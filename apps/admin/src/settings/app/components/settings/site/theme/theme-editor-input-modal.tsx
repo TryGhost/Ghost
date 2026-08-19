@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Field, FieldLabel, Input} from '@tryghost/shade/components';
 import {SettingsModal} from '@tryghost/shade/patterns';
@@ -13,22 +12,17 @@ export type ThemeEditorInputModalProps = {
     okLabel?: string;
 };
 
-const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
+const ThemeEditorInputModal: React.FC<ThemeEditorInputModalProps & {onResolve: (result: string | null) => void}> = ({
     title,
     prompt,
     fieldTitle,
     initialValue,
     placeholder,
     cancelLabel = 'Cancel',
-    okLabel = 'Continue'
+    okLabel = 'Continue',
+    onResolve
 }) => {
-    const modal = useModal();
     const [value, setValue] = useState(initialValue);
-
-    const closeWithResult = (result: string | null) => {
-        modal.resolve(result);
-        modal.remove();
-    };
 
     return (
         <SettingsModal
@@ -39,8 +33,9 @@ const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
             testId='theme-editor-input-modal'
             title={title}
             width={540}
-            onCancel={() => closeWithResult(null)}
-            onOk={() => closeWithResult(value)}
+            onCancel={() => onResolve(null)}
+            onClose={() => onResolve(null)}
+            onOk={() => onResolve(value)}
         >
             <div className='flex flex-col gap-4 py-4'>
                 {prompt}
@@ -51,6 +46,6 @@ const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
             </div>
         </SettingsModal>
     );
-});
+};
 
 export default ThemeEditorInputModal;

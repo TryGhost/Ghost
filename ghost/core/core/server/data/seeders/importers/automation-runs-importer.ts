@@ -4,8 +4,7 @@ import assert from 'node:assert/strict';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 import {parseEmailAddress} from '@tryghost/parse-email-address';
-// @ts-expect-error This module currently lacks type definitions.
-import dateToDatabaseString from '../utils/database-date';
+import * as databaseDate from '../utils/database-date';
 
 type Automation = {
     id: string;
@@ -74,8 +73,8 @@ export class AutomationRunsImporter extends TableImporter<AutomationRun, Automat
         }
 
         const member = faker.helpers.arrayElement(this.#members);
-        const automationCreatedAt = dateToDatabaseString.parse(this.#automation.created_at);
-        const memberCreatedAt = dateToDatabaseString.parse(member.created_at);
+        const automationCreatedAt = databaseDate.parse(this.#automation.created_at);
+        const memberCreatedAt = databaseDate.parse(member.created_at);
         const createdAt = faker.date.between({
             from: new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())),
             to: new Date()
@@ -85,8 +84,8 @@ export class AutomationRunsImporter extends TableImporter<AutomationRun, Automat
 
         return {
             id: this.fastFakeObjectId(),
-            created_at: dateToDatabaseString(createdAt),
-            updated_at: dateToDatabaseString(createdAt),
+            created_at: databaseDate.dateToDatabaseString(createdAt),
+            updated_at: databaseDate.dateToDatabaseString(createdAt),
             automation_id: this.#automation.id,
             member_id: member.id,
             member_email: member.email

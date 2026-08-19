@@ -680,6 +680,82 @@ describe('automations repository', function () {
             assert.deepEqual(automation.stats.last_run_created_at, latestRunCreatedAt);
         });
 
+        it('returns zero for "total run count" if the automation has no runs', async function () {
+            const result = await repo.browse();
+
+            assert(result.data.every(automation => automation.stats.total_run_count === 0));
+        });
+
+        it('returns the number of runs for the automation', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
+
+            await insertRun(automationId);
+            await insertRun(automationId);
+            await insertRun(automationId);
+            await insertRun(otherAutomationId);
+
+            const browseResult = await repo.browse();
+            const automation = browseResult.data.find(candidate => candidate.id === automationId);
+            const otherAutomation = browseResult.data.find(candidate => candidate.id === otherAutomationId);
+            assert(automation);
+            assert(otherAutomation);
+
+            assert.equal(automation.stats.total_run_count, 3);
+            assert.equal(otherAutomation.stats.total_run_count, 1);
+        });
+
+        it('returns zero for "in progress run count" if the automation has no runs', async function () {
+            const result = await repo.browse();
+
+            assert(result.data.every(automation => automation.stats.in_progress_run_count === 0));
+        });
+
+        it('returns zero for "in progress run count" if none of the runs have pending steps', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const {revision_id: revisionId} = await getActionByIndex(automationId, 0);
+            const run = await insertRun(automationId);
+            await insertStep(run.id, revisionId, {status: 'finished'});
+
+            const browseResult = await repo.browse();
+            const automation = browseResult.data.find(candidate => candidate.id === automationId);
+            assert(automation);
+
+            assert.equal(automation.stats.in_progress_run_count, 0);
+        });
+
+        it('returns the number of runs with pending steps for the automation', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
+            const {revision_id: revisionId} = await getActionByIndex(automationId, 0);
+            const {revision_id: otherRevisionId} = await getActionByIndex(otherAutomationId, 0);
+
+            const pendingRun = await insertRun(automationId);
+            await insertStep(pendingRun.id, revisionId, {status: 'finished'});
+            await insertStep(pendingRun.id, revisionId, {status: 'pending'});
+
+            const multiStepPendingRun = await insertRun(automationId);
+            await insertStep(multiStepPendingRun.id, revisionId, {status: 'pending'});
+            await insertStep(multiStepPendingRun.id, revisionId, {status: 'pending'});
+
+            const finishedRun = await insertRun(automationId);
+            await insertStep(finishedRun.id, revisionId, {status: 'finished'});
+
+            await insertRun(automationId);
+
+            const otherPendingRun = await insertRun(otherAutomationId);
+            await insertStep(otherPendingRun.id, otherRevisionId, {status: 'pending'});
+
+            const browseResult = await repo.browse();
+            const automation = browseResult.data.find(candidate => candidate.id === automationId);
+            const otherAutomation = browseResult.data.find(candidate => candidate.id === otherAutomationId);
+            assert(automation);
+            assert(otherAutomation);
+
+            assert.equal(automation.stats.in_progress_run_count, 2);
+            assert.equal(otherAutomation.stats.in_progress_run_count, 1);
+        });
+
         it('creates missing default free and paid automations', async function () {
             const automationIds = await knex('automations')
                 .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])

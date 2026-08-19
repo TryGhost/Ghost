@@ -1,0 +1,9 @@
+export const searchKeywords = {
+    access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email', 'password protection', 'lock site', 'private site', 'private site mode', 'make this site private'],
+    tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
+    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
+    giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
+    memberEmails: ['membership', 'signup', 'welcome email', 'welcome emails', 'email', 'new user', 'new member', 'account'],
+    tips: ['membership', 'tips', 'donations', 'one time', 'payment'],
+    customFields: ['membership', 'custom fields', 'fields', 'member fields', 'custom field']
+};

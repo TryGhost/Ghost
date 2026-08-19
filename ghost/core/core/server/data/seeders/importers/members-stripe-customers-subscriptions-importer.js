@@ -1,6 +1,6 @@
 const {faker} = require('@faker-js/faker');
 const {TableImporter} = require('./table-importer');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 const generateEvents = require('../utils/event-generator');
 const {luck} = require('../utils/random');
 
@@ -95,7 +95,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
                 (isMonthly ? price.interval === 'month' : price.interval === 'year');
         });
         const mrr = createValid ? (isMonthly ? stripePrice.amount : Math.floor(stripePrice.amount / 12)) : 0;
-        const memberCreatedAt = dateToDatabaseString.parse(member.created_at);
+        const memberCreatedAt = databaseDate.parse(member.created_at);
 
         const referenceEndDate = this.lastSubscriptionStart ?? new Date();
 
@@ -193,8 +193,8 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             validStatusses.push({
                 status: 'trialing',
                 cancel_at_period_end: false,
-                trial_end_at: dateToDatabaseString(endDate),
-                trial_start_at: dateToDatabaseString(startDate)
+                trial_end_at: databaseDate.dateToDatabaseString(endDate),
+                trial_start_at: databaseDate.dateToDatabaseString(startDate)
             });
         }
 
@@ -236,8 +236,8 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             customer_id: customer.customer_id,
             subscription_id: `sub_${faker.string.alphanumeric(14)}`,
             stripe_price_id: stripePrice.stripe_price_id,
-            start_date: dateToDatabaseString(startDate),
-            created_at: dateToDatabaseString(startDate),
+            start_date: databaseDate.dateToDatabaseString(startDate),
+            created_at: databaseDate.dateToDatabaseString(startDate),
             mrr,
             plan_id: stripeProduct.stripe_product_id,
             plan_nickname: `${ghostProduct.name} - ${stripePrice.nickname}`,
@@ -248,7 +248,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             // Defaults
             status: 'active',
             cancel_at_period_end: false,
-            current_period_end: dateToDatabaseString(endDate),
+            current_period_end: databaseDate.dateToDatabaseString(endDate),
 
             // Override
             ...status

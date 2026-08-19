@@ -10,7 +10,6 @@ module.exports = (snippet, frame) => {
     return {
         id: json.id,
         name: json.name,
-        // @ts-ignore
         mobiledoc: json.mobiledoc,
         lexical: json.lexical,
         created_at: json.created_at,

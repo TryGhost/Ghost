@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import validator from 'validator';
 import webhookEventOptions from './webhook-event-options';
@@ -10,11 +9,11 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 interface WebhookModalProps {
     webhook?: Webhook;
     integrationId: string;
+    onClose: () => void;
 }
 
-const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => {
+const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId, onClose}) => {
     const eventErrorId = React.useId();
-    const modal = useModal();
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
     const handleError = useHandleError();
@@ -59,9 +58,10 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         testId='webhook-modal'
         title='Add webhook'
         formSheet
+        onClose={onClose}
         onOk={async () => {
             if (await handleSave()) {
-                modal.remove();
+                onClose();
             }
         }}
     >
@@ -109,4 +109,4 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
     </SettingsModal>;
 };
 
-export default NiceModal.create(WebhookModal);
+export default WebhookModal;

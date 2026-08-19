@@ -13,10 +13,12 @@ type IframeBufferingProps = {
   addDelay?: boolean;
 };
 
-function debounce(func: any, wait: number) { // eslint-disable-line
+// eslint-disable-next-line
+function debounce(func: any, wait: number) {
     let timeout: NodeJS.Timeout;
 
-    return function executedFunction(...args: any) { // eslint-disable-line
+    // eslint-disable-next-line
+    return function executedFunction(...args: any) {
         const later = () => {
             clearTimeout(timeout);
             func(...args);

@@ -25,7 +25,6 @@
         "@codemirror/state": "catalog:",
         "@codemirror/theme-one-dark": "catalog:",
         "@dnd-kit/sortable": "catalog:",
-        "@ebay/nice-modal-react": "catalog:",
         "@sentry/react": "catalog:",
         "@svg-maps/world": "2.0.0",
         "@tanstack/react-query": "catalog:",

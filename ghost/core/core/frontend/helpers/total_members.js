@@ -4,7 +4,8 @@
 const {SafeString} = require('../services/handlebars');
 const {memberCountRounding, getMemberStats} = require('../utils/member-count');
 
-module.exports = async function total_members () { //eslint-disable-line
+// eslint-disable-next-line
+module.exports = async function total_members () {
     if (this.total) {
         return new SafeString(memberCountRounding(this.total));
     } else {

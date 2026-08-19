@@ -303,4 +303,152 @@ test.describe('DOM validation for rendered AP content', async () => {
         const xssValue = await page.evaluate(() => (window as Window & {__xss?: boolean}).__xss);
         expect(xssValue).toBeUndefined();
     });
+
+    test('Notification content warnings hide sensitive content and media', async ({page}) => {
+        await mockApi({page, requests: {
+            getNotifications: {
+                method: 'GET',
+                path: '/v1/notifications',
+                response: {
+                    notifications: [{
+                        id: 'notification-sensitive',
+                        type: 'mention',
+                        actor: {
+                            id: 'actor-sensitive',
+                            name: 'Sensitive Alice',
+                            url: 'https://example.com/@sensitive-alice',
+                            handle: '@sensitive-alice@example.com',
+                            avatarUrl: null,
+                            followedByMe: true
+                        },
+                        post: {
+                            id: 'post-sensitive',
+                            type: 'note',
+                            title: null,
+                            content: '<p>This sensitive notification content should stay hidden.</p>',
+                            url: 'https://example.com/post-sensitive',
+                            sensitive: true,
+                            contentWarning: 'Sensitive notification',
+                            likeCount: 0,
+                            likedByMe: false,
+                            repostCount: 0,
+                            repostedByMe: false,
+                            replyCount: 0,
+                            attachments: [{
+                                type: 'Image',
+                                mediaType: 'image/jpeg',
+                                name: 'Sensitive notification image',
+                                url: 'https://example.com/sensitive-notification.jpg'
+                            }]
+                        },
+                        inReplyTo: null,
+                        createdAt: '2026-06-03T10:00:00.000Z'
+                    }],
+                    next: null
+                }
+            },
+            getNotificationsCount: {
+                method: 'GET',
+                path: '/v1/notifications/unread/count',
+                response: {
+                    count: 0
+                }
+            },
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            },
+            getTopics: {
+                method: 'GET',
+                path: '/v1/topics',
+                response: {
+                    topics: []
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/notifications');
+
+        await expect(page.getByTestId('content-warning-overlay')).toContainText('Sensitive notification');
+        await expect(page.getByText('This sensitive notification content should stay hidden.')).toHaveCount(0);
+        await expect(page.getByRole('img', {name: 'Sensitive notification image'})).toHaveCount(0);
+    });
+
+    test('Inline notification content warnings use a compact disclosure', async ({page}) => {
+        await mockApi({page, requests: {
+            getNotifications: {
+                method: 'GET',
+                path: '/v1/notifications',
+                response: {
+                    notifications: [{
+                        id: 'notification-inline-warning',
+                        type: 'like',
+                        actor: {
+                            id: 'actor-inline-warning',
+                            name: 'Inline Alice',
+                            url: 'https://example.com/@inline-alice',
+                            handle: '@inline-alice@example.com',
+                            avatarUrl: null,
+                            followedByMe: true
+                        },
+                        post: {
+                            id: 'post-inline-warning',
+                            type: 'note',
+                            title: null,
+                            content: '<p>This inline warned content should stay hidden.</p>',
+                            url: 'https://example.com/post-inline-warning',
+                            sensitive: true,
+                            contentWarning: 'Inline warning',
+                            likeCount: 0,
+                            likedByMe: false,
+                            repostCount: 0,
+                            repostedByMe: false,
+                            replyCount: 0,
+                            attachments: []
+                        },
+                        inReplyTo: null,
+                        createdAt: '2026-06-03T10:00:00.000Z'
+                    }],
+                    next: null
+                }
+            },
+            getNotificationsCount: {
+                method: 'GET',
+                path: '/v1/notifications/unread/count',
+                response: {
+                    count: 0
+                }
+            },
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            },
+            getTopics: {
+                method: 'GET',
+                path: '/v1/topics',
+                response: {
+                    topics: []
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/notifications');
+
+        await expect(page.getByTestId('content-warning-overlay')).toHaveCount(0);
+        await expect(page.getByText('This inline warned content should stay hidden.')).toHaveCount(0);
+
+        const compactWarning = page.getByRole('button', {exact: true, name: 'Content warning: Inline warning Show'});
+        await expect(compactWarning).toBeVisible();
+        await expect(compactWarning).toHaveClass(/truncate/);
+
+        await compactWarning.click();
+
+        await expect(page.getByText('This inline warned content should stay hidden.')).toBeVisible();
+    });
 });

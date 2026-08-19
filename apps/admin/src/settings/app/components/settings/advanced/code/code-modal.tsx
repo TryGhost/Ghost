@@ -1,5 +1,4 @@
 import CodeEditor from '@/settings/app/components/code-editor';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
@@ -10,19 +9,15 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '@/settings/app/hooks/use-save-button';
 
 interface CodeModalProps {
-    hint?: React.ReactNode;
-    value?: string;
-    onChange: (value: string) => void;
-    afterClose?: () => void
+    onClose: () => void;
 }
 
-const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
+const CodeModal: React.FC<CodeModalProps> = ({onClose}) => {
     const {
         localSettings,
         handleSave,
         updateSetting
     } = useSettingGroup();
-    const modal = useModal();
 
     const [headerContent, footerContent] = getSettingValues<string>(localSettings, ['codeinjection_head', 'codeinjection_foot']);
 
@@ -63,22 +58,19 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     });
 
     return <SettingsModal
-        afterClose={afterClose}
         backDropClick={false}
         cancelLabel='Close'
         footer={<></>}
         height='full'
         size='full'
         testId='modal-code-injection'
+        onClose={onClose}
     >
         <div className='flex h-full flex-col'>
             <div className='mb-4 flex items-center justify-between'>
                 <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>Code injection</Text>
                 <Inline gap='md'>
-                    <Button type='button' variant='outline' onClick={() => {
-                        modal.remove();
-                        afterClose?.();
-                    }}>Close</Button>
+                    <Button type='button' variant='outline' onClick={onClose}>Close</Button>
                     <Button disabled={isSaving} type='button' onClick={onSaveClick}>{savingTitle}</Button>
                 </Inline>
             </div>
@@ -98,4 +90,4 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     </SettingsModal>;
 };
 
-export default NiceModal.create(CodeModal);
+export default CodeModal;

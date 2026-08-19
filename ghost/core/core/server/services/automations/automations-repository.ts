@@ -68,6 +68,8 @@ export interface AutomationSummary {
 export interface AutomationBrowseResult extends AutomationSummary {
     stats: {
         last_run_created_at: Date | null;
+        total_run_count: number;
+        in_progress_run_count: number;
     };
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-clean-basic-html",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "description": "Sanitises and normalises the basic HTML snippets used in Ghost's editor cards",
   "repository": {
     "type": "git",
@@ -42,10 +42,10 @@
     "@eslint/js": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

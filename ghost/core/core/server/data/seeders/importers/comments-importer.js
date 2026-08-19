@@ -2,7 +2,7 @@ const {faker} = require('@faker-js/faker');
 const {TableImporter} = require('./table-importer');
 const {luck} = require('../utils/random');
 const generateEvents = require('../utils/event-generator');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class CommentsImporter extends TableImporter {
     static table = 'comments';
@@ -24,7 +24,7 @@ class CommentsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.model = model;
-        const publishedAt = dateToDatabaseString.parse(model.published_at);
+        const publishedAt = databaseDate.parse(model.published_at);
 
         this.commentIds = []; // Store [id, parent_id, timestamp] tuples for reply-to-reply
 
@@ -37,7 +37,7 @@ class CommentsImporter extends TableImporter {
             endTime: new Date()
         }).sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically so replies always come after their targets
 
-        this.possibleMembers = this.members.filter(member => dateToDatabaseString.parse(member.created_at) < publishedAt);
+        this.possibleMembers = this.members.filter(member => databaseDate.parse(member.created_at) < publishedAt);
     }
 
     generate() {
@@ -97,8 +97,8 @@ class CommentsImporter extends TableImporter {
             parent_id: parentId,
             in_reply_to_id: inReplyToId,
             status: 'published',
-            created_at: dateToDatabaseString(timestamp),
-            updated_at: dateToDatabaseString(timestamp),
+            created_at: databaseDate.dateToDatabaseString(timestamp),
+            updated_at: databaseDate.dateToDatabaseString(timestamp),
             html: `<p>${faker.lorem.sentence().replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`)}</p>`
         };
 

@@ -30,9 +30,8 @@ export const ConfirmationProvider: React.FC<{children: React.ReactNode}> = ({chi
     const show = useCallback((request: Omit<ConfirmationRequest, 'id'>): ConfirmationHandle => {
         nextId.current += 1;
         const id = nextId.current;
-        // One request per kind, matching NiceModal's per-component keying: a
-        // second show replaces the first instead of stacking (StrictMode
-        // double-effects depend on this).
+        // One request per kind: a second show replaces the first instead of
+        // stacking (StrictMode double-effects depend on this).
         setRequests(current => [...current.filter(r => r.kind !== request.kind), {...request, id} as ConfirmationRequest]);
         return {remove: () => setRequests(current => current.filter(r => r.id !== id))};
     }, []);

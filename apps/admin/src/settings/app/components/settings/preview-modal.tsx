@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {ExternalLink} from 'lucide-react';
-import {useModal} from '@ebay/nice-modal-react';
 
 import {Box, Inline, Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
 import {Button, type ButtonProps, Separator} from '@tryghost/shade/components';
@@ -37,8 +36,8 @@ const headingLeading: Record<HeadingLevel, TextLeading> = {
 };
 
 /**
- * Compatibility shell for settings preview modals while the legacy NiceModal
- * flows are migrated to consumer-controlled Shade compositions.
+ * Consumer-controlled shell for the settings preview dialogs (design, portal,
+ * newsletters, offers). New modal flows should use Shade compositions directly.
  */
 export interface PreviewModalProps {
     testId?: string;
@@ -71,16 +70,14 @@ export interface PreviewModalProps {
     backDropClick?: boolean;
 
     onCancel?: () => void;
-    onOk?: () => void;
-    /** Supersedes the NiceModal close path; without it the modal must be mounted through NiceModal. Keep its presence stable across renders — toggling defined/undefined remounts the modal subtree. */
-    onClose?: () => void;
+    /** May be async; the modal fires it without awaiting, so the handler owns its own error handling. */
+    onOk?: () => void | Promise<void>;
+    onClose: () => void;
     afterClose?: () => void;
 }
 
-type PreviewModalContentBaseProps = Omit<PreviewModalProps, 'onClose'> & {requestClose: () => void};
-
-const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
-    requestClose,
+export const PreviewModalContent: React.FC<PreviewModalProps> = ({
+    onClose,
     testId,
     title,
     titleHeadingLevel = 4,
@@ -126,7 +123,7 @@ const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
             const handleCMDS = (e: KeyboardEvent) => {
                 if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                     e.preventDefault();
-                    onOk();
+                    void onOk();
                 }
             };
             if (enableCMDS) {
@@ -188,7 +185,7 @@ const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
 
     const handleCancel = onCancel || (() => {
         confirm(dirty, () => {
-            requestClose();
+            onClose();
             afterClose?.();
         });
     });
@@ -207,7 +204,7 @@ const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
             title=''
             width={width}
             hideXOnMobile
-            onClose={requestClose}
+            onClose={onClose}
         >
             <Inline align='stretch' className='h-full grow' gap='none'>
                 <Box className={cn(
@@ -233,7 +230,7 @@ const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
                                 {sidebarButtons || (
                                     <Inline gap='md'>
                                         <Button disabled={buttonsDisabled} type='button' variant='outline' onClick={handleCancel}>{cancelLabel}</Button>
-                                        <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={onOk}>{okLabel}</Button>
+                                        <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={() => void onOk?.()}>{okLabel}</Button>
                                     </Inline>
                                 )}
                             </Inline>
@@ -252,16 +249,4 @@ const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
             <DirtyConfirmDialog {...dialogProps} />
         </SettingsModal>
     );
-};
-
-const NicePreviewModalContent: React.FC<Omit<PreviewModalContentBaseProps, 'requestClose'>> = (props) => {
-    const modal = useModal();
-    return <PreviewModalContentBase {...props} requestClose={() => modal.remove()} />;
-};
-
-export const PreviewModalContent: React.FC<PreviewModalProps> = ({onClose, ...props}) => {
-    if (onClose) {
-        return <PreviewModalContentBase {...props} requestClose={onClose} />;
-    }
-    return <NicePreviewModalContent {...props} />;
 };

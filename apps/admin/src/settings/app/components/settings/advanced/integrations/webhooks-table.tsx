@@ -1,5 +1,5 @@
-import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
+import {useState} from 'react';
 import {Button, EmptyIndicator, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
@@ -7,7 +7,7 @@ import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
 import {toast} from 'sonner';
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
+import {type Webhook, useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
@@ -15,12 +15,21 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const handleError = useHandleError();
     const {confirm} = useConfirmation();
     const webhooks = integration.webhooks || [];
+    const [editingWebhook, setEditingWebhook] = useState<Webhook | null>(null);
+    const [isAddingWebhook, setIsAddingWebhook] = useState(false);
 
     const showAddWebhookModal = () => {
-        NiceModal.show(WebhookModal, {
-            integrationId: integration.id
-        });
+        setIsAddingWebhook(true);
     };
+
+    const closeWebhookModal = () => {
+        setIsAddingWebhook(false);
+        setEditingWebhook(null);
+    };
+
+    const webhookModal = isAddingWebhook
+        ? <WebhookModal integrationId={integration.id} onClose={closeWebhookModal} />
+        : editingWebhook && <WebhookModal key={editingWebhook.id} integrationId={integration.id} webhook={editingWebhook} onClose={closeWebhookModal} />;
 
     const handleDelete = (id: string) => {
         confirm({
@@ -57,6 +66,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                     <LucideIcon.Webhook />
                 </EmptyIndicator>
                 <Separator />
+                {webhookModal}
             </Stack>
         );
     }
@@ -72,12 +82,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             </TableHeader>
             <TableBody>
                 {webhooks.map(webhook => (
-                    <TableRow key={webhook.id} className='cursor-pointer' onClick={() => {
-                        NiceModal.show(WebhookModal, {
-                            webhook,
-                            integrationId: integration.id
-                        });
-                    }}>
+                    <TableRow key={webhook.id} className='cursor-pointer' onClick={() => setEditingWebhook(webhook)}>
                         <TableCell className='w-3/4 py-3 pr-6'>
                             <div className='font-semibold'>{webhook.name}</div>
                             <div className='mt-1 grid grid-cols-[max-content_1fr] gap-1 text-sm leading-snug'>
@@ -121,6 +126,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             </Button>
         </Inline>
         <Separator />
+        {webhookModal}
     </Stack>);
 };
 

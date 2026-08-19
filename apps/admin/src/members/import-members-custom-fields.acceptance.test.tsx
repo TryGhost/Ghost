@@ -109,10 +109,91 @@ describe('Import members custom fields', () => {
 
         // The row carries the new field immediately, from the create response: the browse query
         // is invalidated but not awaited, so waiting for the refetch would leave the picker
-        // blank in between. And the trigger names the list it came from, so a custom field
-        // called "Name" could not be read as the member's own name once the list is closed.
+        // blank in between.
         await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
-        await expect.element(fieldSelect('nickname')).toHaveTextContent('Custom field');
+    });
+
+    it('marks a custom field a membership field already has the name of', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await userEvent.fill(createForm().getByLabelText('Name'), 'Name');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+
+        // Two rows read "Name" now, and the mark on the custom one is the whole of what tells
+        // them apart once the list is closed. The membership field carries nothing: it is the
+        // rule rather than the exception, and marking both is what this replaced.
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Name');
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Custom');
+        await expect.element(fieldSelect('name')).toHaveTextContent('Name');
+        await expect.element(fieldSelect('name')).not.toHaveTextContent('Custom');
+    });
+
+    it('leaves a custom field no membership field is named like unmarked', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+        await expect.element(fieldSelect('nickname')).not.toHaveTextContent('Custom');
+    });
+
+    it('selects the second of two fields sharing a name from the keyboard', async () => {
+        const {uploadApi} = fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await userEvent.fill(createForm().getByLabelText('Name'), 'Name');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Name');
+
+        await importToggle('city').click();
+        await fieldSelect('city').click();
+        await userEvent.fill(page.getByPlaceholder('Search fields...'), 'Name');
+        await expect(page.getByRole('option', {name: 'Name', exact: true})).toHaveCount(2);
+
+        // Highlighting and selecting have to agree about which of the two this is.
+        await userEvent.keyboard('{ArrowDown}{Enter}');
+
+        await expect.element(fieldSelect('city')).toHaveTextContent('Custom');
+        // A target belongs to one column at a time, so this is the custom field changing hands.
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+
+        await importToggle('nickname').click();
+        await page.getByRole('button', {name: 'Import 1 member'}).click();
+        await expect.poll(() => uploadApi.lastRequest && sentMapping(uploadApi.lastRequest.body)).toEqual({
+            email: 'email',
+            name: 'name',
+            nickname: '',
+            city: 'custom_fields.name',
+            postcode: ''
+        });
+    });
+
+    it('searches the names on the rows rather than the columns behind them', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+
+        await fieldSelect('nickname').click();
+        await userEvent.fill(page.getByPlaceholder('Search fields...'), 'custom');
+
+        // Force-mounted, so it survives any search. Nothing else should: no field is "custom".
+        await expect.element(page.getByRole('option', {name: 'Add custom field'})).toBeVisible();
+        await expect.element(page.getByRole('option', {name: 'Subscribed to emails'})).not.toBeInTheDocument();
+        await expect.element(page.getByRole('option', {name: 'Nickname'})).not.toBeInTheDocument();
+
+        await userEvent.fill(page.getByPlaceholder('Search fields...'), 'nick');
+        await expect.element(page.getByRole('option', {name: 'Nickname'})).toBeVisible();
     });
 
     it('puts the create form away when another picker is opened', async () => {

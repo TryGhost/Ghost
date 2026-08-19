@@ -182,7 +182,6 @@ class SettingsHelpers {
         unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
         if (uuid) {
             // hash key with member uuid for verification (and to not leak uuid) - it's possible to update member email prefs without logging in
-            // @ts-ignore
             const hmac = crypto.createHmac('sha256', key).update(`${uuid}`).digest('hex');
             unsubscribeUrl.searchParams.set('uuid', uuid);
             unsubscribeUrl.searchParams.set('key', hmac);

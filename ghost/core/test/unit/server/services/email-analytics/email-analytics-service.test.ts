@@ -386,6 +386,21 @@ describe('EmailAnalyticsService', function () {
                 sinon.assert.notCalled(eventProcessor.aggregate);
             });
 
+            it('returns 0 and clears metadata when a pending fetch is canceled', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                service.getStatus().scheduled.canceled = true;
+                setJobMetadataStub.resetHistory();
+
+                const result = await service.fetchScheduled();
+
+                assert.equal(result.eventCount, 0);
+                sinon.assert.calledOnceWithExactly(setJobMetadataStub, JOB_NAMES.scheduled, null);
+                sinon.assert.notCalled(eventProcessor.processBatch);
+            });
+
             it('fetches events with correct parameters', async function () {
                 await service.schedule({
                     begin: new Date(2023, 0, 1),
@@ -398,6 +413,63 @@ describe('EmailAnalyticsService', function () {
                 sinon.assert.calledOnce(setJobStatusStub);
                 sinon.assert.calledOnce(eventProcessor.processBatch);
                 assert.deepEqual(eventProcessor.processBatch.getCall(0).args[0], [1,2,3,4,5,6,7,8,9,10]);
+            });
+
+            it('resumes from the last processed event timestamp', async function () {
+                const begin = new Date(2023, 0, 1);
+                const lastEventTimestamp = new Date(2023, 0, 1, 12);
+                const end = new Date(2023, 0, 2);
+                const fetchEvents = sinon.stub().resolves();
+                service = createService({
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: lastEventTimestamp,
+                            started_at: null,
+                            metadata: {
+                                begin: begin.toISOString(),
+                                end: end.toISOString()
+                            }
+                        }),
+                        setJobTimestamp: setJobTimestampStub,
+                        setJobStatus: setJobStatusStub,
+                        setJobMetadata: setJobMetadataStub
+                    },
+                    fetchEvents
+                });
+                await service.restoreScheduled();
+
+                await service.fetchScheduled();
+
+                sinon.assert.calledOnceWithMatch(fetchEvents, {
+                    begin: lastEventTimestamp,
+                    end
+                });
+            });
+
+            it('cancels a fetch while it is processing', async function () {
+                service = createService({
+                    queries: {
+                        setJobTimestamp: setJobTimestampStub,
+                        setJobStatus: setJobStatusStub,
+                        setJobMetadata: setJobMetadataStub
+                    },
+                    fetchEvents: async ({batchHandler}: {batchHandler: BatchHandler}) => {
+                        service.cancelScheduled();
+                        await batchHandler([1]);
+                    },
+                    createEventProcessor: () => eventProcessor
+                });
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                const result = await service.fetchScheduled();
+
+                assert.equal(result.eventCount, 1);
+                sinon.assert.calledWith(setJobMetadataStub, JOB_NAMES.scheduled, null);
+                assert.equal(service.getStatus().scheduled.canceled, undefined);
             });
 
             it('bails when end date is before begin date', async function () {
@@ -464,6 +536,19 @@ describe('EmailAnalyticsService', function () {
                     begin: begin.toISOString(),
                     end: end.toISOString()
                 });
+            });
+
+            it('rejects scheduling while a fetch is running', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                service.getStatus().scheduled.running = true;
+
+                await assert.rejects(service.schedule({
+                    begin: new Date(2023, 0, 3),
+                    end: new Date(2023, 0, 4)
+                }), /Already fetching scheduled events/);
             });
 
             it('clears metadata when canceling a non-running schedule', async function () {
@@ -563,6 +648,96 @@ describe('EmailAnalyticsService', function () {
 
                 await assert.rejects(service.fetchLatestOpenedEvents(), /final aggregation failed/);
             });
+
+            it('supports processors without aggregation', async function () {
+                const eventProcessor = createStubEventProcessor();
+                eventProcessor.aggregate = undefined as never;
+                const service = createServiceWithEventProcessor(eventProcessor);
+
+                const result = await service.fetchLatestOpenedEvents();
+
+                assert.equal(result.eventCount, 1);
+                assert.equal(result.aggregationTimeMs, 0);
+            });
+
+            it('supports aggregation without timing details', async function () {
+                const eventProcessor = createStubEventProcessor();
+                eventProcessor.aggregate.resolves(undefined);
+                const service = createServiceWithEventProcessor(eventProcessor);
+
+                const result = await service.fetchLatestOpenedEvents();
+
+                assert.equal(result.eventCount, 1);
+                assert.equal(result.aggregationTimeMs, 0);
+            });
+
+            it('preserves new email and member IDs in the cumulative result', async function () {
+                const eventProcessor = createStubEventProcessor();
+                eventProcessor.processBatch.callsFake(async (_events, result) => {
+                    result.emailIds.push('email-id');
+                    result.memberIds.push('member-id');
+                });
+                const service = createServiceWithEventProcessor(eventProcessor);
+
+                const result = await service.fetchLatestOpenedEvents();
+
+                assert.deepEqual(result.result.emailIds, ['email-id']);
+                assert.deepEqual(result.result.memberIds, ['member-id']);
+            });
+
+            it('rejects when fetching events fails', async function () {
+                const error = new Error('fetch failed');
+                const service = createService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    fetchEvents: sinon.stub().rejects(error)
+                });
+
+                await assert.rejects(service.fetchLatestOpenedEvents(), error);
+            });
+
+            it('rejects when fetching events throws a non-Error value', async function () {
+                const service = createService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    fetchEvents: async () => {
+                        throw 'fetch failed';
+                    }
+                });
+
+                await assert.rejects(service.fetchLatestOpenedEvents(), error => error === 'fetch failed');
+            });
+
+            it('persists and advances the last processed event timestamp', async function () {
+                const lastEventTimestamp = new Date(Date.now() - 10_000);
+                const setJobTimestamp = sinon.stub().resolves();
+                const eventProcessor = createStubEventProcessor();
+                eventProcessor.processBatch.callsFake(async (_events, _result, fetchData) => {
+                    fetchData.lastEventTimestamp = lastEventTimestamp;
+                });
+                const service = createService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp,
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    fetchEvents: async ({batchHandler}: {batchHandler: BatchHandler}) => {
+                        await batchHandler([1]);
+                    },
+                    createEventProcessor: () => eventProcessor
+                });
+
+                await service.fetchLatestOpenedEvents({maxEvents: 2});
+
+                sinon.assert.calledWithExactly(setJobTimestamp, JOB_NAMES.latestOpened, 'finished', lastEventTimestamp);
+                assert.deepEqual(service.getStatus().latestOpened.lastEventTimestamp, new Date(lastEventTimestamp.getTime() + 1000));
+            });
         });
 
         describe('restoreScheduled', function () {
@@ -609,6 +784,18 @@ describe('EmailAnalyticsService', function () {
 
                 const status = service.getStatus();
                 assert.equal(status.scheduled.schedule, undefined);
+            });
+
+            it('handles errors while restoring persisted data', async function () {
+                const service = createService({
+                    queries: {
+                        getJobData: sinon.stub().rejects(new Error('read failed'))
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                assert.equal(service.getStatus().scheduled.schedule, undefined);
             });
 
             it('does nothing when metadata is null', async function () {
@@ -693,6 +880,21 @@ describe('EmailAnalyticsService', function () {
                 });
                 await service.fetchMissing();
                 sinon.assert.calledOnce(fetchLatestSpy);
+            });
+
+            it('quits if the end is before the begin', async function () {
+                const fetchEvents = sinon.spy();
+                const service = createService({
+                    queries: {
+                        getLastJobRunTimestamp: sinon.stub().resolves(new Date(Date.now() + 1000))
+                    },
+                    fetchEvents
+                });
+
+                const result = await service.fetchMissing();
+
+                assert.equal(result.eventCount, 0);
+                sinon.assert.notCalled(fetchEvents);
             });
         });
     });

@@ -1,6 +1,6 @@
 {
     "name": "ghost",
-    "version": "6.58.0-rc.0",
+    "version": "6.58.1-rc.0",
     "description": "The professional publishing platform",
     "author": "Ghost Foundation",
     "homepage": "https://ghost.org",
@@ -81,12 +81,14 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "3.1079.0",
+        "@breejs/later": "catalog:",
         "@extractus/oembed-extractor": "3.2.1",
         "@faker-js/faker": "catalog:",
         "@isaacs/ttlcache": "1.4.1",
         "@sentry/node": "7.120.4",
         "@slack/webhook": "7.1.0",
         "@tryghost/adapter-base-cache": "workspace:*",
+        "@tryghost/adapter-base-jobs": "workspace:*",
         "@tryghost/adapter-base-redirects": "workspace:*",
         "@tryghost/adapter-base-route-settings": "workspace:*",
         "@tryghost/adapter-base-scheduling": "workspace:*",
@@ -158,6 +160,7 @@
         "cookies": "0.9.1",
         "cors": "2.8.6",
         "countries-and-timezones": "3.9.0",
+        "cron-validate": "catalog:",
         "csso": "5.0.5",
         "dequal": "catalog:",
         "dompurify": "catalog:",
@@ -171,6 +174,7 @@
         "express-query-boolean": "2.0.0",
         "express-queue": "0.0.13",
         "express-session": "1.19.0",
+        "fastq": "catalog:",
         "file-type": "21.3.4",
         "form-data": "catalog:",
         "fs-extra": "catalog:",
@@ -240,6 +244,9 @@
         "unidecode": "catalog:",
         "xml": "1.0.1",
         "zod": "catalog:"
+    },
+    "overrides": {
+        "cron-validate": "1.4.5"
     },
     "optionalDependencies": {
         "better-sqlite3": "catalog:"

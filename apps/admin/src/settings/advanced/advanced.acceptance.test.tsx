@@ -15,6 +15,21 @@ import {
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
+// Settings groups and the content wrapper open stacking contexts; a dialog rendered
+// inside them (rather than through the settings dialog portal) paints below the chrome.
+function elementsPaintedOverModalBackdrop(): string[] {
+    const hits: string[] = [];
+    for (let x = 4; x < window.innerWidth; x += 24) {
+        for (let y = 4; y < window.innerHeight; y += 24) {
+            const element = document.elementFromPoint(x, y);
+            if (element && !element.closest("#modal-backdrop")) {
+                hits.push(`${x},${y}: <${element.tagName.toLowerCase()} id="${element.id}" data-testid="${element.getAttribute("data-testid") ?? ""}">`);
+            }
+        }
+    }
+    return hits;
+}
+
 function advancedSettings(overrides: Record<string, string | boolean | null>) {
     return settingsResponse({settings: overrides});
 }
@@ -28,6 +43,8 @@ describe("Advanced settings", () => {
         const section = settingsScreen.section("code-injection");
         await section.getByRole("button", {name: "Open"}).click();
         const modal = settingsScreen.section("modal-code-injection");
+        await expect.element(modal).toBeVisible();
+        expect(elementsPaintedOverModalBackdrop()).toEqual([]);
         await modal.getByTestId("header-code").getByRole("textbox").fill("<script>header()</script>");
         await modal.getByRole("tab", {name: "Site footer"}).click();
         await modal.getByTestId("footer-code").getByRole("textbox").fill("<script>footer()</script>");
@@ -126,6 +143,63 @@ describe("Advanced settings", () => {
             await section.getByRole("button", {name}).click();
             expect(JSON.parse(document.body.dataset.externalNavigate ?? "null")).toMatchObject({route, isExternal: true});
         }
+    });
+
+    it("imports content from the universal importer and confirms the import is queued", async () => {
+        fakeSettingsScreens();
+        const importApi = fakeAdminEndpoint("POST", "/db/", {});
+        await renderAdminApp("/settings/migration");
+
+        await settingsScreen.section("migrationtools").getByRole("button", {name: "Universal import"}).click();
+        const modal = page.getByTestId("universal-import-modal");
+        const input = modal.element().querySelector<HTMLInputElement>("#import-file");
+        if (!input) {
+            throw new Error("import file input was not rendered");
+        }
+        await page.elementLocator(input).upload(new File(["{}"], "content.json", {type: "application/json"}));
+
+        await expect.poll(() => importApi.requests.length).toBe(1);
+        await expect(modal).toHaveCount(0);
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent("Import in progress");
+        await settingsScreen.confirmationModal().getByRole("button", {name: "Got it"}).click();
+        await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    });
+
+    it("closes the universal importer without importing when cancelled", async () => {
+        fakeSettingsScreens();
+        const importApi = fakeAdminEndpoint("POST", "/db/", {});
+        await renderAdminApp("/settings/migration");
+
+        await settingsScreen.section("migrationtools").getByRole("button", {name: "Universal import"}).click();
+        const modal = page.getByTestId("universal-import-modal");
+        await expect.element(modal).toBeVisible();
+        await modal.getByRole("button", {name: "Cancel"}).click();
+
+        await expect(modal).toHaveCount(0);
+        expect(importApi.requests).toHaveLength(0);
+    });
+
+    it("enables the automations beta only after confirmation", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        const toggle = section.getByRole("switch", {name: "Automations (beta)"});
+
+        await toggle.click();
+        const confirmation = page.getByTestId("feature-toggle-confirmation-modal");
+        await expect.element(confirmation).toBeVisible();
+        await confirmation.getByRole("button", {name: "Cancel"}).click();
+        await expect(confirmation).toHaveCount(0);
+        expect(settingsApi.requests).toHaveLength(0);
+
+        await toggle.click();
+        await confirmation.getByRole("button", {name: "Enable"}).click();
+        await expect(confirmation).toHaveCount(0);
+        await expect.poll(() => settingsApi.lastRequest?.settings.find(setting => setting.key === "labs")?.value).toContain('"automations":true');
     });
 
     it("downloads the content and settings export", async () => {

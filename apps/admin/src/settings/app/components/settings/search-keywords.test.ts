@@ -1,8 +1,8 @@
 import * as assert from 'assert/strict';
 import {searchKeywords as emailSearchKeywords} from '@/settings/app/components/settings/email/email-settings';
 import {searchKeywords as emailsSearchKeywords} from '@/settings/app/components/settings/email/emails';
-import {searchKeywords as generalSearchKeywords} from '@/settings/app/components/settings/general/general-settings';
-import {searchKeywords as membershipSearchKeywords} from '@/settings/app/components/settings/membership/membership-settings';
+import {searchKeywords as generalSearchKeywords} from '@/settings/general/search-keywords';
+import {searchKeywords as membershipSearchKeywords} from '@/settings/membership/search-keywords';
 
 const includes = (keywords: string[], term: string) => keywords.some(keyword => keyword.toLowerCase().includes(term.toLowerCase()));
 

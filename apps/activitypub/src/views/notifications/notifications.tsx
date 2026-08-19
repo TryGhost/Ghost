@@ -12,14 +12,15 @@ import NotificationIcon from './components/notification-icon';
 import NotificationItem from './components/notification-item';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import Separator from '@components/global/separator';
+import {ContentWarningOverlay, SensitiveMediaOverlay, renderFeedAttachment} from '@components/feed/feed-item';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
 import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
-import {renderFeedAttachment} from '@components/feed/feed-item';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
+import {useSensitiveMediaDisclosure} from '@hooks/use-sensitive-media-disclosure';
 
 interface NotificationGroup {
     id: string;
@@ -199,6 +200,86 @@ const ProfileLinkedContent: React.FC<{
             ref={contentRef}
             className={className}
         />
+    );
+};
+
+interface NotificationPostPreviewProps {
+    post: Notification['post'];
+    variant: 'inline' | 'quoted';
+}
+
+const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
+    post,
+    variant
+}) => {
+    const attachments = post?.attachments ?? [];
+    const hasAttachments = attachments.length > 0;
+
+    const {
+        contentWarning,
+        shouldHideContentWarning,
+        shouldHideSensitiveMedia,
+        revealSensitiveMedia,
+        revealContentWarning
+    } = useSensitiveMediaDisclosure({
+        contentWarning: post?.contentWarning,
+        sensitive: post?.sensitive,
+        hasMedia: hasAttachments,
+        resetKey: post?.id
+    });
+
+    if (!post) {
+        return null;
+    }
+
+    if (shouldHideContentWarning && contentWarning) {
+        if (variant === 'inline') {
+            return (
+                <button
+                    className='mt-0.5 block max-w-full truncate text-left text-sm text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white'
+                    type='button'
+                    onClick={revealContentWarning}
+                >
+                    <span className='font-semibold'>Content warning:</span> {contentWarning} <span className='font-semibold'>Show</span>
+                </button>
+            );
+        }
+
+        return (
+            <ContentWarningOverlay
+                className='mt-2.5'
+                label={contentWarning}
+                size='compact'
+                onReveal={revealContentWarning}
+            />
+        );
+    }
+
+    if (variant === 'inline') {
+        return (
+            <div className='ap-note-content mt-0.5 line-clamp-1 text-sm text-pretty text-gray-700 dark:text-gray-600'>
+                {post.type === 'article' && post.title && <>{post.title} &mdash; </>}
+                <span dangerouslySetInnerHTML={{__html: sanitizeHtml(stripHtml(post.content || ''))}} />
+            </div>
+        );
+    }
+
+    return (
+        <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-950/30 group-hover:dark:bg-black/40'>
+            <ProfileLinkedContent
+                className='ap-note-content text-pretty'
+                content={post.content || ''}
+                stripTags={['a']}
+            />
+            {hasAttachments && (
+                <div className='relative mt-2.5 aspect-square w-[calc(20%-6.4px)] min-w-[96px] overflow-hidden rounded-md [&_img]:absolute [&_img]:inset-0 [&_img]:mt-0 [&_img]:size-full [&_img]:max-h-none [&_img]:max-w-none [&_img]:object-cover [&>.attachment-gallery]:absolute [&>.attachment-gallery]:inset-0 [&>.attachment-gallery]:mt-0 [&>.attachment-gallery]:grid [&>.attachment-gallery]:size-full'>
+                    {renderFeedAttachment({type: 'Note', attachment: attachments})}
+                    {shouldHideSensitiveMedia && (
+                        <SensitiveMediaOverlay showLabel={false} size='compact' isLayered onReveal={revealSensitiveMedia} />
+                    )}
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -438,28 +519,10 @@ const Notifications: React.FC = () => {
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
-                                                    (group.type !== 'reply' && group.type !== 'mention' ?
-                                                        <div className='ap-note-content mt-0.5 line-clamp-1 text-sm text-pretty text-gray-700 dark:text-gray-600'>
-                                                            {group.post?.type === 'article' && group.post?.title && <>{group.post.title} &mdash; </>}
-                                                            <span dangerouslySetInnerHTML={{__html: sanitizeHtml(stripHtml(group.post?.content || ''))}} />
-                                                        </div> :
-                                                        <>
-                                                            <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-950/30 group-hover:dark:bg-black/40'>
-                                                                <ProfileLinkedContent
-                                                                    className='ap-note-content text-pretty'
-                                                                    content={group.post?.content || ''}
-                                                                    stripTags={['a']}
-                                                                />
-                                                                {group.post && group.post.attachments && group.post.attachments.length > 0 && (
-                                                                    <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
-                                                                        {renderFeedAttachment(
-                                                                            {...group.post, type: 'Note', attachment: group.post.attachments}
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </>
-                                                    )
+                                                    <NotificationPostPreview
+                                                        post={group.post}
+                                                        variant={group.type !== 'reply' && group.type !== 'mention' ? 'inline' : 'quoted'}
+                                                    />
                                                 )}
                                                 {((group.type === 'reply' && group.post) || group.type === 'mention') && (
                                                     <div className="mt-1.5">

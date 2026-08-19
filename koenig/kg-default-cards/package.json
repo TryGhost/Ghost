@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-cards",
-  "version": "10.3.4",
+  "version": "10.3.5",
   "description": "Mobiledoc card definitions for Ghost's editor",
   "repository": {
     "type": "git",

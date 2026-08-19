@@ -148,6 +148,11 @@ export default tseslint.config([
             // Manually include rules from plugin:ghost/ts and plugin:ghost/ts-test
             // These would normally come from the extends, but flat config requires explicit inclusion
             ...ghostPlugin.configs.ts.rules,
+            // Formatting is owned by Oxfmt; keep the non-formatting rules ts-no-style also switches off
+            ...ghostPlugin.configs['ts-no-style'].rules,
+            camelcase: ghostPlugin.configs.ts.rules.camelcase,
+            curly: ghostPlugin.configs.ts.rules.curly,
+            'dot-notation': ghostPlugin.configs.ts.rules['dot-notation'],
 
             // Sort multiple import lines into alphabetical groups
             'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {

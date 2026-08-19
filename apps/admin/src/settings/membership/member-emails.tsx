@@ -1,0 +1,327 @@
+import React, {useEffect, useRef, useState} from 'react';
+import TopLevelGroup from '@/settings/app/components/top-level-group';
+import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
+import WelcomeEmailModal, {type WelcomeEmailModalProps} from './member-emails/welcome-email-modal';
+import useQueryParams from '@/settings/app/hooks/use-query-params';
+import {APIError} from '@tryghost/admin-x-framework/errors';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
+import {Button} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
+import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
+import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+
+const EmailPreviewRow: React.FC<{
+    automatedEmail: AutomatedEmail,
+    emailType: 'free' | 'paid',
+    icon: React.ReactNode,
+    title: string,
+    enabled: boolean,
+    isBusy: boolean,
+    isInitialLoading: boolean,
+    onEdit: () => void,
+    onToggle: () => void
+}> = ({
+    automatedEmail,
+    emailType,
+    icon,
+    title,
+    enabled,
+    isBusy,
+    isInitialLoading,
+    onEdit,
+    onToggle
+}) => {
+    return (
+        <ActionListItem data-testid={`${emailType}-welcome-email-row`}>
+            <ActionListItemContent asChild>
+                <button
+                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none'
+                    data-testid={`${emailType}-welcome-email-preview`}
+                    type='button'
+                    onClick={onEdit}
+                >
+                    <span className='flex size-10 shrink-0 items-center justify-center rounded-full bg-muted'>
+                        <span className='text-muted-foreground [&>svg]:size-5'>{icon}</span>
+                    </span>
+                    <span className='min-w-0 grow'>
+                        <span className='block leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</span>
+                        <span className='mt-1 block text-sm leading-[1.35] text-muted-foreground'>
+                            {automatedEmail.subject}
+                        </span>
+                    </span>
+                </button>
+            </ActionListItemContent>
+            <ActionListItemActions>
+                <div className={`flex items-center gap-7 ${isBusy && !isInitialLoading ? 'pointer-events-none' : ''}`}>
+                {isInitialLoading ? (
+                    <div className="h-4 w-7 rounded-full bg-muted" />
+                ) : (
+                    <Switch
+                        aria-label={`${title} welcome email`}
+                        checked={enabled}
+                        disabled={isBusy}
+                        onCheckedChange={onToggle}
+                    />
+                )}
+                <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={onEdit}>Edit</Button>
+                </div>
+            </ActionListItemActions>
+        </ActionListItem>
+    );
+};
+
+const MemberEmailsTable: React.FC<{
+    settings: ReturnType<typeof useGlobalData>['settings'],
+    config: ReturnType<typeof useGlobalData>['config'],
+    freeEmailForDisplay: AutomatedEmail,
+    paidEmailForDisplay: AutomatedEmail,
+    freeWelcomeEmailEnabled: boolean,
+    paidWelcomeEmailEnabled: boolean,
+    isBusy: boolean,
+    isLoading: boolean,
+    onFreeEdit: () => void,
+    onFreeToggle: () => void,
+    onPaidEdit: () => void,
+    onPaidToggle: () => void
+}> = ({
+    settings,
+    config,
+    freeEmailForDisplay,
+    paidEmailForDisplay,
+    freeWelcomeEmailEnabled,
+    paidWelcomeEmailEnabled,
+    isBusy,
+    isLoading,
+    onFreeEdit,
+    onFreeToggle,
+    onPaidEdit,
+    onPaidToggle
+}) => {
+    return (
+        <ActionList className='border-t border-border'>
+            <EmailPreviewRow
+                automatedEmail={freeEmailForDisplay}
+                emailType='free'
+                enabled={freeWelcomeEmailEnabled}
+                icon={<LucideIcon.UserPlus />}
+                isBusy={isBusy}
+                isInitialLoading={isLoading}
+                title='Free members welcome email'
+                onEdit={onFreeEdit}
+                onToggle={onFreeToggle}
+            />
+            {checkStripeEnabled(settings, config) && (
+                <EmailPreviewRow
+                    automatedEmail={paidEmailForDisplay}
+                    emailType='paid'
+                    enabled={paidWelcomeEmailEnabled}
+                    icon={<LucideIcon.Banknote />}
+                    isBusy={isBusy}
+                    isInitialLoading={isLoading}
+                    title='Paid members welcome email'
+                    onEdit={onPaidEdit}
+                    onToggle={onPaidToggle}
+                />
+            )}
+        </ActionList>
+    );
+};
+
+const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {settings, config} = useGlobalData();
+    const [siteTitle] = getSettingValues<string>(settings, ['title']);
+    const verifyEmailToken = useQueryParams().getParam('verifyEmail');
+
+    const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
+    const {mutateAsync: addAutomatedEmail, isPending: isAddingAutomatedEmail} = useAddAutomatedEmail();
+    const {mutateAsync: editAutomatedEmail, isPending: isEditingAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
+    const handleError = useHandleError();
+    const {confirm} = useConfirmation();
+
+    const automatedEmails = automatedEmailsData?.automated_emails || [];
+    const isMutating = isAddingAutomatedEmail || isEditingAutomatedEmail;
+    const isBusy = isLoading || isMutating;
+
+    const freeWelcomeEmail = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS.free);
+    const paidWelcomeEmail = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS.paid);
+
+    const freeWelcomeEmailEnabled = freeWelcomeEmail?.status === 'active';
+    const paidWelcomeEmailEnabled = paidWelcomeEmail?.status === 'active';
+
+    // Create a new automated email row with the given status
+    const createAutomatedEmail = async (emailType: WelcomeEmailType, status: 'active' | 'inactive') => {
+        const defaults = getDefaultWelcomeEmailValues(emailType, siteTitle);
+        return addAutomatedEmail({...defaults, status});
+    };
+
+    const submittedTokenRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!verifyEmailToken || !window.location.href.includes('memberemails')) {
+            return;
+        }
+
+        if (submittedTokenRef.current === verifyEmailToken) {
+            return;
+        }
+        submittedTokenRef.current = verifyEmailToken;
+
+        const clearVerifyEmailFromRoute = () => {
+            const hash = window.location.hash.slice(1);
+            const url = new URL(hash || '/memberemails', window.location.origin);
+            url.searchParams.delete('verifyEmail');
+
+            const nextHash = url.search ? `#${url.pathname}${url.search}` : `#${url.pathname}`;
+            window.history.replaceState(null, '', `${window.location.pathname}${nextHash}`);
+        };
+
+        const verify = async () => {
+            try {
+                const {meta: {email_verified: emailVerified} = {}} = await verifySenderUpdate({token: verifyEmailToken});
+                clearVerifyEmailFromRoute();
+
+                let title = 'Sender email verified';
+                let prompt = <>Welcome email sender settings have been updated.</>;
+
+                if (emailVerified === 'sender_reply_to') {
+                    title = 'Reply-to address verified';
+                    prompt = <>Welcome email reply-to address has been verified and updated.</>;
+                }
+
+                confirm({
+                    title,
+                    prompt,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+            } catch (e) {
+                let prompt = 'There was an error verifying your email address. Try again later.';
+
+                if (e instanceof APIError && e.message === 'Token expired') {
+                    prompt = 'Verification link has expired.';
+                }
+
+                clearVerifyEmailFromRoute();
+
+                confirm({
+                    title: 'Error verifying email address',
+                    prompt,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+                handleError(e, {withToast: false});
+            }
+        };
+
+        void verify();
+    }, [confirm, handleError, verifyEmailToken, verifySenderUpdate]);
+
+    const handleToggle = async (emailType: 'free' | 'paid') => {
+        const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);
+        const label = emailType === 'free' ? 'Free members' : 'Paid members';
+
+        if (isBusy) {
+            return;
+        }
+
+        try {
+            if (!existing) {
+                await createAutomatedEmail(emailType, 'active');
+                toast.success(`${label} welcome email enabled`);
+            } else if (existing.status === 'active') {
+                await editAutomatedEmail({...existing, status: 'inactive'});
+                toast.success(`${label} welcome email disabled`);
+            } else {
+                await editAutomatedEmail({...existing, status: 'active'});
+                toast.success(`${label} welcome email enabled`);
+            }
+        } catch (e) {
+            handleError(e);
+        }
+    };
+
+    const [editingEmail, setEditingEmail] = useState<WelcomeEmailModalProps | null>(null);
+    const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+
+    // Handle Edit button click - creates inactive row if needed, then opens modal
+    const handleEditClick = async (emailType: 'free' | 'paid') => {
+        const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);
+
+        if (isBusy) {
+            return;
+        }
+
+        if (!existing) {
+            try {
+                const result = await createAutomatedEmail(emailType, 'inactive');
+                const newEmail = result?.automated_emails?.[0];
+                if (newEmail) {
+                    setEditingEmail({emailType, automatedEmail: newEmail});
+                }
+            } catch (e) {
+                handleError(e);
+            }
+        } else {
+            setEditingEmail({emailType, automatedEmail: existing});
+        }
+    };
+
+    // Get email to display (existing or default for preview)
+    const freeEmailForDisplay = freeWelcomeEmail || getDefaultWelcomeEmailRecord('free', siteTitle);
+    const paidEmailForDisplay = paidWelcomeEmail || getDefaultWelcomeEmailRecord('paid', siteTitle);
+
+    return (
+        <TopLevelGroup
+            customButtons={(
+                <Button
+                    className='mt-[-5px]'
+                    size='sm'
+                    type='button'
+                    variant='ghost'
+                    onClick={() => setIsCustomizeOpen(true)}
+                >
+                    Customize
+                </Button>
+            )}
+            description="Create and manage automated emails for your members"
+            keywords={keywords}
+            navid='memberemails'
+            testId='memberemails'
+            title='Welcome emails'
+        >
+            <MemberEmailsTable
+                config={config}
+                freeEmailForDisplay={freeEmailForDisplay}
+                freeWelcomeEmailEnabled={freeWelcomeEmailEnabled}
+                isBusy={isBusy}
+                isLoading={isLoading}
+                paidEmailForDisplay={paidEmailForDisplay}
+                paidWelcomeEmailEnabled={paidWelcomeEmailEnabled}
+                settings={settings}
+                onFreeEdit={() => void handleEditClick('free')}
+                onFreeToggle={() => void handleToggle('free')}
+                onPaidEdit={() => void handleEditClick('paid')}
+                onPaidToggle={() => void handleToggle('paid')}
+            />
+            {editingEmail && (
+                <DialogPortal>
+                    <WelcomeEmailModal key={editingEmail.automatedEmail.id} {...editingEmail} onClose={() => setEditingEmail(null)} />
+                </DialogPortal>
+            )}
+            {isCustomizeOpen && <WelcomeEmailCustomizeModal onClose={() => setIsCustomizeOpen(false)} />}
+        </TopLevelGroup>
+    );
+};
+
+export default withErrorBoundary(MemberEmails, 'MemberEmails');

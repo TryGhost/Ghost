@@ -4,7 +4,7 @@ const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
 const {blogStartDate: startTime} = require('../utils/blog-info');
 const generateEvents = require('../utils/event-generator');
 const {luck} = require('../utils/random');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 const debug = require('@tryghost/debug')('MembersImporter');
 
 class MembersImporter extends TableImporter {
@@ -88,9 +88,9 @@ class MembersImporter extends TableImporter {
             email_opened_count: 0,
             email_open_rate: null,
             // 40% of users logged in within a week, 60% sometime since registering
-            last_seen_at: luck(40) ? dateToDatabaseString(faker.date.recent({days: 7})) : dateToDatabaseString(faker.date.between({from: timestamp, to: new Date()})),
-            created_at: dateToDatabaseString(timestamp),
-            updated_at: dateToDatabaseString(timestamp)
+            last_seen_at: luck(40) ? databaseDate.dateToDatabaseString(faker.date.recent({days: 7})) : databaseDate.dateToDatabaseString(faker.date.between({from: timestamp, to: new Date()})),
+            created_at: databaseDate.dateToDatabaseString(timestamp),
+            updated_at: databaseDate.dateToDatabaseString(timestamp)
         };
     }
 }

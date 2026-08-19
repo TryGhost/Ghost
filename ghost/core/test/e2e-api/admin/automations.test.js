@@ -24,7 +24,9 @@ const matchAutomationBase = () => ({
 const matchAutomationSummary = () => ({
     ...matchAutomationBase(),
     stats: {
-        last_run_created_at: null
+        last_run_created_at: null,
+        total_run_count: 0,
+        in_progress_run_count: 0
     }
 });
 
@@ -114,13 +116,38 @@ describe('Automations API', function () {
 
     describe('browse', function () {
         async function createAutomationRun(automationId, createdAt) {
+            const runId = ObjectId().toHexString();
             await models.Base.knex('automation_runs').insert({
-                id: ObjectId().toHexString(),
+                id: runId,
                 automation_id: automationId,
                 member_id: null,
                 member_email: 'member@example.com',
                 created_at: createdAt,
                 updated_at: createdAt
+            });
+            return runId;
+        }
+
+        async function createAutomationRunStep(automationId, runId, status) {
+            const revisionId = await models.Base.knex('automation_action_revisions')
+                .innerJoin('automation_actions', 'automation_actions.id', 'automation_action_revisions.action_id')
+                .where('automation_actions.automation_id', automationId)
+                .first('automation_action_revisions.id')
+                .then(revision => revision.id);
+            const now = new Date();
+            await models.Base.knex('automation_run_steps').insert({
+                id: ObjectId().toHexString(),
+                automation_run_id: runId,
+                automation_action_revision_id: revisionId,
+                ready_at: now,
+                step_attempts: 0,
+                started_at: null,
+                finished_at: null,
+                status,
+                locked_by: null,
+                locked_at: null,
+                created_at: now,
+                updated_at: now
             });
         }
 
@@ -208,6 +235,50 @@ describe('Automations API', function () {
             const automation = body.automations.find(candidate => candidate.id === automationId);
 
             assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
+        });
+
+        it('returns zero total run counts for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.total_run_count), [0, 0]);
+        });
+
+        it('returns the total automation run count', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+
+            await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
+            await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.total_run_count, 2);
+        });
+
+        it('returns zero in progress run counts for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.in_progress_run_count), [0, 0]);
+        });
+
+        it('returns the number of runs with pending steps', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+
+            const pendingRunId = await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
+            await createAutomationRunStep(automationId, pendingRunId, 'finished');
+            await createAutomationRunStep(automationId, pendingRunId, 'pending');
+
+            const finishedRunId = await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
+            await createAutomationRunStep(automationId, finishedRunId, 'finished');
+
+            await createAutomationRun(automationId, new Date('2026-01-03T00:00:00.000Z'));
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.in_progress_run_count, 1);
         });
 
         it('upserts the default free and paid automations', async function () {

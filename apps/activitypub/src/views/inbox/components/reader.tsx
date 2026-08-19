@@ -6,12 +6,13 @@ import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
+import {useSensitiveMediaDisclosure} from '@hooks/use-sensitive-media-disclosure';
 
 import APAvatar from '@src/components/global/ap-avatar';
 import APReplyBox from '@src/components/global/ap-reply-box';
 import BackButton from '@src/components/global/back-button';
 import DeletedFeedItem from '@src/components/feed/deleted-feed-item';
-import FeedItem from '@src/components/feed/feed-item';
+import FeedItem, {ContentWarningOverlay, SensitiveMediaHideButton, SensitiveMediaOverlay, getAttachment} from '@src/components/feed/feed-item';
 import FeedItemStats from '@src/components/feed/feed-item-stats';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
@@ -30,6 +31,12 @@ interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
 
+const SENSITIVE_MEDIA_HIDDEN_CLASS = 'gh-sensitive-media-hidden';
+
+// Shared by the detection helper and the iframe stylesheet so we never conceal
+// less than we detect
+const MEDIA_ELEMENT_SELECTOR = 'audio, canvas, embed, iframe, img, object, picture, source, svg, video';
+
 const ArticleBody: React.FC<{
     postUrl?: string;
     heading: string;
@@ -40,6 +47,7 @@ const ArticleBody: React.FC<{
         profile_image: string;
     }>;
     html: string;
+    hideMedia?: boolean;
     backgroundColor: ColorOption;
     fontSize: FontSize;
     fontStyle: string;
@@ -54,6 +62,7 @@ const ArticleBody: React.FC<{
     excerpt,
     authors,
     html,
+    hideMedia = false,
     backgroundColor,
     fontSize,
     fontStyle,
@@ -65,6 +74,9 @@ const ArticleBody: React.FC<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
+    // Tracks which article is currently rendered in the iframe so srcdoc is only
+    // rewritten when the article itself changes
+    const renderedArticleRef = useRef<string | null>(null);
     const darkMode = (document.documentElement.classList.contains('dark') && backgroundColor === 'SYSTEM') || backgroundColor === 'DARK';
 
     const cssContent = articleBodyStyles();
@@ -77,8 +89,23 @@ const ArticleBody: React.FC<{
         return sanitizeArticleContent(openLinksInNewTab(transformedHtml));
     }, [html, shouldEnforceVideoCardInlinePlayback]);
 
+    const updateSensitiveMediaVisibility = useCallback(() => {
+        const iframe = iframeRef.current;
+        const iframeDocument = iframe?.contentDocument;
+        if (!iframeDocument) {
+            return;
+        }
+
+        iframeDocument.documentElement.classList.toggle(SENSITIVE_MEDIA_HIDDEN_CLASS, hideMedia);
+
+        const iframeWindow = iframe.contentWindow as IframeWindow | null;
+        if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
+            iframeWindow.resizeIframe();
+        }
+    }, [hideMedia]);
+
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
+        <html class="${hideMedia ? `${SENSITIVE_MEDIA_HIDDEN_CLASS} ` : ''}has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
         <head>
             ${cssContent}
             <style>
@@ -92,6 +119,10 @@ const ArticleBody: React.FC<{
                 }
                 .has-sepia-bg {
                     --background-color: #FCF8F1;
+                }
+                .${SENSITIVE_MEDIA_HIDDEN_CLASS} .gh-article-image,
+                .${SENSITIVE_MEDIA_HIDDEN_CLASS} .gh-content :is(${MEDIA_ELEMENT_SELECTOR}) {
+                    display: none !important;
                 }
             </style>
             <style>
@@ -230,10 +261,6 @@ const ArticleBody: React.FC<{
             return;
         }
 
-        if (!iframe.srcdoc) {
-            iframe.srcdoc = htmlContent;
-        }
-
         const handleMessage = (event: MessageEvent) => {
             if (event.data.type === 'resize') {
                 const newHeight = `${event.data.bodyHeight + 24}px`;
@@ -241,6 +268,7 @@ const ArticleBody: React.FC<{
                 iframe.style.height = newHeight;
 
                 if (event.data.isLoaded) {
+                    updateSensitiveMediaVisibility();
                     setIsLoading(false);
                 }
             }
@@ -272,10 +300,29 @@ const ArticleBody: React.FC<{
             if (iframeWindow) {
                 iframeWindow.addEventListener('keydown', handleIframeKeyDown);
             }
+            updateSensitiveMediaVisibility();
         };
 
         iframe.addEventListener('load', handleIframeLoad);
         window.addEventListener('message', handleMessage);
+
+        // Font, colour and sensitive-media changes are patched onto the live
+        // document by the effects below, so srcdoc is only written when the
+        // article document itself changes. Rewriting it reloads the iframe and
+        // throws away scroll position and reading progress.
+        const documentIdentity = [
+            articleHtml,
+            heading,
+            excerpt ?? '',
+            image ?? '',
+            postUrl ?? '',
+            (authors ?? []).map(author => `${author.name}\0${author.profile_image}`).join('\n')
+        ].join('\n');
+        if (renderedArticleRef.current !== documentIdentity) {
+            renderedArticleRef.current = documentIdentity;
+            setIsLoading(true);
+            iframe.srcdoc = htmlContent;
+        }
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -285,7 +332,11 @@ const ArticleBody: React.FC<{
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
             }
         };
-    }, [htmlContent]);
+    }, [articleHtml, authors, excerpt, heading, htmlContent, image, postUrl, updateSensitiveMediaVisibility]);
+
+    useEffect(() => {
+        updateSensitiveMediaVisibility();
+    }, [updateSensitiveMediaVisibility]);
 
     // Separate effect for style updates
     useEffect(() => {
@@ -412,6 +463,12 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-black/[8%] dark:bg-gray-950"></div>
 );
 
+function htmlContainsMedia(html: string): boolean {
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+
+    return parsed.querySelector(MEDIA_ELEMENT_SELECTOR) !== null;
+}
+
 interface ReaderProps {
     postId: string;
     onClose?: () => void;
@@ -461,6 +518,26 @@ export const Reader: React.FC<ReaderProps> = ({
     const authors = activityData?.object?.metadata?.ghostAuthors;
 
     const replyCount = object?.replyCount ?? 0;
+    const articleHtml = object?.content ?? '';
+    const articleImage = typeof object?.image === 'string' ? object.image : object?.image?.url;
+    const articleHtmlHasMedia = useMemo(() => htmlContainsMedia(articleHtml), [articleHtml]);
+
+    const {
+        contentWarning,
+        shouldHideContentWarning,
+        shouldHideSensitiveMedia,
+        canHideSensitiveMedia,
+        revealSensitiveMedia,
+        hideSensitiveMedia,
+        revealContentWarning
+    } = useSensitiveMediaDisclosure({
+        contentWarning: object?.contentWarning,
+        sensitive: object?.sensitive,
+        // An article can carry media as its feature image, as an attachment, or
+        // embedded in the body — any of them is worth concealing
+        hasMedia: Boolean(articleImage) || (object ? getAttachment(object) !== null : false) || articleHtmlHasMedia,
+        resetKey: postId ?? undefined
+    });
 
     useEffect(() => {
         // Only set up infinite scroll if pagination is supported
@@ -865,21 +942,43 @@ export const Reader: React.FC<ReaderProps> = ({
                             {!isLoadingContent && <div className='grow overflow-y-auto'>
                                 <div className={`mx-auto px-6 pt-5 pb-10`} style={{maxWidth: currentMaxWidth}}>
                                     <div className='flex flex-col items-center pb-8' id='object-content'>
-                                        <ArticleBody
-                                            authors={authors}
-                                            backgroundColor={backgroundColor}
-                                            excerpt={object.summary ?? ''}
-                                            fontSize={fontSize}
-                                            fontStyle={fontStyle}
-                                            heading={object.name}
-                                            html={object.content ?? ''}
-                                            image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                            isPopoverOpen={isCustomizerOpen || isTOCOpen}
-                                            postUrl={object?.url || ''}
-                                            onHeadingsExtracted={handleHeadingsExtracted}
-                                            onIframeLoad={handleIframeLoad}
-                                            onLoadingChange={setIsLoading}
-                                        />
+                                        {shouldHideContentWarning && contentWarning ? (
+                                            <ContentWarningOverlay
+                                                className='w-full'
+                                                label={contentWarning}
+                                                onReveal={revealContentWarning}
+                                            />
+                                        ) : <>
+                                            {shouldHideSensitiveMedia && (
+                                                <SensitiveMediaOverlay
+                                                    className='w-full'
+                                                    onReveal={revealSensitiveMedia}
+                                                />
+                                            )}
+                                            {canHideSensitiveMedia && (
+                                                <div className='mb-3 flex w-full justify-end'>
+                                                    <SensitiveMediaHideButton layout='inline' onHide={hideSensitiveMedia} />
+                                                </div>
+                                            )}
+                                            <div className='w-full'>
+                                                <ArticleBody
+                                                    authors={authors}
+                                                    backgroundColor={backgroundColor}
+                                                    excerpt={object.summary ?? ''}
+                                                    fontSize={fontSize}
+                                                    fontStyle={fontStyle}
+                                                    heading={object.name}
+                                                    hideMedia={shouldHideSensitiveMedia}
+                                                    html={articleHtml}
+                                                    image={articleImage}
+                                                    isPopoverOpen={isCustomizerOpen || isTOCOpen}
+                                                    postUrl={object?.url || ''}
+                                                    onHeadingsExtracted={handleHeadingsExtracted}
+                                                    onIframeLoad={handleIframeLoad}
+                                                    onLoadingChange={setIsLoading}
+                                                />
+                                            </div>
+                                        </>}
                                         <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                             <FeedItemStats
                                                 actor={actor}

@@ -15,7 +15,8 @@ const messages = {
     invalidData: 'The {{cancel_link}} helper was used outside of a subscription context. See https://ghost.org/docs/themes/members/#cancel-links.'
 };
 
-function cancel_link(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+function cancel_link(options) {
     let truncateOptions = (options || {}).hash || {};
 
     if (this.id === undefined || this.cancel_at_period_end === undefined) {

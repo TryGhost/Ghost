@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-card-factory",
-  "version": "5.2.3",
+  "version": "5.2.4",
   "description": "Card definition factory for Ghost's Mobiledoc renderer",
   "repository": {
     "type": "git",
@@ -41,10 +41,10 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "simple-dom": "1.4.0",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

@@ -1,4 +1,4 @@
-import NiceModal from '@ebay/nice-modal-react';
+import {useState} from 'react';
 import UniversalImportModal from '@/settings/app/components/settings/advanced/migration-tools/universal-import-modal';
 import {ConfirmationProvider} from '@/settings/app/components/providers/confirmation-provider';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
@@ -36,16 +36,14 @@ describe('UniversalImportModal', () => {
         mockImportContentCSV.mockResolvedValue({});
     });
 
-    afterEach(() => {
-        void NiceModal.remove(UniversalImportModal);
-    });
-
     const showModal = () => {
-        render(<ConfirmationProvider><NiceModal.Provider /></ConfirmationProvider>);
+        const ModalHarness = () => {
+            const [isOpen, setIsOpen] = useState(true);
 
-        act(() => {
-            void NiceModal.show(UniversalImportModal);
-        });
+            return isOpen ? <UniversalImportModal onClose={() => setIsOpen(false)} /> : null;
+        };
+
+        render(<ConfirmationProvider><ModalHarness /></ConfirmationProvider>);
     };
 
     const fileInput = async () => await screen.findByTestId('import-file');

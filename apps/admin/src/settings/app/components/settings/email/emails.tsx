@@ -2,11 +2,10 @@ import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
 import NewslettersTabContent, {type NewslettersFilter} from './newsletters/newsletters-tab-content';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import SearchableSection from '@/settings/app/components/searchable-section';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
-import WelcomeEmailCustomizeModal from '@/settings/app/components/settings/membership/member-emails/welcome-email-customize-modal';
+import WelcomeEmailCustomizeModal from '@/settings/membership/member-emails/welcome-email-customize-modal';
 import useQueryParams from '@/settings/app/hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
@@ -26,8 +25,9 @@ export const searchKeywords = {
 };
 
 const TransactionalTabContent: React.FC = () => {
+    const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
     const openCustomizeModal = () => {
-        NiceModal.show(WelcomeEmailCustomizeModal);
+        setIsCustomizeOpen(true);
     };
 
     return (
@@ -52,6 +52,7 @@ const TransactionalTabContent: React.FC = () => {
                 </ActionListItemContent>
                 <ActionListItemActions><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={openCustomizeModal}>Edit</Button></ActionListItemActions>
             </ActionListItem>
+            {isCustomizeOpen && <WelcomeEmailCustomizeModal onClose={() => setIsCustomizeOpen(false)} />}
         </ActionList>
     );
 };

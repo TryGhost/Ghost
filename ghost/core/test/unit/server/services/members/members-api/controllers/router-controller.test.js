@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
-// @ts-ignore - Intentionally ignoring TypeScript errors for tests
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
 
 describe('RouterController', function () {
@@ -585,7 +584,7 @@ describe('RouterController', function () {
                     }
                 }));
             });
-            it('silently discards too-long personal notes', async function () {
+            it('truncates too-long personal notes', async function () {
                 const routerController = new RouterController({
                     tiersService,
                     paymentsService,
@@ -605,7 +604,7 @@ describe('RouterController', function () {
                         type: 'donation',
                         successUrl: 'https://example.com/?type=success',
                         cancelUrl: 'https://example.com/?type=cancel',
-                        personalNote: 'a'.repeat(1000),
+                        personalNote: 'a'.repeat(51),
                         metadata: {
                             test: 'hello',
                             urlHistory: [
@@ -627,7 +626,103 @@ describe('RouterController', function () {
                 sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
-                    personalNote: '',
+                    personalNote: 'a'.repeat(50),
+                    metadata: {
+                        test: 'hello'
+                    }
+                }));
+            });
+            it('bounds a personal note far past the limit', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers,
+                    urlUtils,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: 'a'.repeat(10000),
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: 'a'.repeat(50),
+                    metadata: {
+                        test: 'hello'
+                    }
+                }));
+            });
+            it('truncates personal notes that grow past the limit when sanitised', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers,
+                    urlUtils,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: 'a'.repeat(30) + '&'.repeat(10),
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: 'a'.repeat(30) + '&amp;'.repeat(4),
                     metadata: {
                         test: 'hello'
                     }

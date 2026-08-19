@@ -1,6 +1,6 @@
 const {TableImporter} = require('./table-importer');
 const {luck} = require('../utils/random');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class MembersSubscribeEventsImporter extends TableImporter {
     static table = 'members_subscribe_events';
@@ -50,7 +50,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
             return null;
         }
 
-        const createdAt = dateToDatabaseString(dateToDatabaseString.randomBetween(this.model.created_at, new Date()));
+        const createdAt = databaseDate.dateToDatabaseString(databaseDate.randomBetween(this.model.created_at, new Date()));
         const newsletterId = this.newsletters[count % this.newsletters.length].id;
 
         return {

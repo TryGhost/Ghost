@@ -5,6 +5,7 @@ const testUtils = require('../../utils');
 const {mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
+const config = require('../../../core/shared/config');
 const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const mailService = require('../../../core/server/services/mail');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
@@ -484,6 +485,17 @@ describe('Member Welcome Emails Integration', function () {
             sinon.assert.calledOnce(MailgunClient.prototype.send);
             const sendCall = MailgunClient.prototype.send.firstCall;
             assert.deepEqual(sendCall.args[0].tags, ['automation-email']);
+        });
+
+        it('adds the configured bulk email Mailgun tag to automation emails', async function () {
+            sinon.stub(config, 'get').callThrough()
+                .withArgs('bulkEmail:mailgun:tag').returns('blog-123');
+
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnce(MailgunClient.prototype.send);
+            const sendCall = MailgunClient.prototype.send.firstCall;
+            assert.deepEqual(sendCall.args[0].tags, ['automation-email', 'blog-123']);
         });
 
         it('passes the open tracking value through for automation emails', async function () {

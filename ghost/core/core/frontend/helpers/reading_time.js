@@ -15,7 +15,8 @@ const {SafeString} = require('../services/handlebars');
 
 const {readingTime: calculateAndFormatReadingTime} = require('@tryghost/helpers');
 
-module.exports = function reading_time(options) {// eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function reading_time(options) {
     options = options || {};
     options.hash = options.hash || {};
     const possiblyPost = this;
