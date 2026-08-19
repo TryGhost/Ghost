@@ -1,6 +1,6 @@
-import { EmberFallback, useEmberFeatureFlag } from "./ember-bridge";
+import { EmberFallback } from "./ember-bridge";
+import { useFlagGatedRouteOwner } from "./use-flag-gated-route-owner";
 import { Suspense, type ComponentType, type LazyExoticComponent } from "react";
-import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 
 /**
  * Chooses which implementation serves a route while a screen migrates from
@@ -28,34 +28,17 @@ export function FlagGatedRoute({ flag, component: Component }: {
     flag: string;
     component: LazyExoticComponent<ComponentType>;
 }) {
-    const { data: config, isError, isLoading } = useBrowseConfig();
-    const emberFlag = useEmberFeatureFlag(flag);
+    const owner = useFlagGatedRouteOwner(flag);
 
-    const renderReact = () => (
+    if (owner === 'pending') {
+        return null;
+    }
+    if (owner === 'ember') {
+        return <EmberFallback />;
+    }
+    return (
         <Suspense fallback={null}>
             <Component />
         </Suspense>
     );
-
-    if (typeof emberFlag === 'boolean') {
-        return emberFlag ? renderReact() : <EmberFallback />;
-    }
-
-    if (emberFlag === null) {
-        return null;
-    }
-
-    if (isLoading) {
-        return null;
-    }
-
-    if (isError || !config) {
-        return <EmberFallback />;
-    }
-
-    if (config.config.labs?.[flag] !== true) {
-        return <EmberFallback />;
-    }
-
-    return renderReact();
 }

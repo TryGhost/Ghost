@@ -14,6 +14,7 @@ import type { RouteHandle } from "./ember-bridge";
 import HomeRedirect from "./home-redirect";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { TagDetailGate } from "./tag-detail-gate";
+import { useFlagGatedRouteOwner } from "./use-flag-gated-route-owner";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
 import { canAccessSettingsRoute } from "./settings/settings-access";
@@ -218,9 +219,16 @@ export const routes: RouteObject[] = [
 // React router's pushState navigation does not fire, so links into Ember-owned
 // routes must stay native hash anchors. Everything else can be a router link
 // (and so gets router history state, which the unsaved-changes blockers need).
-const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks, TagDetailGate]);
+const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks]);
 
-export function isEmberOwnedRoute(pathname: string): boolean {
+export function useIsEmberOwnedRoute(pathname: string): boolean {
+    const tagDetailOwner = useFlagGatedRouteOwner("tagDetailsReact");
     const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
-    return !leaf || EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+    if (!leaf) {
+        return true;
+    }
+    if (leaf.Component === TagDetailGate) {
+        return tagDetailOwner !== "react";
+    }
+    return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
 }

@@ -70,7 +70,7 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled
                             </Button>
                         </div>
                         <p className="text-sm leading-tight text-pretty text-muted-foreground">
-                            Already have members? <a className="font-medium text-foreground underline-offset-4 hover:underline" href="#/members/import">Import with CSV</a>
+                            Already have members? <Link className="font-medium text-foreground underline-offset-4 hover:underline" to="/members/import">Import with CSV</Link>
                         </p>
                     </div>
                 }
