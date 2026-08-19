@@ -200,7 +200,6 @@ const createMySQLSnapshot = async () => {
 
 const restoreMySQLSnapshot = async () => {
     debug('Database snapshot restore');
-    urlServiceUtils.reset();
 
     const tables = getResetTables();
 
@@ -249,7 +248,6 @@ const dropMySQLSnapshots = async () => {
  */
 const truncateAll = async () => {
     debug('Database teardown');
-    urlServiceUtils.reset();
 
     const tables = getResetTables();
 
@@ -308,8 +306,6 @@ const truncateAll = async () => {
  */
 module.exports.initData = async () => {
     await knexMigrator.init();
-    await urlServiceUtils.reset();
-    await urlServiceUtils.init();
     await urlServiceUtils.isFinished();
 };
 

@@ -1,4 +1,5 @@
 import type {ReadonlyDeep} from 'type-fest';
+import type {Knex} from 'knex';
 
 export interface Pagination {
     page: number;
@@ -32,6 +33,11 @@ export interface AutomationEmailStats {
     clicked_rate: number | null;
 }
 
+export interface AutomationActionLink {
+    url: string;
+    clicked_count: number;
+}
+
 export interface SendEmailAction {
     id: string;
     type: 'send_email';
@@ -59,6 +65,14 @@ export interface AutomationSummary {
     updated_at: string;
 }
 
+export interface AutomationBrowseResult extends AutomationSummary {
+    stats: {
+        last_run_created_at: Date | null;
+        total_run_count: number;
+        in_progress_run_count: number;
+    };
+}
+
 export interface Automation extends AutomationSummary {
     actions: AutomationAction[];
     edges: AutomationEdge[];
@@ -84,6 +98,7 @@ export type AutomatedEmailEvents = {
 
 export type RecordEmailSentOptions = Readonly<{
     automationActionRevisionId: string;
+    automationRunStepId: string;
     mailgunMessageId?: string;
     memberEmail: string;
     memberId: string;
@@ -129,8 +144,9 @@ export type AutomationStepTerminalStatus =
     | 'member unsubscribed';
 
 export interface AutomationsRepository {
-    browse(): Promise<Page<AutomationSummary>>;
+    browse(): Promise<Page<AutomationBrowseResult>>;
     getById(id: string): Promise<Automation | null>;
+    getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
     trigger(options: {
         memberEmail: string;
@@ -195,4 +211,16 @@ export interface AutomationsRepository {
     trackEmailDeliveredAndOpened(
         eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
     ): Promise<void>;
+    /**
+     * Record the first click timestamp for the automated email recipient identified by a run step.
+     *
+     */
+    trackEmailClicked(options: {
+        automationActionRevisionId: string;
+        automationRunStepId: string;
+        memberId: string;
+        clickedAt: Readonly<Date>;
+    }, transactionOptions?: {
+        transacting?: Knex.Transaction;
+    }): Promise<void>;
 }

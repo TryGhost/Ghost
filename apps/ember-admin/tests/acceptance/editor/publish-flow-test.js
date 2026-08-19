@@ -1,28 +1,43 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
+import {blur, click, fillIn, find, findAll, triggerEvent, waitFor} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
 import {disableNewsletters, enableNewsletters} from '../../helpers/newsletters';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
+function lexicalParagraph(text) {
+    return {
+        children: text ? [{text, type: 'extended-text'}] : [],
+        type: 'paragraph'
+    };
+}
+
+function lexicalWithPublicPreview({before = 'Public preview content', after = 'Full post content'} = {}) {
+    return JSON.stringify({
+        root: {
+            children: [
+                lexicalParagraph(before),
+                {type: 'paywall'},
+                lexicalParagraph(after)
+            ],
+            type: 'root'
+        }
+    });
+}
+
 describe('Acceptance: Publish flow', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(function () {
-        mockAnalyticsApps();
         this.server.loadFixtures();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
     });
 
     it('has minimal features for contributors', async function () {
@@ -67,6 +82,99 @@ describe('Acceptance: Publish flow', function () {
         await visit(`/editor/post/${post.id}`);
 
         expect(search.isContentStale).to.be.false;
+    });
+
+    describe('public preview warnings', function () {
+        beforeEach(async function () {
+            enableLabsFlag(this.server, 'paywallImprovements');
+            await loginAsRole('Administrator', this.server);
+        });
+
+        it('warns when a public post contains a public preview', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview(),
+                status: 'draft',
+                visibility: 'public'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-testid="public-preview-warning-public-access"]')).to.exist;
+        });
+
+        it('warns when there is no content above the public preview', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({before: ''}),
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-testid="public-preview-warning-no-content-before"]')).to.exist;
+
+            await click('[data-test-button="continue-with-public-preview-warning"]');
+
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-publish-flow="options"]')).to.exist;
+        });
+
+        it('warns when there is no content below the public preview', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({after: ''}),
+                status: 'draft',
+                visibility: 'members'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-testid="public-preview-warning-no-content-after"]')).to.exist;
+
+            await click('[data-test-button="back-to-editor"]');
+
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-modal="publish-flow"]')).to.not.exist;
+        });
+
+        it('shows only the TK warning from the mobile publish flow when both warning types apply', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview(),
+                status: 'draft',
+                visibility: 'public'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await fillIn('[data-test-editor-title-input]', 'Draft with TK placeholder');
+            await triggerEvent('.gh-editor-mobile-menu [data-test-button="publish-flow"]', 'click');
+
+            expect(find('[data-test-modal="tk-reminder"]')).to.exist;
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+
+            await click('[data-test-modal="tk-reminder"] .modal-footer .gh-btn:not(.gh-btn-black)');
+
+            expect(find('[data-test-modal="tk-reminder"]')).to.not.exist;
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-publish-flow="options"]')).to.exist;
+        });
+    });
+
+    it('does not warn about public previews when paywall improvements are disabled', async function () {
+        await loginAsRole('Administrator', this.server);
+
+        const post = this.server.create('post', {
+            lexical: lexicalWithPublicPreview(),
+            status: 'draft',
+            visibility: 'public'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+        await click('[data-test-button="publish-flow"]');
+
+        expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+        expect(find('[data-test-publish-flow="options"]')).to.exist;
     });
 
     it('handles timezones correctly when scheduling');
@@ -576,6 +684,50 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-confirm-error]'), 'confirm error').to.exist;
             expect(find('[data-test-confirm-error]'), 'confirm error')
                 .to.have.trimmed.text('Your plan supports up to 1,000 members. Please upgrade to reenable publishing.');
+        });
+
+        // the email limit registering must not mask an account-review hold: the
+        // server applies both, and this used to short-circuit on the limit passing
+        it('shows the verification hold while under a configured email limit', async function () {
+            const config = this.server.db.configs.find(1);
+            config.hostSettings = {
+                subscription: {start: '2026-01-01T00:00:00.000Z'},
+                limits: {
+                    emails: {
+                        maxPeriodic: 1000,
+                        error: 'Your plan supports up to {{max}} emails. Please upgrade to keep sending.'
+                    }
+                }
+            };
+            this.server.db.configs.update(1, config);
+
+            this.server.db.settings.update({key: 'email_verification_required'}, {value: true});
+
+            // the periodic limit counts sent emails through this endpoint
+            const emailRequests = [];
+            this.server.get('/emails/', function (schema, request) {
+                emailRequests.push(request.queryParams);
+                return {emails: [], meta: {pagination: {total: 0}}};
+            });
+
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-setting="publish-type"] [data-test-setting-title]');
+
+            // without this the verification hold alone would satisfy the assertion
+            // below, even with the limit never registered
+            // the adapter turns limit: 'all' into paged requests, so this asserts what
+            // reaches the endpoint rather than what getEmailsCount asked for
+            const emailCountQuery = emailRequests.find(query => query.fields === 'id,email_count');
+            expect(emailCountQuery, 'email count query').to.exist;
+            expect(emailCountQuery.filter).to.match(/^created_at:>='/);
+
+            expect(find('[data-test-publish-type-error="email-disabled"]'), 'email disabled error').to.exist;
+            expect(find('[data-test-publish-type-error="email-disabled"]'), 'email disabled error')
+                .to.have.trimmed.text('Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.');
         });
 
         it('(as editor) handles over-member limits', async function () {

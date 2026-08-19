@@ -272,7 +272,8 @@ class LinterContext {
             resultsToFilter.add(resultIndex);
         }
 
-        console.log(`Applied ${this._fixes.length} fixes`); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.log(`Applied ${this._fixes.length} fixes`);
 
         for (const resultIndex of resultsToFilter) {
             this.summary.results[resultIndex].messages = this.summary.results[resultIndex].messages.filter(Boolean);
@@ -310,17 +311,20 @@ async function exitWithSummary(summary) {
     const formattedResults = await formatter.format(summary.results, {cwd: '', rulesMeta: {}});
 
     if (formattedResults) {
-        console.log(formattedResults); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.log(formattedResults);
     }
 
     if (summary.ignoreAllFlagProvidedWithoutFixFlag) {
-        console.warn( // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.warn(
             '--unsafe-ignore-all was provided without --fix; errors were not ignored'
         );
     }
 
     if (summary.errorCount > 0) {
-        console.log( // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.log(
             `\nNote: Since JSON doesn't support comments, use test/i18n-ignore.json to waive messages.\n\n`
         );
         process.exit(1);
@@ -479,7 +483,8 @@ async function analyze() {
 
 if (require.main === module) {
     analyze().then(results => exitWithSummary(results)).catch((error) => {
-        console.error(error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(error);
         process.exit(1);
     });
 }

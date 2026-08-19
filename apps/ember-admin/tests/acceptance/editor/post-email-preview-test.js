@@ -1,7 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import {click, find, findAll, focus, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
-import {disableLabsFlag, enableLabsFlag} from '../../helpers/labs-flag';
 import {disableMembers, disablePaidMembers, enableMembers, enablePaidMembers} from '../../helpers/members';
 import {enableMailgun} from '../../helpers/mailgun';
 import {expect} from 'chai';
@@ -18,7 +17,6 @@ describe('Acceptance: Post email preview', function () {
         enableMailgun(this.server);
         enableMembers(this.server);
         enablePaidMembers(this.server);
-        enableLabsFlag(this.server, 'previewByTier');
         await loginAsRole('Administrator', this.server);
     });
 
@@ -117,30 +115,6 @@ describe('Acceptance: Post email preview', function () {
         const tierRequestBody = JSON.parse(tierRequest.requestBody);
         expect(tierRequestBody.member_status).to.equal('paid');
         expect(tierRequestBody.member_tier).to.equal('archive');
-    });
-
-    it('sends the legacy memberSegment param and hides tiers without the previewByTier flag', async function () {
-        disableLabsFlag(this.server, 'previewByTier');
-        this.server.create('tier', {name: 'Archive', slug: 'archive', type: 'paid', active: false});
-
-        await openEmailPreviewModal.call(this);
-
-        // no Tier option without the flag
-        await clickTrigger('[data-test-select="preview-segment"]');
-        const options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(2);
-        expect(options[0].textContent.trim()).to.equal('Free member');
-        expect(options[1].textContent.trim()).to.equal('Paid member');
-
-        // older backends only understand memberSegment
-        await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
-        await click(find('[data-test-button="post-preview-test-email"]'));
-        await click(find('[data-test-button="send-test-email"]'));
-        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-        const requestBody = JSON.parse(lastRequest.requestBody);
-        expect(requestBody.memberSegment).to.equal('status:-free');
-        expect(requestBody.member_status).to.be.undefined;
-        expect(requestBody.member_tier).to.be.undefined;
     });
 
     it('hides segment dropdown when only one option is available', async function () {

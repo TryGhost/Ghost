@@ -525,7 +525,7 @@ module.exports = class RouterController {
      * @param {string} options.cancelUrl URL to redirect to after cancelled checkout
      * @param {string} [options.email] Email address of the customer
      * @param {object} [options.member] Currently authenticated member OR member associated with the email address
-     * @param {object} [options.gift] Active gift subscription for the member
+     * @param {number|null} [options.giftTrialDays] Stable continuation decision from gift subscriptions
      * @param {boolean} options.isAuthenticated
      * @param {object} options.metadata Metadata to be passed to Stripe
      * @returns
@@ -680,9 +680,11 @@ module.exports = class RouterController {
 
     /**
      * @param {object} options
-     * @param {object} options.tier
-     * @param {'month'|'year'} options.cadence
-     * @param {string} options.email
+     * @param {string} options.tierId
+     * @param {string} [options.offerId]
+     * @param {string} [options.cadence]
+     * @param {number} [options.duration]
+     * @param {string} [options.email]
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
      * @param {object} options.metadata
@@ -698,10 +700,26 @@ module.exports = class RouterController {
         }
 
         try {
-            const paymentLink = await this._paymentsService.getGiftPaymentLink(options);
-
-            return {url: paymentLink};
+            return await this._giftService.service.startCheckout({
+                tierId: options.tierId,
+                offerId: options.offerId,
+                cadence: options.cadence,
+                duration: options.duration,
+                metadata: options.metadata,
+                successUrl: options.successUrl,
+                cancelUrl: options.cancelUrl,
+                buyer: {
+                    memberId: options.member?.id ?? null,
+                    email: options.member?.get('email') ?? options.email ?? null,
+                    name: options.member?.get('name') ?? null,
+                    isAuthenticated: options.isAuthenticated
+                }
+            });
         } catch (err) {
+            if (err instanceof BadRequestError || err instanceof NoPermissionError) {
+                throw err;
+            }
+
             logging.error(err);
             this._sentry?.captureException?.(err);
             throw new BadRequestError({
@@ -788,7 +806,7 @@ module.exports = class RouterController {
             let tier;
             let cadence;
             let offer;
-            let gift;
+            let giftTrialDays;
 
             if (req.body.continueFromGift) {
                 if (!isAuthenticated || !member) {
@@ -796,25 +814,16 @@ module.exports = class RouterController {
                         message: tpl(messages.signInRequired)
                     });
                 }
-                if (member.get('status') !== 'gift') {
-                    throw new BadRequestError({
-                        message: tpl(messages.badRequest),
-                        context: 'Member does not have an active gift subscription'
-                    });
-                }
-
-                gift = await this._giftService.service.getActiveByMember(member.id);
-                if (!gift) {
-                    throw new BadRequestError({
-                        message: tpl(messages.badRequest),
-                        context: 'No active gift subscription found for member'
-                    });
-                }
+                const continuation = await this._giftService.service.preparePaidContinuation({
+                    memberId: member.id,
+                    memberStatus: member.get('status')
+                });
 
                 ({tier, cadence} = await this._getSubscriptionCheckoutData({
-                    tierId: gift.tierId,
-                    cadence: gift.cadence
+                    tierId: continuation.tierId,
+                    cadence: continuation.cadence
                 }));
+                giftTrialDays = continuation.trialDays;
             } else {
                 ({tier, cadence, offer} = await this._getSubscriptionCheckoutData(req.body));
             }
@@ -825,7 +834,7 @@ module.exports = class RouterController {
                 tier,
                 cadence,
                 offer,
-                gift
+                giftTrialDays
             });
 
             // Add welcome_page_url to the response if available and member is authenticated
@@ -842,19 +851,12 @@ module.exports = class RouterController {
                 });
             }
 
-            if (req.body.offerId) {
-                throw new BadRequestError({
-                    message: tpl(messages.badRequest),
-                    context: 'Offers cannot be applied to gift subscriptions'
-                });
-            }
-
-            const data = await this._getSubscriptionCheckoutData(req.body);
-
             response = await this._createGiftCheckoutSession({
                 ...options,
-                ...data,
-                duration: 1, // gifts are currently 1 month or 1 year only
+                tierId: req.body.tierId,
+                offerId: req.body.offerId,
+                cadence: req.body.cadence,
+                duration: req.body.duration,
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
             });

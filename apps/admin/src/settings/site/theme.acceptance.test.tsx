@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
 import {
     configResponse,
@@ -115,6 +115,22 @@ describe("Theme settings", () => {
         expect(deleteApi.requests).toHaveLength(1);
     });
 
+    it("closes an installed-theme menu with Escape without closing the theme modal", async () => {
+        fakeThemeWorld();
+        await renderAdminApp("/settings/design/change-theme");
+
+        const modal = settingsScreen.themeModal();
+        await modal.getByRole("tab", { name: "Installed" }).click();
+        await installedTheme("casper").getByRole("button", { name: "Menu" }).click();
+        await expect.element(settingsScreen.menuItem("Download")).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(settingsScreen.menuItem("Download")).toHaveCount(0);
+        await expect.element(modal).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings/design/change-theme");
+    });
+
     it("uploads a theme archive", async () => {
         fakeThemeWorld();
         const uploaded = theme({ name: "mytheme" });
@@ -127,6 +143,70 @@ describe("Theme settings", () => {
 
         await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/successful/i);
         expect(uploadApi.requests).toHaveLength(1);
+    });
+
+    it("keeps the installed-theme dialog open when activation fails", async () => {
+        fakeThemeWorld();
+        const uploaded = theme({ name: "mytheme" });
+        fakeAdminEndpoint("POST", "/themes/upload/", { themes: [uploaded] });
+        const activateApi = fakeAdminEndpoint("PUT", "/themes/mytheme/activate/", {
+            errors: [{ message: "Theme activation failed" }],
+        }, { status: 422 });
+        const buffer = await archiveBuffer();
+        await renderAdminApp("/settings/design/change-theme");
+
+        await settingsScreen.themeModal().getByRole("button", { name: "Upload theme" }).click();
+        await uploadThemeFile(new File([buffer], "mytheme.zip", { type: "application/zip" }));
+
+        const installedModal = settingsScreen.confirmationModal();
+        await installedModal.getByRole("button", { name: "Activate theme" }).click();
+
+        await expect.element(installedModal).toBeVisible();
+        await expect.element(settingsScreen.errorToast()).toHaveTextContent("Theme activation failed");
+        await expect.poll(currentRoute).toBe("/settings/design/change-theme");
+        expect(activateApi.requests).toHaveLength(1);
+    });
+
+    it("reports blocking upload errors and retries the upload from the error dialog", async () => {
+        fakeThemeWorld();
+        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/", {
+            errors: [{ message: "Theme is not compatible or contains errors.", details: "Missing index.hbs" }],
+        }, { status: 422 });
+        const buffer = await archiveBuffer();
+        await renderAdminApp("/settings/design/change-theme");
+
+        await settingsScreen.themeModal().getByRole("button", { name: "Upload theme" }).click();
+        await uploadThemeFile(new File([buffer], "theme.zip", { type: "application/zip" }));
+
+        const errorModal = settingsScreen.confirmationModal();
+        await expect.element(errorModal).toHaveTextContent("Theme not uploaded");
+        await expect.element(errorModal).toHaveTextContent("Missing index.hbs");
+        expect(uploadApi.requests).toHaveLength(1);
+
+        await errorModal.getByRole("button", { name: "Retry" }).click();
+        await expect.element(page.getByText("Click to select or drag & drop zip file", { exact: true })).toBeVisible();
+        await expect(page.getByText("Theme not uploaded")).toHaveCount(0);
+    });
+
+    it("reports blocking activation errors for an installed theme", async () => {
+        fakeThemeWorld();
+        const activateApi = fakeAdminEndpoint("PUT", "/themes/casper/activate/", {
+            errors: [{ message: "Theme is not compatible or contains errors.", details: "Missing post.hbs" }],
+        }, { status: 422 });
+        await renderAdminApp("/settings/design/change-theme");
+
+        const modal = settingsScreen.themeModal();
+        await modal.getByRole("tab", { name: "Installed" }).click();
+        await installedTheme("casper").getByRole("button", { name: "Activate" }).click();
+
+        const errorModal = settingsScreen.confirmationModal();
+        await expect.element(errorModal).toHaveTextContent("Theme not activated");
+        await expect.element(errorModal).toHaveTextContent("Missing post.hbs");
+        expect(activateApi.requests).toHaveLength(1);
+
+        await errorModal.getByRole("button", { name: "Close" }).click();
+        await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+        await expect.element(modal).toBeVisible();
     });
 
     it("prevents uploading an archive over a built-in theme", async () => {
@@ -174,6 +254,9 @@ describe("Theme settings", () => {
         const editor = await editorTextbox();
         await editor.fill('{"name":"edition","version":"1.0.0"}\n');
         window.dispatchEvent(new KeyboardEvent("keydown", { key: "s", ctrlKey: true, bubbles: true, cancelable: true }));
+        await expect.element(settingsScreen.themeEditorConfirmModal()).toBeVisible();
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "s", ctrlKey: true, bubbles: true, cancelable: true }));
+        await expect(settingsScreen.themeEditorConfirmModal()).toHaveCount(1);
         await settingsScreen.themeEditorConfirmModal().getByRole("button", { name: "Replace theme" }).click();
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent(/Theme saved/i);
@@ -202,6 +285,28 @@ describe("Theme settings", () => {
         await expect.element(settingsScreen.errorToast()).toHaveTextContent(/1\.0 MB/);
     });
 
+    it("keeps the code editor open and reports blocking validation errors on save", async () => {
+        fakeThemeWorld();
+        await fakeThemeDownload("edition");
+        fakeAdminEndpoint("POST", "/themes/upload/", {
+            errors: [{ message: "Theme is not compatible or contains errors.", details: "Missing default.hbs" }],
+        }, { status: 422 });
+        await renderAdminApp("/settings/theme/edit/edition");
+
+        const editor = await editorTextbox();
+        await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+        await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Save" }).click();
+        await settingsScreen.themeEditorConfirmModal().getByRole("button", { name: "Replace theme" }).click();
+
+        const errorModal = settingsScreen.confirmationModal();
+        await expect.element(errorModal).toHaveTextContent("Theme not saved");
+        await expect.element(errorModal).toHaveTextContent("Missing default.hbs");
+        await expect(errorModal.getByRole("button", { name: "Retry" })).toHaveCount(0);
+        await userEvent.keyboard("{Escape}");
+        await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+        await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
+    });
+
     it("requires built-in themes to be saved under a valid new name", async () => {
         fakeThemeWorld();
         await fakeThemeDownload("casper");
@@ -225,7 +330,10 @@ describe("Theme settings", () => {
         fakeThemeWorld();
         await fakeThemeDownload("casper");
         await fakeThemeDownload("casper-edited");
-        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/", { themes: [theme({ name: "casper-edited" })] });
+        // saving under a new name carries over the original theme's settings
+        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/?copy_settings_from=casper", {
+            themes: [theme({ name: "casper-edited" })],
+        });
         await renderAdminApp("/settings/theme/edit/casper");
 
         const editor = await editorTextbox();
@@ -327,7 +435,8 @@ describe("Theme settings", () => {
         await editor.fill('{"name":"edition","version":"1.0.0"}\n');
         await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Close" }).click();
         await expect.element(settingsScreen.themeEditorConfirmModal()).toHaveTextContent(/unsaved theme changes/i);
-        await settingsScreen.themeEditorConfirmModal().getByRole("button", { name: "Cancel" }).click();
+        await userEvent.keyboard("{Escape}");
+        await expect(settingsScreen.themeEditorConfirmModal()).toHaveCount(0);
         await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
         await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Close" }).click();
         await settingsScreen.themeEditorConfirmModal().getByRole("button", { name: "Discard changes" }).click();

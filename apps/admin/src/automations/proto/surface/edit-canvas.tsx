@@ -158,7 +158,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                             // Shared email preview (editable: inline subject + floating edit button),
                             // with metrics below.
                             <div>
-                                <EmailPreview editable subject={d.subject ?? ''} onEditContent={d.onEditContent} onSubjectChange={d.onSubjectChange} />
+                                <EmailPreview subject={d.subject ?? ''} editable onEditContent={d.onEditContent} onSubjectChange={d.onSubjectChange} />
                                 {d.stats && (
                                     // The summary IS the analytics affordance — clicking it opens
                                     // the deeper read in the right-hand sheet.
@@ -407,11 +407,11 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     className={REACT_FLOW_THEME}
                     edges={edges}
                     edgeTypes={edgeTypes}
+                    maxZoom={1}
+                    minZoom={0.5}
                     nodes={nodes}
                     nodesConnectable={false}
                     nodesDraggable={false}
-                    maxZoom={1}
-                    minZoom={0.5}
                     nodeTypes={nodeTypes}
                     proOptions={{hideAttribution: true}}
                     translateExtent={translateExtent}

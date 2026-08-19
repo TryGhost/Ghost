@@ -100,10 +100,10 @@ const StopAutomationDialog: React.FC<{
                         Type <span className="font-semibold text-foreground">stop all</span> to confirm
                     </Label>
                     <Input
-                        autoFocus
                         id="stop-confirm"
                         placeholder="stop all"
                         value={confirmText}
+                        autoFocus
                         onChange={e => setConfirmText(e.target.value)}
                         onKeyDown={(e) => {
                             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -209,7 +209,7 @@ const AutomationSurface: React.FC = () => {
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-background" data-testid="surface-detail">
                 {/* Persistent header — the left stays put across modes; only the right controls morph. */}
-                <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4 py-4">
+                <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated p-4">
                     <Inline align="center" gap="sm">
                         {/* Back arrow hides in edit mode — under load it reads as "exit editing",
                             so the only ways out are the deliberate Done / Start on the right. */}

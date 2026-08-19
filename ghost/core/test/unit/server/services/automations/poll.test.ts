@@ -8,6 +8,7 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 import {Member} from '../../../../../core/server/models';
 
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const labs = require('../../../../../core/shared/labs');
 
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
@@ -124,6 +125,7 @@ describe('automations poll', function () {
     let scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     let options: PollOptionsStubs;
     let settingsCacheGet: sinon.SinonStub;
+    let labsIsSet: sinon.SinonStub;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
@@ -156,6 +158,8 @@ describe('automations poll', function () {
         settingsCacheGet = sinon.stub(settingsCache, 'get');
         settingsCacheGet.withArgs('email_track_clicks').returns(false);
         settingsCacheGet.withArgs('email_track_opens').returns(false);
+        labsIsSet = sinon.stub(labs, 'isSet');
+        labsIsSet.withArgs('automationAnalytics').returns(true);
         sinon.stub(Member, 'findOne').resolves(buildMember());
     });
 
@@ -261,11 +265,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member changed status');
     });
 
-    it('skips sending email if the member unsubscribed from updates & announcements', async function () {
-        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+    it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
         Member.findOne.resolves(buildMember({enable_updates_and_announcements: false}));
 
         await poll(options);
@@ -273,9 +275,9 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automationsApi.recordEmailSent);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
     });
 
     it('sends email if updates & announcements is unset and the member has newsletter subscriptions', async function () {
@@ -293,11 +295,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
 
-    it('skips sending email if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
-        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+    it('ends the automation run if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
         Member.findOne.resolves(buildMember({
             enable_updates_and_announcements: null,
             newsletters: []
@@ -308,9 +308,9 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automationsApi.recordEmailSent);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
     });
 
     it('gift members run through paid automations', async function () {
@@ -364,6 +364,7 @@ describe('automations poll', function () {
         }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: step.id,
             mailgunMessageId: 'mailgun-message-id',
             memberEmail: 'member@example.com',
             memberId: 'member-id',
@@ -433,7 +434,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: true
+        }));
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackClicks: true,
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -445,7 +452,32 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: false
+        }));
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackClicks: false,
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
+        }));
+    });
+
+    it('disables click tracking when automation analytics are disabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_clicks').returns(true);
+        labsIsSet.withArgs('automationAnalytics').returns(false);
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
+            trackClicks: false
+        }));
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackClicks: false,
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -467,6 +499,7 @@ describe('automations poll', function () {
         }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: step.id,
             memberEmail: 'member@example.com',
             memberId: 'member-id',
             memberName: 'Test Member',

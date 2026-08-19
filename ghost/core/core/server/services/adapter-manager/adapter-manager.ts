@@ -1,6 +1,5 @@
-import path from 'node:path';
 import errors from '@tryghost/errors';
-import {resolveAdapterExport, resolveAdapterEntryPoint, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
+import {loadAdapterClass, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
 import type {ConfigInstance} from '../../../shared/config/loader';
 import type {
     Adapter,
@@ -186,52 +185,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
             });
         }
 
-        let Adapter: AdapterConstructor | null = null;
-        for (const pathToAdapters of this.pathsToAdapters) {
-            let pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
-            if (pathToAdapters === '') {
-                // We are loading from node_modules, we can remove the `adapterType` prefix
-                pathToAdapter = path.join(pathToAdapters, adapterClassName);
-            }
-            // An adapter directory may be a full module with its own
-            // package.json, in which case this resolves the `exports` entry
-            // point; otherwise the path passes through unchanged.
-            const moduleToLoad = resolveAdapterEntryPoint(pathToAdapter);
-
-            try {
-                const adapterModule = this.loadAdapterFromPath(moduleToLoad);
-                Adapter = resolveAdapterExport(adapterModule);
-                if (Adapter) {
-                    break;
-                }
-            } catch (err) {
-                // Catch runtime errors
-                if (!(err instanceof Error) || (err as NodeJS.ErrnoException).code !== 'MODULE_NOT_FOUND') {
-                    throw new errors.IncorrectUsageError({err: err as Error});
-                }
-
-                // Catch missing dependencies BUT NOT missing adapter.
-                // Only check the first line — Node appends a "Require stack"
-                // that includes the adapter's own path, which would false-positive.
-                const firstLine = err.message.split('\n')[0];
-                if (!firstLine.includes(pathToAdapter)) {
-                    // Name the unresolved module so the error is actionable, e.g.
-                    // "Cannot find module 'superagent'" -> 'superagent'.
-                    const missingMatch = /Cannot find module '([^']+)'/.exec(firstLine);
-                    const missingModule = missingMatch ? ` '${missingMatch[1]}'` : '';
-                    throw new errors.IncorrectUsageError({
-                        message: `You are missing a dependency${missingModule} in your adapter ${pathToAdapter}`,
-                        err: err as Error
-                    });
-                }
-            }
-        }
-
-        if (!Adapter) {
-            throw new errors.IncorrectUsageError({
-                message: `Unable to find ${adapterType} adapter ${adapterClassName} in ${this.pathsToAdapters}.`
-            });
-        }
+        const Adapter = loadAdapterClass(adapterType, adapterClassName, this.pathsToAdapters, this.loadAdapterFromPath);
 
         return {Adapter, adapterConfig: adapterConfig ?? {}, adapterType, adapterClassName};
     }

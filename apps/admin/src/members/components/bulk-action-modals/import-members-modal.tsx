@@ -9,9 +9,8 @@ import {createInitialImportState, importReducer} from './import-members/reducer'
 import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
 import {memberCustomFieldCsvColumns, useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {parseCSV} from './import-members/csv';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
-import {useFeatureFlag} from '@/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLabelPicker} from '@/members/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
@@ -29,9 +28,8 @@ export function ImportMembersModal({
 }: ImportMembersModalProps) {
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
-    const {data: configData} = useBrowseConfig();
     const {mutateAsync: importMembers} = useImportMembers();
-    const importMemberTier = configData?.config?.labs?.importMemberTier === true;
+    const importMemberTier = useFeatureFlag('importMemberTier');
 
     // Defined custom fields become mapping targets. Fetched only when the feature is on;
     // browse returns active fields only, which are the ones the importer writes to.
@@ -309,7 +307,14 @@ export function ImportMembersModal({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className={cn('gap-0', isWide && 'max-w-2xl')}>
+            {/* While mapping, the dialog is bounded to the viewport and laid out as a column, so
+                the table takes the leftover height and the footer stays reachable on a short
+                screen. 8vmin matches the dialog's own top offset. */}
+            <DialogContent className={cn(
+                'gap-0',
+                isWide && 'max-w-2xl',
+                isWide && 'flex max-h-[calc(100vh-16vmin)] flex-col'
+            )}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription className="sr-only">

@@ -62,7 +62,9 @@ describe("Comments thread sidebar", () => {
         // Direct children carry no replied-to context in their parent's thread.
         await expect.element(commentsScreen.threadRow(firstReply.id).repliedToLink()).not.toBeInTheDocument();
 
-        await commentsScreen.threadRow(firstReply.id).repliesMetric().click();
+        const repliesLink = commentsScreen.threadRow(firstReply.id).repliesMetric();
+        await expect.element(repliesLink).toHaveAttribute("href", `#/comments?thread=is%3A${firstReply.id}`);
+        await repliesLink.click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${firstReply.id}`);
         await expect.element(commentsScreen.threadRow(firstReply.id)).toBeVisible();
@@ -110,8 +112,9 @@ describe("Comments thread sidebar", () => {
 
         await commentsScreen.loadMoreRepliesButton().click();
 
+        await expect.poll(() => threadApi.requests.length).toBe(2);
+        await expect.element(commentsScreen.threadRow(replies.at(-1)!.id)).toBeVisible();
         await expect(commentsScreen.threadRows()).toHaveCount(6); // root + all 5 replies
         await expect.element(commentsScreen.loadMoreRepliesButton()).not.toBeInTheDocument();
-        await expect.poll(() => threadApi.requests.length).toBe(2);
     });
 });

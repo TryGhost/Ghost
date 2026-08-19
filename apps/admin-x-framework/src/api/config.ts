@@ -80,6 +80,29 @@ export type Config = {
         billing?: {
             enabled?: boolean
             url?: string
+            // Destination for the upgrade button shown when a host limit is reached.
+            // Managed hosting providers can override it; falls back to Ghost's default.
+            upgradeUrl?: string // eg. '#/pro/billing/plans' or an absolute billing URL
+            // Copy and branding for the sidebar trial banner.
+            // Managed hosting providers can override these; each falls back to Ghost's default.
+            upgradeBanner?: {
+                title?: string // Banner heading
+                message?: string // Banner message, {{days}} is replaced with the remaining trial days
+                upgradeUrl?: string // Destination for the banner's upgrade button
+                logo?: string // Logo shown above the heading
+                logoDark?: string // Logo shown in dark mode, falls back to logo
+                logoAlt?: string // Alt text for the logo
+            }
+            // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
+            search?: {
+                groupName?: string
+                items?: {
+                    id?: string
+                    title?: string
+                    path?: string
+                    keywords?: string
+                }[]
+            }
         },
         pintura?: {
             js?: string
@@ -127,4 +150,13 @@ export const hasSendingDomain = (config: Config) => {
 
 export const sendingDomain = (config: Config) => {
     return config?.hostSettings?.managedEmail?.sendingDomain;
+};
+
+export const DEFAULT_UPGRADE_ROUTE = '/pro';
+
+// hostSettings stores an href; navigation takes a route, so a hash one drops its '#'
+export const upgradeRoute = (config?: Config) => {
+    const configured = config?.hostSettings?.billing?.upgradeUrl;
+
+    return configured ? configured.replace(/^#/, '') : DEFAULT_UPGRADE_ROUTE;
 };

@@ -48,7 +48,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
+            <SettingItem to='/preferences/moderation' withHover>
                 <SettingHeader>
                     <SettingTitle>Moderation</SettingTitle>
                     <SettingDescription>Manage blocked users and domains</SettingDescription>
@@ -88,14 +88,14 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     );
 };
 
-const SettingTitle = H4;
+export const SettingTitle = H4;
 
 interface SettingDescriptionProps {
     children: React.ReactNode;
     className?: string;
 }
 
-const SettingDescription: React.FC<SettingDescriptionProps> = ({children, className = ''}) => {
+export const SettingDescription: React.FC<SettingDescriptionProps> = ({children, className = ''}) => {
     return (
         <span className={`text-sm text-gray-700 ${className}`}>
             {children}
@@ -108,7 +108,7 @@ interface SettingHeaderProps {
     className?: string;
 }
 
-const SettingHeader: React.FC<SettingHeaderProps> = ({children, className = ''}) => {
+export const SettingHeader: React.FC<SettingHeaderProps> = ({children, className = ''}) => {
     return (
         <div className={`relative flex flex-col gap-0.5 ${className}`}>
             {children}
@@ -138,7 +138,7 @@ interface SettingItemProps {
     onClick?: () => void;
 }
 
-const SettingItem: React.FC<SettingItemProps> = ({children, className = '', withHover = false, to, href, onClick}) => {
+export const SettingItem: React.FC<SettingItemProps> = ({children, className = '', withHover = false, to, href, onClick}) => {
     const basePath = useAppBasePath();
     const baseClasses = 'flex items-center justify-between py-3 gap-4';
     const hoverClasses = withHover ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950' : '';

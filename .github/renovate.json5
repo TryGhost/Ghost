@@ -1,6 +1,13 @@
 {
     "extends": [
-        "github>tryghost/renovate-config"
+        "github>tryghost/renovate-config",
+        // Track `# renovate:`-annotated `ARG/ENV *_VERSION` pins in Dockerfiles,
+        // for tool versions that no native manager sees (e.g. the Tinybird CLI
+        // installed via `uv tool install` in docker/tb-cli/Dockerfile).
+        "customManagers:dockerfileVersions",
+        // Same, for `# renovate:`-annotated `env:` version pins in workflows
+        // (the Tinybird CLI in .github/workflows/tinybird.yml).
+        "customManagers:githubActionsVersions"
     ],
     // Keep Renovate's own concurrency guardrails in place. The shared preset
     // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
@@ -38,13 +45,24 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
-    // Keep every open Renovate branch current, including updates that require
-    // human review. The shared preset uses `rebaseWhen: automerging`, which
-    // Renovate resolves to `never` whenever a package rule disables automerge.
-    // Those PRs then conflict with main indefinitely and occupy the open-PR cap
-    // until somebody manually requests a rebase. Runner scheduling below still
-    // limits when the resulting branch updates and CI runs can happen.
-    "rebaseWhen": "behind-base-branch",
+    // Merge automerged PRs by rebasing the branch's own commits onto the base
+    // instead of squashing. Renovate branches are a single, concise commit
+    // (e.g. "chore(deps): update X to Y"), so a squash merge would replace that
+    // clean message with the PR title *and* the full PR body — release-note
+    // tables, changelogs, dependency dashboards — producing a giant commit
+    // message on main. Rebase preserves the branch commit message verbatim.
+    "automergeStrategy": "rebase",
+    // Branch protection does not require up-to-date branches (the required
+    // status checks ruleset has strict: false), so a green-but-behind branch
+    // is still mergeable. Rebasing on every `main` commit therefore buys
+    // nothing and costs a force-push plus a full CI re-run per branch, which
+    // is what stopped branches from ever being green *and* current inside an
+    // automerge window. "conflicted" rebases only when a branch genuinely
+    // conflicts — in practice whenever another Renovate PR lands a
+    // pnpm-lock.yaml change, which is exactly when it's needed. It also keeps
+    // needs:review PRs current, unlike the preset's "automerging", which
+    // Renovate resolves to "never" wherever a package rule disables automerge.
+    "rebaseWhen": "conflicted",
     // Soak every dependency update for 72 hours before opening a PR. This guards
     // against compromised publishes (malicious version yanked within a few hours)
     // and against unstable releases that get hotfixed shortly after publish.
@@ -78,8 +96,6 @@
     // self-hosted workflow that means a CI-storm of force-pushes across all
     // open Renovate PRs during the workday. Setting `updateNotScheduled:
     // false` keeps existing branch maintenance inside the same windows.
-    // Existing branches can still be maintained outside the normal creation
-    // schedule when the workflow switches Renovate into cap-reached mode.
     "updateNotScheduled": false,
     "schedule": [
         // Run all weekend
@@ -87,15 +103,17 @@
         // Run on weekday evenings
         "* 23 * * 1-5",
         // Run on early weekday mornings (previous day 23:00 is already
-        // covered by the evening/weekend blocks above)
-        "* 0-4 * * 1-6"
+        // covered by the evening/weekend blocks above). Extends to 05:59 to
+        // absorb GitHub Actions scheduler drift — delayed ticks were landing
+        // outside the window and doing nothing.
+        "* 0-5 * * 1-6"
     ],
     "automergeSchedule": [
         // Allow automerge all weekend
         "* * * * 0,6",
-        // Allow automerge overnight on weekday evenings (11pm-4:59am UTC)
+        // Allow automerge overnight on weekday evenings (11pm-5:59am UTC)
         "* 23 * * 1-5",
-        "* 0-4 * * 1-6"
+        "* 0-5 * * 1-6"
     ],
     // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
     // PR, and schedule limits. Let them keep doing that so security fixes can
@@ -104,70 +122,34 @@
     "vulnerabilityAlerts": {
         "schedule": ["at any time"],
         "minimumReleaseAge": "3 days",
-        "rebaseWhen": "behind-base-branch",
+        // Same reasoning as the global `rebaseWhen` above: branches don't have
+        // to be current to merge, so rebasing a security PR on every `main`
+        // commit only delays the fix behind another CI cycle.
+        "rebaseWhen": "conflicted",
         "dependencyDashboardApproval": false,
         "labels": ["dependencies", "security"]
     },
     "ignoreDeps": [
         // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
-        // `got` 10.x has a Node 10 bug that makes it pretty much unusable for now
-        "got",
-        // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
-        // `intl-messageformat` 6.0.0 introduced a breaking change in terms of
-        // escaping that would be pretty difficult to fix for now
+        // Theme i18n ({{t}} helper) is on intl-messageformat 5.x. 6.0.0 changed
+        // message escaping from `\` to ICU apostrophe quoting, which changes the
+        // output of existing theme locale strings; needs a deliberate migration.
         "intl-messageformat",
-        // https://github.com/TryGhost/Ghost/commit/b2fa84c7ff9bf8e21b0791f268f57e92759a87b1
-        // no reason given
-        "moment",
-        // https://github.com/TryGhost/Ghost/pull/10672
-        // https://github.com/TryGhost/Ghost/issues/10870
-        "moment-timezone",
-        // https://github.com/TryGhost/Admin/pull/1111/files
-        // Ignored because of a mobiledoc-kit issue but that's now in koenig, can probably be cleaned up
-        "simple-dom",
-        // https://github.com/TryGhost/Admin/pull/1111/files
-        // https://github.com/TryGhost/Ghost/pull/10672
-        // These have been ignored since forever
-        "ember-drag-drop",
-        "normalize.css",
-        "validator",
 
-        // https://github.com/TryGhost/Ghost/commit/7ebf2891b7470a1c2ffeddefb2fe5e7a57319df3
-        // Changed how modules are loaded, caused a weird error during render
-        "@embroider/macros",
-
-        // https://github.com/TryGhost/Ghost/commit/a10ad3767f60ed2c8e56feb49e7bf83d9618b2ab
-        // Caused linespacing issues in the editor, but now it's used in different places
-        // So not sure if it's relevant - soon we will finish switching to react-codemirror
+        // codemirror 6 is a rewrite of the 5.x API. @tryghost/kg-simplemde (the
+        // Koenig markdown card) is built on 5.x and is not being ported. Also
+        // covers the `codemirror@<5.58.2` pnpm override key.
         "codemirror",
-
-        // https://github.com/TryGhost/Ghost/commit/3236891b80988924fbbdb625d30cb64a7bf2afd1
-        // ember-cli-code-coverage@2.0.0 broke our code coverage
-        "ember-cli-code-coverage",
-        // https://github.com/TryGhost/Ghost/commit/1382e34e42a513c201cb957b7f843369a2ce1b63
-        // ember-cli-terser@4.0.2 has a regression that breaks our sourcemaps
-        "ember-cli-terser",
-
-        // https://linear.app/ghost/issue/PLA-56
-        // Deprecated (per-method lodash packages are EOL); last real release is
-        // 4.5.0 (2019). The flagged "4.18.0 [SECURITY]" bump does not exist, so
-        // Renovate can't remediate it. It's transitive-only — we never call
-        // `_.template` ourselves — and only reachable via frozen Ember build
-        // tooling (broccoli-templater, sourcemap-validator) plus old @tryghost/*
-        // packages, so it can't be removed from the tree here. Ignore it to stop
-        // the unactionable dashboard noise.
-        "lodash.template",
 
         // https://linear.app/ghost/issue/PLA-78
         // https://github.com/TryGhost/Ghost/pull/28180
-        // knex 2.5.x breaks migrations: 2.5.0's password-masking mutates the
-        // shared `config.get('database')` object, which we hand to BOTH knex()
-        // and knex-migrator. With core ahead of knex-migrator's pinned knex
-        // (2.4.2), the password is stripped before knex-migrator connects →
-        // "Access denied (using password: NO)". 2.x is EOL; the real move is
-        // knex 3.x, gated on publishing a knex-3 knex-migrator
-        // (TryGhost/knex-migrator#86, unreleased), bumped in lockstep with core.
-        // Ignore until we do that coordinated upgrade.
+        // ghost/core is pinned to knex 2.4.2 and knex-migrator's knex is pinned
+        // back to the same version via the `knex-migrator>knex` pnpm override
+        // (knex-migrator 5.4.x bundles knex 3.x). Migrations are built with
+        // core's query builder and executed by knex-migrator's, so the two must
+        // move together; 2.5.x also strips the password from the shared
+        // `config.get('database')` object before knex-migrator connects. Ignore
+        // until core moves to knex 3.x in one coordinated upgrade.
         "knex",
         // Same PLA-78 pin, but Renovate treats the pnpm override key
         // `knex-migrator>knex` as its own dependency name, so the plain "knex"
@@ -282,6 +264,35 @@
                 "node"
             ],
             "enabled": false
+        },
+
+        // The Tinybird CLI declares `requires_python: >=3.10,<3.14`, so a 3.14
+        // base image would break `uv tool install tinybird` (or silently force
+        // uv to fetch a second, standalone interpreter). Cap rather than
+        // disable, so 3.13.x patches and digest re-pins still flow.
+        {
+            "description": "Cap the tb-cli base image below Python 3.14 (Tinybird CLI requires <3.14)",
+            "matchFileNames": [
+                "docker/tb-cli/Dockerfile"
+            ],
+            "matchPackageNames": [
+                "python"
+            ],
+            "allowedVersions": "<3.14"
+        },
+
+        // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
+        // local dev run against. Capping (rather than disabling) keeps 8.x
+        // patches and digest re-pins flowing.
+        {
+            "description": "Cap MySQL at the 8.x line",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "mysql"
+            ],
+            "allowedVersions": "<9"
         },
 
         // Keep `@types/*` aligned with the runtime major they describe. Type defs

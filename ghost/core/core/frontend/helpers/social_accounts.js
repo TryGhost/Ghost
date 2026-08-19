@@ -45,7 +45,8 @@ const SOCIAL_PLATFORMS = [
     {type: 'instagram', name: 'Instagram'}
 ];
 
-module.exports = function social_accounts(source, options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function social_accounts(source, options) {
     // {{#social_accounts}} with no positional arg: handlebars passes only options.
     if (arguments.length < 2) {
         throw new errors.IncorrectUsageError({

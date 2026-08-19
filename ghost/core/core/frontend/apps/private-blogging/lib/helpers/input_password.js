@@ -7,7 +7,8 @@
 const {SafeString, templates} = require('../../../../services/handlebars');
 
 // We use the name input_password to match the helper for consistency:
-module.exports = function input_password(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function input_password(options) {
     options = options || {};
     options.hash = options.hash || {};
 

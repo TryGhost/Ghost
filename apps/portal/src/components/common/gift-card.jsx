@@ -10,7 +10,7 @@ const GiftCard = ({cardRef, duration, tierName, name, giftValue, siteIcon, siteT
                 <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
                 {hasMeta && (
                     <div className='gh-portal-gift-checkout-card-meta'>
-                        <div className='gh-portal-gift-checkout-card-duration'>{duration}</div>
+                        <div className='gh-portal-gift-checkout-card-duration' data-testid='gift-card-duration'>{duration}</div>
                         <div className='gh-portal-gift-checkout-card-tier'>{t('{tierName} membership', {tierName})}</div>
                     </div>
                 )}
@@ -25,7 +25,7 @@ const GiftCard = ({cardRef, duration, tierName, name, giftValue, siteIcon, siteT
                         {giftValue && (
                             <div className='gh-portal-gift-checkout-card-detail'>
                                 <div className='gh-portal-gift-checkout-card-detail-label'>{t('Gift value')}</div>
-                                <div className='gh-portal-gift-checkout-card-detail-value'>{giftValue}</div>
+                                <div className='gh-portal-gift-checkout-card-detail-value' data-testid='gift-card-value'>{giftValue}</div>
                             </div>
                         )}
                     </div>

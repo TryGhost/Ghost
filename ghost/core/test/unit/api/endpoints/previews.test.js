@@ -22,8 +22,8 @@ describe('Previews controller', function () {
         // mapper as the other endpoints, so the lazy URL service's required
         // relations must be loaded here too — a published post previewed on a
         // site with tag-filtered collections is otherwise rejected as thin.
-        it('lazyRouting: force-loads the URL service required relations', async function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        it('force-loads the URL service required relations', async function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {options: {}};
             await previewsController.read.query(frame);
@@ -35,8 +35,8 @@ describe('Previews controller', function () {
             assert.deepEqual(frame.forcedUrlRelations, ['tags', 'authors']);
         });
 
-        it('lazyRouting: only forces the relations the caller did not include', async function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        it('only forces the relations the caller did not include', async function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {options: {withRelated: ['tags']}};
             await previewsController.read.query(frame);

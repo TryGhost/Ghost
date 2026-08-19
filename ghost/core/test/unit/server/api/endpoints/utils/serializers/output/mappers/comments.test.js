@@ -7,7 +7,7 @@ describe('Unit: endpoints/utils/serializers/output/mappers/comments', function (
     let getUrlForResourceStub;
 
     beforeEach(function () {
-        getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/resolved/');
+        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource').returns('https://example.com/resolved/');
     });
 
     afterEach(function () {

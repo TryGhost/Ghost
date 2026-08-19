@@ -15,12 +15,54 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+const labs = require('../../shared/labs');
+const {getMarkdownUrl} = require('../services/llms/markdown');
+const {isPurchasableEntry, isMachinePaymentsEnabled} = require('../../shared/machine-payments');
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
  */
 
 const {get: getMetaData, getAssetUrl} = metaData;
+
+function isMachinePaymentsFeatureEnabled() {
+    return isMachinePaymentsEnabled({
+        labs,
+        settingsCache,
+        isStripeConnected: () => settingsHelpers.isStripeConnected()
+    });
+}
+
+function shouldOutputMarkdownAlternate({context, post}) {
+    if (
+        !context
+        || !_.includes(context, 'post')
+        || !post
+        || settingsCache.get('is_private')
+        || settingsCache.get('llms_enabled') === false
+    ) {
+        return false;
+    }
+
+    if (post.visibility === 'public') {
+        return true;
+    }
+
+    return isPurchasableEntry(post) && isMachinePaymentsFeatureEnabled();
+}
+
+function getMarkdownAlternateLink({context, post, canonicalUrl}) {
+    if (!shouldOutputMarkdownAlternate({context, post})) {
+        return '';
+    }
+
+    try {
+        return '<link rel="alternate" type="text/markdown" href="' + escapeExpression(getMarkdownUrl(canonicalUrl)) + '">';
+    } catch (err) {
+        logging.warn(err);
+        return '';
+    }
+}
 
 /**
  * Escape a serialized JSON string for safe inclusion inside an inline
@@ -278,7 +320,8 @@ function getTinybirdTrackerScript(dataRoot) {
  *  Also see how the root object gets created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
 // We use the name ghost_head to match the helper for consistency:
-module.exports = async function ghost_head(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = async function ghost_head(options) {
     debug('begin');
     // if server error page do nothing
     if (options.data.root.statusCode >= 500) {
@@ -327,6 +370,16 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
 
                 head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
+
+                const markdownAlternateLink = getMarkdownAlternateLink({
+                    context,
+                    post: dataRoot.post,
+                    canonicalUrl: meta.canonicalUrl
+                });
+
+                if (markdownAlternateLink) {
+                    head.push(markdownAlternateLink);
+                }
 
                 if (_.includes(context, 'preview')) {
                     head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));

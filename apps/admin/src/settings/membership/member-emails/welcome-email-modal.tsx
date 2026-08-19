@@ -1,0 +1,333 @@
+import React from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
+
+import MemberEmailEditor from './member-email-editor';
+import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
+import {FieldError, Input} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
+import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useWelcomeEmailPreview} from './use-welcome-email-preview';
+import {useWelcomeEmailSenderDetails} from '@/settings/app/hooks/use-welcome-email-sender-details';
+
+import TestEmailDropdown from './test-email-dropdown';
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+
+import {Button, Popover, PopoverTrigger, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
+
+interface EmailPreviewModalContentProps {
+    title: string;
+    centeredHeaderContent?: React.ReactNode;
+    headerActions?: React.ReactNode;
+    children: React.ReactNode;
+    className?: string;
+    isEditMode?: boolean;
+}
+
+const EmailPreviewModalContent = React.forwardRef<
+    HTMLDivElement,
+    EmailPreviewModalContentProps
+>(({title, centeredHeaderContent, headerActions, children, className, isEditMode = false}, ref) => (
+    <div
+        ref={ref}
+        className={cn(
+            'flex size-full flex-col gap-0 overflow-hidden p-0',
+            isEditMode ? 'bg-white' : 'bg-gray-100',
+            'dark:bg-gray-950',
+            className
+        )}
+    >
+        <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-950">
+            <h3 className="justify-self-start text-xl font-semibold">
+                {title}
+            </h3>
+            <div className="justify-self-center">
+                {centeredHeaderContent}
+            </div>
+            <div className="flex items-center gap-2 justify-self-end">
+                {headerActions}
+            </div>
+        </div>
+        <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow flex-col overflow-y-auto [scrollbar-gutter:stable]">
+            {children}
+        </div>
+    </div>
+));
+EmailPreviewModalContent.displayName = 'EmailPreviewModalContent';
+
+interface EmailPreviewEmailHeaderProps {
+    children: React.ReactNode;
+    className?: string;
+}
+
+const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
+    <div className={cn(
+        'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-950',
+        className
+    )}>
+        {children}
+    </div>
+);
+
+interface EmailPreviewBodyProps {
+    children: React.ReactNode;
+    className?: string;
+}
+
+const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}) => (
+    <div className={cn(
+        'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:shadow-none',
+        className
+    )}>
+        {children}
+    </div>
+);
+
+export interface WelcomeEmailModalProps {
+    emailType: 'free' | 'paid';
+    automatedEmail: AutomatedEmail;
+}
+
+type PreviewMode = 'edit' | 'preview';
+
+const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & {onClose: () => void}> = ({emailType = 'free', automatedEmail, onClose}) => {
+    const {settings: globalSettings, config} = useGlobalData();
+    const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'support_email_address']);
+    const {updateRoute} = useSettingsNavigation();
+    const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
+    const {data: automatedEmailsData} = useBrowseAutomatedEmails();
+    const [showTestDropdown, setShowTestDropdown] = useState(false);
+    const [mode, setMode] = useState<PreviewMode>('edit');
+    const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
+    const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
+    const hasEditorBeenInteractedWith = useRef(false);
+    const handleError = useHandleError();
+    const automatedEmails = automatedEmailsData?.automated_emails || [];
+    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmails, {
+        config,
+        defaultEmailAddress,
+        siteTitle,
+        supportEmailAddress
+    });
+    const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
+    const modalTitle = `${emailTypeLabel} members welcome email`;
+    const {confirm, dialogProps} = useDirtyConfirmation();
+
+    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
+        initialState: {
+            subject: automatedEmail?.subject || 'Welcome',
+            lexical: automatedEmail?.lexical || ''
+        },
+        savingDelay: 500,
+        onSave: async (state) => {
+            await editAutomatedEmail({...automatedEmail, ...state});
+        },
+        onSaveError: handleError,
+        onValidate: getWelcomeEmailValidationErrors
+    });
+    const saveButtonLabel = okProps.label || 'Save';
+    const {previewFrameState, enterPreview, exitPreview} = useWelcomeEmailPreview({
+        automatedEmailId: automatedEmail.id,
+        previewWelcomeEmail,
+        setErrors
+    });
+
+    const isDirty = saveState === 'unsaved';
+
+    const handleClose = useCallback(() => {
+        confirm(isDirty, onClose);
+    }, [confirm, onClose, isDirty]);
+
+    const handleSaveRef = useRef(handleSave);
+    useEffect(() => {
+        handleSaveRef.current = handleSave;
+    }, [handleSave]);
+
+    useEffect(() => {
+        const handleCMDS = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                void handleSaveRef.current({fakeWhenUnchanged: true});
+            }
+        };
+        window.addEventListener('keydown', handleCMDS);
+        return () => {
+            window.removeEventListener('keydown', handleCMDS);
+        };
+    }, []);
+
+    const handleModeChange = useCallback((nextMode: PreviewMode) => {
+        setMode(nextMode);
+
+        if (nextMode === 'preview') {
+            setPreviewSubjectOverride(null);
+            void enterPreview(formState);
+        } else {
+            setShowTestDropdown(false);
+            setPreviewSubjectOverride(null);
+            exitPreview();
+        }
+    }, [enterPreview, exitPreview, formState]);
+
+    // The editor normalizes content on mount (e.g., processing {name} templates),
+    // which triggers onChange even without user edits. We track whether the editor
+    // has received user input - the modal can autofocus the editor before normalization
+    // finishes, so focus alone is not evidence of an edit. After user interaction, we
+    // compare against the normalized baseline to determine dirty state.
+    const handleEditorChange = useCallback((lexical: string) => {
+        if (!hasEditorBeenInteractedWith.current) {
+            // Editor hasn't received user input yet = must be normalization
+            normalizedLexical.current = lexical;
+            setFormState(state => ({...state, lexical}));
+            return;
+        }
+
+        // Editor has been focused = compare to baseline
+        if (lexical !== normalizedLexical.current) {
+            updateForm(state => ({...state, lexical}));
+        } else {
+            // Content reverted to normalized state - don't mark dirty
+            setFormState(state => ({...state, lexical}));
+        }
+    }, [setFormState, updateForm]);
+
+    return (
+        <SettingsModal
+            afterClose={() => {
+                updateRoute('memberemails');
+            }}
+            backDropClick={false}
+            dirty={isDirty}
+            footer={false}
+            header={false}
+            padding={false}
+            scrolling={false}
+            size='full'
+            testId='welcome-email-modal'
+            width='full'
+            onClose={onClose}
+        >
+            <EmailPreviewModalContent
+                centeredHeaderContent={
+                    <Tabs
+                        data-testid='welcome-email-mode-toggle'
+                        value={mode}
+                        variant='segmented-sm'
+                        onValueChange={value => value && handleModeChange(value as PreviewMode)}
+                    >
+                        <TabsList className='grid w-[240px] grid-cols-2 bg-gray-100 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]'>
+                            <TabsTrigger className='w-full justify-center data-[state=active]:bg-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black' data-testid='welcome-email-mode-edit' value='edit'>Email content</TabsTrigger>
+                            <TabsTrigger className='w-full justify-center' data-testid='welcome-email-mode-preview' value='preview'>Preview</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                }
+                className='dark:bg-[#151719]'
+                headerActions={
+                    <>
+                        <Button type='button' variant='outline' onClick={handleClose}>Close</Button>
+                        <Button
+                            disabled={okProps.disabled}
+                            type='button'
+                            onClick={() => void handleSave({fakeWhenUnchanged: true})}
+                        >
+                            {saveButtonLabel}
+                        </Button>
+                    </>
+                }
+                isEditMode={mode === 'edit'}
+                title={modalTitle}
+            >
+                <div className='flex grow flex-col items-center p-6'>
+                    {mode === 'preview' && (
+                        <EmailPreviewEmailHeader className='border-x-0 border-t-0 border-b'>
+                            <div className='flex flex-col gap-2'>
+                                <div className='flex items-center py-1'>
+                                    <div className='w-20 shrink-0 font-semibold'>From:</div>
+                                    <div className='min-w-0 grow pr-4'>
+                                        <span className='flex gap-1 truncate whitespace-nowrap'>
+                                            <span>{resolvedSenderName}</span>
+                                            <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
+                                        </span>
+                                    </div>
+                                    <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
+                                        <PopoverTrigger asChild>
+                                            <Button type='button' variant='outline'><LucideIcon.Send />Test</Button>
+                                        </PopoverTrigger>
+                                        {showTestDropdown && (
+                                            <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />
+                                        )}
+                                    </Popover>
+                                </div>
+                                {hasDistinctReplyTo && (
+                                    <div className='flex items-center'>
+                                        <div className='w-20 shrink-0 font-semibold'>Reply-to:</div>
+                                        <div className='grow text-gray-500 dark:text-gray-400'>
+                                            {resolvedReplyToEmail}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className='flex items-center'>
+                                    <div className='w-20 shrink-0 font-semibold'>Subject:</div>
+                                    <div className='grow'>
+                                        <Input
+                                            data-testid='welcome-email-preview-subject'
+                                            value={previewSubjectOverride ?? formState.subject}
+                                            onChange={(e) => {
+                                                const nextSubject = e.target.value;
+                                                setPreviewSubjectOverride(nextSubject);
+                                                updateForm(state => ({...state, subject: nextSubject}));
+                                            }}
+                                        />
+                                        {errors.subject && <FieldError className='mt-2'>{errors.subject}</FieldError>}
+                                    </div>
+                                </div>
+                            </div>
+                        </EmailPreviewEmailHeader>
+                    )}
+                    <EmailPreviewBody className={cn(
+                        mode === 'preview' && 'bg-white shadow-sm dark:bg-grey-950',
+                        mode === 'edit' && 'px-6',
+                        mode === 'edit' && 'rounded-lg',
+                        mode === 'edit' && errors.lexical && 'border border-red-500'
+                    )}>
+                        <div
+                            className={cn(
+                                'mx-auto w-full max-w-[600px] pt-10 pb-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
+                                mode === 'preview' && 'hidden'
+                            )}
+                            data-testid='welcome-email-editor'
+                            onKeyDown={() => {
+                                hasEditorBeenInteractedWith.current = true;
+                            }}
+                            onPointerDown={() => {
+                                hasEditorBeenInteractedWith.current = true;
+                            }}
+                        >
+                            <MemberEmailEditor
+                                key={automatedEmail?.id || 'new'}
+                                className='welcome-email-editor'
+                                placeholder='Begin writing your email...'
+                                value={formState.lexical}
+                                onChange={handleEditorChange}
+                            />
+                        </div>
+                        {mode === 'preview' && (
+                            <WelcomeEmailPreviewFrame previewState={previewFrameState} />
+                        )}
+                    </EmailPreviewBody>
+                    {mode === 'edit' && errors.lexical && <FieldError className='mt-2 max-w-[740px]'>{errors.lexical}</FieldError>}
+                </div>
+            </EmailPreviewModalContent>
+            <DirtyConfirmDialog {...dialogProps} />
+        </SettingsModal>
+    );
+};
+
+export default WelcomeEmailModal;

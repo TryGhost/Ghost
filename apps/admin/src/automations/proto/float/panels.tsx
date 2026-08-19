@@ -367,9 +367,9 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                     the single rule; Shade's defaults doubled it at rest. */}
                 <TableHeader className="border-b-0">
                     <TableRow className="border-b-0 hover:bg-transparent">
-                        <SortHead label="Member" onSort={onSort} sort={sort} sortKey="member" />
-                        <SortHead className="w-24" label="Started" onSort={onSort} sort={sort} sortKey="started" />
-                        <SortHead className="w-24" label="Status" onSort={onSort} sort={sort} sortKey="status" />
+                        <SortHead label="Member" sort={sort} sortKey="member" onSort={onSort} />
+                        <SortHead className="w-24" label="Started" sort={sort} sortKey="started" onSort={onSort} />
+                        <SortHead className="w-24" label="Status" sort={sort} sortKey="status" onSort={onSort} />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -399,16 +399,16 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                                 // Toggle: clicking the selected row again de-selects it.
                                 onClick={() => onSelectMember(isSelected ? null : run.id)}
                             >
-                                <TableCell className="min-w-0 px-4 py-4 group-hover:bg-transparent">
+                                <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
                                     <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                 </TableCell>
-                                <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
+                                <TableCell className="w-24 p-4 align-middle group-hover:bg-transparent">
                                     {/* Same size and colour as the member column — it's a
                                         value in its own right, not an annotation on the
                                         name. Only the weight separates them. */}
                                     <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                 </TableCell>
-                                <TableCell className="w-24 px-4 py-4 text-center align-middle group-hover:bg-transparent">
+                                <TableCell className="w-24 p-4 text-center align-middle group-hover:bg-transparent">
                                     {/* Icon only — the status cards above name each state. */}
                                     <div className={cn('flex justify-center', statusColor)} title={statusLabel}>
                                         <StatusGlyph label={statusLabel} pct={pct} run={run} />

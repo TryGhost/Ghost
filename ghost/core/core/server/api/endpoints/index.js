@@ -11,6 +11,10 @@ module.exports = {
         return apiFramework.pipeline(require('./automations'), localUtils);
     },
 
+    get automationActionLinks() {
+        return apiFramework.pipeline(require('./automation-action-links'), localUtils);
+    },
+
     get automationEmailPreviews() {
         return apiFramework.pipeline(require('./automation-email-previews'), localUtils);
     },
@@ -168,10 +172,6 @@ module.exports = {
         return apiFramework.pipeline(require('./config'), localUtils);
     },
 
-    get explore() {
-        return apiFramework.pipeline(require('./explore'), localUtils);
-    },
-
     get themes() {
         return apiFramework.pipeline(require('./themes'), localUtils);
     },
@@ -312,8 +312,8 @@ module.exports = {
         return apiFramework.pipeline(require('./gift-links'), localUtils);
     },
 
-    get giftReminders() {
-        return apiFramework.pipeline(require('./gift-reminders'), localUtils);
+    get gifts() {
+        return apiFramework.pipeline(require('./gifts'), localUtils);
     },
 
     get recommendationsPublic() {

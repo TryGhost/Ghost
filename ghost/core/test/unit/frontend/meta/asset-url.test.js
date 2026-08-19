@@ -31,14 +31,20 @@ describe('getAssetUrl', function () {
 
     it('should not add asset to url if ghost.css for default templates', function () {
         const testUrl = getAssetUrl('public/ghost.css');
-        // Without caching:assets:contentBasedHash, uses global hash
-        assert.equal(testUrl, '/public/ghost.css?v=' + config.get('assetHash'));
+        // ghost.css ships in the static public path, so it gets a content-based hash
+        assert.match(testUrl, /^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
     });
 
     it('should not add asset to url has public in it', function () {
         const testUrl = getAssetUrl('public/myfile.js');
         // Non-existent public files fall back to global hash
         assert.equal(testUrl, '/public/myfile.js?v=' + config.get('assetHash'));
+    });
+
+    it('should use the global hash when contentBasedHash is disabled', function () {
+        configUtils.set('caching:assets:contentBasedHash:enabled', false);
+        const testUrl = getAssetUrl('public/ghost.css');
+        assert.equal(testUrl, '/public/ghost.css?v=' + config.get('assetHash'));
     });
 
     it('should return hash before #', function () {
@@ -122,8 +128,8 @@ describe('getAssetUrl', function () {
 
         it('should not add asset to url if ghost.css for default templates', function () {
             const testUrl = getAssetUrl('public/ghost.css');
-            // Without caching:assets:contentBasedHash, uses global hash
-            assert.equal(testUrl, '/blog/public/ghost.css?v=' + config.get('assetHash'));
+            // ghost.css ships in the static public path, so it gets a content-based hash
+            assert.match(testUrl, /^\/blog\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
         });
 
         it('should not add asset to url has public in it', function () {
@@ -265,6 +271,19 @@ describe('getAssetUrl', function () {
 
             const testUrl = getAssetUrl(testFile);
             assert.equal(testUrl, `/assets/${testFile}?v=${expectedHash}`);
+        });
+
+        it('should use the same hash whether or not the caller spells the assets/ prefix', function () {
+            sinon.stub(themeEngine, 'getActive').returns({
+                path: fixturesPath
+            });
+
+            const bare = getAssetUrl('built/screen.css');
+            const prefixed = getAssetUrl('assets/built/screen.css');
+
+            // Same file, same URL, so the cache-busting key must match too
+            assert.equal(prefixed, bare);
+            assert.match(prefixed, /^\/assets\/built\/screen\.css\?v=[A-Za-z0-9_-]{16}$/);
         });
 
         it('should fallback to global hash when theme asset file does not exist', function () {

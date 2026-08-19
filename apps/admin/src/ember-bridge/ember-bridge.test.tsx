@@ -40,6 +40,7 @@ function createMockStateBridge(sidebarVisible = true) {
         onUpdate: vi.fn(),
         onInvalidate: vi.fn(),
         onDelete: vi.fn(),
+        isFeatureEnabled: vi.fn().mockReturnValue(false),
         on,
         off,
         sidebarVisible,
@@ -62,13 +63,14 @@ declare global {
 
 let useEmberDataSync: typeof import('./ember-bridge').useEmberDataSync;
 let useEmberAuthSync: typeof import('./ember-bridge').useEmberAuthSync;
+let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;
 let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
 let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
 
 beforeEach(async () => {
     vi.resetModules();
     vi.useRealTimers();
-    ({ useEmberDataSync, useEmberAuthSync, useSidebarVisibility, useEmberRouting } = await import('./ember-bridge'));
+    ({ useEmberDataSync, useEmberAuthSync, useEmberFeatureFlag, useSidebarVisibility, useEmberRouting } = await import('./ember-bridge'));
     delete window.EmberBridge;
 });
 
@@ -76,6 +78,50 @@ afterEach(() => {
     delete window.EmberBridge;
     vi.clearAllTimers();
     vi.useRealTimers();
+});
+
+describe('useEmberFeatureFlag', () => {
+    test('updates when Ember feature ownership changes', async () => {
+        const mock = createMockStateBridge();
+        let enabled = false;
+        mock.stateBridge.isFeatureEnabled = vi.fn(() => enabled);
+        window.EmberBridge = {state: mock.stateBridge};
+
+        const {result} = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+        expect(result.current).toBe(false);
+
+        enabled = true;
+        act(() => mock.emit('featureFlagsChange', undefined));
+
+        await waitFor(() => expect(result.current).toBe(true));
+    });
+
+    test('updates when the Ember bridge becomes available after subscribing', async () => {
+        vi.useFakeTimers();
+        const mock = createMockStateBridge();
+        mock.stateBridge.isFeatureEnabled = vi.fn(() => true);
+
+        const {result} = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+        expect(result.current).toBeUndefined();
+
+        window.EmberBridge = {state: mock.stateBridge};
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(100);
+        });
+
+        expect(mock.onSpy).toHaveBeenCalledWith('featureFlagsChange', expect.any(Function));
+        expect(result.current).toBe(true);
+    });
+
+    test('distinguishes loading Ember settings from an unavailable bridge', () => {
+        const mock = createMockStateBridge();
+        mock.stateBridge.isFeatureEnabled = vi.fn(() => undefined);
+        window.EmberBridge = {state: mock.stateBridge};
+
+        const {result} = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+
+        expect(result.current).toBeNull();
+    });
 });
 
 describe('useEmberDataSync', () => {

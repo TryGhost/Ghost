@@ -41,7 +41,7 @@ describe('Local Storage Base', function () {
 
     describe('urlToPath', function () {
         it('returns relative path from full url', function () {
-            let localStorageBase = new LocalStorageBase({
+            const localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
                 siteUrl: 'http://example.com/blog/'
@@ -54,7 +54,7 @@ describe('Local Storage Base', function () {
         });
 
         it('returns relative path from prefix url', function () {
-            let localStorageBase = new LocalStorageBase({
+            const localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
                 siteUrl: 'http://example.com/'
@@ -67,7 +67,7 @@ describe('Local Storage Base', function () {
         });
 
         it('throws if the url resolves outside the storage root', function () {
-            let localStorageBase = new LocalStorageBase({
+            const localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
                 siteUrl: 'http://example.com/blog/'
@@ -79,7 +79,7 @@ describe('Local Storage Base', function () {
         });
 
         it('throws if the prefix url resolves outside the storage root', function () {
-            let localStorageBase = new LocalStorageBase({
+            const localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
                 siteUrl: 'http://example.com/'
@@ -91,7 +91,7 @@ describe('Local Storage Base', function () {
         });
 
         it('throws if the url does not match current site', function () {
-            let localStorageBase = new LocalStorageBase({
+            const localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
                 siteUrl: 'http://example.com/blog/'

@@ -1,4 +1,5 @@
 import Service from '@ember/service';
+import {BILLING_SEARCH_GROUP_KEY} from '../utils/search';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -6,6 +7,7 @@ import {task, timeout} from 'ember-concurrency';
 
 export default class SearchService extends Service {
     @service ajax;
+    @service billing;
     @service feature;
     @service notifications;
     @service searchProviderBasic;
@@ -42,7 +44,13 @@ export default class SearchService extends Service {
             yield this.refreshContentTask.lastRunning;
         }
 
-        return yield this.provider.searchTask.perform(term);
+        const results = yield this.provider.searchTask.perform(term);
+
+        if (!this.billing.canAccessBilling) {
+            return results.filter(group => group.groupKey !== BILLING_SEARCH_GROUP_KEY);
+        }
+
+        return results;
     }
 
     @task({drop: true})

@@ -51,6 +51,10 @@ export interface Post {
     tiers?: unknown[];
     authors?: unknown[];
     count?: {clicks: number; positive_feedback: number; negative_feedback: number};
+    /** Only present when the request includes `email`; set for posts sent as an email. */
+    email?: {email_count: number; opened_count: number; status?: string} | null;
+    /** Only present when the request includes `newsletter`; the newsletter the email went to. */
+    newsletter?: {id: string; feedback_enabled?: boolean} | null;
     created_at: string;
     updated_at: string;
     published_at: string | null;

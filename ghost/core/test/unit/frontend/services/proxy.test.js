@@ -15,7 +15,7 @@ describe('Proxy: serverEvents', function () {
         sinon.restore();
     });
 
-    ['site.changed', 'url.added', 'url.removed'].forEach(function (eventName) {
+    ['site.changed'].forEach(function (eventName) {
         it(`subscribes a listener to the permitted "${eventName}" event`, function () {
             const listener = () => {};
 
@@ -42,6 +42,6 @@ describe('Proxy: prepareContextResource', function () {
 
         proxy.prepareContextResource(resource);
 
-        assert.equal(resource.feature_image_caption.toString(), '<span style="color: red"><a href="https://example.com">Caption</a></span>');
+        assert.equal(resource.feature_image_caption.toString(), '<span style="color:red"><a href="https://example.com">Caption</a></span>');
     });
 });

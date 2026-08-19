@@ -371,11 +371,11 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
             <ReactFlow
                 className={REACT_FLOW_THEME}
                 edges={edges}
+                maxZoom={1}
+                minZoom={0.5}
                 nodes={nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
-                maxZoom={1}
-                minZoom={0.5}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
                 translateExtent={translateExtent}

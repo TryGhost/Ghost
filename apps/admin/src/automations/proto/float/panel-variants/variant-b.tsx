@@ -212,9 +212,9 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                             <LucideIcon.Search />
                         </InputGroupAddon>
                         <InputGroupInput
-                            autoFocus
                             placeholder="Search members…"
                             value={query}
+                            autoFocus
                             onChange={e => setQuery(e.target.value)}
                         />
                     </InputGroup>
@@ -416,9 +416,9 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                     row, so grouping rows by it is what clicking this
                                     header visibly does — the Member header sorts by
                                     STATUS, with name as the tie-break inside each group. */}
-                                <SortHead label="Member" onSort={onSort} sort={sort} sortKey={statusLeads ? 'status' : 'member'} />
-                                <SortHead className="w-24" label="Entered" onSort={onSort} sort={sort} sortKey="entered" />
-                                {!statusLeads && <SortHead className="w-20" label="Status" onSort={onSort} sort={sort} sortKey="status" />}
+                                <SortHead label="Member" sort={sort} sortKey={statusLeads ? 'status' : 'member'} onSort={onSort} />
+                                <SortHead className="w-24" label="Entered" sort={sort} sortKey="entered" onSort={onSort} />
+                                {!statusLeads && <SortHead className="w-20" label="Status" sort={sort} sortKey="status" onSort={onSort} />}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -442,7 +442,7 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                         // Toggle: clicking the selected row again de-selects it.
                                         onClick={() => onSelectMember(isSelected ? null : run.id)}
                                     >
-                                        <TableCell className="min-w-0 px-4 py-4 group-hover:bg-transparent">
+                                        <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
                                             {statusLeads ? (
                                                 <div className="flex min-w-0 items-center gap-2.5">
                                                     <span className={cn('shrink-0', rowColor(status, run))} title={status}>{rowGlyph(status, run)}</span>
@@ -460,7 +460,7 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                                 <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                             )}
                                         </TableCell>
-                                        <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
+                                        <TableCell className="w-24 p-4 align-middle group-hover:bg-transparent">
                                             {/* Matches panels.tsx — same size and colour as
                                                 the member column, weight alone separating
                                                 them. Kept in step so the two left-pane
@@ -468,7 +468,7 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                             <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                         </TableCell>
                                         {!statusLeads && (
-                                            <TableCell className="w-20 px-4 py-4 text-center align-middle group-hover:bg-transparent">
+                                            <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
                                                 {/* Icon only — the cards above name each state. */}
                                                 <div className={cn('flex justify-center', rowColor(status, run))} title={status}>
                                                     {rowGlyph(status, run)}

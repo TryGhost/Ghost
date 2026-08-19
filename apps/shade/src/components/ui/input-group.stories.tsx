@@ -318,7 +318,7 @@ export const Disabled: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'Disabled state reduces opacity across all group elements. Add data-disabled="true" to the InputGroup for consistent styling.'
+                story: 'Disabled groups use the shared disabled field surface while keeping their value readable. Add data-disabled="true" to the InputGroup for consistent wrapper styling.'
             }
         }
     }

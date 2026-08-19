@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {createHash} = require('node:crypto');
 const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
@@ -12,15 +13,25 @@ const StartAutomationsPollEvent = require('../../../core/server/services/automat
 
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
+const hashRedirectDestination = url => createHash('sha256').update(url).digest();
 
-const matchAutomationSummary = () => ({
+const matchAutomationBase = () => ({
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 });
 
+const matchAutomationSummary = () => ({
+    ...matchAutomationBase(),
+    stats: {
+        last_run_created_at: null,
+        total_run_count: 0,
+        in_progress_run_count: 0
+    }
+});
+
 const matchAutomation = () => ({
-    ...matchAutomationSummary(),
+    ...matchAutomationBase(),
     actions: [{
         id: anyObjectId
     }, {
@@ -82,7 +93,7 @@ describe('Automations API', function () {
 
     beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('users', 'integrations', 'api_keys');
+        await fixtureManager.init('users', 'integrations', 'api_keys', 'members');
         await agent.loginAsOwner();
 
         schedulerKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
@@ -104,6 +115,42 @@ describe('Automations API', function () {
     });
 
     describe('browse', function () {
+        async function createAutomationRun(automationId, createdAt) {
+            const runId = ObjectId().toHexString();
+            await models.Base.knex('automation_runs').insert({
+                id: runId,
+                automation_id: automationId,
+                member_id: null,
+                member_email: 'member@example.com',
+                created_at: createdAt,
+                updated_at: createdAt
+            });
+            return runId;
+        }
+
+        async function createAutomationRunStep(automationId, runId, status) {
+            const revisionId = await models.Base.knex('automation_action_revisions')
+                .innerJoin('automation_actions', 'automation_actions.id', 'automation_action_revisions.action_id')
+                .where('automation_actions.automation_id', automationId)
+                .first('automation_action_revisions.id')
+                .then(revision => revision.id);
+            const now = new Date();
+            await models.Base.knex('automation_run_steps').insert({
+                id: ObjectId().toHexString(),
+                automation_run_id: runId,
+                automation_action_revision_id: revisionId,
+                ready_at: now,
+                step_attempts: 0,
+                started_at: null,
+                finished_at: null,
+                status,
+                locked_by: null,
+                locked_at: null,
+                created_at: now,
+                updated_at: now
+            });
+        }
+
         async function deleteActionsForAutomationIds(automationIds) {
             const actionIds = await models.Base.knex('automation_actions')
                 .whereIn('automation_id', automationIds)
@@ -167,6 +214,71 @@ describe('Automations API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('returns null last run timestamps for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.last_run_created_at), [null, null]);
+        });
+
+        it('returns latest automation run timestamp', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+            const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
+            const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
+
+            await createAutomationRun(automationId, olderRunCreatedAt);
+            await createAutomationRun(automationId, latestRunCreatedAt);
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
+        });
+
+        it('returns zero total run counts for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.total_run_count), [0, 0]);
+        });
+
+        it('returns the total automation run count', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+
+            await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
+            await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.total_run_count, 2);
+        });
+
+        it('returns zero in progress run counts for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.in_progress_run_count), [0, 0]);
+        });
+
+        it('returns the number of runs with pending steps', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+
+            const pendingRunId = await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
+            await createAutomationRunStep(automationId, pendingRunId, 'finished');
+            await createAutomationRunStep(automationId, pendingRunId, 'pending');
+
+            const finishedRunId = await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
+            await createAutomationRunStep(automationId, finishedRunId, 'finished');
+
+            await createAutomationRun(automationId, new Date('2026-01-03T00:00:00.000Z'));
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.in_progress_run_count, 1);
         });
 
         it('upserts the default free and paid automations', async function () {
@@ -283,6 +395,102 @@ describe('Automations API', function () {
                         clicked_rate: 67
                     });
                 });
+        });
+    });
+
+    describe('action links', function () {
+        it('returns unique member click counts grouped across revisions', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automationId = body.automations[0].id;
+            const action = await models.Base.knex('automation_actions')
+                .where({automation_id: automationId, type: 'send_email'})
+                .first();
+            const revision = await models.Base.knex('automation_action_revisions')
+                .where('action_id', action.id)
+                .first();
+            const secondRevisionId = ObjectId().toHexString();
+            await models.Base.knex('automation_action_revisions').insert({
+                id: secondRevisionId,
+                action_id: action.id,
+                created_at: new Date('2026-07-21T12:00:00.000Z'),
+                email_subject: 'Updated email',
+                email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
+            });
+
+            const redirects = [{
+                id: ObjectId().toHexString(),
+                from: `/r/${ObjectId().toHexString()}`,
+                to: 'https://example.com/alpha',
+                to_hash: hashRedirectDestination('https://example.com/alpha'),
+                automation_action_revision_id: revision.id,
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                from: `/r/${ObjectId().toHexString()}`,
+                to: 'https://example.com/alpha',
+                to_hash: hashRedirectDestination('https://example.com/alpha'),
+                automation_action_revision_id: secondRevisionId,
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                from: `/r/${ObjectId().toHexString()}`,
+                to: 'https://example.com/zero',
+                to_hash: hashRedirectDestination('https://example.com/zero'),
+                automation_action_revision_id: secondRevisionId,
+                created_at: new Date()
+            }];
+            await models.Base.knex('redirects').insert(redirects);
+            await models.Base.knex('members_click_events').insert([{
+                id: ObjectId().toHexString(),
+                member_id: fixtureManager.get('members', 0).id,
+                redirect_id: redirects[0].id,
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                member_id: fixtureManager.get('members', 0).id,
+                redirect_id: redirects[1].id,
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                member_id: fixtureManager.get('members', 1).id,
+                redirect_id: redirects[1].id,
+                created_at: new Date()
+            }]);
+
+            const {body: linksBody} = await agent
+                .get(`automations/${automationId}/actions/${action.id}/links`)
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+            assert.deepEqual(linksBody, {
+                automation_action_links: [{
+                    url: 'https://example.com/alpha',
+                    clicked_count: 2
+                }, {
+                    url: 'https://example.com/zero',
+                    clicked_count: 0
+                }]
+            });
+        });
+
+        it('returns 404 when the action belongs to a different automation', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+            const action = await models.Base.knex('automation_actions')
+                .where('automation_id', body.automations[0].id)
+                .first();
+
+            await agent
+                .get(`automations/${body.automations[1].id}/actions/${action.id}/links`)
+                .expectStatus(404)
+                .expect(cacheInvalidateHeaderNotSet());
+        });
+
+        it('requires an authenticated admin', async function () {
+            agent.resetAuthentication();
+            await agent
+                .get(`automations/${ObjectId().toHexString()}/actions/${ObjectId().toHexString()}/links`)
+                .expectStatus(403);
+            await agent.loginAsOwner();
         });
     });
 

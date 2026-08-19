@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {useState} from 'react';
-import {Filters, type Filter, type FilterFieldConfig, createFilter} from './filters';
+import {Filters, FilterSegmentSelect, FilterSegmentInput, type CustomRendererProps, type Filter, type FilterFieldConfig, createFilter} from './filters';
 import {
     User,
     Mail,
@@ -15,7 +15,9 @@ import {
     CheckCircle,
     XCircle,
     Circle,
-    X
+    X,
+    Archive,
+    SlidersHorizontal
 } from 'lucide-react';
 
 const meta = {
@@ -826,3 +828,117 @@ export const ClearButtonCustomHandler: Story = {
         }
     }
 };
+
+// A customRenderer composing FilterSegmentSelect + FilterSegmentInput into a cascade
+// (part -> operator -> value) that reads as native filter segments.
+const CascadeRenderer = ({values, onChange, operator, onOperatorChange, readOnly}: CustomRendererProps<string>) => {
+    const [part = '', value = ''] = values;
+
+    return (
+        <>
+            <FilterSegmentSelect
+                ariaLabel="Part"
+                options={[{value: '', label: 'Any'}, {value: 'city', label: 'City'}, {value: 'country', label: 'Country'}]}
+                readOnly={readOnly}
+                value={part}
+                onChange={next => onChange([next, value])}
+            />
+            {onOperatorChange && (
+                <FilterSegmentSelect
+                    ariaLabel="Operator"
+                    options={[{value: 'contains', label: 'contains'}, {value: 'is', label: 'is'}]}
+                    readOnly={readOnly}
+                    value={operator}
+                    onChange={onOperatorChange}
+                />
+            )}
+            <FilterSegmentInput
+                ariaLabel="Value"
+                placeholder="Enter value..."
+                readOnly={readOnly}
+                value={value}
+                onChange={next => onChange([part, next])}
+            />
+        </>
+    );
+};
+
+const segmentFields: FilterFieldConfig[] = [
+    {
+        key: 'address',
+        label: 'Address',
+        type: 'custom',
+        icon: <SlidersHorizontal className="size-4" />,
+        renderOperatorInValue: true,
+        operators: [{value: 'contains', label: 'contains'}, {value: 'is', label: 'is'}],
+        customRenderer: props => <CascadeRenderer {...(props as CustomRendererProps<string>)} />
+    }
+];
+
+export const ComposedSegments: Story = {
+    render: () => <FilterDemo fields={segmentFields} initialFilters={[createFilter('address', 'contains', ['city', 'York'])]} />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'FilterSegmentSelect and FilterSegmentInput composed by a customRenderer (with `renderOperatorInValue`) into a cascade that reads as native filter segments rather than standalone selects.'
+            }
+        }
+    }
+};
+
+const readOnlyFields: FilterFieldConfig[] = [
+    {
+        key: 'archived_field',
+        label: 'Archived field',
+        type: 'text',
+        icon: <Archive className="size-4" />,
+        readOnly: true,
+        operators: [{value: 'is', label: 'is'}]
+    },
+    {
+        key: 'name',
+        label: 'Name',
+        type: 'text',
+        icon: <User className="size-4" />
+    }
+];
+
+export const ReadOnlyFilter: Story = {
+    render: () => <FilterDemo fields={readOnlyFields} initialFilters={[createFilter('archived_field', 'is', ['London'])]} />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'A read-only filter keeps its operator and value visible as static text and can only be removed — for a filter on a source no longer offered, such as an archived field.'
+            }
+        }
+    }
+};
+
+const previewLimitFields: FilterFieldConfig[] = [
+    {
+        group: 'Basic',
+        fields: [{key: 'name', label: 'Name', type: 'text', icon: <User className="size-4" />}]
+    },
+    {
+        group: 'Custom fields',
+        previewLimit: 3,
+        fields: Array.from({length: 8}, (_, index): FilterFieldConfig => ({
+            key: `custom_field.field_${index + 1}`,
+            label: `Field ${index + 1}`,
+            type: 'text',
+            icon: <SlidersHorizontal className="size-4" />
+        }))
+    }
+];
+
+export const GroupPreviewLimit: Story = {
+    render: () => <FilterDemo fields={previewLimitFields} />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'A group can preview a subset of its fields with `previewLimit`, revealing the rest behind "Show more". Every field stays resolvable and findable by search.'
+            }
+        }
+    }
+};
+

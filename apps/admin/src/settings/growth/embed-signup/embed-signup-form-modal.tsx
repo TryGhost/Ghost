@@ -1,0 +1,130 @@
+import EmbedSignupPreview from './embed-signup-preview';
+import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
+import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import {type EmbedSignupLayout, generateCode} from '@/settings/app/utils/generate-embed-code';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useEffect, useState} from 'react';
+import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+
+const EmbedSignupFormModal = () => {
+    const [selectedColor, setSelectedColor] = useState<string>('#08090c');
+    const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
+    const [selectedLayout, setSelectedLayout] = useState<EmbedSignupLayout>('all-in-one');
+    const [previewScript, setPreviewScript] = useState<string>('');
+    const [generatedScript, setGeneratedScript] = useState<string>('');
+    const [isCopied, setIsCopied] = useState(false);
+
+    const {updateRoute} = useSettingsNavigation();
+    const {config} = useGlobalData();
+    const {localSettings, siteData} = useSettingGroup();
+    const [accentColor, title, description, locale, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'icon']);
+    const [customColor, setCustomColor] = useState<{active: boolean}>({active: false});
+
+    useEffect(() => {
+        if (!siteData) {
+            return;
+        }
+
+        const defaultConfig = {
+            config: {
+                blogUrl: siteData.url,
+                signupForm: {
+                    url: config?.signupForm?.url,
+                    version: config?.signupForm?.version
+                }
+            },
+            settings: {
+                accentColor: accentColor || '#d74780',
+                title: title || '',
+                locale: locale || 'en',
+                icon: icon || '',
+                description: description || ''
+            },
+            labels: selectedLabels.map(({label}) => ({name: label})),
+            backgroundColor: selectedColor || '#08090c',
+            layout: selectedLayout
+        };
+
+        const previewCode = generateCode({
+            preview: true,
+            ...defaultConfig
+        });
+        setPreviewScript(previewCode);
+
+        const generatedCode = generateCode({
+            preview: false,
+            ...defaultConfig
+        });
+        setGeneratedScript(generatedCode);
+    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, icon, description]);
+
+    const handleCopyClick = async () => {
+        try {
+            await navigator.clipboard.writeText(generatedScript);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000); // reset after 2 seconds
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to copy text: ', err);
+        }
+    };
+
+    const handleColorToggle = (e:string) => {
+        setSelectedColor(e);
+    };
+
+    const handleClose = () => {
+        updateRoute('embed-signup-form');
+    };
+
+    const addSelectedLabel = (selected: string[]) => {
+        if (selected.length) {
+            const chosenLabels = selected.map(value => ({label: value, value}));
+            setSelectedLabels(chosenLabels);
+        } else {
+            setSelectedLabels([]);
+        }
+    };
+
+    return (
+        <SettingsModal
+            cancelLabel=''
+            className='max-lg:h-auto!'
+            footer={false}
+            height={645}
+            padding={false}
+            testId='embed-signup-form'
+            title=''
+            topRightContent='close'
+            width={1120}
+            onClose={handleClose}
+        >
+            <div className='grid grid-cols-1 lg:grid-cols-[5.2fr_2.8fr]'>
+                <EmbedSignupPreview
+                    backgroundColor={selectedColor}
+                    html={previewScript}
+                    style={selectedLayout}
+                />
+                <EmbedSignupSidebar
+                    accentColor={accentColor}
+                    customColor={customColor}
+                    embedScript={generatedScript}
+                    handleClose={handleClose}
+                    handleColorToggle={handleColorToggle}
+                    handleCopyClick={() => void handleCopyClick()}
+                    handleLabelClick={addSelectedLabel}
+                    handleLayoutSelect={setSelectedLayout}
+                    isCopied={isCopied}
+                    selectedColor={selectedColor}
+                    selectedLabels={selectedLabels}
+                    selectedLayout={selectedLayout}
+                    setCustomColor={setCustomColor}
+                />
+            </div>
+        </SettingsModal>
+    );
+};
+
+export default EmbedSignupFormModal;

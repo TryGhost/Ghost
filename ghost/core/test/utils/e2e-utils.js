@@ -9,7 +9,6 @@ const crypto = require('crypto');
 // Ghost Internals
 const boot = require('../../core/boot');
 const models = require('../../core/server/models');
-const urlService = require('../../core/server/services/url');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
 
@@ -99,7 +98,7 @@ const _startGhost = async (options) => {
     // Stop the server -- noops if it's not running
     await stopGhost();
 
-    urlServiceUtils.resetGenerators();
+    urlServiceUtils.resetRouters();
 
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
     adapterManager.clearCache();
@@ -176,10 +175,9 @@ const stopGhost = async () => {
     if (ghostServer && ghostServer.httpServer) {
         await ghostServer.stop();
         delete require.cache[require.resolve('../../core/app')];
-        // NOTE: similarly to urlService.reset() there doesn't seem to be a need for this call
-        //       probable best location for this type of cleanup if it's needed is registering
-        //       a hood during the "server cleanup" phase of the server stop
-        urlService.resetGenerators();
+        // Drop the stopped boot's router configs; the next startGhost registers
+        // its own. Best done from a "server cleanup" hook, if one ever exists.
+        urlServiceUtils.resetRouters();
     }
 };
 

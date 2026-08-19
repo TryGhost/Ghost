@@ -1,4 +1,3 @@
-import {useModal} from '@ebay/nice-modal-react';
 import {cva} from 'class-variance-authority';
 import {X} from 'lucide-react';
 import React, {forwardRef, useEffect, useState} from 'react';
@@ -14,8 +13,8 @@ import useGlobalDirtyState from '@/hooks/use-global-dirty-state';
 import {cn} from '@/lib/utils';
 
 /**
- * Compatibility shell for settings modals while the legacy NiceModal flows are
- * migrated to Shade's consumer-controlled Dialog primitives.
+ * Consumer-controlled settings modal shell. Legacy full-page settings dialogs
+ * still render through it; new modal flows should use Shade Dialog primitives.
  */
 export type SettingsModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
@@ -36,12 +35,16 @@ export interface SettingsModalProps {
     buttonsDisabled?: boolean;
     okDisabled?: boolean;
     footer?: boolean | React.ReactNode;
+    /** Extra classes on the default footer's button row, e.g. to constrain its width. */
+    footerClassName?: string;
     header?: boolean;
     padding?: boolean;
-    onOk?: () => void;
+    /** May be async; the modal fires it without awaiting, so the handler owns its own error handling. */
+    onOk?: () => void | Promise<void>;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
     hideXOnMobile?: boolean;
+    onClose: () => void;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
@@ -63,11 +66,11 @@ const settingsModalVariants = cva(
     {
         variants: {
             size: {
-                sm: 'max-w-[480px] rounded',
-                md: 'max-w-[720px] rounded',
-                lg: 'max-w-[1020px] rounded',
-                xl: 'max-w-[1240px] rounded',
-                full: 'h-full rounded',
+                sm: 'max-w-[480px] rounded-lg',
+                md: 'max-w-[720px] rounded-lg',
+                lg: 'max-w-[1020px] rounded-lg',
+                xl: 'max-w-[1240px] rounded-lg',
+                full: 'h-full rounded-lg',
                 bleed: 'h-full'
             },
             align: {
@@ -133,6 +136,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     okLoading = false,
     cancelLabel = 'Cancel',
     footer,
+    footerClassName,
     header,
     leftButton,
     buttonsDisabled,
@@ -143,6 +147,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     onCancel,
     topRightContent,
     hideXOnMobile = false,
+    onClose,
     afterClose,
     children,
     backDrop = true,
@@ -156,7 +161,6 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     enableCMDS = true,
     allowBackgroundInteraction = false
 }, ref) => {
-    const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
     const {confirm, dialogProps} = useDirtyConfirmation();
     const [animationFinished, setAnimationFinished] = useState(false);
@@ -166,7 +170,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
 
     const removeModal = () => {
         confirm(dirty, () => {
-            modal.remove();
+            onClose();
             afterClose?.();
         });
     };
@@ -182,19 +186,24 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 return;
             }
 
-            if (activeElement instanceof HTMLElement) {
-                activeElement.blur();
-            }
-
             setTimeout(() => {
+                // Radix layers may handle Escape from a document listener that
+                // was registered after this modal. Wait until propagation is
+                // complete before deciding whether the modal should close.
+                if (event.defaultPrevented) {
+                    return;
+                }
+
+                if (activeElement instanceof HTMLElement && document.activeElement === activeElement) {
+                    activeElement.blur();
+                }
+
                 if (onCancel) {
                     onCancel();
                 } else {
                     removeModal();
                 }
             });
-
-            event.stopPropagation();
         };
 
         document.addEventListener('keydown', handleEscapeKey);
@@ -214,7 +223,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
         const handleCMDS = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 event.preventDefault();
-                onOk();
+                void onOk();
             }
         };
 
@@ -255,7 +264,8 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     const footerClasses = cn(
         paddingClasses,
         'flex w-full items-center justify-between',
-        stickyFooter && 'py-6'
+        stickyFooter && 'py-6',
+        footerClassName
     );
     const modalStyles: React.CSSProperties = {
         ...(typeof width === 'number' ? {width: '100%', maxWidth: `${width}px`} : {}),
@@ -277,12 +287,12 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 <Box>{leftButton}</Box>
                 <Inline gap='md'>
                     {cancelLabel && (
-                        <Button className='font-semibold' data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='ghost' onClick={onCancel || removeModal}>
+                        <Button data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='outline' onClick={onCancel || removeModal}>
                             {cancelLabel}
                         </Button>
                     )}
                     {okLabel && (
-                        <Button className='min-w-20' data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={() => void onOk?.()}>
                             {okLoading && <LoadingIndicator size='sm' />}
                             {okLabel}
                         </Button>

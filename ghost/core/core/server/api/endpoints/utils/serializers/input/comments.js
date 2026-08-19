@@ -24,7 +24,7 @@ module.exports = {
         });
 
         if (frame.options.withRelated.includes('post')) {
-            for (const relation of urlService.facade.getRequiredRelations()) {
+            for (const relation of urlService.getRequiredRelations()) {
                 const prefixed = `post.${relation}`;
                 if (!frame.options.withRelated.includes(prefixed)) {
                     frame.options.withRelated.push(prefixed);

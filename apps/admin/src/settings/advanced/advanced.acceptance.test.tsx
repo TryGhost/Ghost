@@ -15,6 +15,21 @@ import {
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
+// Settings groups and the content wrapper open stacking contexts; a dialog rendered
+// inside them (rather than through the settings dialog portal) paints below the chrome.
+function elementsPaintedOverModalBackdrop(): string[] {
+    const hits: string[] = [];
+    for (let x = 4; x < window.innerWidth; x += 24) {
+        for (let y = 4; y < window.innerHeight; y += 24) {
+            const element = document.elementFromPoint(x, y);
+            if (element && !element.closest("#modal-backdrop")) {
+                hits.push(`${x},${y}: <${element.tagName.toLowerCase()} id="${element.id}" data-testid="${element.getAttribute("data-testid") ?? ""}">`);
+            }
+        }
+    }
+    return hits;
+}
+
 function advancedSettings(overrides: Record<string, string | boolean | null>) {
     return settingsResponse({settings: overrides});
 }
@@ -28,6 +43,8 @@ describe("Advanced settings", () => {
         const section = settingsScreen.section("code-injection");
         await section.getByRole("button", {name: "Open"}).click();
         const modal = settingsScreen.section("modal-code-injection");
+        await expect.element(modal).toBeVisible();
+        expect(elementsPaintedOverModalBackdrop()).toEqual([]);
         await modal.getByTestId("header-code").getByRole("textbox").fill("<script>header()</script>");
         await modal.getByRole("tab", {name: "Site footer"}).click();
         await modal.getByTestId("footer-code").getByRole("textbox").fill("<script>footer()</script>");
@@ -52,12 +69,12 @@ describe("Advanced settings", () => {
         await expect.poll(() => api.requests.length).toBe(1);
     });
 
-    it("resets authentication when the feature is enabled", async () => {
+    it("resets authentication after confirmation", async () => {
         fakeSettingsScreens();
         // Success intentionally navigates to /ghost/ after locking users;
         // the isolated E2E danger-zone test covers that successful mutation.
         const api = fakeAdminEndpoint("POST", "/authentication/reset/", {errors: [{message: "stop after request"}]}, {status: 400});
-        await renderAdminApp("/settings/advanced", {labs: {dangerZoneResetAuth: true}});
+        await renderAdminApp("/settings/advanced");
 
         await settingsScreen.section("dangerzone").getByRole("button", {name: "Reset all authentication"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Reset all authentication"}).click();
@@ -126,6 +143,63 @@ describe("Advanced settings", () => {
             await section.getByRole("button", {name}).click();
             expect(JSON.parse(document.body.dataset.externalNavigate ?? "null")).toMatchObject({route, isExternal: true});
         }
+    });
+
+    it("imports content from the universal importer and confirms the import is queued", async () => {
+        fakeSettingsScreens();
+        const importApi = fakeAdminEndpoint("POST", "/db/", {});
+        await renderAdminApp("/settings/migration");
+
+        await settingsScreen.section("migrationtools").getByRole("button", {name: "Universal import"}).click();
+        const modal = page.getByTestId("universal-import-modal");
+        const input = modal.element().querySelector<HTMLInputElement>("#import-file");
+        if (!input) {
+            throw new Error("import file input was not rendered");
+        }
+        await page.elementLocator(input).upload(new File(["{}"], "content.json", {type: "application/json"}));
+
+        await expect.poll(() => importApi.requests.length).toBe(1);
+        await expect(modal).toHaveCount(0);
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent("Import in progress");
+        await settingsScreen.confirmationModal().getByRole("button", {name: "Got it"}).click();
+        await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    });
+
+    it("closes the universal importer without importing when cancelled", async () => {
+        fakeSettingsScreens();
+        const importApi = fakeAdminEndpoint("POST", "/db/", {});
+        await renderAdminApp("/settings/migration");
+
+        await settingsScreen.section("migrationtools").getByRole("button", {name: "Universal import"}).click();
+        const modal = page.getByTestId("universal-import-modal");
+        await expect.element(modal).toBeVisible();
+        await modal.getByRole("button", {name: "Cancel"}).click();
+
+        await expect(modal).toHaveCount(0);
+        expect(importApi.requests).toHaveLength(0);
+    });
+
+    it("enables the automations beta only after confirmation", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        const toggle = section.getByRole("switch", {name: "Automations (beta)"});
+
+        await toggle.click();
+        const confirmation = page.getByTestId("feature-toggle-confirmation-modal");
+        await expect.element(confirmation).toBeVisible();
+        await confirmation.getByRole("button", {name: "Cancel"}).click();
+        await expect(confirmation).toHaveCount(0);
+        expect(settingsApi.requests).toHaveLength(0);
+
+        await toggle.click();
+        await confirmation.getByRole("button", {name: "Enable"}).click();
+        await expect(confirmation).toHaveCount(0);
+        await expect.poll(() => settingsApi.lastRequest?.settings.find(setting => setting.key === "labs")?.value).toContain('"automations":true');
     });
 
     it("downloads the content and settings export", async () => {
@@ -218,6 +292,7 @@ describe("Advanced settings", () => {
         const actor = {id: "1", name: "Jamie Larson", slug: "main", image: null};
         const actions = [
             {id: "security", resource_id: null, resource_type: "security_action", actor_id: "1", actor_type: "user", event: "edited", context: '{"action_name":"reset_authentication","api_keys_rotated":4,"users_locked":3}', created_at: "2023-08-11T12:37:02.000Z", actor},
+            {id: "tag", resource_id: "tag", resource_type: "tag", actor_id: "1", actor_type: "user", event: "edited", context: '{}', created_at: "2023-08-11T12:36:02.000Z", actor, resource: {id: "tag", slug: "useful-tag", title: "Useful tag"}},
             ...["setting-1", "setting-2"].map((id, index) => ({id, resource_id: "setting", resource_type: "setting", actor_id: "1", actor_type: "user", event: "edited", context: '{"key":"navigation","group":"site"}', created_at: `2023-08-11T12:3${index}:02.000Z`, actor, resource: {id: "setting", slug: "navigation"}})),
             ...["post-1", "post-2"].map((id, index) => ({id, resource_id: "post", resource_type: "post", actor_id: "1", actor_type: "user", event: "edited", context: '{"type":"page","primary_name":"The Clunkers Hall of Shame"}', created_at: `2023-08-11T12:2${index}:02.000Z`, actor, resource: {id: "post", slug: "clunkers", title: "The Clunkers Hall of Shame"}})),
         ];
@@ -229,6 +304,12 @@ describe("Advanced settings", () => {
         await expect.element(modal).toHaveTextContent(/Settings edited: Site \(navigation\) 2 times/);
         await expect.element(modal).toHaveTextContent(/Page edited: The Clunkers Hall of Shame 2 times/);
         await expect.element(modal).toHaveTextContent(/Security action reset authentication: 4 API keys rotated, 3 users locked/);
+        await modal.getByText("Useful tag").click();
+        expect(JSON.parse(document.body.dataset.externalNavigate ?? "null")).toMatchObject({
+            isExternal: true,
+            route: "tag",
+            models: ["useful-tag"]
+        });
         await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
         const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
         expect(initialQuery.get("include")).toBe("actor,resource");

@@ -88,9 +88,8 @@ async function initDatabase({config}) {
  * @param {object} options
  * @param {object} options.ghostServer
  * @param {object} options.config
- * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config, frontend}) {
+async function initCore({ghostServer, config}) {
     debug('Begin: initCore');
 
     // Validate configured adapters up-front so misconfiguration fails at boot
@@ -122,17 +121,6 @@ async function initCore({ghostServer, config, frontend}) {
     const i18n = require('./server/services/i18n');
     await i18n.init();
     debug('End: i18n');
-
-    // The URLService is a core part of Ghost, which depends on models.
-    debug('Begin: Url Service');
-    const urlService = require('./server/services/url');
-    // Note: there is no await here, we do not wait for the url service to finish
-    // We can return, but the site will remain in maintenance mode until this finishes
-    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
-    urlService.init({
-        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
-    });
-    debug('End: Url Service');
 
     // Gift links service: wires the (knex-backed) repository once the DB is ready.
     debug('Begin: Gift Links Service');
@@ -173,9 +161,13 @@ async function initCore({ghostServer, config, frontend}) {
         });
         debug('End: Mentions Job Service');
 
+        debug('Begin: Jobs Service');
+        const jobsService = require('./server/services/jobs-service');
+
         ghostServer.registerCleanupTask(async () => {
-            await urlService.shutdown();
+            await jobsService.shutdown({timeoutMs: config.get('server:shutdownTimeout')});
         });
+        debug('End: Jobs Service');
     }
 
     debug('End: initCore');
@@ -260,10 +252,7 @@ async function initExpressApps({frontend, backend, config}) {
 
     if (frontend) {
         // SITE + MEMBERS
-        // RouterManager and migrated frontend callers expect the facade
-        // (getUrlForResource / ownsResource), not the raw eager UrlService
-        // (which only exposes the legacy id-based methods).
-        const urlService = require('./server/services/url').facade;
+        const urlService = require('./server/services/url');
         const frontendApp = require('./server/web/parent/frontend')({urlService});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
     }
@@ -290,8 +279,13 @@ function initPrometheusClient({config}) {
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
  * Routing is currently tightly coupled between the frontend and backend
+ *
+ * Runs on every boot, not just a frontend one: it both mounts routers on the
+ * site app and tells the URL service about them, and only the first needs a
+ * frontend. The APIs, the email service and webhooks all build URLs, so a
+ * backend-only boot that skipped this resolved every resource to /404/.
  */
-async function initDynamicRouting() {
+async function initDynamicRouting({frontend}) {
     debug('Begin: Dynamic Routing');
     const routing = require('./frontend/services/routing');
     const routeSettingsModule = require('./server/services/route-settings');
@@ -299,9 +293,17 @@ async function initDynamicRouting() {
     const bridge = require('./bridge');
     bridge.init();
 
+    // With a frontend, initFrontend has already called this to build the site
+    // app's router. Without one there is nothing to mount, but the URL service
+    // still has to be handed to RouterManager before the routers register — so
+    // call the same init and discard the express router it returns.
+    if (!frontend) {
+        routing.routerManager.init({urlService});
+    }
+
     await routeSettingsModule.service.start({
         routerManager: routing.routerManager,
-        urlService: urlService.facade
+        urlService
     });
 
     debug('End: Dynamic Routing');
@@ -315,6 +317,7 @@ async function initAppService() {
     debug('Begin: App Service');
     const appService = require('./frontend/services/apps');
     await appService.init();
+    debug('End: App Service');
 }
 
 /**
@@ -322,7 +325,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ghostServer} = {}) {
+async function initServices({ghostServer, config, prometheusClient}) {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -351,15 +354,20 @@ async function initServices({ghostServer} = {}) {
     const mediaInliner = require('./server/services/media-inliner');
     const donationService = require('./server/services/donations');
     const giftService = require('./server/services/gifts');
+    const machinePaymentsService = require('./server/services/machine-payments');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
     const automations = require('./server/services/automations');
+    const automationsApi = require('./server/services/automations/automations-api');
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
+    const metrics = require('@tryghost/metrics');
+    const db = require('./server/data/db');
+    const models = require('./server/models');
     const urlUtils = require('./shared/url-utils').default;
     const settingsCache = require('./shared/settings-cache');
     const internalKeys = require('./server/services/internal-keys').default;
@@ -386,7 +394,18 @@ async function initServices({ghostServer} = {}) {
         slack.init(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
-        emailAnalytics.init(),
+        emailAnalytics.init({
+            automationsApi,
+            config,
+            db,
+            domainEvents,
+            emailSuppressionList,
+            membersRepository: members.api.members,
+            models,
+            metrics,
+            prometheusClient,
+            settingsCache
+        }),
         webhooks.listen(),
         comments.init(),
         linkTracking.init(),
@@ -402,6 +421,7 @@ async function initServices({ghostServer} = {}) {
             schedulerAdapter,
             internalKeys
         }),
+        machinePaymentsService.init(),
         automations.init({
             domainEvents,
             apiUrl,
@@ -576,7 +596,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config, frontend});
+        await initCore({ghostServer, config});
 
         // Instrument the knex instance and connection pool if prometheus is enabled
         // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
@@ -591,12 +611,20 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 
+        await initDynamicRouting({frontend});
+
         if (frontend) {
-            await initDynamicRouting();
             await initAppService();
         }
 
-        await initServices({ghostServer});
+        await initServices({ghostServer, config, prometheusClient});
+
+        debug('Begin: Register job handlers');
+        const jobsService = require('./server/services/jobs-service');
+        const service = jobsService.init();
+        require('./server/services/jobs-service/register-job-handlers').default();
+        await service.start();
+        debug('End: Register job handlers');
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

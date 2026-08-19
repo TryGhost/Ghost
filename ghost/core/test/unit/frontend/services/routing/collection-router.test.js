@@ -5,7 +5,7 @@ const express = require('../../../../../core/shared/express')._express;
 const events = require('../../../../../core/server/lib/common/events');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const CollectionRouter = require('../../../../../core/frontend/services/routing/collection-router');
-const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
+const RESOURCE_CONFIG = {QUERY: {post: {controller: 'postsPublic', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {
     let req;
@@ -22,7 +22,6 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
         mountRouteSpy = sinon.spy(CollectionRouter.prototype, 'mountRoute');
         mountRouterSpy = sinon.spy(CollectionRouter.prototype, 'mountRouter');
-        sinon.spy(CollectionRouter.prototype, 'unmountRoute');
         sinon.spy(express.Router, 'param');
 
         req = sinon.stub();
@@ -71,6 +70,17 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/');
             assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
+        });
+
+        it('converts a domain {slug} permalink to :slug notation', function () {
+            const collectionRouter = new CollectionRouter('/', {permalink: '/{primary_tag}/{slug}/'}, RESOURCE_CONFIG, routerCreatedSpy);
+
+            // the router owns the {slug} -> :slug conversion via the permalink adapter
+            assert.equal(collectionRouter.getPermalinks().getValue(), '/:primary_tag/:slug/');
+
+            // and the express routes are mounted with :slug
+            assert.equal(mountRouteSpy.args[2][0], '/:primary_tag/:slug/:options(edit)?/');
+            assert.equal(mountRouteSpy.args[3][0], '/:primary_tag/:slug.md');
         });
 
         it('router name', function () {
@@ -147,7 +157,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'},
+                query: {controller: 'postsPublic', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: [],
                 identifier: collectionRouter.identifier,
@@ -175,7 +185,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'},
+                query: {controller: 'postsPublic', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: ['index', 'home'],
                 identifier: collectionRouter.identifier,
@@ -186,6 +196,18 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 order: 'published asc',
                 limit: 19
             });
+        });
+
+        it('passes route data through in domain form', function () {
+            const collectionRouter = new CollectionRouter('/podcast/', {
+                permalink: '/podcast/{slug}/',
+                data: {'my-tag': 'tag.podcast'}
+            }, RESOURCE_CONFIG, routerCreatedSpy);
+
+            collectionRouter._prepareEntriesContext(req, res, next);
+
+            sinon.assert.calledOnce(next);
+            assert.deepEqual(res.routerOptions.data, {'my-tag': 'tag.podcast'});
         });
     });
 });

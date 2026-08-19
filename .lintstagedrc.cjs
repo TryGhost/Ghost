@@ -1,14 +1,11 @@
 const path = require('path');
 const fs = require('fs');
+const {quote: shellQuote} = require('shell-quote');
 
 const ROOT = process.cwd();
 
 function normalize(p) {
     return p.split(path.sep).join('/');
-}
-
-function shellQuote(value) {
-    return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
 // Parse the `packages:` list from pnpm-workspace.yaml. We only need the simple
@@ -83,19 +80,32 @@ function findWorkspace(file) {
 function buildCommand(workspace, files) {
     const base = workspace ? path.join(ROOT, workspace) : ROOT;
     const relativeFiles = files
-        .map(file => normalize(path.relative(base, file)))
-        .map(shellQuote)
-        .join(' ');
-    const dirArg = workspace ? `--dir ${shellQuote(workspace)} ` : '';
-    return `pnpm ${dirArg}exec eslint --cache -- ${relativeFiles}`;
+        .map(file => normalize(path.relative(base, file)));
+    const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
+    return `pnpm ${dirArg}exec eslint --cache -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
     const relativeFiles = files
+        .map(file => normalize(path.relative(ROOT, file)));
+    return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
+}
+
+function buildMarkdownCommands(files) {
+    const relativeFiles = files
         .map(file => normalize(path.relative(ROOT, file)))
-        .map(shellQuote)
-        .join(' ');
-    return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${relativeFiles}`;
+        .filter(file => !file.startsWith('.changeset/'))
+        .filter(file => !file.split('/').some(part => part === 'fixture' || part === 'fixtures'));
+
+    if (relativeFiles.length === 0) {
+        return [];
+    }
+
+    const quotedFiles = shellQuote(relativeFiles);
+    return [
+        `pnpm exec markdownlint-cli2 --config .markdownlint-cli2.jsonc ${quotedFiles}`,
+        `pnpm exec remark --use remark-validate-links --frail --quiet --no-stdout ${quotedFiles}`
+    ];
 }
 
 module.exports = {
@@ -115,6 +125,13 @@ module.exports = {
     },
     'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
         buildBoundaryCommand(files),
-    'apps/{shade,admin-x-design-system,admin-x-framework,activitypub,posts,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
-        buildBoundaryCommand(files)
+    'apps/{shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
+        buildBoundaryCommand(files),
+    '**/*.md': buildMarkdownCommands,
+    '{**/AGENTS.md,scripts/check-agent-guidance.js}': () =>
+        'pnpm lint:agent-guidance',
+    '{.agents/skills/**,.claude/skills/**,scripts/check-agent-skill-links.js}': () =>
+        'pnpm lint:agent-skills',
+    '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,scripts/check-internal-packages.js,scripts/create-package.js,scripts/lib/constants.js,scripts/lib/package-template.js}': () =>
+        'pnpm lint:packages'
 };

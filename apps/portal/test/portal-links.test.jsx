@@ -601,15 +601,17 @@ describe('Portal Data links:', () => {
 
     describe('?stripe=gift-purchase-success', () => {
         test('opens gift success page', async () => {
-            window.location.href = 'https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123';
-            window.location.search = '?stripe=gift-purchase-success&gift_token=abc123';
+            const site = FixtureSite.singleTier.basic;
+            const tierId = site.products.find(product => product.type === 'paid').id;
+            window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12`;
+            window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12`;
             window.location.hash = '';
             window.location.pathname = '/';
 
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site,
                 showPopup: false
             });
 
@@ -623,6 +625,9 @@ describe('Portal Data links:', () => {
 
             const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
             expect(redeemUrl).toBeInTheDocument();
+
+            const duration = within(popupFrame.contentDocument).queryByText('12 months');
+            expect(duration).toBeInTheDocument();
         });
 
         test('does not open gift success page when gift_token is missing', async () => {

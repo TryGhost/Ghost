@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-converters",
-  "version": "1.2.3",
+  "version": "1.2.5",
+  "description": "Converts between serialized Mobiledoc and Lexical formats for Ghost's editor",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
@@ -37,12 +38,11 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
-  },
-  "dependencies": {}
+  }
 }

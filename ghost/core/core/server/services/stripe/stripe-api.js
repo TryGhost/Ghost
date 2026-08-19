@@ -1,6 +1,4 @@
-// @ts-ignore
 const {VersionMismatchError} = require('@tryghost/errors');
-// @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
@@ -22,6 +20,12 @@ const LIVE_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
 const SEARCH_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
 
 const STRIPE_API_VERSION = '2020-08-27';
+
+// Stripe's Managed Payments does not support Connect, and some Stripe
+// accounts have it enabled by default for all Checkout Sessions.
+// On those accounts, session creation fails with "Managed Payments cannot be
+// used with Connect" unless it is explicitly disabled per session.
+const MANAGED_PAYMENTS_DISABLED = {enabled: false};
 
 /**
  * @typedef {import('stripe').Stripe.Customer} ICustomer
@@ -61,6 +65,7 @@ module.exports = class StripeAPI {
      * StripeAPI
      * @param {object} deps
      * @param {object} deps.labs
+     * @param {(key: string) => boolean} deps.labs.isSet
      */
     constructor(deps) {
         /** @type {Stripe} */
@@ -217,8 +222,7 @@ module.exports = class StripeAPI {
             unit_amount: options.amount,
             active: options.active,
             nickname: options.nickname,
-            // @ts-ignore
-            custom_unit_amount: options.custom_unit_amount, // missing in .d.ts definitions in the Stripe node version we use, but should be supported in Stripe API at this version (:
+            custom_unit_amount: options.custom_unit_amount,
             recurring: options.type === 'recurring' && options.interval ? {
                 interval: options.interval
             } : undefined
@@ -584,9 +588,9 @@ module.exports = class StripeAPI {
 
         let stripeSessionOptions = {
             payment_method_types: this.PAYMENT_METHOD_TYPES,
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
-            // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
@@ -615,7 +619,6 @@ module.exports = class StripeAPI {
 
         this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customerId)});
 
-        // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
         return session;
@@ -649,6 +652,7 @@ module.exports = class StripeAPI {
 
         const stripeSessionOptions = {
             mode: 'payment',
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             success_url: successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
             automatic_tax: {
@@ -684,7 +688,6 @@ module.exports = class StripeAPI {
 
         this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customer)});
 
-        // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
         return session;
     }
@@ -715,6 +718,7 @@ module.exports = class StripeAPI {
 
         const stripeSessionOptions = {
             mode: 'payment',
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             success_url: successUrl,
             cancel_url: cancelUrl,
             automatic_tax: {
@@ -741,7 +745,6 @@ module.exports = class StripeAPI {
 
         this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customer)});
 
-        // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
         return session;
@@ -761,6 +764,7 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.checkout.sessions.create({
             mode: 'setup',
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSetupSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSetupSessionCancelUrl,
@@ -773,7 +777,6 @@ module.exports = class StripeAPI {
 
             // Note: this is required for dynamic payment methods
             // https://docs.stripe.com/api/checkout/sessions/create#create_checkout_session-currency
-            // @ts-ignore
             currency: this.labs.isSet('additionalPaymentMethods') ? options.currency : undefined
         });
 
