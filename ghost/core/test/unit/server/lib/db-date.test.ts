@@ -85,6 +85,14 @@ describe('database date utilities', function () {
             assert.deepEqual(fromDatabaseDate('2020-01-01T12:34:56.000Z'), new Date('2020-01-01T12:34:56.000Z'));
         });
 
+        it('preserves fractional seconds in database date strings', function () {
+            assert.deepEqual(fromDatabaseDate('2020-01-01 12:34:56.123'), new Date('2020-01-01T12:34:56.123Z'));
+        });
+
+        it('respects timezone offsets in ISO date strings', function () {
+            assert.deepEqual(fromDatabaseDate('2020-01-01T12:34:56.123-04:00'), new Date('2020-01-01T16:34:56.123Z'));
+        });
+
         it('converts strings to Date objects, parsing as UTC, in other system timezones', async function () {
             await runInOtherTimezones(`
                 assert.deepEqual(fromDatabaseDate('2020-01-01 12:34:56'), new Date('2020-01-01T12:34:56.000Z'));

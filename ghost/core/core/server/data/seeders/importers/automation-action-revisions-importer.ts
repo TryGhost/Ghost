@@ -2,7 +2,7 @@ import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-import * as databaseDate from '../utils/database-date';
+import {fromDatabaseDate, toDatabaseDate} from '../../../lib/db-date';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} from '../../../services/member-welcome-emails/constants';
 
 type AutomationAction = {
@@ -66,13 +66,13 @@ export class AutomationActionRevisionsImporter extends TableImporter<AutomationA
             throw new errors.IncorrectUsageError({message: 'Cannot generate automation action revision without an action'});
         }
 
-        const createdAt = databaseDate.parse(this.#action.created_at);
+        const createdAt = fromDatabaseDate(this.#action.created_at);
         createdAt.setSeconds(createdAt.getSeconds() + this.#revisionIndex);
         this.#revisionIndex += 1;
 
         const common = {
             id: this.fastFakeObjectId(),
-            created_at: databaseDate.dateToDatabaseString(createdAt),
+            created_at: toDatabaseDate(createdAt),
             action_id: this.#action.id,
             email_sent_count: null,
             email_opened_count: null,

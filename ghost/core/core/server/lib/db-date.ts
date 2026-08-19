@@ -15,7 +15,7 @@ export const fromDatabaseDate = (date: DatabaseDate): Date => {
     }
 
     if (typeof date === 'string') {
-        return moment.utc(date, DATABASE_DATE_FORMAT).toDate();
+        return moment.utc(date).toDate();
     }
 
     // Defense-in-depth for legacy SQLite rows stored as epoch milliseconds.

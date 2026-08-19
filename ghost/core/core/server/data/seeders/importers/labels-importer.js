@@ -2,7 +2,7 @@ const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const {blogStartDate} = require('../utils/blog-info');
-const databaseDate = require('../utils/database-date');
+const {toDatabaseDate} = require('../../../lib/db-date');
 
 class LabelsImporter extends TableImporter {
     static table = 'labels';
@@ -30,8 +30,8 @@ class LabelsImporter extends TableImporter {
             id: this.fastFakeObjectId(),
             name: name,
             slug: `${slugify(name)}`,
-            created_at: databaseDate.dateToDatabaseString(blogStartDate),
-            updated_at: databaseDate.dateToDatabaseString(blogStartDate)
+            created_at: toDatabaseDate(blogStartDate),
+            updated_at: toDatabaseDate(blogStartDate)
         };
     }
 }

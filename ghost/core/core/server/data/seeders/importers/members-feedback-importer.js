@@ -1,6 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {luck} = require('../utils/random');
 const databaseDate = require('../utils/database-date');
+const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class MembersFeedbackImporter extends TableImporter {
     static table = 'members_feedback';
@@ -24,8 +25,8 @@ class MembersFeedbackImporter extends TableImporter {
             return null;
         }
 
-        const openedAt = databaseDate.parse(this.model.opened_at);
-        const laterOn = databaseDate.parse(this.model.opened_at);
+        const openedAt = fromDatabaseDate(this.model.opened_at);
+        const laterOn = fromDatabaseDate(this.model.opened_at);
         laterOn.setMinutes(laterOn.getMinutes() + 60);
         const feedbackTime = databaseDate.randomBetween(openedAt, laterOn);
 
@@ -35,8 +36,8 @@ class MembersFeedbackImporter extends TableImporter {
             score: luck(70) ? 1 : 0,
             member_id: this.model.member_id,
             post_id: postId,
-            created_at: databaseDate.dateToDatabaseString(feedbackTime),
-            updated_at: databaseDate.dateToDatabaseString(feedbackTime)
+            created_at: toDatabaseDate(feedbackTime),
+            updated_at: toDatabaseDate(feedbackTime)
         };
     }
 }

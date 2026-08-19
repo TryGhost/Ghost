@@ -1,7 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {slugify} = require('@tryghost/string');
 const {blogStartDate} = require('../utils/blog-info');
-const databaseDate = require('../utils/database-date');
+const {toDatabaseDate} = require('../../../lib/db-date');
 
 const offerTemplates = [{
     name: 'Black Friday',
@@ -107,8 +107,8 @@ class OffersImporter extends TableImporter {
             portal_title: name,
             portal_description: template.description,
             redemption_type: 'signup',
-            created_at: databaseDate.dateToDatabaseString(blogStartDate),
-            updated_at: databaseDate.dateToDatabaseString(blogStartDate)
+            created_at: toDatabaseDate(blogStartDate),
+            updated_at: toDatabaseDate(blogStartDate)
         };
     }
 }
