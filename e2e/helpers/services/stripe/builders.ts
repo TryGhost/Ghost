@@ -345,6 +345,7 @@ export function buildGiftCheckoutCompletedEvent(opts: {
                 id: opts.sessionId,
                 object: 'checkout.session',
                 mode: 'payment',
+                payment_status: 'paid',
                 amount_total: opts.amount,
                 currency: opts.currency,
                 customer: opts.customerId ?? null,
