@@ -53,28 +53,6 @@ describe("Settings navigation history", () => {
         await expect.element(modal).not.toBeInTheDocument();
     });
 
-    it("confirms before the back button closes a dirty dialog when settings was entered by a hash link", async () => {
-        const {boot} = fakeStaffWorld();
-        fakeAnalyticsOverview();
-        await renderAdminApp("/analytics", {boot});
-
-        // The admin sidebar's Settings item is a plain hash anchor, not a router link.
-        window.location.hash = "#/settings";
-        await expect.element(settingsScreen.users()).toBeVisible();
-        await settingsScreen.users().getByTestId("owner-user").click();
-        const modal = settingsScreen.userDetailModal();
-        await expect.element(modal).toBeVisible();
-        await modal.getByLabelText("Location").fill("Somewhere new");
-        await flushEffects();
-
-        window.history.back();
-
-        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
-        await settingsScreen.confirmationAction("Leave").click();
-        await expect.poll(currentRoute).toBe("/settings");
-        await expect.element(modal).not.toBeInTheDocument();
-    });
-
     it("does not prompt when the back button only switches a dirty dialog's tab", async () => {
         const {boot, currentUser} = fakeStaffWorld();
         await renderAdminApp(`/settings/staff/${currentUser.slug}`, {boot});

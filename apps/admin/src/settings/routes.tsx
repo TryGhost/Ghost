@@ -5,24 +5,26 @@ import {type RouteObject, Navigate, lazyComponent} from '@tryghost/admin-x-frame
 // settings providers and chrome — routed dialogs render through its Outlet.
 // Paths mirror the legacy modal-route contract exactly; route ranking (static
 // over dynamic over splat) resolves overlaps like offers/edit/retention vs
-// offers/edit/:offerId.
+// offers/edit/:offerId. `handle.dialogGroup` marks sibling routes rendered by
+// one dialog instance, so the history guard treats moving between them as a
+// tab switch rather than leaving the dialog.
 export const settingsRouteChildren: RouteObject[] = [
     // Design and theme share one container across four entry paths; it reads
     // the path to pick its internal view.
-    {path: 'design/change-theme', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
-    {path: 'design/edit', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
-    {path: 'theme/install', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
-    {path: 'theme/edit/:themeName', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'design/change-theme', handle: {dialogGroup: 'design'}, lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'design/edit', handle: {dialogGroup: 'design'}, lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'theme/install', handle: {dialogGroup: 'design'}, lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'theme/edit/:themeName', handle: {dialogGroup: 'design'}, lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
     // Theme names may contain %2F; anything deeper than one segment is not a
     // valid editor URL.
     {path: 'theme/edit/*', element: <Navigate to="/settings/theme" replace />},
     {path: 'navigation/edit', lazy: lazyComponent(() => import('./site/navigation-modal'))},
     {path: 'announcement-bar/edit', lazy: lazyComponent(() => import('./site/announcement-bar-modal'))},
     {path: 'staff/invite', lazy: lazyComponent(() => import('./general/invite-user-modal'))},
-    {path: 'staff/:slug', lazy: lazyComponent(() => import('./general/user-detail-modal'))},
-    {path: 'staff/:slug/edit', lazy: lazyComponent(() => import('./general/user-detail-modal'))},
-    {path: 'staff/:slug/social-links', lazy: lazyComponent(() => import('./general/user-detail-modal'))},
-    {path: 'staff/:slug/email-notifications', lazy: lazyComponent(() => import('./general/user-detail-modal'))},
+    {path: 'staff/:slug', handle: {dialogGroup: 'staff'}, lazy: lazyComponent(() => import('./general/user-detail-modal'))},
+    {path: 'staff/:slug/edit', handle: {dialogGroup: 'staff'}, lazy: lazyComponent(() => import('./general/user-detail-modal'))},
+    {path: 'staff/:slug/social-links', handle: {dialogGroup: 'staff'}, lazy: lazyComponent(() => import('./general/user-detail-modal'))},
+    {path: 'staff/:slug/email-notifications', handle: {dialogGroup: 'staff'}, lazy: lazyComponent(() => import('./general/user-detail-modal'))},
     {path: 'portal/edit', lazy: lazyComponent(() => import('./membership/portal/portal-modal'))},
     {path: 'tiers/add', lazy: lazyComponent(() => import('./membership/tiers/tier-detail-modal'))},
     {path: 'tiers/:tierId', lazy: lazyComponent(() => import('./membership/tiers/tier-detail-modal'))},
@@ -46,11 +48,11 @@ export const settingsRouteChildren: RouteObject[] = [
     {path: 'embed-signup-form/show', lazy: lazyComponent(() => import('./growth/embed-signup/embed-signup-form-modal'))},
     // The offers container owns list/add/edit/retention/success views and
     // reads the path to pick between them.
-    {path: 'offers/new', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
-    {path: 'offers/edit', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
-    {path: 'offers/edit/:offerId', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
-    {path: 'offers/edit/retention/:offerId', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
-    {path: 'offers/success/:offerId', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/new', handle: {dialogGroup: 'offers'}, lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/edit', handle: {dialogGroup: 'offers'}, lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/edit/:offerId', handle: {dialogGroup: 'offers'}, lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/edit/retention/:offerId', handle: {dialogGroup: 'offers'}, lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/success/:offerId', handle: {dialogGroup: 'offers'}, lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
     {path: 'explore/testimonial', lazy: lazyComponent(() => import('./growth/explore/testimonials-modal'))},
     {path: 'about', lazy: lazyComponent(() => import('./general/about'))},
     // The lock-site setting was merged into the Access section.

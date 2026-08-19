@@ -129,16 +129,6 @@ export function RouterProvider({
         });
     }, [routes, prefix, errorElement, children]);
 
-    // Native hash navigations (plain `<a href="#/…">` anchors, Ember) create
-    // history entries without the router's state, and the router cannot block a
-    // POP onto such an entry (it can't compute the delta to undo it). Stamp them
-    // the way the router stamps its initial entry so back-navigation blockers work.
-    useEffect(() => router.subscribe((state) => {
-        if (state.historyAction === 'POP' && (window.history.state as {idx?: number} | null)?.idx === undefined) {
-            window.history.replaceState({...(window.history.state as object | null), idx: 0}, '');
-        }
-    }), [router]);
-
     return (
         <ReactRouterProvider router={router} />
     );

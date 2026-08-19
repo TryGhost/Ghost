@@ -6,18 +6,19 @@ import {useConfirmUnload} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
 import {useEffect, useRef} from 'react';
 
-// Sibling dialog routes that share a component (staff tabs, offers steps, design/theme)
-// keep their state across navigation, so only leaving a dialog's route family counts.
-const dialogFamily = (pathname: string): string => {
-    if (!pathname.startsWith('/settings/')) {
-        return pathname.startsWith('/settings') ? 'settings' : 'outside';
+// Which dialog a settings path renders: routes sharing a `handle.dialogGroup` are one
+// dialog instance (tabs/steps), any other leaf route is its own, and section roots
+// or anything outside settings count as leaving every dialog.
+const dialogIdentity = (pathname: string): string => {
+    if (!pathname.startsWith('/settings')) {
+        return 'outside';
     }
-    const relative = pathname.slice('/settings'.length);
-    const leaf = matchRoutes(settingsRouteChildren, relative)?.at(-1)?.route;
+    const leaf = matchRoutes(settingsRouteChildren, pathname.slice('/settings'.length) || '/')?.at(-1)?.route;
     if (!leaf?.lazy) {
         return 'settings';
     }
-    return relative.split('/')[1];
+    const group = (leaf.handle as {dialogGroup?: string} | undefined)?.dialogGroup;
+    return group ? `group:${group}` : `route:${leaf.path ?? ''}`;
 };
 
 // Only history (back/forward) navigations are blocked: every in-app way out of a
@@ -44,7 +45,7 @@ export const DirtyNavigationGuard: React.FC = () => {
         if (!onRouterEntryRef.current) {
             return false;
         }
-        return dialogFamily(currentLocation.pathname) !== dialogFamily(nextLocation.pathname);
+        return dialogIdentity(currentLocation.pathname) !== dialogIdentity(nextLocation.pathname);
     });
     const isBlocked = blocker.state === 'blocked';
 
