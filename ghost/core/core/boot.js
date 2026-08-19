@@ -344,6 +344,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
+    const contentImport = require('./server/services/content-import');
     const donationService = require('./server/services/donations');
     const giftService = require('./server/services/gifts');
     const machinePaymentsService = require('./server/services/machine-payments');
@@ -404,6 +405,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
         emailSuppressionList.init(),
         slackNotifications.init(),
         mediaInliner.init(),
+        contentImport.init(),
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),

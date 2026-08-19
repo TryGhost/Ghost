@@ -1,8 +1,22 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const os = require('node:os');
 const {agentProvider, fixtureManager, assertions, mockManager, resetRateLimits} = require('../../utils/e2e-framework');
 const {cacheInvalidateHeaderNotSet} = assertions;
 const path = require('path');
+const models = require('../../../core/server/models');
+const jobsService = require('../../../core/server/services/jobs');
 
 const csvPath = path.join(__dirname, '../../utils/fixtures/csv/valid-posts-import.csv');
+
+// Test CSVs are written inline to a temp dir rather than committed as fixtures.
+let tmpDir;
+
+const csvFile = async (name, content) => {
+    const filePath = path.join(tmpDir, name);
+    await fs.writeFile(filePath, content);
+    return filePath;
+};
 
 describe('Posts Importer API', function () {
     let agent;
@@ -10,6 +24,11 @@ describe('Posts Importer API', function () {
     beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'posts-importer-'));
+    });
+
+    afterAll(async function () {
+        await fs.rm(tmpDir, {recursive: true, force: true});
     });
 
     beforeEach(async function () {
@@ -18,7 +37,10 @@ describe('Posts Importer API', function () {
         await resetRateLimits();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
+        // Every accepted upload schedules a background import — drain it so a job
+        // doesn't run on into another test (or another file on this fork's DB)
+        await jobsService.allSettled();
         mockManager.restore();
     });
 
@@ -86,6 +108,49 @@ describe('Posts Importer API', function () {
             .post('posts/upload/')
             .attach('postsfile', csvPath)
             .expectStatus(403);
+    });
+
+    it('Imports each CSV row as a post with its content and publish date', async function () {
+        await agent.loginAsOwner();
+
+        const contentCsvPath = await csvFile('valid-posts-import-content.csv',
+            'title,html,published_at\n' +
+            'Content check post one,"<p>First <strong>imported</strong> body</p>",2024-05-01T08:00:00.000Z\n' +
+            '"Content check post two, with a comma","<p>Second body, with a comma</p>",2024-06-15T18:45:00.000Z\n'
+        );
+
+        await agent
+            .post('posts/upload/')
+            .attach('postsfile', contentCsvPath)
+            .expectStatus(202);
+
+        await jobsService.allSettled();
+
+        const {data: posts} = await models.Post.findPage({
+            filter: `title:~'Content check post'`,
+            status: 'all',
+            limit: 'all'
+        });
+
+        assert.equal(posts.length, 2);
+
+        const one = posts.find(post => post.get('title') === 'Content check post one');
+        const two = posts.find(post => post.get('title') === 'Content check post two, with a comma');
+
+        assert.ok(one, 'first row was imported');
+        assert.ok(two, 'second row was imported');
+
+        // html is rendered from the converted lexical, not passed through
+        assert.match(one.get('html'), /First <strong>imported<\/strong> body/);
+        assert.match(two.get('html'), /Second body, with a comma/);
+
+        assert.equal(one.get('published_at').toISOString(), '2024-05-01T08:00:00.000Z');
+        assert.equal(two.get('published_at').toISOString(), '2024-06-15T18:45:00.000Z');
+
+        // Slugs come from the importer's own slugify: the model's importing-context
+        // pass would keep the comma's double dash
+        assert.equal(one.get('slug'), 'content-check-post-one');
+        assert.equal(two.get('slug'), 'content-check-post-two-with-a-comma');
     });
 
     it('Cannot upload a posts CSV when the csvContentImporter flag is disabled', async function () {
