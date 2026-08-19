@@ -25,6 +25,9 @@ allowBuilds:
   # sentry-cli's postinstall downloads its binary, which is only used for
   # sourcemap upload — that was gated on the old Koenig repo's IS_SHIPPING
   # publish flow and isn't part of dev or CI builds here.
+  # Pi's provider catalog declares Google support, but Builder only ships the
+  # tree-shaken OpenAI and Anthropic browser adapters.
+  '@google/genai@1.52.0': false
   '@sentry/cli': false
   '@swc/core@1.15.43': true
   'better-sqlite3@12.11.1': true
@@ -243,6 +246,9 @@ catalog:
   human-number: 3.0.0
   sanitize-html: 2.17.7
   path-to-regexp: 1.9.0
+  '@earendil-works/pi-agent-core': 0.84.2
+  '@earendil-works/pi-ai': 0.84.2
+  html2canvas-pro: 2.2.1
 
 catalogs:
   react17:

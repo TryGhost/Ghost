@@ -26,4 +26,14 @@ describe('Design Builder route', () => {
         await expect.element(notification).toHaveAttribute('data-visible', 'true');
         await expect.element(notification).toHaveTextContent('Design Builder is not available on this site.');
     });
+
+    it('runs the development Pi tool-loop proof in a real browser', async () => {
+        await renderAdminApp('/builder/theme?proof=pi', {labs: {designBuilder: true}});
+
+        await page.getByRole('button', {name: 'Run OpenAI proof'}).click();
+        await expect.element(page.getByTestId('pi-proof-result')).toHaveTextContent('OpenAI Pi provider proof passed');
+
+        await page.getByRole('button', {name: 'Run Anthropic proof'}).click();
+        await expect.element(page.getByTestId('pi-proof-result')).toHaveTextContent('Anthropic Pi provider proof passed');
+    });
 });
