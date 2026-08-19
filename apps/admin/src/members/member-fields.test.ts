@@ -27,7 +27,6 @@ describe('memberFields', () => {
             'last_seen_at',
             'created_at',
             'signup',
-            'newsletters.:slug',
             'tier_id',
             'status',
             'subscriptions.plan_interval',
@@ -44,6 +43,7 @@ describe('memberFields', () => {
             'newsletter_feedback',
             'offer_redemptions',
             'count.active_stripe_customers',
+            'newsletters.:slug',
             'custom_fields.:key'
         ]);
     });
@@ -67,7 +67,7 @@ describe('memberFields', () => {
         expect(memberFields['subscriptions.current_period_end'].operators).toEqual(futureDateOperators);
     });
 
-    it('always appends the past/future relative operator to member date fields', () => {
+    it('gives each member date field the direction it can actually point', () => {
         const fields = getMemberFields();
 
         expect(fields.created_at.operators).toContain('in-the-last');
@@ -76,17 +76,11 @@ describe('memberFields', () => {
         expect(fields['subscriptions.current_period_end'].operators).toContain('in-the-next');
     });
 
-    it('keeps the relative operator when a date field narrows its other operators', () => {
-        const narrowed = describeField({
-            key: 'created_at',
-            icon: 'calendar',
-            type: 'timestamp',
-            relative: 'past',
-            operators: ['is-greater'],
-            ui: {label: 'Created'}
-        });
+    it('offers both relative directions to a date field that does not narrow them', () => {
+        const both = describeField({key: 'x', icon: 'calendar', type: 'timestamp', ui: {label: 'X'}});
 
-        expect(narrowed.operators).toEqual(['is-greater', 'in-the-last']);
+        expect(both.operators).toContain('in-the-last');
+        expect(both.operators).toContain('in-the-next');
     });
 
     it('keeps the expected subscription status options', () => {
@@ -209,7 +203,7 @@ describe('multipleActiveSubscriptionsCodec', () => {
 });
 
 describe('newsletterCodec', () => {
-    it('serializes newsletter subscription state from a pattern field', () => {
+    it('serializes newsletter subscription state from the field it belongs to', () => {
         const predicate: FilterPredicate = {
             id: '1',
             field: 'newsletters.weekly',
