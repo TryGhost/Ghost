@@ -1,592 +1,499 @@
-import React, { useMemo } from 'react';
-import {
-  DATE_OPERATOR_LABELS,
-  RELATIVE_DATE_OPERATOR_LABELS,
-  createOperatorOptions,
-  createRelativeDateRenderer,
-  fieldHasRelativeOperator,
-  getTodayInTimezone,
-} from '@/shared/filters';
-import {
-  type FilterFieldConfig,
-  type FilterFieldGroup,
-  type FilterOption,
-  type ValueSource,
-} from '@tryghost/shade/patterns';
-import CustomFieldFilterRenderer from './custom-field-filter-renderer';
+import React, {useMemo} from 'react';
+import {RELATIVE_DATE_OPERATOR_LABELS, createOperatorOptions, createRelativeDateRenderer, fieldHasRelativeOperator, getTodayInTimezone, FIELD_ICONS} from '@/shared/filters';
+import type {FieldIcon} from '@/shared/filters';
+import {CUSTOM_FIELDS_PREFIX} from '@/members/member-fields';
+import {keyIsUnder} from '@/shared/filters';
+import type {StaticMemberFieldKey} from '@/members/member-fields';
+import {type FilterFieldConfig, type FilterFieldGroup, type FilterOption, type ValueSource} from '@tryghost/shade/patterns';
+import CustomFieldFilterRenderer from './custom-fields/filter-renderer';
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
-import { LabelFilterRenderer } from '@/members/label-picker';
-import { LucideIcon } from '@tryghost/shade/utils';
-import { MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD } from './multiple-active-subscriptions';
-import { CUSTOM_FIELDS_PREFIX, getMemberFields } from './member-fields';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { Offer } from '@tryghost/admin-x-framework/api/offers';
+import {LabelFilterRenderer} from '@/members/label-picker';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
+import {buildMemberFields} from './member-filter-catalog';
+import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
-  labelValueSource?: ValueSource<string>;
-  tierValueSource?: ValueSource<string>;
-  newsletters?: Array<{ slug: string; name: string; status?: string }>;
-  hydratedNewsletterSlugs?: string[];
-  hasMultipleTiers?: boolean;
-  paidMembersEnabled?: boolean;
-  emailFiltersEnabled?: boolean;
-  postValueSource?: ValueSource<string>;
-  emailValueSource?: ValueSource<string>;
-  offers?: Offer[];
-  multipleActiveSubscriptionsCount?: number;
-  membersTrackSources?: boolean;
-  emailTrackOpens?: boolean;
-  emailTrackClicks?: boolean;
-  customFieldsEnabled?: boolean;
-  customFields?: Array<{ key: string; name: string; type: MemberCustomField['type'] }>;
-  // Archived fields still referenced by the current filter. Rendered as disabled,
-  // removable-only pills so a saved segment stays visible and undoable even though
-  // the field is no longer offered in the picker.
-  archivedCustomFields?: Array<{ key: string; name: string }>;
-  siteTimezone?: string;
+    labelValueSource?: ValueSource<string>;
+    tierValueSource?: ValueSource<string>;
+    newsletters?: Array<{slug: string; name: string; status?: string}>;
+    hydratedNewsletterSlugs?: string[];
+    hasMultipleTiers?: boolean;
+    paidMembersEnabled?: boolean;
+    emailFiltersEnabled?: boolean;
+    postValueSource?: ValueSource<string>;
+    emailValueSource?: ValueSource<string>;
+    offers?: Offer[];
+    multipleActiveSubscriptionsCount?: number;
+    membersTrackSources?: boolean;
+    emailTrackOpens?: boolean;
+    emailTrackClicks?: boolean;
+    customFieldsEnabled?: boolean;
+    customFields?: Array<{key: string; name: string; type: MemberCustomField['type']}>;
+    // Archived fields still referenced by the current filter. Rendered as disabled,
+    // removable-only pills so a saved segment stays visible and undoable even though
+    // the field is no longer offered in the picker.
+    archivedCustomFields?: Array<{key: string; name: string}>;
+    siteTimezone?: string;
 }
 
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource'>;
 
+type PickerKey = StaticMemberFieldKey | `newsletters.${string}` | `custom_fields.${string}`;
+
+const BASIC_ORDER = [
+    'name', 'email', 'label', 'subscribed', 'last_seen_at', 'created_at', 'signup'
+] as const;
+
+const SUBSCRIPTION_ORDER = [
+    'tier_id', 'status', MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD, 'subscriptions.plan_interval',
+    'subscriptions.status', 'subscriptions.start_date', 'subscriptions.current_period_end',
+    'conversion', 'offer_redemptions'
+] as const;
+
+const EMAIL_ORDER = [
+    'email_count', 'email_opened_count', 'email_open_rate', 'emails.post_id',
+    'opened_emails.post_id', 'clicked_links.post_id', 'newsletter_feedback'
+] as const;
+
+type PlacedFieldKey =
+    | typeof BASIC_ORDER[number]
+    | typeof SUBSCRIPTION_ORDER[number]
+    | typeof EMAIL_ORDER[number];
+
+const EVERY_DECLARED_FIELD_IS_PLACED: Exclude<StaticMemberFieldKey, PlacedFieldKey> extends never
+    ? true
+    : {fieldsWithNoGroup: Exclude<StaticMemberFieldKey, PlacedFieldKey>} = true;
+
+void EVERY_DECLARED_FIELD_IS_PLACED;
+
 // How many custom fields the picker shows before "Show more" — the same preview
 // size the settings list uses. The rest stay searchable and resolvable.
+const NO_NEWSLETTERS: NonNullable<UseMemberFilterFieldsOptions['newsletters']> = [];
+const NO_SLUGS: string[] = [];
+const NO_OFFERS: NonNullable<UseMemberFilterFieldsOptions['offers']> = [];
+const NO_CUSTOM_FIELDS: NonNullable<UseMemberFilterFieldsOptions['customFields']> = [];
+const NO_ARCHIVED_CUSTOM_FIELDS: NonNullable<UseMemberFilterFieldsOptions['archivedCustomFields']> = [];
+
 const CUSTOM_FIELDS_PREVIEW_LIMIT = 5;
 
-const MEMBER_OPERATOR_LABELS: Record<string, string> = {
-  'is-any': 'is any of',
-  'is-not-any': 'is none of',
-  'does-not-contain': 'does not contain',
-  ...DATE_OPERATOR_LABELS,
-  ...RELATIVE_DATE_OPERATOR_LABELS,
-  1: 'More like this',
-  0: 'Less like this',
+const MEMBER_OPERATOR_LABELS: Partial<Record<string, string>> = {
+    'is-any': 'is any of',
+    'is-not-any': 'is none of',
+    'does-not-contain': 'does not contain',
+    ...RELATIVE_DATE_OPERATOR_LABELS,
+    1: 'More like this',
+    0: 'Less like this'
 };
 
-const NUMBER_OPERATOR_LABELS: Record<string, string> = {
-  'is-greater': 'is greater than',
-  'is-less': 'is less than',
-};
-
-function getFieldIcon(key: string) {
-  switch (key) {
-    case 'name':
-      return React.createElement(LucideIcon.User, { className: 'size-4' });
-    case 'email':
-    case 'subscribed':
-      return React.createElement(LucideIcon.Mail, { className: 'size-4' });
-    case 'label':
-      return React.createElement(LucideIcon.Tag, { className: 'size-4' });
-    case 'last_seen_at':
-      return React.createElement(LucideIcon.Eye, { className: 'size-4' });
-    case 'created_at':
-      return React.createElement(LucideIcon.Calendar, { className: 'size-4' });
-    case 'signup':
-      return React.createElement(LucideIcon.UserPlus, { className: 'size-4' });
-    case 'tier_id':
-    case 'subscriptions.status':
-      return React.createElement(LucideIcon.CreditCard, { className: 'size-4' });
-    case 'status':
-      return React.createElement(LucideIcon.UserCircle, { className: 'size-4' });
-    case 'subscriptions.plan_interval':
-      return React.createElement(LucideIcon.CalendarClock, { className: 'size-4' });
-    case 'subscriptions.start_date':
-      return React.createElement(LucideIcon.CalendarPlus, { className: 'size-4' });
-    case 'subscriptions.current_period_end':
-      return React.createElement(LucideIcon.CalendarArrowDown, { className: 'size-4' });
-    case 'conversion':
-      return React.createElement(LucideIcon.ArrowRightLeft, { className: 'size-4' });
-    case 'email_count':
-    case 'emails.post_id':
-      return React.createElement(LucideIcon.Send, { className: 'size-4' });
-    case 'email_opened_count':
-    case 'opened_emails.post_id':
-      return React.createElement(LucideIcon.MailOpen, { className: 'size-4' });
-    case 'email_open_rate':
-      return React.createElement(LucideIcon.Percent, { className: 'size-4' });
-    case 'clicked_links.post_id':
-      return React.createElement(LucideIcon.MousePointerClick, { className: 'size-4' });
-    case 'newsletter_feedback':
-      return React.createElement(LucideIcon.MessageSquare, { className: 'size-4' });
-    case 'offer_redemptions':
-      return React.createElement(LucideIcon.Ticket, { className: 'size-4' });
-    case MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD:
-      return React.createElement(LucideIcon.Layers, { className: 'size-4' });
-    default:
-      if (key.startsWith('newsletters.')) {
-        return React.createElement(LucideIcon.Newspaper, { className: 'size-4' });
-      }
-
-      return undefined;
-  }
-}
 
 function createSearchableFieldOverrides(
-  options: FilterOption[],
-  valueSource?: ValueSource<string>,
+    options: FilterOption[],
+    valueSource?: ValueSource<string>
 ): SearchableFieldOverrides {
-  return {
-    options,
-    valueSource,
-  };
+    return {
+        options,
+        valueSource
+    };
 }
 
 export function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]> {
-  const map = new Map<string, string[]>();
-  const monthlyIds: string[] = [];
-  const yearlyIds: string[] = [];
+    const map = new Map<string, string[]>();
+    const monthlyIds: string[] = [];
+    const yearlyIds: string[] = [];
 
-  for (const offer of offers) {
-    if (offer.redemption_type === 'retention') {
-      if (offer.cadence === 'month') {
-        monthlyIds.push(offer.id);
-      } else if (offer.cadence === 'year') {
-        yearlyIds.push(offer.id);
-      }
+    for (const offer of offers) {
+        if (offer.redemption_type === 'retention') {
+            if (offer.cadence === 'month') {
+                monthlyIds.push(offer.id);
+            } else if (offer.cadence === 'year') {
+                yearlyIds.push(offer.id);
+            }
+        }
     }
-  }
 
-  if (monthlyIds.length > 0) {
-    map.set('retention:month', monthlyIds);
-  }
+    if (monthlyIds.length > 0) {
+        map.set('retention:month', monthlyIds);
+    }
 
-  if (yearlyIds.length > 0) {
-    map.set('retention:year', yearlyIds);
-  }
+    if (yearlyIds.length > 0) {
+        map.set('retention:year', yearlyIds);
+    }
 
-  return map;
+    return map;
 }
 
 function getOfferGroupIds(option: FilterOption): string[] | null {
-  if (!Array.isArray(option.metadata?.offerIds)) {
-    return null;
-  }
+    if (!Array.isArray(option.metadata?.offerIds)) {
+        return null;
+    }
 
-  return option.metadata.offerIds.filter((value): value is string => typeof value === 'string');
+    return option.metadata.offerIds.filter((value): value is string => typeof value === 'string');
 }
 
 export function buildOfferOptions(offers: Offer[]): OfferOption[] {
-  const options: OfferOption[] = [];
-  const retentionMap = buildRetentionOfferIdMap(offers);
+    const options: OfferOption[] = [];
+    const retentionMap = buildRetentionOfferIdMap(offers);
 
-  for (const offer of offers) {
-    if (offer.redemption_type === 'retention') {
-      continue;
+    for (const offer of offers) {
+        if (offer.redemption_type === 'retention') {
+            continue;
+        }
+
+        options.push({value: offer.id, label: offer.name});
     }
 
-    options.push({ value: offer.id, label: offer.name });
-  }
+    if (retentionMap.has('retention:month')) {
+        options.push({
+            value: 'retention:month',
+            label: 'Monthly Retention',
+            metadata: {offerIds: retentionMap.get('retention:month')}
+        });
+    }
 
-  if (retentionMap.has('retention:month')) {
-    options.push({
-      value: 'retention:month',
-      label: 'Monthly Retention',
-      metadata: { offerIds: retentionMap.get('retention:month') },
-    });
-  }
+    if (retentionMap.has('retention:year')) {
+        options.push({
+            value: 'retention:year',
+            label: 'Yearly Retention',
+            metadata: {offerIds: retentionMap.get('retention:year')}
+        });
+    }
 
-  if (retentionMap.has('retention:year')) {
-    options.push({
-      value: 'retention:year',
-      label: 'Yearly Retention',
-      metadata: { offerIds: retentionMap.get('retention:year') },
-    });
-  }
-
-  return options;
+    return options;
 }
 
 export function toOfferFilterDisplayValues(values: string[], options: FilterOption[]): string[] {
-  const collapsed: string[] = [];
-  const consumed = new Set<string>();
+    const collapsed: string[] = [];
+    const consumed = new Set<string>();
 
-  for (const option of options) {
-    const groupIds = getOfferGroupIds(option);
+    for (const option of options) {
+        const groupIds = getOfferGroupIds(option);
 
-    if (groupIds && groupIds.length > 0 && groupIds.every((id) => values.includes(id))) {
-      collapsed.push(String(option.value));
-      groupIds.forEach((id) => {
-        consumed.add(id);
-      });
+        if (groupIds && groupIds.length > 0 && groupIds.every(id => values.includes(id))) {
+            collapsed.push(String(option.value));
+            groupIds.forEach((id) => {
+                consumed.add(id);
+            });
+        }
     }
-  }
 
-  for (const value of values) {
-    if (!consumed.has(value)) {
-      collapsed.push(value);
+    for (const value of values) {
+        if (!consumed.has(value)) {
+            collapsed.push(value);
+        }
     }
-  }
 
-  return collapsed;
+    return collapsed;
 }
 
 export function fromOfferFilterDisplayValues(values: string[], options: FilterOption[]): string[] {
-  const expanded: string[] = [];
+    const expanded: string[] = [];
 
-  for (const value of values) {
-    const option = options.find((currentOption) => currentOption.value === value);
-    const groupIds = option ? getOfferGroupIds(option) : null;
+    for (const value of values) {
+        const option = options.find(currentOption => currentOption.value === value);
+        const groupIds = option ? getOfferGroupIds(option) : null;
 
-    if (groupIds) {
-      expanded.push(...groupIds);
-    } else {
-      expanded.push(value);
+        if (groupIds) {
+            expanded.push(...groupIds);
+        } else {
+            expanded.push(value);
+        }
     }
-  }
 
-  return [...new Set(expanded)];
+    return [...new Set(expanded)];
 }
 
 function createOfferLabelMap(offers: Offer[]) {
-  return new Map(offers.map((offer) => [offer.id, offer.name]));
+    return new Map(offers.map(offer => [offer.id, offer.name]));
 }
 
-function renderOfferFilterValues(
-  values: string[],
-  options: OfferOption[],
-  offerLabels: Map<string, string>,
-) {
-  const selectedOptions = values
-    .map((value) => options.find((option) => option.value === value))
-    .filter((option): option is OfferOption => Boolean(option));
+function renderOfferFilterValues(values: string[], options: OfferOption[], offerLabels: Map<string, string>) {
+    const selectedOptions = values
+        .map(value => options.find(option => option.value === value))
+        .filter((option): option is OfferOption => Boolean(option));
 
-  if (selectedOptions.length === 1) {
-    return selectedOptions[0].label;
-  }
+    if (selectedOptions.length === 1) {
+        return selectedOptions[0].label;
+    }
 
-  if (selectedOptions.length > 1) {
-    return `${selectedOptions.length} selected`;
-  }
+    if (selectedOptions.length > 1) {
+        return `${selectedOptions.length} selected`;
+    }
 
-  if (values.length === 1) {
-    return offerLabels.get(values[0]) ?? 'Select...';
-  }
+    if (values.length === 1) {
+        return offerLabels.get(values[0]) ?? 'Select...';
+    }
 
-  if (values.length > 1) {
-    return `${values.length} selected`;
-  }
+    if (values.length > 1) {
+        return `${values.length} selected`;
+    }
 
-  return 'Select...';
+    return 'Select...';
 }
 
 export function useMemberFilterFields({
-  labelValueSource,
-  tierValueSource,
-  newsletters = [],
-  hydratedNewsletterSlugs = [],
-  hasMultipleTiers = false,
-  paidMembersEnabled = false,
-  emailFiltersEnabled = false,
-  postValueSource,
-  emailValueSource,
-  offers = [],
-  multipleActiveSubscriptionsCount = 0,
-  membersTrackSources = false,
-  emailTrackOpens = false,
-  emailTrackClicks = false,
-  customFieldsEnabled = false,
-  customFields = [],
-  archivedCustomFields = [],
-  siteTimezone = 'UTC',
-}: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
-  return useMemo(() => {
-    const fields = getMemberFields();
-    type MemberFieldKey = keyof typeof fields;
-
-    function createFieldConfig(
-      key: string,
-      overrides: Partial<FilterFieldConfig> = {},
-      operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS,
-    ): FilterFieldConfig {
-      let field;
-      if (key.startsWith('newsletters.')) {
-        field = fields['newsletters.:slug'];
-      } else if (key.startsWith(CUSTOM_FIELDS_PREFIX)) {
-        field = fields['custom_fields.:key'];
-      } else {
-        field = fields[key as MemberFieldKey];
-      }
-
-      return {
-        key,
-        ...field.ui,
-        icon: getFieldIcon(key),
-        operators: createOperatorOptions(field.operators, { labels: operatorLabels }),
-        ...('options' in field && field.options ? { options: field.options } : {}),
-        ...overrides,
-      };
-    }
-
-    function createDateFieldConfig(
-      key: string,
-      today: string,
-      overrides: Partial<FilterFieldConfig> = {},
-    ): FilterFieldConfig {
-      const field = fields[key as MemberFieldKey];
-      const config = createFieldConfig(key, { defaultValue: today, ...overrides });
-
-      return fieldHasRelativeOperator(field)
-        ? { ...config, customRenderer: createRelativeDateRenderer(today) }
-        : config;
-    }
-
-    const groups: FilterFieldGroup[] = [];
-    const activeNewsletters = newsletters.filter((newsletter) => newsletter.status !== 'archived');
-    const activeNewsletterSlugs = new Set(activeNewsletters.map((newsletter) => newsletter.slug));
-    const visibleHydratedNewsletters = [...new Set(hydratedNewsletterSlugs)].map((slug) => {
-      const newsletter = newsletters.find((currentNewsletter) => currentNewsletter.slug === slug);
-
-      return {
-        slug,
-        name: newsletter?.name ?? slug,
-      };
-    });
-    const hiddenHydratedNewsletters = visibleHydratedNewsletters.filter(
-      (newsletter) => !activeNewsletterSlugs.has(newsletter.slug),
-    );
-    const offerOptions = buildOfferOptions(offers);
-    const offerLabels = createOfferLabelMap(offers);
-    const today = getTodayInTimezone(siteTimezone);
-
-    const basicFields: FilterFieldConfig[] = [
-      createFieldConfig('name'),
-      createFieldConfig('email'),
-    ];
-
-    if (labelValueSource) {
-      basicFields.push(
-        createFieldConfig('label', {
-          ...createSearchableFieldOverrides([], labelValueSource),
-          customRenderer: (props) =>
-            React.createElement(
-              LabelFilterRenderer,
-              props as React.ComponentProps<typeof LabelFilterRenderer>,
-            ),
-        }),
-      );
-    }
-
-    if (activeNewsletters.length <= 1) {
-      basicFields.push(createFieldConfig('subscribed'));
-
-      for (const newsletter of visibleHydratedNewsletters) {
-        basicFields.push(
-          createFieldConfig(`newsletters.${newsletter.slug}`, {
-            label: newsletter.name,
-          }),
-        );
-      }
-    }
-
-    basicFields.push(
-      createDateFieldConfig('last_seen_at', today),
-      createDateFieldConfig('created_at', today),
-    );
-
-    if (membersTrackSources) {
-      basicFields.push(
-        createFieldConfig('signup', createSearchableFieldOverrides([], postValueSource)),
-      );
-    }
-
-    groups.push({ group: 'Basic', fields: basicFields });
-
-    // Each defined custom field is its own named entry, so a publisher can search
-    // for "Shipping address" directly rather than reaching it through a generic
-    // "Custom field" door. A simple field filters on its value; a composite field's
-    // renderer opens its parts (plus "Any") in the pill.
-    if (customFieldsEnabled) {
-      const customFieldFields = customFields.map((field) =>
-        createFieldConfig(`custom_fields.${field.key}`, {
-          label: field.name,
-          // The dropdown entry and the added filter show the field type's own icon
-          // rather than a generic custom-field mark.
-          icon: React.createElement(CustomFieldIcon, { type: field.type, className: 'size-4' }),
-          // Text fields default to "contains" to match native Name/Email; a
-          // composite defaults to whole-field "is set" (the renderer coerces it).
-          defaultOperator: 'contains',
-          // The field's type decides its parts and operators, so the operator
-          // control lives in the renderer, after any part is chosen.
-          renderOperatorInValue: true,
-          customRenderer: (props) =>
-            React.createElement(
-              CustomFieldFilterRenderer,
-              props as React.ComponentProps<typeof CustomFieldFilterRenderer>,
-            ),
-        }),
-      );
-
-      // An archived field the current filter still references: a disabled,
-      // removable-only pill with an archive icon. Its key is already in the filter,
-      // so the picker's own de-dup keeps it out of the add-list — it only ever
-      // renders as an existing pill.
-      const archivedFieldFields = archivedCustomFields.map((field) =>
-        createFieldConfig(`custom_fields.${field.key}`, {
-          label: field.name,
-          icon: React.createElement(LucideIcon.Archive, { className: 'size-4' }),
-          // Read-only: the operator and value stay visible so the segment reads
-          // clearly, but the field is gone from the picker, so the pill can only
-          // be removed, never re-edited.
-          readOnly: true,
-          renderOperatorInValue: true,
-          customRenderer: (props) =>
-            React.createElement(
-              CustomFieldFilterRenderer,
-              props as React.ComponentProps<typeof CustomFieldFilterRenderer>,
-            ),
-        }),
-      );
-
-      const allCustomFieldFields = [...customFieldFields, ...archivedFieldFields];
-
-      // Nothing defined yet means nothing to filter on, so the group stays out of
-      // the picker entirely rather than showing a section that can't be used.
-      if (allCustomFieldFields.length > 0) {
-        groups.push({
-          group: 'Custom fields',
-          fields: allCustomFieldFields,
-          previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT,
-        });
-      }
-    }
-
-    if (activeNewsletters.length > 1) {
-      const newsletterFields: FilterFieldConfig[] = [
-        createFieldConfig('subscribed', {
-          label: 'All newsletters',
-          options: [
-            { value: 'subscribed', label: 'Subscribed to at least one' },
-            { value: 'unsubscribed', label: 'Unsubscribed from all' },
-            { value: 'email-disabled', label: 'Email disabled' },
-          ],
-        }),
-      ];
-
-      for (const newsletter of activeNewsletters) {
-        newsletterFields.push(
-          createFieldConfig(`newsletters.${newsletter.slug}`, {
-            label: newsletter.name,
-          }),
-        );
-      }
-
-      for (const newsletter of hiddenHydratedNewsletters) {
-        newsletterFields.push(
-          createFieldConfig(`newsletters.${newsletter.slug}`, {
-            label: newsletter.name,
-          }),
-        );
-      }
-
-      groups.push({ group: 'Newsletters', fields: newsletterFields });
-    }
-
-    if (paidMembersEnabled) {
-      const subscriptionFields: FilterFieldConfig[] = [];
-
-      if (hasMultipleTiers) {
-        subscriptionFields.push(
-          createFieldConfig('tier_id', createSearchableFieldOverrides([], tierValueSource)),
-        );
-      }
-
-      subscriptionFields.push(
-        createFieldConfig('status', {
-          options: [...fields.status.options, { value: 'gift', label: 'Gift subscription' }],
-        }),
-      );
-
-      if (multipleActiveSubscriptionsCount > 0) {
-        subscriptionFields.push(createFieldConfig(MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD));
-      }
-
-      subscriptionFields.push(
-        createFieldConfig('subscriptions.plan_interval'),
-        createFieldConfig('subscriptions.status'),
-        createDateFieldConfig('subscriptions.start_date', today),
-        createDateFieldConfig('subscriptions.current_period_end', today),
-      );
-
-      if (membersTrackSources) {
-        subscriptionFields.push(
-          createFieldConfig('conversion', createSearchableFieldOverrides([], postValueSource)),
-        );
-      }
-
-      if (offers.length > 0) {
-        subscriptionFields.push(
-          createFieldConfig('offer_redemptions', {
-            options: offerOptions,
-            customValueRenderer: (values) =>
-              renderOfferFilterValues(values as string[], offerOptions, offerLabels),
-          }),
-        );
-      }
-
-      groups.push({ group: 'Subscription', fields: subscriptionFields });
-    }
-
-    if (emailFiltersEnabled) {
-      const emailFields: FilterFieldConfig[] = [
-        createFieldConfig('email_count', {}, NUMBER_OPERATOR_LABELS),
-        createFieldConfig('email_opened_count', {}, NUMBER_OPERATOR_LABELS),
-      ];
-
-      if (emailTrackOpens) {
-        emailFields.push(createFieldConfig('email_open_rate', {}, NUMBER_OPERATOR_LABELS));
-      }
-
-      emailFields.push(
-        createFieldConfig('emails.post_id', createSearchableFieldOverrides([], emailValueSource)),
-      );
-
-      if (emailTrackOpens) {
-        emailFields.push(
-          createFieldConfig(
-            'opened_emails.post_id',
-            createSearchableFieldOverrides([], emailValueSource),
-          ),
-        );
-      }
-
-      if (emailTrackClicks) {
-        emailFields.push(
-          createFieldConfig(
-            'clicked_links.post_id',
-            createSearchableFieldOverrides([], emailValueSource),
-          ),
-        );
-      }
-
-      emailFields.push(
-        createFieldConfig(
-          'newsletter_feedback',
-          createSearchableFieldOverrides([], emailValueSource),
-        ),
-      );
-
-      groups.push({ group: 'Email', fields: emailFields });
-    }
-
-    return groups;
-  }, [
-    emailFiltersEnabled,
-    emailValueSource,
-    customFieldsEnabled,
-    customFields,
-    archivedCustomFields,
-    emailTrackClicks,
-    emailTrackOpens,
-    hasMultipleTiers,
     labelValueSource,
-    membersTrackSources,
-    multipleActiveSubscriptionsCount,
-    newsletters,
-    offers,
-    hydratedNewsletterSlugs,
-    paidMembersEnabled,
-    postValueSource,
-    siteTimezone,
     tierValueSource,
-  ]);
+    newsletters = NO_NEWSLETTERS,
+    hydratedNewsletterSlugs = NO_SLUGS,
+    hasMultipleTiers = false,
+    paidMembersEnabled = false,
+    emailFiltersEnabled = false,
+    postValueSource,
+    emailValueSource,
+    offers = NO_OFFERS,
+    multipleActiveSubscriptionsCount = 0,
+    membersTrackSources = false,
+    emailTrackOpens = false,
+    emailTrackClicks = false,
+    customFieldsEnabled = false,
+    customFields = NO_CUSTOM_FIELDS,
+    archivedCustomFields = NO_ARCHIVED_CUSTOM_FIELDS,
+    siteTimezone = 'UTC'
+}: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
+    // Which fields exist is decided by the site's own data, and nothing else. Kept apart from the
+    // picker below because building it builds a codec for every field, while the picker changes
+    // whenever the view does — on every filter edit, among other things.
+    const fields = useMemo(() => {
+        const catalogNewsletters = [
+            ...newsletters,
+            ...hydratedNewsletterSlugs
+                .filter(slug => !newsletters.some(newsletter => newsletter.slug === slug))
+                .map(slug => ({slug, name: slug}))
+        ];
+
+        return buildMemberFields({
+            newsletters: catalogNewsletters,
+            customFields: [...customFields, ...archivedCustomFields.map(field => ({...field, type: 'short_text' as const}))]
+        });
+    }, [newsletters, hydratedNewsletterSlugs, customFields, archivedCustomFields]);
+
+    return useMemo(() => {
+        function createFieldConfig(
+            key: PickerKey,
+            overrides: Partial<FilterFieldConfig> = {},
+            operatorLabels: Partial<Record<string, string>> = MEMBER_OPERATOR_LABELS
+        ): FilterFieldConfig {
+            const parameterised = keyIsUnder(key, 'newsletters')
+                ? fields['newsletters.:slug']
+                : keyIsUnder(key, CUSTOM_FIELDS_PREFIX) ? fields['custom_fields.:key'] : undefined;
+            const field = fields[key] ?? parameterised;
+
+            return {
+                key,
+                ...field.ui,
+                icon: FIELD_ICONS[field.ui.icon as FieldIcon],
+                operators: createOperatorOptions(field.operators, {labels: {...operatorLabels, ...field.operatorLabels}}),
+                ...('options' in field && field.options ? {options: field.options} : {}),
+                ...overrides
+            };
+        }
+
+        function createDateFieldConfig(
+            key: PickerKey,
+            today: string,
+            overrides: Partial<FilterFieldConfig> = {}
+        ): FilterFieldConfig {
+            const field = fields[key];
+            const config = createFieldConfig(key, {defaultValue: today, ...overrides});
+
+            return fieldHasRelativeOperator(field)
+                ? {...config, customRenderer: createRelativeDateRenderer(today)}
+                : config;
+        }
+
+        const groups: FilterFieldGroup[] = [];
+        const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
+        const activeNewsletterSlugs = new Set(activeNewsletters.map(newsletter => newsletter.slug));
+        const visibleHydratedNewsletters = [...new Set(hydratedNewsletterSlugs)].map((slug) => {
+            const newsletter = newsletters.find(currentNewsletter => currentNewsletter.slug === slug);
+
+            return {
+                slug,
+                name: newsletter?.name ?? slug
+            };
+        });
+        const hiddenHydratedNewsletters = visibleHydratedNewsletters.filter(newsletter => !activeNewsletterSlugs.has(newsletter.slug));
+        const offerOptions = buildOfferOptions(offers);
+        const offerLabels = createOfferLabelMap(offers);
+        const today = getTodayInTimezone(siteTimezone);
+
+        const oneNewsletterOrFewer = activeNewsletters.length <= 1;
+        const basicShown: Partial<Record<typeof BASIC_ORDER[number], boolean>> = {
+            label: Boolean(labelValueSource),
+            subscribed: oneNewsletterOrFewer,
+            signup: membersTrackSources
+        };
+
+        const basicFields = BASIC_ORDER
+            .filter(key => basicShown[key] ?? true)
+            .flatMap((key): FilterFieldConfig[] => {
+                switch (key) {
+                case 'label':
+                    return [createFieldConfig(key, {
+                        ...createSearchableFieldOverrides([], labelValueSource),
+                        customRenderer: props => React.createElement(LabelFilterRenderer, props as React.ComponentProps<typeof LabelFilterRenderer>)
+                    })];
+                case 'subscribed':
+                    return [
+                        createFieldConfig(key),
+                        ...visibleHydratedNewsletters.map(newsletter => createFieldConfig(
+                            `newsletters.${newsletter.slug}`,
+                            {label: newsletter.name}
+                        ))
+                    ];
+                case 'last_seen_at':
+                case 'created_at':
+                    return [createDateFieldConfig(key, today)];
+                case 'signup':
+                    return [createFieldConfig(key, createSearchableFieldOverrides([], postValueSource))];
+                default:
+                    return [createFieldConfig(key)];
+                }
+            });
+
+        groups.push({group: 'Basic', fields: basicFields});
+
+        // Each defined custom field is its own named entry, so a publisher can search
+        // for "Shipping address" directly rather than reaching it through a generic
+        // "Custom field" door. A simple field filters on its value; a composite field's
+        // renderer opens its parts (plus "Any") in the pill.
+        if (customFieldsEnabled) {
+            const customFieldFields = customFields.map(field => createFieldConfig(`custom_fields.${field.key}`, {
+                label: field.name,
+                // The dropdown entry and the added filter show the field type's own icon
+                // rather than a generic custom-field mark.
+                icon: React.createElement(CustomFieldIcon, {type: field.type, className: 'size-4'}),
+                // The field's type decides its parts and operators, so the operator
+                // control lives in the renderer, after any part is chosen.
+                renderOperatorInValue: true,
+                customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
+            }));
+
+            // An archived field the current filter still references: a disabled,
+            // removable-only pill with an archive icon. Its key is already in the filter,
+            // so the picker's own de-dup keeps it out of the add-list — it only ever
+            // renders as an existing pill.
+            const archivedFieldFields = archivedCustomFields.map(field => createFieldConfig(`custom_fields.${field.key}`, {
+                label: field.name,
+                icon: React.createElement(LucideIcon.Archive, {className: 'size-4'}),
+                // Read-only: the operator and value stay visible so the segment reads
+                // clearly, but the field is gone from the picker, so the pill can only
+                // be removed, never re-edited.
+                readOnly: true,
+                renderOperatorInValue: true,
+                customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
+            }));
+
+            const allCustomFieldFields = [...customFieldFields, ...archivedFieldFields];
+
+            // Nothing defined yet means nothing to filter on, so the group stays out of
+            // the picker entirely rather than showing a section that can't be used.
+            if (allCustomFieldFields.length > 0) {
+                groups.push({group: 'Custom fields', fields: allCustomFieldFields, previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT});
+            }
+        }
+
+        if (activeNewsletters.length > 1) {
+            const newsletterFields: FilterFieldConfig[] = [
+                createFieldConfig('subscribed', {
+                    label: 'All newsletters',
+                    options: [
+                        {value: 'subscribed', label: 'Subscribed to at least one'},
+                        {value: 'unsubscribed', label: 'Unsubscribed from all'},
+                        {value: 'email-disabled', label: 'Email disabled'}
+                    ]
+                })
+            ];
+
+            for (const newsletter of activeNewsletters) {
+                newsletterFields.push(createFieldConfig(`newsletters.${newsletter.slug}`, {
+                    label: newsletter.name
+                }));
+            }
+
+            for (const newsletter of hiddenHydratedNewsletters) {
+                newsletterFields.push(createFieldConfig(`newsletters.${newsletter.slug}`, {
+                    label: newsletter.name
+                }));
+            }
+
+            groups.push({group: 'Newsletters', fields: newsletterFields});
+        }
+
+        if (paidMembersEnabled) {
+            const subscriptionShown: Partial<Record<typeof SUBSCRIPTION_ORDER[number], boolean>> = {
+                tier_id: hasMultipleTiers,
+                [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD]: multipleActiveSubscriptionsCount > 0,
+                conversion: membersTrackSources,
+                offer_redemptions: offers.length > 0
+            };
+
+            const subscriptionFields = SUBSCRIPTION_ORDER
+                .filter(key => subscriptionShown[key] ?? true)
+                .map((key) => {
+                    switch (key) {
+                    case 'tier_id':
+                        return createFieldConfig(key, createSearchableFieldOverrides([], tierValueSource));
+                    case 'status':
+                        return createFieldConfig(key, {
+                            options: [...(fields.status?.options ?? []), {value: 'gift', label: 'Gift subscription'}]
+                        });
+                    case 'subscriptions.start_date':
+                    case 'subscriptions.current_period_end':
+                        return createDateFieldConfig(key, today);
+                    case 'conversion':
+                        return createFieldConfig(key, createSearchableFieldOverrides([], postValueSource));
+                    case 'offer_redemptions':
+                        return createFieldConfig(key, {
+                            options: offerOptions,
+                            customValueRenderer: values => renderOfferFilterValues(values as string[], offerOptions, offerLabels)
+                        });
+                    default:
+                        return createFieldConfig(key);
+                    }
+                });
+
+            groups.push({group: 'Subscription', fields: subscriptionFields});
+        }
+
+        if (emailFiltersEnabled) {
+            const emailShown: Partial<Record<typeof EMAIL_ORDER[number], boolean>> = {
+                email_open_rate: emailTrackOpens,
+                'opened_emails.post_id': emailTrackOpens,
+                'clicked_links.post_id': emailTrackClicks
+            };
+            const emailCounts = new Set<string>(['email_count', 'email_opened_count', 'email_open_rate']);
+
+            const emailFields = EMAIL_ORDER
+                .filter(key => emailShown[key] ?? true)
+                .map(key => (emailCounts.has(key)
+                    ? createFieldConfig(key)
+                    : createFieldConfig(key, createSearchableFieldOverrides([], emailValueSource))));
+
+            groups.push({group: 'Email', fields: emailFields});
+        }
+
+        return groups;
+    }, [
+        fields,
+        emailFiltersEnabled,
+        emailValueSource,
+        customFieldsEnabled,
+        emailTrackClicks,
+        emailTrackOpens,
+        hasMultipleTiers,
+        labelValueSource,
+        membersTrackSources,
+        multipleActiveSubscriptionsCount,
+        newsletters,
+        offers,
+        hydratedNewsletterSlugs,
+        paidMembersEnabled,
+        postValueSource,
+        siteTimezone,
+        tierValueSource
+    ]);
 }
