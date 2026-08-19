@@ -15,7 +15,14 @@ pnpm dev      # watch and rebuild all three bundles concurrently
 pnpm test     # build + run tests against the built bundles
 ```
 
-## Edit mode chunk
+## Legacy edit-mode spike
+
+The edit-mode bundles remain in this package as the renderer and editing spike
+that informed the Admin Design Builder. Ghost no longer emits the
+`data-edit-mode-enabled` attribute, so the public toolbar does not load this
+surface. New product work belongs in the full-screen React Builder in
+`apps/admin/src/builder/`; reuse the renderer behavior here without reviving
+the public Preact UI.
 
 The toolbar ships in three bundles:
 
@@ -23,8 +30,8 @@ The toolbar ships in three bundles:
   signed-in staff. Built by `vite.config.mjs`.
 - `umd/admin-toolbar-editor.min.js` — the edit-mode chunk, a plain ES module
   built from `src/edit-mode/index.js` by `vite.editor.config.mjs`. It is only
-  fetched when a user with theme permissions clicks "Edit" on a site with the
-  `editModeOnSite` labs flag enabled. It contains the editor tooling only
+  fetched only by the legacy loader when a host explicitly supplies the old
+  data attribute. It contains the editor tooling only
   (archive round-trip, marker parsing, text edits, overlay UI) — the renderer
   itself ships once, in the worker artifact.
 - `umd/admin-toolbar-editor-worker.min.js` — the render-worker entry, a plain

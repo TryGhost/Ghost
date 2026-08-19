@@ -263,7 +263,6 @@ function getAdminToolbarHelper(dataRoot, siteTitle, excludeList, frontendKey) {
       isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
     'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
         'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined,
-        'edit-mode-enabled': labs.isSet('editModeOnSite') ? 'true' : undefined,
         // getFrontendKey() returns null when the internal key is unavailable —
         // undefined drops the attribute instead of emitting data-key="null"
         key: frontendKey || undefined

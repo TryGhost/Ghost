@@ -3,6 +3,7 @@ import { page } from 'vitest/browser';
 
 import {
   activeThemeResponse,
+    currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
   fakeEndpoint,
@@ -68,8 +69,32 @@ async function openThemeTab() {
   return modal;
 }
 
-describe('Design settings', () => {
-  it('requests homepage and post previews and switches device size', async () => {
+describe("Design settings", () => {
+    it("opens the design builder when the backend enables it", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/design", {labs: {designBuilder: true}});
+
+        await settingsScreen.design().getByRole("button", {name: "Build with AI"}).click();
+
+        await expect.poll(currentRoute).toBe("/builder/theme");
+    });
+
+    it("hides the design builder when the backend does not expose it", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/design", {labs: {}});
+
+        await expect(settingsScreen.design().getByRole("button", {name: "Build with AI"})).toHaveCount(0);
+        await expect.element(settingsScreen.design().getByRole("button", {name: "Customize"})).toBeVisible();
+    });
+
+    it("hides the design builder when the experiment is disabled", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/design", {labs: {designBuilder: false}});
+
+        await expect(settingsScreen.design().getByRole("button", {name: "Build with AI"})).toHaveCount(0);
+    });
+
+    it("requests homepage and post previews and switches device size", async () => {
     const { homepagePreview, postPreview } = fakeDesignWorld([], { withPost: true });
     await renderAdminApp('/settings/design/edit');
 

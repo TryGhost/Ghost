@@ -49,9 +49,6 @@ async function testGhostHead(options) {
   const adminToolbarCommentsDisabled = / data-comments-enabled="false"/g;
   rendered = rendered.replace(adminToolbarCommentsDisabled, '');
 
-    const adminToolbarEditMode = / data-edit-mode-enabled="true"/g;
-    rendered = rendered.replace(adminToolbarEditMode, '');
-
   assertExists(rendered);
   // Note: we need to convert the string to an object in order to use the snapshot feature
   assertMatchSnapshot({ rendered });
@@ -2176,8 +2173,8 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, new RegExp(`data-resource-id="${posts[0].id}"`));
     });
 
-        it('marks the admin toolbar script for edit mode when the labs flag is enabled', async function () {
-            getStub.withArgs('labs').returns({editModeOnSite: true});
+        it('does not expose the superseded on-site editor for either builder flag', async function () {
+            getStub.withArgs('labs').returns({designBuilder: true, editModeOnSite: true});
 
             const rendered = (await ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -2190,7 +2187,7 @@ describe('{{ghost_head}} helper', function () {
 
             const toolbarTag = rendered.match(/<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/)?.[0];
             assertExists(toolbarTag);
-            assert.match(toolbarTag, /data-edit-mode-enabled="true"/);
+            assert.doesNotMatch(toolbarTag, /data-edit-mode-enabled/);
             assert.match(toolbarTag, /data-key="xyz"/);
         });
 

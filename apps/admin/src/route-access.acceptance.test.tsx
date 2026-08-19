@@ -37,7 +37,16 @@ describe('Route access', () => {
     await expect.poll(currentRoute).toBe('/');
   });
 
-  it('keeps a contributor on their own profile settings', async () => {
+    it("redirects a contributor away from the design builder", async () => {
+        await renderAdminApp("/builder/theme", {
+            ...asRole("Contributor"),
+            labs: {designBuilder: true},
+        });
+
+        await expect.poll(homeHandoff).toMatchObject({route: "/", isExternal: true});
+    });
+
+    it("keeps a contributor on their own profile settings", async () => {
     // The settings app owns its request graph; this spec asserts only the shell routing.
     allowUnhandledRequests();
     await renderAdminApp(`/settings/staff/${OWNER_SLUG}`, asRole('Contributor'));
