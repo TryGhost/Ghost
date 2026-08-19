@@ -5,11 +5,12 @@ import ContentCSVImporter, {
   type FailureReporter,
 } from './import/importer';
 import readPostRows from './import/reader';
+import { EDITORIAL_POST_FIELDS } from './import/row';
 import { ImportRunStore } from './import/store';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
-const importableFields = new Set(['title', 'html', 'published_at']);
+const importableFields = new Set<string>(EDITORIAL_POST_FIELDS);
 const mappingSchema = z.record(z.string(), z.string()).superRefine((mapping, ctx) => {
   const targets = new Set<string>();
   for (const [header, target] of Object.entries(mapping)) {

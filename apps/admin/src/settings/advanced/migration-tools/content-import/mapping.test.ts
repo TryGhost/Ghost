@@ -1,4 +1,4 @@
-import { ContentFieldMapping } from './mapping';
+import { CONTENT_FIELD_GROUPS, CONTENT_FIELD_MAPPINGS, ContentFieldMapping } from './mapping';
 
 describe('ContentFieldMapping', () => {
   it('keeps every CSV column in the upload contract', () => {
@@ -38,5 +38,58 @@ describe('ContentFieldMapping', () => {
 
     expect(missing.hasTarget('title')).toBe(false);
     expect(complete.hasTarget('title')).toBe(true);
+  });
+
+  it('offers the full editorial field set grouped for search', () => {
+    expect(CONTENT_FIELD_GROUPS.map((group) => group.label)).toEqual([
+      'Content',
+      'Publishing',
+      'Images',
+      'SEO',
+      'Social',
+      'Advanced',
+    ]);
+    expect(CONTENT_FIELD_MAPPINGS.map((field) => field.value)).toEqual([
+      'title',
+      'html',
+      'slug',
+      'custom_excerpt',
+      'type',
+      'status',
+      'visibility',
+      'featured',
+      'created_at',
+      'updated_at',
+      'published_at',
+      'feature_image',
+      'feature_image_alt',
+      'feature_image_caption',
+      'show_title_and_feature_image',
+      'meta_title',
+      'meta_description',
+      'canonical_url',
+      'og_image',
+      'og_title',
+      'og_description',
+      'twitter_image',
+      'twitter_title',
+      'twitter_description',
+      'custom_template',
+      'codeinjection_head',
+      'codeinjection_foot',
+      'frontmatter',
+    ]);
+    expect(CONTENT_FIELD_MAPPINGS.map((field) => field.value)).not.toEqual(
+      expect.arrayContaining([
+        'authors',
+        'tags',
+        'comment_id',
+        'newsletter_id',
+        'email',
+        'tiers',
+        'id',
+        'lexical',
+      ]),
+    );
   });
 });

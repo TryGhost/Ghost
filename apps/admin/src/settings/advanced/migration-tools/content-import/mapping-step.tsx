@@ -1,10 +1,5 @@
 import {
   Banner,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Table,
   TableBody,
   TableCell,
@@ -14,7 +9,8 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
-import { CONTENT_FIELD_MAPPINGS, ContentFieldMapping } from './mapping';
+import { FieldPicker } from './field-picker';
+import { ContentFieldMapping } from './mapping';
 
 interface MappingStepProps {
   rows: Record<string, string>[];
@@ -105,32 +101,12 @@ export function MappingStep({
                     {row[column] || '\u00a0'}
                   </TableCell>
                   <TableCell>
-                    <Select
+                    <FieldPicker
+                      column={column}
                       disabled={disabled}
-                      value={mapping.get(column) ?? '__not_imported__'}
-                      onValueChange={(value) =>
-                        onMappingChange(column, value === '__not_imported__' ? null : value)
-                      }
-                    >
-                      <SelectTrigger
-                        aria-label={`Field for ${column}`}
-                        className={cn(
-                          'h-8 text-sm',
-                          !mapping.get(column) && 'text-muted-foreground',
-                        )}
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__not_imported__">Not imported</SelectItem>
-                        {CONTENT_FIELD_MAPPINGS.map((field) => (
-                          <SelectItem key={field.value} value={field.value}>
-                            {field.label}
-                            {field.required ? ' (required)' : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      value={mapping.get(column)}
+                      onValueChange={(value) => onMappingChange(column, value)}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

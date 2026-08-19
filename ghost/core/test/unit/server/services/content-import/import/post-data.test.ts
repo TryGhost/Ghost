@@ -31,6 +31,16 @@ describe('buildPostData', function () {
     assert.equal(data.slug, 'a-post-with-a-comma-in-its-title');
   });
 
+  it('sanitizes an explicit slug instead of deriving it from the title', function () {
+    const data = buildPostData(
+      row({ title: 'Different title', slug: ' Custom Slug, Here ' }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.equal(data.slug, 'custom-slug-here');
+  });
+
   it('omits lexical for an empty html cell, leaving the model its blank document', function () {
     const data = buildPostData(row({ title: 'T' }), htmlToLexical, TAGS);
 
@@ -66,12 +76,97 @@ describe('buildPostData', function () {
     assert.equal('authors' in data, false);
   });
 
+  it('imports publishing, image, and advanced post fields', function () {
+    const data = buildPostData(
+      row({
+        title: 'Full post',
+        type: 'page',
+        status: 'draft',
+        visibility: 'members',
+        featured: '1',
+        show_title_and_feature_image: 'false',
+        custom_excerpt: 'Summary',
+        feature_image: 'https://example.com/image.jpg',
+        canonical_url: 'https://example.com/original',
+        custom_template: 'wide',
+        codeinjection_head: '<style>body{color:red}</style>',
+        codeinjection_foot: '<script>window.test=true</script>',
+      }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.equal(data.type, 'page');
+    assert.equal(data.status, 'draft');
+    assert.equal(data.visibility, 'members');
+    assert.equal(data.featured, true);
+    assert.equal(data.show_title_and_feature_image, false);
+    assert.equal(data.custom_excerpt, 'Summary');
+    assert.equal(data.feature_image, 'https://example.com/image.jpg');
+    assert.equal(data.canonical_url, 'https://example.com/original');
+    assert.equal(data.custom_template, 'wide');
+    assert.equal(data.codeinjection_head, '<style>body{color:red}</style>');
+    assert.equal(data.codeinjection_foot, '<script>window.test=true</script>');
+  });
+
+  it('puts feature metadata, SEO, social fields, and frontmatter in posts_meta', function () {
+    const data = buildPostData(
+      row({
+        title: 'Metadata post',
+        feature_image_alt: 'Alt text',
+        feature_image_caption: 'Caption',
+        meta_title: 'Meta title',
+        meta_description: 'Meta description',
+        og_image: 'https://example.com/og.jpg',
+        og_title: 'OG title',
+        og_description: 'OG description',
+        twitter_image: 'https://example.com/twitter.jpg',
+        twitter_title: 'Twitter title',
+        twitter_description: 'Twitter description',
+        frontmatter: 'key: value',
+      }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.deepEqual(data.posts_meta, {
+      feature_image_alt: 'Alt text',
+      feature_image_caption: 'Caption',
+      meta_title: 'Meta title',
+      meta_description: 'Meta description',
+      og_image: 'https://example.com/og.jpg',
+      og_title: 'OG title',
+      og_description: 'OG description',
+      twitter_image: 'https://example.com/twitter.jpg',
+      twitter_title: 'Twitter title',
+      twitter_description: 'Twitter description',
+      frontmatter: 'key: value',
+    });
+  });
+
   it('omits every date when the cell is absent, leaving the model to stamp now', function () {
     const data = buildPostData(row({ title: 'T' }), htmlToLexical, TAGS);
 
     assert.equal('published_at' in data, false);
     assert.equal('created_at' in data, false);
     assert.equal('updated_at' in data, false);
+  });
+
+  it('lets explicit created and updated dates override the published date fallback', function () {
+    const data = buildPostData(
+      row({
+        title: 'T',
+        published_at: '2025-01-01',
+        created_at: '2024-01-01',
+        updated_at: '2025-02-01',
+      }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.equal(data.published_at, '2025-01-01');
+    assert.equal(data.created_at, '2024-01-01');
+    assert.equal(data.updated_at, '2025-02-01');
   });
 
   const skipsWith = (cells: Record<string, string>, reason: string | RegExp) => {
@@ -131,6 +226,22 @@ describe('buildPostData', function () {
 
     assert.equal(data.published_at, 'May 1, 2024');
   });
+
+  for (const [field, value, reason] of [
+    ['type', 'article', 'type must be one of: post, page'],
+    ['status', 'scheduled', 'status must be one of: draft, published'],
+    ['visibility', 'private', 'visibility must be one of: public, members, paid'],
+    ['featured', 'yes', 'featured must be true, false, 1, or 0'],
+    [
+      'show_title_and_feature_image',
+      'sometimes',
+      'show_title_and_feature_image must be true, false, 1, or 0',
+    ],
+  ] as const) {
+    it(`skips a row with an invalid ${field}`, function () {
+      skipsWith({ title: 'T', [field]: value }, reason);
+    });
+  }
 
   it('skips a row whose html cannot be converted', function () {
     const throwingConverter = () => {

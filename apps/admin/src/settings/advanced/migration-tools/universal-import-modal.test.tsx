@@ -38,6 +38,10 @@ vi.mock('@tryghost/admin-x-framework/hooks', async () => {
 });
 
 describe('UniversalImportModal', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockImportContent.mockResolvedValue({});
@@ -160,6 +164,33 @@ describe('UniversalImportModal', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Required field missing: Title');
     expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
     expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
+
+  it('searches grouped editorial targets and submits the chosen field', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    const file = new File(['title,Social summary\nHello,Shared copy'], 'posts.csv', {
+      type: 'text/csv',
+    });
+    await dropFile(file);
+
+    fireEvent.click(await screen.findByRole('combobox', { name: /Field for Social summary/ }));
+    expect(screen.getByText('Content')).toBeInTheDocument();
+    expect(screen.getByText('Social')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText('Search post fields...'), {
+      target: { value: 'Twitter description' },
+    });
+    fireEvent.click(screen.getByText('Twitter description'));
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        file,
+        mapping: { title: 'title', 'Social summary': 'twitter_description' },
+      }),
+    );
   });
 
   it('still sends JSON files to the db import when csvContentImporter is enabled', async () => {

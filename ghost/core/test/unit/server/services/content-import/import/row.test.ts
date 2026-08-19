@@ -28,6 +28,20 @@ describe('post import row schema', function () {
     );
   });
 
+  it('reads empty optional editorial cells as absent', function () {
+    const parsed = postImportRowSchema.parse({
+      slug: '',
+      feature_image: 'undefined',
+      meta_title: '',
+      frontmatter: '',
+    });
+
+    assert.equal(parsed.slug, undefined);
+    assert.equal(parsed.feature_image, undefined);
+    assert.equal(parsed.meta_title, undefined);
+    assert.equal(parsed.frontmatter, undefined);
+  });
+
   it('passes unknown columns through for later milestones to consume', function () {
     const parsed = postImportRowSchema.parse({ title: 'T', custom_thing: 'kept' });
     assert.equal(parsed.custom_thing, 'kept');

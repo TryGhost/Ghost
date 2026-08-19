@@ -36,4 +36,15 @@ describe('content import reader', function () {
 
     assert.deepEqual(rows, [{ title: 'Hello', html: '<p>World</p>', published_at: '2025-01-01' }]);
   });
+
+  it('keeps full editorial identity headers for direct API clients', async function () {
+    const file = path.join(directory, 'full-post.csv');
+    await fs.writeFile(file, 'title,slug,featured,meta_title\nHello,custom,1,Search title\n');
+
+    const rows = await readPostRows(file);
+
+    assert.deepEqual(rows, [
+      { title: 'Hello', slug: 'custom', featured: '1', meta_title: 'Search title', html: '' },
+    ]);
+  });
 });
