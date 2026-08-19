@@ -175,13 +175,22 @@ class PostsService {
                     message: tpl(messages.invalidTags)
                 });
             }
+            // null and undefined mean the field was not supplied, anything else
+            // that is not a string is a malformed value rather than an absent one
+            const isMalformed = value => value !== undefined && value !== null && typeof value !== 'string';
+
             for (const tag of data.meta.tags) {
-                if (typeof tag !== 'object') {
+                if (!tag || typeof tag !== 'object') {
                     throw new errors.IncorrectUsageError({
                         message: tpl(messages.invalidTags)
                     });
                 }
                 if (!tag.id && !tag.name) {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTags)
+                    });
+                }
+                if (isMalformed(tag.id) || isMalformed(tag.name)) {
                     throw new errors.IncorrectUsageError({
                         message: tpl(messages.invalidTags)
                     });

@@ -301,6 +301,28 @@ describe('Posts Bulk API', function () {
             assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
         });
 
+        it('Rejects tags that are not usable objects', async function () {
+            const validTag = await models.Tag.findOne({slug: fixtureManager.get('tags', 0).slug});
+            const invalidTags = [
+                [null],
+                [{id: 1}],
+                [{name: 1}],
+                [{name: {}}],
+                // Falsy non-strings are supplied values too, not absent ones
+                [{id: 0, name: 'Falsy id'}],
+                [{id: false, name: 'Falsy id'}],
+                [{name: 0, id: validTag.id}],
+                [{name: false, id: validTag.id}]
+            ];
+
+            for (const tags of invalidTags) {
+                await agent
+                    .put('/posts/bulk/?filter=' + encodeURIComponent('status:[draft]'))
+                    .body({bulk: {action: 'addTag', meta: {tags}}})
+                    .expectStatus(400);
+            }
+        });
+
         it('Can add multiple tags to posts and create new tags', async function () {
             const filter = 'status:[draft]';
             const tag = await models.Tag.findOne({id: fixtureManager.get('tags', 1).id});
