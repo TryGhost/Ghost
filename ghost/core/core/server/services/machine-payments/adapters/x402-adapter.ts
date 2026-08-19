@@ -1,8 +1,20 @@
 import crypto from 'node:crypto';
 import errors from '@tryghost/errors';
+import {z} from 'zod';
 import config from '../../../../shared/config';
 import type {Fulfillment, PaymentAdapter, PaymentTerms} from '../types';
 import type {PaymentAmountTerms} from '../pricing';
+
+export const X402_ROUTE_CACHE_LIMIT = 128;
+
+const settlementResponseSchema = z.object({
+    transaction: z.string().optional(),
+    txHash: z.string().optional(),
+    hash: z.string().optional(),
+    settlement: z.object({
+        transaction: z.string().optional()
+    }).optional()
+});
 
 type DepositAddressStoreLike = {
     getOrCreateAddress: (options: {network?: string}) => Promise<string>;
@@ -13,11 +25,6 @@ type FacilitatorClientLike = {
     [key: string]: unknown;
 };
 
-type X402AdapterDeps = {
-    depositAddressStore: DepositAddressStoreLike;
-    facilitatorClient?: FacilitatorClientLike;
-};
-
 type DispatchOptions = {
     body: string;
 };
@@ -25,6 +32,68 @@ type DispatchOptions = {
 type CachedApp = {
     fetch: (request: Request) => Promise<Response>;
 };
+
+type HonoLike = {
+    use: (middleware: unknown) => void;
+    get: (path: string, handler: () => Response) => void;
+    on: (method: string, path: string, handler: () => Response) => void;
+    fetch: (request: Request) => Promise<Response>;
+};
+
+type X402RuntimeModules = {
+    paymentMiddlewareFromConfig: (...args: unknown[]) => unknown;
+    HTTPFacilitatorClient: new (options?: {url?: string}) => FacilitatorClientLike;
+    ExactEvmScheme: new () => unknown;
+    Hono: new () => HonoLike;
+};
+
+type X402AdapterDeps = {
+    depositAddressStore: DepositAddressStoreLike;
+    facilitatorClient?: FacilitatorClientLike;
+    maxCachedApps?: number;
+    runtimeFactory?: () => X402RuntimeModules;
+};
+
+/**
+ * Bounded LRU cache for per-route Hono apps. Prevents unbounded growth when many
+ * paid markdown URLs are challenged over the lifetime of the process.
+ */
+export class BoundedRouteCache<V> {
+    #maxSize: number;
+    #entries = new Map<string, V>();
+
+    constructor(maxSize: number) {
+        this.#maxSize = Math.max(1, maxSize);
+    }
+
+    get size(): number {
+        return this.#entries.size;
+    }
+
+    get(key: string): V | undefined {
+        const value = this.#entries.get(key);
+        if (value === undefined) {
+            return undefined;
+        }
+
+        this.#entries.delete(key);
+        this.#entries.set(key, value);
+        return value;
+    }
+
+    set(key: string, value: V): void {
+        if (this.#entries.has(key)) {
+            this.#entries.delete(key);
+        } else if (this.#entries.size >= this.#maxSize) {
+            const oldest = this.#entries.keys().next().value;
+            if (oldest !== undefined) {
+                this.#entries.delete(oldest);
+            }
+        }
+
+        this.#entries.set(key, value);
+    }
+}
 
 /**
  * x402 adapter (Base USDC). Second rail behind the same canHandle/challenge/fulfill boundary.
@@ -37,11 +106,19 @@ export class X402Adapter implements PaymentAdapter {
 
     #facilitator: FacilitatorClientLike | null = null;
     #scheme: unknown = null;
-    #apps = new Map<string, CachedApp>();
+    #apps: BoundedRouteCache<CachedApp>;
+    #runtimeFactory?: () => X402RuntimeModules;
 
-    constructor({depositAddressStore, facilitatorClient}: X402AdapterDeps) {
+    constructor({
+        depositAddressStore,
+        facilitatorClient,
+        maxCachedApps = X402_ROUTE_CACHE_LIMIT,
+        runtimeFactory
+    }: X402AdapterDeps) {
         this.depositAddressStore = depositAddressStore;
         this.facilitatorClient = facilitatorClient;
+        this.#apps = new BoundedRouteCache(maxCachedApps);
+        this.#runtimeFactory = runtimeFactory;
         this.name = 'x402';
     }
 
@@ -116,6 +193,27 @@ export class X402Adapter implements PaymentAdapter {
         return await cached.fetch(request);
     }
 
+    #loadRuntimeModules(): X402RuntimeModules {
+        if (this.#runtimeFactory) {
+            return this.#runtimeFactory();
+        }
+
+        const {paymentMiddlewareFromConfig} = require('@x402/hono') as {
+            paymentMiddlewareFromConfig: X402RuntimeModules['paymentMiddlewareFromConfig'];
+        };
+        const {HTTPFacilitatorClient} = require('@x402/core/server') as {
+            HTTPFacilitatorClient: X402RuntimeModules['HTTPFacilitatorClient'];
+        };
+        const {ExactEvmScheme} = require('@x402/evm/exact/server') as {
+            ExactEvmScheme: X402RuntimeModules['ExactEvmScheme'];
+        };
+        const {Hono} = require('hono') as {
+            Hono: X402RuntimeModules['Hono'];
+        };
+
+        return {paymentMiddlewareFromConfig, HTTPFacilitatorClient, ExactEvmScheme, Hono};
+    }
+
     #createApp({
         route,
         method,
@@ -133,23 +231,12 @@ export class X402Adapter implements PaymentAdapter {
         terms: PaymentTerms;
         responseData: DispatchOptions;
     }): CachedApp {
-        const {paymentMiddlewareFromConfig} = require('@x402/hono') as {
-            paymentMiddlewareFromConfig: (...args: unknown[]) => unknown;
-        };
-        const {HTTPFacilitatorClient} = require('@x402/core/server') as {
-            HTTPFacilitatorClient: new (options?: {url?: string}) => FacilitatorClientLike;
-        };
-        const {ExactEvmScheme} = require('@x402/evm/exact/server') as {
-            ExactEvmScheme: new () => unknown;
-        };
-        const {Hono} = require('hono') as {
-            Hono: new () => {
-                use: (middleware: unknown) => void;
-                get: (path: string, handler: () => Response) => void;
-                on: (method: string, path: string, handler: () => Response) => void;
-                fetch: (request: Request) => Promise<Response>;
-            };
-        };
+        const {
+            paymentMiddlewareFromConfig,
+            HTTPFacilitatorClient,
+            ExactEvmScheme,
+            Hono
+        } = this.#loadRuntimeModules();
 
         if (!this.#facilitator) {
             const facilitatorUrl = config.get('machinePayments:x402:facilitatorUrl');
@@ -213,19 +300,21 @@ export function formatPrice(terms: PaymentAmountTerms): string {
  * settlement transaction hash, and hash the header if that is missing.
  */
 export function settlementReference(paymentResponse: string): string {
-    const decoded = decodeJsonHeader(paymentResponse) as {
-        transaction?: string;
-        txHash?: string;
-        hash?: string;
-        settlement?: {transaction?: string};
-    } | null;
-    const reference = decoded?.transaction
-        || decoded?.txHash
-        || decoded?.hash
-        || decoded?.settlement?.transaction;
+    const decoded = decodeJsonHeader(paymentResponse);
+    const parsed = settlementResponseSchema.safeParse(decoded);
+    const reference = parsed.success
+        ? parsed.data.transaction
+            || parsed.data.txHash
+            || parsed.data.hash
+            || parsed.data.settlement?.transaction
+        : undefined;
 
     if (typeof reference === 'string' && reference.length > 0 && reference.length <= 255) {
         return reference;
+    }
+
+    if (decoded !== null && !parsed.success) {
+        return crypto.createHash('sha256').update(String(paymentResponse)).digest('hex');
     }
 
     if (typeof paymentResponse === 'string' && paymentResponse.length <= 255) {

@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {
+    BoundedRouteCache,
+    X402Adapter,
     formatPrice,
     settlementReference
 } = require('../../../../../core/server/services/machine-payments/adapters/x402-adapter');
@@ -15,6 +17,37 @@ const {
 
 function encodeReceipt(receipt) {
     return Buffer.from(JSON.stringify(receipt)).toString('base64url');
+}
+
+function createX402RuntimeFactory({onHonoCreate} = {}) {
+    let honoCreateCount = 0;
+
+    return {
+        get honoCreateCount() {
+            return honoCreateCount;
+        },
+        factory: () => ({
+            paymentMiddlewareFromConfig: () => () => {},
+            HTTPFacilitatorClient: class {},
+            ExactEvmScheme: class {},
+            Hono: class {
+                constructor() {
+                    honoCreateCount += 1;
+                    onHonoCreate?.(honoCreateCount);
+                }
+
+                use() {}
+
+                get() {}
+
+                on() {}
+
+                fetch() {
+                    return Promise.resolve(new Response('', {status: 402}));
+                }
+            }
+        })
+    };
 }
 
 function createMppxFactory({
@@ -119,6 +152,132 @@ describe('Unit: server/services/machine-payments/adapters', function () {
             settlementReference('x'.repeat(300)).length,
             64
         );
+    });
+
+    it('prefers txHash and nested settlement.transaction for x402 references', function () {
+        const txHashHeader = Buffer.from(JSON.stringify({txHash: '0xtxhash'})).toString('base64');
+        const nestedHeader = Buffer.from(JSON.stringify({
+            settlement: {transaction: '0xnested'}
+        })).toString('base64');
+
+        assert.equal(settlementReference(txHashHeader), '0xtxhash');
+        assert.equal(settlementReference(nestedHeader), '0xnested');
+    });
+
+    it('hashes malformed x402 settlement payloads instead of trusting invalid fields', function () {
+        const malformed = Buffer.from(JSON.stringify({transaction: 12345})).toString('base64');
+
+        assert.equal(settlementReference(malformed).length, 64);
+        assert.notEqual(settlementReference(malformed), '12345');
+    });
+
+    it('evicts the oldest cached route when the bounded cache is full', function () {
+        const cache = new BoundedRouteCache(2);
+
+        cache.set('a', 1);
+        cache.set('b', 2);
+        assert.equal(cache.size, 2);
+
+        cache.get('a');
+        cache.set('c', 3);
+
+        assert.equal(cache.size, 2);
+        assert.equal(cache.get('a'), 1);
+        assert.equal(cache.get('b'), undefined);
+        assert.equal(cache.get('c'), 3);
+    });
+
+    describe('X402Adapter', function () {
+        const terms = {
+            amount: 100,
+            currency: 'USD',
+            description: 'Paid post',
+            method: 'GET',
+            mimeType: 'text/markdown',
+            url: 'http://example.com/paid-post.md'
+        };
+
+        it('detects x-payment and payment-signature credentials', function () {
+            const adapter = new X402Adapter({
+                depositAddressStore: {
+                    getOrCreateAddress: async () => '0xrecipient'
+                }
+            });
+
+            assert.equal(adapter.canHandle(new Request('http://example.com/paid.md')), false);
+            assert.equal(adapter.canHandle(new Request('http://example.com/paid.md', {
+                headers: {'x-payment': 'abc'}
+            })), true);
+            assert.equal(adapter.canHandle(new Request('http://example.com/paid.md', {
+                headers: {'payment-signature': 'abc'}
+            })), true);
+        });
+
+        it('reuses cached route apps and evicts stale routes when the cache is full', async function () {
+            const runtime = createX402RuntimeFactory();
+            const adapter = new X402Adapter({
+                depositAddressStore: {
+                    getOrCreateAddress: async () => '0xrecipient'
+                },
+                maxCachedApps: 2,
+                facilitatorClient: {},
+                runtimeFactory: runtime.factory
+            });
+
+            await adapter.challenge(new Request('http://example.com/a.md'), terms);
+            await adapter.challenge(new Request('http://example.com/b.md'), {
+                ...terms,
+                url: 'http://example.com/b.md'
+            });
+            await adapter.challenge(new Request('http://example.com/c.md'), {
+                ...terms,
+                url: 'http://example.com/c.md'
+            });
+            await adapter.challenge(new Request('http://example.com/a.md'), terms);
+
+            assert.equal(runtime.honoCreateCount, 4);
+        });
+
+        it('fulfills with a validated settlement reference header', async function () {
+            const paymentResponse = Buffer.from(JSON.stringify({
+                transaction: '0xfulfilled'
+            })).toString('base64');
+
+            const adapter = new X402Adapter({
+                depositAddressStore: {
+                    getOrCreateAddress: async () => '0xrecipient'
+                },
+                facilitatorClient: {},
+                runtimeFactory: () => ({
+                    paymentMiddlewareFromConfig: () => () => {},
+                    HTTPFacilitatorClient: class {},
+                    ExactEvmScheme: class {},
+                    Hono: class {
+                        use() {}
+
+                        get() {}
+
+                        on() {}
+
+                        fetch() {
+                            return Promise.resolve(new Response('', {
+                                status: 200,
+                                headers: {'payment-response': paymentResponse}
+                            }));
+                        }
+                    }
+                })
+            });
+
+            const fulfillment = await adapter.fulfill(new Request('http://example.com/paid.md', {
+                headers: {'x-payment': 'abc'}
+            }), terms);
+
+            assert.equal(fulfillment.protocol, 'x402');
+            assert.equal(fulfillment.method, 'base');
+            assert.equal(fulfillment.reference, '0xfulfilled');
+            assert.equal(fulfillment.receiptHeaders['payment-response'], paymentResponse);
+        });
     });
 
     it('parses a Payment-Receipt header from withReceipt', function () {
