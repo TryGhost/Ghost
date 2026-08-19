@@ -14,4 +14,21 @@ describe('ContentFieldMapping', () => {
 
     expect(mapping.toJSON()).toEqual({ 'First title': '', 'Second title': 'title' });
   });
+
+  it('detects exact field-name headers', () => {
+    const mapping = ContentFieldMapping.detect(['title', 'html', 'published_at', 'Something else']);
+
+    expect(mapping.toJSON()).toEqual({
+      title: 'title',
+      html: 'html',
+      published_at: 'published_at',
+      'Something else': '',
+    });
+  });
+
+  it('does not case-fold or guess header mappings', () => {
+    const mapping = ContentFieldMapping.detect(['Title', 'Post HTML', 'Published At']);
+
+    expect(mapping.toJSON()).toEqual({ Title: '', 'Post HTML': '', 'Published At': '' });
+  });
 });

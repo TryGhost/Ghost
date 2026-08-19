@@ -15,6 +15,13 @@ export class ContentFieldMapping {
     return new ContentFieldMapping(Object.fromEntries(columns.map((column) => [column, null])));
   }
 
+  static detect(columns: string[]): ContentFieldMapping {
+    const targets = new Set<string>(CONTENT_FIELD_MAPPINGS.map((field) => field.value));
+    return new ContentFieldMapping(
+      Object.fromEntries(columns.map((column) => [column, targets.has(column) ? column : null])),
+    );
+  }
+
   get(column: string): string | null {
     return this.mapping[column] ?? null;
   }

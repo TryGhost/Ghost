@@ -59,7 +59,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         setCSVImport({
           file,
           rows,
-          mapping: ContentFieldMapping.empty(columnsOf(rows)),
+          mapping: ContentFieldMapping.detect(columnsOf(rows)),
           sampleIndex: 0,
         });
       } catch (error) {

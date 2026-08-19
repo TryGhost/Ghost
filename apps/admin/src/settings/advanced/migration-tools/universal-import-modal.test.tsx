@@ -131,7 +131,7 @@ describe('UniversalImportModal', () => {
     await waitFor(() =>
       expect(mockImportContentCSV).toHaveBeenCalledWith({
         file,
-        mapping: { title: '' },
+        mapping: { title: 'title' },
       }),
     );
     expect(mockImportContent).not.toHaveBeenCalled();
