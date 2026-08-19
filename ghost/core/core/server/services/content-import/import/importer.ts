@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import buildPostData, {RowSkipped, type HtmlToLexical, type PostData} from './post-data';
 import type {PostImportRow} from './row';
-import type {Clock, ImportRunStore} from './store';
+import type {Clock, ImportRunStore, RowOutcome} from './store';
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -36,7 +36,9 @@ type ReadRows = (path: string) => Promise<PostImportRow[]>;
 
 const messages = {
     unreadableFile: 'The file could not be parsed as a CSV file.',
-    tooManyPosts: 'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.'
+    tooManyPosts: 'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.',
+    allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
+    urlResolutionFailed: 'Content import could not resolve a URL for {count} created {postNoun}.'
 };
 
 const MAX_POSTS = 100;
@@ -125,12 +127,40 @@ class ContentCSVImporter {
     // Must resolve in every case: the job manager reads a rejected inline job as a
     // defect in the job itself, and there is no retry behind it.
     private async runImportJob(runId: string, importTagNames: string[], rows: PostImportRow[]): Promise<void> {
+        let urlFailureCount = 0;
+        let firstUrlFailure: unknown;
+
         try {
             const htmlToLexical = this._getHtmlToLexical();
+            let attemptedWrites = 0;
+            let successfulWrites = 0;
+            let failedWrites = 0;
+            let firstWriteFailure: unknown;
 
             for (const [index, row] of rows.entries()) {
                 const line = index + 2;
+                let data: PostData;
 
+                try {
+                    data = buildPostData(row, htmlToLexical, importTagNames);
+                } catch (error) {
+                    if (error instanceof RowSkipped) {
+                        this._store.record(runId, {
+                            line,
+                            title: row.title || null,
+                            status: 'skipped',
+                            reason: messageOf(error)
+                        });
+                        continue;
+                    }
+
+                    // Anything other than an expected source-row refusal is an importer
+                    // failure. Stop the run before misclassifying it as a lost write.
+                    throw error;
+                }
+
+                attemptedWrites += 1;
+                let post: CreatedPost;
                 try {
                     // options.importing preserves the supplied timestamps and keeps the import silent:
                     // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
@@ -138,34 +168,70 @@ class ContentCSVImporter {
                     // it, one reason status is never 'scheduled'). Pinned by
                     // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
                     // model layer mutates it.
-                    const post = await this._posts.create(buildPostData(row, htmlToLexical, importTagNames), {
+                    post = await this._posts.create(data, {
                         importing: true,
                         context: {internal: true}
                     });
-
+                    successfulWrites += 1;
+                } catch (error) {
+                    if (failedWrites === 0) {
+                        firstWriteFailure = error;
+                    }
+                    failedWrites += 1;
                     this._store.record(runId, {
                         line,
                         title: row.title,
-                        status: 'created',
-                        postId: post.id,
-                        url: this._urlForPost(post)
-                    });
-                } catch (error) {
-                    this._store.record(runId, {
-                        line,
-                        title: row.title || null,
-                        // skipped = refused before the write (fix the file);
-                        // failed = the write was attempted and lost
-                        status: error instanceof RowSkipped ? 'skipped' : 'failed',
+                        status: 'failed',
                         reason: messageOf(error)
                     });
+                    continue;
                 }
+
+                const outcome: RowOutcome = {
+                    line,
+                    title: row.title,
+                    status: 'created',
+                    postId: post.id
+                };
+                try {
+                    outcome.url = this._urlForPost(post);
+                } catch (error) {
+                    if (urlFailureCount === 0) {
+                        firstUrlFailure = error;
+                    }
+                    urlFailureCount += 1;
+                }
+                this._store.record(runId, outcome);
             }
-        } catch (error) {
-            this._report(error);
-        } finally {
-            // However the run ended, it must read as finished.
+
+            if (attemptedWrites > 0 && successfulWrites === 0 && failedWrites === attemptedWrites) {
+                this._report(new errors.InternalServerError({
+                    message: tpl(messages.allWritesFailed, {
+                        count: failedWrites,
+                        postNoun: failedWrites === 1 ? 'post' : 'posts'
+                    }),
+                    err: firstWriteFailure
+                }));
+            }
+
+            this.reportUrlFailures(urlFailureCount, firstUrlFailure);
             this._store.finish(runId);
+        } catch (error) {
+            this.reportUrlFailures(urlFailureCount, firstUrlFailure);
+            this._report(error);
+            this._store.fail(runId, messageOf(error));
+        }
+    }
+
+    private reportUrlFailures(count: number, firstFailure: unknown): void {
+        if (count > 0) {
+            this._report(new errors.InternalServerError({
+                message: tpl(messages.urlResolutionFailed, {
+                    count,
+                    postNoun: count === 1 ? 'post' : 'posts'
+                }),
+                err: firstFailure
+            }));
         }
     }
 }

@@ -21,9 +21,10 @@ export interface RowOutcome {
 
 export interface ImportRun {
     id: string;
-    status: 'running' | 'complete';
+    status: 'running' | 'complete' | 'failed';
     startedAt: Date;
     finishedAt?: Date;
+    failureReason?: string;
     total: number;
     rows: RowOutcome[];
 }
@@ -63,6 +64,15 @@ export class ImportRunStore {
         const run = this._runs.get(id);
         if (run) {
             run.status = 'complete';
+            run.finishedAt = this._now();
+        }
+    }
+
+    fail(id: string, reason: string): void {
+        const run = this._runs.get(id);
+        if (run) {
+            run.status = 'failed';
+            run.failureReason = reason;
             run.finishedAt = this._now();
         }
     }

@@ -35,8 +35,22 @@ describe('ImportRunStore', function () {
 
         store.record('nope', outcome(1));
         store.finish('nope');
+        store.fail('nope', 'failed');
 
         assert.equal(store.get('nope'), undefined);
+    });
+
+    it('tracks a run-level failure as a finished terminal state', function () {
+        const finishedAt = new Date('2026-01-01T11:00:00.000Z');
+        const store = new ImportRunStore({now: () => finishedAt});
+
+        store.create('run_failed', 2);
+        store.fail('run_failed', 'converter unavailable');
+
+        const failed = store.get('run_failed');
+        assert.equal(failed?.status, 'failed');
+        assert.equal(failed?.failureReason, 'converter unavailable');
+        assert.equal(failed?.finishedAt, finishedAt);
     });
 
     it('keeps only the most recent finished runs', function () {
@@ -92,6 +106,20 @@ describe('ImportRunStore', function () {
 
         assert.equal(store.get('run_old'), undefined, 'aged out');
         assert.ok(store.get('run_recent'), 'not yet an hour old');
+        assert.ok(store.get('run_new'));
+    });
+
+    it('evicts failed runs by age like completed runs', function () {
+        let now = new Date('2026-01-01T10:00:00.000Z');
+        const store = new ImportRunStore({now: () => now});
+
+        store.create('run_failed', 1);
+        store.fail('run_failed', 'converter unavailable');
+
+        now = new Date('2026-01-01T11:15:00.000Z');
+        store.create('run_new', 1);
+
+        assert.equal(store.get('run_failed'), undefined);
         assert.ok(store.get('run_new'));
     });
 });

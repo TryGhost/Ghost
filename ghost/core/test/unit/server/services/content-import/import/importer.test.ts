@@ -16,6 +16,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     const reported: unknown[] = [];
     const jobs: Array<{name: string; offloaded: boolean; job: () => Promise<void>}> = [];
     const createFailures = new Map<string, unknown>();
+    const urlFailures = new Map<string, unknown>();
     const store = new ImportRunStore();
     let converterResolutions = 0;
     // Late-bound: the importer captures deps at construction.
@@ -45,7 +46,13 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
             reported.push(error);
         },
         store,
-        urlForPost: (post: {id: string}) => `https://example.com/${post.id}/`,
+        urlForPost: (post: {id: string}) => {
+            const failure = urlFailures.get(post.id);
+            if (failure) {
+                throw failure;
+            }
+            return `https://example.com/${post.id}/`;
+        },
         newRunId: () => 'run_test',
         getTimezone: () => 'Europe/Amsterdam',
         now: () => new Date('2026-01-01T10:30:00.000Z')
@@ -66,7 +73,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
         htmlToLexicalFactory = factory;
     };
 
-    return {importer, run, deps, created, reported, jobs, createFailures, store, setHtmlToLexicalFactory, converterResolutions: () => converterResolutions};
+    return {importer, run, deps, created, reported, jobs, createFailures, urlFailures, store, setHtmlToLexicalFactory, converterResolutions: () => converterResolutions};
 }
 
 describe('ContentCSVImporter', function () {
@@ -174,6 +181,22 @@ describe('ContentCSVImporter', function () {
         assert.deepEqual(run?.rows[1], {line: 3, title: 'Second', status: 'failed', reason: 'insert failed'});
     });
 
+    it('reports once when every attempted write fails', async function () {
+        const h = harness([row('First'), row('Second')]);
+        h.createFailures.set('First', new Error('first insert failed'));
+        h.createFailures.set('Second', new Error('second insert failed'));
+
+        await h.run();
+
+        assert.equal(h.created.length, 0);
+        assert.equal(h.reported.length, 1);
+        assert.equal((h.reported[0] as {errorType?: string}).errorType, 'InternalServerError');
+        assert.equal((h.reported[0] as Error).message, 'Content import failed to write all 2 attempted posts.');
+        assert.match((h.reported[0] as Error).stack ?? '', /first insert failed/, 'the first write failure is preserved as the cause');
+        assert.equal(h.store.get('run_test')?.status, 'complete');
+        assert.deepEqual(h.store.get('run_test')?.rows.map(outcome => outcome.status), ['failed', 'failed']);
+    });
+
     it('skips a malformed row on its own and imports the rest', async function () {
         const h = harness([row('First'), {title: '', html: '<p>No title</p>', published_at: undefined}, row('Third')]);
 
@@ -187,6 +210,19 @@ describe('ContentCSVImporter', function () {
         assert.deepEqual(run?.rows.map(r => r.status), ['created', 'skipped', 'created']);
     });
 
+    it('completes without reporting when every row is skipped before a write', async function () {
+        const h = harness([
+            {title: '', html: '<p>No title</p>', published_at: undefined},
+            {title: '', html: '<p>Still no title</p>', published_at: undefined}
+        ]);
+
+        await h.run();
+
+        assert.deepEqual(h.reported, []);
+        assert.equal(h.store.get('run_test')?.status, 'complete');
+        assert.deepEqual(h.store.get('run_test')?.rows.map(outcome => outcome.status), ['skipped', 'skipped']);
+    });
+
     it('still reports a run-level failure that is nobody\'s row', async function () {
         const h = harness();
         const failure = new Error('converter unavailable');
@@ -197,7 +233,38 @@ describe('ContentCSVImporter', function () {
         await h.run();
 
         assert.deepEqual(h.reported, [failure]);
-        assert.equal(h.store.get('run_test')?.status, 'complete', 'the run still reads as finished');
+        assert.equal(h.store.get('run_test')?.status, 'failed');
+        assert.equal(h.store.get('run_test')?.failureReason, 'converter unavailable');
+        assert.ok(h.store.get('run_test')?.finishedAt instanceof Date);
+    });
+
+    it('keeps a successfully written post created when its URL cannot be resolved', async function () {
+        const h = harness();
+        h.urlFailures.set('post_1', new Error('URL service unavailable'));
+
+        await h.run();
+
+        assert.equal(h.created.length, 2);
+        assert.deepEqual(h.store.get('run_test')?.rows, [
+            {line: 2, title: 'First', status: 'created', postId: 'post_1'},
+            {line: 3, title: 'Second', status: 'created', postId: 'post_2', url: 'https://example.com/post_2/'}
+        ]);
+        assert.equal(h.reported.length, 1);
+        assert.equal((h.reported[0] as Error).message, 'Content import could not resolve a URL for 1 created post.');
+        assert.match((h.reported[0] as Error).stack ?? '', /URL service unavailable/);
+    });
+
+    it('reports multiple URL resolution failures once per run', async function () {
+        const h = harness();
+        h.urlFailures.set('post_1', new Error('first URL failure'));
+        h.urlFailures.set('post_2', new Error('second URL failure'));
+
+        await h.run();
+
+        assert.deepEqual(h.store.get('run_test')?.rows.map(outcome => outcome.status), ['created', 'created']);
+        assert.equal(h.reported.length, 1);
+        assert.equal((h.reported[0] as Error).message, 'Content import could not resolve a URL for 2 created posts.');
+        assert.match((h.reported[0] as Error).stack ?? '', /first URL failure/, 'the first URL failure is preserved as the cause');
     });
 
     it('records a created outcome per row, 1-based, with the post id and URL', async function () {
