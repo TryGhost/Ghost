@@ -2,7 +2,9 @@ import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} f
 import {LoadMoreButton, useInfiniteVirtualScroll, useVirtualListWindow} from '@/shared/virtual-list';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {Tag} from '@tryghost/admin-x-framework/api/tags';
-import {forwardRef, useRef} from 'react';
+import {Link} from '@tryghost/admin-x-framework';
+import React, {forwardRef, useRef} from 'react';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">
@@ -28,6 +30,15 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
         </TableRow>
     );
 });
+
+// Tag detail is served by React or Ember depending on the tagDetailsReact flag;
+// Ember only follows hashchange, so only the React branch may use a router link.
+export function TagLink({slug, className, children}: {slug: string; className?: string; children: React.ReactNode}) {
+    const tagDetailsReact = useFeatureFlag('tagDetailsReact');
+    return tagDetailsReact
+        ? <Link className={className} to={`/tags/${slug}`}>{children}</Link>
+        : <a className={className} href={`#/tags/${slug}`}>{children}</a>;
+}
 
 function TagsList({
     items,
@@ -89,14 +100,11 @@ function TagsList({
                                 data-testid="tag-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
-                                    <a
-                                        className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]"
-                                        href={`#/tags/${item.slug}`}
-                                    >
+                                    <TagLink className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]" slug={item.slug}>
                                         <span className="block truncate text-base text-md font-semibold">
                                             {item.name}
                                         </span>
-                                    </a>
+                                    </TagLink>
                                     <span className="block truncate text-muted-foreground">
                                         {item.description}
                                     </span>

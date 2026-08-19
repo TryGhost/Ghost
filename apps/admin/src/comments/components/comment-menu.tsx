@@ -3,6 +3,7 @@ import {type Comment, usePinComment, useUnpinComment} from '@tryghost/admin-x-fr
 import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
+import {Link} from '@tryghost/admin-x-framework';
 import {useState} from 'react';
 
 interface CommentMenuProps {
@@ -64,10 +65,10 @@ export function CommentMenu({
                     )}
                     {memberId && (
                         <DropdownMenuItem asChild>
-                            <a href={`#/members/${memberId}`}>
+                            <Link to={`/members/${memberId}`}>
                                 <LucideIcon.User className="size-4" />
                                 View member
-                            </a>
+                            </Link>
                         </DropdownMenuItem>
 
                     )}
