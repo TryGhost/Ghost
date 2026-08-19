@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import clsx from 'clsx';
-import useQueryParams from '@/settings/app/hooks/use-query-params';
-import useStaffUsers from '@/settings/app/hooks/use-staff-users';
+import useQueryParams from '@/settings/hooks/use-query-params';
+import useStaffUsers from '@/settings/hooks/use-staff-users';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
 import {Button} from '@tryghost/shade/components';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
@@ -11,10 +11,10 @@ import {UserRoundX} from 'lucide-react';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 interface OwnerProps {
     user: User;
@@ -304,12 +304,12 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             {hasNextPage && selectedTab !== 'invited' && <Button
                 type='button'
                 variant='link'
-                onClick={() => fetchNextPage()}
+                onClick={() => void fetchNextPage()}
             >{`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}</Button>}
             {invitesHasNextPage && selectedTab === 'invited' && <Button
                 type='button'
                 variant='link'
-                onClick={() => fetchNextInvitePage()}
+                onClick={() => void fetchNextInvitePage()}
             >{`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}</Button>}
 
             {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (

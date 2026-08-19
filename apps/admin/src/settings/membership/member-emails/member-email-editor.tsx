@@ -1,14 +1,14 @@
-import ErrorBoundary from '@/settings/app/components/error-boundary';
+import ErrorBoundary from '@/settings/components/error-boundary';
 import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {type KoenigInstance, loadKoenig} from '@/settings/app/components/koenig-editor-base';
+import {type KoenigInstance, loadKoenig} from '@/settings/components/koenig-loader';
 import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useFocusContext} from '@tryghost/shade/app';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useWelcomeEmailLinkSuggestions} from '@/settings/app/hooks/use-welcome-email-link-suggestions';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useWelcomeEmailLinkSuggestions} from '@/settings/hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -85,8 +85,7 @@ const EmailEditorInner: React.FC<{
     registerAPI: (API: KoenigInstance | null) => void;
     onChange: (data: unknown) => void;
 }> = ({editor, darkMode, cardConfig, initialEditorState, placeholder, className, registerAPI, onChange}) => {
-    // loadKoenig resolves the untyped @tryghost/koenig-lexical bundle
-    const {EmailEditor} = editor.read() as {EmailEditor: React.ComponentType<Record<string, unknown>>};
+    const {EmailEditor} = editor.read();
 
     return (
         <div className={cn('koenig-react-editor w-full', baseEditorStyles, className)}>

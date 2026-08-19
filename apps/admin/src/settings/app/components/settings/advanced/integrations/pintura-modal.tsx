@@ -1,14 +1,14 @@
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
+import BrandIcon from '@/settings/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import pinturaScreenshot from '@/settings/app/assets/images/pintura-screenshot.png';
+import pinturaScreenshot from '@/settings/assets/images/pintura-screenshot.png';
 import {Dropzone, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {useUploadFile} from '@tryghost/admin-x-framework/api/files';
 
 function PinturaModal() {

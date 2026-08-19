@@ -1,18 +1,18 @@
 import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview';
-import ColorSwatchField from '@/settings/app/components/color-swatch-field';
-import HtmlField from '@/settings/app/components/html-field';
+import ColorSwatchField from '@/settings/components/color-swatch-field';
+import HtmlField from '@/settings/components/html-field';
 import React, {useRef, useState} from 'react';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, PreviewChrome, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {Laptop, Smartphone} from 'lucide-react';
-import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
-import {debounce} from '@/settings/app/utils/debounce';
+import {PreviewModalContent} from '@/settings/components/preview-modal';
+import {debounce} from '@/settings/utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 type SidebarProps = {
     announcementContent?: string;

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import UniversalImportModal from '@/settings/app/components/settings/advanced/migration-tools/universal-import-modal';
-import {ConfirmationProvider} from '@/settings/app/components/providers/confirmation-provider';
+import {ConfirmationProvider} from '@/settings/providers/confirmation-provider';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 
 const {mockImportContent, mockImportContentCSV, mockUseFeatureFlag, mockHandleError} = vi.hoisted(() => ({
@@ -25,7 +25,7 @@ vi.mock('@tryghost/admin-x-framework/hooks', async () => {
     return {...actual, useHandleError: () => mockHandleError};
 });
 
-vi.mock('@/settings/app/hooks/use-feature-flag', () => ({
+vi.mock('@/settings/hooks/use-feature-flag', () => ({
     default: (flag: string) => mockUseFeatureFlag(flag)
 }));
 

@@ -1,23 +1,23 @@
 import React, {useEffect, useRef, useState} from 'react';
-import StripeButton from '@/settings/app/components/stripe-button';
+import StripeButton from '@/settings/components/stripe-button';
 import TiersList from './tiers/tiers-list';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import clsx from 'clsx';
-import useCurrencyInput from '@/settings/app/hooks/use-currency-input';
+import useCurrencyInput from '@/settings/hooks/use-currency-input';
 import {Button, Field, FieldDescription, FieldError, FieldLabel, Indicator, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {ChevronDown} from 'lucide-react';
-import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
+import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {type Setting, checkStripeEnabled, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
+import {currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/currency';
 import {formatNumber} from '@tryghost/shade/utils';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(

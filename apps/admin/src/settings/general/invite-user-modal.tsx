@@ -1,7 +1,7 @@
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
-import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
+import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Stack} from '@tryghost/shade/primitives';
 import {toast} from 'sonner';
@@ -9,9 +9,9 @@ import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/in
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
 

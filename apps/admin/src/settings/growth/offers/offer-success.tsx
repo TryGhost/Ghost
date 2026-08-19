@@ -1,15 +1,15 @@
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import SettingsBreadcrumbs from '@/settings/app/components/settings/settings-breadcrumbs';
+import BrandIcon from '@/settings/components/icons/brand-icon';
+import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
 import {Button, Input} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {currencyToDecimal} from '@/settings/app/utils/currency';
+import {currencyToDecimal} from '@/settings/utils/currency';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     const {updateRoute} = useSettingsNavigation();

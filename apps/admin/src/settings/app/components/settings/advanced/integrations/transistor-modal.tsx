@@ -1,18 +1,18 @@
 import APIKeys from './api-keys';
-import BookmarkThumb from '@/settings/app/assets/images/integrations/ghost-transistor.png';
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
+import BookmarkThumb from '@/settings/assets/images/integrations/ghost-transistor.png';
+import BrandIcon from '@/settings/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 function TransistorModal() {
     const {updateRoute} = useSettingsNavigation();

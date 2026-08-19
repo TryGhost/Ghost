@@ -1,12 +1,12 @@
 import BetaFeatures from './labs/beta-features';
-import LabsBubbles from '@/settings/app/assets/images/labs-bg.svg';
+import LabsBubbles from '@/settings/assets/images/labs-bg.svg';
 import PrivateFeatures from './labs/private-features';
 import React, {useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {useAutoExpandable} from '@/settings/app/hooks/use-auto-expandable';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useAutoExpandable} from '@/settings/hooks/use-auto-expandable';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 type LabsTab = 'labs-private-features' | 'labs-beta-features';
 

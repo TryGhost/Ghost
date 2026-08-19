@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
+import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
-import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
+import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';

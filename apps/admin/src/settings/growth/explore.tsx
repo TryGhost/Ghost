@@ -1,18 +1,18 @@
-import FakeLogo from '@/settings/app/assets/images/explore-default-logo.png';
+import FakeLogo from '@/settings/assets/images/explore-default-logo.png';
 import React, {useEffect, useState} from 'react';
-import SettingImg from '@/settings/app/assets/images/ghost-explore.png';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import SettingImg from '@/settings/assets/images/ghost-explore.png';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Button} from '@tryghost/shade/components';
 import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
 import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

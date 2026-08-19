@@ -1,12 +1,12 @@
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
+import BrandIcon from '@/settings/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 function UnsplashModal() {
     const {updateRoute} = useSettingsNavigation();

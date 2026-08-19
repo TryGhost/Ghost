@@ -5,7 +5,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 function ContentApiModal() {
     const {updateRoute} = useSettingsNavigation();

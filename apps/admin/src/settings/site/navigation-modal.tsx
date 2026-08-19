@@ -1,15 +1,15 @@
 import NavigationEditForm from './navigation/navigation-edit-form';
-import useNavigationEditor, {type NavigationItem} from '@/settings/app/hooks/site/use-navigation-editor';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import useNavigationEditor, {type NavigationItem} from '@/settings/hooks/site/use-navigation-editor';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useCallback, useMemo, useState} from 'react';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 function NavigationModal() {
     const {updateRoute} = useSettingsNavigation();

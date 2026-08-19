@@ -1,4 +1,4 @@
-import IframeBuffering from '@/settings/app/utils/iframe-buffering';
+import IframeBuffering from '@/settings/utils/iframe-buffering';
 import React, {useCallback, useMemo} from 'react';
 
 const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string, visibility?: string[]) => {

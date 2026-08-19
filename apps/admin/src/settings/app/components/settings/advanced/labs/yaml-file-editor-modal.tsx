@@ -1,4 +1,4 @@
-import CodeEditor from '@/settings/app/components/code-editor';
+import CodeEditor from '@/settings/components/code-editor';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';

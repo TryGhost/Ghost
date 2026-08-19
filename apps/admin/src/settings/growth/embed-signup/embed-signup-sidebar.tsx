@@ -1,7 +1,7 @@
-import ColorPickerField from '@/settings/app/components/color-picker-field';
+import ColorPickerField from '@/settings/components/color-picker-field';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldGroup, FieldLabel, MultiSelectCombobox, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {type EmbedSignupLayout} from '@/settings/app/utils/generate-embed-code';
+import {type EmbedSignupLayout} from '@/settings/utils/generate-embed-code';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';

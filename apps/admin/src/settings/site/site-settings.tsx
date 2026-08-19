@@ -3,7 +3,7 @@ import ChangeTheme from './change-theme';
 import DesignSetting from './design-setting';
 import Navigation from './navigation';
 import React from 'react';
-import SearchableSection from '@/settings/app/components/searchable-section';
+import SearchableSection from '@/settings/components/searchable-section';
 import {searchKeywords} from './search-keywords';
 
 const SiteSettings: React.FC = () => {

@@ -1,12 +1,12 @@
-import CodeEditor from '@/settings/app/components/code-editor';
+import CodeEditor from '@/settings/components/code-editor';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useSaveButton} from '@/settings/app/hooks/use-save-button';
+import {useSaveButton} from '@/settings/hooks/use-save-button';
 
 interface CodeModalProps {
     onClose: () => void;

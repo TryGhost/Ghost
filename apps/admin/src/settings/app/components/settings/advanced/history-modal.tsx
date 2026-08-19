@@ -1,10 +1,10 @@
-import InfiniteScrollListener from '@/settings/app/components/infinite-scroll-listener';
+import InfiniteScrollListener from '@/settings/components/infinite-scroll-listener';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
 import {ActionList, ActionListItem, ActionListItemContent, Avatar, Button, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
 import {ChevronDown, History, Pen, Plus, Trash2, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {useParams} from '@tryghost/admin-x-framework';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {formatNumber} from '@tryghost/shade/utils';

@@ -3,7 +3,7 @@ import {type User, useUpdatePassword} from '@tryghost/admin-x-framework/api/user
 import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {toast} from 'sonner';
 import {useEffect, useRef, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const BAD_PASSWORDS = [

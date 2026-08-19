@@ -1,5 +1,5 @@
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
-import {currencyToDecimal, getSymbol} from '@/settings/app/utils/currency';
+import {currencyToDecimal, getSymbol} from '@/settings/utils/currency';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 

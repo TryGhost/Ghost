@@ -3,7 +3,7 @@ import React from 'react';
 import {Button, SortableList} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {type NavigationEditor} from '@/settings/app/hooks/site/use-navigation-editor';
+import {type NavigationEditor} from '@/settings/hooks/site/use-navigation-editor';
 import {navigationColumnClasses, navigationDragHandleSpacerClasses, navigationRowClasses} from './navigation-layout';
 
 const columnLabelClasses = 'text-xs font-semibold text-muted-foreground';

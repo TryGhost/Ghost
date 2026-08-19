@@ -27,7 +27,7 @@ import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 import {formatNumber} from '@tryghost/shade/utils';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import type {SelectedNode} from './theme-file-tree';
 import type {ThemeEditorConfirmModalProps} from './theme-editor-confirm-modal';
 import type {ThemeEditorFile} from './theme-editor-utils';

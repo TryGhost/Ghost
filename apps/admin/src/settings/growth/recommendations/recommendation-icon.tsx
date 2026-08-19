@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import GhostLogo from '@/settings/app/assets/images/ghost-favicon.png';
+import GhostLogo from '@/settings/assets/images/ghost-favicon.png';
 import React, {useState} from 'react';
 
 interface Props {

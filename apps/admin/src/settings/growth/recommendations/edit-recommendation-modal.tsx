@@ -5,7 +5,7 @@ import {Button} from '@tryghost/shade/components';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface EditRecommendationModalProps {

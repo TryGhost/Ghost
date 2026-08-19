@@ -1,19 +1,19 @@
 import APIKeys from './api-keys';
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
+import BrandIcon from '@/settings/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import ZapierLogo from '@/settings/app/assets/images/zapier-logo.svg';
+import ZapierLogo from '@/settings/assets/images/zapier-logo.svg';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useSettingsApp} from '@/settings/app/components/providers/settings-app-provider';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useSettingsApp} from '@/settings/providers/settings-app-context';
 
 export interface ZapierTemplate {
     ghostImage: string;

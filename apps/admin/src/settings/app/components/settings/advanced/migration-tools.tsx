@@ -1,9 +1,9 @@
 import MigrationToolsExport from './migration-tools/migration-tools-export';
 import MigrationToolsImport from './migration-tools/migration-tools-import';
 import React, {useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 type MigrationTab = 'import' | 'export';
 

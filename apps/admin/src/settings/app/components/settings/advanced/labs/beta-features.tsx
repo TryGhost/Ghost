@@ -8,9 +8,9 @@ import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+import {DialogPortal} from '@/settings/providers/dialog-portal';
 
 const IS_AUTOMATIONS_BETA_ACTIVE = true;
 

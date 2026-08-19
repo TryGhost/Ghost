@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useCurrencyInput from '@/settings/app/hooks/use-currency-input';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useCurrencyInput from '@/settings/hooks/use-currency-input';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButton, CopyFieldLabel, CopyFieldValue, Field, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {ChevronDown} from 'lucide-react';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
+import {currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/currency';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {parseTipsAndDonationsSettings} from './tips-and-donations-settings';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 // Stripe doesn't allow amounts over 10,000 as a preset amount
 const MAX_AMOUNT = 10_000;

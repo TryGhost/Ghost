@@ -1,8 +1,8 @@
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import CustomFieldModal from './custom-fields/custom-field-modal';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {TextCursorInput} from 'lucide-react';
@@ -10,9 +10,9 @@ import {arrayMove} from '@dnd-kit/sortable';
 import {inOrderOf, memberCustomFieldsDataType, useBrowseMemberCustomFieldsIncludingArchived, useReorderMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
-import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+import {DialogPortal} from '@/settings/providers/dialog-portal';
 
 // How many fields render before the list collapses behind "Show all" — the
 // recommendations list's preview size.

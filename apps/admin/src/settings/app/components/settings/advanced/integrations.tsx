@@ -1,21 +1,21 @@
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import IntegrationsSettingsImg from '@/settings/app/assets/images/integrations-settings.png';
+import BrandIcon from '@/settings/components/icons/brand-icon';
+import IntegrationsSettingsImg from '@/settings/assets/images/integrations-settings.png';
 import React, {useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {DEFAULT_UPGRADE_ROUTE} from '@tryghost/admin-x-framework/api/config';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,

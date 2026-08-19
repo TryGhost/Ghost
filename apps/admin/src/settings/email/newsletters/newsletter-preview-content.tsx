@@ -1,12 +1,12 @@
-import CoverImage from '@/settings/app/assets/images/user-cover.jpg';
-import LatestPosts1 from '@/settings/app/assets/images/latest-posts-1.jpg';
-import LatestPosts2 from '@/settings/app/assets/images/latest-posts-2.jpg';
-import LatestPosts3 from '@/settings/app/assets/images/latest-posts-3.jpg';
+import CoverImage from '@/settings/assets/images/user-cover.jpg';
+import LatestPosts1 from '@/settings/assets/images/latest-posts-1.jpg';
+import LatestPosts2 from '@/settings/assets/images/latest-posts-2.jpg';
+import LatestPosts3 from '@/settings/assets/images/latest-posts-3.jpg';
 import clsx from 'clsx';
 import {GhostOrb} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const NewsletterPreviewContent: React.FC<{
     senderName?: string;

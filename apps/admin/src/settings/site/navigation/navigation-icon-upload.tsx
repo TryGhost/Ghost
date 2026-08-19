@@ -1,7 +1,7 @@
 import React from 'react';
 import {Trash2, Upload} from 'lucide-react';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '@/settings/app/hooks/site/use-navigation-editor';
+import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '@/settings/hooks/site/use-navigation-editor';
 
 type NavigationIconUploadProps = {
     idPrefix: string;

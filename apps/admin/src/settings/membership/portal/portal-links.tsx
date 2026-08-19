@@ -5,7 +5,7 @@ import {ModalPage} from '@tryghost/shade/page-templates';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 interface PortalLinkPrefs {
     name: string;

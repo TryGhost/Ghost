@@ -1,12 +1,12 @@
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Button} from '@tryghost/shade/components';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useSettingsNavigation();
