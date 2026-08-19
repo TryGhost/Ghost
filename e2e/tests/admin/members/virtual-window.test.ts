@@ -85,6 +85,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         const renderedCount = await reactMemberRows.count();
         const targetRowLocator = reactMemberRows.nth(Math.max(0, renderedCount - 5));
+        await targetRowLocator.scrollIntoViewIfNeeded();
         const targetRow = {
             index: Number(await targetRowLocator.getAttribute('data-index')),
             text: await targetRowLocator.textContent(),

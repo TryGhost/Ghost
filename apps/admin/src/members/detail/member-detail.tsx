@@ -19,7 +19,7 @@ import {getMember, useAddMember, useEditMember} from '@tryghost/admin-x-framewor
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {NavigationType, useBlocker} from 'react-router';
-import {useIsOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
+import {isOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
@@ -282,11 +282,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
     };
 
     useConfirmUnload(activeMutation.isPending || hasUnsavedChanges);
-    const onRouterEntryRef = useIsOnRouterHistoryEntry();
     const blocker = useBlocker(({currentLocation, nextLocation, historyAction}) => {
         // A POP can only be undone from a router-created entry; elsewhere the router
         // would miscount the delta and jump or reload, so let those through.
-        if (historyAction === NavigationType.Pop && !onRouterEntryRef.current) {
+        if (historyAction === NavigationType.Pop && !isOnRouterHistoryEntry()) {
             return false;
         }
         return !bypassGuardRef.current && hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname;

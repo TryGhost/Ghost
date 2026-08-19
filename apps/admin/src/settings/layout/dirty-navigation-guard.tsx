@@ -2,7 +2,7 @@ import {DirtyConfirmDialog} from '@tryghost/shade/patterns';
 import {NavigationType, useBlocker} from 'react-router';
 import {useConfirmUnload} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
-import {useIsOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
+import {isOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
 import {useRef} from 'react';
 import {dialogIdentity} from './dirty-navigation-guard-identity';
 
@@ -11,15 +11,13 @@ import {dialogIdentity} from './dirty-navigation-guard-identity';
 export const DirtyNavigationGuard: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();
     const leaveConfirmedRef = useRef(false);
-    const onRouterEntryRef = useIsOnRouterHistoryEntry();
-
     useConfirmUnload(isDirty);
 
     const blocker = useBlocker(({currentLocation, nextLocation, historyAction}) => {
         if (!isDirty || historyAction !== NavigationType.Pop) {
             return false;
         }
-        if (!onRouterEntryRef.current) {
+        if (!isOnRouterHistoryEntry()) {
             return false;
         }
         return dialogIdentity(currentLocation.pathname) !== dialogIdentity(nextLocation.pathname);

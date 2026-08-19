@@ -13,7 +13,7 @@ import {dequal} from 'dequal';
 import {getTagBySlug, useAddTag, useEditTag} from '@tryghost/admin-x-framework/api/tags';
 import {toast} from 'sonner';
 import {NavigationType, useBlocker} from 'react-router';
-import {useIsOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
+import {isOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
 import type {TagsResponseType} from '@tryghost/admin-x-framework/api/tags';
@@ -282,11 +282,10 @@ const TagDetail: React.FC = () => {
 
     const shouldGuardNavigation = activeMutation.isPending || hasPendingImageUpload || isDeleting || hasUnsavedChanges;
     useConfirmUnload(shouldGuardNavigation);
-    const onRouterEntryRef = useIsOnRouterHistoryEntry();
     const blocker = useBlocker(({currentLocation, nextLocation, historyAction}) => {
         // A POP can only be undone from a router-created entry; elsewhere the router
         // would miscount the delta and jump or reload, so let those through.
-        if (historyAction === NavigationType.Pop && !onRouterEntryRef.current) {
+        if (historyAction === NavigationType.Pop && !isOnRouterHistoryEntry()) {
             return false;
         }
         const shouldBlock = !bypassGuardRef.current && shouldGuardNavigation && currentLocation.pathname !== nextLocation.pathname;

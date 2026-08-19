@@ -87,4 +87,22 @@ describe('Member detail leave guard', () => {
         await page.getByRole('button', {name: 'Leave'}).click();
         await expect.poll(currentRoute).toBe('/members');
     });
+
+    it('allows a back navigation to an untracked history entry', async () => {
+        const m = member({name: 'Ada Lovelace'});
+        fakeMemberDetailWorld(m);
+        await renderAdminApp('/members');
+
+        // Native hash navigations do not carry react-router's history index.
+        // Preserve that legacy target shape before opening the React detail.
+        window.history.replaceState({}, '');
+        await page.getByRole('link', {name: 'Ada Lovelace'}).click();
+        await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
+        await page.getByLabelText('Name').fill('Ada B');
+
+        window.history.back();
+
+        await expect.poll(currentRoute).toBe('/members');
+        expect(page.getByText('Discard unsaved changes?').query()).toBeNull();
+    });
 });
