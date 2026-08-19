@@ -4,16 +4,16 @@ import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {FilterBar, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun} from '@/automations/proto/shared/mock';
-import type {LeftPanelProps} from './types';
+import type {LeftPanelProps} from './left-panel-types';
 import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
 import {SortHead, type SortState} from '@/automations/proto/float/sort-head';
 import {startedLabel} from '@/automations/proto/shared/member-runs';
 import {toAreaData} from '@/automations/proto/shared/chart';
 import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 
-// Variant B of the float concept's left pane. Same scroll behaviour as variant A
-// (search + filters roll up into a sticky bar as the cards scroll off), but with
-// a simpler read of the data:
+// The float concept's left pane: search + filters roll up into a sticky bar as
+// the cards scroll off, over a table of the members who've entered. The read of
+// the data it settled on:
 //
 // - All time by default. Coming in pre-filtered to 30 days meant the totals here
 //   silently disagreed with the automations list, which is the first thing anyone
@@ -26,11 +26,7 @@ import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 //   describing a run agree.
 // - "Entered" rather than "Started", which was ambiguous about whether it meant
 //   the run or the member.
-//
-// Variant C (variant-c.tsx) renders this same panel with `statusLeads` — the
-// status icon moves in front of the member name under a blank (but still
-// sortable) header. One base rather than a forked file, so the two variants can
-// only differ in the one thing they're comparing.
+
 
 const CHART_HEIGHT = 'h-44';
 
@@ -79,22 +75,7 @@ const RANGE_OPTIONS: {value: string; label: string}[] = [
 
 type EnrichedRun = {run: AutomationRun; status: StatusKey};
 
-// The one appended phrase in the status-leads layout: early exits carry their
-// reason after the name, lowercased so it continues the sentence ("Priya Nair
-// unsubscribed"). In-progress and completed rows stay bare — their glyphs are
-// self-explanatory, and the reason is the only text that adds something the icon
-// can't say. (Both a full labelled status column and suffixes on every row were
-// tried on the way here; one duplicated the glyph in words, the other made
-// every row talk.)
-const exitSuffix = (status: StatusKey, run: AutomationRun): string | null => {
-    if (status !== 'Exited early') {
-        return null;
-    }
-    const reason = run.exit_reason ?? 'Exited early';
-    return reason.charAt(0).toLowerCase() + reason.slice(1);
-};
-
-export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> = ({scenario, selectedMemberId, onSelectMember, onSearchOpenChange, onCollapse, headerDocked = false, statusLeads = false}) => {
+export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId, onSelectMember, onCollapse}) => {
     const {automation, metrics, runs} = scenario;
     const [range, setRange] = useState('all');
     const [query, setQuery] = useState('');
@@ -107,7 +88,6 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
     // the automation title out of the way.
     const toggleSearch = (open: boolean) => {
         setSearchOpen(open);
-        onSearchOpenChange?.(open);
     };
     // Newest first: the question this table answers is "who's in here now".
     const [sort, setSort] = useState<SortState<SortKey>>({key: 'entered', direction: 'desc'});
@@ -185,21 +165,13 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                 baseline. Outside the scroll container either way, so they stay put. */}
             <Inline
                 align="center"
-                className={cn(
-                    'shrink-0 pt-4 pr-6 pb-3',
-                    // Open search takes the whole strip, so it indents past the back
-                    // arrow rather than sitting under it — the exit stays reachable
-                    // while the title behind it is hidden. Docked, the arrow is up in
-                    // the bar, so there's nothing to clear.
-                    searchOpen && !headerDocked ? 'pl-16' : 'pl-6'
-                )}
+                className="shrink-0 px-6 pt-4 pb-3"
                 gap="sm"
-                justify={headerDocked && !searchOpen ? 'between' : 'end'}
+                justify={searchOpen ? 'end' : 'between'}
             >
-                {/* Named only when the pane is a region of its own. Under floating
-                    chrome the automation's title is the only title on screen, and a
-                    second one competing with it made the strip read as two headers. */}
-                {headerDocked && !searchOpen && (
+                {/* The pane is a region of its own under the header bar, so it says
+                    what it is. */}
+                {!searchOpen && (
                     <Text size="lg" weight="semibold">Performance</Text>
                 )}
                 {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
@@ -418,19 +390,15 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                             on, the two lines doubled up at rest. */}
                         <TableHeader className="border-b-0">
                             <TableRow className="border-b-0 hover:bg-transparent">
-                                {/* Status leading: the icon is the first thing in every
-                                    row, so grouping rows by it is what clicking this
-                                    header visibly does — the Member header sorts by
-                                    STATUS, with name as the tie-break inside each group. */}
-                                <SortHead label="Member" sort={sort} sortKey={statusLeads ? 'status' : 'member'} onSort={onSort} />
+                                <SortHead label="Member" sort={sort} sortKey="member" onSort={onSort} />
                                 <SortHead className="w-24" label="Entered" sort={sort} sortKey="entered" onSort={onSort} />
-                                {!statusLeads && <SortHead className="w-20" label="Status" sort={sort} sortKey="status" onSort={onSort} />}
+                                <SortHead className="w-20" label="Status" sort={sort} sortKey="status" onSort={onSort} />
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {sorted.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell className="py-6 text-center text-sm text-muted-foreground" colSpan={statusLeads ? 2 : 3}>No members match.</TableCell>
+                                    <TableCell className="py-6 text-center text-sm text-muted-foreground" colSpan={3}>No members match.</TableCell>
                                 </TableRow>
                             )}
                             {sorted.map(({run, status}) => {
@@ -449,38 +417,17 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                         onClick={() => onSelectMember(isSelected ? null : run.id)}
                                     >
                                         <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
-                                            {statusLeads ? (
-                                                <div className="flex min-w-0 items-center gap-2.5">
-                                                    <span className={cn('shrink-0', rowColor(status, run))} title={status}>{rowGlyph(status, run)}</span>
-                                                    {/* One truncating span so a long name + reason
-                                                        clips as a unit. The reason drops to muted —
-                                                        with most rows bare, the few that speak don't
-                                                        need full-strength text to be found, and muted
-                                                        keeps the name column reading as names. */}
-                                                    <span className="min-w-0 truncate text-base">
-                                                        <span className="font-semibold">{run.member.name}</span>
-                                                        {exitSuffix(status, run) && <span className="text-muted-foreground"> {exitSuffix(status, run)}</span>}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
-                                            )}
+                                            <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                         </TableCell>
                                         <TableCell className="w-24 p-4 align-middle group-hover:bg-transparent">
-                                            {/* Matches panels.tsx — same size and colour as
-                                                the member column, weight alone separating
-                                                them. Kept in step so the two left-pane
-                                                variants differ only where they mean to. */}
                                             <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                         </TableCell>
-                                        {!statusLeads && (
-                                            <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
-                                                {/* Icon only — the cards above name each state. */}
-                                                <div className={cn('flex justify-center', rowColor(status, run))} title={status}>
-                                                    {rowGlyph(status, run)}
-                                                </div>
-                                            </TableCell>
-                                        )}
+                                        <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
+                                            {/* Icon only — the cards above name each state. */}
+                                            <div className={cn('flex justify-center', rowColor(status, run))} title={status}>
+                                                {rowGlyph(status, run)}
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
                                 );
                             })}
@@ -492,6 +439,3 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
         </div>
     );
 };
-
-// Variant B proper: the trailing status column, as reviewed so far.
-export const LeftPanelVariantB: React.FC<LeftPanelProps> = props => <LeftPanelBase {...props} />;

@@ -104,12 +104,10 @@ const appRoutes: RouteObject[] = [
         handle: {hideAdminSidebar: true, requiresAccess: canManageAutomations} satisfies AdminRouteHandle & AccessRouteHandle,
         lazy: lazyComponent(() => import("./automations/editor")),
     },
-    // Automations prototype concepts. Each concept owns its own route subtree
-    // under /automations-proto/<concept>, so concepts can diverge freely in
-    // layout and architecture. Reached directly by URL — there's no index; the
-    // sidebar item points at the default concept (float), and surface remains
-    // URL-only. Adding a concept = a new folder + a route block here (no nav
-    // edits). Same access rule as the real automations routes.
+    // Automations prototype. Reached directly by URL — there's no index; the
+    // sidebar item points at it. Same access rule as the real automations
+    // routes. (A second concept, "surface", lived here until its variants were
+    // decided; it's in the branch history if it's ever wanted back.)
     {
         path: "/automations-proto/float",
         handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
@@ -121,16 +119,6 @@ const appRoutes: RouteObject[] = [
         path: "/automations-proto/float/:id",
         handle: {hideAdminSidebar: true, requiresAccess: canManageAutomations} satisfies AdminRouteHandle & AccessRouteHandle,
         lazy: lazyComponent(() => import("./automations/proto/float/detail")),
-    },
-    {
-        path: "/automations-proto/surface",
-        handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
-        lazy: lazyComponent(() => import("./automations/proto/surface/list")),
-    },
-    {
-        path: "/automations-proto/surface/:id",
-        handle: {hideAdminSidebar: true, requiresAccess: canManageAutomations} satisfies AdminRouteHandle & AccessRouteHandle,
-        lazy: lazyComponent(() => import("./automations/proto/surface/detail")),
     },
     {
         // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
