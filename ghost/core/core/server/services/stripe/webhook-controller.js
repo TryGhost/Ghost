@@ -21,6 +21,8 @@ module.exports = class WebhookController {
             'customer.subscription.created': this.subscriptionEvent,
             'invoice.payment_succeeded': this.invoiceEvent,
             'checkout.session.completed': this.checkoutSessionEvent,
+            'checkout.session.async_payment_succeeded': this.checkoutSessionEvent,
+            'checkout.session.async_payment_failed': this.checkoutSessionEvent,
             'charge.refunded': this.chargeRefundedEvent
         };
     }
@@ -119,7 +121,7 @@ module.exports = class WebhookController {
             return;
         }
 
-        await this.handlers[event.type].call(this, event.data.object);
+        await this.handlers[event.type].call(this, event.data.object, event.type);
     }
 
     /**
@@ -143,10 +145,11 @@ module.exports = class WebhookController {
     /**
      * Delegates any `checkout.session.*` events to the `checkoutSessionEventService`
      * @param {import('stripe').Stripe.Checkout.Session} session
+     * @param {import('stripe').Stripe.Event.Type} eventType
      * @private
      */
-    async checkoutSessionEvent(session) {
-        await this.checkoutSessionEventService.handleEvent(session);
+    async checkoutSessionEvent(session, eventType) {
+        await this.checkoutSessionEventService.handleEvent(session, eventType);
     }
 
     /**
