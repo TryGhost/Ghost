@@ -3,7 +3,7 @@
 /**
  * Builds the card asset manifest.
  *
- * Every card ships one optional CSS file and one optional JS file in
+ * Every card ships optional CSS and JS source files in
  * core/frontend/src/cards. A theme picks a subset of them via its `card_assets`
  * config, and Ghost serves that subset as /public/cards.min.{css,js}.
  *
@@ -32,12 +32,12 @@ const LOADERS = {
     js: {loader: 'js', target: ['es2020']}
 };
 
-// Some cards have multiple source files but a single public `card_assets` name.
-// Keep this mapping explicit so unrelated names that share a prefix are not
-// accidentally grouped together.
-const CARD_ASSET_GROUPS = {
-    header_v2: 'header'
-};
+// header_v2.css is a second stylesheet for the public `header` card, not a
+// separate configurable card. This exact path override is intentional — `_vN`
+// filename suffixes are not a convention for grouping card assets.
+const PUBLIC_CARD_ASSET_NAMES = new Map([
+    ['css/header_v2.css', 'header']
+]);
 
 export async function buildType(type, sourceDir = srcDir) {
     const dir = path.join(sourceDir, type);
@@ -49,12 +49,13 @@ export async function buildType(type, sourceDir = srcDir) {
         const contents = fs.readFileSync(path.join(dir, file), 'utf8');
         const {code} = await esbuild.transform(contents, {minify: true, ...LOADERS[type]});
         const sourceName = file.slice(0, -suffix.length);
-        const cardName = CARD_ASSET_GROUPS[sourceName] || sourceName;
+        const cardName = PUBLIC_CARD_ASSET_NAMES.get(`${type}/${file}`) || sourceName;
 
         if (Object.hasOwn(chunks, cardName)) {
             // Match the separator used when the runtime service concatenates
             // separate chunks, keeping the default bundle bytes stable.
-            chunks[cardName] += `\n${code}`;
+            const separator = type === 'js' ? ';\n' : '\n';
+            chunks[cardName] += `${separator}${code}`;
         } else {
             chunks[cardName] = code;
         }

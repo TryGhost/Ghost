@@ -26,22 +26,42 @@ const expectedHash = content => crypto.createHash('sha256').update(content).dige
 describe('Card Asset Manifest Builder', function () {
     let testDir,
         manifestPath,
-        manifest;
+        manifest,
+        ungroupedCssManifest,
+        shippedCssManifest;
 
     beforeAll(async function () {
         testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-card-assets-builder-tests-'));
         manifestPath = path.join(testDir, 'cards.manifest.json');
 
         const cssDir = path.join(testDir, 'css');
-        await fs.mkdir(cssDir);
+        const jsDir = path.join(testDir, 'js');
+        const ungroupedCssDir = path.join(testDir, 'ungrouped', 'css');
+        await Promise.all([
+            fs.mkdir(cssDir),
+            fs.mkdir(jsDir),
+            fs.mkdir(ungroupedCssDir, {recursive: true})
+        ]);
         await Promise.all([
             fs.writeFile(path.join(cssDir, 'gallery.css'), '.gallery { color: red; }'),
             fs.writeFile(path.join(cssDir, 'header.css'), '.kg-header-card { color: blue; }'),
-            fs.writeFile(path.join(cssDir, 'header_v2.css'), '.kg-header-card.kg-v2 { color: green; }')
+            fs.writeFile(path.join(cssDir, 'header_v2.css'), '.kg-header-card.kg-v2 { color: green; }'),
+            fs.writeFile(path.join(jsDir, 'header.js'), 'window.header = true;'),
+            fs.writeFile(path.join(jsDir, 'header_v2.js'), 'window.headerV2 = true;'),
+            fs.writeFile(path.join(ungroupedCssDir, 'gallery.css'), '.gallery { color: red; }'),
+            fs.writeFile(path.join(ungroupedCssDir, 'header.css'), '.kg-header-card { color: blue; }'),
+            // This sorts directly after header.css without triggering the path override,
+            // reconstructing the previous separately-keyed bundle for comparison.
+            fs.writeFile(path.join(ungroupedCssDir, 'headerz.css'), '.kg-header-card.kg-v2 { color: green; }')
         ]);
 
         const {buildType} = await import('../../../../scripts/build-card-assets.mjs');
-        manifest = {css: await buildType('css', testDir)};
+        manifest = {
+            css: await buildType('css', testDir),
+            js: await buildType('js', testDir)
+        };
+        ungroupedCssManifest = await buildType('css', path.join(testDir, 'ungrouped'));
+        shippedCssManifest = await buildType('css');
         await fs.writeFile(manifestPath, JSON.stringify(manifest));
     });
 
@@ -49,14 +69,29 @@ describe('Card Asset Manifest Builder', function () {
         await fs.rm(testDir, {recursive: true});
     });
 
-    it('groups every source file for a card under its public card name', function () {
+    it('maps header v2 CSS to the public header card name', function () {
         assert.deepEqual(Object.keys(manifest.css), ['gallery', 'header']);
         assert.match(manifest.css.header, /\.kg-header-card\{/);
         assert.match(manifest.css.header, /\.kg-header-card\.kg-v2\{/);
         assert.ok(manifest.css.header.indexOf('.kg-header-card{') < manifest.css.header.indexOf('.kg-header-card.kg-v2{'));
     });
 
-    it('excludes every grouped chunk by the public card name', function () {
+    it('does not infer public card names from version suffixes', function () {
+        assert.deepEqual(Object.keys(manifest.js), ['header', 'header_v2']);
+    });
+
+    it('does not expose a versioned header card name from the shipped CSS', function () {
+        assert.deepEqual(Object.keys(shippedCssManifest).filter(name => name.startsWith('header')), ['header']);
+    });
+
+    it('preserves the default bundle bytes when combining the header chunks', function () {
+        const cardAssets = new CardAssetService({manifest: manifestPath, config: true});
+        const previousContent = Object.values(ungroupedCssManifest).join('\n');
+
+        assert.equal(cardAssets.getBundle('css').content, previousContent);
+    });
+
+    it('excludes both header styles by the public header card name', function () {
         const cardAssets = new CardAssetService({
             manifest: manifestPath,
             config: {exclude: ['header']}
@@ -66,7 +101,7 @@ describe('Card Asset Manifest Builder', function () {
         assert.doesNotMatch(cardAssets.getBundle('css').content, /\.kg-header-card/);
     });
 
-    it('includes every grouped chunk by the public card name', function () {
+    it('includes both header styles by the public header card name', function () {
         const cardAssets = new CardAssetService({
             manifest: manifestPath,
             config: {include: ['header']}
