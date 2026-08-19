@@ -13,6 +13,7 @@ const tpl = require('@tryghost/tpl');
 
 export interface ImportRequest {
   filePath: string;
+  mapping?: Record<string, string>;
 }
 
 // The id is what a completion report will be looked up by.
@@ -33,7 +34,7 @@ export interface PostsRepository {
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
 
-type ReadRows = (path: string) => Promise<PostImportRow[]>;
+type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PostImportRow[]>;
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
@@ -113,7 +114,7 @@ class ContentCSVImporter {
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     let rows: PostImportRow[];
     try {
-      rows = await this._readRows(request.filePath);
+      rows = await this._readRows(request.filePath, request.mapping);
     } catch (error) {
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),

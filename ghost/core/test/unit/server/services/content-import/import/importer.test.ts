@@ -144,6 +144,22 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.created.length, 2);
   });
 
+  it('passes a caller-supplied mapping to the CSV reader', async function () {
+    const h = harness();
+    let receivedMapping: Record<string, string> | undefined;
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      readRows: async (_path, mapping) => {
+        receivedMapping = mapping;
+        return [row('Mapped')];
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', mapping: { Headline: 'title' } });
+
+    assert.deepEqual(receivedMapping, { Headline: 'title' });
+  });
+
   it('writes one post per row, in order, under the importing options', async function () {
     const h = harness();
 

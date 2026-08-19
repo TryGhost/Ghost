@@ -8,7 +8,10 @@ const FIELD_BY_HEADER: Record<string, string> = {
   published_at: 'published_at',
 };
 
-export default async function readPostRows(path: string): Promise<PostImportRow[]> {
-  const rows = await parseCSV(path, FIELD_BY_HEADER);
+export default async function readPostRows(
+  path: string,
+  mapping?: Record<string, string>,
+): Promise<PostImportRow[]> {
+  const rows = await parseCSV(path, mapping ?? FIELD_BY_HEADER);
   return rows.map((row) => postImportRowSchema.parse(row));
 }

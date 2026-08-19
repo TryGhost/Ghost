@@ -9,7 +9,26 @@ import { ImportRunStore } from './import/store';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
-const importRequestSchema = z.object({ filePath: z.string().min(1) });
+const importableFields = new Set(['title', 'html', 'published_at']);
+const mappingSchema = z.record(z.string(), z.string()).superRefine((mapping, ctx) => {
+  const targets = new Set<string>();
+  for (const [header, target] of Object.entries(mapping)) {
+    if (!header || header in Object.prototype) {
+      ctx.addIssue({ code: 'custom', message: `Invalid CSV header mapping: "${header}"` });
+    }
+    if (target && !importableFields.has(target)) {
+      ctx.addIssue({ code: 'custom', message: `Unknown post field mapping: "${target}"` });
+    }
+    if (target && targets.has(target)) {
+      ctx.addIssue({ code: 'custom', message: `Post field is mapped more than once: "${target}"` });
+    }
+    targets.add(target);
+  }
+});
+const importRequestSchema = z.object({
+  filePath: z.string().min(1),
+  mapping: mappingSchema.optional(),
+});
 // A junk timezone setting falls back to UTC rather than mis-stamping the batch tag.
 const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 

@@ -109,7 +109,7 @@ describe('UniversalImportModal', () => {
     expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
   });
 
-  it('sends CSV files to the posts upload endpoint when csvContentImporter is enabled', async () => {
+  it('maps CSV files before sending them to the posts upload endpoint', async () => {
     mockUseFeatureFlag.mockReturnValue(true);
     showModal();
 
@@ -121,9 +121,34 @@ describe('UniversalImportModal', () => {
     const file = new File(['title\nHello'], 'posts.csv', { type: 'text/csv' });
     await dropFile(file);
 
-    await waitFor(() => expect(mockImportContentCSV).toHaveBeenCalledWith(file));
+    expect(await screen.findByText('Map CSV fields')).toBeInTheDocument();
+    expect(screen.getByText('title')).toBeInTheDocument();
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        file,
+        mapping: { title: '' },
+      }),
+    );
     expect(mockImportContent).not.toHaveBeenCalled();
     expect(await screen.findByTestId('confirmation-modal')).toHaveTextContent('Import in progress');
+  });
+
+  it('can start over after selecting a CSV file', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    await dropFile(new File(['title\nHello'], 'posts.csv', { type: 'text/csv' }));
+    expect(await screen.findByText('Map CSV fields')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start over' }));
+
+    expect(await fileInput()).toBeInTheDocument();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
   });
 
   it('still sends JSON files to the db import when csvContentImporter is enabled', async () => {
@@ -144,6 +169,8 @@ describe('UniversalImportModal', () => {
     showModal();
 
     await dropFile(new File(['title\nHello'], 'posts.csv', { type: 'text/csv' }));
+    await screen.findByText('Map CSV fields');
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
 
     await waitFor(() => expect(mockHandleError).toHaveBeenCalledWith(error));
     expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();

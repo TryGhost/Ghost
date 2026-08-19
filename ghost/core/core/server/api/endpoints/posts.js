@@ -134,6 +134,7 @@ const controller = {
       // the 202.
       const { importId, total } = await contentImportService.importCSV({
         filePath: frame.file.path,
+        mapping: frame.data.mapping,
       });
       return { meta: { import_id: importId, total } };
     },
