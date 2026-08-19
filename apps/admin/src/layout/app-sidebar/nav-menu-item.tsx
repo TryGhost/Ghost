@@ -2,6 +2,8 @@ import React from 'react';
 import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
 import {cn, LucideIcon} from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
+import { Link } from '@tryghost/admin-x-framework';
+import { isEmberOwnedRoute } from '@/routes';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (
@@ -114,10 +116,12 @@ function NavMenuLink({
     children,
     ...props
 }: NavMenuLinkProps) {
-    const href = `#/${to?.replace(/^\/?#\//, '')}`;
+    const path = `/${to?.replace(/^\/?#\//, '')}`;
     const computedIsActive = useIsActiveLink({ path: to, activeOnSubpath });
     const isActive = controlledIsActive !== undefined ? controlledIsActive : computedIsActive;
     const { isMobile, setOpenMobile } = useSidebar();
+    const isExternal = target === '_blank';
+    const useRouterLink = !isExternal && !isEmberOwnedRoute(path.split('?')[0]);
 
     const handleClick = () => {
         if (isMobile) {
@@ -130,15 +134,27 @@ function NavMenuLink({
             isActive={isActive}
             asChild
             {...props}>
-            <a
-                aria-current={isActive ? 'page' : undefined}
-                href={target === '_blank' ? to : href}
-                rel={target === '_blank' ? rel ?? 'noopener noreferrer' : rel}
-                target={target}
-                onClick={handleClick}
-            >
-                {children}
-            </a>
+            {useRouterLink ? (
+                <Link
+                    aria-current={isActive ? 'page' : undefined}
+                    rel={rel}
+                    target={target}
+                    to={path}
+                    onClick={handleClick}
+                >
+                    {children}
+                </Link>
+            ) : (
+                <a
+                    aria-current={isActive ? 'page' : undefined}
+                    href={isExternal ? to : `#${path}`}
+                    rel={isExternal ? rel ?? 'noopener noreferrer' : rel}
+                    target={target}
+                    onClick={handleClick}
+                >
+                    {children}
+                </a>
+            )}
         </SidebarMenuButton>
     )
 }
