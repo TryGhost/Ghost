@@ -1,25 +1,12 @@
 import {DirtyConfirmDialog} from '@tryghost/shade/patterns';
 import {NavigationType, useBlocker, useLocation} from 'react-router';
-import {matchRoutes} from '@tryghost/admin-x-framework';
-import {type SettingsRouteHandle, settingsRouteChildren} from '@/settings/routes';
 import {useConfirmUnload} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
 import {useEffect, useRef} from 'react';
+import {z} from 'zod';
+import {dialogIdentity} from './dirty-navigation-guard-identity';
 
-// Which dialog a settings path renders: routes sharing a `handle.dialogGroup` are one
-// dialog instance (tabs/steps), any other leaf route is its own, and section roots
-// or anything outside settings count as leaving every dialog.
-const dialogIdentity = (pathname: string): string => {
-    if (!pathname.startsWith('/settings')) {
-        return 'outside';
-    }
-    const leaf = matchRoutes(settingsRouteChildren, pathname.slice('/settings'.length) || '/')?.at(-1)?.route;
-    if (!leaf?.lazy) {
-        return 'settings';
-    }
-    const group = (leaf.handle as SettingsRouteHandle | undefined)?.dialogGroup;
-    return group ? `group:${group}` : `route:${leaf.path ?? ''}`;
-};
+const historyStateSchema = z.record(z.string(), z.unknown()).nullable();
 
 // Only history (back/forward) navigations are blocked: every in-app way out of a
 // dirty settings dialog already runs its own dirty confirmation before navigating.
@@ -31,7 +18,8 @@ export const DirtyNavigationGuard: React.FC = () => {
     // remember whether the entry being left was created by the router (it has a key).
     const onRouterEntryRef = useRef(false);
     useEffect(() => {
-        onRouterEntryRef.current = typeof (window.history.state as {key?: unknown} | null)?.key === 'string';
+        const historyState = historyStateSchema.safeParse(window.history.state);
+        onRouterEntryRef.current = historyState.success && typeof historyState.data?.key === 'string';
     }, [location]);
 
     useConfirmUnload(isDirty);
