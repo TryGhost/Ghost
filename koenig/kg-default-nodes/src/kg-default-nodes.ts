@@ -44,6 +44,7 @@ export * from './nodes/callout/CalloutNode.js';
 export * from './nodes/aside/AsideNode.js';
 export * from './nodes/horizontalrule/HorizontalRuleNode.js';
 export * from './nodes/html/HtmlNode.js';
+export * from './nodes/artifact/ArtifactNode.js';
 export * from './nodes/toggle/ToggleNode.js';
 export * from './nodes/button/ButtonNode.js';
 export * from './nodes/bookmark/BookmarkNode.js';

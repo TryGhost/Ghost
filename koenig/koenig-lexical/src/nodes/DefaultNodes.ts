@@ -11,6 +11,7 @@ import {
     extendedTextNodeReplacement
 } from '@tryghost/kg-default-nodes';
 
+import {ArtifactNode} from './ArtifactNode';
 import {AsideNode} from './AsideNode';
 import {AudioNode} from './AudioNode';
 import {BookmarkNode} from './BookmarkNode';
@@ -50,6 +51,7 @@ const DEFAULT_NODES = [
     ListNode,
     ListItemNode,
     AsideNode,
+    ArtifactNode,
     LinkNode,
     CodeBlockNode,
     HorizontalRuleNode,

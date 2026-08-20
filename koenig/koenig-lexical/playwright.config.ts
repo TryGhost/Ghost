@@ -15,7 +15,7 @@ dns.setDefaultResultOrder('verbatim');
 // "request for X is not in cache"). The async loader path handles it fine.
 // Fixed in Node 24.x — drop the flag when the workspace moves off Node 22.
 
-export const E2E_PORT = 5174;
+export const E2E_PORT = Number(process.env.E2E_PORT) || 5174;
 export default defineConfig({
     outputDir: path.resolve(__dirname, 'test-results'),
     testDir: './test/e2e',
@@ -62,7 +62,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `pnpm dev:test`,
+        command: `pnpm exec concurrently "vite --port ${E2E_PORT}" "pnpm multiplayer"`,
         url: `http://localhost:${E2E_PORT}`,
         reuseExistingServer: !process.env.CI,
         timeout: 10000

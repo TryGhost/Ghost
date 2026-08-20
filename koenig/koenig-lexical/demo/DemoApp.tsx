@@ -58,8 +58,10 @@ const defaultCardConfig = {
     siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,
     siteUrl: window.location.origin,
     membersEnabled: true,
+    openArtifact: async ({artifact}) => artifact,
     stripeEnabled: true,
     feature: {
+        designBuilder: true,
         transistor: false
     },
     // this enables the internal linking feature, can be disabled with `/#/?searchLinks=false`

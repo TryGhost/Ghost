@@ -1,3 +1,4 @@
+import ArtifactPlugin from './ArtifactPlugin';
 import AtLinkPlugin from './AtLinkPlugin.jsx';
 import CallToActionPlugin from '../plugins/CallToActionPlugin';
 import EmEnDashPlugin from '../plugins/EmEnDashPlugin';
@@ -43,6 +44,7 @@ export const AllDefaultPlugins = () => {
 
             {/* Card Plugins */}
             <AudioPlugin />
+            <ArtifactPlugin />
             <ImagePlugin />
             <GalleryPlugin />
             <VideoPlugin />

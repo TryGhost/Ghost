@@ -1,4 +1,5 @@
 import React from 'react';
+import type {ArtifactData} from '@tryghost/kg-default-nodes';
 import type {Doc} from 'yjs';
 
 export interface FileTypeConfig {
@@ -70,9 +71,17 @@ export interface CardConfigPost {
 
 // no index signature: a new flag must be declared here before a card can read it
 export interface CardConfigFeature {
+    designBuilder?: boolean;
     transistor?: boolean;
     paywallImprovements?: boolean;
 }
+
+export interface OpenArtifactRequest {
+    nodeKey: string;
+    artifact: ArtifactPayload;
+}
+
+export type ArtifactPayload = Required<ArtifactData>;
 
 export interface CardConfig {
     createSnippet?: (snippet: Snippet) => void;
@@ -88,6 +97,7 @@ export interface CardConfig {
     renderLabels?: boolean;
     image?: {allowedWidths?: string[]};
     feature?: CardConfigFeature;
+    openArtifact?: (request: OpenArtifactRequest) => Promise<ArtifactPayload | null>;
     post?: CardConfigPost;
     snippets?: Snippet[];
     [key: string]: unknown;

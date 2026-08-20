@@ -9,6 +9,7 @@ import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
+import ArtifactPlugin from './plugins/ArtifactPlugin';
 import AudioPlugin from './plugins/AudioPlugin';
 import BookmarkPlugin from './plugins/BookmarkPlugin';
 import ButtonPlugin from './plugins/ButtonPlugin';
@@ -81,6 +82,7 @@ export {
 
     AllDefaultPlugins,
 
+    ArtifactPlugin,
     AudioPlugin,
     BookmarkPlugin,
     ButtonPlugin,
