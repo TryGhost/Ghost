@@ -3,6 +3,8 @@ import path from 'node:path';
 import Handlebars from 'handlebars';
 import type {GiftPurchaseConfirmationData} from './email-templates/gift-purchase-confirmation';
 import {renderText as renderPurchaseConfirmationText} from './email-templates/gift-purchase-confirmation';
+import type {GiftDeliveryFailureData} from './email-templates/gift-delivery-failure';
+import {renderText as renderDeliveryFailureText} from './email-templates/gift-delivery-failure';
 import type {GiftReminderData} from './email-templates/gift-reminder';
 import {renderText as renderReminderText} from './email-templates/gift-reminder';
 import type {GiftDeliveryEmailData} from './email-templates/gift-delivery';
@@ -15,6 +17,7 @@ export class GiftEmailRenderer {
     private readonly t: Translate;
 
     private purchaseConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
+    private deliveryFailureTemplate: HandlebarsTemplateDelegate | null = null;
     private reminderTemplate: HandlebarsTemplateDelegate | null = null;
     private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
 
@@ -34,6 +37,18 @@ export class GiftEmailRenderer {
         return {
             html: this.purchaseConfirmationTemplate(data),
             text: renderPurchaseConfirmationText(data, this.t)
+        };
+    }
+
+    async renderDeliveryFailure(data: GiftDeliveryFailureData): Promise<{html: string; text: string}> {
+        if (!this.deliveryFailureTemplate) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery-failure.hbs'), 'utf8');
+            this.deliveryFailureTemplate = this.handlebars.compile(source);
+        }
+
+        return {
+            html: this.deliveryFailureTemplate(data),
+            text: renderDeliveryFailureText(data, this.t)
         };
     }
 

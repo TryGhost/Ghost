@@ -22,7 +22,7 @@ export interface GiftServiceInitOptions {
 export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
 
-let deliveryService: GiftDeliveryService | undefined;
+export let deliveryService: GiftDeliveryService | undefined;
 
 export async function init(options: GiftServiceInitOptions): Promise<void> {
     if (service) {
@@ -40,6 +40,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
     const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
     const jobs = require('./jobs');
+    const emailAnalyticsJobs = require('../email-analytics/jobs');
 
     const {GhostMailer} = require('../mail');
     const MailgunClient = require('../lib/mailgun-client');
@@ -78,7 +79,10 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         giftRepository: repository,
         giftDeliveryRepository: deliveryRepository,
         tiersService,
-        giftEmailService
+        giftEmailService,
+        giftEmailAnalytics: {
+            schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true)
+        }
     });
 
     const giftReminderScheduler = new GiftReminderScheduler({

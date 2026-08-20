@@ -1,10 +1,12 @@
 const assert = require('node:assert/strict');
+const ObjectId = require('bson-objectid').default;
 const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
+const models = require('../../../core/server/models');
 const urlUtilsHelper = require('../../utils/url-utils');
 
 describe('Tag API', function () {
@@ -87,6 +89,39 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.tags[0].count.posts, 7);
 
         assert.equal(new URL(jsonResponse.tags[0].url).pathname, '/tag/getting-started/');
+    });
+
+    it('Counts posts, not posts_tags rows', async function () {
+        const tagId = testUtils.getExistingData().tags[0].id;
+
+        const readCount = async () => {
+            const res = await request
+                .get(localUtils.API.getApiQuery(`tags/${tagId}/?include=count.posts`))
+                .set('Origin', config.get('url'))
+                .expect(200);
+
+            return res.body.tags[0].count.posts;
+        };
+
+        const before = await readCount();
+        assert(before > 0, 'Expect the tag to have posts for this test to work');
+
+        const existing = await models.Base.knex('posts_tags')
+            .where('tag_id', tagId)
+            .select('post_id');
+        const redundant = existing.map(row => ({
+            id: new ObjectId().toHexString(),
+            post_id: row.post_id,
+            tag_id: tagId,
+            sort_order: 0
+        }));
+        await models.Base.knex('posts_tags').insert(redundant);
+
+        try {
+            assert.equal(await readCount(), before, 'Expect duplicate posts_tags rows not to inflate count.posts');
+        } finally {
+            await models.Base.knex('posts_tags').whereIn('id', redundant.map(r => r.id)).del();
+        }
     });
 
     it('Can add a tag', async function () {

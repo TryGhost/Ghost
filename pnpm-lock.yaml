@@ -2377,6 +2377,9 @@ importers:
       '@tryghost/zip':
         specifier: 3.5.1
         version: 3.5.1(supports-color@10.2.2)
+      archiver:
+        specifier: 8.0.0
+        version: 8.0.0
       body-parser:
         specifier: 1.20.6
         version: 1.20.6(supports-color@10.2.2)

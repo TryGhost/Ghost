@@ -3,6 +3,7 @@ import type {GiftCadence} from './gift-schema';
 import {Color} from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
 import {getMailgunMessageId} from '../lib/mailgun-message-id';
+import {GIFT_DELIVERY_EMAIL_TAG} from './constants';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
@@ -77,6 +78,13 @@ interface GiftDeliverySendData {
     benefits: string[];
     cadence: GiftCadence;
     duration: number;
+    expiresAt: Date;
+}
+
+interface GiftDeliveryFailureNotificationData {
+    buyerEmail: string;
+    recipientEmail: string;
+    token: string;
     expiresAt: Date;
 }
 
@@ -174,6 +182,35 @@ export class GiftEmailService {
         });
     }
 
+    async sendDeliveryFailureNotification({buyerEmail, recipientEmail, token, expiresAt}: GiftDeliveryFailureNotificationData): Promise<void> {
+        const siteDomain = this.siteDomain;
+        const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
+        const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+        const {html, text} = await this.renderer.renderDeliveryFailure({
+            siteTitle,
+            siteUrl,
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            siteDomain,
+            toEmail: buyerEmail,
+            gift: {
+                link: giftLink,
+                expiresAt: this.formatDate(expiresAt),
+                recipientEmail
+            }
+        });
+
+        await this.transactionalMailer.send({
+            to: buyerEmail,
+            subject: this.t('We couldn\'t deliver your gift'),
+            html,
+            text,
+            from: this.getFromAddress(),
+            forceTextContent: true,
+            disableTracking: true
+        });
+    }
+
     async sendReminder({memberEmail, memberName, tierName, consumesAt}: ReminderData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
@@ -247,7 +284,7 @@ export class GiftEmailService {
                 text,
                 from: this.getFromAddress(),
                 forceTextContent: true,
-                tags: ['gift-delivery'],
+                tags: [GIFT_DELIVERY_EMAIL_TAG],
                 disableTracking: true
             });
 
@@ -259,7 +296,7 @@ export class GiftEmailService {
             html,
             plaintext: text,
             from: this.getFromAddress(),
-            tags: ['gift-delivery'],
+            tags: [GIFT_DELIVERY_EMAIL_TAG],
             disable_tracking: true
         }, {[recipientEmail]: {}}, []);
         const providerMessageId = getMailgunMessageId(response) ?? null;

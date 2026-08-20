@@ -176,7 +176,7 @@ Tag = ghostBookshelf.Model.extend({
         return {
             posts(modelOrCollection, options) {
                 modelOrCollection.query('columns', 'tags.*', (qb) => {
-                    qb.count('posts.id')
+                    qb.countDistinct('posts.id')
                         .from('posts')
                         .leftOuterJoin('posts_tags', 'posts.id', 'posts_tags.post_id')
                         .whereRaw('posts_tags.tag_id = tags.id')

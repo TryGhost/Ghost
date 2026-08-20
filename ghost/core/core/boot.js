@@ -484,7 +484,8 @@ async function initBackgroundServices({config}) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
         await Promise.all([
             emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
-            emailAnalyticsJobs.scheduleRecurringAutomationsJob()
+            emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
+            emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob()
         ]);
     }
 

@@ -1476,8 +1476,16 @@ module.exports = {
         started_at: {type: 'dateTime', nullable: true},
         email_sent_at: {type: 'dateTime', nullable: true},
         email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true},
+        outcome: {
+            type: 'string', maxlength: 50, nullable: false, defaultTo: 'unknown', validations: {
+                isIn: [['unknown', 'delivered', 'temporary_failed', 'permanent_failed']]
+            }
+        },
+        outcome_at: {type: 'dateTime', nullable: true},
+        outcome_error: {type: 'text', maxlength: 65535, nullable: true},
         '@@INDEXES@@': [
-            ['status', 'started_at']
+            ['status', 'started_at'],
+            {columns: ['email_provider_message_id'], length: 31}
         ]
     }
 };

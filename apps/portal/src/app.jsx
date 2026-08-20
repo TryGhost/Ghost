@@ -599,7 +599,8 @@ export default class App extends React.Component {
             const tierId = qParams.get('gift_tier');
             const cadence = qParams.get('gift_cadence');
             const duration = Number(qParams.get('gift_duration'));
-            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence', 'gift_duration']);
+            const deliveryMethod = qParams.get('gift_delivery');
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence', 'gift_duration', 'gift_delivery']);
             if (token) {
                 return {
                     showPopup: true,
@@ -608,7 +609,8 @@ export default class App extends React.Component {
                         token,
                         tierId,
                         cadence,
-                        duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null
+                        duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
+                        deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link'
                     }
                 };
             }
