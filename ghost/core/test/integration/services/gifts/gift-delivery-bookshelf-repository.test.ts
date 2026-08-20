@@ -288,4 +288,30 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal(reloaded?.outcomeAt?.toISOString(), '2026-08-11T10:00:00.000Z');
         assert.equal(reloaded?.outcomeError, 'permanent rejection');
     });
+
+    it('keeps permanent provider failures terminal across later events', async function () {
+        const {delivery} = await createPendingEmailGift();
+        await delivery.save({email_provider_message_id: 'provider-123'}, {patch: true});
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'permanent_failed',
+            timestamp: new Date('2026-08-11T10:00:00.000Z'),
+            error: 'permanent rejection'
+        }), 'recorded');
+
+        for (const outcome of ['delivered', 'temporary_failed', 'permanent_failed'] as const) {
+            assert.equal(await deliveryRepository.recordOutcome({
+                providerMessageId: 'provider-123',
+                outcome,
+                timestamp: new Date('2026-08-11T10:00:01.000Z'),
+                error: outcome === 'delivered' ? null : 'later rejection'
+            }), 'stale');
+        }
+
+        const reloaded = await deliveryRepository.getById(delivery.id);
+        assert.equal(reloaded?.outcome, 'permanent_failed');
+        assert.equal(reloaded?.outcomeAt?.toISOString(), '2026-08-11T10:00:00.000Z');
+        assert.equal(reloaded?.outcomeError, 'permanent rejection');
+    });
 });

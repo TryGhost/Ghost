@@ -158,6 +158,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
                 : [];
         const updated = await this.knex('gift_deliveries')
             .where({email_provider_message_id: providerMessageId})
+            .whereNot({outcome: 'permanent_failed'})
             .where((builder) => {
                 builder.whereNull('outcome_at').orWhere('outcome_at', '<', outcomeAt);
 
