@@ -197,7 +197,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                             </DialogTitle>
                         </DialogHeader>
                         <DialogDescription>
-                            The data has been exported as a zip file. You can now close this window.
+                            Your export has been downloaded as a zip file.
                         </DialogDescription>
                         <DialogFooter className='sm:justify-end'>
                             <Button onClick={() => handleOpenChange(false)}>Close</Button>
