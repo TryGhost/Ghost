@@ -5,7 +5,6 @@ import { automationsScreen } from './automations.screen';
 
 // Automations ships behind the `automations` beta labs flag.
 const AUTOMATIONS_ENABLED = { labs: { automations: true } };
-const RUN_ANALYTICS_ENABLED = { labs: { automations: true, automationRunAnalytics: true } };
 
 describe('Automations list', () => {
   it('renders the automations page', async () => {
@@ -13,7 +12,7 @@ describe('Automations list', () => {
     await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.heading()).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Last entry')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('Last entry')).toBeVisible();
   });
 
   it('lists the welcome automations', async () => {
@@ -39,7 +38,7 @@ describe('Automations list', () => {
         },
       }),
     ]);
-    await renderAdminApp('/automations', RUN_ANALYTICS_ENABLED);
+    await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
     await expect.element(automationsScreen.columnHeader('Last entry')).toBeVisible();
