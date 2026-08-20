@@ -1254,6 +1254,44 @@ describe('Batch Sending Service', function () {
             assert.equal(members.length, 2);
         });
 
+        it('Propagates a failed submitted-status write during shutdown', async function () {
+            const sendingService = {
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
+            };
+            const service = new BatchSendingService({
+                models: {EmailRecipient},
+                sendingService
+            });
+            const batch = createModel({status: 'pending', member_segment: null});
+            const save = sinon.stub(batch, 'save').rejects(new Error('deadlock'));
+            sinon.stub(service, 'updateStatusLock').resolves(batch);
+
+            service.onPreStop();
+
+            const clock = sinon.useFakeTimers();
+            const promise = service.sendBatch({
+                email: createModel({}),
+                batch: createModel({}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+            // Drain the collapsed shutdown retry budget without waiting in real time
+            const assertion = assert.rejects(promise);
+            await clock.tickAsync(30000);
+            await assertion;
+            clock.restore();
+
+            // Mailgun accepted the batch, so reporting success would let the parent email
+            // be saved as `submitted` with this row left behind in `submitting`
+            sinon.assert.calledOnce(sendingService.send);
+            assert.ok(save.callCount > 0);
+            assert.ok(
+                save.getCalls().every(call => call.args[0].status === 'submitted'),
+                'batch must never be downgraded to failed once Mailgun has accepted it'
+            );
+        });
+
         it('Does send with a deliverytime', async function () {
             const EmailBatch = createModelClass({
                 findOne: {
@@ -2133,6 +2171,207 @@ describe('Batch Sending Service', function () {
             assert.equal(afterEmailModel.get('error'), undefined, 'No error field should be written when send stops on shutdown');
             // logging.info was stubbed in the outer beforeEach — confirm the shutdown breadcrumb was emitted.
             sinon.assert.calledWithMatch(logging.info, /send stopped because the container is shutting down/);
+        });
+
+        it('emailJob leaves email in submitting status for any error once shutting down', async function () {
+            const Email = createModelClass({
+                findOne: {
+                    status: 'pending'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {Email}
+            });
+            let afterEmailModel;
+            // A plain transient error, not SHUTDOWN_CODE — the kind the collapsed
+            // shutdown retry budgets stop absorbing.
+            sinon.stub(service, 'sendEmail').callsFake((email) => {
+                afterEmailModel = email;
+                return Promise.reject(new Error('connection lost'));
+            });
+            service.onPreStop();
+
+            await service.emailJob({emailId: '123'});
+
+            assert.equal(afterEmailModel.get('status'), 'submitting', 'Email must stay submitting so the boot resume scan picks it up');
+            assert.equal(afterEmailModel.get('error'), undefined);
+        });
+
+        it('onPreStop stops workers claiming new batches without waiting for in-flight ones', async function () {
+            const clock = sinon.useFakeTimers(new Date());
+            const service = new BatchSendingService({
+                sendingService: {
+                    getTargetDeliveryWindow() {
+                        return 0;
+                    }
+                }
+            });
+            const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
+                await simulateSleep(5, clock);
+                return true;
+            });
+            // 6 batches, 2 workers: the first 2 are claimed immediately, 4 stay queued.
+            const batches = new Array(6).fill(0).map(() => createModel({}));
+            const sendPromise = service.sendBatches({
+                email: createModel({}),
+                batches,
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            // Synchronous — must not await the in-flight batches.
+            service.onPreStop();
+
+            await assert.rejects(
+                sendPromise,
+                err => err.code === BatchSendingService.SHUTDOWN_CODE
+            );
+            sinon.assert.callCount(sendBatch, 2);
+            clock.restore();
+        });
+
+        it('collapses pre-send retries once shutting down', async function () {
+            const buildService = () => {
+                const service = new BatchSendingService({
+                    models: {EmailBatch: createModelClass({findOne: {status: 'pending'}})},
+                    BEFORE_RETRY_CONFIG: {maxRetries: 3, sleep: 0}
+                });
+                const updateStatusLock = sinon.stub(service, 'updateStatusLock').rejects(new Error('deadlock'));
+                return {service, updateStatusLock};
+            };
+            const args = () => ({
+                email: createModel({}),
+                batch: createModel({status: 'pending'}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            // Baseline: the configured budget is spent trying to claim the batch.
+            const baseline = buildService();
+            await assert.rejects(baseline.service.sendBatch(args()));
+            sinon.assert.callCount(baseline.updateStatusLock, 4);
+
+            // Shutting down: give up on the first failure instead of holding the batch
+            // in `submitting` until the container is killed.
+            const shuttingDown = buildService();
+            shuttingDown.service.onPreStop();
+            await assert.rejects(shuttingDown.service.sendBatch(args()));
+            sinon.assert.callCount(shuttingDown.updateStatusLock, 1);
+        });
+
+        it('collapses retries for a shutdown that starts while an attempt is pending', async function () {
+            const service = new BatchSendingService({});
+            const func = sinon.stub().callsFake(async () => {
+                // Shutdown begins mid-attempt, after the caller already picked its policy
+                service.onPreStop();
+                throw new Error('deadlock');
+            });
+
+            await assert.rejects(service.retryDb(func, {
+                maxRetries: 10,
+                maxTime: 10 * 60 * 1000,
+                sleep: 0,
+                shutdownConfig: {maxRetries: 0},
+                description: 'mid-flight shutdown'
+            }));
+
+            // The captured 10-retry budget must not survive the shutdown
+            sinon.assert.callCount(func, 1);
+        });
+
+        it('waits for every worker to settle when one throws', async function () {
+            const service = new BatchSendingService({
+                sendingService: {
+                    getTargetDeliveryWindow() {
+                        return 0;
+                    }
+                }
+            });
+
+            let slowBatchSettled = false;
+            let releaseSlowBatch;
+            const slowBatch = new Promise((resolve) => {
+                releaseSlowBatch = resolve;
+            });
+
+            sinon.stub(service, 'sendBatch').callsFake(async ({batch}) => {
+                if (batch.get('member_segment') === 'throws') {
+                    throw new Error('lock timeout');
+                }
+                await slowBatch;
+                slowBatchSettled = true;
+                return true;
+            });
+
+            let outcome = null;
+            const tracked = service.sendBatches({
+                email: createModel({}),
+                batches: [createModel({member_segment: 'throws'}), createModel({member_segment: 'slow'})],
+                post: createModel({}),
+                newsletter: createModel({})
+            }).then(
+                () => {
+                    outcome = 'fulfilled';
+                },
+                (err) => {
+                    outcome = err;
+                }
+            );
+
+            // Let every pending microtask and timer callback run. The throwing worker has
+            // rejected by now; with Promise.all that alone settled sendBatches, leaving
+            // the sibling's status write in flight while the drain reported itself done.
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            assert.equal(outcome, null, 'sendBatches must not settle while a worker is still in flight');
+            assert.equal(slowBatchSettled, false);
+
+            releaseSlowBatch();
+            await tracked;
+
+            assert.equal(slowBatchSettled, true);
+            assert.match(outcome.message, /lock timeout/, 'the worker failure must still surface');
+        });
+
+        it('does not retry when shutdown starts during the backoff sleep', async function () {
+            const service = new BatchSendingService({});
+            const func = sinon.stub().rejects(new Error('mailgun 500'));
+
+            const promise = service.retryDb(func, {
+                maxRetries: 6,
+                sleep: 20,
+                shutdownConfig: {maxRetries: 0},
+                description: 'shutdown during backoff'
+            });
+
+            // First attempt has already failed and retryDb is now sleeping before the
+            // next one — the window where a Mailgun send would otherwise fire again.
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
+            service.onPreStop();
+
+            await assert.rejects(promise);
+            sinon.assert.callCount(func, 1);
+        });
+
+        it('keeps a short retry budget for terminal status writes during shutdown', async function () {
+            const service = new BatchSendingService({});
+            const func = sinon.stub().rejects(new Error('deadlock'));
+            service.onPreStop();
+
+            await assert.rejects(service.retryDb(func, {
+                maxRetries: 20,
+                maxTime: 30 * 60 * 1000,
+                sleep: 0,
+                shutdownConfig: {maxRetries: 3, maxTime: 10 * 1000, sleep: 0},
+                description: 'terminal write'
+            }));
+
+            // Collapsed to the shutdown budget, but not to zero — this write is the one
+            // that has to land, or the batch orphans in `submitting`
+            sinon.assert.callCount(func, 4);
         });
     });
 });
