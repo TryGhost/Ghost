@@ -443,6 +443,88 @@ describe('BuilderSession', () => {
         expect(modelAccess.requests.at(-1)?.messages.filter(message => message.role === 'user').map(message => message.text)).toEqual(['First turn', 'Replacement turn']);
     });
 
+    it('restores each earlier checkpoint across multiple completed turns', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        for (const value of ['first', 'second', 'third']) {
+            modelAccess.enqueue(async (request) => {
+                await tool(request, 'set_value').execute({value}, request.signal);
+            });
+        }
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const first = await session.startTurn('First turn');
+        await session.startTurn('Second turn');
+        const third = await session.startTurn('Third turn');
+
+        await session.rewind(third.userMessageId);
+        expect(workspace.snapshot()).toEqual({revision: 'revision-2', payload: {value: 'second'}});
+        expect(session.state.messages.filter(message => message.role === 'user').map(message => message.text)).toEqual(['First turn', 'Second turn']);
+
+        await session.rewind(first.userMessageId);
+        expect(workspace.snapshot()).toEqual({revision: 'revision-0', payload: {value: 'initial'}});
+        expect(session.state.messages).toEqual([]);
+    });
+
+    it('publishes restored workspace and conversation state atomically', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(async (request) => {
+            await tool(request, 'set_value').execute({value: 'changed'}, request.signal);
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        const observations: Array<{status: string; revision: string; messages: number}> = [];
+        session.subscribe(state => observations.push({status: state.status, revision: state.workspace.revision, messages: state.messages.length}));
+        await session.load();
+        const turn = await session.startTurn('Change it');
+        observations.length = 0;
+
+        await session.rewind(turn.userMessageId);
+
+        expect(observations).not.toContainEqual({status: 'restoring', revision: 'revision-0', messages: 2});
+        expect(observations.at(-1)).toEqual({status: 'ready', revision: 'revision-0', messages: 0});
+    });
+
+    it('rewinds an interrupted turn with a valid unpromoted candidate atomically', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(async (request) => {
+            await tool(request, 'set_value').execute({value: 'partial'}, request.signal);
+            throw new Error('Provider unavailable');
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const turn = await session.startTurn('Interrupted edit');
+        expect(workspace.candidateSnapshot).toEqual({revision: 'revision-1', payload: {value: 'partial'}});
+
+        await session.rewind(turn.userMessageId);
+
+        expect(session.state).toMatchObject({status: 'ready', messages: []});
+        expect(workspace.snapshot()).toEqual({revision: 'revision-0', payload: {value: 'initial'}});
+        expect(workspace.candidateSnapshot).toBeNull();
+    });
+
+    it('rewinds an interrupted turn that made no valid mutation', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue((request) => {
+            request.onEvent({type: 'assistant-text-delta', text: 'I could not finish'});
+            request.onEvent({type: 'run-aborted'});
+            return Promise.resolve();
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const turn = await session.startTurn('Interrupted without edits');
+        await session.rewind(turn.userMessageId);
+
+        expect(session.state).toMatchObject({status: 'ready', messages: []});
+        expect(workspace.snapshot()).toEqual({revision: 'revision-0', payload: {value: 'initial'}});
+        expect(workspace.candidateSnapshot).toBeNull();
+    });
+
     it('rewinds an interrupted turn before retrying it', async () => {
         const workspace = new FakeArtifactWorkspace();
         const modelAccess = new ScriptedModelAccess();

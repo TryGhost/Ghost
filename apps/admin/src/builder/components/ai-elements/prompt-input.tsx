@@ -4,7 +4,7 @@ import {Button, Textarea} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 
-import type {FormEvent, KeyboardEvent} from 'react';
+import type {FormEvent, KeyboardEvent, Ref} from 'react';
 
 export const maxBuilderPromptLength = 32_000;
 
@@ -12,10 +12,11 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
-export const PromptInput = ({disabled, isRunning, context, onRemoveContext, onSubmit, onStop}: {
+export const PromptInput = ({disabled, isRunning, context, inputRef, onRemoveContext, onSubmit, onStop}: {
     disabled?: boolean;
     isRunning: boolean;
     context?: {label: string} | null;
+    inputRef?: Ref<HTMLTextAreaElement>;
     onRemoveContext?: () => void;
     onSubmit: (value: string) => void | Promise<unknown>;
     onStop: () => void;
@@ -71,6 +72,7 @@ export const PromptInput = ({disabled, isRunning, context, onRemoveContext, onSu
                     </Inline>
                 )}
                 <Textarea
+                    ref={inputRef}
                     aria-invalid={Boolean(submissionError)}
                     aria-label='Describe a change'
                     className='min-h-20 resize-none'

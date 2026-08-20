@@ -4,15 +4,17 @@ import {Button, Input} from '@tryghost/shade/components';
 import {Stack, Text} from '@tryghost/shade/primitives';
 
 import type {BuilderProvider} from '@/builder/models/curated-models';
+import type {Ref} from 'react';
 
 function providerName(provider: BuilderProvider): string {
     return provider === 'openai' ? 'OpenAI' : 'Anthropic';
 }
 
-export const ProviderSetup = ({provider, connected, disabled, onSave, onForget}: {
+export const ProviderSetup = ({provider, connected, disabled, inputRef, onSave, onForget}: {
     provider: BuilderProvider;
     connected: boolean;
     disabled?: boolean;
+    inputRef?: Ref<HTMLInputElement>;
     onSave: (provider: BuilderProvider, key: string) => void;
     onForget: (provider: BuilderProvider) => void;
 }) => {
@@ -34,6 +36,7 @@ export const ProviderSetup = ({provider, connected, disabled, onSave, onForget}:
             <Text weight='medium'>Connect {name}</Text>
             <Text size='sm' tone='secondary'>Your API key stays in this Admin tab and is cleared when the session ends.</Text>
             <Input
+                ref={inputRef}
                 aria-label={`${name} API key`}
                 autoComplete='off'
                 disabled={disabled}

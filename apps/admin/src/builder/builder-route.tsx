@@ -39,6 +39,7 @@ const unavailableNotice = {
 
 const RuntimeProof = import.meta.env.DEV ? lazy(() => import('./runtime-proof')) : null;
 const PreviewRuntimeProof = import.meta.env.DEV ? lazy(() => import('./workspaces/theme/preview/preview-runtime-proof')) : null;
+const RewindRuntimeProof = import.meta.env.DEV ? lazy(() => import('./rewind-runtime-proof')) : null;
 
 const loadingState: BuilderSessionState = {
     status: 'loading',
@@ -207,7 +208,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
                 }}
                 onRemoveSelection={() => void previewRef.current?.clearSelection()}
                 onRetry={() => void session?.retryLastTurn()}
-                onRewind={messageId => void session?.rewind(messageId)}
+                onRewind={messageId => session?.rewind(messageId) ?? Promise.reject(new Error('The Builder session is not ready.'))}
                 onSaveApiKey={(targetProvider, key) => {
                     modelAccess.setApiKey(targetProvider, key);
                     setCredentialVersion(value => value + 1);
@@ -301,6 +302,10 @@ const BuilderRoute = () => {
 
     if (PreviewRuntimeProof && searchParams.get('proof') === 'preview') {
         return <Suspense fallback={null}><PreviewRuntimeProof /></Suspense>;
+    }
+
+    if (RewindRuntimeProof && searchParams.get('proof') === 'rewind') {
+        return <Suspense fallback={null}><RewindRuntimeProof /></Suspense>;
     }
 
     return <Box className='size-full' data-model-runtime={BrowserPiModelAccess.runtime}><ThemeBuilderRoute /></Box>;

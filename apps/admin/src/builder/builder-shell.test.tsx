@@ -1,4 +1,4 @@
-import {fireEvent, render, screen} from '@testing-library/react';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {MemoryRouter} from 'react-router';
 
@@ -192,6 +192,57 @@ describe('BuilderShell', () => {
         />, {wrapper: MemoryRouter});
 
         expect(screen.getByRole('button', {name: 'Return to before this message'})).toBeDisabled();
+    });
+
+    it('confirms before an earlier checkpoint discards later work and restores stable focus', async () => {
+        const onRewind = vi.fn(() => Promise.resolve());
+        render(<BuilderShell
+            {...defaultProps}
+            state={state({
+                messages: [
+                    {id: 'user-1', role: 'user', text: 'First turn', status: 'complete'},
+                    {id: 'assistant-1', role: 'assistant', text: 'First result', status: 'complete'},
+                    {id: 'user-2', role: 'user', text: 'Second turn', status: 'complete'},
+                    {id: 'assistant-2', role: 'assistant', text: 'Second result', status: 'complete'}
+                ]
+            })}
+            onRewind={onRewind}
+        />, {wrapper: MemoryRouter});
+
+        const checkpoints = screen.getAllByRole('button', {name: 'Return to before this message'});
+        fireEvent.click(checkpoints[0]);
+
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('heading', {name: 'Return to this checkpoint?'})).toBeInTheDocument();
+        expect(onRewind).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', {name: 'Keep current work'}));
+        expect(onRewind).not.toHaveBeenCalled();
+
+        fireEvent.click(checkpoints[0]);
+        fireEvent.click(screen.getByRole('button', {name: 'Return and discard later work'}));
+        expect(onRewind).toHaveBeenCalledWith('user-1');
+        await waitFor(() => expect(screen.getByRole('textbox', {name: 'Describe a change'})).toHaveFocus());
+        const firstAnnouncement = screen.getByRole('status');
+        expect(firstAnnouncement).toHaveTextContent('Returned to the selected checkpoint.');
+
+        fireEvent.click(checkpoints[1]);
+        expect(onRewind).toHaveBeenCalledWith('user-2');
+        await waitFor(() => expect(screen.getByRole('textbox', {name: 'Describe a change'})).toHaveFocus());
+        expect(screen.getByRole('status')).not.toBe(firstAnnouncement);
+    });
+
+    it('focuses provider setup after rewind when the composer has no credential', async () => {
+        const onRewind = vi.fn(() => Promise.resolve());
+        render(<BuilderShell
+            {...defaultProps}
+            hasCredential={false}
+            state={state({messages: [{id: 'user-1', role: 'user', text: 'First turn', status: 'complete'}]})}
+            onRewind={onRewind}
+        />, {wrapper: MemoryRouter});
+
+        fireEvent.click(screen.getByRole('button', {name: 'Return to before this message'}));
+
+        await waitFor(() => expect(screen.getByLabelText('OpenAI API key')).toHaveFocus());
     });
 
     it('shows when the workspace has unpublished changes', () => {

@@ -104,6 +104,40 @@ describe('Design Builder route', () => {
         await expect.element(page.getByTestId('pi-proof-result')).toHaveTextContent('Anthropic Pi provider proof passed');
     });
 
+    it('keeps theme state and visible conversation aligned after rewinding an earlier turn', async () => {
+        await renderAdminApp('/builder/theme?proof=rewind', {labs: {designBuilder: true}});
+
+        await page.getByRole('button', {name: 'Run first edit'}).click();
+        await expect.element(page.getByText('First edit', {exact: true})).toBeVisible();
+        const secondEdit = page.getByRole('button', {name: 'Run second edit'});
+        await expect.element(secondEdit).toBeEnabled();
+        await secondEdit.click();
+        await expect.element(page.getByText('Second edit', {exact: true})).toBeVisible();
+        const rendered = page.getByTestId('rewind-proof-rendered');
+        await expect.element(rendered).toHaveTextContent(/Rendered path: \/second\/$/);
+
+        await page.getByRole('button', {name: 'Return to before this message'}).first().click();
+        await expect.element(page.getByRole('heading', {name: 'Return to this checkpoint?'})).toBeVisible();
+        await page.getByRole('button', {name: 'Return and discard later work'}).click();
+
+        await expect.element(rendered).toHaveTextContent('Initial');
+        expect(page.getByText('First edit', {exact: true}).query()).toBeNull();
+        expect(page.getByText('Second edit', {exact: true}).query()).toBeNull();
+        await expect.element(rendered).toHaveTextContent('#000000');
+        await expect.element(rendered).toHaveTextContent(/Rendered path: \/$/);
+        await expect.element(page.getByTitle('Rewind proof preview')).toBeVisible();
+        await expect.element(page.getByTestId('rewind-proof-url')).toHaveTextContent('https://example.com/');
+        await expect.element(page.getByTestId('rewind-proof-selection')).toHaveTextContent('none');
+
+        await page.getByRole('button', {name: 'Continue after rewind'}).click();
+        await expect.element(page.getByText('Continue on a new branch', {exact: true})).toBeVisible();
+        await expect.element(rendered).toHaveTextContent('Branched');
+        await expect.element(rendered).toHaveTextContent('#333333');
+        await expect.element(rendered).toHaveTextContent(/Rendered path: \/branch\/$/);
+        await expect.element(page.getByTestId('rewind-proof-url')).toHaveTextContent('https://example.com/branch/');
+        await expect.element(page.getByTestId('rewind-proof-selection')).toHaveTextContent('Branch hero');
+    });
+
     it('keeps the last valid iframe document and virtual URL through render repair', async () => {
         await renderAdminApp('/builder/theme?proof=preview', {labs: {designBuilder: true}});
 

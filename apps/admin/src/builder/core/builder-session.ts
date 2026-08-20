@@ -63,6 +63,7 @@ export class BuilderSession {
     private checkpoints: TurnCheckpoint[] = [];
     private activeTurn: ActiveTurn | null = null;
     private loadController: AbortController | null = null;
+    private bufferedWorkspaceState: BuilderWorkspaceState | null = null;
     private sequence = 0;
     private currentState: BuilderSessionState = {
         status: 'idle',
@@ -74,6 +75,10 @@ export class BuilderSession {
         this.workspace = workspace;
         this.modelAccess = modelAccess;
         this.unsubscribeWorkspace = workspace.subscribe((state) => {
+            if (this.currentState.status === 'restoring') {
+                this.bufferedWorkspaceState = state;
+                return;
+            }
             this.setState({...this.currentState, workspace: state});
         });
     }
@@ -231,6 +236,7 @@ export class BuilderSession {
             throw new Error('The Builder checkpoint is no longer available.');
         }
 
+        this.bufferedWorkspaceState = null;
         this.setState({...this.currentState, status: 'restoring', error: undefined});
         try {
             const validation = await this.workspace.restore(checkpoint.snapshot);
@@ -239,13 +245,17 @@ export class BuilderSession {
             }
 
             this.checkpoints = this.checkpoints.slice(0, checkpointIndex);
+            const workspaceState = this.bufferedWorkspaceState ?? this.currentState.workspace;
+            this.bufferedWorkspaceState = null;
             this.setState({
                 status: 'ready',
                 messages: this.currentState.messages.slice(0, checkpoint.conversationCursor),
-                workspace: this.currentState.workspace
+                workspace: workspaceState
             });
         } catch (error) {
-            this.setState({...this.currentState, status: 'interrupted', error: errorMessage(error)});
+            const workspaceState = this.bufferedWorkspaceState ?? this.currentState.workspace;
+            this.bufferedWorkspaceState = null;
+            this.setState({...this.currentState, status: 'interrupted', workspace: workspaceState, error: errorMessage(error)});
             throw error;
         }
     }
