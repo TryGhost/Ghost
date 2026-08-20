@@ -485,6 +485,10 @@ export default class App extends React.Component {
         data.site.portal_button = JSON.parse(value);
       } else if (key === 'name') {
         data.site.portal_name = JSON.parse(value);
+      } else if (key === 'signupGiftPromotion') {
+        data.site.portal_signup_gift_promotion = JSON.parse(value);
+      } else if (key === 'accountGiftPromotion') {
+        data.site.portal_account_gift_promotion = JSON.parse(value);
       } else if (key === 'isFree' && JSON.parse(value)) {
         allowedPlans.push('free');
       } else if (key === 'isMonthly' && JSON.parse(value)) {

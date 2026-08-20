@@ -28,6 +28,10 @@ _Avoid_: Gift membership, recurring subscription
 A one-time purchase that creates a gift subscription for the buyer to share. Completing a gift purchase does not mean that an emailed gift has been sent.
 _Avoid_: Gift checkout
 
+**Giftable offering**:
+At least one paid membership tier and gift duration that can currently be purchased together. Its absence means gift checkout cannot offer a purchasable gift.
+_Avoid_: Gifting enabled, paid memberships enabled
+
 **Delivery method**:
 The buyer's chosen way of handing over a gift subscription: the publication emails it to a recipient, or the buyer shares the redemption link privately.
 _Avoid_: Delivery mode
