@@ -1,4 +1,4 @@
-import {sanitizeEmailHtml} from './sanitize-email-html';
+import {sanitizeNotificationHtml} from './sanitize-notification-html';
 
 interface Mailer {
     send(options: {to: string; subject: string; html: string; text?: string}): Promise<unknown>;
@@ -48,7 +48,7 @@ export class NotificationEmailService {
         if (!to.length) {
             return;
         }
-        const message = sanitizeEmailHtml(content);
+        const message = sanitizeNotificationHtml(content);
         const siteUrl = this.getSiteUrl();
         for (const recipient of to) {
             const {html, text} = await this.generateEmailContent({

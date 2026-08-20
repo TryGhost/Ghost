@@ -5,10 +5,20 @@ const errors = require('@tryghost/errors');
 const ghostVersion = require('@tryghost/version');
 const tpl = require('@tryghost/tpl');
 const ObjectId = require('bson-objectid').default;
+const {sanitizeNotificationHtml} = require('./sanitize-notification-html');
 
 const messages = {
     noPermissionToDismissNotif: 'You do not have permission to dismiss this notification.',
-    notificationDoesNotExist: 'Notification does not exist.'
+    notificationDoesNotExist: 'Notification does not exist.',
+    invalidNotificationMessage: 'Notification message must be a string.'
+};
+
+const sanitizeMessage = (message) => {
+    if (typeof message !== 'string') {
+        return '';
+    }
+
+    return sanitizeNotificationHtml(message);
 };
 
 class Notifications {
@@ -42,6 +52,9 @@ class Notifications {
 
         allNotifications.forEach((notification) => {
             notification.addedAt = moment(notification.addedAt).toDate();
+            // Sanitising on read protects installs with notifications that were
+            // persisted before write-side sanitisation was introduced.
+            notification.message = sanitizeMessage(notification.message);
         });
 
         return allNotifications;
@@ -145,7 +158,15 @@ class Notifications {
             });
 
             if (!isDuplicate) {
-                notificationsToAdd.push(Object.assign({}, defaults, notification, overrides));
+                if (typeof notification.message !== 'string') {
+                    throw new errors.ValidationError({
+                        message: tpl(messages.invalidNotificationMessage)
+                    });
+                }
+
+                const notificationToAdd = Object.assign({}, defaults, notification, overrides);
+                notificationToAdd.message = sanitizeMessage(notificationToAdd.message);
+                notificationsToAdd.push(notificationToAdd);
             }
         });
 
