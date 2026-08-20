@@ -4,8 +4,9 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {Link} from '@tryghost/admin-x-framework';
 
 import type {BuilderSessionState} from '@/builder/core/builder-session';
+import type {ReactNode} from 'react';
 
-export const BuilderHeader = ({title, state, backTo, backLabel}: {title: string; state: BuilderSessionState; backTo: string; backLabel: string}) => {
+export const BuilderHeader = ({title, state, backTo, backLabel, publishAction}: {title: string; state: BuilderSessionState; backTo: string; backLabel: string; publishAction?: ReactNode}) => {
     const isRunning = state.status === 'running';
     return (
         <header className='z-10 h-14 shrink-0 border-b border-border-default bg-surface-elevated px-3 shadow-sm'>
@@ -30,7 +31,7 @@ export const BuilderHeader = ({title, state, backTo, backLabel}: {title: string;
                         </Inline>
                     )}
                 </Inline>
-                <Button className='shrink-0' type='button' disabled>Publish</Button>
+                {publishAction ?? <Button className='shrink-0' type='button' disabled>Publish changes</Button>}
             </Inline>
         </header>
     );

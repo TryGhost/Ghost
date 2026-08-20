@@ -561,6 +561,47 @@ describe('BuilderSession', () => {
         expect(workspace.publishCalls).toBe(1);
     });
 
+    it('keeps handled publish failures out of the agent-turn error state', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(completeWith('Prepared'));
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+        await session.startTurn('Prepare it');
+        workspace.publish = () => Promise.resolve({
+            ok: false,
+            revision: workspace.state.revision,
+            error: {code: 'publish_settings_failed', message: 'Settings unavailable', retryable: true}
+        });
+
+        const result = await session.publish();
+
+        expect(result).toMatchObject({ok: false, error: {code: 'publish_settings_failed'}});
+        expect(session.state).toMatchObject({status: 'ready', error: undefined});
+        expect(session.state.messages.at(-1)).toMatchObject({role: 'assistant', text: 'Prepared', status: 'complete'});
+    });
+
+    it('aborts an in-flight publish when the session is disposed', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+        let started: (() => void) | undefined;
+        const publishStarted = new Promise<void>((resolve) => {
+            started = resolve;
+        });
+        workspace.publish = signal => new Promise((_resolve, reject) => {
+            started?.();
+            signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), {once: true});
+        });
+
+        const publishing = session.publish();
+        await publishStarted;
+        session.dispose();
+
+        await expect(publishing).rejects.toMatchObject({name: 'AbortError'});
+    });
+
     it('does not expose publish-like workspace tools to the model', async () => {
         const workspace = new FakeArtifactWorkspace();
         const safeTools = workspace.getTools();

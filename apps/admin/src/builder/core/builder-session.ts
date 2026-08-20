@@ -63,6 +63,7 @@ export class BuilderSession {
     private checkpoints: TurnCheckpoint[] = [];
     private activeTurn: ActiveTurn | null = null;
     private loadController: AbortController | null = null;
+    private publishController: AbortController | null = null;
     private bufferedWorkspaceState: BuilderWorkspaceState | null = null;
     private sequence = 0;
     private currentState: BuilderSessionState = {
@@ -278,19 +279,27 @@ export class BuilderSession {
         }
 
         this.setState({...this.currentState, status: 'publishing', error: undefined});
+        const controller = new AbortController();
+        this.publishController = controller;
         try {
-            const result = await this.workspace.publish(new AbortController().signal);
-            this.setState({...this.currentState, status: 'ready', error: result.ok ? undefined : result.error.message});
+            const result = await this.workspace.publish(controller.signal);
+            this.setState({...this.currentState, status: 'ready', error: undefined});
             return result;
         } catch (error) {
-            this.setState({...this.currentState, status: 'interrupted', error: errorMessage(error)});
+            this.setState({...this.currentState, status: 'ready', error: undefined});
             throw error;
+        } finally {
+            if (this.publishController === controller) {
+                this.publishController = null;
+            }
         }
     }
 
     dispose(): void {
         this.loadController?.abort();
         this.loadController = null;
+        this.publishController?.abort();
+        this.publishController = null;
         this.stop();
         this.unsubscribeWorkspace();
         this.listeners.clear();

@@ -6,11 +6,12 @@ import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {isDefaultOrLegacyTheme, useActiveTheme} from '@tryghost/admin-x-framework/api/themes';
+import {isDefaultOrLegacyTheme, useActiveTheme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {DirtyConfirmDialog} from '@tryghost/shade/patterns';
 import {Box, Stack, Text} from '@tryghost/shade/primitives';
 import {scrapeContentApiKey} from '@tryghost/theme-renderer/editor/instance-config';
+import {useQueryClient} from '@tanstack/react-query';
 import {useBlocker} from 'react-router';
 
 import {BuilderShell} from '@/builder/builder-shell';
@@ -21,6 +22,8 @@ import {loadThemeDraft} from '@/builder/workspaces/theme/theme-loader';
 import {createThemeRendererClient} from '@/builder/workspaces/theme/preview/preview-bridge';
 import {IframePreviewDocumentSurface} from '@/builder/workspaces/theme/preview/preview-document';
 import {ThemePreviewAdapter} from '@/builder/workspaces/theme/preview/theme-preview-adapter';
+import {PublishThemeDialog} from '@/builder/workspaces/theme/publish/publish-theme-dialog';
+import {createAdminThemePublishTransport, ThemePublisher} from '@/builder/workspaces/theme/publish/publish-theme';
 import {ThemeWorkspace} from '@/builder/workspaces/theme/theme-workspace';
 
 import type {BuilderSessionState} from '@/builder/core/builder-session';
@@ -29,6 +32,7 @@ import type {BuilderProvider} from '@/builder/models/curated-models';
 import type {CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import type {Setting} from '@tryghost/admin-x-framework/api/settings';
 import type {Theme} from '@tryghost/admin-x-framework/api/themes';
+import type {ThemePublishState} from '@/builder/workspaces/theme/publish/publish-theme';
 
 const unavailableNotice = {
     settingsNotice: {
@@ -40,6 +44,7 @@ const unavailableNotice = {
 const RuntimeProof = import.meta.env.DEV ? lazy(() => import('./runtime-proof')) : null;
 const PreviewRuntimeProof = import.meta.env.DEV ? lazy(() => import('./workspaces/theme/preview/preview-runtime-proof')) : null;
 const RewindRuntimeProof = import.meta.env.DEV ? lazy(() => import('./rewind-runtime-proof')) : null;
+const PublishRuntimeProof = import.meta.env.DEV ? lazy(() => import('./publish-runtime-proof')) : null;
 
 const loadingState: BuilderSessionState = {
     status: 'loading',
@@ -133,10 +138,11 @@ async function loadActiveTheme({theme, settings, customSettings, siteUrl, previe
     return preview.draft;
 }
 
-const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
+const ThemeBuilderExperience = ({theme, settings, customSettings, installedThemeNames, siteUrl}: {
     theme: Theme;
     settings: Array<{key: string; value: string | boolean | null}>;
     customSettings: CustomThemeSetting[];
+    installedThemeNames: string[];
     siteUrl: string;
 }) => {
     const [iframe, setIframe] = useState<HTMLIFrameElement | null>(null);
@@ -145,10 +151,24 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
     const [selection, setSelection] = useState<BuilderSelectionContext | null>(null);
     const [provider, setProvider] = useState<BuilderProvider>('openai');
     const [modelId, setModelId] = useState(() => providerDefaultModel('openai'));
+    const [publishState, setPublishState] = useState<ThemePublishState>({status: 'idle', stage: 'idle'});
+    const [publishTheme, setPublishTheme] = useState({name: theme.name, builtIn: isDefaultOrLegacyTheme(theme)});
     const [, setCredentialVersion] = useState(0);
     const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
+    const queryClient = useQueryClient();
     const previewRef = useRef<ThemePreviewAdapter | null>(null);
+    const publisherRef = useRef<ThemePublisher | null>(null);
+    const pendingCopyNameRef = useRef<string>();
+    const serverMutationRef = useRef(false);
     const leaveConfirmedRef = useRef(false);
+
+    useEffect(() => () => {
+        if (serverMutationRef.current) {
+            void queryClient.invalidateQueries({queryKey: ['ThemesResponseType']});
+            void queryClient.invalidateQueries({queryKey: ['SettingsResponseType']});
+            void queryClient.invalidateQueries({queryKey: ['CustomThemeSettingsResponseType']});
+        }
+    }, [queryClient]);
 
     useEffect(() => {
         if (!iframe) {
@@ -156,10 +176,30 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
         }
         const surface = new IframePreviewDocumentSurface(iframe);
         const preview = new ThemePreviewAdapter({rendererFactory: () => Promise.resolve(createThemeRendererClient()), surface});
+        let unsubscribePublisher = () => {};
         const workspace = new ThemeWorkspace({
             id: `theme:${theme.name}`,
-            load: signal => loadActiveTheme({theme, settings, customSettings, siteUrl, preview, signal}),
+            load: async (signal) => {
+                const draft = await loadActiveTheme({theme, settings, customSettings, siteUrl, preview, signal});
+                const publisher = new ThemePublisher({
+                    baseline: draft,
+                    installedThemeNames,
+                    onServerMutation: () => {
+                        serverMutationRef.current = true;
+                    },
+                    transport: createAdminThemePublishTransport(getGhostPaths().apiRoot)
+                });
+                publisherRef.current = publisher;
+                unsubscribePublisher = publisher.subscribe(setPublishState);
+                return draft;
+            },
             preview,
+            publish: (draft, signal) => {
+                if (!publisherRef.current) {
+                    throw new Error('Theme publishing is not ready yet.');
+                }
+                return publisherRef.current.publish(draft, {copyName: pendingCopyNameRef.current}, signal);
+            },
             title: theme.name
         });
         const nextSession = new BuilderSession({modelAccess, workspace});
@@ -170,13 +210,15 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
         void nextSession.load().catch(() => {});
 
         return () => {
+            unsubscribePublisher();
             unsubscribePreview();
             unsubscribeSession();
             nextSession.dispose();
             preview.destroy();
             previewRef.current = null;
+            publisherRef.current = null;
         };
-    }, [customSettings, iframe, modelAccess, settings, siteUrl, theme]);
+    }, [customSettings, iframe, installedThemeNames, modelAccess, settings, siteUrl, theme]);
 
     const shouldGuardNavigation = state.workspace.dirty || state.status === 'running' || state.status === 'publishing';
     useConfirmUnload(shouldGuardNavigation);
@@ -199,6 +241,31 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
                 models={CURATED_MODELS}
                 preview={<iframe ref={setIframe} className='size-full border-0 bg-background' title='Theme preview' />}
                 provider={provider}
+                publishAction={
+                    <PublishThemeDialog
+                        builtIn={publishTheme.builtIn}
+                        dirty={state.workspace.dirty}
+                        installedThemeNames={installedThemeNames}
+                        publishState={publishState}
+                        sessionStatus={state.status}
+                        themeName={publishTheme.name}
+                        onPublish={async (copyName) => {
+                            pendingCopyNameRef.current = copyName;
+                            try {
+                                if (!session) {
+                                    throw new Error('The Builder session is not ready.');
+                                }
+                                const result = await session.publish();
+                                if (result.ok && publishTheme.builtIn && copyName) {
+                                    setPublishTheme({name: copyName, builtIn: false});
+                                }
+                                return result;
+                            } finally {
+                                pendingCopyNameRef.current = undefined;
+                            }
+                        }}
+                    />
+                }
                 selection={selection}
                 state={state}
                 title='Design Builder'
@@ -240,12 +307,14 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, siteUrl}: {
 
 const ThemeBuilderRoute = () => {
     const activeTheme = useActiveTheme();
+    const themes = useBrowseThemes();
     const settings = useBrowseSettings();
     const customSettings = useBrowseCustomThemeSettings();
     const site = useBrowseSite();
-    const isLoading = activeTheme.isLoading || settings.isLoading || customSettings.isLoading || site.isLoading;
+    const isLoading = activeTheme.isLoading || themes.isLoading || settings.isLoading || customSettings.isLoading || site.isLoading;
     const theme = activeTheme.data?.themes[0];
     const themeSettings = useMemo(() => compatibleSettings(settings.data?.settings ?? []), [settings.data]);
+    const installedThemeNames = useMemo(() => themes.data?.themes.map(installed => installed.name) ?? [], [themes.data]);
 
     if (isLoading) {
         return (
@@ -259,7 +328,7 @@ const ThemeBuilderRoute = () => {
         );
     }
 
-    if (activeTheme.isError || settings.isError || customSettings.isError || site.isError || !theme || !settings.data || !customSettings.data || !site.data) {
+    if (activeTheme.isError || themes.isError || settings.isError || customSettings.isError || site.isError || !theme || !themes.data || !settings.data || !customSettings.data || !site.data) {
         return (
             <Box className='fixed inset-0 z-50 bg-background' padding='lg'>
                 <Stack align='center' className='size-full text-center' gap='sm' justify='center'>
@@ -276,6 +345,7 @@ const ThemeBuilderRoute = () => {
     return (
         <ThemeBuilderExperience
             customSettings={customSettings.data.custom_theme_settings}
+            installedThemeNames={installedThemeNames}
             settings={themeSettings}
             siteUrl={site.data.site.url}
             theme={theme}
@@ -306,6 +376,10 @@ const BuilderRoute = () => {
 
     if (RewindRuntimeProof && searchParams.get('proof') === 'rewind') {
         return <Suspense fallback={null}><RewindRuntimeProof /></Suspense>;
+    }
+
+    if (PublishRuntimeProof && searchParams.get('proof') === 'publish') {
+        return <Suspense fallback={null}><PublishRuntimeProof /></Suspense>;
     }
 
     return <Box className='size-full' data-model-runtime={BrowserPiModelAccess.runtime}><ThemeBuilderRoute /></Box>;

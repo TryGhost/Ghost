@@ -13,11 +13,12 @@ export type BuilderShellProps = ChatPanelProps & {
     preview: ReactNode;
     backTo: string;
     backLabel: string;
+    publishAction?: ReactNode;
 };
 
-export const BuilderShell = ({title, preview, backTo, backLabel, ...chatProps}: BuilderShellProps) => (
+export const BuilderShell = ({title, preview, backTo, backLabel, publishAction, ...chatProps}: BuilderShellProps) => (
     <Stack className='fixed inset-0 z-50 min-h-0 overflow-hidden bg-background' gap='none'>
-        <BuilderHeader backLabel={backLabel} backTo={backTo} state={chatProps.state} title={title} />
+        <BuilderHeader backLabel={backLabel} backTo={backTo} publishAction={publishAction} state={chatProps.state} title={title} />
         <BuilderLayout
             chat={<ChatPanel {...chatProps} />}
             preview={<PreviewPanel>{preview}</PreviewPanel>}

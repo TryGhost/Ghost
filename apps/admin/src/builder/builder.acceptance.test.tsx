@@ -12,6 +12,7 @@ async function fakeBuilderWorld(): Promise<void> {
     if (!theme) {
         throw new Error('The active theme fixture is missing.');
     }
+    fakeAdminEndpoint('GET', '/themes/', {themes: [theme]});
     const archive = await new JSZip()
         .file('casper/package.json', JSON.stringify({name: 'casper', version: '1.0.0'}))
         .file('casper/index.hbs', '<!doctype html><html><head><title>{{@site.title}}</title></head><body><main data-edit="casper/index.hbs:1:1"><h1>{{@site.title}}</h1></main></body></html>')
@@ -87,6 +88,7 @@ describe('Design Builder route', () => {
     });
 
     it('offers a route back to Design settings when Builder data fails to load', async () => {
+        fakeAdminEndpoint('GET', '/themes/', {themes: activeThemeResponse().themes});
         fakeAdminEndpoint('GET', '/custom_theme_settings/', {errors: [{message: 'Unavailable'}]}, {status: 500});
         await renderAdminApp('/builder/theme', {labs: {designBuilder: true}});
 
@@ -136,6 +138,51 @@ describe('Design Builder route', () => {
         await expect.element(rendered).toHaveTextContent(/Rendered path: \/branch\/$/);
         await expect.element(page.getByTestId('rewind-proof-url')).toHaveTextContent('https://example.com/branch/');
         await expect.element(page.getByTestId('rewind-proof-selection')).toHaveTextContent('Branch hero');
+    });
+
+    it('publishes a built-in theme as an activated copy before saving staged settings', async () => {
+        const upload = fakeAdminEndpoint('POST', '/themes/upload/?copy_settings_from=source', {themes: [{name: 'source-edited', active: false, package: {}}]});
+        const activate = fakeAdminEndpoint('PUT', '/themes/source-edited/activate/', {themes: [{name: 'source-edited', active: true, package: {}}]});
+        const settings = fakeAdminEndpoint('PUT', '/settings/', ({body}) => body);
+        const customSettings = fakeAdminEndpoint('PUT', '/custom_theme_settings/', ({body}) => body);
+        await renderAdminApp('/builder/theme?proof=publish&flow=builtin', {labs: {designBuilder: true}});
+
+        await expect.element(page.getByTestId('publish-proof-dirty')).toHaveTextContent('Dirty: true');
+        await page.getByRole('button', {name: 'Publish changes'}).click();
+        await expect.element(page.getByLabelText('Theme copy name')).toHaveValue('source-edited');
+        await page.getByRole('button', {name: 'Publish and activate copy'}).click();
+
+        await expect.element(page.getByTestId('publish-proof-result')).toHaveTextContent('published:source-edited');
+        await expect.element(page.getByTestId('publish-proof-dirty')).toHaveTextContent('Dirty: false');
+        expect(upload.requests).toHaveLength(1);
+        expect(upload.lastRequest?.body).toMatchObject({file: {filename: 'source-edited.zip', type: 'application/zip'}});
+        expect(activate.requests).toHaveLength(1);
+        expect(settings.lastRequest?.body).toEqual({settings: [{key: 'accent_color', value: '#123456'}]});
+        expect(customSettings.lastRequest?.body).toEqual({custom_theme_settings: [{key: 'layout', value: 'Grid'}]});
+    });
+
+    it('publishes an editable custom theme in place without activation', async () => {
+        const installedArchive = await new JSZip()
+            .file('edition/package.json', JSON.stringify({name: 'edition', version: '1.0.0'}))
+            .file('edition/index.hbs', '<main>Initial</main>')
+            .generateAsync({type: 'arraybuffer'});
+        fakeAdminEndpoint('GET', '/themes/edition/download/', installedArchive, {contentType: 'application/zip'});
+        const upload = fakeAdminEndpoint('POST', '/themes/upload/', {themes: [{name: 'edition', active: true, package: {}}]});
+        const settings = fakeAdminEndpoint('PUT', '/settings/', ({body}) => body);
+        const customSettings = fakeAdminEndpoint('PUT', '/custom_theme_settings/', ({body}) => body);
+        await renderAdminApp('/builder/theme?proof=publish&flow=custom', {labs: {designBuilder: true}});
+
+        await expect.element(page.getByTestId('publish-proof-dirty')).toHaveTextContent('Dirty: true');
+        await page.getByRole('button', {name: 'Publish changes'}).click();
+        await expect.element(page.getByRole('heading', {name: 'Publish theme changes?'})).toBeVisible();
+        await page.getByRole('button', {name: 'Publish changes'}).last().click();
+
+        await expect.element(page.getByTestId('publish-proof-result')).toHaveTextContent('published:edition');
+        await expect.element(page.getByTestId('publish-proof-dirty')).toHaveTextContent('Dirty: false');
+        expect(upload.requests).toHaveLength(1);
+        expect(upload.lastRequest?.body).toMatchObject({file: {filename: 'edition.zip', type: 'application/zip'}});
+        expect(settings.requests).toHaveLength(1);
+        expect(customSettings.requests).toHaveLength(1);
     });
 
     it('keeps the last valid iframe document and virtual URL through render repair', async () => {

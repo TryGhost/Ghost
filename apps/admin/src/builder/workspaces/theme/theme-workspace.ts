@@ -456,9 +456,9 @@ export class ThemeWorkspace implements BuilderWorkspace {
                     ...this.lastValidCandidate,
                     theme: structuredClone(publishedDraft.theme)
                 });
-                this.preview.rebaseDraft?.(cloneThemeDraft(this.lastValidCandidate));
             }
             const activeDraft = this.lastValidCandidate ?? publishedDraft;
+            this.preview.rebaseDraft?.(cloneThemeDraft(activeDraft));
             const activePublishRevision = await themePublishRevision(activeDraft);
             const previousValidation = this.lastValidCandidate
                 ? this.currentState.validation ?? {valid: true, diagnostics: [], revision: activeDraft.revision}

@@ -151,11 +151,12 @@ describe('ThemeWorkspace', () => {
             ...loaded,
             theme: {...loaded.theme, name: 'demo-edited', builtIn: false}
         });
+        const rebaseDraft = vi.fn<(draft: ThemeDraft) => void>();
         const workspace = new ThemeWorkspace({
             id: 'theme:demo',
             title: 'Demo',
             load: () => Promise.resolve(loaded),
-            preview: {kind: 'theme'},
+            preview: {kind: 'theme', rebaseDraft},
             publish: () => Promise.resolve({ok: true as const, revision: publishedDraft.revision, draft: publishedDraft})
         });
         await workspace.load(new AbortController().signal);
@@ -165,6 +166,8 @@ describe('ThemeWorkspace', () => {
         expect(result).toMatchObject({ok: true, revision: publishedDraft.revision});
         expect(workspace.draft.theme).toMatchObject({name: 'demo-edited', builtIn: false});
         expect(workspace.snapshot().revision).toBe(publishedDraft.revision);
+        expect(rebaseDraft).toHaveBeenCalledOnce();
+        expect(rebaseDraft.mock.calls[0]?.[0]).toMatchObject({revision: publishedDraft.revision, theme: {name: 'demo-edited', builtIn: false}});
     });
 
     it('does not replace a normalized published draft with the stale preview', async () => {
