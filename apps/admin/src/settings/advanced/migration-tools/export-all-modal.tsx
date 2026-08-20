@@ -11,7 +11,9 @@ import {
     LoadingIndicator
 } from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {downloadSiteExport, type SiteExportComponent} from '@tryghost/admin-x-framework/api/exports';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export type ExportMode = 'sync' | 'async';
 
@@ -38,6 +40,7 @@ type ExportPhase = 'select' | 'confirmed' | 'preparing' | 'done';
 
 const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => void; mode: ExportMode}> = ({open, onOpenChange, mode}) => {
     const {data: currentUser} = useCurrentUser();
+    const handleError = useHandleError();
     const [phase, setPhase] = useState<ExportPhase>('select');
     const [selected, setSelected] = useState<Record<ExportComponentKey, boolean>>(() => {
         const initial = {} as Record<ExportComponentKey, boolean>;
@@ -46,8 +49,8 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
         });
         return initial;
     });
-    const mockTimerRef = useRef<ReturnType<typeof setTimeout>>();
     const resetTimerRef = useRef<ReturnType<typeof setTimeout>>();
+    const abortRef = useRef<AbortController>();
 
     const email = currentUser?.email;
     const visibleComponents = EXPORT_COMPONENTS.filter(component => mode === 'async' || !component.asyncOnly);
@@ -60,40 +63,44 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
             setPhase('select');
             return;
         }
-        clearTimeout(mockTimerRef.current);
+        abortRef.current?.abort();
         clearTimeout(resetTimerRef.current);
         // Reset for the next open, after the close animation
         resetTimerRef.current = setTimeout(() => setPhase('select'), 200);
     };
 
-    // Static UX/UI mockup, nothing is wired to a backend
-    const startExport = () => {
+    const startExport = async () => {
         if (mode === 'async') {
+            // Host mode is not wired to a backend yet — mocked confirmation only
             setPhase('confirmed');
             return;
         }
-        setPhase('preparing');
-        mockTimerRef.current = setTimeout(() => {
-            triggerMockDownload();
-            setPhase('done');
-        }, 10000);
-    };
 
-    const triggerMockDownload = () => {
-        const emptyZip = new Uint8Array([0x50, 0x4b, 0x05, 0x06, ...new Array<number>(18).fill(0)]);
-        const url = URL.createObjectURL(new Blob([emptyZip], {type: 'application/zip'}));
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = 'ghost-export.zip';
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        URL.revokeObjectURL(url);
+        const components = visibleComponents
+            .filter(component => selected[component.key] && component.key !== 'media')
+            .map(component => component.key as SiteExportComponent);
+
+        const controller = new AbortController();
+        abortRef.current = controller;
+        setPhase('preparing');
+
+        try {
+            await downloadSiteExport(components, {signal: controller.signal});
+            // The functional updates guard against a stale transition after
+            // the dialog was closed and reset meanwhile
+            setPhase(current => (current === 'preparing' ? 'done' : current));
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                return;
+            }
+            handleError(error);
+            setPhase(current => (current === 'preparing' ? 'select' : current));
+        }
     };
 
     useEffect(() => {
         return () => {
-            clearTimeout(mockTimerRef.current);
+            abortRef.current?.abort();
             clearTimeout(resetTimerRef.current);
         };
     }, []);
@@ -142,7 +149,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                         </div>
                         <DialogFooter className='gap-2 sm:justify-end'>
                             <Button variant='outline' onClick={() => handleOpenChange(false)}>Cancel</Button>
-                            <Button disabled={noneSelected} onClick={startExport}>
+                            <Button disabled={noneSelected} onClick={() => void startExport()}>
                                 <LucideIcon.Download /> Export
                             </Button>
                         </DialogFooter>
@@ -186,7 +193,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                     <>
                         <DialogHeader>
                             <DialogTitle className='flex items-center gap-2'>
-                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Export downloaded
+                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Export complete
                             </DialogTitle>
                         </DialogHeader>
                         <DialogDescription>
