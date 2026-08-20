@@ -36,7 +36,6 @@
         "bin/",
         "types/",
         "index.js",
-        "ghost.js",
         "loggingrc.js",
         "MigratorConfig.js",
         "nodemon.json",

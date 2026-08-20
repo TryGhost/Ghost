@@ -81,7 +81,7 @@ for (const task in listOfTasks) {
 
 ## Registering commands
 
-New commands need to be registered in `ghost.js` before they can be called.
+New commands need to be registered in `index.js` before they can be called.
 
 Commands are called by passing them to `command.run()` either as a class definition, or as the name of the file to be required in the `core/cli` directory.
 
