@@ -90,9 +90,3 @@ export const useImportContentCSV = createMutation<unknown, File>({
         return formData;
     }
 });
-
-// Search index endpoints for efficient search
-export const useSearchIndexPosts = createQuery<PostsResponseType>({
-    dataType,
-    path: '/search-index/posts/'
-});

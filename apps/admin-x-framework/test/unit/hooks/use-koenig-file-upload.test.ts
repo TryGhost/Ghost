@@ -96,8 +96,7 @@ describe('useKoenigFileUpload', () => {
             subdir: '',
             adminRoot: '/ghost/',
             assetRoot: '/ghost/assets/',
-            apiRoot: `${baseUrl}/ghost/api/admin`,
-            activityPubRoot: '/.ghost/activitypub'
+            apiRoot: `${baseUrl}/ghost/api/admin`
         });
     });
 

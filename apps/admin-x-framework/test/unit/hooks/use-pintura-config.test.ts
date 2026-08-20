@@ -40,8 +40,7 @@ describe('usePinturaConfig', () => {
             subdir: '',
             adminRoot: '/ghost/',
             assetRoot: '/ghost/assets/',
-            apiRoot: '/ghost/api/admin',
-            activityPubRoot: '/.ghost/activitypub'
+            apiRoot: '/ghost/api/admin'
         });
     });
 
@@ -125,8 +124,7 @@ describe('usePinturaConfig', () => {
             subdir: '',
             adminRoot: '/blog/ghost/',
             assetRoot: '/blog/ghost/assets/',
-            apiRoot: '/blog/ghost/api/admin',
-            activityPubRoot: '/.ghost/activitypub'
+            apiRoot: '/blog/ghost/api/admin'
         });
 
         const {result} = renderHook(() => usePinturaConfig());

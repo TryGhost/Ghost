@@ -29,8 +29,7 @@ describe('helpers utils', () => {
                 subdir: '',
                 adminRoot: '/ghost/',
                 assetRoot: '/ghost/assets/',
-                apiRoot: '/ghost/api/admin',
-                activityPubRoot: '/.ghost/activitypub'
+                apiRoot: '/ghost/api/admin'
             });
         });
 
@@ -41,8 +40,7 @@ describe('helpers utils', () => {
                 subdir: '/blog',
                 adminRoot: '/blog/ghost/',
                 assetRoot: '/blog/ghost/assets/',
-                apiRoot: '/blog/ghost/api/admin',
-                activityPubRoot: '/blog/.ghost/activitypub'
+                apiRoot: '/blog/ghost/api/admin'
             });
         });
 
@@ -53,8 +51,7 @@ describe('helpers utils', () => {
                 subdir: '/site/blog',
                 adminRoot: '/site/blog/ghost/',
                 assetRoot: '/site/blog/ghost/assets/',
-                apiRoot: '/site/blog/ghost/api/admin',
-                activityPubRoot: '/site/blog/.ghost/activitypub'
+                apiRoot: '/site/blog/ghost/api/admin'
             });
         });
 
@@ -65,8 +62,7 @@ describe('helpers utils', () => {
                 subdir: '/blog',
                 adminRoot: '/blog/ghost/',
                 assetRoot: '/blog/ghost/assets/',
-                apiRoot: '/blog/ghost/api/admin',
-                activityPubRoot: '/blog/.ghost/activitypub'
+                apiRoot: '/blog/ghost/api/admin'
             });
         });
 
@@ -77,8 +73,7 @@ describe('helpers utils', () => {
                 subdir: '',
                 adminRoot: '/ghost/',
                 assetRoot: '/ghost/assets/',
-                apiRoot: '/ghost/api/admin',
-                activityPubRoot: '/.ghost/activitypub'
+                apiRoot: '/ghost/api/admin'
             });
         });
 
@@ -89,8 +84,7 @@ describe('helpers utils', () => {
                 subdir: '/blog',
                 adminRoot: '/blog/ghost/',
                 assetRoot: '/blog/ghost/assets/',
-                apiRoot: '/blog/ghost/api/admin',
-                activityPubRoot: '/blog/.ghost/activitypub'
+                apiRoot: '/blog/ghost/api/admin'
             });
         });
 
@@ -101,8 +95,7 @@ describe('helpers utils', () => {
                 subdir: '/ghost-blog',
                 adminRoot: '/ghost-blog/ghost/',
                 assetRoot: '/ghost-blog/ghost/assets/',
-                apiRoot: '/ghost-blog/ghost/api/admin',
-                activityPubRoot: '/ghost-blog/.ghost/activitypub'
+                apiRoot: '/ghost-blog/ghost/api/admin'
             });
         });
     });
