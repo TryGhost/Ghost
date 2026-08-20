@@ -4,6 +4,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useAddMember} from '@tryghost/admin-x-framework/api/members';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {Link} from '@tryghost/admin-x-framework';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface MembersEmptyStateProps {
@@ -58,7 +59,7 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled
                     <div className="flex flex-col items-center gap-3">
                         <div className="flex flex-col items-center gap-2 sm:flex-row">
                             <Button asChild>
-                                <a href="#/members/new?back=%2Fmembers">New member</a>
+                                <Link to="/members/new?back=%2Fmembers">New member</Link>
                             </Button>
                             <Button
                                 disabled={isAdding || isCurrentUserLoading || !currentUser}
@@ -69,7 +70,7 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled
                             </Button>
                         </div>
                         <p className="text-sm leading-tight text-pretty text-muted-foreground">
-                            Already have members? <a className="font-medium text-foreground underline-offset-4 hover:underline" href="#/members/import">Import with CSV</a>
+                            Already have members? <Link className="font-medium text-foreground underline-offset-4 hover:underline" to="/members/import">Import with CSV</Link>
                         </p>
                     </div>
                 }

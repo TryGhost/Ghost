@@ -18,7 +18,8 @@ import {formatMemberName} from '@tryghost/shade/app';
 import {getMember, useAddMember, useEditMember} from '@tryghost/admin-x-framework/api/members';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useBlocker} from 'react-router';
+import {NavigationType, useBlocker} from 'react-router';
+import {isOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
@@ -281,7 +282,14 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
     };
 
     useConfirmUnload(activeMutation.isPending || hasUnsavedChanges);
-    const blocker = useBlocker(({currentLocation, nextLocation}) => !bypassGuardRef.current && hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname);
+    const blocker = useBlocker(({currentLocation, nextLocation, historyAction}) => {
+        // A POP can only be undone from a router-created entry; elsewhere the router
+        // would miscount the delta and jump or reload, so let those through.
+        if (historyAction === NavigationType.Pop && !isOnRouterHistoryEntry()) {
+            return false;
+        }
+        return !bypassGuardRef.current && hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname;
+    });
     // Native `<a href="#/…">` navigations (the sidebar, links into Ember
     // routes) never reach the react-router blocker above — see the hook.
     // Ember's own guard (`trailing-hash.js`) can't cover this screen either,

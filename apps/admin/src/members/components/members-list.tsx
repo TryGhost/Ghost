@@ -5,6 +5,7 @@ import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './me
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
 import {buildMemberDetailPath} from '@/members/member-detail-hash';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
 import type {MemberActiveColumn} from '@/members/member-query-params';
 import type {RefObject} from 'react';
@@ -184,12 +185,13 @@ function MembersList({
         estimateSize: () => 72 // Approximate row height
     });
 
+    const navigate = useNavigate();
+
     const handleRowClick = (memberId: string) => {
         if (onRowClick) {
             onRowClick(memberId);
         } else {
-            // Default: Navigate to Ember member detail page
-            window.location.hash = buildMemberDetailPath(memberId, backPath);
+            navigate(buildMemberDetailPath(memberId, backPath));
         }
     };
 
