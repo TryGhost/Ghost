@@ -2,3 +2,4 @@ export const GIFT_EXPIRY_DAYS = 365;
 export const GIFT_REMINDER_LEAD_DAYS = 7;
 export const GIFT_REMINDER_FLOOR_DAYS = 3;
 export const GIFT_DELIVERY_STALE_AFTER_MS = 60 * 60 * 1000;
+export const GIFT_DELIVERY_EMAIL_TAG = 'gift-delivery';

@@ -99,6 +99,14 @@ describe('EmailAnalyticsServiceWrapper', function () {
         });
     });
 
+    it('uses the gift analytics job name in lifecycle logs', function () {
+        const infoLog = sinon.stub(logging, 'info');
+
+        logLatestOpenedJob('gifts');
+
+        sinon.assert.calledWith(infoLog, sinon.match('[Background Job] email-analytics-gift-fetch-latest processed'));
+    });
+
     it('logs and preserves initial schedule restoration failures', async function () {
         const errorLog = sinon.stub(logging, 'error');
         const wrapper = logLatestOpenedJob('newsletters');
@@ -128,5 +136,44 @@ describe('EmailAnalyticsServiceWrapper', function () {
 
         const completions = infoLog.args.filter(([message]) => typeof message === 'string' && message.startsWith('[Background Job] email-analytics-fetch-latest completed'));
         assert.equal(completions.length, 0);
+    });
+
+    it('skips opened event polling when the cursor seed has no opened column', async function () {
+        const wrapper = new EmailAnalyticsServiceWrapper({logName: 'gifts'});
+        wrapper.init({
+            config: {get: sinon.stub()},
+            domainEvents: {subscribe: sinon.stub()},
+            event: FakeEvent,
+            queries: sinon.createStubInstance(Queries),
+            mailgunTags: [],
+            jobNames: {
+                latestNonOpened: 'email-analytics-gifts-latest-others',
+                missing: 'email-analytics-gifts-missing',
+                latestOpened: 'email-analytics-gifts-latest-opened',
+                scheduled: 'email-analytics-gifts-scheduled'
+            },
+            cursorSeed: {
+                tableName: 'gift_deliveries',
+                eventColumns: {
+                    delivered: 'outcome_at',
+                    failed: 'outcome_at'
+                }
+            },
+            settingsCache: {get: sinon.stub()},
+            createEventProcessor: sinon.stub().returns({
+                processBatch: sinon.stub().resolves()
+            }),
+            metrics: {metric: metricStub}
+        });
+
+        sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+        const fetchLatestOpenedEvents = sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(0);
+        sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+        sinon.stub(wrapper, 'fetchMissing').resolves(0);
+        sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+
+        await wrapper.startFetch();
+
+        sinon.assert.notCalled(fetchLatestOpenedEvents);
     });
 });

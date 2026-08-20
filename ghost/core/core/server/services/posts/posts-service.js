@@ -175,13 +175,22 @@ class PostsService {
                     message: tpl(messages.invalidTags)
                 });
             }
+            // null and undefined mean the field was not supplied, anything else
+            // that is not a string is a malformed value rather than an absent one
+            const isMalformed = value => value !== undefined && value !== null && typeof value !== 'string';
+
             for (const tag of data.meta.tags) {
-                if (typeof tag !== 'object') {
+                if (!tag || typeof tag !== 'object') {
                     throw new errors.IncorrectUsageError({
                         message: tpl(messages.invalidTags)
                     });
                 }
                 if (!tag.id && !tag.name) {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTags)
+                    });
+                }
+                if (isMalformed(tag.id) || isMalformed(tag.name)) {
                     throw new errors.IncorrectUsageError({
                         message: tpl(messages.invalidTags)
                     });
@@ -217,28 +226,76 @@ class PostsService {
             });
         }
 
-        // Create tags that don't exist
-        for (const tag of data.tags) {
-            if (!tag.id) {
-                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
-                tag.id = createdTag.id;
+        // The same tag can be passed more than once in a single request. Dedupe
+        // before creating, otherwise a repeated name-only tag is created twice
+        const seen = new Set();
+        const tags = data.tags.filter((tag) => {
+            const key = tag.id ? `id:${tag.id}` : `name:${tag.name.toLocaleLowerCase()}`;
+
+            if (seen.has(key)) {
+                return false;
             }
+
+            seen.add(key);
+            return true;
+        });
+
+        // Create tags that don't exist
+        for (const tag of tags) {
+            if (tag.id) {
+                continue;
+            }
+
+            // The tag may already exist. Match on the slug it generates rather
+            // than the name, because the slug is unique and case insensitive on
+            // every supported database. Derive it the way Tag.onSaving does, so
+            // a supplied slug is looked up rather than silently ignored
+            const slug = await this.models.Base.Model.generateSlug(this.models.Tag, tag.slug || tag.name, {skipDuplicateChecks: true});
+            const existingTag = await this.models.Tag.findOne({slug}, {transacting: options.transacting});
+
+            if (existingTag) {
+                tag.id = existingTag.id;
+                continue;
+            }
+
+            const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
+            tag.id = createdTag.id;
         }
 
         const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+        const postIds = postRows.map(post => post.id);
 
-        const postTags = data.tags.reduce((pt, tag) => {
-            return pt.concat(postRows.map((post) => {
-                return {
+        const tagIds = [...new Set(tags.map(tag => tag.id))];
+
+        // Posts in the selection may already carry the tag, filter those pairs out
+        const existingRows = tagIds.length && postIds.length ?
+            await options.transacting('posts_tags')
+                .whereIn('tag_id', tagIds)
+                .whereIn('post_id', postIds)
+                .select('post_id', 'tag_id') :
+            [];
+        const existing = new Set(existingRows.map(row => `${row.post_id}:${row.tag_id}`));
+
+        const postTags = [];
+        for (const tagId of tagIds) {
+            for (const postId of postIds) {
+                if (existing.has(`${postId}:${tagId}`)) {
+                    continue;
+                }
+
+                postTags.push({
                     id: (new ObjectId()).toHexString(),
-                    post_id: post.id,
-                    tag_id: tag.id,
+                    post_id: postId,
+                    tag_id: tagId,
                     sort_order: 0
-                };
-            }));
-        }, []);
+                });
+            }
+        }
 
-        await options.transacting('posts_tags').insert(postTags);
+        if (postTags.length) {
+            await options.transacting('posts_tags').insert(postTags);
+        }
+
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {

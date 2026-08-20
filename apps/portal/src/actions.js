@@ -303,6 +303,7 @@ async function redeemGift({data, state, api}) {
             pageData: {
                 ...(state.pageData || {}),
                 email: (email || '').trim(),
+                ...(name ? {name} : {}),
                 redirect: redirectUrl.href
             }
         };
@@ -371,11 +372,16 @@ async function continueGiftSubscription({state, api}) {
 
 async function checkoutGift({data, state, api}) {
     try {
-        const {tierId, cadence, duration, email} = data;
+        const {tierId, cadence, duration, email, deliveryMethod, recipientEmail, recipientName, buyerName, personalMessage} = data;
         await api.member.checkoutGift({
             tierId,
             ...(duration === undefined ? {cadence} : {duration}),
-            ...(email ? {email} : {})
+            ...(email ? {email} : {}),
+            ...(deliveryMethod !== undefined ? {deliveryMethod} : {}),
+            ...(recipientEmail ? {recipientEmail} : {}),
+            ...(recipientName ? {recipientName} : {}),
+            ...(buyerName ? {buyerName} : {}),
+            ...(personalMessage ? {personalMessage} : {})
         });
         return {
             action: 'checkoutGift:success'

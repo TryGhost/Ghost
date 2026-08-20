@@ -1,7 +1,8 @@
 import sinon from 'sinon';
 import createKnex from 'knex';
 
-import {automations, init, newsletters} from '../../../../../core/server/services/email-analytics';
+import {automations, gifts, init, newsletters} from '../../../../../core/server/services/email-analytics';
+import {GIFT_DELIVERY_EMAIL_TAG} from '../../../../../core/server/services/gifts/constants';
 import {AUTOMATION_EMAIL_TAG} from '../../../../../core/server/services/member-welcome-emails/constants';
 
 describe('email analytics service', function () {
@@ -17,12 +18,14 @@ describe('email analytics service', function () {
 
     let newslettersInit: sinon.SinonStub;
     let automationsInit: sinon.SinonStub;
+    let giftsInit: sinon.SinonStub;
 
     let dependencies: Parameters<typeof init>[0];
 
     beforeEach(function () {
         newslettersInit = sinon.stub(newsletters, 'init');
         automationsInit = sinon.stub(automations, 'init');
+        giftsInit = sinon.stub(gifts, 'init');
 
         dependencies = {
             automationsApi,
@@ -107,6 +110,31 @@ describe('email analytics service', function () {
                 eventColumns: {
                     delivered: 'delivered_at',
                     opened: 'opened_at'
+                }
+            },
+            metrics,
+            settingsCache,
+            createEventProcessor: sinon.match.func
+        }));
+
+        sinon.assert.calledOnceWithExactly(giftsInit, sinon.match({
+            config,
+            domainEvents,
+            event: {
+                name: 'StartGiftEmailAnalyticsJobEvent',
+            },
+            mailgunTags: [GIFT_DELIVERY_EMAIL_TAG],
+            jobNames: {
+                latestNonOpened: 'email-analytics-gifts-latest-others',
+                missing: 'email-analytics-gifts-missing',
+                latestOpened: 'email-analytics-gifts-latest-opened',
+                scheduled: 'email-analytics-gifts-scheduled'
+            },
+            cursorSeed: {
+                tableName: 'gift_deliveries',
+                eventColumns: {
+                    delivered: 'outcome_at',
+                    failed: 'outcome_at'
                 }
             },
             metrics,

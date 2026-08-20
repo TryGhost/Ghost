@@ -18,15 +18,23 @@ export class EmailAnalyticsServiceWrapper {
     #service?: EmailAnalyticsService;
     #fetching = false;
     #restoredSchedule = false;
+    #fetchOpenedEvents = true;
 
     get #logPrefix(): string {
         return `[EmailAnalytics:${this.#logName}]`;
     }
 
     get #backgroundJobName(): string {
-        return this.#logName === 'newsletters'
-            ? 'email-analytics-fetch-latest'
-            : 'email-analytics-automation-fetch-latest';
+        switch (this.#logName) {
+        case 'newsletters':
+            return 'email-analytics-fetch-latest';
+        case 'automations':
+            return 'email-analytics-automation-fetch-latest';
+        case 'gifts':
+            return 'email-analytics-gift-fetch-latest';
+        default:
+            return `email-analytics-${this.#logName}-fetch-latest`;
+        }
     }
 
     constructor({logName}: {logName: string}) {
@@ -62,6 +70,7 @@ export class EmailAnalyticsServiceWrapper {
 
         this.#config = config;
         this.#metrics = metrics;
+        this.#fetchOpenedEvents = Boolean(cursorSeed.eventColumns.opened);
 
         this.#service = new EmailAnalyticsService({
             fetchEvents: (options) => fetchMailgunEvents({...options, config, settings: settingsCache, tags: mailgunTags}),
@@ -226,7 +235,9 @@ export class EmailAnalyticsServiceWrapper {
         //       This can vary locally, but we should be conservative with the number of events we fetch.
         try {
             // Prioritize opens since they are the most important (only data directly displayed to users)
-            const c1 = await this.fetchLatestOpenedEvents({maxEvents: 10000});
+            const c1 = this.#fetchOpenedEvents
+                ? await this.fetchLatestOpenedEvents({maxEvents: 10000})
+                : 0;
             if (c1 >= 10000) {
                 this._restartFetch('high opened event count');
                 return;

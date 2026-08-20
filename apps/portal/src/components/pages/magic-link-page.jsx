@@ -345,8 +345,9 @@ export default class MagicLinkPage extends React.Component {
                                     <GiftCard
                                         duration={getGiftDurationLabel(gift)}
                                         tierName={gift.tier?.name}
-                                        name={submittedName || null}
-                                        giftValue={formatGiftValue(gift)}
+                                        {...(site?.labs?.giftSubCustomization
+                                            ? {toName: submittedName || null, fromName: gift.buyer_name || null}
+                                            : {name: submittedName || null, giftValue: formatGiftValue(gift)})}
                                         siteIcon={siteIcon}
                                         siteTitle={siteTitle}
                                     />

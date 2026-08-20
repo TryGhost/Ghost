@@ -37,6 +37,9 @@ export function buildGiftDelivery(overrides: Partial<GiftDeliveryData> = {}): Gi
         startedAt: null,
         emailSentAt: null,
         emailProviderMessageId: null,
+        outcome: 'unknown',
+        outcomeAt: null,
+        outcomeError: null,
         ...overrides
     };
 }

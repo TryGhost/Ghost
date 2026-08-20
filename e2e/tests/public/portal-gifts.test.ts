@@ -29,13 +29,18 @@ test.describe('Ghost Public - Portal Gifts', () => {
         const buyerEmail = `gift-buyer-${Date.now()}@example.com`;
 
         await portalGiftPage.buyerEmailInput.fill(buyerEmail);
+        await portalGiftPage.buyerNameInput.fill('Test Gift Buyer');
         await portalGiftPage.durationOption('3 months').click();
         const tier = portalGiftPage.tierOption(tierName);
         await tier.click();
 
         await expect(tier).toContainText('$15');
         await expect(portalGiftPage.giftCardValue).toHaveText('$15');
-        await portalGiftPage.continueButton.click();
+        await portalGiftPage.continueToDeliveryButton.click();
+        await portalGiftPage.recipientNameInput.fill('Test Gift Recipient');
+        await portalGiftPage.recipientEmailInput.fill('gift-recipient@example.com');
+        await portalGiftPage.personalMessageInput.fill('Enjoy your gift!');
+        await portalGiftPage.continueToPaymentButton.click();
 
         const checkoutPage = new FakeStripeCheckoutPage(page);
         await checkoutPage.waitUntilPaymentReady();

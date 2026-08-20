@@ -1,12 +1,15 @@
 import type {Knex} from 'knex';
 import {toDatabaseDate} from '../../lib/db-date';
 import {decodeGiftDeliveryRow, encodeGiftDelivery} from './gift-delivery-codec';
-import type {GiftDeliveryData, GiftDeliveryRow} from './gift-delivery-schema';
+import type {GiftDeliveryData, GiftDeliveryOutcome, GiftDeliveryRow} from './gift-delivery-schema';
 import type {RepositoryTransactionOptions} from './gift-bookshelf-repository';
+
+export type GiftDeliveryOutcomeRecordResult = 'recorded' | 'stale' | 'not_found';
 
 export interface GiftDeliveryRepository {
     getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
     getByGiftId(giftId: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
+    getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
     findRecoverableForPurchasedGifts(staleBefore: Date, limit: number): Promise<GiftDeliveryData[]>;
     tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
     markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
@@ -14,6 +17,7 @@ export interface GiftDeliveryRepository {
     markFailed(id: string): Promise<boolean>;
     markCancelled(id: string): Promise<boolean>;
     cancelPendingForGift(token: string, options?: RepositoryTransactionOptions): Promise<boolean>;
+    recordOutcome(data: {providerMessageId: string; outcome: GiftDeliveryOutcome; timestamp: Date; error: string | null}): Promise<GiftDeliveryOutcomeRecordResult>;
     create(delivery: GiftDeliveryData, options?: RepositoryTransactionOptions): Promise<void>;
 }
 
@@ -59,6 +63,12 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
 
     async getByGiftId(giftId: string, options: RepositoryTransactionOptions = {}): Promise<GiftDeliveryData | null> {
         const model = await this.model.findOne({gift_id: giftId}, {require: false, ...options});
+
+        return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
+    }
+
+    async getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null> {
+        const model = await this.model.findOne({email_provider_message_id: providerMessageId}, {require: false});
 
         return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
     }
@@ -137,6 +147,46 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
             .update({status: 'cancelled', started_at: null});
 
         return updated === 1;
+    }
+
+    async recordOutcome({providerMessageId, outcome, timestamp, error}: {providerMessageId: string; outcome: GiftDeliveryOutcome; timestamp: Date; error: string | null}): Promise<GiftDeliveryOutcomeRecordResult> {
+        const outcomeAt = toDatabaseDate(timestamp);
+        const lowerPriorityOutcomes: GiftDeliveryOutcome[] = outcome === 'permanent_failed'
+            ? ['temporary_failed', 'delivered']
+            : outcome === 'delivered'
+                ? ['temporary_failed']
+                : [];
+        const updated = await this.knex('gift_deliveries')
+            .where({email_provider_message_id: providerMessageId})
+            .whereNot({outcome: 'permanent_failed'})
+            .where((builder) => {
+                builder.whereNull('outcome_at').orWhere('outcome_at', '<', outcomeAt);
+
+                // Database dates have second precision. Allow a same-second outcome
+                // to advance, while preventing refetches from regressing or replaying it.
+                if (lowerPriorityOutcomes.length > 0) {
+                    builder.orWhere((sameSecond) => {
+                        sameSecond.where('outcome_at', '=', outcomeAt)
+                            .whereIn('outcome', lowerPriorityOutcomes);
+                    });
+                }
+            })
+            .update({
+                outcome,
+                outcome_at: outcomeAt,
+                outcome_error: error
+            });
+
+        if (updated === 1) {
+            return 'recorded';
+        }
+
+        const delivery = await this.knex('gift_deliveries')
+            .select('id')
+            .where({email_provider_message_id: providerMessageId})
+            .first();
+
+        return delivery ? 'stale' : 'not_found';
     }
 
     async create(delivery: GiftDeliveryData, options: RepositoryTransactionOptions = {}): Promise<void> {

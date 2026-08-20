@@ -1,7 +1,7 @@
 {
     "name": "@tryghost/portal",
     "type": "module",
-    "version": "2.69.16",
+    "version": "2.70.0",
     "description": "Drop-in membership interface for Ghost sites",
     "license": "MIT",
     "repository": "https://github.com/TryGhost/Ghost",

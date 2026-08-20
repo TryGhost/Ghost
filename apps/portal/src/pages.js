@@ -18,8 +18,11 @@ import SupportSuccess from './components/pages/support-success';
 import SupportError from './components/pages/support-error';
 import RecommendationsPage from './components/pages/recommendations-page';
 import GiftPage from './components/pages/gift-page';
+import BetaGiftPage from './components/pages/beta-gift-page';
 import GiftRedemptionPage from './components/pages/gift-redemption-page';
+import BetaGiftRedemptionPage from './components/pages/beta-gift-redemption-page';
 import GiftSuccessPage from './components/pages/gift-success-page';
+import BetaGiftSuccessPage from './components/pages/beta-gift-success-page';
 import ShareModal from './components/pages/share/share-modal';
 
 /** List of all available pages in Portal, mapped to their UI component
@@ -49,6 +52,17 @@ const Pages = {
     giftRedemption: GiftRedemptionPage,
     giftSuccess: GiftSuccessPage,
     share: ShareModal
+};
+
+const BetaPages = {
+    ...Pages,
+    gift: BetaGiftPage,
+    giftRedemption: BetaGiftRedemptionPage,
+    giftSuccess: BetaGiftSuccessPage
+};
+
+export const getPages = function ({site} = {}) {
+    return site?.labs?.giftSubCustomization ? BetaPages : Pages;
 };
 
 /** Return page if valid, fallback to signup */
