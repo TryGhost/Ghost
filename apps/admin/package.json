@@ -100,6 +100,11 @@
             "playwright"
         ],
         "targets": {
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "test:acceptance": {
                 "dependsOn": [
                     "^build"
@@ -121,7 +126,7 @@
             },
             "build:dev": {
                 "dependsOn": [
-                    "build",
+                    "^build",
                     {
                         "projects": [
                             "ghost-admin"
@@ -146,7 +151,7 @@
                     "{workspaceRoot}/ghost/core/core/built/admin"
                 ],
                 "dependsOn": [
-                    "build",
+                    "^build",
                     {
                         "projects": [
                             "ghost-admin"
