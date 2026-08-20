@@ -618,6 +618,7 @@ describe('GiftService', function () {
                 (err: any) => {
                     assert.equal(err.errorType, 'NotFoundError');
                     assert.equal(err.message, 'This gift does not exist.');
+                    assert.equal(err.code, 'GIFT_NOT_FOUND');
                     return true;
                 }
             );

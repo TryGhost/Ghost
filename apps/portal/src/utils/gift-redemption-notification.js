@@ -66,6 +66,9 @@ export function getGiftRedemptionErrorMessage(error) {
 
     if (error?.code) {
         switch (error.code) {
+        case 'GIFT_NOT_FOUND':
+            subtitle = t('This gift link is invalid.');
+            break;
         case 'GIFT_REDEEMED':
             subtitle = t('This gift has already been redeemed.');
             break;

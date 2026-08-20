@@ -47,7 +47,7 @@ const GiftRedemptionPage = () => {
             status: 'error',
             autoHide: false,
             closeable: true,
-            message: getGiftRedemptionErrorMessage()
+            message: getGiftRedemptionErrorMessage({code: 'GIFT_NOT_FOUND'})
         });
         doAction('closePopup');
     }, [doAction, gift]);
