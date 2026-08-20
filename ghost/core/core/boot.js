@@ -497,10 +497,12 @@ async function initBackgroundServices({config}) {
         logging.error(err);
     }
 
-    const updateCheck = require('./server/services/update-check');
-    updateCheck.scheduleRecurringJobs();
-    if (config.get('updateCheck:forceUpdate')) {
-        updateCheck.scheduleBootJob();
+    try {
+        const updateCheck = require('./server/services/update-check');
+        await updateCheck.scheduleJobs();
+    } catch (err) {
+        const logging = require('@tryghost/logging');
+        logging.error(err);
     }
 
     // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
@@ -697,3 +699,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 }
 
 module.exports = bootGhost;
+// Exposed for tests: background services are fire-and-forget, so without a seam
+// nothing can observe which of them boot actually starts.
+module.exports.initBackgroundServices = initBackgroundServices;

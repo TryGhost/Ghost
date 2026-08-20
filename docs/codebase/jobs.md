@@ -17,12 +17,23 @@ events.
 
 Existing examples include:
 
-- Update checks, which run in a worker on a schedule.
 - Imports, which run as inline jobs.
 - Email analytics, which uses scheduled worker jobs.
 
 Prefer an existing job with similar lifecycle and failure requirements as the
 starting point for a new one.
+
+## The class-based jobs service
+
+Recurring jobs are moving off the Bree wrapper and onto the class-based jobs
+service in `ghost/core/core/server/services/jobs-service/`. A job there is a
+class with a stable static `type` and a serialisable payload; its handler is
+registered centrally in `register-job-handlers.ts`, and boot owns scheduling.
+Handlers run on the main event loop rather than in a worker, so they do not
+re-initialize services, and any job whose slowest branch is unbounded must wrap
+itself in `withDeadline` so shutdown can still drain - a job abandoned at its
+deadline is reported as a warning, not a failure. Clean-tokens and update checks
+have moved; prefer this service for new recurring work.
 
 When adding a service which registers jobs, give it an explicit `init()` call
 from `ghost/core/core/boot.js`. Keep the wrapper's `init()` idempotent, but let
@@ -32,9 +43,11 @@ first request.
 ## Testing
 
 Tests for the jobs wrapper live in
-`ghost/core/test/unit/server/services/jobs/`, with update-check integration
-coverage in `ghost/core/test/integration/jobs/`. Tests should cover the job's
-result and failure behavior.
+`ghost/core/test/unit/server/services/jobs/`. Class-based jobs are covered by a
+unit test per job for its type, payload and scheduling, plus an integration test
+that dispatches it against a booted Ghost - see
+`ghost/core/test/integration/jobs/update-check.test.ts`. Tests should cover the
+job's result and failure behavior.
 
 ## Scheduling
 

@@ -17,7 +17,8 @@
     },
     "updateCheck": {
         "url": "https://updates.ghost.org",
-        "forceUpdate": false
+        "forceUpdate": false,
+        "timeout": 15000
     },
     "remoteFlags": {
         "enabled": false,

@@ -2,12 +2,12 @@
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
-const jobsService = require('../jobs');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('./update-check-service');
 const {NotificationEmailService} = require('../notifications/notification-email');
+const UpdateCheckJob = require('./update-check-job').default;
 
 /**
  * Initializes and triggers update check
@@ -66,22 +66,33 @@ module.exports = async ({
     return updateChecker.check();
 };
 
-module.exports.scheduleRecurringJobs = () => {
+let hasScheduled = false;
+
+function randomDailyCron() {
     // use a random seconds/minutes/hours value to avoid spikes to the update service API
     const s = Math.floor(Math.random() * 60); // 0-59
     const m = Math.floor(Math.random() * 60); // 0-59
     const h = Math.floor(Math.random() * 24); // 0-23
 
-    jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`, // Every day
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check'
-    });
-};
+    return `${s} ${m} ${h} * * *`; // Every day
+}
 
-module.exports.scheduleBootJob = () => {
-    jobsService.addJob({
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check-boot'
-    });
+/**
+ * Starts the update check's background jobs.
+ *
+ * Boot decides when this runs; which jobs it starts - and whether the forced
+ * one-off run happens at all - is decided here, next to the config it reads.
+ */
+module.exports.scheduleJobs = async () => {
+    const jobs = () => require('../jobs-service').getInstance();
+
+    if (!hasScheduled && !process.env.NODE_ENV.startsWith('test')) {
+        await jobs().scheduleRecurring(new UpdateCheckJob(), {cron: randomDailyCron()});
+        hasScheduled = true;
+    }
+
+    // A forced check runs once immediately, on top of the daily schedule
+    if (config.get('updateCheck:forceUpdate')) {
+        await jobs().dispatch(new UpdateCheckJob());
+    }
 };
