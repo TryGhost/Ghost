@@ -1,4 +1,3 @@
-import {GIFT_EXPIRY_DAYS} from './constants';
 import type {GiftCadence, GiftData, GiftDataInput, GiftStatus} from './gift-schema';
 
 export type {GiftCadence, GiftStatus} from './gift-schema';
@@ -24,7 +23,10 @@ export type GiftFromPurchaseData = Pick<GiftDataInput,
     | 'amount'
     | 'stripeCheckoutSessionId'
     | 'stripePaymentIntentId'
->;
+> & {
+    purchasedAt: Date;
+    expiresAt: Date;
+};
 
 export type GiftFromCheckoutData = Pick<GiftDataInput,
     | 'token'
@@ -45,7 +47,8 @@ export interface CompleteGiftPurchaseData {
     buyerMemberId: string | null;
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
-    purchasedAt?: Date;
+    purchasedAt: Date;
+    expiresAt: Date;
 }
 
 export class Gift implements GiftData {
@@ -102,19 +105,14 @@ export class Gift implements GiftData {
     }
 
     static fromPurchase(data: GiftFromPurchaseData) {
-        const purchasedAt = new Date();
-        const expiresAt = new Date(purchasedAt);
-
-        expiresAt.setDate(expiresAt.getDate() + GIFT_EXPIRY_DAYS);
-
         return new Gift({
             ...data,
             redeemerMemberId: null,
             consumesAt: null,
-            checkoutStartedAt: purchasedAt,
-            expiresAt,
+            checkoutStartedAt: data.purchasedAt,
+            expiresAt: data.expiresAt,
             status: 'purchased',
-            purchasedAt,
+            purchasedAt: data.purchasedAt,
             redeemedAt: null,
             consumedAt: null,
             expiredAt: null,
@@ -147,15 +145,9 @@ export class Gift implements GiftData {
             return null;
         }
 
-        const purchasedAt = data.purchasedAt ?? new Date();
-        const expiresAt = new Date(purchasedAt);
-        expiresAt.setDate(expiresAt.getDate() + GIFT_EXPIRY_DAYS);
-
         return new Gift({
             ...this,
             ...data,
-            purchasedAt,
-            expiresAt,
             status: 'purchased'
         });
     }
@@ -187,7 +179,14 @@ export class Gift implements GiftData {
         return this.consumedAt !== null;
     }
 
-    checkRedeemable(memberStatus: string | null): RedeemableCheckResult {
+    // Gifts are only marked expired when the cleanup job next runs, so callers
+    // that must not act on a lapsed gift compare against the deadline itself.
+    // Matches the job's own `expires_at:<now` boundary.
+    isPastClaimDeadline(now: Date = new Date()) {
+        return this.expiresAt !== null && now > this.expiresAt;
+    }
+
+    checkRedeemable(memberStatus: string | null, now: Date = new Date()): RedeemableCheckResult {
         if (this.status === 'payment_pending') {
             return {redeemable: false, reason: 'payment-pending'};
         }
@@ -200,12 +199,12 @@ export class Gift implements GiftData {
             return {redeemable: false, reason: 'consumed'};
         }
 
-        if (this.isExpired()) {
-            return {redeemable: false, reason: 'expired'};
-        }
-
         if (this.isRefunded()) {
             return {redeemable: false, reason: 'refunded'};
+        }
+
+        if (this.isExpired() || this.isPastClaimDeadline(now)) {
+            return {redeemable: false, reason: 'expired'};
         }
 
         if (memberStatus && memberStatus !== 'free') {

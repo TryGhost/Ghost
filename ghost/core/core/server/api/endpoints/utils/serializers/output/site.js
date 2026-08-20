@@ -14,6 +14,7 @@ module.exports = {
                 'cover_image',
                 'accent_color',
                 'locale',
+                'timezone',
                 'url',
                 'version',
                 'allow_external_signup',
