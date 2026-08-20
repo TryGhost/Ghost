@@ -1,5 +1,6 @@
 import {Button, DialogFooter} from '@tryghost/shade/components';
 import {type ImportResponse} from '@/members/components/bulk-action-modals/import-members/state';
+import {formatNumber} from '@tryghost/shade/utils';
 
 interface CompleteStepProps {
     importResponse: ImportResponse;
@@ -17,7 +18,7 @@ export function CompleteStep({importResponse, onReset, onClose}: CompleteStepPro
                     </p>
                 ) : (
                     <p className="text-sm">
-                        A total of <strong>{importResponse.importedCount.toLocaleString()}</strong> {importResponse.importedCount === 1 ? 'person was' : 'people were'} successfully added or updated in your list of members, and now have access to your site.
+                        A total of <strong>{formatNumber(importResponse.importedCount)}</strong> {importResponse.importedCount === 1 ? 'person was' : 'people were'} successfully added or updated in your list of members, and now have access to your site.
                     </p>
                 )}
 
@@ -27,7 +28,7 @@ export function CompleteStep({importResponse, onReset, onClose}: CompleteStepPro
                             <>
                                 <hr className="border-grey-200" />
                                 <p className="text-sm">
-                                    <strong>{importResponse.errorCount.toLocaleString()}</strong> {importResponse.errorCount === 1 ? 'member was' : 'members were'} skipped due to the following errors:
+                                    <strong>{formatNumber(importResponse.errorCount)}</strong> {importResponse.errorCount === 1 ? 'member was' : 'members were'} skipped due to the following errors:
                                 </p>
                             </>
                         )}

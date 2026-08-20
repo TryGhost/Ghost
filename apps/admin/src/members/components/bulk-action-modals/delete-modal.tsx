@@ -1,4 +1,5 @@
 import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useState} from 'react';
 
 interface DeleteModalProps {
@@ -53,7 +54,7 @@ export function DeleteModal({
                 {memberCount > 0 ? (
                     <>
                         <p>
-                            You&apos;re about to delete <strong>{memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}</strong>.
+                            You&apos;re about to delete <strong>{formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}</strong>.
                             This is permanent! All Ghost data will be deleted, this will have no effect on subscriptions in Stripe.
                         </p>
                         <p>

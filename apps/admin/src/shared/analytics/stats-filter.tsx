@@ -3,7 +3,7 @@ import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Button} from '@tryghost/shade/components';
 import {type Filter, type FilterFieldConfig, Filters} from '@tryghost/shade/patterns';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from './constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from './audience';
@@ -33,7 +33,7 @@ const getCountryName = (code: string): string => {
 // Helper component for visit count badge - used by all filter options
 const VisitCountBadge = ({visits}: {visits: number}) => (
     <span className="order-2 font-mono text-xs text-muted-foreground">
-        {visits.toLocaleString()}
+        {formatNumber(visits)}
     </span>
 );
 
