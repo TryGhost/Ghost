@@ -1,17 +1,17 @@
 import NewslettersList from './newsletters/newsletters-list';
 import React, {type ReactNode, useEffect, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useQueryParams from '@/settings/app/hooks/use-query-params';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useQueryParams from '@/settings/hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
 import {formatNumber} from '@tryghost/shade/utils';
-import {type ConfirmationHandle, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {type ConfirmationHandle, useConfirmation} from '@/settings/providers/confirmation-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const NavigateToNewsletter = ({id, onNavigate, children}: {id: string; onNavigate: () => void; children: ReactNode}) => {
     const {updateRoute} = useSettingsNavigation();

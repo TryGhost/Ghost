@@ -1,9 +1,9 @@
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButton, CopyFieldLabel, CopyFieldValue} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {siteData} = useGlobalData();

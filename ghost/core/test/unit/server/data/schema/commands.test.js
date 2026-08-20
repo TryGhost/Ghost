@@ -154,7 +154,7 @@ describe('schema commands', function () {
             await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'});
 
             assert.deepEqual(rawStatements, [
-                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant;'
+                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant'
             ]);
         });
 
@@ -171,8 +171,53 @@ describe('schema commands', function () {
             await commands.renameColumn('table', 'old_column', 'new_column', fakeKnex);
 
             assert.deepEqual(rawStatements, [
-                'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`;'
+                'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`'
             ]);
+        });
+
+        it('retries without the algorithm when the server does not support it', async function () {
+            const rawStatements = [];
+            const fakeKnex = {
+                client: {config: {client: 'mysql2'}},
+                raw: (sql) => {
+                    rawStatements.push(sql);
+
+                    if (sql.includes('algorithm=')) {
+                        const error = new Error('ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.');
+                        error.code = 'ER_ALTER_OPERATION_NOT_SUPPORTED';
+                        return Promise.reject(error);
+                    }
+
+                    return Promise.resolve();
+                }
+            };
+
+            await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'});
+
+            assert.deepEqual(rawStatements, [
+                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
+                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`'
+            ]);
+        });
+
+        it('does not retry on unrelated errors', async function () {
+            const rawStatements = [];
+            const fakeKnex = {
+                client: {config: {client: 'mysql2'}},
+                raw: (sql) => {
+                    rawStatements.push(sql);
+                    const error = new Error("Table 'email_batches' doesn't exist");
+                    error.code = 'ER_NO_SUCH_TABLE';
+                    return Promise.reject(error);
+                }
+            };
+
+            await assert.rejects(
+                commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'}),
+                /doesn't exist/
+            );
+
+            assert.equal(rawStatements.length, 1);
         });
     });
 });

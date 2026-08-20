@@ -291,6 +291,7 @@ describe('redeemGift action', () => {
             pageData: {
                 token: 'gift-token-123',
                 email: 'jamie@example.com',
+                name: 'Jamie Larson',
                 redirect: expectedRedirect
             }
         });
@@ -711,6 +712,39 @@ describe('checkoutGift action', () => {
             duration: 3
         });
         expect(result.action).toBe('checkoutGift:success');
+    });
+
+    test('passes immediate email delivery details through to api.member.checkoutGift', async () => {
+        const mockApi = {
+            member: {
+                checkoutGift: vi.fn(() => Promise.resolve())
+            }
+        };
+
+        await ActionHandler({
+            action: 'checkoutGift',
+            data: {
+                tierId: 'tier_123',
+                duration: 3,
+                deliveryMethod: 'email',
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Taylor',
+                buyerName: 'Jamie',
+                personalMessage: 'Enjoy!'
+            },
+            state: {},
+            api: mockApi
+        });
+
+        expect(mockApi.member.checkoutGift).toHaveBeenCalledWith({
+            tierId: 'tier_123',
+            duration: 3,
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            recipientName: 'Taylor',
+            buyerName: 'Jamie',
+            personalMessage: 'Enjoy!'
+        });
     });
 
     test('returns failed action with notification on error', async () => {

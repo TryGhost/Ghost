@@ -1,5 +1,5 @@
 import React, {type ReactNode} from 'react';
-import {ConfirmationModalContent} from '@/settings/app/components/confirmation-modal';
+import {ConfirmationModalContent} from '@/settings/components/confirmation-modal';
 import {ErrorTextCard, ThemeValidationDetailsDisclosure, ValidationProblemCard} from './theme-validation-details';
 import {type FatalErrors, getIssuesFromFatalErrors} from './theme-validation-issues';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';

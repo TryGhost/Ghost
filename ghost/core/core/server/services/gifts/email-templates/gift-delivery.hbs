@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>{{t 'A gift, just for you'}}</title></head>
+  <body style="background:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;margin:0;padding:0;color:#3A464C;">
+    <span class="preheader" style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;visibility:hidden;width:0;">{{t 'You\'ve been gifted a membership to {siteTitle}' siteTitle=siteTitle}}</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center">
+      <table role="presentation" width="540" cellpadding="0" cellspacing="0" border="0" style="max-width:540px;width:100%;"><tr><td style="padding:40px 20px;">
+        {{#if siteIconUrl}}<a href="{{siteUrl}}"><img src="{{siteIconUrl}}" alt="{{siteTitle}}" width="48" height="48" style="border-radius:4px;"></a>{{else}}<a href="{{siteUrl}}" style="color:{{accentColor}};font-size:17px;font-weight:700;text-decoration:none;">{{siteTitle}}</a>{{/if}}
+        <h1 style="color:#15212A;font-size:26px;line-height:31px;margin:22px 0 14px;">{{t 'A gift, just for you'}}</h1>
+        {{#if recipientName}}<p style="font-size:16px;line-height:24px;margin:0 0 16px;">{{t 'Hi {recipientName},' recipientName=(strong recipientName)}}</p>{{/if}}
+        <p style="font-size:16px;line-height:24px;margin:0 0 24px;">{{#if gift.isMonthly}}{{t '{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}' buyerName=(strong buyerName) duration=(strong gift.duration) count=gift.duration tierName=(strong gift.tierName) siteTitle=siteTitle}}{{else}}{{t '{buyerName} has gifted you a {duration}-year {tierName} membership to {siteTitle}' buyerName=(strong buyerName) duration=(strong gift.duration) count=gift.duration tierName=(strong gift.tierName) siteTitle=siteTitle}}{{/if}}</p>
+        {{#if personalMessage}}<div style="background:{{accentTint}};border-radius:8px;margin-bottom:24px;padding:16px 18px;"><p style="color:#15212A;font-size:16px;font-style:italic;line-height:24px;margin:0;white-space:pre-line;word-break:break-word;">{{personalMessage}}</p><p style="color:{{accentShade}};font-size:14px;margin:10px 0 0;">{{buyerName}}</p></div>{{/if}}
+        {{#if gift.benefits.length}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;"><tr><td><p style="font-size:16px;line-height:24px;margin:0 0 6px;">{{t 'What\'s included'}}</p></td></tr>{{#each gift.benefits}}<tr><td style="font-size:16px;line-height:24px;padding:4px 0;"><span style="color:{{../accentColor}};font-weight:bold;">&#10003;</span>&nbsp;&nbsp;{{this}}</td></tr>{{/each}}</table>{{/if}}
+        <a href="{{gift.link}}" style="background:{{accentColor}};border-radius:5px;color:#fff;display:block;font-size:16px;padding:10px 22px;text-align:center;text-decoration:none;">{{t 'Redeem your gift:'}}</a>
+        <p style="color:#738A94;font-size:13px;line-height:20px;margin:16px 0 0;">{{t 'This gift can only be redeemed once and expires on {expiresAt}.' expiresAt=(strong gift.expiresAt)}}</p>
+        <p style="color:#738A94;font-size:11px;line-height:16px;margin:40px 0 0;">{{t 'This message was sent from {siteDomain} to {email} on behalf of {buyerName} ({buyerEmail}).' siteDomain=(linkTag siteUrl siteDomain style="color:#738A94;") email=(linkTag (mailto toEmail) toEmail style="color:#738A94;") buyerName=buyerName buyerEmail=(linkTag (mailto buyerEmail) buyerEmail style="color:#738A94;")}}</p>
+      </td></tr></table>
+    </td></tr></table>
+  </body>
+</html>

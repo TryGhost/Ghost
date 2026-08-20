@@ -8,6 +8,11 @@ export interface Automation {
     name: string;
     slug: string;
     status: "active" | "inactive";
+    stats: {
+        last_run_created_at: string | null;
+        total_run_count: number;
+        in_progress_run_count: number;
+    };
 }
 
 export const automation = createBuilder<Automation>(() => {
@@ -17,6 +22,11 @@ export const automation = createBuilder<Automation>(() => {
         id: generateId(),
         name,
         slug: `${generateSlug(name)}-${faker.string.alphanumeric(6).toLowerCase()}`,
-        status: "inactive"
+        status: "inactive",
+        stats: {
+            last_run_created_at: null,
+            total_run_count: 0,
+            in_progress_run_count: 0
+        }
     };
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import RecommendationDescriptionForm from './recommendation-description-form';
 import {validateDescriptionForm} from './recommendation-validation';
-import trackEvent from '@/settings/app/utils/analytics';
+import trackEvent from '@/settings/utils/analytics';
 import {Button} from '@tryghost/shade/components';
 import {type EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {LucideIcon} from '@tryghost/shade/utils';

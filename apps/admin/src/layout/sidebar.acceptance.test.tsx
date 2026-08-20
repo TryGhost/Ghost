@@ -56,6 +56,22 @@ describe("Sidebar navigation", () => {
         await expect.element(sidebarScreen.navLink("Tags")).not.toHaveAttribute("aria-current");
     });
 
+    it("uses router navigation for React-owned routes and hash anchors for Ember-owned ones", async () => {
+        fakeTags([]);
+        await renderAdminApp("/site");
+
+        // Router links carry the router's history state (the unsaved-changes
+        // blockers rely on it); Ember's router only follows hashchange, so its
+        // links must stay native anchors.
+        await sidebarScreen.navLink("Tags").click();
+        await expect.poll(currentRoute).toBe("/tags");
+        expect(typeof (window.history.state as {key?: unknown} | null)?.key).toBe("string");
+
+        await sidebarScreen.navLink("Posts").click();
+        await expect.poll(currentRoute).toBe("/posts");
+        expect((window.history.state as {key?: unknown} | null)?.key).toBeUndefined();
+    });
+
     it("clicking Posts and Pages navigates to the Ember-owned lists", async () => {
         // Posts/Pages active states come from the Ember routing bridge, absent in this tier.
         await renderAdminApp("/site");

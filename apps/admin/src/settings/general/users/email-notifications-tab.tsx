@@ -2,7 +2,7 @@ import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@trygho
 import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
 import {type User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {config, settings} = useGlobalData();

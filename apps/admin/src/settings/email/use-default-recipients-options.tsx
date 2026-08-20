@@ -1,7 +1,7 @@
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {type Offer} from '@tryghost/admin-x-framework/api/offers';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
-import {isObjectId} from '@/settings/app/utils/helpers';
+import {isObjectId} from '@/settings/utils/helpers';
 import {useEffect, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 

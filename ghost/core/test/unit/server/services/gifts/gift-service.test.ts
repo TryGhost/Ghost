@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import type {Knex} from 'knex';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
@@ -47,14 +48,21 @@ describe('GiftService', function () {
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
+        deleteAbandonedCheckouts: sinon.SinonStub<Parameters<GiftRepository['deleteAbandonedCheckouts']>, ReturnType<GiftRepository['deleteAbandonedCheckouts']>>;
         browsePurchaseEvents: sinon.SinonStub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>;
         browseRedemptionEvents: sinon.SinonStub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
+        deletePendingCheckout: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
     };
 
     let giftRepository: GiftRepositoryStub;
+    let giftDeliveryService: {
+        createForCheckout: sinon.SinonStub;
+        dispatchForGift: sinon.SinonStub;
+        cancelPendingForGift: sinon.SinonStub;
+    };
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
@@ -98,13 +106,20 @@ describe('GiftService', function () {
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            deleteAbandonedCheckouts: sinon.stub<Parameters<GiftRepository['deleteAbandonedCheckouts']>, ReturnType<GiftRepository['deleteAbandonedCheckouts']>>().resolves(0),
             browsePurchaseEvents: sinon.stub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>().resolves({data: [], meta: {}}),
             browseRedemptionEvents: sinon.stub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>().resolves({data: [], meta: {}}),
-            create: sinon.stub(),
+            create: sinon.stub().resolves('gift_1'),
             update: sinon.stub(),
+            deletePendingCheckout: sinon.stub().resolves(true),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback(transacting);
             })
+        };
+        giftDeliveryService = {
+            createForCheckout: sinon.stub().resolves(undefined),
+            dispatchForGift: sinon.stub().resolves(null),
+            cancelPendingForGift: sinon.stub().resolves(false),
         };
         memberRepository = {
             get: sinon.stub().callsFake(() => {
@@ -153,6 +168,10 @@ describe('GiftService', function () {
     });
 
     let giftReminderScheduler: {scheduleFor: sinon.SinonStub};
+    let checkoutAdapter: {
+        getCustomerId: sinon.SinonStub;
+        createSession: sinon.SinonStub;
+    };
 
     function createService(overrides: {
         giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
@@ -160,17 +179,19 @@ describe('GiftService', function () {
         giftReminderScheduler = overrides.giftReminderScheduler ?? {
             scheduleFor: sinon.stub().resolves()
         };
+        checkoutAdapter = {
+            getCustomerId: sinon.stub().resolves(null),
+            createSession: sinon.stub().resolves({id: 'cs_checkout', url: 'https://checkout.example/'})
+        };
         return new GiftService({
             giftRepository: giftRepository as any,
+            giftDeliveryService,
             memberRepository,
             tiersService,
             giftEmailService,
             staffServiceEmails,
             giftReminderScheduler,
-            checkoutAdapter: {
-                getCustomerId: sinon.stub().resolves(null),
-                createSession: sinon.stub().resolves('https://checkout.example/')
-            },
+            checkoutAdapter,
             labsService: {
                 isSet: sinon.stub().returns(false)
             },
@@ -181,6 +202,187 @@ describe('GiftService', function () {
     }
 
     describe('completePurchase', function () {
+        it('completes a pre-created pending gift without reconstructing recipient data from Stripe', async function () {
+            const pending = Gift.fromCheckout({
+                token: 'pending-token',
+                buyerEmail: 'checkout-buyer@example.com',
+                buyerMemberId: null,
+                buyerName: 'Buyer',
+                recipientName: 'Recipient',
+                personalMessage: 'Enjoy this gift',
+                tierId: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000
+            }).bindCheckoutSession('cs_pending')!;
+            giftRepository.getById.resolves(pending);
+            giftDeliveryService.dispatchForGift.resolves('recipient@example.com');
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: null,
+                stripeCustomerId: null,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            const purchased = giftRepository.update.firstCall.firstArg;
+            assert.equal(purchased.status, 'purchased');
+            assert.equal(purchased.recipientName, 'Recipient');
+            assert.equal(purchased.buyerEmail, 'checkout-buyer@example.com');
+            assert.equal(purchased.currency, 'usd');
+            assert.equal(purchased.amount, 5000);
+            assert.equal(purchased.stripePaymentIntentId, 'pi_pending');
+            sinon.assert.notCalled(giftRepository.create);
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.dispatchForGift, 'gift_1');
+        });
+
+        function buildAnonymousPendingGift() {
+            return Gift.fromCheckout({
+                token: 'pending-token',
+                buyerEmail: null,
+                buyerMemberId: null,
+                buyerName: null,
+                recipientName: null,
+                personalMessage: null,
+                tierId: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000
+            }).bindCheckoutSession('cs_pending')!;
+        }
+
+        it('logs identifiers when a paid checkout has no matching gift', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'missing_gift',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                stripeCheckoutSessionId: 'cs_missing',
+                stripePaymentIntentId: 'pi_missing'
+            }), false);
+
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_purchase.completion_gift_missing'},
+                giftId: 'missing_gift',
+                stripeCheckoutSessionId: 'cs_missing',
+                stripePaymentIntentId: 'pi_missing'
+            }), sinon.match.string);
+            sinon.assert.notCalled(giftDeliveryService.dispatchForGift);
+        });
+
+        it('continues purchase notifications when gift delivery dispatch fails', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            giftDeliveryService.dispatchForGift.rejects(new Error('dispatch unavailable'));
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
+            sinon.assert.calledOnceWithExactly(giftEmailService.sendPurchaseConfirmation, sinon.match({
+                buyerEmail: 'buyer@example.com',
+                recipientEmail: null
+            }));
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_delivery.dispatch_failed'},
+                giftId: 'gift_1'
+            }), sinon.match.string);
+        });
+
+        const unusableTiers = [
+            {name: 'cannot be read', arrange: (read: sinon.SinonStub) => read.rejects(new Error('tiers unavailable'))},
+            {name: 'is missing', arrange: (read: sinon.SinonStub) => read.resolves(null)}
+        ];
+
+        for (const {name, arrange} of unusableTiers) {
+            it(`does not fail a completed purchase when its tier ${name} for notifications`, async function () {
+                sinon.stub(logging, 'error');
+                giftRepository.getById.resolves(buildAnonymousPendingGift());
+                arrange(tiersService.api.read);
+                const service = createService();
+
+                assert.equal(await service.completePurchase({
+                    giftId: 'gift_1',
+                    buyerEmail: 'buyer@example.com',
+                    stripeCustomerId: null,
+                    stripeCheckoutSessionId: 'cs_pending',
+                    stripePaymentIntentId: 'pi_pending'
+                }), true);
+
+                sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
+                sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+            });
+        }
+
+        it('completes a pending gift without a checkout buyer email using the Stripe customer email', async function () {
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: ' stripe-buyer@example.com ',
+                stripeCustomerId: null,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            assert.equal(giftRepository.update.firstCall.firstArg.buyerEmail, 'stripe-buyer@example.com');
+            sinon.assert.calledOnceWithExactly(giftEmailService.sendPurchaseConfirmation, sinon.match({
+                buyerEmail: 'stripe-buyer@example.com'
+            }));
+        });
+
+        it('falls back to the Stripe customer member email when Stripe omits customer details', async function () {
+            const memberGet = sinon.stub();
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: null,
+                stripeCustomerId: 'cust_123',
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            const purchased = giftRepository.update.firstCall.firstArg;
+            assert.equal(purchased.buyerEmail, 'member@example.com');
+            assert.equal(purchased.buyerMemberId, 'member_1');
+        });
+
+        it('refuses to complete a pending gift when no buyer email is available', async function () {
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            const service = createService();
+
+            await assert.rejects(() => service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: undefined,
+                stripeCustomerId: null,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), (err: unknown) => err instanceof errors.ValidationError && (err as {property?: string}).property === 'buyerEmail');
+
+            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(giftDeliveryService.dispatchForGift);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
+            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+        });
+
         it('creates a Gift entity and saves it', async function () {
             const service = createService();
 
@@ -260,6 +462,14 @@ describe('GiftService', function () {
             assert.equal(gift.duration, 3);
         });
 
+        it('keeps legacy completion tolerant of Stripe email formats', async function () {
+            const service = createService();
+
+            await service.completePurchase({...purchaseData, buyerEmail: 'unusual..local@example.com'});
+
+            assert.equal(giftRepository.create.firstCall.firstArg.buyerEmail, 'unusual..local@example.com');
+        });
+
         it('throws ValidationError for an unnormalized duration', async function () {
             const service = createService();
 
@@ -301,15 +511,13 @@ describe('GiftService', function () {
             assert.equal(emailData.duration, 1);
         });
 
-        it('throws when tier is not found', async function () {
+        it('keeps a legacy purchase completed when its tier is not found for notifications', async function () {
+            sinon.stub(logging, 'error');
             tiersService.api.read.resolves(null);
 
             const service = createService();
 
-            await assert.rejects(
-                () => service.completePurchase(purchaseData),
-                {message: 'Tier not found: tier_1'}
-            );
+            assert.equal(await service.completePurchase(purchaseData), true);
 
             sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
             sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
@@ -640,6 +848,7 @@ describe('GiftService', function () {
             const savedGift = giftRepository.update.getCall(0).args[0];
             assert.equal(savedGift.status, 'expired');
             assert.notEqual(savedGift.expiredAt, null);
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, gift.token, {transacting});
         });
 
         it('skips gifts that are no longer purchased when re-loaded', async function () {
@@ -685,6 +894,23 @@ describe('GiftService', function () {
 
             assert.equal(result.expiredCount, 2);
             assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
+    describe('processAbandonedCheckouts', function () {
+        it('hard-deletes a pending checkout after 30 days without calling Stripe', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+            giftRepository.deleteAbandonedCheckouts.resolves(1);
+            const service = createService();
+
+            const result = await service.processAbandonedCheckouts();
+
+            assert.deepEqual(result, {deletedCount: 1});
+            sinon.assert.calledOnceWithExactly(
+                giftRepository.deleteAbandonedCheckouts,
+                new Date('2026-07-19T12:00:00.000Z')
+            );
+            clock.restore();
         });
     });
 
@@ -984,6 +1210,7 @@ describe('GiftService', function () {
                 transacting
             });
             sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, redeemed.token, {transacting});
             sinon.assert.calledTwice(tiersService.api.read);
             sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
             sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
@@ -1331,6 +1558,7 @@ describe('GiftService', function () {
             assert.ok(saved.refundedAt);
             assert.notEqual(saved, gift);
             assert.deepEqual(options, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, saved.token, {transacting});
         });
 
         it('returns false when no gift matches the payment intent', async function () {

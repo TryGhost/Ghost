@@ -2,17 +2,17 @@ import GlobalSettings, {type GlobalSettingValues} from './design-and-branding/gl
 import React, {useEffect, useState} from 'react';
 import ThemePreview from './design-and-branding/theme-preview';
 import ThemeSettings from './design-and-branding/theme-settings';
-import useQueryParams from '@/settings/app/hooks/use-query-params';
+import useQueryParams from '@/settings/hooks/use-query-params';
 import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Laptop, Smartphone} from 'lucide-react';
 import {PreviewChrome, Tabs, TabsContent, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
+import {PreviewModalContent} from '@/settings/components/preview-modal';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 const Sidebar: React.FC<{
     globalSettings: GlobalSettingValues

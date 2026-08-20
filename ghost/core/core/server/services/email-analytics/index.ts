@@ -26,6 +26,10 @@ import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-e
 import {AUTOMATION_EMAIL_TAG} from '../member-welcome-emails/constants';
 import type * as AutomationsApi from '../automations/automations-api';
 import {AutomationEmailAnalyticsBatchProcessor} from './automation-email-analytics-batch-processor';
+import {GiftEmailAnalyticsBatchProcessor} from './gift-email-analytics-batch-processor';
+import {StartGiftEmailAnalyticsJobEvent} from './events/start-gift-email-analytics-job-event';
+import {deliveryService as giftDeliveryService} from '../gifts';
+import {GIFT_DELIVERY_EMAIL_TAG} from '../gifts/constants';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters'
@@ -33,6 +37,10 @@ export const newsletters = new EmailAnalyticsServiceWrapper({
 
 export const automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
+});
+
+export const gifts = new EmailAnalyticsServiceWrapper({
+    logName: 'gifts'
 });
 
 export const init = ({
@@ -152,6 +160,36 @@ export const init = ({
         createEventProcessor: () => (
             new AutomationEmailAnalyticsBatchProcessor({
                 automationsApi
+            })
+        )
+    });
+
+    gifts.init({
+        config,
+        domainEvents,
+        event: StartGiftEmailAnalyticsJobEvent,
+        queries,
+        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG],
+        jobNames: {
+            latestNonOpened: 'email-analytics-gifts-latest-others',
+            missing: 'email-analytics-gifts-missing',
+            latestOpened: 'email-analytics-gifts-latest-opened',
+            scheduled: 'email-analytics-gifts-scheduled'
+        },
+        cursorSeed: {
+            tableName: 'gift_deliveries',
+            eventColumns: {
+                delivered: 'outcome_at',
+                failed: 'outcome_at'
+            }
+        },
+        metrics,
+        settingsCache,
+        createEventProcessor: () => (
+            new GiftEmailAnalyticsBatchProcessor({
+                giftDeliveryService: {
+                    recordOutcome: data => giftDeliveryService!.recordOutcome(data)
+                }
             })
         )
     });

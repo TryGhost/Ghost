@@ -3,7 +3,7 @@ import React from 'react';
 import Analytics from '@/settings/membership/analytics';
 import PublicationLanguage from './publication-language';
 import SEOMeta from './seo-meta';
-import SearchableSection from '@/settings/app/components/searchable-section';
+import SearchableSection from '@/settings/components/searchable-section';
 import SocialAccounts from './social-accounts';
 import TimeZone from './time-zone';
 import TitleAndDescription from './title-and-description';

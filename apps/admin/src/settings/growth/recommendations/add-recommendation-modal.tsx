@@ -5,9 +5,9 @@ import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/ad
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, LoadingIndicator} from '@tryghost/shade/components';
 import {useSearchParams} from '@tryghost/admin-x-framework';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {formatUrl} from '@/settings/app/utils/format-url';
+import {formatUrl} from '@/settings/utils/format-url';
 import {toast} from 'sonner';
 
 const doFormatUrl = (url: string) => {

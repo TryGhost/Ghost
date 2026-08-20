@@ -1,12 +1,12 @@
 import EditRecommendationModal from './edit-recommendation-modal';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {ActionList, ActionListItem, ActionListItemContent, Button, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],

@@ -1,7 +1,7 @@
 import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {data: {roles} = {}} = useBrowseRoles();

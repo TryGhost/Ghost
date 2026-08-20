@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
 import WelcomeEmailModal, {type WelcomeEmailModalProps} from './member-emails/welcome-email-modal';
-import useQueryParams from '@/settings/app/hooks/use-query-params';
+import useQueryParams from '@/settings/hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
 import {Button} from '@tryghost/shade/components';
@@ -11,12 +11,12 @@ import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
-import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+import {DialogPortal} from '@/settings/providers/dialog-portal';
 
 const EmailPreviewRow: React.FC<{
     automatedEmail: AutomatedEmail,

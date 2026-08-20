@@ -4,14 +4,14 @@ import GiftSubscriptions from './gift-subscriptions';
 import MemberEmails from './member-emails';
 import Portal from './portal';
 import React from 'react';
-import SearchableSection from '@/settings/app/components/searchable-section';
-import SpamFilters from '@/settings/app/components/settings/advanced/spam-filters';
+import SearchableSection from '@/settings/components/searchable-section';
+import SpamFilters from '@/settings/advanced/spam-filters';
 import Tiers from './tiers';
 import TipsAndDonations from '@/settings/growth/tips-and-donations';
-import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
+import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords} from './search-keywords';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const MembershipSettings: React.FC = () => {
     const {config, settings} = useGlobalData();

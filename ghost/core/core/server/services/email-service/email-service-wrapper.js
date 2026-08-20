@@ -136,7 +136,7 @@ class EmailServiceWrapper {
         });
 
         if (ghostServer) {
-            ghostServer.registerCleanupTask(() => batchSendingService.onShutdown());
+            ghostServer.registerCleanupTask(() => batchSendingService.onShutdown(), 'Email batch sending');
         }
 
         this.renderer = emailRenderer;

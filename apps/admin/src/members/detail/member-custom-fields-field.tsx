@@ -3,9 +3,8 @@ import {Button, Card, CardContent, Dialog, DialogContent, DialogFooter, DialogHe
 import {LucideIcon} from '@tryghost/shade/utils';
 import {dequal} from 'dequal';
 import {ADDRESS_PARTS, buildCustomFieldSavePayload, getCustomFieldValidationErrors, getEditableCustomFieldValues, parseCustomFieldServerErrors} from './member-detail-edit';
-import {formatAddressValue} from './member-detail-format';
 import {toast} from 'sonner';
-import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {formatMemberCustomFieldValue, useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useEditMember} from '@tryghost/admin-x-framework/api/members';
 import type {EditableAddressValue, EditableCustomFieldValue} from './member-detail-edit';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -230,17 +229,6 @@ const MemberCustomFieldEditModal: React.FC<{
     );
 };
 
-/** One readable line per value; address collapses to a formatted string. */
-function formatValue(value: EditableCustomFieldValue | undefined): string | null {
-    if (value === undefined) {
-        return null;
-    }
-    if (typeof value === 'string') {
-        return value;
-    }
-    return formatAddressValue(value) || null;
-}
-
 /**
  * The Custom fields section of the member detail screen: a read-only list of
  * the member's values, one row per field defined in Settings. This screen is
@@ -270,7 +258,8 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({member
                 <CardContent className='px-6 py-4'>
                     <ul>
                         {fields.map((field) => {
-                            const display = formatValue(values[field.key]);
+                            // Null rather than an empty line, so an unset value shows its placeholder.
+                            const display = formatMemberCustomFieldValue(field.type, values[field.key]) || null;
                             return (
                                 // Dividers fade around the hovered row (its own border-b, and the
                                 // previous row's via :has), so the hover tint floats free of the

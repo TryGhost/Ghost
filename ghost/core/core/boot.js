@@ -145,7 +145,7 @@ async function initCore({ghostServer, config}) {
 
         ghostServer.registerCleanupTask(async () => {
             await jobService.shutdown();
-        });
+        }, 'Job Service');
         debug('End: Job Service');
 
         // Mentions Job Service allows mentions to be processed in the background
@@ -158,7 +158,7 @@ async function initCore({ghostServer, config}) {
 
         ghostServer.registerCleanupTask(async () => {
             await mentionsJobService.shutdown();
-        });
+        }, 'Mentions Job Service');
         debug('End: Mentions Job Service');
 
         debug('Begin: Jobs Service');
@@ -166,7 +166,7 @@ async function initCore({ghostServer, config}) {
 
         ghostServer.registerCleanupTask(async () => {
             await jobsService.shutdown({timeoutMs: config.get('server:shutdownTimeout')});
-        });
+        }, 'Jobs Service (in-memory)');
         debug('End: Jobs Service');
     }
 
@@ -352,6 +352,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
+    const contentImport = require('./server/services/content-import');
     const donationService = require('./server/services/donations');
     const giftService = require('./server/services/gifts');
     const machinePaymentsService = require('./server/services/machine-payments');
@@ -412,6 +413,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
         emailSuppressionList.init(),
         slackNotifications.init(),
         mediaInliner.init(),
+        contentImport.init(),
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
@@ -470,6 +472,11 @@ async function initBackgroundServices({config}) {
         logging.error(err);
     }
 
+    // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
+    // sends sequentially and must not hold up the remaining background services.
+    const giftService = require('./server/services/gifts');
+    giftService.recoverPendingDeliveries();
+
     const activitypub = require('./server/services/activitypub');
     await activitypub.init();
     // Load email analytics recurring jobs
@@ -477,8 +484,17 @@ async function initBackgroundServices({config}) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
         await Promise.all([
             emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
-            emailAnalyticsJobs.scheduleRecurringAutomationsJob()
+            emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
+            emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob()
         ]);
+    }
+
+    try {
+        const memberJobs = require('./server/services/members/jobs');
+        await memberJobs.scheduleTokenCleanupJob();
+    } catch (err) {
+        const logging = require('@tryghost/logging');
+        logging.error(err);
     }
 
     const updateCheck = require('./server/services/update-check');
@@ -580,7 +596,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
                 if (prometheusClient) {
                     prometheusClient.stop();
                 }
-            });
+            }, 'Prometheus client');
             debug('End: load server + minimal app');
         }
 

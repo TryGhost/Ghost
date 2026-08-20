@@ -1,6 +1,6 @@
 import React, {type ReactNode} from 'react';
-import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
-import {ConfirmationModalContent} from '@/settings/app/components/confirmation-modal';
+import useCustomFonts from '@/settings/hooks/use-custom-fonts';
+import {ConfirmationModalContent} from '@/settings/components/confirmation-modal';
 import {type InstalledTheme, useActivateTheme} from '@tryghost/admin-x-framework/api/themes';
 import {OutcomeBanner, ThemeValidationDetailsDisclosure} from './theme-validation-details';
 import {getIssuesFromInstalledTheme} from './theme-validation-issues';

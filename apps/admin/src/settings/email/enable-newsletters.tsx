@@ -1,14 +1,14 @@
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Banner, Switch} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

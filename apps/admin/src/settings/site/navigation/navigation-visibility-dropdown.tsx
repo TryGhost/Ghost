@@ -1,7 +1,7 @@
 import React from 'react';
 import {ChevronDown} from 'lucide-react';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Switch} from '@tryghost/shade/components';
-import {type EditableItem, type NavigationItem, type NavigationItemErrors, type NavigationItemVisibility} from '@/settings/app/hooks/site/use-navigation-editor';
+import {type EditableItem, type NavigationItem, type NavigationItemErrors, type NavigationItemVisibility} from '@/settings/hooks/site/use-navigation-editor';
 import {
     type VisibilityAudience,
     getAudienceVisibility,

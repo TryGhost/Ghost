@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import SettingsBreadcrumbs from '@/settings/app/components/settings/settings-breadcrumbs';
+import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
 import {Button, Field, FieldLabel, PreviewChrome, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {type OfficialTheme, type ThemeVariant} from '@/settings/app/components/providers/settings-app-provider';
+import {type OfficialTheme, type ThemeVariant} from '@/settings/providers/settings-app-context';
 import {PageHeader} from '@tryghost/shade/patterns';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 

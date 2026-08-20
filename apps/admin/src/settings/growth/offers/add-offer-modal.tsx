@@ -2,18 +2,18 @@ import PortalFrame from '@/settings/membership/portal/portal-frame';
 import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
+import {PreviewModalContent} from '@/settings/components/preview-modal';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
-import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/settings/app/utils/get-offers-portal-preview-url';
+import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/settings/utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {getTiersCadences} from '@/settings/app/utils/get-tiers-cadences';
+import {getTiersCadences} from '@/settings/utils/get-tiers-cadences';
 import {toast} from 'sonner';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 // we should replace this with a library
 function slugify(text: string): string {

@@ -6,7 +6,7 @@ import {type IncomingRecommendation} from '@tryghost/admin-x-framework/api/recom
 import {Inline} from '@tryghost/shade/primitives';
 import {type ReferrerHistoryItem} from '@tryghost/admin-x-framework/api/referrers';
 import {cn, formatNumber} from '@tryghost/shade/utils';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 interface IncomingRecommendationListProps {
     incomingRecommendations: IncomingRecommendation[],

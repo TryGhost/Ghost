@@ -327,7 +327,8 @@ describe('{{navigation}} helper', function () {
 
             assertExists(rendered);
             assert(!rendered.string.includes('class="nav-icon"'));
-            assert(rendered.string.includes('<span class="nav-label">Foo</span>'));
+            assert(!rendered.string.includes('class="nav-label"'));
+            assert(rendered.string.includes('/foo">Foo</a>'));
         });
 
         it('does not filter items by visibility', function () {
@@ -339,8 +340,58 @@ describe('{{navigation}} helper', function () {
             const rendered = runHelper(optionsData);
 
             assertExists(rendered);
-            assert(rendered.string.includes('<span class="nav-label">Hidden</span>'));
-            assert(rendered.string.includes('<span class="nav-label">Paid</span>'));
+            assert(rendered.string.includes('/hidden">Hidden</a>'));
+            assert(rendered.string.includes('/paid">Paid</a>'));
+        });
+
+        it('drops icon-only items rather than rendering an empty link', function () {
+            optionsData.data.site.navigation = [
+                {url: '/icon-only', icon: 'https://example.com/icon.svg'},
+                {label: 'Foo', url: '/foo'}
+            ];
+
+            const rendered = runHelper(optionsData);
+
+            assertExists(rendered);
+            assert(!rendered.string.includes('/icon-only'));
+            assert(!rendered.string.includes('class="nav-"'));
+            assert(rendered.string.includes('/foo">Foo</a>'));
+        });
+
+        it('drops items whose label is only whitespace', function () {
+            optionsData.data.site.navigation = [
+                {label: '   ', url: '/blank', icon: 'https://example.com/icon.svg'},
+                {label: 'Foo', url: '/foo'}
+            ];
+
+            const rendered = runHelper(optionsData);
+
+            assertExists(rendered);
+            assert(!rendered.string.includes('/blank'));
+            assert(rendered.string.includes('/foo">Foo</a>'));
+        });
+
+        it('renders empty nav when every item is icon-only', function () {
+            optionsData.data.site.navigation = [
+                {url: '/icon-only', icon: 'https://example.com/icon.svg'}
+            ];
+
+            const rendered = runHelper(optionsData);
+
+            assertExists(rendered);
+            assert.equal(rendered.string, '');
+        });
+
+        it('renders the same markup as before the flag existed', function () {
+            optionsData.data.site.navigation = [{label: 'Foo', url: '/foo'}];
+
+            const rendered = runHelper(optionsData);
+
+            assertExists(rendered);
+            assert.equal(
+                rendered.string.trim(),
+                '<ul class="nav">\n    <li class="nav-foo"><a href="' + configUtils.config.get('url') + '/foo">Foo</a></li>\n</ul>'
+            );
         });
     });
 

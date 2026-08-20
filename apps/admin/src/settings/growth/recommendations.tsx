@@ -1,16 +1,16 @@
 import IncomingRecommendationList from './recommendations/incoming-recommendation-list';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/recommendation-list';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Button} from '@tryghost/shade/components';
 import {Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '@tryghost/admin-x-framework/api/recommendations';
 import {useReferrerHistory} from '@tryghost/admin-x-framework/api/referrers';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

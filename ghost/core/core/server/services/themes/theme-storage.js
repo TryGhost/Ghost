@@ -20,12 +20,23 @@ class ThemeStorage extends LocalStorageBase {
         return this.storagePath;
     }
 
+    /**
+     * The single place a theme is turned into a zip — shared by the theme
+     * download endpoint and the site export.
+     *
+     * @param {string} themeName
+     * @param {string} zipPath - full path the zip is written to
+     * @returns {Promise<{path: string, size: number}>}
+     */
+    zipToFile(themeName, zipPath) {
+        return compress(path.join(this.storagePath, themeName), zipPath);
+    }
+
     serve(options) {
         const self = this;
 
         return function downloadTheme(req, res, next) {
             const themeName = options.name;
-            const themePath = path.join(self.storagePath, themeName);
             const zipName = themeName + '.zip';
 
             // store this in a unique temporary folder
@@ -36,7 +47,7 @@ class ThemeStorage extends LocalStorageBase {
 
             fs.ensureDir(zipBasePath)
                 .then(function () {
-                    return compress(themePath, zipPath);
+                    return self.zipToFile(themeName, zipPath);
                 })
                 .then(function (result) {
                     res.set({

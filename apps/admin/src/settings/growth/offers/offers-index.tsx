@@ -7,8 +7,8 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl, getOfferCadence, getOfferDiscount, getOfferDuration} from './offer-helpers';
 import {toast} from 'sonner';
-import {useOffersShowArchived, useSortingState} from '@/settings/app/components/providers/settings-app-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useOffersShowArchived, useSortingState} from '@/settings/providers/settings-app-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 const OffersFilterMenu: React.FC<{
     showArchived: boolean;

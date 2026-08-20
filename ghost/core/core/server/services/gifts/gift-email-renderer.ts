@@ -3,8 +3,12 @@ import path from 'node:path';
 import Handlebars from 'handlebars';
 import type {GiftPurchaseConfirmationData} from './email-templates/gift-purchase-confirmation';
 import {renderText as renderPurchaseConfirmationText} from './email-templates/gift-purchase-confirmation';
+import type {GiftDeliveryFailureData} from './email-templates/gift-delivery-failure';
+import {renderText as renderDeliveryFailureText} from './email-templates/gift-delivery-failure';
 import type {GiftReminderData} from './email-templates/gift-reminder';
 import {renderText as renderReminderText} from './email-templates/gift-reminder';
+import type {GiftDeliveryEmailData} from './email-templates/gift-delivery';
+import {renderText as renderDeliveryText} from './email-templates/gift-delivery';
 
 export type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -13,7 +17,9 @@ export class GiftEmailRenderer {
     private readonly t: Translate;
 
     private purchaseConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
+    private deliveryFailureTemplate: HandlebarsTemplateDelegate | null = null;
     private reminderTemplate: HandlebarsTemplateDelegate | null = null;
+    private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
 
     constructor({t}: {t: Translate}) {
         this.t = t;
@@ -34,6 +40,18 @@ export class GiftEmailRenderer {
         };
     }
 
+    async renderDeliveryFailure(data: GiftDeliveryFailureData): Promise<{html: string; text: string}> {
+        if (!this.deliveryFailureTemplate) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery-failure.hbs'), 'utf8');
+            this.deliveryFailureTemplate = this.handlebars.compile(source);
+        }
+
+        return {
+            html: this.deliveryFailureTemplate(data),
+            text: renderDeliveryFailureText(data, this.t)
+        };
+    }
+
     async renderReminder(data: GiftReminderData): Promise<{html: string; text: string}> {
         if (!this.reminderTemplate) {
             const source = await fs.readFile(path.join(__dirname, './email-templates/gift-reminder.hbs'), 'utf8');
@@ -47,11 +65,23 @@ export class GiftEmailRenderer {
         };
     }
 
+    async renderDelivery(data: GiftDeliveryEmailData): Promise<{html: string; text: string}> {
+        if (!this.deliveryTemplate) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery.hbs'), 'utf8');
+            this.deliveryTemplate = this.handlebars.compile(source);
+        }
+
+        return {
+            html: this.deliveryTemplate(data),
+            text: renderDeliveryText(data, this.t)
+        };
+    }
+
     private registerTemplateHelpers(): void {
         this.handlebars.registerHelper('t', (key: string, options?: Handlebars.HelperOptions) => {
             const hash = options?.hash || {};
-            const escapedHash = Object.entries(hash).reduce<Record<string, string>>((acc, [name, value]) => {
-                acc[name] = this.htmlSafeInterpolationValue(value);
+            const escapedHash = Object.entries(hash).reduce<Record<string, unknown>>((acc, [name, value]) => {
+                acc[name] = typeof value === 'number' ? value : this.htmlSafeInterpolationValue(value);
                 return acc;
             }, {});
 

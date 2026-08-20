@@ -22,8 +22,11 @@ import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
 import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/support-success';
 import {GiftRedemptionStyles} from './pages/gift-redemption-page';
+import {BetaGiftRedemptionStyles} from './pages/beta-gift-redemption-page';
 import {GiftPageStyles} from './pages/gift-page';
+import {BetaGiftPageStyles} from './pages/beta-gift-page';
 import {GiftSuccessStyle} from './pages/gift-success-page';
+import {BetaGiftSuccessStyle} from './pages/beta-gift-success-page';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
 import {ShareModalStyles} from './pages/share/share-modal.styles';
@@ -1371,10 +1374,10 @@ export function getFrameStyles({site}) {
         EmailSuppressionFAQ +
         EmailReceivingFAQ +
         TipsAndDonationsSuccessStyle +
-        GiftRedemptionStyles +
-        GiftPageStyles +
+        (site?.labs?.giftSubCustomization ? BetaGiftRedemptionStyles : GiftRedemptionStyles) +
+        (site?.labs?.giftSubCustomization ? BetaGiftPageStyles : GiftPageStyles) +
         TipsAndDonationsErrorStyle +
-        GiftSuccessStyle +
+        (site?.labs?.giftSubCustomization ? BetaGiftSuccessStyle : GiftSuccessStyle) +
         RecommendationsPageStyles +
         ShareModalStyles +
         TransistorPodcastsActionStyles;

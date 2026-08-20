@@ -1,8 +1,8 @@
-import ColorPickerField from '@/settings/app/components/color-picker-field';
+import ColorPickerField from '@/settings/components/color-picker-field';
 import React, {useState} from 'react';
-import UnsplashSelector from '@/settings/app/components/selectors/unsplash-selector';
+import UnsplashSelector from '@/settings/components/selectors/unsplash-selector';
 import clsx from 'clsx';
-import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
+import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
 import {Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
@@ -13,7 +13,7 @@ import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/theme
 import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {BodyFontName, HeadingFontName} from '@tryghost/custom-fonts';
 

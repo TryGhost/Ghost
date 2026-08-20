@@ -12,6 +12,7 @@ import {Box, Container} from '@tryghost/shade/primitives';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {keepPreviousData} from '@tanstack/react-query';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import {CUSTOM_FIELDS_PREFIX} from './member-fields';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {checkStripeEnabled, getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -19,8 +20,10 @@ import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezo
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {useBrowseMemberCustomFieldsIncludingArchived} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useDebouncedCallback} from 'use-debounce';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLocation, useSearchParams} from 'react-router';
 import {useMultipleActiveSubscriptionsCount} from './hooks/use-multiple-active-subscriptions-count';
 
@@ -62,9 +65,26 @@ const MembersPage: React.FC<MembersPageProps> = ({
         hasResolvedCount: hasResolvedMultipleActiveSubscriptionsCount
     } = useMultipleActiveSubscriptionsCount({enabled: hasStripeEnabled});
 
+    // Names the custom field columns. Archived fields are included so a filter on one
+    // still shows its values, matching the read-only pill the filter bar renders for it.
+    //
+    // Only a filter on a custom field earns a column, and naming one is all these are for,
+    // so the fetch waits for a filter rather than riding every visit to the members list.
+    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+    const hasCustomFieldFilter = useMemo(
+        () => filters.some(filter => filter.field.startsWith(CUSTOM_FIELDS_PREFIX)),
+        [filters]
+    );
+    const {data: customFieldsData} = useBrowseMemberCustomFieldsIncludingArchived({
+        enabled: customFieldsEnabled && hasCustomFieldFilter
+    });
+    // Left undefined until the fetch lands (and while the flag is off) rather than defaulted
+    // to an empty array, so the identity the memos below depend on stays stable.
+    const customFields = customFieldsData?.members_custom_fields;
+
     const activeColumns = useMemo(() => {
-        return getMemberActiveColumns(filters);
-    }, [filters]);
+        return getMemberActiveColumns(filters, {customFields});
+    }, [filters, customFields]);
 
     const canBulkDelete = useMemo(() => {
         return canBulkDeleteMembers(filters, nql);

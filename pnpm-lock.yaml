@@ -2398,6 +2398,9 @@ importers:
       '@x402/hono':
         specifier: 'catalog:'
         version: 2.12.0(hono@4.12.18)
+      archiver:
+        specifier: 8.0.0
+        version: 8.0.0
       body-parser:
         specifier: 1.20.6
         version: 1.20.6(supports-color@10.2.2)
@@ -2677,6 +2680,9 @@ importers:
       stripe:
         specifier: 8.222.0
         version: 8.222.0
+      temporal-polyfill:
+        specifier: 'catalog:'
+        version: 0.3.2
       terser:
         specifier: 5.48.0
         version: 5.48.0

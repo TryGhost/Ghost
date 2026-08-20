@@ -1,21 +1,21 @@
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
-import useCurrencyInput from '@/settings/app/hooks/use-currency-input';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
-import useSortableIndexedList from '@/settings/app/hooks/use-sortable-indexed-list';
-import useUrlInput from '@/settings/app/hooks/use-url-input';
+import useCurrencyInput from '@/settings/hooks/use-currency-input';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
+import useSortableIndexedList from '@/settings/hooks/use-sortable-indexed-list';
+import useUrlInput from '@/settings/hooks/use-url-input';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useParams} from '@tryghost/admin-x-framework';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
-import {currencies, currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
+import {currencies, currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/currency';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
     trial_days: string;

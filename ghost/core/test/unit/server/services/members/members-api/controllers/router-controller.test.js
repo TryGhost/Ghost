@@ -974,6 +974,35 @@ describe('RouterController', function () {
                 }));
             });
 
+            it('passes gift delivery fields without forwarding client metadata', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        deliveryMethod: 'email',
+                        recipientEmail: 'recipient@example.com',
+                        recipientName: 'Recipient',
+                        buyerName: 'Buyer',
+                        personalMessage: 'Enjoy this gift',
+                        metadata: {
+                            ghost_gift_id: 'attacker-controlled-id',
+                            custom_key: 'preserved'
+                        }
+                    }
+                }, mockRes);
+
+                const input = giftService.service.startCheckout.firstCall.firstArg;
+                assert.equal(input.deliveryMethod, 'email');
+                assert.equal(input.recipientEmail, 'recipient@example.com');
+                assert.equal(input.recipientName, 'Recipient');
+                assert.equal(input.buyerName, 'Buyer');
+                assert.equal(input.personalMessage, 'Enjoy this gift');
+                assert.equal('metadata' in input, false);
+            });
+
             it('rejects when offerId is provided', async function () {
                 giftService.service.startCheckout.rejects(new errors.BadRequestError({
                     message: 'Bad Request.',
