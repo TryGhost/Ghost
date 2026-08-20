@@ -96,8 +96,11 @@ interface KoenigFileUploadOptions extends UploadRequestOptions {
    * Checked before the request is made, which the server-side limit cannot do:
    * a reverse proxy in front of Ghost may reject an oversized body before it
    * ever reaches the API, so the host limit's error never gets a chance to run.
+   *
+   * Accepts the raw config value: limits configured through environment
+   * variables arrive as strings, and are normalised here.
    */
-  maxUploadSize?: number;
+  maxUploadSize?: number | string;
   /**
    * Message from `hostSettings.limits.uploads.error`, shown in place of the
    * default when the size check fails.
@@ -106,8 +109,8 @@ interface KoenigFileUploadOptions extends UploadRequestOptions {
 }
 
 // Config can reach the browser via environment variables, where every value is a
-// string, so coerce before comparing against `File.size`.
-const resolveUploadLimit = (limit: undefined | number): null | number => {
+// string, so normalise here rather than trusting the declared config type.
+const resolveUploadLimit = (limit: undefined | number | string): null | number => {
   const bytes = Number(limit);
   return Number.isFinite(bytes) && bytes > 0 ? bytes : null;
 };
@@ -330,7 +333,7 @@ export const useKoenigFileUpload = (
  * stays stable across renders.
  */
 export const createKoenigFileUploader = (
-  maxUploadSize: undefined | number,
+  maxUploadSize: undefined | number | string,
   maxUploadError?: string,
 ) => ({
   fileTypes: koenigFileUploadTypes,
