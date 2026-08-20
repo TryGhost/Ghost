@@ -97,6 +97,16 @@ function readPackage(pkg) {
         delete pkg.peerDependenciesMeta?.typescript;
     }
 
+    // abitype's zod peer is only used by its `abitype/zod` subpath, which nothing
+    // in the tree imports. Left in place it peer-forks abitype and everything
+    // above it: mppx resolves that chain against zod 4 and @x402/* against zod 3,
+    // so ghost's production closure carried two identical copies of viem (~2.9k
+    // files each), ox and abitype.
+    if (pkg.name === 'abitype') {
+        delete pkg.peerDependencies?.zod;
+        delete pkg.peerDependenciesMeta?.zod;
+    }
+
     return pkg;
 }
 
