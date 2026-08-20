@@ -26,6 +26,14 @@ describe('useFeatureFlag', () => {
         expect(result.current).toBe(true);
     });
 
+    it('does not refetch config when mounted', () => {
+        mockUseBrowseConfig.mockReturnValue(withLabs({myFlag: true}));
+
+        renderHook(() => useFeatureFlag('myFlag'));
+
+        expect(mockUseBrowseConfig).toHaveBeenCalledWith({refetchOnMount: false});
+    });
+
     it('returns false when the flag is false', () => {
         mockUseBrowseConfig.mockReturnValue(withLabs({myFlag: false}));
 

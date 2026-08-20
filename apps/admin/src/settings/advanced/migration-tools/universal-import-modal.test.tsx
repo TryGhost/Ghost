@@ -22,12 +22,12 @@ vi.mock('@tryghost/admin-x-framework/api/posts', async () => {
 
 vi.mock('@tryghost/admin-x-framework/hooks', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>('@tryghost/admin-x-framework/hooks');
-    return {...actual, useHandleError: () => mockHandleError};
+    return {
+        ...actual,
+        useFeatureFlag: (flag: string) => mockUseFeatureFlag(flag) as boolean,
+        useHandleError: () => mockHandleError
+    };
 });
-
-vi.mock('@/settings/hooks/use-feature-flag', () => ({
-    default: (flag: string) => mockUseFeatureFlag(flag) as boolean
-}));
 
 describe('UniversalImportModal', () => {
     beforeEach(() => {

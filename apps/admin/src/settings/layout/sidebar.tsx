@@ -17,7 +17,7 @@ import {searchKeywords as growthSearchKeywords} from '@/settings/growth/search-k
 import {searchKeywords as membershipSearchKeywords} from '@/settings/membership/search-keywords';
 import {searchKeywords as siteSearchKeywords} from '@/settings/site/search-keywords';
 
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {useScrollSectionContext, useScrollSectionNav} from '@/settings/hooks/use-scroll-section';

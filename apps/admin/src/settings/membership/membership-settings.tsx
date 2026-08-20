@@ -8,9 +8,9 @@ import SearchableSection from '@/settings/components/searchable-section';
 import SpamFilters from '@/settings/advanced/spam-filters';
 import Tiers from './tiers';
 import TipsAndDonations from '@/settings/growth/tips-and-donations';
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords} from './search-keywords';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const MembershipSettings: React.FC = () => {
