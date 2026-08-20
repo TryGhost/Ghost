@@ -12,7 +12,7 @@ const Error = ({statusCode, errorCode}: {statusCode?: number, errorCode?: string
 
     const toAnalytics = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-        navigate('/analytics/', {crossApp: true});
+        navigate('/analytics/');
     };
 
     if (routeError) {

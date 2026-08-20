@@ -123,7 +123,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             <button
                                                 className='cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
                                                 type='button'
-                                                onClick={() => navigate('/analytics/', {crossApp: true})}
+                                                onClick={() => navigate('/analytics/')}
                                             >
                                                 Analytics
                                             </button>

@@ -146,8 +146,8 @@ const DesignAndThemeModal: React.FC = () => {
             if (noThemeChangesAllowed) {
                 // Single theme - show limit modal and redirect to /theme
                 showThemeLimitModal(error);
-                // Clear URL parameters
-                window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
+                // Strip the query from the history entry so back doesn't re-trigger the install
+                updateRoute({route: 'theme/install', replace: true});
                 updateRoute('theme');
             } else {
                 // Multiple themes allowed - show limit modal and then redirect

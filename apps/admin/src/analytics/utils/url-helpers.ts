@@ -96,13 +96,13 @@ export function getClickHandler(
     attributionUrl: string,
     postId: string | null | undefined,
     siteUrl: string,
-    navigate: (path: string, options?: {crossApp?: boolean}) => void,
+    navigate: (path: string) => void,
     attributionType?: string
 ) {
     return () => {
         // For posts with analytics, go to analytics page
         if (postId && attributionUrl && attributionType === 'post') {
-            navigate(`/posts/analytics/${postId}`, {crossApp: true});
+            navigate(`/posts/analytics/${postId}`);
             return;
         }
 

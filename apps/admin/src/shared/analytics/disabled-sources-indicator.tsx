@@ -17,7 +17,7 @@ const DisabledSourcesIndicator: React.FC<DisabledSourcesIndicatorProps> = ({clas
     return (
         <EmptyIndicator
             actions={
-                <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                <Button variant='outline' onClick={() => navigate('/settings/analytics')}>
                     Open settings
                 </Button>
             }
