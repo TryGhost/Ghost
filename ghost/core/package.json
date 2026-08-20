@@ -49,6 +49,7 @@
     "build:assets:js": "node scripts/minify-assets.mjs",
     "build:assets:cards": "node scripts/build-card-assets.mjs",
     "generate-golden-email": "node bin/generate-golden-email.js",
+    "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
