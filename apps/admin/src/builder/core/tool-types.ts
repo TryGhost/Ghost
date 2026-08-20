@@ -12,8 +12,14 @@ export type BuilderToolError = {
     details?: unknown;
 };
 
+export type BuilderToolAttachment = {
+    type: 'image';
+    mediaType: 'image/png';
+    data: string;
+};
+
 export type BuilderToolResult<T> =
-    | {ok: true; revision: string; data: T; diagnostics?: WorkspaceDiagnostic[]}
+    | {ok: true; revision: string; data: T; diagnostics?: WorkspaceDiagnostic[]; attachments?: BuilderToolAttachment[]}
     | {ok: false; revision: string; error: BuilderToolError};
 
 export type BuilderToolDefinition<T = unknown> = {

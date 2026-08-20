@@ -4,6 +4,7 @@ import {describe, expect, it, vi} from 'vitest';
 import {loadThemeDraft} from './theme-loader';
 import {withThemeRevision} from './theme-state';
 import {ThemeWorkspace} from './theme-workspace';
+import {PreviewInspectionError} from './preview/preview-inspection';
 
 import type {ThemeLoadInput} from './theme-loader';
 import type {ThemeDraft} from './theme-state';
@@ -50,7 +51,11 @@ describe('ThemeWorkspace', () => {
             'write_file',
             'delete_file',
             'list_design_settings',
-            'update_design_settings'
+            'update_design_settings',
+            'inspect_page',
+            'inspect_element',
+            'navigate',
+            'screenshot'
         ]);
         expect(workspace.getTools().map(tool => tool.name)).not.toEqual(expect.arrayContaining(['preview', 'apply', 'commit']));
         expect(workspace.getPreview()).toEqual({kind: 'theme'});
@@ -60,6 +65,83 @@ describe('ThemeWorkspace', () => {
         const published = await workspace.publish(new AbortController().signal);
         expect(published).toEqual({ok: true, revision: workspace.draft.revision});
         expect(publisher).toHaveBeenCalledOnce();
+    });
+
+    it('exposes structured preview inspection, navigation, and screenshot tools', async () => {
+        const source = await loadInput();
+        const inspectPage = vi.fn(() => Promise.resolve({
+            url: 'https://example.com/',
+            title: 'Demo',
+            viewport: {width: 1200, height: 800, scrollX: 0, scrollY: 0},
+            outline: [],
+            text: 'Demo',
+            truncated: {outline: false, text: false, source: false},
+            diagnostics: [],
+            diagnosticsTruncated: false
+        }));
+        const inspectElement = vi.fn(() => Promise.resolve({
+            tag: 'main',
+            role: 'main',
+            accessibleName: 'Demo',
+            attributes: {'data-edit': 'index.hbs:1:1'},
+            box: {x: 0, y: 0, width: 1200, height: 800},
+            styles: {display: 'block'},
+            text: 'Demo',
+            source: {path: 'index.hbs', line: 1, column: 1},
+            truncated: {text: false, source: false}
+        }));
+        const navigate = vi.fn(() => Promise.resolve({kind: 'virtual' as const, url: 'https://example.com/about/', status: 200}));
+        const screenshot = vi.fn(() => Promise.resolve({dataUrl: 'data:image/png;base64,AA==', width: 1200, height: 800, warnings: []}));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', inspectPage, inspectElement, navigate, screenshot}
+        });
+        await workspace.load(new AbortController().signal);
+        const tools = Object.fromEntries(workspace.getTools().map(tool => [tool.name, tool]));
+        const signal = new AbortController().signal;
+
+        const page = await tools.inspect_page.execute({}, signal);
+        const element = await tools.inspect_element.execute({marker: 'index.hbs:1:1'}, signal);
+        const navigation = await tools.navigate.execute({url: '/about/'}, signal);
+        const image = await tools.screenshot.execute({kind: 'element', marker: 'index.hbs:1:1'}, signal);
+
+        expect(page).toMatchObject({ok: true, data: {url: 'https://example.com/', title: 'Demo'}});
+        expect(element).toMatchObject({ok: true, data: {tag: 'main', source: {path: 'index.hbs'}}});
+        expect(navigation).toMatchObject({ok: true, data: {url: 'https://example.com/about/', status: 200}});
+        expect(image).toMatchObject({ok: true, data: {width: 1200, height: 800, warnings: []}, attachments: [{type: 'image', mediaType: 'image/png', data: 'AA=='}]});
+        expect(inspectElement).toHaveBeenCalledWith({marker: 'index.hbs:1:1'}, signal);
+        expect(navigate).toHaveBeenCalledWith('/about/', signal);
+        expect(screenshot).toHaveBeenCalledWith({kind: 'element', marker: 'index.hbs:1:1'}, signal);
+    });
+
+    it('returns stable preview tool errors for missing elements and blocked navigation', async () => {
+        const source = await loadInput();
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {
+                kind: 'theme',
+                inspectElement: () => Promise.reject(new PreviewInspectionError('preview_element_not_found', 'No matching source marker.')),
+                navigate: url => Promise.resolve({
+                    kind: 'failed' as const,
+                    url,
+                    diagnostics: [{code: 'preview_navigation_blocked', message: 'Agent navigation must stay on this site.', severity: 'error' as const}]
+                })
+            }
+        });
+        await workspace.load(new AbortController().signal);
+        const tools = Object.fromEntries(workspace.getTools().map(tool => [tool.name, tool]));
+
+        const missing = await tools.inspect_element.execute({marker: 'missing.hbs:1:1'}, new AbortController().signal);
+        const external = await tools.navigate.execute({url: 'https://outside.example/'}, new AbortController().signal);
+        const invalidImage = await tools.screenshot.execute({kind: 'video'}, new AbortController().signal);
+
+        expect(missing).toMatchObject({ok: false, error: {code: 'preview_element_not_found', retryable: false}});
+        expect(external).toMatchObject({ok: false, error: {code: 'preview_navigation_blocked', retryable: false}});
+        expect(invalidImage).toMatchObject({ok: false, error: {code: 'invalid_screenshot_request', retryable: false}});
     });
 
     it('atomically adopts a changed draft returned by a successful publish', async () => {

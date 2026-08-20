@@ -9,6 +9,8 @@ import {withThemeRevision} from '@/builder/workspaces/theme/theme-state';
 import type {BuilderSelectionContext} from '@/builder/core/workspace';
 import type {ThemeRendererClient, ThemeRendererClientFactory, ThemeRendererWorkerLike, ThemeRendererWorkerRequest, ThemeRendererWorkerResponse, ThemeRenderResult} from './preview-bridge';
 import type {PreviewDocumentSurface} from './preview-document';
+import type {PreviewElementInspection, PreviewElementTarget, PreviewPageInspection} from './preview-inspection';
+import type {ScreenshotRequest, ScreenshotResult} from './screenshot';
 import type {ThemeDraft} from '@/builder/workspaces/theme/theme-state';
 
 async function draft(content = '<main>Initial</main>', virtualUrl = 'https://example.com/'): Promise<ThemeDraft> {
@@ -64,6 +66,18 @@ class FakeSurface implements PreviewDocumentSurface {
             return Promise.reject(error);
         }
         return Promise.resolve(this.remappedSelection);
+    }
+
+    inspectPage(url: string, _signal: AbortSignal): Promise<PreviewPageInspection> {
+        return Promise.resolve({url, title: 'Demo', viewport: {width: 1200, height: 800, scrollX: 0, scrollY: 0}, outline: [], text: 'Demo', truncated: {outline: false, text: false, source: false}});
+    }
+
+    inspectElement(_target: PreviewElementTarget, _signal: AbortSignal): Promise<PreviewElementInspection> {
+        return Promise.resolve({tag: 'main', role: 'main', accessibleName: 'Demo', attributes: {}, box: {x: 0, y: 0, width: 1200, height: 800}, styles: {display: 'block'}, text: 'Demo', source: null, truncated: {text: false, source: false}});
+    }
+
+    screenshot(_request: ScreenshotRequest, _signal: AbortSignal): Promise<ScreenshotResult> {
+        return Promise.resolve({dataUrl: 'data:image/png;base64,AA==', width: 1200, height: 800, warnings: []});
     }
 
     openExternal(url: string): void {
@@ -329,7 +343,7 @@ describe('ThemePreviewAdapter', () => {
         expect(surface.externalUrls).toEqual([]);
     });
 
-    it('surfaces external navigation without asking the renderer to follow it', async () => {
+    it('rejects agent-requested external navigation without asking the renderer to follow it', async () => {
         const initial = await draft();
         const {adapter, renderer, surface} = setup();
         renderer.render.mockResolvedValue(rendered('<html>Home</html>'));
@@ -337,8 +351,20 @@ describe('ThemePreviewAdapter', () => {
 
         const result = await adapter.navigate('https://outside.example/path', new AbortController().signal);
 
-        expect(result).toEqual({kind: 'external', url: 'https://outside.example/path'});
-        expect(surface.externalUrls).toEqual(['https://outside.example/path']);
+        expect(result).toMatchObject({kind: 'failed', url: 'https://outside.example/path', diagnostics: [{code: 'preview_navigation_blocked'}]});
+        expect(surface.externalUrls).toEqual([]);
+        expect(renderer.render).toHaveBeenCalledOnce();
+    });
+
+    it('opens an external link clicked inside the preview without rendering it', async () => {
+        const initial = await draft();
+        const {adapter, renderer, surface} = setup();
+        renderer.render.mockResolvedValue(rendered('<html>Home</html>'));
+        await adapter.start(initial, new AbortController().signal);
+
+        surface.navigationHandler?.('https://outside.example/path');
+        await vi.waitFor(() => expect(surface.externalUrls).toEqual(['https://outside.example/path']));
+
         expect(renderer.render).toHaveBeenCalledOnce();
     });
 
@@ -355,19 +381,55 @@ describe('ThemePreviewAdapter', () => {
         expect(renderer.render).toHaveBeenCalledOnce();
     });
 
-    it('retains runtime diagnostics from the committed page', async () => {
+    it('rejects a renderer redirect outside a subpath-scoped site', async () => {
+        const source = await draft('<main>Initial</main>', 'https://example.com/blog/');
+        const initial = await withThemeRevision({...source, renderer: {...source.renderer, siteUrl: 'https://example.com/blog/'}});
+        const {adapter, renderer, surface} = setup();
+        renderer.render
+            .mockResolvedValueOnce(rendered('<html>Home</html>', 'https://example.com/blog/'))
+            .mockResolvedValueOnce(rendered('<html>Outside</html>', 'https://example.com/outside/'));
+        await adapter.start(initial, new AbortController().signal);
+
+        const result = await adapter.navigate('/blog/about/', new AbortController().signal);
+
+        expect(result).toMatchObject({kind: 'failed', diagnostics: [{code: 'preview_navigation_blocked'}]});
+        expect(surface.documents).toHaveLength(1);
+        expect(adapter.state.url).toBe('https://example.com/blog/');
+    });
+
+    it('bounds runtime diagnostics from the committed page and reports truncation', async () => {
         const initial = await draft();
         const {adapter, renderer, surface} = setup();
         renderer.render.mockResolvedValue(rendered('<html>Home</html>', initial.virtualUrl, [{code: 'preview_runtime_error', message: 'Script failed', severity: 'error'}]));
 
         await adapter.start(initial, new AbortController().signal);
-        const runtimeDiagnostic = {code: 'preview_runtime_error', message: 'Later script failed', severity: 'error' as const};
-        surface.diagnosticHandler?.(runtimeDiagnostic);
+        for (let index = 0; index < 55; index += 1) {
+            surface.diagnosticHandler?.({code: 'preview_runtime_error', message: `Later script failed ${index}`, severity: 'error'});
+        }
 
-        expect(adapter.state.diagnostics).toEqual([
-            {code: 'preview_runtime_error', message: 'Script failed', severity: 'error'},
-            runtimeDiagnostic
-        ]);
+        const page = await adapter.inspectPage(new AbortController().signal);
+        expect(adapter.state.diagnostics).toHaveLength(50);
+        expect(adapter.state.diagnostics[0]?.message).toBe('Later script failed 5');
+        expect(page).toMatchObject({diagnosticsTruncated: true});
+    });
+
+    it('provides structured page, element, and screenshot reads from the committed surface', async () => {
+        const initial = await draft();
+        const {adapter, renderer, surface} = setup();
+        renderer.render.mockResolvedValue(rendered('<html>Home</html>', initial.virtualUrl, [{code: 'render_warning', message: 'Warning', severity: 'warning'}]));
+        const inspectElement = vi.spyOn(surface, 'inspectElement');
+        const screenshot = vi.spyOn(surface, 'screenshot');
+        await adapter.start(initial, new AbortController().signal);
+
+        const page = await adapter.inspectPage(new AbortController().signal);
+        const element = await adapter.inspectElement({marker: 'index.hbs:1:1'}, new AbortController().signal);
+        const image = await adapter.screenshot({kind: 'element', marker: 'index.hbs:1:1'}, new AbortController().signal);
+
+        expect(page).toMatchObject({url: initial.virtualUrl, title: 'Demo', diagnostics: [{code: 'render_warning'}]});
+        expect(element).toMatchObject({tag: 'main', role: 'main'});
+        expect(inspectElement).toHaveBeenCalledWith({marker: 'index.hbs:1:1'}, expect.any(AbortSignal));
+        expect(image).toMatchObject({dataUrl: 'data:image/png;base64,AA=='});
+        expect(screenshot).toHaveBeenCalledWith({kind: 'element', marker: 'index.hbs:1:1'}, expect.any(AbortSignal));
     });
 
     it('restarts a crashed worker from the last valid draft and retries once', async () => {
@@ -408,6 +470,7 @@ describe('ThemePreviewAdapter', () => {
         renderer.render.mockResolvedValueOnce(rendered('<html>No marker</html>'));
         await adapter.navigate('/about/', new AbortController().signal);
         expect(adapter.state.selection).toBeNull();
+        expect(adapter.state.diagnostics).toContainEqual(expect.objectContaining({code: 'preview_selection_cleared'}));
     });
 
     it('uses the active selection when restoring after failed adoption', async () => {
@@ -545,6 +608,11 @@ describe('theme renderer worker', () => {
 });
 
 describe('preview document bridge', () => {
+    function bridgeIdentity(html: string): {channel: string | undefined; documentId: string | undefined} {
+        const script = new DOMParser().parseFromString(html, 'text/html').querySelector<HTMLScriptElement>('script[data-builder-preview]');
+        return {channel: script?.dataset.builderChannel, documentId: script?.dataset.builderDocument};
+    }
+
     it('creates an isolated document with base URL, link interception, and deferred selection remapping', () => {
         const html = createPreviewDocument(
             {html: '<html><head><title>Demo</title></head><body><a href="/about/"><main data-edit="index.hbs:1:1">Hello</main></a></body></html>', url: 'https://example.com/posts/', revision: 'rev-1'},
@@ -553,33 +621,36 @@ describe('preview document bridge', () => {
             'document-1'
         );
         const parsed = new DOMParser().parseFromString(html, 'text/html');
-        const bridgeScript = parsed.querySelector('script[data-builder-preview]')?.textContent ?? '';
+        const bridgeScript = parsed.querySelector<HTMLScriptElement>('script[data-builder-preview]');
 
         expect(parsed.querySelector('base[data-builder-preview]')?.getAttribute('href')).toBe('https://example.com/posts/');
-        expect(bridgeScript).toContain("closest('[data-edit]')");
-        expect(bridgeScript).toContain("closest('a[href]')");
-        expect(bridgeScript).toContain('DOMContentLoaded');
-        expect(bridgeScript).toContain('document-1');
+        expect(bridgeScript?.getAttribute('src')).toBeNull();
+        expect(bridgeScript?.textContent).toContain('clone.outerHTML');
+        expect(bridgeScript?.textContent).toContain('new MessageChannel');
+        expect(bridgeScript?.textContent).not.toContain('html2canvas-pro');
+        expect(bridgeScript?.dataset).toMatchObject({builderChannel: 'channel-1', builderDocument: 'document-1', builderSelection: 'index.hbs:1:1'});
     });
 
-    it('removes directives that can disable the bridge or navigate outside it', () => {
+    it('removes directives that disable the bridge while preserving isolated theme scripts and events', () => {
         const html = createPreviewDocument(
-            {html: '<html><head><meta http-equiv="Content-Security-Policy" content="script-src none"><meta http-equiv="refresh" content="0;url=https://outside.example"></head></html>', url: 'https://example.com/', revision: 'rev-1'},
+            {html: '<html><head><meta http-equiv="Content-Security-Policy" content="script-src none"><meta http-equiv="refresh" content="0;url=https://outside.example"><script>parent.document.body.textContent = "unsafe"</script></head><body onclick="parent.alert(1)"><a href="javascript:parent.alert(2)">Unsafe</a></body></html>', url: 'https://example.com/', revision: 'rev-1'},
             'channel-1',
             null
         );
         const parsed = new DOMParser().parseFromString(html, 'text/html');
 
         expect(parsed.querySelector('meta[http-equiv]')).toBeNull();
+        expect(parsed.querySelectorAll('script')).toHaveLength(2);
         expect(parsed.querySelector('script[data-builder-preview]')).not.toBeNull();
+        expect(parsed.body.hasAttribute('onclick')).toBe(true);
+        expect(parsed.querySelector('a')?.hasAttribute('href')).toBe(true);
     });
 
-    it('sandboxes the iframe without same-origin privileges', () => {
+    it('keeps the preview in an opaque-origin script sandbox', () => {
         const iframe = document.createElement('iframe');
         const surface = new IframePreviewDocumentSurface(iframe);
 
         expect(iframe.getAttribute('sandbox')).toBe('allow-scripts');
-        expect(iframe.getAttribute('sandbox')).not.toContain('allow-same-origin');
 
         surface.destroy();
     });
@@ -592,13 +663,14 @@ describe('preview document bridge', () => {
         surface.onNavigate(url => navigations.push(url));
         const first = surface.replaceDocument({html: '<html></html>', url: 'https://example.com/', revision: 'rev-1'}, null, new AbortController().signal);
         const firstScript = iframe.srcdoc;
-        const firstDocumentId = firstScript.match(/const documentId = "([^"]+)"/)?.[1];
-        const channel = firstScript.match(/const channel = "([^"]+)"/)?.[1];
+        const {channel, documentId: firstDocumentId} = bridgeIdentity(firstScript);
         const firstRejection = expect(first).rejects.toThrow('replaced');
         const second = surface.replaceDocument({html: '<html></html>', url: 'https://example.com/', revision: 'rev-2'}, null, new AbortController().signal);
-        const secondDocumentId = iframe.srcdoc.match(/const documentId = "([^"]+)"/)?.[1];
+        const {documentId: secondDocumentId} = bridgeIdentity(iframe.srcdoc);
 
         window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId: firstDocumentId, type: 'navigate', url: 'https://example.com/stale/'}}));
+        const secondCommands = new MessageChannel();
+        window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId: secondDocumentId, type: 'command-port'}, ports: [secondCommands.port1]}));
         window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId: secondDocumentId, type: 'ready', selection: null}}));
         window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId: secondDocumentId, type: 'loaded'}}));
 
@@ -618,8 +690,9 @@ describe('preview document bridge', () => {
         const controller = new AbortController();
         const replacing = surface.replaceDocument({html: '<html><h1>Home</h1></html>', url: 'https://example.com/', revision: 'rev-1'}, null, controller.signal);
         const expectedSrcdoc = iframe.srcdoc;
-        const documentId = expectedSrcdoc.match(/const documentId = "([^"]+)"/)?.[1];
-        const channel = expectedSrcdoc.match(/const channel = "([^"]+)"/)?.[1];
+        const {channel, documentId} = bridgeIdentity(expectedSrcdoc);
+        const commands = new MessageChannel();
+        window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId, type: 'command-port'}, ports: [commands.port1]}));
         window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId, type: 'ready', selection: null}}));
         window.dispatchEvent(new MessageEvent('message', {source: iframe.contentWindow, data: {channel, documentId, type: 'loaded'}}));
 

@@ -1,4 +1,4 @@
-import type {BuilderToolDefinition, BuilderToolResult} from '@/builder/core/tool-types';
+import type {BuilderToolDefinition, BuilderToolResult, WorkspaceDiagnostic} from '@/builder/core/tool-types';
 import type {
     BuilderPreviewAdapter,
     BuilderSelectionContext,
@@ -21,6 +21,11 @@ import {
 
 import type {ThemeDraft} from './theme-state';
 import type {ThemeCandidateResult} from './theme-tools';
+import {PreviewInspectionError} from './preview/preview-inspection';
+
+import type {PreviewElementInspection, PreviewElementTarget, PreviewPageInspection} from './preview/preview-inspection';
+import type {ThemeNavigationResult} from './preview/theme-preview-adapter';
+import type {ScreenshotRequest, ScreenshotResult} from './preview/screenshot';
 
 type ThemePublishAdapterResult = PublishResult & {draft?: ThemeDraft};
 
@@ -36,6 +41,10 @@ type ThemeMutationPreview = BuilderPreviewAdapter & {
     renderCandidate?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
     restoreDraft?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
     rebaseDraft?: (draft: ThemeDraft) => void;
+    inspectPage?: (signal: AbortSignal) => Promise<PreviewPageInspection & {diagnostics: WorkspaceDiagnostic[]; diagnosticsTruncated: boolean}>;
+    inspectElement?: (target: PreviewElementTarget, signal: AbortSignal) => Promise<PreviewElementInspection>;
+    navigate?: (target: string, signal: AbortSignal) => Promise<ThemeNavigationResult>;
+    screenshot?: (request: ScreenshotRequest, signal: AbortSignal) => Promise<ScreenshotResult>;
     readonly draft?: ThemeDraft;
     readonly state?: {url?: string};
 };
@@ -359,6 +368,47 @@ export class ThemeWorkspace implements BuilderWorkspace {
                     additionalProperties: false
                 },
                 execute: (input, signal) => this.enqueueMutation(signal, draft => updateDesignSettings(draft, {revision: input.revision, values: input.values}))
+            },
+            {
+                name: 'inspect_page',
+                description: 'Inspect the current preview URL, title, accessibility outline, bounded page text, viewport, and diagnostics.',
+                inputSchema: {type: 'object', properties: {}, additionalProperties: false},
+                execute: (_input, signal) => this.executePreviewRead(signal, 'inspect_page', preview => preview.inspectPage?.(signal))
+            },
+            {
+                name: 'inspect_element',
+                description: 'Inspect one accessible preview element by source marker or selector with bounded attributes, styles, text, box, and source origin.',
+                inputSchema: {
+                    type: 'object',
+                    properties: {marker: {type: 'string', minLength: 1, maxLength: 512}, selector: {type: 'string', minLength: 1, maxLength: 512}},
+                    oneOf: [{required: ['marker']}, {required: ['selector']}],
+                    additionalProperties: false
+                },
+                execute: (input, signal) => this.executePreviewRead(signal, 'inspect_element', preview => preview.inspectElement?.({marker: input.marker as string | undefined, selector: input.selector as string | undefined}, signal))
+            },
+            {
+                name: 'navigate',
+                description: 'Navigate the preview virtually to a same-site URL without leaving Builder.',
+                inputSchema: {
+                    type: 'object',
+                    properties: {url: {type: 'string', minLength: 1, maxLength: 8_192}},
+                    required: ['url'],
+                    additionalProperties: false
+                },
+                execute: (input, signal) => this.executeNavigation(input.url, signal)
+            },
+            {
+                name: 'screenshot',
+                description: 'Capture a bounded viewport, full-page, or source-marker/selector element screenshot of the current preview.',
+                inputSchema: {
+                    oneOf: [
+                        {type: 'object', properties: {kind: {type: 'string', const: 'viewport'}}, required: ['kind'], additionalProperties: false},
+                        {type: 'object', properties: {kind: {type: 'string', const: 'full_page'}}, required: ['kind'], additionalProperties: false},
+                        {type: 'object', properties: {kind: {type: 'string', const: 'element'}, marker: {type: 'string', minLength: 1, maxLength: 512}}, required: ['kind', 'marker'], additionalProperties: false},
+                        {type: 'object', properties: {kind: {type: 'string', const: 'element'}, selector: {type: 'string', minLength: 1, maxLength: 512}}, required: ['kind', 'selector'], additionalProperties: false}
+                    ]
+                },
+                execute: (input, signal) => this.executeScreenshot(input, signal)
             }
         ];
     }
@@ -440,6 +490,81 @@ export class ThemeWorkspace implements BuilderWorkspace {
     private activeDraftForRead(): ThemeDraft {
         this.syncPreviewOnlyDraft();
         return this.requireActiveDraft();
+    }
+
+    private async executePreviewRead<T>(
+        signal: AbortSignal,
+        tool: string,
+        operation: (preview: ThemeMutationPreview) => Promise<T> | undefined
+    ): Promise<BuilderToolResult<T>> {
+        abortIfNeeded(signal);
+        const revision = this.activeDraftForRead().revision;
+        try {
+            const pending = operation(this.preview);
+            if (!pending) {
+                return this.previewToolFailure(revision, 'preview_unavailable', `The preview does not support ${tool}.`, true);
+            }
+            const data = await pending;
+            abortIfNeeded(signal);
+            this.syncPreviewOnlyDraft();
+            return {ok: true, revision: this.requireActiveDraft().revision, data};
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                throw error;
+            }
+            const fallbackCode = tool === 'screenshot' ? 'preview_screenshot_failed' : tool === 'navigate' ? 'preview_navigation_failed' : 'preview_inspection_failed';
+            const code = error instanceof PreviewInspectionError ? error.code : fallbackCode;
+            return this.previewToolFailure(revision, code, error instanceof Error ? error.message : String(error), code === fallbackCode);
+        }
+    }
+
+    private async executeNavigation(target: unknown, signal: AbortSignal): Promise<BuilderToolResult<{url: string; status: number}>> {
+        const revision = this.activeDraftForRead().revision;
+        if (typeof target !== 'string' || !target || target.length > 8_192) {
+            return this.previewToolFailure(revision, 'invalid_navigation_target', 'Provide a non-empty preview URL under 8192 characters.', false);
+        }
+        const result = await this.executePreviewRead(signal, 'navigate', preview => preview.navigate?.(target, signal));
+        if (!result.ok) {
+            return result;
+        }
+        if (result.data.kind !== 'virtual') {
+            const diagnostic = result.data.kind === 'failed' ? result.data.diagnostics[0] : undefined;
+            return this.previewToolFailure(result.revision, diagnostic?.code ?? 'preview_navigation_blocked', diagnostic?.message ?? 'Agent navigation must stay on this site.', false, {url: result.data.url});
+        }
+        return {ok: true, revision: result.revision, data: {url: result.data.url, status: result.data.status}};
+    }
+
+    private async executeScreenshot(input: Record<string, unknown>, signal: AbortSignal): Promise<BuilderToolResult<Omit<ScreenshotResult, 'dataUrl'>>> {
+        const revision = this.activeDraftForRead().revision;
+        if (!['viewport', 'full_page', 'element'].includes(String(input.kind))) {
+            return this.previewToolFailure(revision, 'invalid_screenshot_request', 'Screenshot kind must be viewport, full_page, or element.', false);
+        }
+        const hasMarker = typeof input.marker === 'string' && input.marker.length > 0;
+        const hasSelector = typeof input.selector === 'string' && input.selector.length > 0;
+        if ((input.kind === 'element' && hasMarker === hasSelector) || (input.kind !== 'element' && (input.marker !== undefined || input.selector !== undefined))) {
+            return this.previewToolFailure(revision, 'invalid_screenshot_request', 'Element screenshots require exactly one marker or selector; other screenshot kinds accept no target.', false);
+        }
+        const request = input.kind === 'element'
+            ? {kind: 'element' as const, marker: input.marker as string | undefined, selector: input.selector as string | undefined}
+            : {kind: input.kind as 'viewport' | 'full_page'};
+        const result = await this.executePreviewRead(signal, 'screenshot', preview => preview.screenshot?.(request, signal));
+        if (!result.ok) {
+            return result;
+        }
+        const prefix = 'data:image/png;base64,';
+        if (!result.data.dataUrl.startsWith(prefix)) {
+            return this.previewToolFailure(result.revision, 'preview_screenshot_failed', 'The preview returned an invalid screenshot image.', true);
+        }
+        return {
+            ok: true,
+            revision: result.revision,
+            data: {width: result.data.width, height: result.data.height, warnings: result.data.warnings},
+            attachments: [{type: 'image', mediaType: 'image/png', data: result.data.dataUrl.slice(prefix.length)}]
+        };
+    }
+
+    private previewToolFailure(revision: string, code: string, message: string, retryable: boolean, details?: unknown): Extract<BuilderToolResult<never>, {ok: false}> {
+        return {ok: false, revision, error: {code, message, retryable, ...(details === undefined ? {} : {details})}};
     }
 
     private syncPreviewOnlyDraft(): void {
