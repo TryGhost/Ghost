@@ -169,7 +169,8 @@ describe('GiftEmailService', function () {
         const expectedDate = new Intl.DateTimeFormat('fr', {
             day: 'numeric',
             month: 'short',
-            year: 'numeric'
+            year: 'numeric',
+            timeZone: 'Etc/UTC'
         }).format(defaultData.expiresAt);
 
         sinon.assert.match(msg.html, sinon.match(expectedDate));
@@ -524,7 +525,8 @@ describe('GiftEmailService', function () {
             const expectedDate = new Intl.DateTimeFormat('en-gb', {
                 day: 'numeric',
                 month: 'short',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'Etc/UTC'
             }).format(reminderData.consumesAt);
 
             for (const field of ['html', 'text']) {
@@ -594,7 +596,8 @@ describe('GiftEmailService', function () {
             const expectedDate = new Intl.DateTimeFormat('fr', {
                 day: 'numeric',
                 month: 'short',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'Etc/UTC'
             }).format(reminderData.consumesAt);
 
             for (const field of ['html', 'text']) {
