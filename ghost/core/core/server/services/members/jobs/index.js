@@ -1,14 +1,26 @@
 const path = require('path');
 const jobLogging = require('../../jobs/job-logging');
 const jobsService = require('../../jobs');
+const CleanTokensJob = require('./clean-tokens-job').default;
 
 let hasScheduled = {
     expiredComped: false,
     tokens: false
 };
 
+function alreadyScheduledOrTest(key) {
+    return hasScheduled[key] || process.env.NODE_ENV.startsWith('test');
+}
+
+function randomDailyCron(maxHour = 24) {
+    const s = Math.floor(Math.random() * 60);
+    const m = Math.floor(Math.random() * 60);
+    const h = Math.floor(Math.random() * maxHour);
+    return `${s} ${m} ${h} * * *`;
+}
+
 function scheduleJob(key, name, jobFile, maxHour = 6) {
-    if (hasScheduled[key] || process.env.NODE_ENV.startsWith('test')) {
+    if (alreadyScheduledOrTest(key)) {
         return hasScheduled[key];
     }
 
@@ -36,6 +48,15 @@ module.exports = {
     },
 
     async scheduleTokenCleanupJob() {
-        return scheduleJob('tokens', 'clean-tokens', 'clean-tokens.js', 24);
+        if (alreadyScheduledOrTest('tokens')) {
+            return;
+        }
+
+        const classBasedJobs = require('../../jobs-service').getInstance();
+        const cron = randomDailyCron();
+        jobLogging.info(`[Background Job] clean-tokens scheduled at ${cron}`);
+        await classBasedJobs.scheduleRecurring(new CleanTokensJob(), {cron});
+
+        hasScheduled.tokens = true;
     }
 };
