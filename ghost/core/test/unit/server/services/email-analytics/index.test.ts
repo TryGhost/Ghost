@@ -63,7 +63,7 @@ describe('email analytics service', function () {
         sinon.restore();
     });
 
-    it('initializes newsletter and automation analytics', function () {
+    it('initializes newsletter, automation, and gift analytics', function () {
         init(dependencies);
 
         sinon.assert.calledOnceWithExactly(newslettersInit, sinon.match({
