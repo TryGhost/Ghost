@@ -175,20 +175,6 @@ export const useShowComment = createMutation<CommentsResponseType, {id: string}>
     }
 });
 
-export const useDeleteComment = createMutation<CommentsResponseType, {id: string}>({
-    method: 'PUT',
-    path: ({id}) => `/comments/${id}/`,
-    body: ({id}) => ({
-        comments: [{
-            id,
-            status: 'deleted'
-        }]
-    }),
-    invalidateQueries: {
-        dataType
-    }
-});
-
 export const usePinComment = createMutation<CommentsResponseType, {id: string}>({
     method: 'PUT',
     path: ({id}) => `/comments/${id}/`,
@@ -214,15 +200,6 @@ export const useUnpinComment = createMutation<CommentsResponseType, {id: string}
     }),
     invalidateQueries: {
         dataType
-    }
-});
-
-export const useCommentReplies = createQueryWithId<CommentsResponseType>({
-    dataType,
-    path: (id: string) => `/comments/${id}/replies/`,
-    defaultSearchParams: {
-        include: 'member,post,count.replies,count.likes,count.reports,parent',
-        limit: '100' // Max limit allowed by API
     }
 });
 

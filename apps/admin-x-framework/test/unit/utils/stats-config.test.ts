@@ -1,11 +1,5 @@
-import {getStatEndpointUrl, getToken} from '../../../src/utils/stats-config';
+import {getStatEndpointUrl} from '../../../src/utils/stats-config';
 import {StatsConfig} from '../../../src/providers/framework-provider';
-import {getTinybirdToken} from '../../../src/api/tinybird';
-
-// Mock getTinybirdToken
-vi.mock('../../../src/api/tinybird', () => ({
-    getTinybirdToken: vi.fn()
-}));
 
 describe('stats-config utils', () => {
     beforeEach(() => {
@@ -107,55 +101,6 @@ describe('stats-config utils', () => {
                 endpointBrowser: 'https://browser-api.example.com'
             };
             expect(getStatEndpointUrl(config, 'analytics')).toBe('https://browser-api.example.com/v0/pipes/analytics.json?');
-        });
-    });
-
-    describe('getToken', () => {
-        const mockTokenFromApi: string = 'api-fetched-token';
-
-        it('returns token from getTinybirdToken when it returns a valid token', () => {
-            vi.mocked(getTinybirdToken).mockReturnValue({
-                data: {tinybird: {token: mockTokenFromApi}},
-                refetch: vi.fn()
-            } as any);
-
-            expect(getToken()).toBe(mockTokenFromApi);
-        });
-
-        it('returns undefined when getTinybirdToken returns null token', () => {
-            vi.mocked(getTinybirdToken).mockReturnValue({
-                data: {tinybird: {token: null}},
-                refetch: vi.fn()
-            } as any);
-
-            expect(getToken()).toBeUndefined();
-        });
-
-        it('returns undefined when getTinybirdToken returns undefined token', () => {
-            vi.mocked(getTinybirdToken).mockReturnValue({
-                data: {tinybird: {token: undefined}},
-                refetch: vi.fn()
-            } as any);
-
-            expect(getToken()).toBeUndefined();
-        });
-
-        it('returns undefined when getTinybirdToken returns non-string token', () => {
-            vi.mocked(getTinybirdToken).mockReturnValue({
-                data: {tinybird: {token: 123}},
-                refetch: vi.fn()
-            } as any);
-
-            expect(getToken()).toBeUndefined();
-        });
-
-        it('returns undefined when getTinybirdToken returns no data', () => {
-            vi.mocked(getTinybirdToken).mockReturnValue({
-                data: undefined,
-                refetch: vi.fn()
-            } as any);
-
-            expect(getToken()).toBeUndefined();
         });
     });
 });

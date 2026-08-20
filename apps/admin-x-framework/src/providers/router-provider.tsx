@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useRef, useEffect, createContext, useContext} from 'react';
+import React, {useCallback, useMemo, useRef, useEffect} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams, Navigate as ReactRouterNavigate} from 'react-router';
 import {useFramework} from './framework-provider';
 import {NavigationStackProvider} from './navigation-stack-provider';
@@ -26,22 +26,6 @@ export interface RouterProviderProps {
 
 // Store scroll positions globally
 const scrollPositions = new Map<string, number>();
-
-interface ScrollRestorationContextType {
-    saveScrollPosition: (pathname: string, position: number) => void;
-    getScrollPosition: (pathname: string) => number | undefined;
-    resetScrollPosition: (pathname: string) => void;
-}
-
-const ScrollRestorationContext = createContext<ScrollRestorationContextType>({
-    saveScrollPosition: () => {},
-    getScrollPosition: () => undefined,
-    resetScrollPosition: () => {}
-});
-
-export function useScrollRestoration() {
-    return useContext(ScrollRestorationContext);
-}
 
 export function resetScrollPosition(location: string) {
     scrollPositions.delete(location);
@@ -163,11 +147,6 @@ export function useNavigate() {
 
         navigate(to, options);
     }, [navigate, externalNavigate]);
-}
-
-export function useBaseRoute() {
-    const location = useLocation();
-    return location.pathname.split('/')[1];
 }
 
 export function useRouteHasParams() {

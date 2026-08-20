@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createQuery} from '../utils/api/hooks';
 
 export type Page = {
     id: string;
@@ -22,11 +22,6 @@ const dataType = 'PagesResponseType';
 export const useBrowsePages = createQuery<PagesResponseType>({
     dataType,
     path: '/pages/'
-});
-
-export const getPage = createQueryWithId<PagesResponseType>({
-    dataType,
-    path: id => `/pages/${id}/`
 });
 
 export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & {isEnd: boolean}>({

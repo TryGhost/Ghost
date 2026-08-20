@@ -1,6 +1,6 @@
 # Admin X Framework
 
-Ghost Shared Framework that is used by all the micro-frontends for common functionality like data fetching and routing.
+Shared runtime for Ghost's React admin apps: the admin shell (`apps/admin`) and the route-composed ActivityPub app (`apps/activitypub`). It provides the data layer (React Query factories and per-resource API modules), the `FrameworkProvider`/`RouterProvider` pair, and shared hooks.
 
 ## Pre-requisites
 
@@ -17,6 +17,6 @@ Follow the instructions for the top-level repo.
 ## Test
 
 - `pnpm lint` - run just eslint
-- `pnpm test` - runs acceptance tests
+- `pnpm test` - runs unit tests
 
 In package.json you can find other related running options too.

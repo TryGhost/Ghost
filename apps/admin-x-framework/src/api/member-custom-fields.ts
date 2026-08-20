@@ -1,6 +1,6 @@
 import {FIELD_TYPE_IDS, subFieldsOf, type FieldType, type PartsOf} from '@tryghost/custom-field-types';
 import {csvColumnsForField} from '@tryghost/custom-field-types/csv';
-import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
 
 // Re-exported so the import mapping can recognise a custom_fields.* column (same reason
 // as the re-exports below).
@@ -236,11 +236,6 @@ export const useBrowseMemberCustomFields = createQuery<MemberCustomFieldsRespons
 export const useBrowseMemberCustomFieldsIncludingArchived = (
     options?: Parameters<typeof useBrowseMemberCustomFields>[0]
 ) => useBrowseMemberCustomFields({...options, searchParams: {filter: 'status:[active,archived]'}});
-
-export const getMemberCustomField = createQueryWithId<MemberCustomFieldsResponseType>({
-    dataType,
-    path: key => `/members/custom_fields/${key}/`
-});
 
 // The backend mints the key from the name, so create takes just a name and a type.
 export const useCreateMemberCustomField = createMutation<MemberCustomFieldsResponseType, Pick<MemberCustomField, 'name' | 'type'>>({

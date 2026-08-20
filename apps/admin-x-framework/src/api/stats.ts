@@ -277,20 +277,6 @@ export const useTopPostsViews = createQuery<TopPostViewsResponseType>({
     path: '/stats/top-posts-views/'
 });
 
-export interface NewsletterStatsSearchParams {
-    newsletterId?: string;
-    date_from?: string;
-    date_to?: string;
-    order?: string;
-    limit?: number;
-}
-
-export interface SubscriberCountSearchParams {
-    newsletterId?: string;
-    date_from?: string;
-    date_to?: string;
-}
-
 export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
     dataType: newsletterStatsDataType,
     path: '/stats/newsletter-stats/',
@@ -315,31 +301,6 @@ export const useNewsletterClickStats = createQuery<NewsletterClickStatsResponseT
     }
 });
 
-// Hook wrapper to accept a newsletterId parameter
-export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}, queryOptions: {enabled?: boolean} = {}) => {
-    const searchParams: Record<string, string> = {};
-
-    if (newsletterId) {
-        searchParams.newsletter_id = newsletterId;
-    }
-
-    // Add any additional search params
-    if (options.date_from) {
-        searchParams.date_from = options.date_from;
-    }
-    if (options.date_to) {
-        searchParams.date_to = options.date_to;
-    }
-    if (options.order) {
-        searchParams.order = options.order;
-    }
-    if (options.limit) {
-        searchParams.limit = options.limit.toString();
-    }
-
-    return useNewsletterStats({searchParams, enabled: queryOptions.enabled});
-};
-
 export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseType>({
     dataType: newsletterSubscriberStatsDataType,
     path: '/stats/subscriber-count/',
@@ -347,22 +308,3 @@ export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseT
         // Empty default params, will be filled by the hook
     }
 });
-
-// Hook wrapper to accept a newsletterId parameter
-export const useSubscriberCountByNewsletterId = (newsletterId?: string, options: Partial<SubscriberCountSearchParams> = {}) => {
-    const searchParams: Record<string, string> = {};
-
-    if (newsletterId) {
-        searchParams.newsletter_id = newsletterId;
-    }
-
-    // Add any additional search params
-    if (options.date_from) {
-        searchParams.date_from = options.date_from;
-    }
-    if (options.date_to) {
-        searchParams.date_to = options.date_to;
-    }
-
-    return useSubscriberCount({searchParams});
-};

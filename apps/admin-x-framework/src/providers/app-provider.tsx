@@ -1,6 +1,4 @@
-import {ShadeAppProps} from '@tryghost/shade/app';
 import {ReactNode, createContext, useContext} from 'react';
-import {TopLevelFrameworkProps} from './framework-provider';
 
 // Shared app settings type for all Ghost Admin apps
 export interface AppSettings {
@@ -15,17 +13,9 @@ export interface AppSettings {
     };
 }
 
-// Base props that all Ghost Admin apps will have
-export interface BaseAppProps {
-    framework: TopLevelFrameworkProps;
-    designSystem: ShadeAppProps;
-    appSettings?: AppSettings;
-}
-
 // Base app context type for all Ghost Admin apps
 export interface AppContextType {
     appSettings?: AppSettings;
-    externalNavigate: (url: string) => void;
 }
 
 // Base app provider props
@@ -41,10 +31,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({
     children
 }) => {
     const appContextValue: AppContextType = {
-        appSettings,
-        externalNavigate: (url: string) => {
-            window.location.href = url;
-        }
+        appSettings
     };
 
     return (

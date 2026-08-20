@@ -16,5 +16,3 @@ export const useUploadFile = createMutation<FilesResponseType, {file: File}>({
         return formData;
     }
 });
-
-export const getFileUrl = (response: FilesResponseType) => response.files[0].url;

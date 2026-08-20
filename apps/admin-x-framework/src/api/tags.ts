@@ -85,11 +85,6 @@ export const useBrowseTags = ({
     });
 };
 
-export const getTag = createQueryWithId<TagsResponseType>({
-    dataType,
-    path: id => `/tags/${id}/`
-});
-
 // Mirrors Ember's `queryRecord('tag', {slug})`, which the admin API serves at
 // the dedicated `/tags/slug/:slug/` route.
 export const getTagBySlug = createQueryWithId<TagsResponseType>({
