@@ -246,10 +246,11 @@ class PostsService {
                 continue;
             }
 
-            // A name may belong to a tag that already exists. Match on the slug
-            // it generates rather than the name itself, because the slug is
-            // unique and case insensitive on every supported database
-            const slug = await this.models.Base.Model.generateSlug(this.models.Tag, tag.name, {skipDuplicateChecks: true});
+            // The tag may already exist. Match on the slug it generates rather
+            // than the name, because the slug is unique and case insensitive on
+            // every supported database. Derive it the way Tag.onSaving does, so
+            // a supplied slug is looked up rather than silently ignored
+            const slug = await this.models.Base.Model.generateSlug(this.models.Tag, tag.slug || tag.name, {skipDuplicateChecks: true});
             const existingTag = await this.models.Tag.findOne({slug}, {transacting: options.transacting});
 
             if (existingTag) {

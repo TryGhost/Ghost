@@ -329,6 +329,25 @@ describe('Posts Bulk API', function () {
             }
         });
 
+        it('Reuses an existing tag when it is added by slug', async function () {
+            const filter = 'status:[draft]';
+            const existing = await models.Tag.add({name: 'Slug owner', slug: 'slug-owner'}, {context: {internal: true}});
+
+            // Tag.add honours a supplied slug, so the lookup has to use it too
+            await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                .body({bulk: {action: 'addTag', meta: {tags: [{name: 'A different name', slug: 'slug-owner'}]}}})
+                .expectStatus(200);
+
+            const owners = await models.Base.knex('tags').where('slug', 'like', 'slug-owner%').select('slug');
+            assert.deepEqual(owners.map(t => t.slug), ['slug-owner'], 'Expect no second tag to be created');
+
+            const posts = await models.Post.findAll({filter, status: 'all', withRelated: ['tags']});
+            for (const post of posts) {
+                assert(post.related('tags').find(t => t.id === existing.id), `Expect post ${post.id} to have the existing tag`);
+            }
+        });
+
         it('Does not confuse a tag id with another tag of the same name', async function () {
             const filter = 'status:[draft]';
             const existing = await models.Tag.findOne({slug: fixtureManager.get('tags', 1).slug});
