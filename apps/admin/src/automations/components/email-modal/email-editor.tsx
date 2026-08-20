@@ -114,7 +114,11 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
   const settings = settingsData?.settings || [];
   const config = configData?.config;
   const maxUploadSize = config?.hostSettings?.limits?.uploads?.max;
-  const fileUploader = useMemo(() => createKoenigFileUploader(maxUploadSize), [maxUploadSize]);
+  const maxUploadError = config?.hostSettings?.limits?.uploads?.error;
+  const fileUploader = useMemo(
+    () => createKoenigFileUploader(maxUploadSize, maxUploadError),
+    [maxUploadError, maxUploadSize],
+  );
   const { fetchAutocompleteLinks, searchLinks } = useEmailLinkSuggestions();
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config?.klipy?.apiKey ? config.klipy : null;
