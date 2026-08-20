@@ -10,6 +10,16 @@ function makeFile(name: string, type = 'image/jpeg'): File {
     return new File(['content'], name, {type});
 }
 
+const MB = 1000000;
+
+// A real File reports the size of its own contents, so stub the size rather
+// than allocating hundreds of megabytes per test.
+function makeFileOfSize(name: string, bytes: number, type = 'image/jpeg'): File {
+    const file = makeFile(name, type);
+    Object.defineProperty(file, 'size', {value: bytes});
+    return file;
+}
+
 interface UploadResponse {
     body: Record<string, unknown>;
     status?: number;
@@ -322,5 +332,89 @@ describe('useKoenigFileUpload', () => {
             // Each valid extension should produce a successful upload result
             expect(uploadResult).not.toBeNull();
         }
+    });
+
+    it('rejects a file larger than the configured limit without sending it', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: 200 * MB}));
+
+        const file = makeFileOfSize('huge.jpg', 250 * MB);
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).toBeNull();
+        expect(requestLog.find(request => request.method === 'POST')).toBeUndefined();
+        expect(result.current.errors).toHaveLength(1);
+        expect(result.current.errors[0].fileName).toBe('huge.jpg');
+        expect(result.current.errors[0].message).toBe(
+            'The file you uploaded is larger than the maximum file size of 200MB.'
+        );
+    });
+
+    it('uploads a file that fits within the configured limit', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: 200 * MB}));
+
+        const file = makeFileOfSize('photo.jpg', 199 * MB);
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).not.toBeNull();
+        expect(result.current.errors).toHaveLength(0);
+    });
+
+    it('applies the limit to the file type, which skips extension validation', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('file', {maxUploadSize: 1 * MB}));
+
+        const file = makeFileOfSize('archive.zip', 2 * MB, 'application/zip');
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).toBeNull();
+        expect(requestLog.find(request => request.method === 'POST')).toBeUndefined();
+        expect(result.current.errors[0].message).toBe(
+            'The file you uploaded is larger than the maximum file size of 1MB.'
+        );
+    });
+
+    it('does not check size when no limit is configured', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFileOfSize('huge.jpg', 1000 * MB);
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).not.toBeNull();
+        expect(result.current.errors).toHaveLength(0);
+    });
+
+    it('ignores a limit that is not a usable size', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: 0}));
+
+        const file = makeFileOfSize('huge.jpg', 1000 * MB);
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).not.toBeNull();
+    });
+
+    it('accepts a limit that arrives as a string', async () => {
+        // Self-hosters configure limits through environment variables, where
+        // every value reaches the config as a string.
+        const stringLimit = String(200 * MB) as unknown as number;
+        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: stringLimit}));
+
+        const file = makeFileOfSize('huge.jpg', 250 * MB);
+        await act(async () => {
+            await result.current.upload([file]);
+        });
+
+        expect(requestLog.find(request => request.method === 'POST')).toBeUndefined();
+        expect(result.current.errors[0].message).toBe(
+            'The file you uploaded is larger than the maximum file size of 200MB.'
+        );
     });
 });

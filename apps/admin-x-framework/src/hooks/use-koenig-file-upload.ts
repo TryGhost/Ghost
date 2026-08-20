@@ -76,7 +76,28 @@ const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null |
     return (typeof current === 'string') ? current : null;
 };
 
-export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileUploadHook => {
+interface KoenigFileUploadOptions {
+    /**
+     * Maximum accepted file size in bytes, from `hostSettings.limits.uploads.max`.
+     * Checked before the request is made, which the server-side limit cannot do:
+     * a reverse proxy in front of Ghost may reject an oversized body before it
+     * ever reaches the API, so the host limit's error never gets a chance to run.
+     */
+    maxUploadSize?: number;
+}
+
+// Config can reach the browser via environment variables, where every value is a
+// string, so coerce before comparing against `File.size`.
+const resolveUploadLimit = (limit: undefined | number): null | number => {
+    const bytes = Number(limit);
+    return Number.isFinite(bytes) && bytes > 0 ? bytes : null;
+};
+
+// The limit service reports upload limits in decimal MB, so quote the same unit
+// back rather than switching to mebibytes.
+const formatUploadLimit = (bytes: number): string => `${Math.round((bytes / 1000000) * 10) / 10}MB`;
+
+export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image', {maxUploadSize}: KoenigFileUploadOptions = {}): FileUploadHook => {
     const [progress, setProgress] = useState(0);
     const [isLoading, setLoading] = useState(false);
     const [errors, setErrors] = useState<UploadError[]>([]);
@@ -85,6 +106,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
     const progressTracker = useRef(new Map());
 
     const fetchApi = useFetchApi();
+    const uploadLimit = resolveUploadLimit(maxUploadSize);
 
     function updateProgress() {
         if (progressTracker.current.size === 0) {
@@ -104,6 +126,12 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
     // we only check the file extension by default because IE doesn't always
     // expose the mime-type, we'll rely on the API for final validation
     const defaultValidator = (file: File): true | string => {
+        // Size is checked ahead of the early return below: the file card accepts
+        // any file type, and is the one most likely to be handed something huge.
+        if (uploadLimit !== null && file.size > uploadLimit) {
+            return `The file you uploaded is larger than the maximum file size of ${formatUploadLimit(uploadLimit)}.`;
+        }
+
         // if type is file we don't need to validate since the card can accept any file type
         if (type === 'file') {
             return true;
@@ -245,3 +273,15 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
 
     return {progress, isLoading, upload, errors, filesNumber};
 };
+
+/**
+ * Builds the `fileUploader` object Koenig expects, with an upload size limit
+ * applied. Memoize the result on `maxUploadSize` so the editor's context value
+ * stays stable across renders.
+ */
+export const createKoenigFileUploader = (maxUploadSize: undefined | number) => ({
+    fileTypes: koenigFileUploadTypes,
+    useFileUpload: function useFileUpload(type: KoenigFileUploadType = 'image') {
+        return useKoenigFileUpload(type, {maxUploadSize});
+    }
+});

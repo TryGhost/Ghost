@@ -5,7 +5,7 @@ import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
+import {createKoenigFileUploader, useKoenigFetchEmbed, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useFocusContext} from '@tryghost/shade/app';
 import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useWelcomeEmailLinkSuggestions} from '@/settings/hooks/use-welcome-email-link-suggestions';
@@ -16,11 +16,6 @@ export interface MemberEmailsEditorProps {
     className?: string;
     onChange?: (value: string) => void;
 }
-
-const fileUploader = {
-    useFileUpload: useKoenigFileUpload,
-    fileTypes: koenigFileUploadTypes
-};
 
 type EditorResource = ReturnType<typeof loadKoenig>;
 
@@ -86,6 +81,9 @@ const EmailEditorInner: React.FC<{
     onChange: (data: unknown) => void;
 }> = ({editor, darkMode, cardConfig, initialEditorState, placeholder, className, registerAPI, onChange}) => {
     const {EmailEditor} = editor.read();
+    const {config} = useGlobalData();
+    const maxUploadSize = config?.hostSettings?.limits?.uploads?.max;
+    const fileUploader = useMemo(() => createKoenigFileUploader(maxUploadSize), [maxUploadSize]);
 
     return (
         <div className={cn('koenig-react-editor w-full', baseEditorStyles, className)}>

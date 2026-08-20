@@ -4,7 +4,7 @@ export {default as useForm} from './hooks/use-form';
 export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/use-form';
 export {default as useHandleError} from './hooks/use-handle-error';
 export {useFeatureFlag} from './hooks/use-feature-flag';
-export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-file-upload';
+export {useKoenigFileUpload, koenigFileUploadTypes, createKoenigFileUploader} from './hooks/use-koenig-file-upload';
 export {useKoenigFetchEmbed} from './hooks/use-koenig-fetch-embed';
 export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
 export {useKoenigLinkSuggestions} from './hooks/use-koenig-link-suggestions';

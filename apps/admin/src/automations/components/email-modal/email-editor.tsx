@@ -4,7 +4,7 @@ import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
+import {createKoenigFileUploader, useKoenigFetchEmbed, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useEmailLinkSuggestions} from './use-link-suggestions';
 import {useFocusContext} from '@tryghost/shade/app';
@@ -18,11 +18,6 @@ export interface EmailEditorProps {
 
 // The editor API handle, typed as whatever focusKoenigEditorOnBottomClick accepts.
 type KoenigAPI = Parameters<typeof focusKoenigEditorOnBottomClick>[0];
-
-const fileUploader = {
-    useFileUpload: useKoenigFileUpload,
-    fileTypes: koenigFileUploadTypes
-};
 
 // @tryghost/koenig-lexical ships no type declarations, so its runtime module
 // resolves as `any`. Declare just the EmailEditor surface we use so the lazy
@@ -112,6 +107,8 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
     const {data: configData} = useBrowseConfig();
     const settings = settingsData?.settings || [];
     const config = configData?.config;
+    const maxUploadSize = config?.hostSettings?.limits?.uploads?.max;
+    const fileUploader = useMemo(() => createKoenigFileUploader(maxUploadSize), [maxUploadSize]);
     const {fetchAutocompleteLinks, searchLinks} = useEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
     const klipyConfig = config?.klipy?.apiKey ? config.klipy : null;

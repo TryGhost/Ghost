@@ -3,9 +3,9 @@ import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {createKoenigFileUploader} from '@tryghost/admin-x-framework/hooks';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
-import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
 import {inject as service} from '@ember/service';
 
 function LockIcon({...props}) {
@@ -182,20 +182,17 @@ const TKCountPlugin = ({editorResource, ...props}) => {
     return <_TKCountPlugin {...props} />;
 };
 
-const FILE_UPLOADER = {
-    useFileUpload: useKoenigFileUpload,
-    fileTypes: koenigFileUploadTypes
-};
-
 const NOOP = () => {};
 
-const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, onError}) => {
+const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, maxUploadSize, onError}) => {
+    const fileUploader = React.useMemo(() => createKoenigFileUploader(maxUploadSize), [maxUploadSize]);
+
     return (
         <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
             <KoenigComposer
                 editorResource={editorResource}
                 cardConfig={cardConfig}
-                fileUploader={FILE_UPLOADER}
+                fileUploader={fileUploader}
                 initialEditorState={editorArgs.lexical}
                 onError={onError}
                 darkMode={darkMode}
@@ -520,6 +517,7 @@ export default class KoenigLexicalEditor extends Component {
             darkMode: this.feature.nightShift,
             editorArgs: this.args,
             editorResource: this.editorResource,
+            maxUploadSize: this.config.hostSettings?.limits?.uploads?.max,
             onError: this.onError
         };
 
