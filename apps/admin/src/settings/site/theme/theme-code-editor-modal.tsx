@@ -18,21 +18,20 @@ import {
     normaliseRelativePath,
     packThemeArchive
 } from './theme-editor-utils';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
+import {apiUrl} from '@tryghost/admin-x-framework/helpers';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {search} from '@codemirror/search';
 
 import {toast} from 'sonner';
-import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useQueryClient} from '@tanstack/react-query';
+import {useBrowseThemes, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
+import {useFetchApi, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import type {SelectedNode} from './theme-file-tree';
 import type {ThemeEditorConfirmModalProps} from './theme-editor-confirm-modal';
 import type {ThemeEditorFile} from './theme-editor-utils';
 import type {ThemeEditorInputModalProps} from './theme-editor-input-modal';
-import type {ThemesInstallResponseType} from '@tryghost/admin-x-framework/api/themes';
 
 const getLanguageExtension = (path: string) => {
     const extension = getExtension(path);
@@ -212,6 +211,32 @@ const formatLimitBytes = (bytes: number | undefined) => {
     return `${Math.round(bytes / 1024)} KB`;
 };
 
+// Size-limit failures are 415s, which the fetch layer surfaces as an
+// UnsupportedMediaTypeError carrying the raw response text
+const getUploadSizeLimitError = (error: unknown): (UploadSizeLimitError & {code: string}) | null => {
+    if (!(error instanceof APIError)) {
+        return null;
+    }
+
+    let data: unknown = error.data;
+
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data);
+        } catch {
+            return null;
+        }
+    }
+
+    const serverError = (data as {errors?: UploadSizeLimitError[]} | undefined)?.errors?.[0];
+
+    if (serverError?.code && UPLOAD_SIZE_LIMIT_TITLES[serverError.code]) {
+        return serverError as UploadSizeLimitError & {code: string};
+    }
+
+    return null;
+};
+
 const buildUploadSizeLimitMessage = (err: UploadSizeLimitError) => {
     const {entryName, limitBytes} = err.errorDetails ?? {};
     const limit = formatLimitBytes(limitBytes);
@@ -245,9 +270,10 @@ const editorSelectionTheme = EditorView.theme({
 
 const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const {updateRoute} = useSettingsNavigation();
-    const queryClient = useQueryClient();
+    const fetchApi = useFetchApi();
     const handleError = useHandleError();
     const {data: themesData} = useBrowseThemes();
+    const {mutateAsync: uploadTheme} = useUploadTheme();
 
     const [currentThemeName, setCurrentThemeName] = useState(themeName);
     const [baseFiles, setBaseFiles] = useState<Record<string, ThemeEditorFile>>({});
@@ -283,19 +309,9 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             resetLoadedTheme();
 
             try {
-                const {apiRoot} = getGhostPaths();
-                const response = await fetch(`${apiRoot}/themes/${encodeURIComponent(themeName)}/download/`, {
-                    credentials: 'include',
-                    headers: {
-                        Accept: 'application/zip, application/octet-stream, */*'
-                    }
+                const archive = await fetchApi<ArrayBuffer>(apiUrl(`/themes/${encodeURIComponent(themeName)}/download/`), {
+                    responseType: 'arraybuffer'
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to load theme "${themeName}" (${response.status})`);
-                }
-
-                const archive = await response.arrayBuffer();
                 const snapshot = await extractThemeArchive(archive);
                 const nextFiles = cloneThemeFiles(snapshot.files);
                 const nextSelection = getDefaultSelection(nextFiles);
@@ -315,7 +331,11 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     return;
                 }
 
-                setLoadError(error instanceof Error ? error.message : 'Failed to load theme');
+                if (error instanceof APIError && error.response) {
+                    setLoadError(`Failed to load theme "${themeName}" (${error.response.status})`);
+                } else {
+                    setLoadError(error instanceof Error ? error.message : 'Failed to load theme');
+                }
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
@@ -328,7 +348,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         return () => {
             isMounted = false;
         };
-    }, [themeName]);
+    }, [themeName, fetchApi]);
 
     useEffect(() => {
         const previousOverflow = document.body.style.overflow;
@@ -790,39 +810,12 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 rootPrefix
             });
 
-            const formData = new FormData();
-            formData.append('file', blob, `${nextThemeName}.zip`);
-
-            // when saving under a new name, carry over the original theme's
-            // settings so activating the copy keeps the site's design
-            const uploadQuery = isSaveAs ? `?copy_settings_from=${encodeURIComponent(previousThemeName)}` : '';
-
-            const response = await fetch(`${getGhostPaths().apiRoot}/themes/upload/${uploadQuery}`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    Accept: 'application/json'
-                },
-                body: formData
+            const data = await uploadTheme({
+                file: new File([blob], `${nextThemeName}.zip`, {type: 'application/zip'}),
+                // when saving under a new name, carry over the original theme's
+                // settings so activating the copy keeps the site's design
+                copySettingsFrom: isSaveAs ? previousThemeName : undefined
             });
-
-            const data = await response.json().catch(() => null) as ThemesInstallResponseType & {errors?: FatalErrors};
-
-            if (!response.ok) {
-                if (response.status === 422 && data?.errors) {
-                    setSaveErrors(data.errors);
-                    return;
-                }
-
-                const serverError = (data as {errors?: Array<UploadSizeLimitError>} | null)?.errors?.[0];
-
-                if (serverError?.code && UPLOAD_SIZE_LIMIT_TITLES[serverError.code]) {
-                    toast.error(UPLOAD_SIZE_LIMIT_TITLES[serverError.code], {description: buildUploadSizeLimitMessage(serverError)});
-                    return;
-                }
-
-                throw new Error(serverError?.message || 'Theme upload failed.');
-            }
 
             const uploadedTheme = data.themes[0];
             const returnRoute = getReturnRouteFromHash();
@@ -835,8 +828,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 updateRoute(buildThemeEditorRoute(nextThemeName, returnRoute));
             }
 
-            await queryClient.invalidateQueries({queryKey: ['ThemesResponseType']});
-
             if (isSaveAs || uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
                 setInstalledModal({
                     title: isSaveAs ? 'Theme saved' : 'Theme updated',
@@ -847,6 +838,18 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 toast.success('Theme saved', {description: <div><span className='capitalize'>{uploadedTheme.name}</span> has been updated.</div>});
             }
         } catch (error) {
+            if (error instanceof JSONError && error.response?.status === 422 && error.data?.errors) {
+                setSaveErrors(error.data.errors as unknown as FatalErrors);
+                return;
+            }
+
+            const sizeLimitError = getUploadSizeLimitError(error);
+
+            if (sizeLimitError) {
+                toast.error(UPLOAD_SIZE_LIMIT_TITLES[sizeLimitError.code], {description: buildUploadSizeLimitMessage(sizeLimitError)});
+                return;
+            }
+
             handleError(error);
         } finally {
             setIsSaving(false);

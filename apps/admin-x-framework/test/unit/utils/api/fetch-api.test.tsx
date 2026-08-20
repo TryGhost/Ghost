@@ -59,13 +59,30 @@ describe('useFetchApi', () => {
                 if (url.includes('slow')) {
                     await sleep(100);
                 }
-                res.writeHead(200, {
-                    'Content-Type': 'application/json',
-                    // jsdom's `XMLHttpRequest` needs these CORS headers.
+
+                // jsdom's `XMLHttpRequest` needs these CORS headers.
+                const corsHeaders = {
                     'Access-Control-Allow-Origin': req.headers.origin || '*',
                     'Access-Control-Allow-Methods': '*',
                     'Access-Control-Allow-Headers': '*',
                     'Access-Control-Allow-Credentials': 'true'
+                };
+
+                if (url.includes('yaml')) {
+                    res.writeHead(200, {'Content-Type': 'application/yaml', ...corsHeaders});
+                    res.end('routes:\n');
+                    return;
+                }
+
+                if (url.includes('binary')) {
+                    res.writeHead(200, {'Content-Type': 'application/zip', ...corsHeaders});
+                    res.end(Buffer.from([80, 75, 3, 4]));
+                    return;
+                }
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
                 });
                 res.end(JSON.stringify({
                     method: req.method,
@@ -106,6 +123,39 @@ describe('useFetchApi', () => {
         expect(data.headers['app-pragma']).toBe('no-cache');
         expect(data.headers['content-type']).toBe('application/json');
         expect(data.body).toBe('test');
+    });
+
+    it('returns text for yaml responses', async () => {
+        const {result} = renderHook(() => useFetchApi(), {wrapper});
+
+        const data = await result.current<string>(`${baseUrl}/ghost/api/admin/yaml/`, {retry: false});
+
+        expect(data).toBe('routes:\n');
+    });
+
+    it('resolves the raw ArrayBuffer when responseType is arraybuffer', async () => {
+        const {result} = renderHook(() => useFetchApi(), {wrapper});
+
+        const data = await result.current<ArrayBuffer>(`${baseUrl}/ghost/api/admin/binary/`, {
+            retry: false,
+            responseType: 'arraybuffer'
+        });
+
+        expect(data).toBeInstanceOf(ArrayBuffer);
+        expect(Array.from(new Uint8Array(data))).toEqual([80, 75, 3, 4]);
+    });
+
+    it('resolves the raw Blob when responseType is blob', async () => {
+        const {result} = renderHook(() => useFetchApi(), {wrapper});
+
+        const data = await result.current<Blob>(`${baseUrl}/ghost/api/admin/binary/`, {
+            retry: false,
+            responseType: 'blob'
+        });
+
+        // instanceof fails across realms (undici Blob vs jsdom Blob), so assert shape
+        expect(data.constructor.name).toBe('Blob');
+        expect(Array.from(new Uint8Array(await data.arrayBuffer()))).toEqual([80, 75, 3, 4]);
     });
 
     it('retries maintenance errors until the API recovers', async () => {
