@@ -136,6 +136,10 @@ class EmailServiceWrapper {
         });
 
         if (ghostServer) {
+            // Two phases: stop claiming batches immediately, drain in-flight ones later.
+            // Draining alone would leave workers claiming new batches for the whole HTTP
+            // server drain, each a fresh orphan candidate.
+            ghostServer.registerPreStopTask(() => batchSendingService.onPreStop(), 'Email batch sending (stop claiming)');
             ghostServer.registerCleanupTask(() => batchSendingService.onShutdown(), 'Email batch sending');
         }
 
