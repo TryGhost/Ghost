@@ -149,7 +149,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                         </div>
                         <DialogFooter className='gap-2 sm:justify-end'>
                             <Button variant='outline' onClick={() => handleOpenChange(false)}>Cancel</Button>
-                            <Button disabled={noneSelected} onClick={startExport}>
+                            <Button disabled={noneSelected} onClick={() => void startExport()}>
                                 <LucideIcon.Download /> Export
                             </Button>
                         </DialogFooter>
