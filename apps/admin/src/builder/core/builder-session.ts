@@ -62,6 +62,7 @@ export class BuilderSession {
     private readonly unsubscribeWorkspace: () => void;
     private checkpoints: TurnCheckpoint[] = [];
     private activeTurn: ActiveTurn | null = null;
+    private loadController: AbortController | null = null;
     private sequence = 0;
     private currentState: BuilderSessionState = {
         status: 'idle',
@@ -98,12 +99,17 @@ export class BuilderSession {
 
         this.setState({...this.currentState, status: 'loading', error: undefined});
         const controller = new AbortController();
+        this.loadController = controller;
         try {
             await this.workspace.load(controller.signal);
             this.setState({...this.currentState, status: 'ready', error: undefined});
         } catch (error) {
             this.setState({...this.currentState, status: 'error', error: errorMessage(error)});
             throw error;
+        } finally {
+            if (this.loadController === controller) {
+                this.loadController = null;
+            }
         }
     }
 
@@ -244,6 +250,15 @@ export class BuilderSession {
         }
     }
 
+    async retryLastTurn(): Promise<BuilderTurnResult> {
+        const message = [...this.currentState.messages].reverse().find(item => item.role === 'user');
+        if (!message) {
+            throw new Error('There is no Builder message to retry.');
+        }
+        await this.rewind(message.id);
+        return this.startTurn(message.text);
+    }
+
     async publish(): Promise<PublishResult> {
         if (this.activeTurn) {
             throw new Error('Stop the active Builder turn before publishing.');
@@ -264,6 +279,8 @@ export class BuilderSession {
     }
 
     dispose(): void {
+        this.loadController?.abort();
+        this.loadController = null;
         this.stop();
         this.unsubscribeWorkspace();
         this.listeners.clear();

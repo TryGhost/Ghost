@@ -25,7 +25,7 @@ export type ThemeLoadInput = {
     archive: ArrayBuffer;
     settings: Array<{key: string; value: SettingValue}>;
     customSettings: ThemeLoadCustomSetting[];
-    site: {url: string; contentApiKey: string; liveHtml: string};
+    site: {url: string; contentApiKey: string; liveHtml: string; settingsPayload?: Record<string, unknown>};
     virtualUrl?: string;
     selection?: BuilderSelectionContext | null;
 };
@@ -349,7 +349,7 @@ export async function loadThemeDraft(input: ThemeLoadInput, signal?: AbortSignal
             contentApiKey: input.site.contentApiKey,
             config: instanceConfig.config,
             missing: instanceConfig.missing,
-            settingsPayload: settingsPayload(input.settings)
+            settingsPayload: input.site.settingsPayload ?? settingsPayload(input.settings)
         },
         virtualUrl: input.virtualUrl ?? input.site.url,
         selection: input.selection ? structuredClone(input.selection) : null

@@ -19,6 +19,7 @@ export type BuilderWorkspaceState = {
 
 export type BuilderPreviewAdapter = {
     kind: string;
+    clearSelection?: () => Promise<void> | void;
 };
 
 export type BuilderSelectionContext = {

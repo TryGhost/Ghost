@@ -149,6 +149,29 @@ describe('loadThemeDraft', () => {
         expect(draft.revision).toMatch(/^theme-[a-f0-9]{64}$/);
     });
 
+    it('uses the decoded Content API settings payload for rendering', async () => {
+        const source = input(await archive({
+            'demo/package.json': JSON.stringify({name: 'demo', version: '1.2.3'}),
+            'demo/index.hbs': '<main>{{navigation}}</main>'
+        }));
+        source.site = {
+            ...source.site,
+            settingsPayload: {
+                title: 'Rendered site',
+                navigation: [{label: 'Home', url: '/'}],
+                labs: {members: true}
+            }
+        };
+
+        const draft = await loadThemeDraft(source);
+
+        expect(draft.renderer.settingsPayload).toEqual({
+            title: 'Rendered site',
+            navigation: [{label: 'Home', url: '/'}],
+            labs: {members: true}
+        });
+    });
+
     it('produces the same revision regardless of archive entry order and dates', async () => {
         const files = {
             'demo/package.json': JSON.stringify({name: 'demo', version: '1.0.0'}),

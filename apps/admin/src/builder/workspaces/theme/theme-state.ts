@@ -50,7 +50,7 @@ export type ThemeDraft = {
         contentApiKey: string;
         config: Record<string, unknown>;
         missing: string[];
-        settingsPayload?: Record<string, string | boolean | null>;
+        settingsPayload?: Record<string, unknown>;
     };
     virtualUrl: string;
     selection: BuilderSelectionContext | null;

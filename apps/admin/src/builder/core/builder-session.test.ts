@@ -207,6 +207,25 @@ describe('BuilderSession', () => {
         expect(session.preview).toBe(workspace.preview);
     });
 
+    it('aborts an in-flight workspace load when the session is disposed', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        let loadSignal: AbortSignal | undefined;
+        vi.spyOn(workspace, 'load').mockImplementation((signal) => {
+            loadSignal = signal;
+            return new Promise((_resolve, reject) => {
+                signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), {once: true});
+            });
+        });
+        const session = new BuilderSession({workspace, modelAccess: new ScriptedModelAccess()});
+
+        const loading = session.load();
+        await vi.waitFor(() => expect(loadSignal).toBeDefined());
+        session.dispose();
+
+        await expect(loading).rejects.toMatchObject({name: 'AbortError'});
+        expect(loadSignal?.aborted).toBe(true);
+    });
+
     it('snapshots before a turn, promotes the last valid candidate, and completes the conversation', async () => {
         const workspace = new FakeArtifactWorkspace();
         const modelAccess = new ScriptedModelAccess();
@@ -422,6 +441,27 @@ describe('BuilderSession', () => {
         expect(session.state.messages.map(message => message.text)).not.toContain('Second turn');
         expect(workspace.snapshot()).toEqual({revision: 'revision-1', payload: {value: 'first'}});
         expect(modelAccess.requests.at(-1)?.messages.filter(message => message.role === 'user').map(message => message.text)).toEqual(['First turn', 'Replacement turn']);
+    });
+
+    it('rewinds an interrupted turn before retrying it', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(async (request) => {
+            await tool(request, 'set_value').execute({value: 'partial'}, request.signal);
+            throw new Error('Provider unavailable');
+        });
+        modelAccess.enqueue(async (request) => {
+            await tool(request, 'set_value').execute({value: 'retried'}, request.signal);
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        await session.startTurn('Make the change');
+        await session.retryLastTurn();
+
+        expect(session.state.messages.filter(message => message.role === 'user').map(message => message.text)).toEqual(['Make the change']);
+        expect(modelAccess.requests.at(-1)?.messages.filter(message => message.role === 'user').map(message => message.text)).toEqual(['Make the change']);
+        expect(workspace.snapshot()).toEqual({revision: 'revision-1', payload: {value: 'retried'}});
     });
 
     it('publishes only through the explicit user command', async () => {

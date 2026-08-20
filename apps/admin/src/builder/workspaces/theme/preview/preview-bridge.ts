@@ -6,7 +6,7 @@ export type ThemeRendererInitialization = {
     config: Record<string, unknown>;
     theme: Record<string, string>;
     revision: string;
-    settingsPayload?: Record<string, string | boolean | null>;
+    settingsPayload?: Record<string, unknown>;
     customThemeSettings?: Record<string, string | boolean | null>;
 };
 

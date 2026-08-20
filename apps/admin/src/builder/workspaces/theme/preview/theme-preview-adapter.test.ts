@@ -473,6 +473,21 @@ describe('ThemePreviewAdapter', () => {
         expect(adapter.state.diagnostics).toContainEqual(expect.objectContaining({code: 'preview_selection_cleared'}));
     });
 
+    it('clears the active selection from the preview context chip', async () => {
+        const initial = await draft();
+        const selected = {id: 'index.hbs:1:1', label: 'Main'};
+        const {adapter, renderer, surface} = setup();
+        renderer.render.mockResolvedValue(rendered('<html>Home</html>'));
+        await adapter.start(initial, new AbortController().signal);
+        surface.selectionHandler?.(selected);
+        await vi.waitFor(() => expect(adapter.state.selection).toEqual(selected));
+
+        await adapter.clearSelection();
+
+        expect(adapter.state.selection).toBeNull();
+        expect(adapter.draft.selection).toBeNull();
+    });
+
     it('uses the active selection when restoring after failed adoption', async () => {
         const initial = await draft();
         const candidate = await draft('<main>Changed</main>');

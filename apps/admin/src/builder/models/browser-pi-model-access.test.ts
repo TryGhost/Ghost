@@ -96,6 +96,16 @@ describe('BrowserPiModelAccess', () => {
         expect(() => access.createRuntime({provider: 'anthropic', modelId: 'claude-sonnet-5'})).toThrow('Add an Anthropic API key before starting a turn.');
     });
 
+    it('reports provider setup state as session credentials change', () => {
+        const access = new BrowserPiModelAccess({credentialStore: new SessionCredentialStore(new MemoryStorage())});
+
+        expect(access.hasApiKey('openai')).toBe(false);
+        access.setApiKey('openai', 'session-key');
+        expect(access.hasApiKey('openai')).toBe(true);
+        access.forgetApiKey('openai');
+        expect(access.hasApiKey('openai')).toBe(false);
+    });
+
     it('stops authorizing requests when a key is forgotten after runtime creation', async () => {
         let apiKey: string | undefined = 'session-key';
         const fetch = vi.fn(() => Promise.resolve(new Response(''))) as FetchFunction;

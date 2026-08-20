@@ -282,6 +282,10 @@ export class BrowserPiModelAccess implements ModelAccessAdapter {
         this.credentialStore.set(provider, credential);
     }
 
+    hasApiKey(provider: BuilderProvider): boolean {
+        return Boolean(this.getApiKey(provider));
+    }
+
     forgetApiKey(provider: BuilderProvider): void {
         this.credentialStore.forget(provider);
     }

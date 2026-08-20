@@ -179,6 +179,14 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         });
     }
 
+    async clearSelection(): Promise<void> {
+        if (this.destroyed || !this.currentState.selection) {
+            return;
+        }
+        this.setState({...this.currentState, selection: null});
+        await this.adoptSelection(null);
+    }
+
     destroy(): void {
         if (this.destroyed) {
             return;

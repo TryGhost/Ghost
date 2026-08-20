@@ -72,6 +72,7 @@ async function openThemeTab() {
 describe("Design settings", () => {
     it("opens the design builder when the backend enables it", async () => {
         fakeSettingsScreens();
+        fakeAdminEndpoint("GET", "/custom_theme_settings/", {custom_theme_settings: []});
         await renderAdminApp("/settings/design", {labs: {designBuilder: true}});
 
         await settingsScreen.design().getByRole("button", {name: "Build with AI"}).click();
