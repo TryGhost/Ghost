@@ -3,8 +3,8 @@
  *
  * The browser zip round-trip (extract/pack + limits + text/binary
  * classification) moved to `@tryghost/theme-renderer/editor/archive` so the
- * on-site edit mode (admin-toolbar edit-mode chunk) shares the exact same
- * archive behavior — it is re-exported here unchanged for the editor UI.
+ * standalone Admin Builder and the source editor share the exact same archive
+ * behavior — it is re-exported here unchanged for the editor UI.
  * What remains below is Admin-app-specific: routing, save-as rules, and the
  * file-tree diff/rename helpers.
  */

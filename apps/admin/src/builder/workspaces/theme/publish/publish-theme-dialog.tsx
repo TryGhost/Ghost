@@ -27,10 +27,11 @@ function progressLabel(state: ThemePublishState): string | null {
     }
 }
 
-export const PublishThemeDialog = ({themeName, builtIn, dirty, installedThemeNames = [], sessionStatus, publishState, onPublish}: {
+export const PublishThemeDialog = ({themeName, builtIn, dirty, disabled = false, installedThemeNames = [], sessionStatus, publishState, onPublish}: {
     themeName: string;
     builtIn: boolean;
     dirty: boolean;
+    disabled?: boolean;
     installedThemeNames?: readonly string[];
     sessionStatus: BuilderSessionStatus;
     publishState: ThemePublishState;
@@ -41,7 +42,7 @@ export const PublishThemeDialog = ({themeName, builtIn, dirty, installedThemeNam
     const [nameError, setNameError] = useState<string>();
     const [publishError, setPublishError] = useState<string>();
     const isPublishing = sessionStatus === 'publishing' || publishState.status === 'publishing';
-    const canPublish = dirty && (sessionStatus === 'ready' || sessionStatus === 'interrupted');
+    const canPublish = !disabled && dirty && (sessionStatus === 'ready' || sessionStatus === 'interrupted');
     const progress = progressLabel(publishState);
     const activeFailure = Boolean(publishError) && publishState.status === 'failed';
     const resumableFailure = publishState.status === 'failed' && publishState.retryable !== false && publishState.stage !== 'validation';

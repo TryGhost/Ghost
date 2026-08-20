@@ -68,6 +68,30 @@ const defaultProps = {
 };
 
 describe('BuilderShell', () => {
+    it('exposes the preview inline-editing mode when the workspace supports it', () => {
+        const onTogglePreviewEditing = vi.fn();
+        const {rerender} = render(
+            <BuilderShell
+                {...defaultProps}
+                previewEditing={false}
+                onTogglePreviewEditing={onTogglePreviewEditing}
+            />,
+            {wrapper: MemoryRouter}
+        );
+
+        fireEvent.click(screen.getByRole('button', {name: 'Edit preview'}));
+        expect(onTogglePreviewEditing).toHaveBeenCalledWith(true);
+
+        rerender(
+            <BuilderShell
+                {...defaultProps}
+                previewEditing
+                onTogglePreviewEditing={onTogglePreviewEditing}
+            />
+        );
+        expect(screen.getByRole('button', {name: 'Finish editing preview'})).toHaveAttribute('aria-pressed', 'true');
+    });
+
     it('renders the empty state and submits a prompt', () => {
         const onSubmit = vi.fn();
         render(<BuilderShell {...defaultProps} onSubmit={onSubmit} />, {wrapper: MemoryRouter});

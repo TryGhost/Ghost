@@ -3,10 +3,9 @@
  * (docs/deltas.md rows 1 + 3), recovered from a live page's rendered HTML.
  *
  * PROVENANCE: moved from test/integration/harness.ts (which now re-exports
- * from here) so the on-site editor (admin-toolbar edit-mode chunk) can share
- * the exact same regexes instead of duplicating them: the byte-parity suite,
- * the fixture recorder, and the live editor must never drift apart on what
- * "fully configured" means.
+ * from here) so the standalone Admin Builder can share the exact same regexes
+ * instead of duplicating them: the byte-parity suite, fixture recorder, and
+ * Builder must never drift apart on what "fully configured" means.
  *
  * Exported from the `@tryghost/theme-renderer/editor/instance-config` subpath
  * — editor-side bootstrap tooling, not part of the render contract.

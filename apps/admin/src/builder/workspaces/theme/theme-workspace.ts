@@ -12,6 +12,8 @@ import {cloneThemeDraft, themePublishRevision, withThemeRevision} from './theme-
 import {listDesignSettings, updateDesignSettings} from './design-setting-tools';
 import {
     deleteThemeFile,
+    editThemeImageAtMarker,
+    editThemeTextAtMarker,
     listThemeFiles,
     readThemeFile,
     replaceInThemeFile,
@@ -208,6 +210,12 @@ export class ThemeWorkspace implements BuilderWorkspace {
         });
     }
 
+    async flush(signal: AbortSignal): Promise<void> {
+        abortIfNeeded(signal);
+        await this.mutationTail;
+        abortIfNeeded(signal);
+    }
+
     snapshot(): WorkspaceSnapshot {
         this.syncPreviewOnlyDraft();
         const draft = this.requireDraft();
@@ -321,7 +329,7 @@ export class ThemeWorkspace implements BuilderWorkspace {
             },
             {
                 name: 'replace_in_file',
-                description: 'Replace one exact, unambiguous text occurrence in a revision-checked theme file.',
+                description: 'Replace one exact, unambiguous text occurrence in a revision-checked theme file. For CSS, edit the stylesheet actually linked by the rendered theme; follow uncompiled_theme_asset.details.renderedPaths when provided.',
                 inputSchema: mutationSchema({oldText: {type: 'string'}, newText: {type: 'string'}}, ['oldText', 'newText']),
                 execute: (input, signal) => this.enqueueMutation(signal, draft => replaceInThemeFile(draft, {
                     revision: input.revision as string,
@@ -332,7 +340,7 @@ export class ThemeWorkspace implements BuilderWorkspace {
             },
             {
                 name: 'write_file',
-                description: 'Create or replace one text theme file at a safe revision-checked path.',
+                description: 'Create or replace one text theme file at a safe revision-checked path. Theme-specific build scripts do not run, so write rendered assets rather than authoring-only sources.',
                 inputSchema: mutationSchema({content: {type: 'string'}}, ['content']),
                 execute: (input, signal) => this.enqueueMutation(signal, draft => writeThemeFile(draft, {
                     revision: input.revision as string,
@@ -423,8 +431,19 @@ export class ThemeWorkspace implements BuilderWorkspace {
         return draft?.selection ? structuredClone(draft.selection) : null;
     }
 
+    applyInlineTextEdit(input: {marker: string; tagName: string; newText: string}, signal: AbortSignal): Promise<BuilderToolResult<{path: string; marker: string} & MutationRenderData>> {
+        const revision = this.activeDraftForRead().revision;
+        return this.enqueueMutation(signal, draft => editThemeTextAtMarker(draft, {...input, revision}), {promote: true, requirePromotedSource: true});
+    }
+
+    applyInlineImageEdit(input: {marker: string; tagName: 'img'; fileName: string; mediaType: string; data: Uint8Array}, signal: AbortSignal): Promise<BuilderToolResult<{path: string; marker: string; assetPath: string} & MutationRenderData>> {
+        const revision = this.activeDraftForRead().revision;
+        return this.enqueueMutation(signal, draft => editThemeImageAtMarker(draft, {...input, revision}), {promote: true, requirePromotedSource: true});
+    }
+
     async publish(signal: AbortSignal): Promise<PublishResult> {
         abortIfNeeded(signal);
+        await this.flush(signal);
         this.syncPreviewOnlyDraft();
         const draft = this.requireDraft();
         if (!this.publishDraft) {
@@ -598,11 +617,23 @@ export class ThemeWorkspace implements BuilderWorkspace {
 
     private enqueueMutation<T extends Record<string, unknown>>(
         signal: AbortSignal,
-        operation: (draft: ThemeDraft) => Promise<ThemeCandidateResult<T>>
+        operation: (draft: ThemeDraft) => Promise<ThemeCandidateResult<T>>,
+        options: {promote?: boolean; requirePromotedSource?: boolean} = {}
     ): Promise<BuilderToolResult<T & MutationRenderData>> {
         const queued = this.mutationTail.then(async () => {
             abortIfNeeded(signal);
             this.syncPreviewOnlyDraft();
+            if (options.requirePromotedSource && this.lastValidCandidate) {
+                return {
+                    ok: false as const,
+                    revision: this.lastValidCandidate.revision,
+                    error: {
+                        code: 'inline_edit_conflict',
+                        message: 'Inline editing is unavailable while interrupted agent changes are pending. Return to a checkpoint or continue the chat before editing the preview.',
+                        retryable: false
+                    }
+                };
+            }
             const source = this.requireActiveDraft();
             const result = await operation(source);
             if (!result.ok) {
@@ -677,7 +708,12 @@ export class ThemeWorkspace implements BuilderWorkspace {
                     }
                 };
             }
-            this.lastValidCandidate = cloneThemeDraft(adopted);
+            if (options.promote) {
+                this.currentDraft = cloneThemeDraft(adopted);
+                this.lastValidCandidate = null;
+            } else {
+                this.lastValidCandidate = cloneThemeDraft(adopted);
+            }
             const publishRevision = await themePublishRevision(adopted);
             const adoptedValidation = {...validation, revision: adopted.revision};
             this.setState({revision: adopted.revision, dirty: publishRevision !== this.baselinePublishRevision, validation: adoptedValidation});

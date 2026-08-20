@@ -71,6 +71,7 @@ export function assembleBuilderSystemPrompt(request: Pick<BuilderModelTurnReques
         'Available tools:',
         tools || '- none',
         'Tool results use a canonical JSON envelope. If a result is not ok, use its code, diagnostics, and current revision to repair the candidate before continuing.',
+        'For CSS changes, edit the stylesheet referenced by the rendered theme (commonly assets/built/*.css). Theme build scripts do not run in this browser session; authored assets/css files may not affect the preview.',
         'Mutations update only the session candidate. Only the user can publish; never claim that normal model completion published changes.'
     ].join('\n');
     return prompt.slice(0, promptLimit - 1);

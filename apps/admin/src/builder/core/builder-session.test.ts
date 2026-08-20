@@ -20,6 +20,7 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
     promoteError: Error | null = null;
     loadError: Error | null = null;
     restoreGate: Promise<void> | null = null;
+    flushImplementation: ((signal: AbortSignal) => Promise<void>) | null = null;
     invalidCandidate: ArtifactPayload | null = null;
     selection: {id: string; label: string; data?: unknown} | null = null;
     private payload: ArtifactPayload = {value: 'initial'};
@@ -54,6 +55,10 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
 
     snapshot(): WorkspaceSnapshot {
         return {revision: this.draftRevision, payload: structuredClone(this.payload)};
+    }
+
+    flush(signal: AbortSignal): Promise<void> {
+        return this.flushImplementation?.(signal) ?? Promise.resolve();
     }
 
     restore(snapshot: WorkspaceSnapshot): Promise<ValidationResult> {
@@ -336,6 +341,23 @@ describe('BuilderSession', () => {
         expect(workspace.snapshot()).toEqual({revision: 'revision-0', payload: {value: 'initial'}});
         expect(workspace.candidateSnapshot).toEqual({revision: 'revision-1', payload: {value: 'before-stop'}});
         expect(await session.publish()).toEqual({ok: true, revision: 'revision-0'});
+    });
+
+    it('rolls back a provisional turn when pre-turn workspace flushing is stopped', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        workspace.flushImplementation = signal => new Promise((_resolve, reject) => {
+            signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), {once: true});
+        });
+        const session = new BuilderSession({workspace, modelAccess: new ScriptedModelAccess()});
+        await session.load();
+
+        const turn = session.startTurn('Wait for the inline edit');
+        await vi.waitFor(() => expect(session.state.status).toBe('running'));
+        session.stop();
+        await expect(turn).resolves.toMatchObject({status: 'interrupted'});
+
+        expect(session.state.status).toBe('ready');
+        expect(session.state.messages).toEqual([]);
     });
 
     it('marks an in-flight tool card interrupted when the user stops the turn', async () => {

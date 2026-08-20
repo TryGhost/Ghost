@@ -1,7 +1,6 @@
 import { createElement as h } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
-import {canShowEditMode, loadAndMountEditMode} from './edit-mode/loader';
 import {getToolbarActions} from './actions';
 import {DISPLAY_EXPANDED, DISPLAY_MINIMIZED, ROOT_ID} from './constants';
 import {Icon} from './icons';
@@ -53,55 +52,6 @@ function ToolbarButton({icon, label, onClick}) {
     ]);
 
     return h(TooltipWrap, {label}, button);
-}
-
-function EditModeButton({config, user}) {
-    const [status, setStatus] = useState('idle'); // idle | loading | active | error
-
-    async function activate() {
-        if (status === 'loading' || status === 'active') {
-            return;
-        }
-
-        setStatus('loading');
-
-        // The session reports its own end (Exit button, fatal boot failure)
-        // through onExit — resetting to idle/error keeps the Edit button
-        // usable for re-entry instead of being stuck "active" forever.
-        let exited = false;
-
-        try {
-            await loadAndMountEditMode({
-                config,
-                user,
-                onExit: (info) => {
-                    exited = true;
-                    setStatus(info?.reason === 'boot_failure' ? 'error' : 'idle');
-                }
-            });
-            if (!exited) {
-            setStatus('active');
-            }
-        } catch {
-            setStatus('error');
-        }
-    }
-
-    return h('span', {className: 'gh-admin-toolbar-edit-mode-wrap'}, [
-        h(ToolbarButton, {
-            icon: 'editMode',
-            label: 'Edit theme',
-            onClick: activate
-        }),
-        status === 'loading' ? h('span', {
-            className: 'gh-admin-toolbar-status',
-            role: 'status'
-        }, 'Loading editor…') : null,
-        status === 'error' ? h('span', {
-            className: 'gh-admin-toolbar-status gh-admin-toolbar-status-error',
-            role: 'status'
-        }, 'Editor failed to load') : null
-    ]);
 }
 
 function ToolbarMenu({isMinimized, isOpen, onMaximize, onMinimize, setIsOpen}) {
@@ -319,7 +269,6 @@ export function Toolbar({ config, user }) {
         h('div', {className: 'gh-admin-toolbar-section', ref: contentRef}, [
             h(UserAvatar, {adminUrl: config.adminUrl, siteTitle: config.siteTitle, user}),
             ...actions.map(action => h(ToolbarLink, action)),
-            canShowEditMode(config, user) ? h(EditModeButton, {config, user}) : null,
         h(ToolbarMenu, {
           isMinimized,
           isOpen: isMenuOpen,

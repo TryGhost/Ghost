@@ -31,12 +31,13 @@ export type ChatPanelProps = {
     onSaveApiKey: (provider: BuilderProvider, key: string) => void;
     onForgetApiKey: (provider: BuilderProvider) => void;
     onSelectModel: (provider: BuilderProvider, modelId: string) => void;
+    interactionDisabled?: boolean;
 };
 
-export const ChatPanel = ({state, provider, modelId, models, hasCredential, selection, onSubmit, onStop, onRetry, onRewind, onRemoveSelection, onSaveApiKey, onForgetApiKey, onSelectModel}: ChatPanelProps) => {
+export const ChatPanel = ({state, provider, modelId, models, hasCredential, selection, onSubmit, onStop, onRetry, onRewind, onRemoveSelection, onSaveApiKey, onForgetApiKey, onSelectModel, interactionDisabled = false}: ChatPanelProps) => {
     const isRunning = state.status === 'running';
-    const controlsDisabled = isRunning || state.status === 'publishing';
-    const canPrompt = state.status === 'ready' || state.status === 'interrupted';
+    const controlsDisabled = interactionDisabled || isRunning || state.status === 'publishing';
+    const canPrompt = !interactionDisabled && (state.status === 'ready' || state.status === 'interrupted');
     const promptRef = useRef<HTMLTextAreaElement>(null);
     const providerKeyRef = useRef<HTMLInputElement>(null);
     const rewindSequence = useRef(0);

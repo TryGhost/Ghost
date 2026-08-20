@@ -4,7 +4,7 @@ import {visibleThemeCustomSettings} from '@/builder/workspaces/theme/theme-loade
 
 import type {WorkspaceDiagnostic} from '@/builder/core/tool-types';
 import type {BuilderPreviewAdapter, BuilderSelectionContext, ValidationResult} from '@/builder/core/workspace';
-import type {PreviewDocumentSurface} from './preview-document';
+import type {PreviewAsset, PreviewDocumentSurface, PreviewInlineEditRequest, PreviewInlineEditResult} from './preview-document';
 import type {PreviewElementInspection, PreviewElementTarget, PreviewPageInspection} from './preview-inspection';
 import type {ThemeRendererCandidateSettings, ThemeRendererClient, ThemeRendererClientFactory, ThemeRenderResult} from './preview-bridge';
 import type {ScreenshotRequest, ScreenshotResult} from './screenshot';
@@ -45,6 +45,13 @@ function rendererSettings(draft: ThemeDraft): ThemeRendererCandidateSettings {
     };
 }
 
+function previewAssets(draft: ThemeDraft): Record<string, PreviewAsset> {
+    return Object.fromEntries(Object.entries(draft.files).flatMap(([path, file]) => path.startsWith('assets/') ? [[path, {
+        content: file.content,
+        binary: file.binary
+    }]] : []));
+}
+
 function diagnostic(error: unknown): WorkspaceDiagnostic {
     return {
         code: 'theme_render_failed',
@@ -75,6 +82,7 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
     private readonly unsubscribeNavigate: () => void;
     private readonly unsubscribeSelection: () => void;
     private readonly unsubscribeDiagnostic: () => void;
+    private readonly unsubscribeInlineEdit: () => void;
     private renderer: ThemeRendererClient | null = null;
     private rendererRevision = '';
     private lastValidDraft: ThemeDraft | null = null;
@@ -87,7 +95,7 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
     private lastValidDiagnosticsTruncated = false;
     private destroyed = false;
 
-    constructor({rendererFactory, surface}: {rendererFactory: ThemeRendererClientFactory; surface: PreviewDocumentSurface}) {
+    constructor({rendererFactory, surface, onInlineEdit}: {rendererFactory: ThemeRendererClientFactory; surface: PreviewDocumentSurface; onInlineEdit?: (edit: PreviewInlineEditRequest, signal: AbortSignal) => Promise<PreviewInlineEditResult>}) {
         this.rendererFactory = rendererFactory;
         this.surface = surface;
         this.unsubscribeNavigate = surface.onNavigate((url) => {
@@ -109,6 +117,9 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
             this.diagnosticsTruncated ||= diagnostics.length > MAX_PREVIEW_DIAGNOSTICS;
             this.setState({...this.currentState, diagnostics: diagnostics.slice(-MAX_PREVIEW_DIAGNOSTICS)});
         });
+        this.unsubscribeInlineEdit = onInlineEdit && surface.onInlineEdit
+            ? surface.onInlineEdit(onInlineEdit)
+            : () => {};
     }
 
     get state(): ThemePreviewState {
@@ -179,6 +190,18 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         });
     }
 
+    async setInlineEditMode(enabled: boolean, signal: AbortSignal): Promise<void> {
+        if (!this.surface.setInlineEditMode) {
+            throw new Error('The preview does not support inline editing.');
+        }
+        const queued = this.operationTail.then(() => {
+            this.throwIfUnavailable(signal);
+            return this.surface.setInlineEditMode?.(enabled, signal);
+        });
+        this.operationTail = queued.then(() => {}, () => {});
+        await queued;
+    }
+
     async clearSelection(): Promise<void> {
         if (this.destroyed || !this.currentState.selection) {
             return;
@@ -200,6 +223,7 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         this.unsubscribeNavigate();
         this.unsubscribeSelection();
         this.unsubscribeDiagnostic();
+        this.unsubscribeInlineEdit();
         this.surface.destroy();
         this.listeners.clear();
     }
@@ -383,7 +407,7 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         {preserveSelection = false, expectedRevision}: {preserveSelection?: boolean; expectedRevision?: string} = {}
     ): Promise<void> {
         this.throwIfUnavailable(signal);
-        const remappedSelection = await this.surface.replaceDocument({html: result.html, url: result.url, revision: draft.revision}, draft.selection, signal);
+        const remappedSelection = await this.surface.replaceDocument({html: result.html, url: result.url, revision: draft.revision, assets: previewAssets(draft)}, draft.selection, signal);
         this.throwIfUnavailable(signal);
         const selection = preserveSelection && remappedSelection?.id === draft.selection?.id ? draft.selection : remappedSelection;
         const selectionDiagnostic: WorkspaceDiagnostic[] = draft.selection && !selection ? [{
@@ -414,7 +438,8 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
             const selection = await this.surface.replaceDocument({
                 html: this.lastValidResult.html,
                 url: this.lastValidResult.url,
-                revision: this.lastValidDraft.revision
+                revision: this.lastValidDraft.revision,
+                assets: previewAssets(this.lastValidDraft)
             }, this.currentState.selection, new AbortController().signal);
             const revised = await withThemeRevision({...this.lastValidDraft, selection});
             this.selectionSequence += 1;

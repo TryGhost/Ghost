@@ -139,16 +139,11 @@ export class BuilderSession {
         const userMessageId = this.nextId('message');
         const assistantMessageId = this.nextId('message');
         const conversationCursor = this.currentState.messages.length;
-        this.checkpoints.push({
-            turnId,
-            userMessageId,
-            conversationCursor,
-            snapshot: this.workspace.checkpointSnapshot?.() ?? this.workspace.snapshot()
-        });
-
         const userMessage: BuilderConversationMessage = {id: userMessageId, role: 'user', text, status: 'complete'};
         const assistantMessage: BuilderConversationMessage = {id: assistantMessageId, role: 'assistant', text: '', status: 'pending'};
-        const messages = [...this.currentState.messages, userMessage, assistantMessage];
+        const previousStatus = this.currentState.status;
+        const previousMessages = this.currentState.messages;
+        const messages = [...previousMessages, userMessage, assistantMessage];
         const controller = new AbortController();
         const activeTurn: ActiveTurn = {
             turnId,
@@ -161,7 +156,16 @@ export class BuilderSession {
         this.activeTurn = activeTurn;
         this.setState({status: 'running', messages, workspace: this.currentState.workspace});
 
+        let checkpointCreated = false;
         try {
+            await this.workspace.flush?.(controller.signal);
+            this.checkpoints.push({
+                turnId,
+                userMessageId,
+                conversationCursor,
+                snapshot: this.workspace.checkpointSnapshot?.() ?? this.workspace.snapshot()
+            });
+            checkpointCreated = true;
             await this.modelAccess.runTurn({
                 messages: messages.slice(0, -1),
                 tools: this.workspace.getTools().filter(tool => !userOnlyToolNames.has(tool.name.toLowerCase())),
@@ -181,6 +185,17 @@ export class BuilderSession {
             } else if (!activeTurn.stopRequested) {
                 activeTurn.streamError = errorMessage(error);
             }
+        }
+
+        if (!checkpointCreated) {
+            this.activeTurn = null;
+            this.setState({
+                ...this.currentState,
+                status: activeTurn.stopRequested || activeTurn.streamAborted ? previousStatus : 'interrupted',
+                messages: previousMessages,
+                error: activeTurn.streamError
+            });
+            return {turnId, userMessageId, status: 'interrupted'};
         }
 
         const interruptedBeforePromotion = activeTurn.stopRequested || activeTurn.streamAborted || Boolean(activeTurn.streamError);
@@ -240,6 +255,7 @@ export class BuilderSession {
         this.bufferedWorkspaceState = null;
         this.setState({...this.currentState, status: 'restoring', error: undefined});
         try {
+            await this.workspace.flush?.(new AbortController().signal);
             const validation = await this.workspace.restore(checkpoint.snapshot);
             if (!validation.valid) {
                 throw new Error('The Builder workspace could not restore this checkpoint.');

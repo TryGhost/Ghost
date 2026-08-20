@@ -1,4 +1,6 @@
 import {THEME_EDITOR_ARCHIVE_LIMITS, isEditablePath, normaliseRelativePath} from '@tryghost/theme-renderer/editor/archive';
+import {applyAttributeEdits, applyTextEdit} from '@tryghost/theme-renderer/editor';
+import {parseEditMarker} from '@tryghost/theme-renderer/markers';
 
 import {cloneThemeDraft, withThemeRevision} from './theme-state';
 
@@ -39,6 +41,84 @@ type MutationInput = {
     revision: string;
     path: string;
 };
+
+export type ThemeInlineTextEditInput = {
+    revision: string;
+    marker: string;
+    tagName: string;
+    newText: string;
+};
+
+export type ThemeInlineImageEditInput = {
+    revision: string;
+    marker: string;
+    tagName: string;
+    fileName: string;
+    mediaType: string;
+    data: Uint8Array;
+};
+
+const inlineImageTypes: Record<string, string> = {
+    'image/gif': 'gif',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp'
+};
+const maxInlineImageBytes = 5 * 1024 * 1024;
+const maxInlineImageDimension = 16_384;
+const maxInlineImagePixels = 64 * 1024 * 1024;
+
+function inlineImageDimensions(mediaType: string, data: Uint8Array): {width: number; height: number} | null {
+    if (mediaType === 'image/png' && data.length >= 24 && [137, 80, 78, 71, 13, 10, 26, 10].every((byte, index) => data[index] === byte)) {
+        const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        return {width: view.getUint32(16), height: view.getUint32(20)};
+    }
+    if (mediaType === 'image/gif' && data.length >= 10 && String.fromCharCode(...data.slice(0, 6))?.match(/^GIF8[79]a$/)) {
+        const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        return {width: view.getUint16(6, true), height: view.getUint16(8, true)};
+    }
+    if (mediaType === 'image/jpeg' && data.length >= 10 && data[0] === 0xFF && data[1] === 0xD8) {
+        let offset = 2;
+        while (offset + 8 < data.length) {
+            if (data[offset] !== 0xFF) {
+                offset += 1;
+                continue;
+            }
+            const marker = data[offset + 1];
+            const length = (data[offset + 2] << 8) | data[offset + 3];
+            if (length < 2 || offset + length + 2 > data.length) {
+                return null;
+            }
+            if ([0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF].includes(marker)) {
+                return {
+                    height: (data[offset + 5] << 8) | data[offset + 6],
+                    width: (data[offset + 7] << 8) | data[offset + 8]
+                };
+            }
+            offset += length + 2;
+        }
+        return null;
+    }
+    if (mediaType === 'image/webp' && data.length >= 25 && String.fromCharCode(...data.slice(0, 4)) === 'RIFF' && String.fromCharCode(...data.slice(8, 12)) === 'WEBP') {
+        const chunk = String.fromCharCode(...data.slice(12, 16));
+        if (chunk === 'VP8X' && data.length >= 30) {
+            return {
+                width: 1 + data[24] + (data[25] << 8) + (data[26] << 16),
+                height: 1 + data[27] + (data[28] << 8) + (data[29] << 16)
+            };
+        }
+        if (chunk === 'VP8 ' && data.length >= 30 && data[23] === 0x9D && data[24] === 0x01 && data[25] === 0x2A) {
+            return {width: (data[26] | (data[27] << 8)) & 0x3FFF, height: (data[28] | (data[29] << 8)) & 0x3FFF};
+        }
+        if (chunk === 'VP8L' && data[20] === 0x2F) {
+            return {
+                width: 1 + data[21] + ((data[22] & 0x3F) << 8),
+                height: 1 + ((data[22] & 0xC0) >> 6) + (data[23] << 2) + ((data[24] & 0x0F) << 10)
+            };
+        }
+    }
+    return null;
+}
 
 const encoder = new TextEncoder();
 
@@ -83,6 +163,112 @@ function textFile(draft: ThemeDraft, path: unknown): BuilderToolResult<{path: st
     return {ok: true, revision: draft.revision, data: {path: safe.data.path, file: file as ThemeFile & {kind: 'text'; content: string}}};
 }
 
+function referencedStylesheets(draft: ThemeDraft): Set<string> {
+    const references = new Set<string>();
+    const addReference = (reference: string, assetHelper = false) => {
+        const clean = reference.split(/[?#]/, 1)[0];
+        const path = assetHelper ? `assets/${clean.replace(/^\/?assets\//, '')}` : clean.replace(/^\/?assets\//, 'assets/');
+        if (path.startsWith('assets/') && path.endsWith('.css')) {
+            references.add(path);
+        }
+    };
+
+    Object.values(draft.files).forEach((file) => {
+        if (file.kind !== 'text' || file.content === null || !file.path.endsWith('.hbs')) {
+            return;
+        }
+        const template = file.content
+            .replace(/<!--[^]*?-->/g, '')
+            .replace(/\{\{!--[^]*?--\}\}/g, '')
+            .replace(/\{\{![^]*?\}\}/g, '');
+        for (const link of template.matchAll(/<link\b[^>]*>/gi)) {
+            if (!/\brel\s*=\s*(?:["'][^"']*\bstylesheet\b[^"']*["']|stylesheet\b)/i.test(link[0])) {
+                continue;
+            }
+            for (const match of link[0].matchAll(/\{\{\s*asset\s+["']([^"']+\.css(?:[?#][^"']*)?)["']/gi)) {
+                addReference(match[1], true);
+            }
+            for (const match of link[0].matchAll(/["'](\/?assets\/[^"']+\.css(?:[?#][^"']*)?)["']/gi)) {
+                addReference(match[1]);
+            }
+        }
+    });
+    return references;
+}
+
+function importedStylesheets(draft: ThemeDraft, path: string): string[] {
+    const file = Object.hasOwn(draft.files, path) ? draft.files[path] : undefined;
+    if (!file || file.kind !== 'text' || file.content === null) {
+        return [];
+    }
+    const directory = path.slice(0, Math.max(0, path.lastIndexOf('/') + 1));
+    const imports: string[] = [];
+    const css = file.content.replace(/\/\*[^]*?\*\//g, '');
+    const importPattern = /@import\s+(?:url\(\s*(?:"([^"]+)"|'([^']+)'|([^\s)]+))\s*\)|"([^"]+)"|'([^']+)')/gi;
+    for (const match of css.matchAll(importPattern)) {
+        const matchedReference = match.slice(1).find(value => value !== undefined);
+        if (!matchedReference) {
+            continue;
+        }
+        const reference = matchedReference.split(/[?#]/, 1)[0];
+        if (!reference.toLowerCase().endsWith('.css')) {
+            continue;
+        }
+        if (/^(?:[a-z]+:|\/\/|\/)/i.test(reference)) {
+            continue;
+        }
+        const segments = `${directory}${reference}`.split('/');
+        const normalized: string[] = [];
+        for (const segment of segments) {
+            if (segment === '..') {
+                normalized.pop();
+            } else if (segment && segment !== '.') {
+                normalized.push(segment);
+            }
+        }
+        imports.push(normalized.join('/'));
+    }
+    return imports;
+}
+
+function sourceFeedsStylesheet(draft: ThemeDraft, sourcePath: string, entryPath: string, visited = new Set<string>()): boolean {
+    if (sourcePath === entryPath) {
+        return true;
+    }
+    if (visited.has(entryPath)) {
+        return false;
+    }
+    visited.add(entryPath);
+    return importedStylesheets(draft, entryPath).some(path => sourceFeedsStylesheet(draft, sourcePath, path, visited));
+}
+
+function uncompiledStylesheetFailure(draft: ThemeDraft, path: string): ToolFailure | null {
+    if (!path.startsWith('assets/css/') || !path.endsWith('.css')) {
+        return null;
+    }
+    const references = referencedStylesheets(draft);
+    if ([...references].some(renderedPath => sourceFeedsStylesheet(draft, path, renderedPath))) {
+        return null;
+    }
+    const renderedPaths = [...references].filter((renderedPath) => {
+        if (!renderedPath.startsWith('assets/built/')) {
+            return false;
+        }
+        const sourceEntry = `assets/css/${renderedPath.slice('assets/built/'.length)}`;
+        return sourceFeedsStylesheet(draft, path, sourceEntry);
+    }).sort();
+    if (!renderedPaths.length) {
+        return null;
+    }
+    return failure(
+        draft,
+        'uncompiled_theme_asset',
+        `${path} is authoring source and is not loaded by the rendered theme. This browser Builder does not run theme-specific build scripts. Apply the equivalent change to ${renderedPaths.join(', ')} and verify the preview before finishing.`,
+        false,
+        {sourcePath: path, renderedPaths}
+    );
+}
+
 function validateTextSize(draft: ThemeDraft, path: string, content: string): BuilderToolResult<null> {
     const fileBytes = encoder.encode(content).byteLength;
     if (fileBytes > THEME_TEXT_LIMITS.maxFileBytes) {
@@ -116,6 +302,113 @@ export function listThemeFiles(draft: ThemeDraft): BuilderToolResult<{files: The
         };
     });
     return {ok: true, revision: draft.revision, data: {files}};
+}
+
+export async function editThemeTextAtMarker(draft: ThemeDraft, input: ThemeInlineTextEditInput): Promise<ThemeCandidateResult<{path: string; marker: string}>> {
+    const revision = currentRevision(draft, input.revision);
+    if (!revision.ok) {
+        return revision;
+    }
+    if (typeof input.marker !== 'string' || input.marker.length === 0 || input.marker.length > 512) {
+        return failure(draft, 'invalid_source_marker', 'Inline edits require a bounded source marker from the current preview.');
+    }
+    const marker = parseEditMarker(input.marker);
+    if (!marker || !marker.file || !Number.isSafeInteger(marker.line) || marker.line < 1 || !Number.isSafeInteger(marker.column) || marker.column < 1) {
+        return failure(draft, 'invalid_source_marker', 'The preview source marker is invalid. Select the rendered element again and retry.');
+    }
+    if (typeof input.tagName !== 'string' || !/^[a-z][a-z0-9-]*$/i.test(input.tagName) || input.tagName.length > 64) {
+        return failure(draft, 'invalid_inline_edit', 'The preview element tag is invalid.');
+    }
+    if (typeof input.newText !== 'string' || input.newText.length > 4_096) {
+        return failure(draft, 'invalid_inline_edit', 'Inline text must be a string under 4096 characters.');
+    }
+    const resolved = textFile(draft, marker.file);
+    if (!resolved.ok) {
+        return resolved;
+    }
+    let content: string;
+    try {
+        content = applyTextEdit(
+            resolved.data.file.content,
+            {line: marker.line, column: marker.column},
+            input.newText,
+            {tagName: input.tagName}
+        );
+    } catch (error) {
+        return failure(draft, 'inline_edit_unavailable', error instanceof Error ? error.message : 'This rendered text cannot be edited at its current source marker.');
+    }
+    const size = validateTextSize(draft, resolved.data.path, content);
+    if (!size.ok) {
+        return size;
+    }
+    const {candidate} = await revisedCandidate(draft, (next) => {
+        next.files[resolved.data.path] = {...resolved.data.file, content};
+    });
+    return {ok: true, revision: candidate.revision, candidate, data: {path: resolved.data.path, marker: input.marker}};
+}
+
+export async function editThemeImageAtMarker(draft: ThemeDraft, input: ThemeInlineImageEditInput): Promise<ThemeCandidateResult<{path: string; marker: string; assetPath: string}>> {
+    const revision = currentRevision(draft, input.revision);
+    if (!revision.ok) {
+        return revision;
+    }
+    const marker = typeof input.marker === 'string' && input.marker.length <= 512 ? parseEditMarker(input.marker) : null;
+    if (!marker || !marker.file || !Number.isSafeInteger(marker.line) || marker.line < 1 || !Number.isSafeInteger(marker.column) || marker.column < 1) {
+        return failure(draft, 'invalid_source_marker', 'The preview source marker is invalid. Select the rendered image again and retry.');
+    }
+    if (input.tagName.toLowerCase() !== 'img') {
+        return failure(draft, 'invalid_inline_image', 'Inline image replacement requires a rendered img element.');
+    }
+    const extension = inlineImageTypes[input.mediaType];
+    const dimensions = extension && input.data instanceof Uint8Array ? inlineImageDimensions(input.mediaType, input.data) : null;
+    if (!extension || !(input.data instanceof Uint8Array) || input.data.byteLength === 0 || input.data.byteLength > maxInlineImageBytes || !dimensions || dimensions.width < 1 || dimensions.height < 1 || dimensions.width > maxInlineImageDimension || dimensions.height > maxInlineImageDimension || dimensions.width * dimensions.height > maxInlineImagePixels) {
+        return failure(draft, 'invalid_inline_image', `Use a GIF, JPEG, PNG, or WebP image under ${maxInlineImageBytes} bytes.`);
+    }
+    const resolved = textFile(draft, marker.file);
+    if (!resolved.ok) {
+        return resolved;
+    }
+    const originalBase = input.fileName.split(/[\\/]/).at(-1)?.replace(/\.[^.]*$/, '') ?? '';
+    const safeBase = originalBase.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'image';
+    let assetPath = `assets/images/builder/${safeBase}.${extension}`;
+    for (let suffix = 2; Object.hasOwn(draft.files, assetPath); suffix += 1) {
+        assetPath = `assets/images/builder/${safeBase}-${suffix}.${extension}`;
+    }
+    if (Object.keys(draft.files).length + 1 > THEME_EDITOR_ARCHIVE_LIMITS.maxFiles) {
+        return failure(draft, 'theme_too_many_files', `Themes must stay under ${THEME_EDITOR_ARCHIVE_LIMITS.maxFiles} files.`);
+    }
+    let content: string;
+    try {
+        const placeholder = `ghost-builder-${safeBase}-${extension}`;
+        const edited = applyAttributeEdits(
+            resolved.data.file.content,
+            {line: marker.line, column: marker.column},
+            [
+                {name: 'src', value: placeholder},
+                {name: 'srcset', value: null, optional: true},
+                {name: 'sizes', value: null, optional: true}
+            ],
+            {tagName: 'img'}
+        ).source;
+        const assetHelper = `src="{{asset "${assetPath.slice('assets/'.length)}"}}"`;
+        content = edited.replace(`src="${placeholder}"`, assetHelper);
+    } catch (error) {
+        return failure(draft, 'inline_edit_unavailable', error instanceof Error ? error.message : 'This rendered image cannot be edited at its current source marker.');
+    }
+    const size = validateTextSize(draft, resolved.data.path, content);
+    if (!size.ok) {
+        return size;
+    }
+    const currentBytes = Object.values(draft.files).reduce((total, file) => total + (file.kind === 'text' ? encoder.encode(file.content ?? '').byteLength : file.binary?.byteLength ?? 0), 0);
+    const projectedBytes = currentBytes - encoder.encode(resolved.data.file.content).byteLength + encoder.encode(content).byteLength + input.data.byteLength;
+    if (projectedBytes > THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes) {
+        return failure(draft, 'theme_too_large', `Theme files must stay under ${THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes} bytes.`);
+    }
+    const {candidate} = await revisedCandidate(draft, (next) => {
+        next.files[resolved.data.path] = {...resolved.data.file, content};
+        next.files[assetPath] = {path: assetPath, kind: 'binary', content: null, binary: new Uint8Array(input.data), unixPermissions: null, dosPermissions: null};
+    });
+    return {ok: true, revision: candidate.revision, candidate, data: {path: resolved.data.path, marker: input.marker, assetPath}};
 }
 
 export function searchThemeFiles(draft: ThemeDraft, input: {query?: unknown; regex?: unknown}): BuilderToolResult<{matches: ThemeSearchMatch[]; truncated: boolean}> {
@@ -246,6 +539,10 @@ export async function replaceInThemeFile(draft: ThemeDraft, input: MutationInput
     if (!resolved.ok) {
         return resolved;
     }
+    const uncompiled = uncompiledStylesheetFailure(draft, resolved.data.path);
+    if (uncompiled) {
+        return uncompiled;
+    }
     if (typeof input.oldText !== 'string' || !input.oldText || typeof input.newText !== 'string') {
         return failure(draft, 'invalid_replacement', 'Provide non-empty oldText and string newText values.');
     }
@@ -276,6 +573,10 @@ export async function writeThemeFile(draft: ThemeDraft, input: MutationInput & {
     const safe = normalizedSafePath(draft, input.path);
     if (!safe.ok) {
         return safe;
+    }
+    const uncompiled = uncompiledStylesheetFailure(draft, safe.data.path);
+    if (uncompiled) {
+        return uncompiled;
     }
     if (typeof input.content !== 'string') {
         return failure(draft, 'invalid_file_content', 'File content must be text.');
@@ -318,6 +619,10 @@ export async function deleteThemeFile(draft: ThemeDraft, input: MutationInput): 
     const safe = normalizedSafePath(draft, input.path);
     if (!safe.ok) {
         return safe;
+    }
+    const uncompiled = uncompiledStylesheetFailure(draft, safe.data.path);
+    if (uncompiled) {
+        return uncompiled;
     }
     if (!Object.hasOwn(draft.files, safe.data.path)) {
         return failure(draft, 'file_not_found', `No theme file exists at ${safe.data.path}.`);

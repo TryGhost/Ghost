@@ -50,6 +50,7 @@ describe('BrowserPiModelAccess', () => {
         expect(prompt).toContain('revision-7');
         expect(prompt).toContain('write_file');
         expect(prompt).toContain('index.hbs');
+        expect(prompt).toContain('Theme build scripts do not run');
         expect(prompt).toContain('Only the user can publish');
         expect(prompt.length).toBeLessThan(12_000);
     });

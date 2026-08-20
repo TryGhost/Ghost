@@ -469,6 +469,26 @@ describe('ThemeWorkspace', () => {
         expect(workspace.candidateDraft?.files['new.hbs'].content).toBe('New');
     });
 
+    it('does not let an inline edit promote an interrupted agent candidate', async () => {
+        const source = await loadInput();
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate: candidate => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision})}
+        });
+        await workspace.load(new AbortController().signal);
+        const promoted = workspace.draft;
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+        await write?.execute({revision: promoted.revision, path: 'agent-only.hbs', content: 'Interrupted agent work'}, new AbortController().signal);
+
+        const result = await workspace.applyInlineTextEdit({marker: 'index.hbs:1:1', tagName: 'main', newText: 'Inline edit'}, new AbortController().signal);
+
+        expect(result).toMatchObject({ok: false, error: {code: 'inline_edit_conflict', retryable: false}});
+        expect(workspace.draft).toEqual(promoted);
+        expect(workspace.candidateDraft?.files['agent-only.hbs'].content).toBe('Interrupted agent work');
+    });
+
     it('restores the visible preview before atomically adopting a checkpoint', async () => {
         const source = await loadInput();
         const renderCandidate = vi.fn((candidate: ThemeDraft) => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}));

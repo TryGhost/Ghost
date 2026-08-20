@@ -152,11 +152,17 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const [provider, setProvider] = useState<BuilderProvider>('openai');
     const [modelId, setModelId] = useState(() => providerDefaultModel('openai'));
     const [publishState, setPublishState] = useState<ThemePublishState>({status: 'idle', stage: 'idle'});
+    const [previewEditing, setPreviewEditing] = useState(false);
+    const [inlineEditPending, setInlineEditPending] = useState(false);
+    const [inlineEditAnnouncement, setInlineEditAnnouncement] = useState<{id: number; message: string} | null>(null);
     const [publishTheme, setPublishTheme] = useState({name: theme.name, builtIn: isDefaultOrLegacyTheme(theme)});
     const [, setCredentialVersion] = useState(0);
     const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
     const queryClient = useQueryClient();
     const previewRef = useRef<ThemePreviewAdapter | null>(null);
+    const previewToggleSequenceRef = useRef(0);
+    const inlineAnnouncementSequenceRef = useRef(0);
+    const previewEditingButtonRef = useRef<HTMLButtonElement>(null);
     const publisherRef = useRef<ThemePublisher | null>(null);
     const pendingCopyNameRef = useRef<string>();
     const serverMutationRef = useRef(false);
@@ -174,8 +180,38 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
         if (!iframe) {
             return;
         }
+        previewToggleSequenceRef.current += 1;
+        setPreviewEditing(false);
+        setInlineEditPending(false);
         const surface = new IframePreviewDocumentSurface(iframe);
-        const preview = new ThemePreviewAdapter({rendererFactory: () => Promise.resolve(createThemeRendererClient()), surface});
+        let disposed = false;
+        const workspaceRef: {current: ThemeWorkspace | null} = {current: null};
+        const preview = new ThemePreviewAdapter({
+            rendererFactory: () => Promise.resolve(createThemeRendererClient()),
+            surface,
+            onInlineEdit: async (edit, signal) => {
+                if (!workspaceRef.current) {
+                    return {ok: false, message: 'The theme workspace is not ready.'};
+                }
+                setInlineEditPending(true);
+                try {
+                    const result = edit.kind === 'text'
+                        ? await workspaceRef.current.applyInlineTextEdit(edit, signal)
+                        : await workspaceRef.current.applyInlineImageEdit(edit, signal);
+                    inlineAnnouncementSequenceRef.current += 1;
+                    setInlineEditAnnouncement({
+                        id: inlineAnnouncementSequenceRef.current,
+                        message: result.ok ? edit.kind === 'text' ? 'Preview text updated.' : 'Preview image updated.' : result.error.message
+                    });
+                    requestAnimationFrame(() => previewEditingButtonRef.current?.focus());
+                    return result.ok ? {ok: true} : {ok: false, message: result.error.message};
+                } finally {
+                    if (!disposed) {
+                        setInlineEditPending(false);
+                    }
+                }
+            }
+        });
         let unsubscribePublisher = () => {};
         const workspace = new ThemeWorkspace({
             id: `theme:${theme.name}`,
@@ -202,6 +238,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
             },
             title: theme.name
         });
+        workspaceRef.current = workspace;
         const nextSession = new BuilderSession({modelAccess, workspace});
         previewRef.current = preview;
         setSession(nextSession);
@@ -210,6 +247,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
         void nextSession.load().catch(() => {});
 
         return () => {
+            disposed = true;
             unsubscribePublisher();
             unsubscribePreview();
             unsubscribeSession();
@@ -219,6 +257,13 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
             publisherRef.current = null;
         };
     }, [customSettings, iframe, installedThemeNames, modelAccess, settings, siteUrl, theme]);
+
+    useEffect(() => {
+        if (previewEditing && !['ready', 'interrupted'].includes(state.status)) {
+            setPreviewEditing(false);
+            void previewRef.current?.setInlineEditMode(false, new AbortController().signal).catch(() => {});
+        }
+    }, [previewEditing, state.status]);
 
     const shouldGuardNavigation = state.workspace.dirty || state.status === 'running' || state.status === 'publishing';
     useConfirmUnload(shouldGuardNavigation);
@@ -237,14 +282,19 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                 backLabel='Back to Design settings'
                 backTo='/settings/design'
                 hasCredential={modelAccess.hasApiKey(provider)}
+                interactionDisabled={inlineEditPending}
                 modelId={modelId}
                 models={CURATED_MODELS}
                 preview={<iframe ref={setIframe} className='size-full border-0 bg-background' title='Theme preview' />}
+                previewEditing={previewEditing}
+                previewEditingButtonRef={previewEditingButtonRef}
+                previewEditingDisabled={inlineEditPending || !['ready', 'interrupted'].includes(state.status)}
                 provider={provider}
                 publishAction={
                     <PublishThemeDialog
                         builtIn={publishTheme.builtIn}
                         dirty={state.workspace.dirty}
+                        disabled={inlineEditPending}
                         installedThemeNames={installedThemeNames}
                         publishState={publishState}
                         sessionStatus={state.status}
@@ -283,7 +333,25 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                 onSelectModel={selectModel}
                 onStop={() => session?.stop()}
                 onSubmit={value => session?.startTurn(value) ?? Promise.reject(new Error('The Builder session is not ready.'))}
+                onTogglePreviewEditing={(enabled) => {
+                    const preview = previewRef.current;
+                    if (!preview) {
+                        return;
+                    }
+                    previewToggleSequenceRef.current += 1;
+                    const sequence = previewToggleSequenceRef.current;
+                    void preview.setInlineEditMode(enabled, new AbortController().signal).then(() => {
+                        if (previewToggleSequenceRef.current === sequence) {
+                            setPreviewEditing(enabled);
+                        }
+                    }).catch(() => {
+                        if (previewToggleSequenceRef.current === sequence) {
+                            setPreviewEditing(false);
+                        }
+                    });
+                }}
             />
+            {inlineEditAnnouncement && <span key={inlineEditAnnouncement.id} className='sr-only' role='status'>{inlineEditAnnouncement.message}</span>}
             <DirtyConfirmDialog
                 open={isNavigationBlocked}
                 onConfirm={() => {

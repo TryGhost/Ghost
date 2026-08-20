@@ -3,6 +3,8 @@ import {describe, expect, it} from 'vitest';
 import {
     THEME_TEXT_LIMITS,
     deleteThemeFile,
+    editThemeImageAtMarker,
+    editThemeTextAtMarker,
     listThemeFiles,
     readThemeFile,
     replaceInThemeFile,
@@ -30,7 +32,164 @@ async function draft(): Promise<ThemeDraft> {
     });
 }
 
+const onePixelPng = new Uint8Array([
+    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82,
+    0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 0, 0, 0, 181, 28, 12, 2,
+    0, 0, 0, 11, 73, 68, 65, 84, 120, 218, 99, 100, 248, 15, 0, 1,
+    5, 1, 1, 39, 24, 227, 102, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66,
+    96, 130
+]);
+
 describe('theme file tools', () => {
+    it('rejects edits to authored CSS when the theme renders a compiled stylesheet', async () => {
+        const source = await draft();
+        source.files['assets/css/screen.css'] = {path: 'assets/css/screen.css', kind: 'text', content: '@IMPORT url(global.css);\n.hero { color: red; }', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['assets/css/global.css'] = {path: 'assets/css/global.css', kind: 'text', content: 'body { color: black; }', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['assets/built/screen.css'] = {path: 'assets/built/screen.css', kind: 'text', content: 'body{color:#000}.hero{color:red}', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['default.hbs'] = {path: 'default.hbs', kind: 'text', content: '<link rel="stylesheet" href="{{asset "built/screen.css"}}">', binary: null, unixPermissions: null, dosPermissions: null};
+        const revised = await withThemeRevision(source);
+
+        await expect(replaceInThemeFile(revised, {
+            revision: revised.revision,
+            path: 'assets/css/screen.css',
+            oldText: 'color: red',
+            newText: 'color: blue'
+        })).resolves.toMatchObject({
+            ok: false,
+            revision: revised.revision,
+            error: {
+                code: 'uncompiled_theme_asset',
+                retryable: false,
+                details: {sourcePath: 'assets/css/screen.css', renderedPaths: ['assets/built/screen.css']}
+            }
+        });
+
+        await expect(writeThemeFile(revised, {
+            revision: revised.revision,
+            path: 'assets/css/global.css',
+            content: 'body { color: blue; }'
+        })).resolves.toMatchObject({
+            ok: false,
+            error: {
+                code: 'uncompiled_theme_asset',
+                details: {sourcePath: 'assets/css/global.css', renderedPaths: ['assets/built/screen.css']}
+            }
+        });
+    });
+
+    it('ignores non-rendering and commented template CSS references', async () => {
+        const source = await draft();
+        source.files['assets/css/screen.css'] = {path: 'assets/css/screen.css', kind: 'text', content: '.hero { color: red; }', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['assets/built/screen.css'] = {path: 'assets/built/screen.css', kind: 'text', content: '.hero{color:red}', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['default.hbs'] = {
+            path: 'default.hbs',
+            kind: 'text',
+            content: '<link rel="stylesheet" href="{{asset "built/screen.css"}}">\n<!-- <link rel="stylesheet" href="{{asset "css/screen.css"}}"> -->\n<a href="/assets/css/screen.css">Download</a>',
+            binary: null,
+            unixPermissions: null,
+            dosPermissions: null
+        };
+        const revised = await withThemeRevision(source);
+
+        await expect(replaceInThemeFile(revised, {
+            revision: revised.revision,
+            path: 'assets/css/screen.css',
+            oldText: 'color: red',
+            newText: 'color: blue'
+        })).resolves.toMatchObject({ok: false, error: {code: 'uncompiled_theme_asset'}});
+    });
+
+    it('allows CSS edits in the import closure of a rendered stylesheet', async () => {
+        const source = await draft();
+        source.files['assets/css/global.css'] = {path: 'assets/css/global.css', kind: 'text', content: 'body { color: black; }', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['assets/built/screen.css'] = {path: 'assets/built/screen.css', kind: 'text', content: '@import url(../css/global.css);', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['default.hbs'] = {path: 'default.hbs', kind: 'text', content: '<link rel="stylesheet" href="{{asset "built/screen.css"}}">', binary: null, unixPermissions: null, dosPermissions: null};
+        const revised = await withThemeRevision(source);
+
+        await expect(replaceInThemeFile(revised, {
+            revision: revised.revision,
+            path: 'assets/css/global.css',
+            oldText: 'color: black',
+            newText: 'color: blue'
+        })).resolves.toMatchObject({ok: true, data: {path: 'assets/css/global.css'}});
+    });
+
+    it('allows CSS edits when the authored stylesheet is loaded directly', async () => {
+        const source = await draft();
+        source.files['assets/css/screen.css'] = {path: 'assets/css/screen.css', kind: 'text', content: '.hero { color: red; }', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['assets/built/screen.css'] = {path: 'assets/built/screen.css', kind: 'text', content: '.hero{color:red}', binary: null, unixPermissions: null, dosPermissions: null};
+        source.files['default.hbs'] = {path: 'default.hbs', kind: 'text', content: '<link rel="stylesheet" href="{{asset "css/screen.css"}}">', binary: null, unixPermissions: null, dosPermissions: null};
+        const revised = await withThemeRevision(source);
+
+        await expect(replaceInThemeFile(revised, {
+            revision: revised.revision,
+            path: 'assets/css/screen.css',
+            oldText: 'color: red',
+            newText: 'color: blue'
+        })).resolves.toMatchObject({ok: true, data: {path: 'assets/css/screen.css'}});
+    });
+
+    it('applies an anchor-verified inline text edit to a new immutable candidate', async () => {
+        const source = await draft();
+        const result = await editThemeTextAtMarker(source, {
+            revision: source.revision,
+            marker: 'index.hbs:1:1',
+            tagName: 'main',
+            newText: 'Edited inline'
+        });
+
+        expect(result).toMatchObject({ok: true, data: {path: 'index.hbs', marker: 'index.hbs:1:1'}});
+        if (!result.ok) {
+            throw new Error('Expected the inline edit to succeed');
+        }
+        expect(result.candidate.files['index.hbs'].content).toContain('<main>Edited inline</main>');
+        expect(result.candidate.revision).not.toBe(source.revision);
+        expect(source.files['index.hbs'].content).toContain('<main>Welcome</main>');
+    });
+
+    it('rejects stale, unparseable, and mismatched inline text markers', async () => {
+        const source = await draft();
+
+        await expect(editThemeTextAtMarker(source, {revision: 'stale', marker: 'index.hbs:1:1', tagName: 'main', newText: 'No'})).resolves.toMatchObject({ok: false, error: {code: 'stale_revision'}});
+        await expect(editThemeTextAtMarker(source, {revision: source.revision, marker: 'not-a-marker', tagName: 'main', newText: 'No'})).resolves.toMatchObject({ok: false, error: {code: 'invalid_source_marker'}});
+        await expect(editThemeTextAtMarker(source, {revision: source.revision, marker: 'index.hbs:1:1', tagName: 'section', newText: 'No'})).resolves.toMatchObject({ok: false, error: {code: 'inline_edit_unavailable'}});
+    });
+
+    it('adds a bounded image asset and anchor-edits src while clearing responsive sources', async () => {
+        const source = await draft();
+        source.files['index.hbs'].content = '<img src="/old.png" srcset="/old-2x.png 2x" sizes="100vw">';
+        const revised = await withThemeRevision(source);
+
+        const result = await editThemeImageAtMarker(revised, {
+            revision: revised.revision,
+            marker: 'index.hbs:1:1',
+            tagName: 'img',
+            fileName: 'new hero.png',
+            mediaType: 'image/png',
+            data: onePixelPng
+        });
+
+        expect(result).toMatchObject({ok: true, data: {path: 'index.hbs', assetPath: 'assets/images/builder/new-hero.png'}});
+        if (!result.ok) {
+            throw new Error('Expected the inline image edit to succeed');
+        }
+        expect(result.candidate.files['index.hbs'].content).toBe('<img src="{{asset "images/builder/new-hero.png"}}">');
+        expect(Array.from(result.candidate.files['assets/images/builder/new-hero.png'].binary ?? []).slice(0, 8)).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+    });
+
+    it('rejects unsupported or oversized inline image data', async () => {
+        const source = await draft();
+
+        await expect(editThemeImageAtMarker(source, {
+            revision: source.revision,
+            marker: 'index.hbs:1:1',
+            tagName: 'img',
+            fileName: 'payload.svg',
+            mediaType: 'image/svg+xml',
+            data: new Uint8Array([1])
+        })).resolves.toMatchObject({ok: false, error: {code: 'invalid_inline_image'}});
+    });
+
     it('lists normalized files with stable text/binary metadata', async () => {
         const source = await draft();
 

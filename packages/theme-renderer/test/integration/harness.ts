@@ -10,9 +10,9 @@ import {join, relative} from 'node:path';
 import {scrapeContentApiKey} from '../../src/editor/instance-config.ts';
 
 // The instance-config scraper moved into src/editor/instance-config.ts (the
-// on-site editor bootstraps from the same regexes — they must never drift from
-// what the parity suite considers "fully configured"). Re-exported here so the
-// integration suites and fixture recorder keep their single import point.
+// Admin Builder bootstraps from the same regexes — they must never drift from
+// what the parity suite considers "fully configured"). Re-exported here so
+// the integration suites and fixture recorder keep their single import point.
 export {scrapeInstanceConfig, type InstanceConfigScrape} from '../../src/editor/instance-config.ts';
 
 export const GHOST_URL = (process.env.GHOST_URL ?? 'http://localhost:2368').replace(/\/$/, '');

@@ -30,7 +30,7 @@ comparison. The rendered/live pairs land in `test/integration/__output__/`
 | # | Route | Delta | Cause | Expected fix (slice) |
 | --- | --- | --- | --- | --- |
 | 6 | post | ~~`{{comments}}` renders nothing~~ — RESOLVED: the helper is ported (helpers/comments.ts) and byte-parity holds with comments enabled. It became visible (and broke parity as designed) the day the dev instance turned comments on; what remains is row 13 below | — | done |
-| 13 | post | `{{comments}}` renders nothing when the instance config has no comments script URL (seam guard in helpers/comments.ts) | The comments-ui URL is per-instance (`config comments:url`) and only scrapeable from a page that carries the tag — a post page with comments enabled. Entering edit mode from such a page supplies it; from other pages the preview omits the comments box | accept, or scrape a post page during editor boot |
+| 13 | post | `{{comments}}` renders nothing when the instance config has no comments script URL (seam guard in helpers/comments.ts) | The comments-ui URL is per-instance (`config comments:url`) and only scrapeable from a page that carries the tag — a post page with comments enabled. Opening Builder from configuration scraped from such a page supplies it; from other pages the preview omits the comments box | accept, or scrape a post page during Builder boot |
 | 9 | all | `@custom` values come from the theme's package.json defaults | Custom theme settings are Admin-API-only; dev instance uses defaults, so no visible diff | 4/5 — Admin API session in the editor slices |
 | 10 | all | Analytics/tinybird script absent on both sides today; would diverge if enabled | `isWebAnalyticsEnabled()` stub → false (non-public settings + config) | 2 — injectable |
 

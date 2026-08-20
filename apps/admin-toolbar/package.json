@@ -16,13 +16,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "vite build && vite build --config vite.editor.config.mjs && vite build --config vite.worker.config.mjs",
-    "build:editor": "vite build --config vite.editor.config.mjs",
-    "build:worker": "vite build --config vite.worker.config.mjs",
-    "dev": "concurrently -n main,editor,worker \"pnpm dev:main\" \"pnpm dev:editor\" \"pnpm dev:worker\"",
-    "dev:main": "vite build --watch --mode development",
-    "dev:editor": "vite build --watch --mode development --config vite.editor.config.mjs",
-    "dev:worker": "vite build --watch --mode development --config vite.worker.config.mjs",
+    "build": "vite build",
+    "dev": "vite build --watch --mode development",
     "lint": "eslint src test --cache",
     "test": "pnpm test:unit",
     "test:unit": "pnpm run build && vitest run",
@@ -38,7 +33,6 @@
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
-    "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "globals": "catalog:",

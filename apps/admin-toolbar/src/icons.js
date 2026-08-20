@@ -13,12 +13,6 @@ const icons = {
     h('path', { d: 'M12 20h9' }),
     h('path', { d: 'M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z' }),
   ],
-    // Lucide brush — reads as "change how it looks"; deliberately NOT
-    // another pencil (edit/posts already are pencils)
-    editMode: [
-        h('path', {d: 'm9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08'}),
-        h('path', {d: 'M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02'})
-    ],
   members: [
     h('path', { d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' }),
     h('path', { d: 'M16 3.128a4 4 0 0 1 0 7.744' }),

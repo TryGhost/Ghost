@@ -318,24 +318,6 @@ export function getToolbarStyle() {
             width: 100%;
         }
 
-        .gh-admin-toolbar-edit-mode-wrap {
-            align-items: center;
-            display: inline-flex;
-            gap: 6px;
-        }
-
-        .gh-admin-toolbar-status {
-            color: #6b7280;
-            font-size: 12px;
-            font-weight: 600;
-            line-height: 1;
-            white-space: nowrap;
-        }
-
-        .gh-admin-toolbar-status-error {
-            color: #dc2626;
-        }
-
         .gh-admin-toolbar-sr-only {
             border: 0;
             clip: rect(0 0 0 0);

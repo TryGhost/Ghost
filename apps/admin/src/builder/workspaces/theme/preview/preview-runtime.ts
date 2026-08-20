@@ -12,6 +12,7 @@ export function previewRuntimeBootstrap(): void {
     const channel = runtimeScript?.dataset.builderChannel;
     const documentId = runtimeScript?.dataset.builderDocument;
     const selectedId = runtimeScript?.dataset.builderSelection || null;
+    let inlineEditing = runtimeScript?.dataset.builderInlineEditing === 'true';
     if (!channel || !documentId) {
         return;
     }
@@ -270,9 +271,328 @@ export function previewRuntimeBootstrap(): void {
         send({type: 'navigate', url: destination.href});
     };
 
+    type ActiveInlineEdit = {
+        editId: number;
+        element: Element;
+        marker: string;
+        tagName: string;
+        original: Text;
+        editor: HTMLSpanElement;
+        pending: boolean;
+    };
+    let activeInlineEdit: ActiveInlineEdit | null = null;
+    let pendingImageEdit: {editId: number; element: HTMLImageElement; previousOutline: string} | null = null;
+    let hoveredInlineElement: HTMLElement | null = null;
+    let previousHoverOutline = '';
+    let nextInlineEditId = 0;
+    let inlineModeGeneration = 0;
+    let allowBlurCommit = false;
+    const inlineTabStops = new Map<HTMLElement, string | null>();
+    const clearInlineHover = () => {
+        if (hoveredInlineElement) {
+            hoveredInlineElement.style.outline = previousHoverOutline;
+            hoveredInlineElement = null;
+            previousHoverOutline = '';
+        }
+    };
+    const directEditableText = (element: Element) => Array.from(element.childNodes).find(node => node.nodeType === Node.TEXT_NODE && Boolean(node.textContent?.trim())) as Text | undefined;
+    const announceInlineEdit = (message: string, failed = false) => {
+        const notice = document.createElement('div');
+        notice.setAttribute('role', failed ? 'alert' : 'status');
+        notice.setAttribute('data-builder-inline-notice', 'true');
+        notice.textContent = message.slice(0, 500);
+        notice.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483647;max-width:320px;padding:8px 12px;border-radius:8px;background:Canvas;color:CanvasText;border:1px solid Highlight;font:13px system-ui,sans-serif;box-shadow:0 4px 16px rgb(0 0 0 / 20%)';
+        document.body.appendChild(notice);
+        window.setTimeout(() => notice.remove(), 3_000);
+    };
+    const cancelInlineEdit = () => {
+        const active = activeInlineEdit;
+        if (!active) {
+            return;
+        }
+        active.editor.replaceWith(active.original);
+        activeInlineEdit = null;
+    };
+    const commitInlineEdit = () => {
+        const active = activeInlineEdit;
+        if (!active || active.pending) {
+            return;
+        }
+        const newText = active.editor.textContent ?? '';
+        if (newText === active.original.data) {
+            active.editor.replaceWith(active.original);
+            activeInlineEdit = null;
+            return;
+        }
+        if (newText.length > 4_096 || /[\r\n]/.test(newText)) {
+            announceInlineEdit('Inline text must be one line under 4096 characters.', true);
+            active.editor.focus();
+            return;
+        }
+        active.pending = true;
+        active.editor.contentEditable = 'false';
+        send({type: 'inline-edit', edit: {kind: 'text', editId: active.editId, marker: active.marker, tagName: active.tagName, newText}});
+    };
+    const beginInlineEdit = (element: Element) => {
+        const marker = element.getAttribute('data-edit');
+        const source = parseSource(marker);
+        const text = directEditableText(element);
+        if (!marker || !source.source || source.truncated || !text) {
+            announceInlineEdit('This element does not have directly editable theme text.', true);
+            return;
+        }
+        nextInlineEditId += 1;
+        const editor = document.createElement('span');
+        editor.textContent = text.data;
+        editor.contentEditable = 'plaintext-only';
+        editor.spellcheck = true;
+        editor.setAttribute('role', 'textbox');
+        editor.setAttribute('aria-label', `Edit ${bounded(visibleText(element), 120).text || element.tagName.toLowerCase()}`);
+        editor.style.outline = '2px solid Highlight';
+        text.replaceWith(editor);
+        activeInlineEdit = {editId: nextInlineEditId, element, marker, tagName: element.tagName.toLowerCase(), original: text, editor, pending: false};
+        editor.addEventListener('keydown', (event) => {
+            if (!event.isTrusted) {
+                return;
+            }
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                cancelInlineEdit();
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                commitInlineEdit();
+            } else if (event.key === 'Tab') {
+                allowBlurCommit = true;
+            }
+        }, true);
+        editor.addEventListener('blur', () => {
+            if (allowBlurCommit) {
+                allowBlurCommit = false;
+                commitInlineEdit();
+            } else {
+                cancelInlineEdit();
+            }
+        });
+        editor.focus();
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    };
+    const submitInlineImage = async (element: HTMLImageElement, file: File) => {
+        if (!inlineEditing || pendingImageEdit) {
+            announceInlineEdit('Finish the current image replacement first.', true);
+            return;
+        }
+        if (element.closest('picture')?.querySelector('source')) {
+            announceInlineEdit('Responsive picture images are not editable inline yet. Ask Builder to update the picture sources instead.', true);
+            return;
+        }
+        const marker = element.getAttribute('data-edit');
+        const source = parseSource(marker);
+        if (!marker || !source.source || source.truncated) {
+            announceInlineEdit('This image does not have an editable theme source marker.', true);
+            return;
+        }
+        if (!['image/gif', 'image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size === 0 || file.size > 5 * 1024 * 1024) {
+            announceInlineEdit('Use a GIF, JPEG, PNG, or WebP image under 5 MB.', true);
+            return;
+        }
+        nextInlineEditId += 1;
+        const editId = nextInlineEditId;
+        const generation = inlineModeGeneration;
+        const pending = {editId, element, previousOutline: element.style.outline};
+        pendingImageEdit = pending;
+        element.style.outline = '2px solid Highlight';
+        try {
+            const data = new Uint8Array(await file.arrayBuffer());
+            if (!inlineEditing || generation !== inlineModeGeneration || pendingImageEdit !== pending) {
+                element.style.outline = pending.previousOutline;
+                if (pendingImageEdit === pending) {
+                    pendingImageEdit = null;
+                }
+                return;
+            }
+            send({type: 'inline-edit', edit: {kind: 'image', editId, marker, tagName: 'img', fileName: file.name.slice(0, 255), mediaType: file.type, data}});
+        } catch (error) {
+            element.style.outline = pending.previousOutline;
+            if (pendingImageEdit === pending) {
+                pendingImageEdit = null;
+            }
+            announceInlineEdit(error instanceof Error ? error.message : 'The image could not be read.', true);
+        }
+    };
+    const imagePicker = document.createElement('input');
+    imagePicker.type = 'file';
+    imagePicker.accept = 'image/gif,image/jpeg,image/png,image/webp';
+    imagePicker.hidden = true;
+    imagePicker.setAttribute('data-builder-inline-control', 'true');
+    imagePicker.setAttribute('data-testid', 'builder-inline-image-input');
+    document.documentElement.appendChild(imagePicker);
+    let imagePickerTarget: HTMLImageElement | null = null;
+    imagePicker.addEventListener('change', () => {
+        const file = imagePicker.files?.[0];
+        const target = imagePickerTarget;
+        imagePicker.value = '';
+        imagePickerTarget = null;
+        if (file && target) {
+            void submitInlineImage(target, file);
+        }
+    });
+    const beginInlineImage = (element: HTMLImageElement) => {
+        if (pendingImageEdit) {
+            announceInlineEdit('Finish the current image replacement first.', true);
+            return;
+        }
+        if (element.closest('picture')?.querySelector('source')) {
+            announceInlineEdit('Responsive picture images are not editable inline yet. Ask Builder to update the picture sources instead.', true);
+            return;
+        }
+        imagePickerTarget = element;
+        imagePicker.click();
+    };
+    const setInlineEditMode = (enabled: boolean) => {
+        inlineModeGeneration += 1;
+        inlineEditing = enabled;
+        document.documentElement.dataset.inlineEditMode = enabled ? 'on' : 'off';
+        if (enabled) {
+            document.querySelectorAll<HTMLElement>('[data-edit]').forEach((element) => {
+                const naturallyFocusable = element.matches('a[href],button,input,select,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]');
+                if (!naturallyFocusable && !inlineTabStops.has(element)) {
+                    inlineTabStops.set(element, element.getAttribute('tabindex'));
+                    element.tabIndex = 0;
+                }
+            });
+        } else {
+            cancelInlineEdit();
+            clearInlineHover();
+            imagePickerTarget = null;
+            imagePicker.value = '';
+            if (pendingImageEdit) {
+                pendingImageEdit.element.style.outline = pendingImageEdit.previousOutline;
+                pendingImageEdit = null;
+            }
+            inlineTabStops.forEach((tabIndex, element) => {
+                if (tabIndex === null) {
+                    element.removeAttribute('tabindex');
+                } else {
+                    element.setAttribute('tabindex', tabIndex);
+                }
+            });
+            inlineTabStops.clear();
+        }
+    };
+    const handleInlineEditResult = (message: {editId?: unknown; ok?: unknown; message?: unknown}) => {
+        if (!Number.isSafeInteger(message.editId) || typeof message.ok !== 'boolean') {
+            return;
+        }
+        const pending = pendingImageEdit;
+        if (pending && pending.editId === message.editId) {
+            pendingImageEdit = null;
+            pending.element.style.outline = pending.previousOutline;
+            if (!message.ok) {
+                announceInlineEdit(typeof message.message === 'string' ? message.message.slice(0, 500) : 'The image could not be replaced.', true);
+            } else {
+                announceInlineEdit('Preview image updated.');
+            }
+            return;
+        }
+        const active = activeInlineEdit;
+        if (!active || message.editId !== active.editId) {
+            return;
+        }
+        if (!message.ok) {
+            const error = typeof message.message === 'string' ? message.message.slice(0, 500) : 'The inline edit could not be applied.';
+            active.editor.replaceWith(active.original);
+            activeInlineEdit = null;
+            announceInlineEdit(error, true);
+            return;
+        }
+        active.editor.replaceWith(document.createTextNode(active.editor.textContent ?? ''));
+        activeInlineEdit = null;
+        announceInlineEdit('Preview text updated.');
+    };
+
+    setInlineEditMode(inlineEditing);
+    window.addEventListener('pointerover', (event) => {
+        if (!inlineEditing || activeInlineEdit || !(event.target instanceof Element)) {
+            return;
+        }
+        const editable = event.target.closest<HTMLElement>('[data-edit]');
+        if (!editable || (!(editable instanceof HTMLImageElement) && !directEditableText(editable)) || editable === hoveredInlineElement) {
+            return;
+        }
+        clearInlineHover();
+        hoveredInlineElement = editable;
+        previousHoverOutline = editable.style.outline;
+        editable.style.outline = '2px solid Highlight';
+    }, true);
+    window.addEventListener('pointerout', (event) => {
+        if (event.target === hoveredInlineElement) {
+            clearInlineHover();
+        }
+    }, true);
+    window.addEventListener('dragover', (event) => {
+        if (inlineEditing && event.target instanceof HTMLImageElement && event.dataTransfer?.types.includes('Files')) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+        }
+    }, true);
+    window.addEventListener('drop', (event) => {
+        if (!event.isTrusted || !inlineEditing || !(event.target instanceof HTMLImageElement)) {
+            return;
+        }
+        const file = event.dataTransfer?.files[0];
+        if (!file) {
+            return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void submitInlineImage(event.target, file);
+    }, true);
+    window.addEventListener('pointerdown', (event) => {
+        if (event.isTrusted && activeInlineEdit && event.target instanceof Node && !activeInlineEdit.element.contains(event.target)) {
+            allowBlurCommit = true;
+        }
+    }, true);
+
+    window.addEventListener('keydown', (event) => {
+        if (!event.isTrusted || !inlineEditing || activeInlineEdit || !['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) {
+            return;
+        }
+        const editable = event.target.closest('[data-edit]');
+        if (!editable) {
+            return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        clearInlineHover();
+        if (editable instanceof HTMLImageElement) {
+            beginInlineImage(editable);
+        } else {
+            beginInlineEdit(editable);
+        }
+    }, true);
+
     window.addEventListener('click', (event) => {
         const target = event.target instanceof Element ? event.target : null;
         const editable = target?.closest('[data-edit]');
+        if (event.isTrusted && inlineEditing && editable) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            clearInlineHover();
+            if (editable instanceof HTMLImageElement) {
+                beginInlineImage(editable);
+            } else if (!activeInlineEdit) {
+                beginInlineEdit(editable);
+            } else if (!activeInlineEdit.element.contains(target)) {
+                commitInlineEdit();
+            }
+            return;
+        }
         const selection = editable ? context(editable) : null;
         if (selection) {
             event.preventDefault();
@@ -318,7 +638,14 @@ export function previewRuntimeBootstrap(): void {
     window.addEventListener('load', () => send({type: 'loaded'}), {once: true});
     const handleCommand = (event: MessageEvent<unknown>) => {
         const message = event.data as {channel?: unknown; documentId?: unknown; type?: unknown; requestId?: unknown; command?: unknown; payload?: unknown};
-        if (message.channel !== channel || message.documentId !== documentId || message.type !== 'command' || !Number.isInteger(message.requestId) || !['inspect-page', 'inspect-element', 'screenshot'].includes(String(message.command))) {
+        if (message.channel !== channel || message.documentId !== documentId) {
+            return;
+        }
+        if (message.type === 'inline-edit-result') {
+            handleInlineEditResult(message as {editId?: unknown; ok?: unknown; message?: unknown});
+            return;
+        }
+        if (message.type !== 'command' || !Number.isInteger(message.requestId) || !['inspect-page', 'inspect-element', 'screenshot', 'set-inline-edit-mode'].includes(String(message.command))) {
             return;
         }
         try {
@@ -327,8 +654,12 @@ export function previewRuntimeBootstrap(): void {
                 result = inspectPage();
             } else if (message.command === 'inspect-element') {
                 result = inspectElement(message.payload as {marker?: unknown; selector?: unknown});
-            } else {
+            } else if (message.command === 'screenshot') {
                 result = screenshotSnapshot();
+            } else {
+                const enabled = Boolean((message.payload as {enabled?: unknown})?.enabled);
+                setInlineEditMode(enabled);
+                result = true;
             }
             portPostMessage({channel, documentId, type: 'command-result', requestId: message.requestId, ok: true, result});
         } catch (cause) {
@@ -341,6 +672,9 @@ export function previewRuntimeBootstrap(): void {
     parentPostMessage({channel, documentId, type: 'command-port'}, '*', [commandChannel.port2]);
 
     const ready = () => {
+        if (inlineEditing) {
+            setInlineEditMode(true);
+        }
         const selected = selectedId ? Array.from(document.querySelectorAll('[data-edit]')).find(element => element.getAttribute('data-edit') === selectedId) : null;
         send({type: 'ready', selection: selected ? context(selected) : null});
     };

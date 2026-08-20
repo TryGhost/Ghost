@@ -1,5 +1,5 @@
-// Browser zip round-trip for theme archives (slice 4: shared by the Admin
-// theme code editor and the on-site edit mode). Tests moved together with the
+// Browser zip round-trip for theme archives (shared by the Admin theme code
+// editor and the standalone Admin Builder). Tests moved together with the
 // code from apps/admin/src/settings/app/components/settings/site/theme/
 // theme-editor-utils.test.ts — same fixtures, same assertions.
 import * as assert from 'node:assert/strict';

@@ -31,6 +31,20 @@ function normalizeBuildPermissions(directory: string): void {
   }
 }
 
+export function copyDirectorySkippingSelfReferences(source: string, destination: string): void {
+    fs.cpSync(source, destination, {
+        recursive: true,
+        force: true,
+        filter: (sourcePath, destinationPath) => {
+            try {
+                return fs.realpathSync(sourcePath) !== fs.realpathSync(destinationPath);
+            } catch {
+                return true;
+            }
+        }
+    });
+}
+
 // Vite plugin to extract styles and scripts from Ghost admin index.html
 export function emberAssetsPlugin() {
   let config: ResolvedConfig;
@@ -140,13 +154,10 @@ export function emberAssetsPlugin() {
           // Copy Ember assets to React build output to enable use of
           // vite preview. This also prevents stale Ember assets from
           // overwriting fresh ones in the next step.
-          fs.cpSync(ghostAssetsDir, reactAssetsDir, { recursive: true });
+                    copyDirectorySkippingSelfReferences(ghostAssetsDir, reactAssetsDir);
 
           // Copy combined assets back to Ghost core admin assets folder
-          fs.cpSync(reactAssetsDir, ghostAssetsDir, {
-            recursive: true,
-            force: true,
-          });
+                    copyDirectorySkippingSelfReferences(reactAssetsDir, ghostAssetsDir);
 
           // Copy React index.html, overwriting the existing index.html
           const forwardIndexFile = path.resolve(GHOST_ADMIN_PATH, 'index.html');

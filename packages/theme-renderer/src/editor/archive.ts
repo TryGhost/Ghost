@@ -1,6 +1,6 @@
 /**
  * Browser-side theme archive round-trip (zip → files → zip), shared by the
- * Admin theme code editor and the on-site edit mode (slice 4).
+ * Admin theme code editor and the standalone Admin Builder.
  *
  * PROVENANCE: moved verbatim (minus the Admin-app-specific route/diff helpers)
  * from apps/admin/src/settings/app/components/settings/site/theme/
@@ -53,8 +53,8 @@ export class ThemeArchiveExtractionError extends Error {
  * Ghost's bundled default themes. The server refuses `casper.zip` /
  * `source.zip` uploads outright (core/server/services/themes/storage.js), so
  * every editor that publishes by upload must rename first. Shared here (moved
- * from apps/admin's theme-editor-utils) so the Admin code editor and the
- * on-site edit mode agree on what counts as a default theme.
+ * from apps/admin's theme-editor-utils) so the Admin code editor and Builder
+ * agree on what counts as a default theme.
  */
 export const isDefaultThemeName = (themeName: string): boolean => {
     return ['casper', 'source'].includes(themeName.toLowerCase());

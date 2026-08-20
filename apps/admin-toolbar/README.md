@@ -10,95 +10,10 @@ environment and the Admin Toolbar watcher. To work on this package by itself,
 run these commands from this directory:
 
 ```bash
-pnpm build    # one-off build (main bundle + edit-mode chunk + render worker)
-pnpm dev      # watch and rebuild all three bundles concurrently
-pnpm test     # build + run tests against the built bundles
+pnpm build    # one-off toolbar build
+pnpm dev      # watch and rebuild the toolbar
+pnpm test     # build + run tests against the built bundle
 ```
-
-## Legacy edit-mode spike
-
-The edit-mode bundles remain in this package as the renderer and editing spike
-that informed the Admin Design Builder. Ghost no longer emits the
-`data-edit-mode-enabled` attribute, so the public toolbar does not load this
-surface. New product work belongs in the full-screen React Builder in
-`apps/admin/src/builder/`; reuse the renderer behavior here without reviving
-the public Preact UI.
-
-The toolbar ships in three bundles:
-
-- `umd/admin-toolbar.min.js` — the main IIFE, loaded on every page view for
-  signed-in staff. Built by `vite.config.mjs`.
-- `umd/admin-toolbar-editor.min.js` — the edit-mode chunk, a plain ES module
-  built from `src/edit-mode/index.js` by `vite.editor.config.mjs`. It is only
-  fetched only by the legacy loader when a host explicitly supplies the old
-  data attribute. It contains the editor tooling only
-  (archive round-trip, marker parsing, text edits, overlay UI) — the renderer
-  itself ships once, in the worker artifact.
-- `umd/admin-toolbar-editor-worker.min.js` — the render-worker entry, a plain
-  ES module built from `src/edit-mode/worker.js` by `vite.worker.config.mjs`.
-  This is the ONLY artifact that bundles `@tryghost/theme-renderer`. The
-  chunk boots it as a module Web Worker via a blob bootstrap
-  (`src/edit-mode/render-client.js`); when workers are unavailable (CSP etc.)
-  or the worker crashes mid-session, the chunk dynamically `import()`s this
-  same artifact — it re-exports `createRenderBackend` and only installs its
-  message loop inside a worker scope — and renders on the main thread.
-
-The main bundle must never statically import anything under `src/edit-mode/`
-except `loader.js` — the build inlines dynamic imports
-(`inlineDynamicImports`), so the chunk boundary is a *runtime* URL: `loader.js`
-resolves `admin-toolbar-editor.min.js` relative to the toolbar script's own
-`src` and loads it with a native `import()`. The chunk resolves the worker
-artifact the same way. The test suite asserts a sentinel string from the chunk
-stays out of the main bundle, and guards the main bundle's size.
-
-Edit-mode internals live in `src/edit-mode/`: `session.js` (orchestration),
-`render-client.js`/`render-backend.js`/`worker.js` (worker-first rendering),
-`swap.js` (in-place document swap), `draft-store.js` (the DraftStore seam,
-in-memory only for now), `theme-api.js` (Admin API download/upload),
-`ui.js`/`interactions.js` (Preact overlay + click-to-edit), and `agent/`
-(the chat agent: BYOK key store, provider seam, tool-calling loop). Building
-the chunk requires `@tryghost/theme-renderer`'s `build/` output (nx orders
-this via the workspace dependency).
-
-### Chat agent (BYOK)
-
-The edit-mode bar has a chat drawer that runs natural-language theme tasks
-through a browser-side tool-calling loop (`src/edit-mode/agent/`). Everything
-happens in the user's browser: the agent's tools operate on the in-memory
-draft theme through the same render-verify/commit pipeline as manual edits,
-it can never publish, and its tools never touch the Admin API. While a task
-runs, the human edit surfaces (click-to-edit, image replace, publish) are
-refused with a visible status — one writer at a time.
-
-**Key storage disclosure.** The agent is bring-your-own-key. The key is kept
-in the browser tab's `sessionStorage` **on the site's origin** — any script
-running on the site (theme code, third-party tags, code injection) could read
-it while stored; it does not persist and is cleared when the tab closes. This
-residual risk is deliberate (sessionStorage bounds the exposure in time where
-localStorage would not) and is disclosed verbatim next to the key input in
-the drawer. The key is sent only to the provider API, never to Ghost, and
-never appears in URLs, logs, or error messages. When storage is unusable
-(private modes that throw on access or on write), the store degrades to
-in-memory for the page's lifetime.
-
-**Publish visibility.** The publish button's arm step lists every file the
-session has changed (human and agent commits alike):
-`Publishing overwrites "<theme>" for all visitors — changed files: a.hbs,
-b.hbs (+2 more) — …`. Follow-up (recorded, not in this slice): a per-file
-diff view at publish time, so the user can inspect *what* changed in each
-listed file rather than just which files.
-
-`pnpm build` builds all three (main first — the one-off build empties `umd/`;
-the watchers never do). During development a single command watches all three
-bundles via `concurrently`:
-
-```bash
-pnpm dev           # watch main + chunk + worker together
-```
-
-The nx `dev` target runs the same thing. `pnpm dev:main` / `pnpm dev:editor` /
-`pnpm dev:worker` watch a single bundle, and `pnpm build:editor` /
-`pnpm build:worker` do one-off builds if you don't need the watchers.
 
 ## How it's served
 

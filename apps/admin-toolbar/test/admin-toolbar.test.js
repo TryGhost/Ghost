@@ -5,25 +5,6 @@ import { JSDOM } from 'jsdom';
 
 const BUNDLE_PATH = path.join(import.meta.dirname, '../umd/admin-toolbar.min.js');
 
-const EDITOR_BUNDLE_PATH = path.join(
-    import.meta.dirname,
-    '../umd/admin-toolbar-editor.min.js'
-);
-
-const WORKER_BUNDLE_PATH = path.join(
-    import.meta.dirname,
-    '../umd/admin-toolbar-editor-worker.min.js'
-);
-
-// Unique marker string exported by src/edit-mode/index.js. Its presence in the
-// main bundle would mean rollup inlined the edit-mode chunk into the IIFE.
-const EDIT_MODE_SENTINEL = 'ghost-admin-toolbar-edit-mode-chunk-4f1c9d';
-
-// Size of umd/admin-toolbar.min.js before the edit-mode shell landed
-// (2026-08-14). The edit-mode chunk is lazy-loaded precisely so the main
-// bundle stays small; if this guard trips, something got inlined.
-const PRE_EDIT_MODE_BUNDLE_BYTES = 33952;
-
 const source = fs.readFileSync(BUNDLE_PATH, 'utf8');
 
 function createDom({
@@ -35,8 +16,7 @@ function createDom({
   siteAnalyticsEnabled = false,
   activityPubEnabled = false,
   membersEnabled = false,
-  commentsEnabled = true,
-    editModeEnabled = false
+    commentsEnabled = true
 } = {}) {
   const dom = new JSDOM(
     `<!DOCTYPE html><html><body>
@@ -53,7 +33,6 @@ function createDom({
             ${activityPubEnabled ? 'data-activitypub-enabled="true"' : ''}
             ${membersEnabled ? 'data-members-enabled="true"' : ''}
             ${commentsEnabled === false ? 'data-comments-enabled="false"' : ''}
-            ${editModeEnabled ? 'data-edit-mode-enabled="true" data-key="content-api-key"' : ''}
         ></script>
     </body></html>`,
     {
@@ -119,18 +98,6 @@ function editorUser(overrides = {}) {
     roles: [{ name: 'Editor' }],
     ...overrides,
   };
-}
-
-function adminUser(overrides = {}) {
-    return {
-        name: 'Ada Admin',
-        roles: [{name: 'Administrator'}],
-        ...overrides
-    };
-}
-
-function getEditModeButton(root) {
-    return root.shadowRoot.querySelector('.gh-admin-toolbar-edit-mode-wrap button');
 }
 
 describe('admin-toolbar', function () {
@@ -614,137 +581,6 @@ describe('admin-toolbar', function () {
     );
     dom.window.close();
   });
-
-    it('shows the edit mode button for administrators when the flag is enabled', async function () {
-        const dom = createDom({
-            adminUrl: 'https://site.example.com/ghost/',
-            editModeEnabled: true
-        });
-        const {root} = await runToolbar(dom, {result: {users: [adminUser()]}});
-        const button = getEditModeButton(root);
-
-        assert.notEqual(button, null);
-        assert.equal(button.getAttribute('aria-label'), 'Edit theme');
-        // its own icon — post/tag actions use the pencil, and two pencils in
-        // one bar (or two buttons both labelled "Edit") are indistinguishable
-        assert.notEqual(button.querySelector('svg.gh-admin-toolbar-icon-editMode'), null);
-        dom.window.close();
-    });
-
-    it('does not show the edit mode button for editors', async function () {
-        const dom = createDom({
-            adminUrl: 'https://site.example.com/ghost/',
-            editModeEnabled: true
-        });
-        const {root} = await runToolbar(dom, {result: {users: [editorUser()]}});
-
-        assert.ok(root, 'toolbar should still render for editors');
-        assert.equal(getEditModeButton(root), null);
-        dom.window.close();
-    });
-
-    it('does not show the edit mode button without the edit mode attribute', async function () {
-        const dom = createDom({adminUrl: 'https://site.example.com/ghost/'});
-        const {root} = await runToolbar(dom, {result: {users: [adminUser()]}});
-
-        assert.ok(root);
-        assert.equal(getEditModeButton(root), null);
-        dom.window.close();
-    });
-
-    it('does not show the edit mode button on split-admin installs', async function () {
-        // adminUrl origin differs from the site origin (custom admin.url)
-        const dom = createDom({editModeEnabled: true});
-        const {root} = await runToolbar(dom, {result: {users: [adminUser()]}});
-
-        assert.ok(root);
-        assert.equal(getEditModeButton(root), null);
-        dom.window.close();
-    });
-
-    it('surfaces a status in the toolbar when activating edit mode', async function () {
-        const dom = createDom({
-            adminUrl: 'https://site.example.com/ghost/',
-            editModeEnabled: true
-        });
-        const {root} = await runToolbar(dom, {result: {users: [adminUser()]}});
-
-        getEditModeButton(root).click();
-        await new Promise((resolve) => {
-            dom.window.setTimeout(resolve, 0);
-        });
-
-        // jsdom cannot resolve dynamic imports, so the chunk load either sits
-        // in the loading state or fails — both must surface inline status text
-        const status = root.shadowRoot.querySelector('.gh-admin-toolbar-status');
-        assert.notEqual(status, null);
-        assert.match(status.textContent, /Loading editor|Editor failed to load/);
-        dom.window.close();
-    });
-
-    it('keeps the edit-mode chunk out of the main bundle', function () {
-        const editorSource = fs.readFileSync(EDITOR_BUNDLE_PATH, 'utf8');
-
-        assert.ok(editorSource.includes(EDIT_MODE_SENTINEL), 'sentinel should be in the editor chunk');
-        assert.equal(source.includes(EDIT_MODE_SENTINEL), false, 'sentinel must not leak into the main bundle — the chunk got inlined');
-        assert.match(editorSource, /export\s*\{/, 'editor chunk should be an ES module');
-    });
-
-    it('keeps the main bundle within 2x its pre-edit-mode size', function () {
-        const mainBytes = fs.statSync(BUNDLE_PATH).size;
-        const editorBytes = fs.statSync(EDITOR_BUNDLE_PATH).size;
-        const ratio = mainBytes / PRE_EDIT_MODE_BUNDLE_BYTES;
-
-        assert.ok(editorBytes > 0, 'editor chunk should exist and be non-empty');
-        assert.ok(
-            ratio <= 2,
-            `main bundle is ${mainBytes}B, ${ratio.toFixed(2)}x the ${PRE_EDIT_MODE_BUNDLE_BYTES}B pre-edit-mode baseline — did the editor chunk get inlined?`
-        );
-    });
-
-    it('ships the renderer ONLY in the worker artifact, keeping the chunk small', function () {
-        const editorSource = fs.readFileSync(EDITOR_BUNDLE_PATH, 'utf8');
-        const workerSource = fs.readFileSync(WORKER_BUNDLE_PATH, 'utf8');
-
-        // 'edit_mode_backend_no_theme' is a render-backend.js sentinel — the
-        // module (and the theme-renderer engine behind it) must live in the
-        // worker artifact only; the chunk reaches it via dynamic import()
-        assert.equal(
-            editorSource.includes('edit_mode_backend_no_theme'),
-            false,
-            'render-backend (and the renderer) leaked into the edit-mode chunk'
-        );
-        assert.ok(workerSource.includes('edit_mode_backend_no_theme'));
-        assert.ok(
-            workerSource.includes('createRenderBackend'),
-            'the worker artifact must export createRenderBackend for the main-thread fallback'
-        );
-
-        // Measured 2026-08 after the split: ~190KB raw (~50KB gz) — jszip +
-        // preact + editor tooling. The renderer alone is ~1.9MB raw, so any
-        // regression that drags it (or another heavyweight) back into the
-        // chunk blows straight through this threshold.
-        const chunkBytes = fs.statSync(EDITOR_BUNDLE_PATH).size;
-        assert.ok(
-            chunkBytes < 256 * 1024,
-            `edit-mode chunk is ${chunkBytes}B — expected < ${256 * 1024}B (did the renderer get inlined?)`
-        );
-    });
-
-    it('builds the render-worker artifact beside the chunk', function () {
-        const workerSource = fs.readFileSync(WORKER_BUNDLE_PATH, 'utf8');
-
-        assert.ok(workerSource.length > 0, 'worker artifact should exist and be non-empty');
-        // a plain ES module the blob bootstrap can `import` — a leading
-        // IIFE/UMD wrapper here would mean the worker vite config regressed
-        assert.equal(/^\(function\s*\(/.test(workerSource), false, 'worker artifact must not be an IIFE');
-        assert.match(workerSource, /onmessage/, 'worker entry should install a message handler');
-        assert.equal(
-            workerSource.includes(EDIT_MODE_SENTINEL),
-            false,
-            'the chunk entry (sentinel) must not be bundled into the worker artifact'
-        );
-    });
 
   it('hides toolbar tooltip popups while the more menu is open', async function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });

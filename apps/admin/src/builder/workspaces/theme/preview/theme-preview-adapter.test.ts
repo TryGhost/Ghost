@@ -646,6 +646,39 @@ describe('preview document bridge', () => {
         expect(bridgeScript?.dataset).toMatchObject({builderChannel: 'channel-1', builderDocument: 'document-1', builderSelection: 'index.hbs:1:1'});
     });
 
+    it('embeds candidate theme assets while preserving unrelated live resources', () => {
+        const html = createPreviewDocument(
+            {
+                html: '<html><head><link id="candidate-style" rel="stylesheet" href="/assets/built/screen.css?v=live"><script id="candidate-script" src="/assets/built/theme.js?v=live"></script><script id="ghost-script" src="/ghost/assets/portal/portal.min.js" data-ghost data-api="/ghost/api/content/" data-key="test"></script></head><body><svg><use id="candidate-image" href="/assets/images/icons.svg#search"></use></svg><img id="external-image" src="https://cdn.example/assets/images/icons.svg#external"><img id="mixed-source" srcset="data:image/png;base64,AAAA 1x, /assets/images/pixel.png 2x"></body></html>',
+                url: 'https://example.com/posts/',
+                revision: 'rev-1',
+                assets: {
+                    'assets/built/screen.css': {content: 'main { background-image: url("../images/pixel.png"); }', binary: null},
+                    'assets/built/theme.js': {content: 'document.body.dataset.candidate = "true";', binary: null},
+                    'assets/images/pixel.png': {content: null, binary: new Uint8Array([137, 80, 78, 71])}
+                }
+            },
+            'channel-1',
+            null,
+            'document-1',
+            (reference, baseUrl) => {
+                const resolved = new URL(reference, baseUrl);
+                if (resolved.origin !== 'https://example.com' || !resolved.pathname.startsWith('/assets/')) {
+                    return null;
+                }
+                return `data:text/plain;base64,${btoa(resolved.pathname.split('/').at(-1) ?? '')}${resolved.hash}`;
+            }
+        );
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+
+        expect(parsed.querySelector('#candidate-style')?.getAttribute('href')).toBe(`data:text/plain;base64,${btoa('screen.css')}`);
+        expect(parsed.querySelector('#candidate-script')?.getAttribute('src')).toBe(`data:text/plain;base64,${btoa('theme.js')}`);
+        expect(parsed.querySelector('#candidate-image')?.getAttribute('href')).toBe(`data:text/plain;base64,${btoa('icons.svg')}#search`);
+        expect(parsed.querySelector('#external-image')?.getAttribute('src')).toBe('https://cdn.example/assets/images/icons.svg#external');
+        expect(parsed.querySelector('#ghost-script')).toBeNull();
+        expect(parsed.querySelector('#mixed-source')?.getAttribute('srcset')).toBe(`data:image/png;base64,AAAA 1x, data:text/plain;base64,${btoa('pixel.png')} 2x`);
+    });
+
     it('removes directives that disable the bridge while preserving isolated theme scripts and events', () => {
         const html = createPreviewDocument(
             {html: '<html><head><meta http-equiv="Content-Security-Policy" content="script-src none"><meta http-equiv="refresh" content="0;url=https://outside.example"><script>parent.document.body.textContent = "unsafe"</script></head><body onclick="parent.alert(1)"><a href="javascript:parent.alert(2)">Unsafe</a></body></html>', url: 'https://example.com/', revision: 'rev-1'},

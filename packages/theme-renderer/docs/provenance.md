@@ -160,7 +160,7 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | editor/attribute-edit.ts | fresh (slice 5) | anchored attribute applier (image swaps: set/replace/delete on the marked open tag) + `applyAttributeEdits` batch form (single tag resolution, right-to-left splices, `optional` block-refusal skips). Attribute scanning lives in src/engine/source-scanner.ts (`scanAttributes`), shared with the marker transform's existing-`data-edit` check |
 | editor/index.ts | fresh (slice 5) | the `./editor` subpath barrel: both appliers + their types (`SourcePosition`/`EditAnchor` from edit-common, `EditMarker` from engine/markers) |
 | editor/archive.ts | **apps/admin** `src/settings/app/components/settings/site/theme/theme-editor-utils.ts` (slice 4 move, not ghost/core) | browser zip round-trip: extract/pack + limits + text/binary classification, verbatim minus the Admin-app route/diff helpers (which stayed behind); apps/admin re-exports from here. `./editor/archive` subpath. Resync = there is nothing to resync — this is now the single copy |
-| editor/instance-config.ts | **test/integration/harness.ts** (slice 4 move) | `scrapeInstanceConfig` + `scrapeContentApiKey`; harness re-exports from here so parity suite, fixture recorder, and the on-site editor share one set of regexes. `./editor/instance-config` subpath |
+| editor/instance-config.ts | **test/integration/harness.ts** (slice 4 move) | `scrapeInstanceConfig` + `scrapeContentApiKey`; harness re-exports from here so parity suite, fixture recorder, and the standalone Admin Builder share one set of regexes. `./editor/instance-config` subpath |
 
 ## src/seam/ (the data seam)
 
