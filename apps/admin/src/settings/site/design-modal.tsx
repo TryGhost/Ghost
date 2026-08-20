@@ -9,6 +9,7 @@ import {PreviewChrome, Tabs, TabsContent, TabsList, TabsTrigger, ToggleGroup, To
 import {PreviewModalContent} from '@/settings/components/preview-modal';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/providers/global-data-context';
@@ -72,6 +73,7 @@ const DesignModal: React.FC = () => {
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
     const {updateRoute} = useSettingsNavigation();
+    const navigate = useNavigate();
 
     const refParam = useQueryParams().getParam('ref');
 
@@ -225,7 +227,7 @@ const DesignModal: React.FC = () => {
         title='Design'
         onClose={() => {
             if (refParam === 'setup') {
-                updateRoute({isExternal: true, route: 'analytics'});
+                navigate('/analytics');
             } else {
                 updateRoute('design');
             }

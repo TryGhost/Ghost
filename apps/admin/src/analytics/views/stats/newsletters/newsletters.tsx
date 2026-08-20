@@ -80,7 +80,7 @@ const NewsletterTableRows: React.FC<{
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {post.post_id ?
                                         <Button className='h-auto p-0 text-left whitespace-normal hover:underline!' title="View post analytics" variant='link' onClick={() => {
-                                            navigate(`/posts/analytics/${post.post_id}/`, {crossApp: true});
+                                            navigate(`/posts/analytics/${post.post_id}/`);
                                         }}>
                                             {post.post_title}
                                         </Button>

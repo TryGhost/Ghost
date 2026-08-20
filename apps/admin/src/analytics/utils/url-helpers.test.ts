@@ -223,10 +223,10 @@ describe('url-helpers', () => {
     });
 
     describe('getClickHandler', () => {
-        let mockNavigate: ReturnType<typeof vi.fn<(path: string, options?: {crossApp?: boolean}) => void>>;
+        let mockNavigate: ReturnType<typeof vi.fn<(path: string) => void>>;
 
         beforeEach(() => {
-            mockNavigate = vi.fn<(path: string, options?: {crossApp?: boolean}) => void>();
+            mockNavigate = vi.fn<(path: string) => void>();
             mockWindowOpen.mockClear();
         });
 
@@ -234,7 +234,7 @@ describe('url-helpers', () => {
             const handler = getClickHandler('/my-post/', 'post-123', 'https://example.com', mockNavigate, 'post');
             handler();
 
-            expect(mockNavigate).toHaveBeenCalledWith('/posts/analytics/post-123', {crossApp: true});
+            expect(mockNavigate).toHaveBeenCalledWith('/posts/analytics/post-123');
             expect(mockWindowOpen).not.toHaveBeenCalled();
         });
 

@@ -115,7 +115,7 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                             const positiveFilterParam = `${encodeURIComponent(positiveFilter)}&post=${postId}`;
                             const negativeFilterParam = `${encodeURIComponent(negativeFilter)}&post=${postId}`;
 
-                            navigate(`/members?filter=${activeFeedbackTab === 'positive' ? positiveFilterParam : negativeFilterParam}`, {crossApp: true});
+                            navigate(`/members?filter=${activeFeedbackTab === 'positive' ? positiveFilterParam : negativeFilterParam}`);
                         }}>
                             View all
                             <LucideIcon.TableOfContents />

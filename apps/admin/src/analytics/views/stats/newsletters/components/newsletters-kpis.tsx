@@ -362,7 +362,7 @@ const NewsletterKPIs: React.FC<{
                                                 // Recharts types activePayload as `any`; narrow the row we read.
                                                 const activePostId = (e.activePayload?.[0] as {payload?: {post_id?: string}} | undefined)?.payload?.post_id;
                                                 if (activePostId) {
-                                                    navigate(`/posts/analytics/${activePostId}`, {crossApp: true});
+                                                    navigate(`/posts/analytics/${activePostId}`);
                                                 }
                                             }}
                                             onMouseLeave={() => setIsHoveringClickable(false)}

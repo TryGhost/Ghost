@@ -96,14 +96,16 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                 return (
                                     <div key={post.post_id} className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-table-row-hover before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent'>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]' onClick={() => {
-                                            navigate(getPostDestination({
+                                            const destination = getPostDestination({
                                                 postId: post.post_id,
                                                 hasEmailData: post.sent_count !== null,
                                                 analytics: {
                                                     webAnalytics: showWebAnalytics,
                                                     membersTrackSources
                                                 }
-                                            }), {crossApp: true});
+                                            });
+                                            // `/editor/*` is still Ember-owned (EMBER_ROUTES) and needs a hash navigation.
+                                            navigate(destination, {crossApp: destination.startsWith('/editor/')});
                                         }}>
                                             {post.feature_image ?
                                                 <div className='hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]' style={{
@@ -126,7 +128,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             {showWebAnalytics &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-visitors' onClick={(e) => {
                                                     e.stopPropagation();
-                                                    navigate(`/posts/analytics/${post.post_id}/web`, {crossApp: true});
+                                                    navigate(`/posts/analytics/${post.post_id}/web`);
                                                 }}>
                                                     <PostListTooltip
                                                         metrics={[
@@ -147,7 +149,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             {post.sent_count !== null &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
                                                     e.stopPropagation();
-                                                    navigate(`/posts/analytics/${post.post_id}/newsletter`, {crossApp: true});
+                                                    navigate(`/posts/analytics/${post.post_id}/newsletter`);
                                                 }}>
                                                     <PostListTooltip
                                                         className={`${!membersTrackSources ? 'right-0 left-auto translate-x-0' : ''}`}
@@ -208,7 +210,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             {membersTrackSources &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-members' onClick={(e) => {
                                                     e.stopPropagation();
-                                                    navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
+                                                    navigate(`/posts/analytics/${post.post_id}/growth`);
                                                 }}>
                                                     <PostListTooltip
                                                         className='right-0 left-auto translate-x-0'
