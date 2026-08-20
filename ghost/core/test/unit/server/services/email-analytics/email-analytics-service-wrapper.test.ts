@@ -94,4 +94,43 @@ describe('EmailAnalyticsServiceWrapper', function () {
             duration: 2000
         });
     });
+
+    it('skips opened event polling when the cursor seed has no opened column', async function () {
+        const wrapper = new EmailAnalyticsServiceWrapper({logName: 'gifts'});
+        wrapper.init({
+            config: {get: sinon.stub()},
+            domainEvents: {subscribe: sinon.stub()},
+            event: FakeEvent,
+            queries: sinon.createStubInstance(Queries),
+            mailgunTags: [],
+            jobNames: {
+                latestNonOpened: 'email-analytics-gifts-latest-others',
+                missing: 'email-analytics-gifts-missing',
+                latestOpened: 'email-analytics-gifts-latest-opened',
+                scheduled: 'email-analytics-gifts-scheduled'
+            },
+            cursorSeed: {
+                tableName: 'gift_deliveries',
+                eventColumns: {
+                    delivered: 'outcome_at',
+                    failed: 'outcome_at'
+                }
+            },
+            settingsCache: {get: sinon.stub()},
+            createEventProcessor: sinon.stub().returns({
+                processBatch: sinon.stub().resolves()
+            }),
+            metrics: {metric: metricStub}
+        });
+
+        sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+        const fetchLatestOpenedEvents = sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(0);
+        sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+        sinon.stub(wrapper, 'fetchMissing').resolves(0);
+        sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+
+        await wrapper.startFetch();
+
+        sinon.assert.notCalled(fetchLatestOpenedEvents);
+    });
 });

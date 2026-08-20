@@ -11,15 +11,20 @@ describe('Gift delivery codec', function () {
             status: 'sent',
             started_at: null,
             email_sent_at: '2026-08-11T11:00:00.000Z',
-            email_provider_message_id: 'provider-123'
+            email_provider_message_id: 'provider-123',
+            outcome: 'delivered',
+            outcome_at: '2026-08-11T11:01:00.000Z',
+            outcome_error: null
         } as const;
 
         const delivery = decodeGiftDeliveryRow(row);
 
         assert.ok(delivery.emailSentAt instanceof Date);
+        assert.ok(delivery.outcomeAt instanceof Date);
         assert.deepEqual(encodeGiftDelivery(delivery), {
             ...row,
-            email_sent_at: new Date(row.email_sent_at)
+            email_sent_at: new Date(row.email_sent_at),
+            outcome_at: new Date(row.outcome_at)
         });
     });
 
