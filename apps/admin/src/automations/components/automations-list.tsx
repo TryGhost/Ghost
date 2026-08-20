@@ -20,12 +20,11 @@ const AUTOMATION_STAT_COLUMNS = [
 interface AutomationsListProps {
     automations?: AutomationBrowseItem[];
     isLoading?: boolean;
-    showRunAnalytics?: boolean;
 }
 
-const AutomationsListSkeleton: React.FC<{showRunAnalytics: boolean}> = ({showRunAnalytics}) => {
+const AutomationsListSkeleton: React.FC = () => {
     return (
-        <Table aria-busy="true" aria-label="Automations" className={cn('flex table-fixed flex-col lg:table', !showRunAnalytics && 'border-t')} data-testid="automations-list-loading">
+        <Table aria-busy="true" aria-label="Automations" className="flex table-fixed flex-col lg:table" data-testid="automations-list-loading">
             <TableBody className="flex flex-col lg:table-row-group">
                 {Array.from({length: 2}, (_, index) => (
                     <TableRow
@@ -37,13 +36,13 @@ const AutomationsListSkeleton: React.FC<{showRunAnalytics: boolean}> = ({showRun
                             <Skeleton className="mb-1 h-3 w-48 max-w-full " />
                             <Skeleton className="h-3 w-80 max-w-full" />
                         </TableCell>
-                        {showRunAnalytics && AUTOMATION_STAT_COLUMNS.map(column => (
+                        {AUTOMATION_STAT_COLUMNS.map(column => (
                             <TableCell key={column.key} className={cn('hidden lg:table-cell lg:p-4', column.widthClassName)}>
                                 <Skeleton className={cn('h-3', column.skeletonWidthClassName)} />
                             </TableCell>
                         ))}
-                        <TableCell className={cn('w-auto p-0 text-right lg:table-cell lg:p-4', showRunAnalytics ? 'lg:w-28 lg:text-left' : 'lg:w-32')}>
-                            <Skeleton className={cn('ml-auto h-3 w-16', showRunAnalytics && 'lg:ml-0')} />
+                        <TableCell className="w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
+                            <Skeleton className="ml-auto h-3 w-16 lg:ml-0" />
                         </TableCell>
                     </TableRow>
                 ))}
@@ -52,24 +51,22 @@ const AutomationsListSkeleton: React.FC<{showRunAnalytics: boolean}> = ({showRun
     );
 };
 
-const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLoading = false, showRunAnalytics = false}) => {
+const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLoading = false}) => {
     if (isLoading) {
-        return <AutomationsListSkeleton showRunAnalytics={showRunAnalytics} />;
+        return <AutomationsListSkeleton />;
     }
 
     return (
-        <Table aria-label="Automations" className={cn('flex table-fixed flex-col lg:table', !showRunAnalytics && 'border-t')} data-testid="automations-list">
-            {showRunAnalytics && (
-                <TableHeader className="hidden lg:table-header-group">
-                    <TableRow className="hover:bg-transparent">
-                        <TableHead className="lg:px-4" scope="col">Name</TableHead>
-                        {AUTOMATION_STAT_COLUMNS.map(column => (
-                            <TableHead key={column.key} className={cn('lg:px-4', column.widthClassName)} scope="col">{column.label}</TableHead>
-                        ))}
-                        <TableHead className="w-28 lg:px-4" scope="col">Status</TableHead>
-                    </TableRow>
-                </TableHeader>
-            )}
+        <Table aria-label="Automations" className="flex table-fixed flex-col lg:table" data-testid="automations-list">
+            <TableHeader className="hidden lg:table-header-group">
+                <TableRow className="hover:bg-transparent">
+                    <TableHead className="lg:px-4" scope="col">Name</TableHead>
+                    {AUTOMATION_STAT_COLUMNS.map(column => (
+                        <TableHead key={column.key} className={cn('lg:px-4', column.widthClassName)} scope="col">{column.label}</TableHead>
+                    ))}
+                    <TableHead className="w-28 lg:px-4" scope="col">Status</TableHead>
+                </TableRow>
+            </TableHeader>
             <TableBody className="flex flex-col lg:table-row-group">
                 {automations.map((automation) => {
                     const description = AUTOMATION_DESCRIPTIONS[automation.slug];
@@ -112,7 +109,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                     </span>
                                 )}
                             </TableHead>
-                            {showRunAnalytics && AUTOMATION_STAT_COLUMNS.map((column) => {
+                            {AUTOMATION_STAT_COLUMNS.map((column) => {
                                 const cell = statCells[column.key];
 
                                 return (
@@ -121,7 +118,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                     </TableCell>
                                 );
                             })}
-                            <TableCell className={cn('w-auto p-0 text-right lg:table-cell lg:p-4', showRunAnalytics ? 'lg:w-28 lg:text-left' : 'lg:w-32')}>
+                            <TableCell className="w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
                                 <AutomationStatusBadge status={automation.status} />
                             </TableCell>
                         </TableRow>
