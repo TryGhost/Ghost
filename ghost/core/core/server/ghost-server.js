@@ -6,6 +6,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const notify = require('./notify');
+const {flushLogs} = require('../shared/flush-logs');
 const moment = require('moment');
 const stoppable = require('stoppable');
 
@@ -148,14 +149,12 @@ class GhostServer {
             this.isShuttingDown = true;
             logging.warn(tpl(messages.ghostIsShuttingDown));
             await this.stop();
-            setTimeout(() => {
-                process.exit(code);
-            }, 100);
+            await flushLogs();
+            process.exit(code);
         } catch (error) {
             logging.error(error);
-            setTimeout(() => {
-                process.exit(1);
-            }, 100);
+            await flushLogs();
+            process.exit(1);
         }
     }
 

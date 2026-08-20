@@ -531,6 +531,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
     // We need access to these variables in both the try and catch block
     let bootLogger;
     let config;
+    let flushLogs;
     let ghostServer;
     let logging;
     let metrics;
@@ -553,6 +554,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Load logging');
         logging = require('@tryghost/logging');
         metrics = require('@tryghost/metrics');
+        flushLogs = require('./shared/flush-logs').flushLogs;
         bootLogger = new BootLogger(logging, metrics, startTime);
         debug('End: Load logging');
 
@@ -659,6 +661,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // If we pass the env var, kill Ghost
         if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
+            await flushLogs();
             process.exit(0);
         }
 
@@ -688,10 +691,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             notifyServerReady(serverStartError);
             ghostServer.shutdown(2);
         } else {
-            // Ghost server failed to start, set a timeout to give logging a chance to flush
-            setTimeout(() => {
-                process.exit(2);
-            }, 100);
+            // Ghost server failed to start, drain the log transports before exiting
+            await flushLogs();
+            process.exit(2);
         }
     }
 }
