@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {decideDunningIntervention} from '@tryghost/admin-x-framework/utils/dunning-intervention';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -147,7 +148,10 @@ export default class GhBillingIframe extends Component {
         // Reload the limit service to ensure all admin pages can enforce limits
         this.limit.reload();
 
-        this.stateBridge.triggerSubscriptionChange(data);
+        this.stateBridge.triggerSubscriptionChange({
+            ...data,
+            forceUpgrade: this.config.hostSettings?.forceUpgrade === true
+        });
 
         // Invalidate React Query cache for config data in the React admin (settings)
         if (window?.adminXQueryClient?.refetchQueries && typeof window.adminXQueryClient.refetchQueries === 'function') {
@@ -165,8 +169,16 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        // Detect if the current subscription is in a grace state and render a notification
-        if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
+        const dunningIntervention = decideDunningIntervention({
+            subscriptionStatus: data.subscription.status,
+            paymentAttempts: data.user?.payment_attempts,
+            forceUpgrade: this.config.hostSettings?.forceUpgrade === true,
+            audience: this.session.user?.isOwnerOnly ? 'owner' : 'staff',
+            modalDismissed: false
+        });
+
+        // Keep the existing overdue banner independent from the React-owned modal.
+        if (dunningIntervention.bannerVisible) {
             // This notification needs to be shown to every user regardless their permissions to see billing
             this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {
