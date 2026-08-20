@@ -32,6 +32,10 @@ export type Config = {
         apiKey?: string | null;
         contentFilter?: string;
     };
+    pintura?: {
+        js?: string;
+        css?: string;
+    };
     hostSettings?: {
         siteId?: string;
         forceUpgrade?: boolean;
@@ -103,10 +107,6 @@ export type Config = {
                     keywords?: string
                 }[]
             }
-        },
-        pintura?: {
-            js?: string
-            css?: string
         },
         managedEmail?: {
             enabled?: boolean
