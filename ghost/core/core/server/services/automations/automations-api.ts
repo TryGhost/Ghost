@@ -8,13 +8,13 @@ import type {
     AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
+import {StartAutomationsPollEvent} from './events/start-automations-poll-event';
 
 const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
 const lexicalLib = require('../../lib/lexical');
-const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 
 const MAX_AUTOMATION_ACTIONS = 20;
 
