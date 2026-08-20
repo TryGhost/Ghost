@@ -10,7 +10,6 @@ import {getMemberCommentingActionLabel, isMemberCommentingDisabled} from './memb
 import {toast} from 'sonner';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEnableMemberCommenting, useMembersFetching} from '@tryghost/admin-x-framework/api/members';
-import {useQueryClient} from '@tanstack/react-query';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 interface MemberActionsMenuProps {
@@ -29,7 +28,6 @@ interface MemberActionsMenuProps {
  * Impersonate, Sign out of all devices, Disable/Enable commenting, Delete member.
  */
 const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({member, allowLeaveWithUnsavedChanges}) => {
-    const queryClient = useQueryClient();
     const {data: currentUser} = useCurrentUser();
     const [showImpersonate, setShowImpersonate] = React.useState(false);
     const [showLogout, setShowLogout] = React.useState(false);
@@ -62,13 +60,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({member, allowLeave
             toast.success(`Commenting has been enabled for ${displayName}.`);
         } catch {
             toast.error('Couldn’t enable commenting. Please try again.');
-            return;
         }
-        // Fire-and-forget the extra members-cache refresh so the menu label
-        // flips back on the next render. Not awaited: a follow-up refetch
-        // failure must NOT flip the toast to an error (the enable itself
-        // succeeded and is already reflected server-side).
-        void queryClient.invalidateQueries({queryKey: ['MembersResponseType']});
     };
 
     return (
