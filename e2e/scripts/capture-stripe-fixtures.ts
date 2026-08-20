@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {PRICES, provision, stripeClient} from './provision-stripe-environment.ts';
+import {PRICES, asSessionCreateParams, provision, stripeClient} from './provision-stripe-environment.ts';
 import {fileURLToPath} from 'node:url';
 // Reached across the workspace deliberately: the point of this capture is that the request
 // is the one Ghost builds, so importing the builder is the coupling rather than a leak.
@@ -108,13 +108,13 @@ async function main(): Promise<void> {
         phone: null
     });
 
-    save('checkout_session.collection', await stripe.checkout.sessions.create({
+    save('checkout_session.collection', await stripe.checkout.sessions.create(asSessionCreateParams({
         ...urls,
         mode: 'subscription',
         line_items: [{price: monthly.id, quantity: 1}],
         ...collection
-    }));
-    save('checkout_session.donation', await stripe.checkout.sessions.create({
+    })));
+    save('checkout_session.donation', await stripe.checkout.sessions.create(asSessionCreateParams({
         ...urls,
         mode: 'payment',
         submit_type: 'donate',
@@ -125,7 +125,7 @@ async function main(): Promise<void> {
             type: 'text',
             optional: true
         }]
-    }));
+    })));
 
     // Without this there is no way to tell how stale the fixtures are, which makes
     // the "fixtures go stale" trade-off unmeasurable rather than merely accepted.

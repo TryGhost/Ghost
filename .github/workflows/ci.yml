@@ -1218,6 +1218,12 @@ jobs:
       - name: Check Stripe fixtures
         run: pnpm --filter @tryghost/e2e test:fixtures
 
+      # The capture and probe scripts import the request builder out of ghost/core, so
+      # that they send what Ghost sends. Nothing typechecked them until this ran, and
+      # the capture script had already rotted against a change to the builder.
+      - name: Check E2E types
+        run: pnpm --filter @tryghost/e2e test:types
+
       - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:

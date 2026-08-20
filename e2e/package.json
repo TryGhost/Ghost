@@ -26,7 +26,7 @@
     "test:single": "bash ./scripts/run-playwright-host.sh playwright test --project=main -g",
     "test:debug": "bash ./scripts/run-playwright-host.sh playwright test --project=main --headed --timeout=60000 -g",
     "test:fixtures": "playwright test --project=fixtures",
-    "test:types": "tsc --noEmit",
+    "test:types": "tsc --noEmit && tsc -p tsconfig.scripts.json",
     "lint": "eslint . --cache"
   },
   "files": [

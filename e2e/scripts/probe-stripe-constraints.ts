@@ -1,4 +1,4 @@
-import {provision, stripeClient} from './provision-stripe-environment.ts';
+import {asSessionCreateParams, provision, stripeClient} from './provision-stripe-environment.ts';
 
 /**
  * Measures the checkout constraints the fake Stripe server enforces.
@@ -30,7 +30,7 @@ const field = (overrides: Record<string, unknown> = {}) => ({
 
 async function probe(name: string, params: Record<string, unknown>): Promise<void> {
     try {
-        await stripe.checkout.sessions.create(params as Stripe.Checkout.SessionCreateParams);
+        await stripe.checkout.sessions.create(asSessionCreateParams(params));
         log(`  ACCEPTED  ${name}`);
     } catch (error) {
         log(`  REJECTED  ${name}`);

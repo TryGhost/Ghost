@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {asSessionCreateParams, provision, stripeClient} from './provision-stripe-environment.ts';
 import {fileURLToPath} from 'node:url';
-import {provision, stripeClient} from './provision-stripe-environment.ts';
+import type Stripe from 'stripe';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(__dirname, '../helpers/services/stripe/fixtures');
@@ -48,7 +49,7 @@ async function main(): Promise<void> {
         process.exit(1);
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripe.checkout.sessions.create(asSessionCreateParams({
         mode: 'subscription',
         line_items: [{price: monthly.id, quantity: 1}],
         success_url: 'https://example.com/success',
@@ -61,7 +62,7 @@ async function main(): Promise<void> {
             type: 'text',
             optional: true
         }]
-    });
+    }));
 
     log('');
     log('  Open this and pay:');
