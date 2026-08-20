@@ -184,7 +184,7 @@ describe('production preview interaction', () => {
             'assets/built/chunk.js': 'import {prefix} from "./candidate.js"; export const label = () => `${prefix} candidate`;'
         }), new AbortController().signal);
 
-        await expect.poll(() => adapter.state.selection?.id).toBe('index.hbs:1:1');
+        expect(adapter.state.selection).toBeNull();
         await expect(adapter.inspectElement({selector: '#asset-target'}, new AbortController().signal)).resolves.toMatchObject({
             text: 'Initial candidate|url("https://example.com/content/images/fallback.png")',
             styles: {color: 'rgb(255, 0, 0)'}
@@ -211,7 +211,7 @@ describe('production preview interaction', () => {
         iframes.push(iframe);
         const renderer = new BrowserRenderer();
         renderer.render
-            .mockResolvedValueOnce(rendered('<html><body><main data-edit="index.hbs:1:1"><span>Select me</span></main><script>document.querySelector("base").href = "https://theme-controlled.invalid/"; window.addEventListener("message", () => document.querySelector("span").textContent = "Command stolen", {capture:true}); window.addEventListener("click", event => event.stopImmediatePropagation(), true); MessagePort.prototype.postMessage = () => document.querySelector("span").textContent = "Port poisoned"; Promise.resolve = () => ({then: callback => callback({text: "Promise poisoned"})}); window.addEventListener("load", () => setTimeout(() => document.querySelector("span").click(), 50), {once:true})</script></body></html>'))
+            .mockResolvedValueOnce(rendered('<html><body><main data-edit="index.hbs:1:1"><span>Select me</span></main><script>document.querySelector("base").href = "https://theme-controlled.invalid/"; window.addEventListener("message", () => document.querySelector("span").textContent = "Command stolen", {capture:true}); window.addEventListener("click", event => event.stopImmediatePropagation(), true); MessagePort.prototype.postMessage = () => document.querySelector("span").textContent = "Port poisoned"; Promise.resolve = () => ({then: callback => callback({text: "Promise poisoned"})});</script></body></html>'))
             .mockResolvedValueOnce(rendered('<html><body><main data-edit="index.hbs:1:1"><span>Still here</span></main></body></html>'))
             .mockResolvedValueOnce(rendered('<html><body><section>No source marker</section></body></html>'));
         const adapter = new ThemePreviewAdapter({
@@ -223,6 +223,10 @@ describe('production preview interaction', () => {
         await adapter.start(initial, new AbortController().signal);
         const initialPage = await adapter.inspectPage(new AbortController().signal);
         expect(initialPage).toMatchObject({url: 'https://example.com/', text: 'Select me'});
+
+        await adapter.setSelectionMode(true, new AbortController().signal);
+        const frame = page.frameLocator(page.elementLocator(iframe));
+        await frame.getByText('Select me').click();
 
         await expect.poll(() => adapter.state.selection).toMatchObject({
             id: 'index.hbs:1:1',

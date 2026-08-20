@@ -72,6 +72,7 @@
     "react-svg-map": "2.2.0",
     "semver": "catalog:",
     "sonner": "catalog:",
+        "streamdown": "catalog:",
     "temporal-polyfill": "catalog:",
     "use-debounce": "10.1.1",
     "validator": "catalog:",

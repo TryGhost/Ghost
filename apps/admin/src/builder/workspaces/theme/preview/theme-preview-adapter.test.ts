@@ -48,6 +48,9 @@ class FakeSurface implements PreviewDocumentSurface {
     readonly documents: Array<{html: string; url: string; revision: string}> = [];
     readonly externalUrls: string[] = [];
     readonly selections: Array<BuilderSelectionContext | null> = [];
+    readonly inlineEditModes: boolean[] = [];
+    readonly interactionModes: Array<'browse' | 'select' | 'edit'> = [];
+    readonly selectionModes: boolean[] = [];
     remappedSelection: BuilderSelectionContext | null = null;
     navigationHandler: ((url: string) => void) | null = null;
     selectionHandler: ((selection: BuilderSelectionContext | null) => void) | null = null;
@@ -78,6 +81,21 @@ class FakeSurface implements PreviewDocumentSurface {
 
     screenshot(_request: ScreenshotRequest, _signal: AbortSignal): Promise<ScreenshotResult> {
         return Promise.resolve({dataUrl: 'data:image/png;base64,AA==', width: 1200, height: 800, warnings: []});
+    }
+
+    setInlineEditMode(enabled: boolean): Promise<void> {
+        this.inlineEditModes.push(enabled);
+        return Promise.resolve();
+    }
+
+    setInteractionMode(mode: 'browse' | 'select' | 'edit'): Promise<void> {
+        this.interactionModes.push(mode);
+        return Promise.resolve();
+    }
+
+    setSelectionMode(enabled: boolean): Promise<void> {
+        this.selectionModes.push(enabled);
+        return Promise.resolve();
     }
 
     openExternal(url: string): void {
@@ -488,6 +506,18 @@ describe('ThemePreviewAdapter', () => {
         expect(adapter.draft.selection).toBeNull();
     });
 
+    it('forwards explicit interaction modes to the preview surface', async () => {
+        const initial = await draft();
+        const {adapter, renderer, surface} = setup();
+        renderer.render.mockResolvedValue(rendered('<html>Home</html>'));
+        await adapter.start(initial, new AbortController().signal);
+
+        await adapter.setInteractionMode('select', new AbortController().signal);
+        await adapter.setInteractionMode('edit', new AbortController().signal);
+
+        expect(surface.interactionModes).toEqual(['select', 'edit']);
+    });
+
     it('uses the active selection when restoring after failed adoption', async () => {
         const initial = await draft();
         const candidate = await draft('<main>Changed</main>');
@@ -643,7 +673,7 @@ describe('preview document bridge', () => {
         expect(bridgeScript?.textContent).toContain('clone.outerHTML');
         expect(bridgeScript?.textContent).toContain('new MessageChannel');
         expect(bridgeScript?.textContent).not.toContain('html2canvas-pro');
-        expect(bridgeScript?.dataset).toMatchObject({builderChannel: 'channel-1', builderDocument: 'document-1', builderSelection: 'index.hbs:1:1'});
+        expect(bridgeScript?.dataset).toMatchObject({builderChannel: 'channel-1', builderDocument: 'document-1', builderSelection: 'index.hbs:1:1', builderSelectionMode: 'false'});
     });
 
     it('embeds candidate theme assets while preserving unrelated live resources', () => {

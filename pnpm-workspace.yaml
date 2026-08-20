@@ -249,6 +249,7 @@ catalog:
   '@earendil-works/pi-agent-core': 0.84.2
   '@earendil-works/pi-ai': 0.84.2
   html2canvas-pro: 2.2.1
+  streamdown: 2.5.0
 
 catalogs:
   react17:

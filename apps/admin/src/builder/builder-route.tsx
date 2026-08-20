@@ -27,6 +27,7 @@ import {createAdminThemePublishTransport, ThemePublisher} from '@/builder/worksp
 import {ThemeWorkspace} from '@/builder/workspaces/theme/theme-workspace';
 
 import type {BuilderSessionState} from '@/builder/core/builder-session';
+import type {PreviewInteractionMode} from '@/builder/components/preview-panel';
 import type {BuilderSelectionContext} from '@/builder/core/workspace';
 import type {BuilderProvider} from '@/builder/models/curated-models';
 import type {CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
@@ -51,6 +52,9 @@ const loadingState: BuilderSessionState = {
     messages: [],
     workspace: {revision: '', dirty: false, validation: null}
 };
+
+type PreviewHistory = {entries: string[]; index: number};
+const emptyPreviewHistory: PreviewHistory = {entries: [], index: -1};
 
 function compatibleSettings(settings: Setting[]): Array<{key: string; value: string | boolean | null}> {
     return settings.flatMap(setting => typeof setting.value === 'string' || typeof setting.value === 'boolean' || setting.value === null ? [{key: setting.key, value: setting.value}] : []);
@@ -152,7 +156,10 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const [provider, setProvider] = useState<BuilderProvider>('openai');
     const [modelId, setModelId] = useState(() => providerDefaultModel('openai'));
     const [publishState, setPublishState] = useState<ThemePublishState>({status: 'idle', stage: 'idle'});
-    const [previewEditing, setPreviewEditing] = useState(false);
+    const [previewMode, setPreviewMode] = useState<PreviewInteractionMode>('browse');
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [previewHistory, setPreviewHistory] = useState<PreviewHistory>(emptyPreviewHistory);
+    const [previewNavigationPending, setPreviewNavigationPending] = useState(false);
     const [inlineEditPending, setInlineEditPending] = useState(false);
     const [inlineEditAnnouncement, setInlineEditAnnouncement] = useState<{id: number; message: string} | null>(null);
     const [publishTheme, setPublishTheme] = useState({name: theme.name, builtIn: isDefaultOrLegacyTheme(theme)});
@@ -161,6 +168,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const queryClient = useQueryClient();
     const previewRef = useRef<ThemePreviewAdapter | null>(null);
     const previewToggleSequenceRef = useRef(0);
+    const previewNavigationPendingRef = useRef(false);
     const inlineAnnouncementSequenceRef = useRef(0);
     const previewEditingButtonRef = useRef<HTMLButtonElement>(null);
     const publisherRef = useRef<ThemePublisher | null>(null);
@@ -181,7 +189,11 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
             return;
         }
         previewToggleSequenceRef.current += 1;
-        setPreviewEditing(false);
+        setPreviewMode('browse');
+        setPreviewUrl('');
+        setPreviewHistory(emptyPreviewHistory);
+        setPreviewNavigationPending(false);
+        previewNavigationPendingRef.current = false;
         setInlineEditPending(false);
         const surface = new IframePreviewDocumentSurface(iframe);
         let disposed = false;
@@ -243,7 +255,20 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
         previewRef.current = preview;
         setSession(nextSession);
         const unsubscribeSession = nextSession.subscribe(setState);
-        const unsubscribePreview = preview.subscribe(previewState => setSelection(previewState.selection));
+        const unsubscribePreview = preview.subscribe((previewState) => {
+            setSelection(previewState.selection);
+            setPreviewUrl(previewState.url);
+            if (!previewState.url || previewNavigationPendingRef.current) {
+                return;
+            }
+            setPreviewHistory((current) => {
+                if (current.entries[current.index] === previewState.url) {
+                    return current;
+                }
+                const entries = [...current.entries.slice(0, current.index + 1), previewState.url];
+                return {entries, index: entries.length - 1};
+            });
+        });
         void nextSession.load().catch(() => {});
 
         return () => {
@@ -259,11 +284,15 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     }, [customSettings, iframe, installedThemeNames, modelAccess, settings, siteUrl, theme]);
 
     useEffect(() => {
-        if (previewEditing && !['ready', 'interrupted'].includes(state.status)) {
-            setPreviewEditing(false);
-            void previewRef.current?.setInlineEditMode(false, new AbortController().signal).catch(() => {});
+        if (previewMode !== 'browse' && !['ready', 'interrupted'].includes(state.status)) {
+            previewToggleSequenceRef.current += 1;
+            setPreviewMode('browse');
+            const preview = previewRef.current;
+            if (preview) {
+                void preview.setInteractionMode('browse', new AbortController().signal).catch(() => {});
+            }
         }
-    }, [previewEditing, state.status]);
+    }, [previewMode, state.status]);
 
     const shouldGuardNavigation = state.workspace.dirty || state.status === 'running' || state.status === 'publishing';
     useConfirmUnload(shouldGuardNavigation);
@@ -276,6 +305,63 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
         setModelId(nextModelId);
     };
 
+    const setPreviewInteractionMode = (mode: PreviewInteractionMode) => {
+        const preview = previewRef.current;
+        if (!preview) {
+            return;
+        }
+        previewToggleSequenceRef.current += 1;
+        const sequence = previewToggleSequenceRef.current;
+        const controller = new AbortController();
+        void preview.setInteractionMode(mode, controller.signal)
+            .then(() => {
+                if (previewToggleSequenceRef.current === sequence) {
+                    setPreviewMode(mode);
+                }
+            }).catch(() => {});
+    };
+
+    const navigatePreview = async (target: string, historyIndex?: number) => {
+        const preview = previewRef.current;
+        if (!preview || previewNavigationPendingRef.current) {
+            return false;
+        }
+        previewNavigationPendingRef.current = true;
+        setPreviewNavigationPending(true);
+        try {
+            const result = await preview.navigate(target, new AbortController().signal);
+            if (result.kind === 'virtual') {
+                setPreviewHistory((current) => {
+                    if (historyIndex !== undefined) {
+                        const entries = [...current.entries];
+                        entries[historyIndex] = result.url;
+                        return {entries, index: historyIndex};
+                    }
+                    if (current.entries[current.index] === result.url) {
+                        return current;
+                    }
+                    const entries = [...current.entries.slice(0, current.index + 1), result.url];
+                    return {entries, index: entries.length - 1};
+                });
+            }
+            return result.kind === 'virtual';
+        } catch {
+            return false;
+        } finally {
+            previewNavigationPendingRef.current = false;
+            setPreviewNavigationPending(false);
+        }
+    };
+
+    const traversePreviewHistory = (direction: -1 | 1) => {
+        const nextIndex = previewHistory.index + direction;
+        const target = previewHistory.entries[nextIndex];
+        if (!target) {
+            return;
+        }
+        void navigatePreview(target, nextIndex);
+    };
+
     return (
         <>
             <BuilderShell
@@ -286,9 +372,12 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                 modelId={modelId}
                 models={CURATED_MODELS}
                 preview={<iframe ref={setIframe} className='size-full border-0 bg-background' title='Theme preview' />}
-                previewEditing={previewEditing}
+                previewCanGoBack={previewHistory.index > 0}
+                previewCanGoForward={previewHistory.index >= 0 && previewHistory.index < previewHistory.entries.length - 1}
+                previewControlsDisabled={inlineEditPending || previewNavigationPending || !['ready', 'interrupted'].includes(state.status)}
                 previewEditingButtonRef={previewEditingButtonRef}
-                previewEditingDisabled={inlineEditPending || !['ready', 'interrupted'].includes(state.status)}
+                previewMode={previewMode}
+                previewUrl={previewUrl}
                 provider={provider}
                 publishAction={
                     <PublishThemeDialog
@@ -323,6 +412,9 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                     modelAccess.forgetApiKey(targetProvider);
                     setCredentialVersion(value => value + 1);
                 }}
+                onNavigatePreview={navigatePreview}
+                onPreviewBack={() => traversePreviewHistory(-1)}
+                onPreviewForward={() => traversePreviewHistory(1)}
                 onRemoveSelection={() => void previewRef.current?.clearSelection()}
                 onRetry={() => void session?.retryLastTurn()}
                 onRewind={messageId => session?.rewind(messageId) ?? Promise.reject(new Error('The Builder session is not ready.'))}
@@ -331,25 +423,9 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                     setCredentialVersion(value => value + 1);
                 }}
                 onSelectModel={selectModel}
+                onSetPreviewMode={setPreviewInteractionMode}
                 onStop={() => session?.stop()}
                 onSubmit={value => session?.startTurn(value) ?? Promise.reject(new Error('The Builder session is not ready.'))}
-                onTogglePreviewEditing={(enabled) => {
-                    const preview = previewRef.current;
-                    if (!preview) {
-                        return;
-                    }
-                    previewToggleSequenceRef.current += 1;
-                    const sequence = previewToggleSequenceRef.current;
-                    void preview.setInlineEditMode(enabled, new AbortController().signal).then(() => {
-                        if (previewToggleSequenceRef.current === sequence) {
-                            setPreviewEditing(enabled);
-                        }
-                    }).catch(() => {
-                        if (previewToggleSequenceRef.current === sequence) {
-                            setPreviewEditing(false);
-                        }
-                    });
-                }}
             />
             {inlineEditAnnouncement && <span key={inlineEditAnnouncement.id} className='sr-only' role='status'>{inlineEditAnnouncement.message}</span>}
             <DirtyConfirmDialog

@@ -4,7 +4,7 @@ import {describe, expect, it} from 'vitest';
 import {ToolGroup} from './tool';
 
 describe('ToolGroup', () => {
-    it('marks failed tool results as failed', () => {
+    it('presents failed work without exposing internal tool details', () => {
         render(<ToolGroup toolCalls={[{
             id: 'failed-tool',
             name: 'write_file',
@@ -15,9 +15,14 @@ describe('ToolGroup', () => {
 
         expect(screen.getByText('Failed')).toBeInTheDocument();
         expect(screen.queryByText('Complete')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText('Some changes need attention'));
+        expect(screen.getByText('Saving design changes')).toBeVisible();
+        expect(screen.getByText('Needs attention')).toBeVisible();
+        expect(screen.queryByText('write_file')).not.toBeInTheDocument();
+        expect(screen.queryByText('Template error')).not.toBeInTheDocument();
     });
 
-    it('omits image payloads and truncates large results', () => {
+    it('summarizes completed visual checks without rendering result payloads', () => {
         const image = 'A'.repeat(20_000);
         render(<ToolGroup toolCalls={[{
             id: 'screenshot-tool',
@@ -32,9 +37,10 @@ describe('ToolGroup', () => {
             }
         }]} />);
 
-        fireEvent.click(screen.getByText('1 tool action'));
+        fireEvent.click(screen.getByText('Changes complete'));
         expect(screen.queryByText(image)).not.toBeInTheDocument();
-        expect(screen.getByText(/image payload omitted/)).toBeInTheDocument();
-        expect(screen.getByText(/result truncated/)).toBeInTheDocument();
+        expect(screen.getByText('Reviewing how the page looks')).toBeVisible();
+        expect(screen.queryByText(/image payload omitted/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/result truncated/)).not.toBeInTheDocument();
     });
 });

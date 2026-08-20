@@ -4,7 +4,7 @@ import {Button, Textarea} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 
-import type {FormEvent, KeyboardEvent, Ref} from 'react';
+import type {FormEvent, KeyboardEvent, ReactNode, Ref} from 'react';
 
 export const maxBuilderPromptLength = 32_000;
 
@@ -12,11 +12,12 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
-export const PromptInput = ({disabled, isRunning, context, inputRef, onRemoveContext, onSubmit, onStop}: {
+export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker, onRemoveContext, onSubmit, onStop}: {
     disabled?: boolean;
     isRunning: boolean;
     context?: {label: string} | null;
     inputRef?: Ref<HTMLTextAreaElement>;
+    modelPicker?: ReactNode;
     onRemoveContext?: () => void;
     onSubmit: (value: string) => void | Promise<unknown>;
     onStop: () => void;
@@ -87,7 +88,8 @@ export const PromptInput = ({disabled, isRunning, context, inputRef, onRemoveCon
                     onKeyDown={handleKeyDown}
                 />
                 {submissionError && <Text className='text-destructive' role='alert' size='sm'>{submissionError}</Text>}
-                <Inline align='center' justify='end'>
+                <Inline align='center' justify={modelPicker ? 'between' : 'end'}>
+                    {modelPicker}
                     {isRunning ? (
                         <Button aria-label='Stop generating' size='icon' type='button' variant='outline' onClick={onStop}>
                             <LucideIcon.Square aria-hidden='true' />

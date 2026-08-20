@@ -13,6 +13,7 @@ export function previewRuntimeBootstrap(): void {
     const documentId = runtimeScript?.dataset.builderDocument;
     const selectedId = runtimeScript?.dataset.builderSelection || null;
     let inlineEditing = runtimeScript?.dataset.builderInlineEditing === 'true';
+    let selectionMode = runtimeScript?.dataset.builderSelectionMode === 'true';
     if (!channel || !documentId) {
         return;
     }
@@ -454,18 +455,35 @@ export function previewRuntimeBootstrap(): void {
         imagePickerTarget = element;
         imagePicker.click();
     };
+    const addSourceTabStops = () => {
+        document.querySelectorAll<HTMLElement>('[data-edit]').forEach((element) => {
+            const naturallyFocusable = element.matches('a[href],button,input,select,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]');
+            if (!naturallyFocusable && !inlineTabStops.has(element)) {
+                inlineTabStops.set(element, element.getAttribute('tabindex'));
+                element.tabIndex = 0;
+            }
+        });
+    };
+    const clearSourceTabStops = () => {
+        inlineTabStops.forEach((tabIndex, element) => {
+            if (tabIndex === null) {
+                element.removeAttribute('tabindex');
+            } else {
+                element.setAttribute('tabindex', tabIndex);
+            }
+        });
+        inlineTabStops.clear();
+    };
     const setInlineEditMode = (enabled: boolean) => {
         inlineModeGeneration += 1;
         inlineEditing = enabled;
+        if (enabled) {
+            selectionMode = false;
+            document.documentElement.dataset.selectionMode = 'off';
+        }
         document.documentElement.dataset.inlineEditMode = enabled ? 'on' : 'off';
         if (enabled) {
-            document.querySelectorAll<HTMLElement>('[data-edit]').forEach((element) => {
-                const naturallyFocusable = element.matches('a[href],button,input,select,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]');
-                if (!naturallyFocusable && !inlineTabStops.has(element)) {
-                    inlineTabStops.set(element, element.getAttribute('tabindex'));
-                    element.tabIndex = 0;
-                }
-            });
+            addSourceTabStops();
         } else {
             cancelInlineEdit();
             clearInlineHover();
@@ -475,15 +493,29 @@ export function previewRuntimeBootstrap(): void {
                 pendingImageEdit.element.style.outline = pendingImageEdit.previousOutline;
                 pendingImageEdit = null;
             }
-            inlineTabStops.forEach((tabIndex, element) => {
-                if (tabIndex === null) {
-                    element.removeAttribute('tabindex');
-                } else {
-                    element.setAttribute('tabindex', tabIndex);
-                }
-            });
-            inlineTabStops.clear();
+            if (!selectionMode) {
+                clearSourceTabStops();
+            }
         }
+    };
+    const setSelectionMode = (enabled: boolean) => {
+        selectionMode = enabled;
+        document.documentElement.dataset.selectionMode = enabled ? 'on' : 'off';
+        if (enabled && inlineEditing) {
+            setInlineEditMode(false);
+            addSourceTabStops();
+        } else if (enabled) {
+            addSourceTabStops();
+        } else if (!enabled) {
+            clearInlineHover();
+            if (!inlineEditing) {
+                clearSourceTabStops();
+            }
+        }
+    };
+    const setInteractionMode = (mode: 'browse' | 'select' | 'edit') => {
+        setInlineEditMode(mode === 'edit');
+        setSelectionMode(mode === 'select');
     };
     const handleInlineEditResult = (message: {editId?: unknown; ok?: unknown; message?: unknown}) => {
         if (!Number.isSafeInteger(message.editId) || typeof message.ok !== 'boolean') {
@@ -517,12 +549,13 @@ export function previewRuntimeBootstrap(): void {
     };
 
     setInlineEditMode(inlineEditing);
+    setSelectionMode(selectionMode);
     window.addEventListener('pointerover', (event) => {
-        if (!inlineEditing || activeInlineEdit || !(event.target instanceof Element)) {
+        if ((!inlineEditing && !selectionMode) || activeInlineEdit || !(event.target instanceof Element)) {
             return;
         }
         const editable = event.target.closest<HTMLElement>('[data-edit]');
-        if (!editable || (!(editable instanceof HTMLImageElement) && !directEditableText(editable)) || editable === hoveredInlineElement) {
+        if (!editable || (inlineEditing && !(editable instanceof HTMLImageElement) && !directEditableText(editable)) || editable === hoveredInlineElement) {
             return;
         }
         clearInlineHover();
@@ -560,7 +593,7 @@ export function previewRuntimeBootstrap(): void {
     }, true);
 
     window.addEventListener('keydown', (event) => {
-        if (!event.isTrusted || !inlineEditing || activeInlineEdit || !['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) {
+        if (!event.isTrusted || (!inlineEditing && !selectionMode) || activeInlineEdit || !['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) {
             return;
         }
         const editable = event.target.closest('[data-edit]');
@@ -570,6 +603,13 @@ export function previewRuntimeBootstrap(): void {
         event.preventDefault();
         event.stopImmediatePropagation();
         clearInlineHover();
+        if (selectionMode) {
+            const selection = context(editable);
+            if (selection) {
+                send({type: 'select', selection});
+            }
+            return;
+        }
         if (editable instanceof HTMLImageElement) {
             beginInlineImage(editable);
         } else {
@@ -593,8 +633,8 @@ export function previewRuntimeBootstrap(): void {
             }
             return;
         }
-        const selection = editable ? context(editable) : null;
-        if (selection) {
+        const selection = selectionMode && editable ? context(editable) : null;
+        if (event.isTrusted && selection) {
             event.preventDefault();
             event.stopImmediatePropagation();
             send({type: 'select', selection});
@@ -645,7 +685,7 @@ export function previewRuntimeBootstrap(): void {
             handleInlineEditResult(message as {editId?: unknown; ok?: unknown; message?: unknown});
             return;
         }
-        if (message.type !== 'command' || !Number.isInteger(message.requestId) || !['inspect-page', 'inspect-element', 'screenshot', 'set-inline-edit-mode'].includes(String(message.command))) {
+        if (message.type !== 'command' || !Number.isInteger(message.requestId) || !['inspect-page', 'inspect-element', 'screenshot', 'set-inline-edit-mode', 'set-selection-mode', 'set-interaction-mode'].includes(String(message.command))) {
             return;
         }
         try {
@@ -656,9 +696,20 @@ export function previewRuntimeBootstrap(): void {
                 result = inspectElement(message.payload as {marker?: unknown; selector?: unknown});
             } else if (message.command === 'screenshot') {
                 result = screenshotSnapshot();
-            } else {
+            } else if (message.command === 'set-inline-edit-mode') {
                 const enabled = Boolean((message.payload as {enabled?: unknown})?.enabled);
                 setInlineEditMode(enabled);
+                result = true;
+            } else if (message.command === 'set-selection-mode') {
+                const enabled = Boolean((message.payload as {enabled?: unknown})?.enabled);
+                setSelectionMode(enabled);
+                result = true;
+            } else {
+                const mode = (message.payload as {mode?: unknown})?.mode;
+                if (!['browse', 'select', 'edit'].includes(String(mode))) {
+                    throw fail('invalid_preview_interaction_mode', 'The preview interaction mode is invalid.');
+                }
+                setInteractionMode(mode as 'browse' | 'select' | 'edit');
                 result = true;
             }
             portPostMessage({channel, documentId, type: 'command-result', requestId: message.requestId, ok: true, result});

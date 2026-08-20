@@ -48,7 +48,9 @@ export interface PreviewDocumentSurface {
     inspectPage(url: string, signal: AbortSignal): Promise<PreviewPageInspection>;
     inspectElement(target: PreviewElementTarget, signal: AbortSignal): Promise<PreviewElementInspection>;
     screenshot(request: ScreenshotRequest, signal: AbortSignal): Promise<ScreenshotResult>;
+    setInteractionMode?(mode: 'browse' | 'select' | 'edit', signal: AbortSignal): Promise<void>;
     setInlineEditMode?(enabled: boolean, signal: AbortSignal): Promise<void>;
+    setSelectionMode?(enabled: boolean, signal: AbortSignal): Promise<void>;
     openExternal(url: string): void;
     onNavigate(handler: (url: string) => void): () => void;
     onSelection(handler: (selection: BuilderSelectionContext | null) => void): () => void;
@@ -70,7 +72,7 @@ type CommandResultMessage =
     | {channel: string; documentId: string; type: 'command-result'; requestId: number; ok: true; result: unknown}
     | {channel: string; documentId: string; type: 'command-result'; requestId: number; ok: false; error: {code: string; message: string}};
 
-type PreviewCommand = 'inspect-page' | 'inspect-element' | 'screenshot' | 'set-inline-edit-mode';
+type PreviewCommand = 'inspect-page' | 'inspect-element' | 'screenshot' | 'set-inline-edit-mode' | 'set-selection-mode' | 'set-interaction-mode';
 
 type PreviewScreenshotSnapshot = {
     html: string;
@@ -563,7 +565,7 @@ function removeUnsupportedGhostScripts(parsed: Document, documentUrl: string): v
     });
 }
 
-export function createPreviewDocument(document: PreviewDocument, channel: string, selection: BuilderSelectionContext | null, documentId = document.revision, resolveAsset: PreviewAssetResolver = () => null, inlineEditing = false, moduleImports: Record<string, string> = {}): string {
+export function createPreviewDocument(document: PreviewDocument, channel: string, selection: BuilderSelectionContext | null, documentId = document.revision, resolveAsset: PreviewAssetResolver = () => null, inlineEditing = false, moduleImports: Record<string, string> = {}, selectionMode = false): string {
     const parsed = new DOMParser().parseFromString(document.html, 'text/html');
     parsed.querySelectorAll('meta[http-equiv]').forEach((meta) => {
         const directive = meta.getAttribute('http-equiv')?.toLowerCase();
@@ -591,6 +593,7 @@ export function createPreviewDocument(document: PreviewDocument, channel: string
     script.dataset.builderDocument = documentId;
     script.dataset.builderSelection = selection?.id ?? '';
     script.dataset.builderInlineEditing = inlineEditing ? 'true' : 'false';
+    script.dataset.builderSelectionMode = selectionMode ? 'true' : 'false';
     script.textContent = `;(${previewRuntimeBootstrap.toString()})();`.replace(/<\/script/gi, '<\\/script');
     parsed.head.prepend(script);
     return `<!doctype html>${parsed.documentElement.outerHTML}`;
@@ -619,6 +622,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     private commandPort: MessagePort | null = null;
     private commandPortDocumentId: string | null = null;
     private inlineEditing = false;
+    private selectionMode = false;
     private inlineEditController: AbortController | null = null;
 
     constructor(iframe: HTMLIFrameElement, {openWindow = url => window.open(url, '_blank', 'noopener'), timeoutMs = 5_000, commandTimeoutMs = 15_000}: {openWindow?: (url: string) => void; timeoutMs?: number; commandTimeoutMs?: number} = {}) {
@@ -657,7 +661,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
             this.pendingReady = {documentId, ready: false, loaded: false, selection: null, resolve, reject, timeout, removeAbortListener: () => signal.removeEventListener('abort', handleAbort)};
             try {
                 const assetBundle = createPreviewAssetResolver(document);
-                this.pendingSrcdoc = createPreviewDocument(document, this.channel, selection, documentId, assetBundle.resolve, this.inlineEditing, assetBundle.moduleImports);
+                this.pendingSrcdoc = createPreviewDocument(document, this.channel, selection, documentId, assetBundle.resolve, this.inlineEditing, assetBundle.moduleImports, this.selectionMode);
             } catch (error) {
                 this.rejectPending(error instanceof Error ? error : new Error(String(error)), false);
                 return;
@@ -709,10 +713,42 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     async setInlineEditMode(enabled: boolean, signal: AbortSignal): Promise<void> {
         if (!this.committedDocumentId) {
             this.inlineEditing = enabled;
+            if (enabled) {
+                this.selectionMode = false;
+            }
             return;
         }
         await this.command('set-inline-edit-mode', {enabled}, signal);
         this.inlineEditing = enabled;
+        if (enabled) {
+            this.selectionMode = false;
+        }
+    }
+
+    async setInteractionMode(mode: 'browse' | 'select' | 'edit', signal: AbortSignal): Promise<void> {
+        if (!this.committedDocumentId) {
+            this.inlineEditing = mode === 'edit';
+            this.selectionMode = mode === 'select';
+            return;
+        }
+        await this.command('set-interaction-mode', {mode}, signal);
+        this.inlineEditing = mode === 'edit';
+        this.selectionMode = mode === 'select';
+    }
+
+    async setSelectionMode(enabled: boolean, signal: AbortSignal): Promise<void> {
+        if (!this.committedDocumentId) {
+            this.selectionMode = enabled;
+            if (enabled) {
+                this.inlineEditing = false;
+            }
+            return;
+        }
+        await this.command('set-selection-mode', {enabled}, signal);
+        this.selectionMode = enabled;
+        if (enabled) {
+            this.inlineEditing = false;
+        }
     }
 
     openExternal(url: string): void {

@@ -6,8 +6,8 @@ import {LucideIcon} from '@tryghost/shade/utils';
 
 import {Checkpoint} from './ai-elements/checkpoint';
 import {Conversation, ConversationContent, ConversationEmptyState} from './ai-elements/conversation';
-import {Message, MessageContent} from './ai-elements/message';
-import {ModelSelector} from './ai-elements/model-selector';
+import {Message, MessageContent, MessageResponse} from './ai-elements/message';
+import {ModelPicker} from './ai-elements/model-picker';
 import {PromptInput} from './ai-elements/prompt-input';
 import {ToolGroup} from './ai-elements/tool';
 import {ProviderSetup} from './provider-setup';
@@ -73,10 +73,12 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
                         {state.messages.map((message, messageIndex) => (
                             <Message key={message.id} from={message.role}>
                                 <Stack className={message.role === 'user' ? 'items-end' : ''} gap='sm'>
-                                    <MessageContent from={message.role} status={message.status}>
-                                        {message.text || (message.role === 'assistant' && isRunning ? 'Working…' : '')}
-                                    </MessageContent>
                                     {message.toolCalls?.length ? <ToolGroup toolCalls={message.toolCalls} /> : null}
+                                    <MessageContent from={message.role} status={message.status}>
+                                        {message.role === 'assistant'
+                                            ? <MessageResponse>{message.text || (isRunning ? 'Working…' : '')}</MessageResponse>
+                                            : <Text className='wrap-break-word whitespace-pre-wrap'>{message.text}</Text>}
+                                    </MessageContent>
                                     {message.role === 'assistant' && message.status === 'pending' && (
                                         <span aria-label='Assistant is responding' className='inline-flex text-muted-foreground'>
                                             <LucideIcon.LoaderCircle aria-hidden='true' className='size-4 animate-spin motion-reduce:animate-none' />
@@ -109,12 +111,12 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
             {rewindAnnouncement && <span key={rewindAnnouncement.id} className='sr-only' role='status'>{rewindAnnouncement.message}</span>}
             <Stack className='border-t border-border-default bg-surface-elevated p-3' gap='sm'>
                 <ProviderSetup connected={hasCredential} disabled={controlsDisabled} inputRef={providerKeyRef} provider={provider} onForget={onForgetApiKey} onSave={onSaveApiKey} />
-                <ModelSelector disabled={controlsDisabled} modelId={modelId} models={models} provider={provider} onSelect={onSelectModel} />
                 <PromptInput
                     context={selection}
                     disabled={!hasCredential || !canPrompt}
                     inputRef={promptRef}
                     isRunning={isRunning}
+                    modelPicker={<ModelPicker disabled={controlsDisabled} modelId={modelId} models={models} provider={provider} onSelect={onSelectModel} />}
                     onRemoveContext={onRemoveSelection}
                     onStop={onStop}
                     onSubmit={onSubmit}

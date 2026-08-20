@@ -202,6 +202,30 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         await queued;
     }
 
+    async setInteractionMode(mode: 'browse' | 'select' | 'edit', signal: AbortSignal): Promise<void> {
+        if (!this.surface.setInteractionMode) {
+            throw new Error('The preview does not support interaction modes.');
+        }
+        const queued = this.operationTail.then(() => {
+            this.throwIfUnavailable(signal);
+            return this.surface.setInteractionMode?.(mode, signal);
+        });
+        this.operationTail = queued.then(() => {}, () => {});
+        await queued;
+    }
+
+    async setSelectionMode(enabled: boolean, signal: AbortSignal): Promise<void> {
+        if (!this.surface.setSelectionMode) {
+            throw new Error('The preview does not support source selection mode.');
+        }
+        const queued = this.operationTail.then(() => {
+            this.throwIfUnavailable(signal);
+            return this.surface.setSelectionMode?.(enabled, signal);
+        });
+        this.operationTail = queued.then(() => {}, () => {});
+        await queued;
+    }
+
     async clearSelection(): Promise<void> {
         if (this.destroyed || !this.currentState.selection) {
             return;

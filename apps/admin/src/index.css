@@ -2,6 +2,7 @@
 @source "../../activitypub/src/**/*.{ts,tsx}";
 @source "../../admin-x-framework/src/**/*.{ts,tsx}";
 @source "../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
+@source "../node_modules/streamdown/dist/*.js";
 
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';

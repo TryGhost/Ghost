@@ -68,28 +68,41 @@ const defaultProps = {
 };
 
 describe('BuilderShell', () => {
-    it('exposes the preview inline-editing mode when the workspace supports it', () => {
-        const onTogglePreviewEditing = vi.fn();
-        const {rerender} = render(
+    it('wraps the canvas in preview navigation and explicit selection and editing modes', () => {
+        const onNavigatePreview = vi.fn();
+        const onPreviewBack = vi.fn();
+        const onPreviewForward = vi.fn();
+        const onSetPreviewMode = vi.fn();
+        render(
             <BuilderShell
                 {...defaultProps}
-                previewEditing={false}
-                onTogglePreviewEditing={onTogglePreviewEditing}
+                previewCanGoForward={false}
+                previewMode='browse'
+                previewUrl='http://localhost:2368/about/'
+                previewCanGoBack
+                onNavigatePreview={onNavigatePreview}
+                onPreviewBack={onPreviewBack}
+                onPreviewForward={onPreviewForward}
+                onSetPreviewMode={onSetPreviewMode}
             />,
             {wrapper: MemoryRouter}
         );
 
-        fireEvent.click(screen.getByRole('button', {name: 'Edit preview'}));
-        expect(onTogglePreviewEditing).toHaveBeenCalledWith(true);
+        expect(screen.getByRole('textbox', {name: 'Preview address'})).toHaveValue('http://localhost:2368/about/');
+        expect(screen.getByRole('button', {name: 'Back in preview'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Forward in preview'})).toBeDisabled();
 
-        rerender(
-            <BuilderShell
-                {...defaultProps}
-                previewEditing
-                onTogglePreviewEditing={onTogglePreviewEditing}
-            />
-        );
-        expect(screen.getByRole('button', {name: 'Finish editing preview'})).toHaveAttribute('aria-pressed', 'true');
+        fireEvent.click(screen.getByRole('button', {name: 'Back in preview'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Select preview content'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Edit preview'}));
+        fireEvent.change(screen.getByRole('textbox', {name: 'Preview address'}), {target: {value: '/archive/'}});
+        fireEvent.submit(screen.getByRole('textbox', {name: 'Preview address'}).closest('form')!);
+
+        expect(onPreviewBack).toHaveBeenCalledOnce();
+        expect(onPreviewForward).not.toHaveBeenCalled();
+        expect(onSetPreviewMode).toHaveBeenNthCalledWith(1, 'select');
+        expect(onSetPreviewMode).toHaveBeenNthCalledWith(2, 'edit');
+        expect(onNavigatePreview).toHaveBeenCalledWith('/archive/');
     });
 
     it('renders the empty state and submits a prompt', () => {
@@ -104,7 +117,7 @@ describe('BuilderShell', () => {
         expect(onSubmit).toHaveBeenCalledWith('Make the hero brighter');
     });
 
-    it('shows streaming text and groups collapsed tool cards with expansion', () => {
+    it('shows tool progress before the streamed final response', () => {
         render(<BuilderShell
             {...defaultProps}
             state={state({
@@ -114,7 +127,7 @@ describe('BuilderShell', () => {
                     {
                         id: 'assistant-1',
                         role: 'assistant',
-                        text: 'I am updating it now',
+                        text: '## Done\n\nI am **updating** it now.',
                         status: 'pending',
                         toolCalls: [
                             {id: 'tool-1', name: 'read_file', input: {path: 'index.hbs'}, status: 'complete', result: {ok: true, revision: 'revision-1', data: {content: 'Hero'}}},
@@ -125,14 +138,17 @@ describe('BuilderShell', () => {
             })}
         />, {wrapper: MemoryRouter});
 
-        expect(screen.getByText('I am updating it now')).toBeInTheDocument();
+        expect(screen.getByRole('heading', {name: 'Done'})).toBeInTheDocument();
         expect(screen.getByText('Builder is running')).toBeInTheDocument();
         expect(screen.getByLabelText('Assistant is responding')).toBeInTheDocument();
-        const tools = screen.getByText('2 tool actions');
+        const tools = screen.getByText('Making changes');
+        expect(tools.compareDocumentPosition(screen.getByRole('heading', {name: 'Done'})) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(tools.closest('details')).not.toHaveAttribute('open');
         fireEvent.click(tools);
-        expect(screen.getByText('read_file')).toBeVisible();
-        expect(screen.getByText('replace_in_file')).toBeVisible();
+        expect(screen.getByText('Reviewing the current design')).toBeVisible();
+        expect(screen.getByText('Updating the design')).toBeVisible();
+        expect(screen.queryByText('read_file')).not.toBeInTheDocument();
+        expect(screen.queryByText('replace_in_file')).not.toBeInTheDocument();
     });
 
     it('supports stop, retry, model switching, rewind, and context removal', () => {
@@ -157,7 +173,7 @@ describe('BuilderShell', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Remove Hero section context'}));
         expect(onStop).toHaveBeenCalledOnce();
         expect(onRemoveSelection).toHaveBeenCalledOnce();
-        expect(screen.getByRole('combobox', {name: 'Model'})).toBeDisabled();
+        expect(screen.getByRole('combobox', {name: 'Choose model: GPT Test'})).toBeDisabled();
         expect(screen.getByRole('button', {name: 'Forget OpenAI key'})).toBeDisabled();
 
         rerender(<BuilderShell
@@ -174,7 +190,11 @@ describe('BuilderShell', () => {
             onRewind={onRewind}
             onSelectModel={onSelectModel}
         />);
-        fireEvent.change(screen.getByRole('combobox', {name: 'Model'}), {target: {value: 'anthropic:claude-test'}});
+        const modelPicker = screen.getByRole('combobox', {name: 'Choose model: GPT Test'});
+        expect(modelPicker.closest('form')).not.toBeNull();
+        Element.prototype.scrollIntoView = vi.fn();
+        fireEvent.click(modelPicker);
+        fireEvent.click(screen.getByText('Claude Test'));
         fireEvent.click(screen.getByRole('button', {name: 'Retry last message'}));
         fireEvent.click(screen.getByRole('button', {name: 'Return to before this message'}));
         expect(onRetry).toHaveBeenCalledOnce();
