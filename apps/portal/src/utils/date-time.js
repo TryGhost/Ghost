@@ -32,5 +32,10 @@ export const getSiteDateString = (isoDate, {locale, timezone} = {}) => {
         || dateFormatterFor(DEFAULT_DATE_LOCALE, timeZone)
         || new Intl.DateTimeFormat(DEFAULT_DATE_LOCALE, {...DATE_FORMAT, timeZone: DEFAULT_TIMEZONE});
 
-    return formatter.format(new Date(isoDate));
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return formatter.format(date);
 };

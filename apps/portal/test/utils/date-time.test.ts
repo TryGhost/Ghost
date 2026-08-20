@@ -8,6 +8,10 @@ describe('getSiteDateString', () => {
         expect(getSiteDateString(undefined)).toBe('');
     });
 
+    test('returns an empty string for an invalid date', () => {
+        expect(getSiteDateString('not-a-date')).toBe('');
+    });
+
     test('formats in the publication locale and timezone', () => {
         expect(getSiteDateString(isoDate, {locale: 'en-GB', timezone: 'America/Los_Angeles'})).toBe('31 Dec 2029');
     });
