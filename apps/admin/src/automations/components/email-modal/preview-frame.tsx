@@ -135,6 +135,7 @@ const EmailPreviewFrame: React.FC<EmailPreviewFrameProps> = ({previewState}) => 
                     <iframe
                         ref={previewIframeRef}
                         className='w-full rounded bg-white'
+                        data-sentry-block='true'
                         data-testid='email-preview-iframe'
                         sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                         srcDoc={previewState.html}

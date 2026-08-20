@@ -17,7 +17,7 @@ const Automations: React.FC = () => {
     }
 
     return (
-        <Box className='size-full'>
+        <Box className='size-full' data-sentry-mask='true'>
             <Container className='relative flex h-full flex-col' size='page'>
             <ListPage data-testid="automations-page">
                 <ListPage.Header>
