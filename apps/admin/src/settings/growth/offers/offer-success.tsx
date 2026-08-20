@@ -4,7 +4,7 @@ import {Button, Input} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {currencyToDecimal} from '@/settings/utils/currency';
+import {currencyToDecimal} from '@tryghost/admin-x-framework';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useEffect, useState} from 'react';

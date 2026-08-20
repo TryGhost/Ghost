@@ -3,6 +3,7 @@ import React from 'react';
 import SourceIcon from '@/shared/analytics/source-icon';
 import {type BaseSourceData, type ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {centsToDollars} from '@tryghost/shade/app';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {useAppContext} from '@tryghost/admin-x-framework';
 
@@ -39,8 +40,6 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                 </TableHeader>
                 <TableBody>
                     {data?.map((row) => {
-                        const centsToDollars = (value: number) => Math.round(value / 100);
-
                         return (
                             <TableRow key={row.source} className='last:border-none'>
                                 <TableCell>

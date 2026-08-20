@@ -1,5 +1,6 @@
 import React from 'react';
 import {type Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useEffect, useMemo, useState} from 'react';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
@@ -47,7 +48,7 @@ export const usePostSuccessModal = () => {
 
     // Helper functions for formatting
     const formatSubscriberCount = (count: number) => {
-        return `${count.toLocaleString()} subscriber${count !== 1 ? 's' : ''}`;
+        return `${formatNumber(count)} subscriber${count !== 1 ? 's' : ''}`;
     };
 
     const formatPublicationTime = (publishedAt: string) => {
@@ -131,7 +132,7 @@ export const usePostSuccessModal = () => {
             postURL: post.url || '',
             primaryTitle: 'Boom! It\'s out there.',
             secondaryTitle: showPostCount && postCount ?
-                `That's ${postCount.toLocaleString()} post${postCount !== 1 ? 's' : ''} published.` :
+                `That's ${formatNumber(postCount)} post${postCount !== 1 ? 's' : ''} published.` :
                 'Spread the word!',
             description: getDescription(),
             featureImageURL: post.feature_image || '',
