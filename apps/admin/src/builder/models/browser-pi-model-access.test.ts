@@ -52,6 +52,9 @@ describe('BrowserPiModelAccess', () => {
         expect(prompt).toContain('index.hbs');
         expect(prompt).toContain('Theme build scripts do not run');
         expect(prompt).toContain('Only the user can publish');
+        expect(prompt).toContain('Write the final response for a non-technical site owner');
+        expect(prompt).toContain('Do not mention tool names, revisions, raw JSON, or file paths unless the user asks');
+        expect(prompt).toContain('Do not narrate intermediate tool steps');
         expect(prompt.length).toBeLessThan(12_000);
     });
 

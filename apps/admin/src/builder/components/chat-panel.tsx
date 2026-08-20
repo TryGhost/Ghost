@@ -73,10 +73,10 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
                         {state.messages.map((message, messageIndex) => (
                             <Message key={message.id} from={message.role}>
                                 <Stack className={message.role === 'user' ? 'items-end' : ''} gap='sm'>
-                                    {message.toolCalls?.length ? <ToolGroup toolCalls={message.toolCalls} /> : null}
+                                    {message.toolCalls?.length ? <ToolGroup messageStatus={message.status} toolCalls={message.toolCalls} /> : null}
                                     <MessageContent from={message.role} status={message.status}>
                                         {message.role === 'assistant'
-                                            ? <MessageResponse>{message.text || (isRunning ? 'Working…' : '')}</MessageResponse>
+                                            ? <MessageResponse>{message.text || (message.status === 'pending' ? 'Working…' : '')}</MessageResponse>
                                             : <Text className='wrap-break-word whitespace-pre-wrap'>{message.text}</Text>}
                                     </MessageContent>
                                     {message.role === 'assistant' && message.status === 'pending' && (

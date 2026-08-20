@@ -506,6 +506,23 @@ describe('ThemePreviewAdapter', () => {
         expect(adapter.draft.selection).toBeNull();
     });
 
+    it('publishes selection state only after it is revisioned and flushable', async () => {
+        const initial = await draft();
+        const selected = {id: 'index.hbs:1:1', label: 'Main'};
+        const {adapter, renderer, surface} = setup();
+        renderer.render.mockResolvedValue(rendered('<html>Home</html>'));
+        await adapter.start(initial, new AbortController().signal);
+
+        surface.selectionHandler?.(selected);
+        expect(adapter.state.selection).toBeNull();
+
+        await adapter.flush(new AbortController().signal);
+
+        expect(adapter.state.selection).toEqual(selected);
+        expect(adapter.draft.selection).toEqual(selected);
+        expect(adapter.state.revision).toBe(adapter.draft.revision);
+    });
+
     it('forwards explicit interaction modes to the preview surface', async () => {
         const initial = await draft();
         const {adapter, renderer, surface} = setup();

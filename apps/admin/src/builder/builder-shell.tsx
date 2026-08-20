@@ -21,7 +21,7 @@ export type BuilderShellProps = ChatPanelProps & {
     previewMode?: PreviewInteractionMode;
     previewEditingButtonRef?: Ref<HTMLButtonElement>;
     previewControlsDisabled?: boolean;
-    onNavigatePreview?: (url: string) => void | Promise<boolean>;
+    onNavigatePreview?: (url: string) => void | Promise<boolean | string>;
     onPreviewBack?: () => void;
     onPreviewForward?: () => void;
     onSetPreviewMode?: (mode: PreviewInteractionMode) => void;
@@ -36,7 +36,7 @@ export const BuilderShell = ({title, preview, backTo, backLabel, publishAction, 
                 <PreviewPanel
                     canGoBack={previewCanGoBack}
                     canGoForward={previewCanGoForward}
-                    disabled={previewControlsDisabled}
+                    disabled={previewControlsDisabled || !['ready', 'interrupted'].includes(chatProps.state.status)}
                     editButtonRef={previewEditingButtonRef}
                     mode={previewMode}
                     url={previewUrl}

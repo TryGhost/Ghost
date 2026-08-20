@@ -296,6 +296,59 @@ describe('BuilderSession', () => {
         });
     });
 
+    it('stores a bounded conversation projection instead of full tool payloads', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        const oversized = 'A'.repeat(200_000);
+        modelAccess.enqueue((request) => {
+            request.onEvent({type: 'tool-start', callId: 'call-1', name: 'screenshot', input: {path: 'index.hbs', selector: oversized}});
+            request.onEvent({
+                type: 'tool-end',
+                callId: 'call-1',
+                name: 'screenshot',
+                result: {
+                    ok: true,
+                    revision: 'revision-1',
+                    data: {description: oversized},
+                    diagnostics: [{code: 'large_warning', message: oversized, severity: 'warning', details: {payload: oversized}}],
+                    attachments: [{type: 'image', mediaType: 'image/png', data: oversized}]
+                }
+            });
+            return Promise.resolve();
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        await session.startTurn('Check the preview');
+
+        const stored = JSON.stringify(session.state.messages.at(-1)?.toolCalls);
+        expect(stored).not.toContain(oversized);
+        expect(stored.length).toBeLessThan(12_000);
+        expect(session.state.messages.at(-1)?.toolCalls?.[0]?.input).toMatchObject({path: 'index.hbs', truncated: true});
+        expect(session.state.messages.at(-1)?.toolCalls?.[0]?.result).toMatchObject({ok: true, revision: 'revision-1'});
+        const result = session.state.messages.at(-1)?.toolCalls?.[0]?.result;
+        expect(result?.ok && result.diagnostics).toBeUndefined();
+    });
+
+    it('interrupts an assistant response that exceeds the conversation limit', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue((request) => {
+            request.onEvent({type: 'assistant-text-delta', text: 'A'.repeat(100_000)});
+            return Promise.resolve();
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const result = await session.startTurn('Write a long answer');
+
+        expect(result.status).toBe('interrupted');
+        expect(session.state.messages.at(-1)?.status).toBe('interrupted');
+        expect(session.state.messages.at(-1)?.text.length).toBeLessThan(70_000);
+        expect(session.state.messages.at(-1)?.text).toContain('[Response truncated]');
+        expect(workspace.promoteCalls).toBe(0);
+    });
+
     it('retains the last valid candidate when a later mutation is invalid', async () => {
         const workspace = new FakeArtifactWorkspace();
         const modelAccess = new ScriptedModelAccess();

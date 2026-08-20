@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 
 import {Button} from '@tryghost/shade/components';
-import {Inline} from '@tryghost/shade/primitives';
+import {Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 
 import {WebPreview, WebPreviewBody, WebPreviewNavigation, WebPreviewNavigationButton, WebPreviewUrl} from './ai-elements/web-preview';
@@ -20,20 +20,26 @@ export const PreviewPanel = ({children, url = '', canGoBack = false, canGoForwar
     disabled?: boolean;
     onBack?: () => void;
     onForward?: () => void;
-    onNavigate?: (url: string) => void | Promise<boolean>;
+    onNavigate?: (url: string) => void | Promise<boolean | string>;
     onSetMode?: (mode: PreviewInteractionMode) => void;
 }) => {
     const [address, setAddress] = useState(url);
+    const [navigationError, setNavigationError] = useState('');
 
-    useEffect(() => setAddress(url), [url]);
+    useEffect(() => {
+        setAddress(url);
+        setNavigationError('');
+    }, [url]);
 
     const submitAddress = (event: FormEvent) => {
         event.preventDefault();
         const target = address.trim();
         if (target && target !== url) {
-            void Promise.resolve(onNavigate?.(target)).then((navigated) => {
-                if (navigated === false) {
+            setNavigationError('');
+            void Promise.resolve(onNavigate?.(target)).then((outcome) => {
+                if (outcome !== true) {
                     setAddress(url);
+                    setNavigationError(typeof outcome === 'string' ? outcome : 'Builder could not open that preview address.');
                 }
             });
         }
@@ -81,7 +87,8 @@ export const PreviewPanel = ({children, url = '', canGoBack = false, canGoForwar
                     </Inline>
                 )}
             </WebPreviewNavigation>
-            <WebPreviewBody>{children}</WebPreviewBody>
+            {navigationError && <Text className='border-b border-border-default px-3 py-2 text-destructive' role='alert' size='sm'>{navigationError}</Text>}
+            <WebPreviewBody className={disabled ? 'pointer-events-none' : undefined} inert={disabled}>{children}</WebPreviewBody>
         </WebPreview>
     );
 };

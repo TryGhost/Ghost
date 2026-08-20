@@ -106,8 +106,9 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
             if (this.destroyed) {
                 return;
             }
-            this.setState({...this.currentState, selection});
-            void this.adoptSelection(selection);
+            const queued = this.operationTail.then(() => this.adoptSelection(selection));
+            this.operationTail = queued.then(() => {}, () => {});
+            void queued.catch(() => {});
         });
         this.unsubscribeDiagnostic = surface.onDiagnostic((runtimeDiagnostic) => {
             if (this.destroyed) {
@@ -190,6 +191,12 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         });
     }
 
+    async flush(signal: AbortSignal): Promise<void> {
+        this.throwIfUnavailable(signal);
+        await this.operationTail;
+        this.throwIfUnavailable(signal);
+    }
+
     async setInlineEditMode(enabled: boolean, signal: AbortSignal): Promise<void> {
         if (!this.surface.setInlineEditMode) {
             throw new Error('The preview does not support inline editing.');
@@ -230,8 +237,9 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         if (this.destroyed || !this.currentState.selection) {
             return;
         }
-        this.setState({...this.currentState, selection: null});
-        await this.adoptSelection(null);
+        const queued = this.operationTail.then(() => this.adoptSelection(null));
+        this.operationTail = queued.then(() => {}, () => {});
+        await queued;
     }
 
     destroy(): void {

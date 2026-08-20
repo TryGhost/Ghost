@@ -47,6 +47,7 @@ type ThemeMutationPreview = BuilderPreviewAdapter & {
     inspectElement?: (target: PreviewElementTarget, signal: AbortSignal) => Promise<PreviewElementInspection>;
     navigate?: (target: string, signal: AbortSignal) => Promise<ThemeNavigationResult>;
     screenshot?: (request: ScreenshotRequest, signal: AbortSignal) => Promise<ScreenshotResult>;
+    flush?: (signal: AbortSignal) => Promise<void>;
     readonly draft?: ThemeDraft;
     readonly state?: {url?: string};
 };
@@ -213,6 +214,7 @@ export class ThemeWorkspace implements BuilderWorkspace {
     async flush(signal: AbortSignal): Promise<void> {
         abortIfNeeded(signal);
         await this.mutationTail;
+        await this.preview.flush?.(signal);
         abortIfNeeded(signal);
     }
 

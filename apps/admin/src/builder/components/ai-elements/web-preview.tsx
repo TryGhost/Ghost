@@ -1,5 +1,5 @@
 import {Button, Input} from '@tryghost/shade/components';
-import {Box, Inline, Stack} from '@tryghost/shade/primitives';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {cn} from '@tryghost/shade/utils';
 
 import type {ComponentProps} from 'react';
@@ -20,6 +20,6 @@ export const WebPreviewUrl = ({className, ...props}: ComponentProps<typeof Input
     <Input className={cn('h-8 min-w-0 bg-background text-sm', className)} {...props} />
 );
 
-export const WebPreviewBody = ({className, ...props}: ComponentProps<typeof Box>) => (
-    <Box className={cn('min-h-0 flex-1 overflow-hidden bg-background', className)} {...props} />
+export const WebPreviewBody = ({className, inert = false, ...props}: ComponentProps<'div'> & {inert?: boolean}) => (
+    <div className={cn('min-h-0 flex-1 overflow-hidden bg-background', className)} {...(inert ? {inert: ''} : {})} {...props} />
 );

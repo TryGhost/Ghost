@@ -105,6 +105,24 @@ describe('BuilderShell', () => {
         expect(onNavigatePreview).toHaveBeenCalledWith('/archive/');
     });
 
+    it('explains a preview address that cannot be opened', async () => {
+        const onNavigatePreview = vi.fn().mockResolvedValue('Preview links need to stay on this site.');
+        render(
+            <BuilderShell
+                {...defaultProps}
+                previewUrl='http://localhost:2368/'
+                onNavigatePreview={onNavigatePreview}
+            />,
+            {wrapper: MemoryRouter}
+        );
+
+        fireEvent.change(screen.getByRole('textbox', {name: 'Preview address'}), {target: {value: 'https://example.com/'}});
+        fireEvent.submit(screen.getByRole('textbox', {name: 'Preview address'}).closest('form')!);
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('Preview links need to stay on this site.');
+        expect(screen.getByRole('textbox', {name: 'Preview address'})).toHaveValue('http://localhost:2368/');
+    });
+
     it('renders the empty state and submits a prompt', () => {
         const onSubmit = vi.fn();
         render(<BuilderShell {...defaultProps} onSubmit={onSubmit} />, {wrapper: MemoryRouter});
@@ -175,6 +193,7 @@ describe('BuilderShell', () => {
         expect(onRemoveSelection).toHaveBeenCalledOnce();
         expect(screen.getByRole('combobox', {name: 'Choose model: GPT Test'})).toBeDisabled();
         expect(screen.getByRole('button', {name: 'Forget OpenAI key'})).toBeDisabled();
+        expect(screen.getByText('Theme preview').closest('[inert]')).toBeInTheDocument();
 
         rerender(<BuilderShell
             {...defaultProps}

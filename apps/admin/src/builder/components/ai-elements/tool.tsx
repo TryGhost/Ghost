@@ -4,7 +4,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 
 import {Task, TaskContent, TaskItem, TaskTrigger} from './task';
 
-import type {BuilderConversationToolCall} from '@/builder/core/model-access';
+import type {BuilderConversationMessage, BuilderConversationToolCall} from '@/builder/core/model-access';
 
 const actionLabels: Record<string, string> = {
     list_files: 'Reviewing the theme',
@@ -21,15 +21,54 @@ const actionLabels: Record<string, string> = {
     screenshot: 'Reviewing how the page looks'
 };
 
+const fileMutationActions = new Set([
+    'replace_in_file',
+    'write_file',
+    'delete_file'
+]);
+
 function actionLabel(name: string): string {
     return actionLabels[name] ?? 'Working on your design';
 }
 
-export const ToolGroup = ({toolCalls}: {toolCalls: readonly BuilderConversationToolCall[]}) => {
-    const running = toolCalls.some(toolCall => toolCall.status === 'running');
-    const interrupted = toolCalls.some(toolCall => toolCall.status === 'interrupted');
-    const failed = toolCalls.some(toolCall => toolCall.result?.ok === false);
-    const label = running ? 'Making changes' : interrupted ? 'Work stopped' : failed ? 'Some changes need attention' : 'Changes complete';
+function actionTarget(toolCall: BuilderConversationToolCall): string | null {
+    if (typeof toolCall.input.path === 'string') {
+        return `file:${toolCall.input.path}`;
+    }
+    if (toolCall.name === 'update_design_settings' && toolCall.input.values && typeof toolCall.input.values === 'object' && !Array.isArray(toolCall.input.values)) {
+        return `settings:${Object.keys(toolCall.input.values).sort().join('|')}`;
+    }
+    return null;
+}
+
+function repairs(failedCall: BuilderConversationToolCall, laterCall: BuilderConversationToolCall): boolean {
+    if (laterCall.status !== 'complete' || laterCall.result?.ok !== true) {
+        return false;
+    }
+    const failedTarget = actionTarget(failedCall);
+    const laterTarget = actionTarget(laterCall);
+    if (failedTarget && laterTarget) {
+        return failedTarget === laterTarget
+            && (laterCall.name === failedCall.name || (fileMutationActions.has(failedCall.name) && fileMutationActions.has(laterCall.name)));
+    }
+    if (fileMutationActions.has(failedCall.name) || failedCall.name === 'update_design_settings') {
+        return false;
+    }
+    return laterCall.name === failedCall.name;
+}
+
+export const ToolGroup = ({messageStatus, toolCalls}: {messageStatus?: BuilderConversationMessage['status']; toolCalls: readonly BuilderConversationToolCall[]}) => {
+    const interrupted = messageStatus === 'interrupted' || toolCalls.some(toolCall => toolCall.status === 'interrupted');
+    const running = !interrupted && (messageStatus === 'pending' || toolCalls.some(toolCall => toolCall.status === 'running'));
+    const unresolvedFailure = toolCalls.some((toolCall, index) => {
+        if (toolCall.status !== 'complete' || toolCall.result?.ok !== false) {
+            return false;
+        }
+        return !toolCalls.slice(index + 1).some(laterCall => repairs(toolCall, laterCall));
+    });
+    const failed = !running && !interrupted && unresolvedFailure;
+    const changed = toolCalls.some(toolCall => (fileMutationActions.has(toolCall.name) || toolCall.name === 'update_design_settings') && toolCall.status === 'complete' && toolCall.result?.ok === true);
+    const label = running ? 'Making changes' : interrupted ? 'Work stopped' : failed ? 'Some changes need attention' : changed ? 'Changes complete' : 'Review complete';
     const status = interrupted ? 'Interrupted' : running ? 'Running' : failed ? 'Failed' : 'Complete';
 
     return (
@@ -44,20 +83,23 @@ export const ToolGroup = ({toolCalls}: {toolCalls: readonly BuilderConversationT
                 </Inline>
             </TaskTrigger>
             <TaskContent>
-                {toolCalls.map(toolCall => (
+                {toolCalls.map((toolCall, index) => {
+                    const resolved = toolCall.result?.ok === false && toolCalls.slice(index + 1).some(laterCall => repairs(toolCall, laterCall));
+                    return (
                     <TaskItem
                         key={toolCall.id}
                         icon={toolCall.status === 'running'
                             ? <LucideIcon.LoaderCircle aria-hidden='true' className='size-4 animate-spin text-muted-foreground motion-reduce:animate-none' />
                             : toolCall.status === 'interrupted'
                                 ? <LucideIcon.CircleStop aria-hidden='true' className='size-4 text-muted-foreground' />
-                                : toolCall.result?.ok === false
+                                : toolCall.result?.ok === false && !resolved
                                     ? <LucideIcon.CircleX aria-hidden='true' className='size-4 text-destructive' />
                                     : <LucideIcon.CircleCheck aria-hidden='true' className='text-success size-4' />}
-                        status={toolCall.status === 'running' ? 'In progress' : toolCall.status === 'interrupted' ? 'Stopped' : toolCall.result?.ok === false ? 'Needs attention' : 'Done'}
+                        status={toolCall.status === 'running' ? 'In progress' : toolCall.status === 'interrupted' ? 'Stopped' : resolved ? 'Retried' : toolCall.result?.ok === false ? 'Needs attention' : 'Done'}
                         title={actionLabel(toolCall.name)}
                     />
-                ))}
+                    );
+                })}
             </TaskContent>
         </Task>
     );

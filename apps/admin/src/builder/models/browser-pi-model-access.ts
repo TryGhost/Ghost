@@ -72,7 +72,10 @@ export function assembleBuilderSystemPrompt(request: Pick<BuilderModelTurnReques
         tools || '- none',
         'Tool results use a canonical JSON envelope. If a result is not ok, use its code, diagnostics, and current revision to repair the candidate before continuing.',
         'For CSS changes, edit the stylesheet referenced by the rendered theme (commonly assets/built/*.css). Theme build scripts do not run in this browser session; authored assets/css files may not affect the preview.',
-        'Mutations update only the session candidate. Only the user can publish; never claim that normal model completion published changes.'
+        'Mutations update only the session candidate. Only the user can publish; never claim that normal model completion published changes.',
+        'Write the final response for a non-technical site owner. Lead with the visible result and how you verified it.',
+        'Do not mention tool names, revisions, raw JSON, or file paths unless the user asks for technical details.',
+        'Do not narrate intermediate tool steps in assistant prose. Let the Builder task UI show progress, then send one concise final response after the work is complete.'
     ].join('\n');
     return prompt.slice(0, promptLimit - 1);
 }

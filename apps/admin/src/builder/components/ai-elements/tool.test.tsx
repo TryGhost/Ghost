@@ -37,10 +37,107 @@ describe('ToolGroup', () => {
             }
         }]} />);
 
-        fireEvent.click(screen.getByText('Changes complete'));
+        fireEvent.click(screen.getByText('Review complete'));
         expect(screen.queryByText(image)).not.toBeInTheDocument();
         expect(screen.getByText('Reviewing how the page looks')).toBeVisible();
         expect(screen.queryByText(/image payload omitted/)).not.toBeInTheDocument();
         expect(screen.queryByText(/result truncated/)).not.toBeInTheDocument();
+    });
+
+    it('does not claim changes completed when the containing turn was interrupted', () => {
+        render(<ToolGroup messageStatus='interrupted' toolCalls={[{
+            id: 'completed-tool',
+            name: 'write_file',
+            input: {path: 'index.hbs'},
+            status: 'complete',
+            result: {ok: true, revision: 'revision-1', data: {}}
+        }]} />);
+
+        expect(screen.getByText('Work stopped')).toBeInTheDocument();
+        expect(screen.getByText('Interrupted')).toBeInTheDocument();
+        expect(screen.queryByText('Changes complete')).not.toBeInTheDocument();
+    });
+
+    it('gives an interrupted tool precedence while the turn is still settling', () => {
+        render(<ToolGroup messageStatus='pending' toolCalls={[{
+            id: 'interrupted-tool',
+            name: 'write_file',
+            input: {},
+            status: 'interrupted'
+        }]} />);
+
+        expect(screen.getByText('Work stopped')).toBeInTheDocument();
+        expect(screen.getByText('Interrupted')).toBeInTheDocument();
+        expect(screen.queryByText('Making changes')).not.toBeInTheDocument();
+    });
+
+    it('summarizes the final repaired outcome instead of an earlier failed attempt', () => {
+        render(<ToolGroup messageStatus='complete' toolCalls={[
+            {
+                id: 'failed-tool',
+                name: 'replace_in_file',
+                input: {path: 'index.hbs'},
+                status: 'complete',
+                result: {ok: false, revision: 'revision-1', error: {code: 'render_failed', message: 'Try again', retryable: true}}
+            },
+            {
+                id: 'repaired-tool',
+                name: 'replace_in_file',
+                input: {path: 'index.hbs'},
+                status: 'complete',
+                result: {ok: true, revision: 'revision-2', data: {}}
+            }
+        ]} />);
+
+        expect(screen.getByText('Changes complete')).toBeInTheDocument();
+        expect(screen.getByText('Complete')).toBeInTheDocument();
+        expect(screen.queryByText('Some changes need attention')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText('Changes complete'));
+        expect(screen.getByText('Retried')).toBeVisible();
+        expect(screen.queryByText('Needs attention')).not.toBeInTheDocument();
+    });
+
+    it('does not treat a later successful inspection as repairing a failed change', () => {
+        render(<ToolGroup messageStatus='complete' toolCalls={[
+            {
+                id: 'failed-change',
+                name: 'write_file',
+                input: {},
+                status: 'complete',
+                result: {ok: false, revision: 'revision-1', error: {code: 'render_failed', message: 'Try again', retryable: true}}
+            },
+            {
+                id: 'successful-inspection',
+                name: 'inspect_page',
+                input: {},
+                status: 'complete',
+                result: {ok: true, revision: 'revision-1', data: {}}
+            }
+        ]} />);
+
+        expect(screen.getByText('Some changes need attention')).toBeInTheDocument();
+        expect(screen.getByText('Failed')).toBeInTheDocument();
+    });
+
+    it('does not treat a successful change to another file as a repair', () => {
+        render(<ToolGroup messageStatus='complete' toolCalls={[
+            {
+                id: 'failed-change',
+                name: 'write_file',
+                input: {path: 'index.hbs'},
+                status: 'complete',
+                result: {ok: false, revision: 'revision-1', error: {code: 'render_failed', message: 'Try again', retryable: true}}
+            },
+            {
+                id: 'unrelated-change',
+                name: 'write_file',
+                input: {path: 'post.hbs'},
+                status: 'complete',
+                result: {ok: true, revision: 'revision-2', data: {}}
+            }
+        ]} />);
+
+        expect(screen.getByText('Some changes need attention')).toBeInTheDocument();
+        expect(screen.getByText('Failed')).toBeInTheDocument();
     });
 });

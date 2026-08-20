@@ -1,4 +1,5 @@
 import type {BuilderConversationMessage, BuilderStreamEvent, ModelAccessAdapter} from './model-access';
+import type {BuilderToolResult} from './tool-types';
 import type {BuilderPreviewAdapter, BuilderWorkspace, BuilderWorkspaceState, PublishResult, WorkspaceSnapshot} from './workspace';
 
 export type BuilderSessionStatus = 'idle' | 'loading' | 'ready' | 'running' | 'interrupted' | 'restoring' | 'publishing' | 'error';
@@ -46,6 +47,61 @@ const emptyWorkspaceState: BuilderWorkspaceState = {
 
 const userOnlyToolNames = new Set(['apply', 'commit', 'preview', 'publish']);
 const maxUserMessageCharacters = 32_000;
+const maxAssistantMessageCharacters = 64_000;
+const maxStoredToolCharacters = 4_000;
+const responseTruncationMarker = '\n\n[Response truncated]';
+
+function boundedValue(value: unknown, limit = maxStoredToolCharacters): unknown {
+    try {
+        const serialized = JSON.stringify(value);
+        if (serialized === undefined) {
+            return null;
+        }
+        if (serialized.length > limit) {
+            return {truncated: true};
+        }
+        return JSON.parse(serialized) as unknown;
+    } catch {
+        return {unavailable: true};
+    }
+}
+
+function boundedToolInput(input: Record<string, unknown>): Record<string, unknown> {
+    const projected = boundedValue(input);
+    if (projected && typeof projected === 'object' && !Array.isArray(projected) && 'truncated' in projected) {
+        const identity: Record<string, unknown> = {truncated: true};
+        if (typeof input.path === 'string') {
+            identity.path = input.path.slice(0, 1_024);
+        }
+        if (input.values && typeof input.values === 'object' && !Array.isArray(input.values)) {
+            identity.values = Object.fromEntries(Object.keys(input.values).slice(0, 50).map(key => [key, null]));
+        }
+        return identity;
+    }
+    return projected && typeof projected === 'object' && !Array.isArray(projected)
+        ? projected as Record<string, unknown>
+        : {unavailable: true};
+}
+
+function boundedToolResult(result: BuilderToolResult<unknown>): BuilderToolResult<unknown> {
+    if (result.ok) {
+        return {
+            ok: true,
+            revision: result.revision,
+            data: boundedValue(result.data)
+        };
+    }
+    return {
+        ok: false,
+        revision: result.revision,
+        error: {
+            code: result.error.code,
+            message: result.error.message.slice(0, 2_000),
+            retryable: result.error.retryable,
+            ...(result.error.details === undefined ? {} : {details: boundedValue(result.error.details)})
+        }
+    };
+}
 
 function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
@@ -326,14 +382,25 @@ export class BuilderSession {
             return;
         }
         if (event.type === 'assistant-text-delta') {
-            this.updateMessage(turn.assistantMessageId, message => ({...message, text: `${message.text}${event.text}`}));
+            this.updateMessage(turn.assistantMessageId, (message) => {
+                const nextText = `${message.text}${event.text}`;
+                if (nextText.length <= maxAssistantMessageCharacters) {
+                    return {...message, text: nextText};
+                }
+                turn.streamError ??= 'The assistant response exceeded the Builder conversation limit.';
+                turn.controller.abort();
+                return {
+                    ...message,
+                    text: `${nextText.slice(0, maxAssistantMessageCharacters - responseTruncationMarker.length)}${responseTruncationMarker}`
+                };
+            });
         } else if (event.type === 'tool-start') {
             this.updateMessage(turn.assistantMessageId, message => ({
                 ...message,
                 toolCalls: [...(message.toolCalls ?? []), {
                     id: event.callId,
                     name: event.name,
-                    input: event.input,
+                    input: boundedToolInput(event.input),
                     status: 'running'
                 }]
             }));
@@ -344,7 +411,7 @@ export class BuilderSession {
                     ...toolCall,
                     name: event.name,
                     status: turn.stopRequested || turn.controller.signal.aborted || turn.streamAborted ? 'interrupted' : 'complete',
-                    result: event.result
+                    result: boundedToolResult(event.result)
                 } : toolCall)
             }));
         } else if (event.type === 'run-error') {

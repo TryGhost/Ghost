@@ -324,7 +324,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const navigatePreview = async (target: string, historyIndex?: number) => {
         const preview = previewRef.current;
         if (!preview || previewNavigationPendingRef.current) {
-            return false;
+            return 'The preview is busy. Wait a moment and try again.';
         }
         previewNavigationPendingRef.current = true;
         setPreviewNavigationPending(true);
@@ -344,9 +344,14 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                     return {entries, index: entries.length - 1};
                 });
             }
-            return result.kind === 'virtual';
+            if (result.kind === 'failed') {
+                return result.diagnostics[0]?.code === 'preview_navigation_blocked'
+                    ? 'Preview links need to stay on this site.'
+                    : 'Builder could not open that preview address.';
+            }
+            return true;
         } catch {
-            return false;
+            return 'Builder could not open that preview address.';
         } finally {
             previewNavigationPendingRef.current = false;
             setPreviewNavigationPending(false);
@@ -368,7 +373,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                 backLabel='Back to Design settings'
                 backTo='/settings/design'
                 hasCredential={modelAccess.hasApiKey(provider)}
-                interactionDisabled={inlineEditPending}
+                interactionDisabled={inlineEditPending || previewNavigationPending}
                 modelId={modelId}
                 models={CURATED_MODELS}
                 preview={<iframe ref={setIframe} className='size-full border-0 bg-background' title='Theme preview' />}
@@ -383,7 +388,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                     <PublishThemeDialog
                         builtIn={publishTheme.builtIn}
                         dirty={state.workspace.dirty}
-                        disabled={inlineEditPending}
+                        disabled={inlineEditPending || previewNavigationPending}
                         installedThemeNames={installedThemeNames}
                         publishState={publishState}
                         sessionStatus={state.status}
