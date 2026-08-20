@@ -105,7 +105,7 @@ describe('Migrations', function () {
             assertHavePermission(permissions, 'Add notifications', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Delete notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
-            assertHavePermission(permissions, 'Browse posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            assertHavePermission(permissions, 'Browse posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'DB Backup Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Read posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Edit posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Add posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
