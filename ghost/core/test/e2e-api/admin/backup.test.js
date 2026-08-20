@@ -88,6 +88,22 @@ describe('Backup Integration', function () {
                         assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
+
+            it('Can export post analytics CSV', async function () {
+                // The trailing slash is what exempts this endpoint from the max
+                // limit cap, so `limit=all` is only honoured in this exact form.
+                await agent
+                    .get('posts/export/?limit=all')
+                    .expectStatus(200)
+                    .expectEmptyBody()
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
+                    })
+                    .expect(({text}) => {
+                        assert.match(text, /^id,title,url/);
+                    });
+            });
         });
 
         describe('Zapier Integration', function () {
