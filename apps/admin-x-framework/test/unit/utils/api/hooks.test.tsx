@@ -459,6 +459,57 @@ describe('API hooks', () => {
             });
         });
 
+        it('can invalidate multiple dataTypes', async () => {
+            await withMockFetch({
+                json: {test: 1}
+            }, async () => {
+                queryClient.setQueryData(['FirstDataType', '1'], {test: 1});
+                queryClient.setQueryData(['SecondDataType', '1'], {test: 2});
+                queryClient.setQueryData(['OtherDataType', '1'], {test: 3});
+
+                const onInvalidate = vi.fn();
+                const spyWrapper: React.FC<{ children: ReactNode }> = ({children}) => (
+                    <FrameworkProvider
+                        externalNavigate={() => {}}
+                        ghostVersion='5.x'
+                        sentryDSN=''
+                        unsplashConfig={{
+                            Authorization: '',
+                            'Accept-Version': '',
+                            'Content-Type': '',
+                            'App-Pragma': '',
+                            'X-Unsplash-Cache': true
+                        }}
+                        onDelete={() => {}}
+                        onInvalidate={onInvalidate}
+                        onUpdate={() => {}}
+                    >
+                        <QueryClientProvider client={queryClient}>
+                            {children}
+                        </QueryClientProvider>
+                    </FrameworkProvider>
+                );
+
+                const useTestMutation = createMutation({
+                    path: () => '/test/',
+                    method: 'PUT',
+                    invalidateQueries: {dataType: ['FirstDataType', 'SecondDataType']}
+                });
+
+                const {result} = renderHook(() => useTestMutation(), {wrapper: spyWrapper});
+
+                await result.current.mutateAsync({});
+
+                expect(queryClient.getQueryState(['FirstDataType', '1'])?.isInvalidated).toBe(true);
+                expect(queryClient.getQueryState(['SecondDataType', '1'])?.isInvalidated).toBe(true);
+                expect(queryClient.getQueryState(['OtherDataType', '1'])?.isInvalidated).toBe(false);
+
+                expect(onInvalidate).toHaveBeenCalledTimes(2);
+                expect(onInvalidate).toHaveBeenNthCalledWith(1, 'FirstDataType');
+                expect(onInvalidate).toHaveBeenNthCalledWith(2, 'SecondDataType');
+            });
+        });
+
         it('can update queries in the cache', async () => {
             await withMockFetch({
                 json: {test: 10}
