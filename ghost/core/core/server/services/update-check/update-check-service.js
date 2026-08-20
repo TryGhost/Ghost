@@ -305,7 +305,8 @@ class UpdateCheckService {
      * Based on a settings value, we check if `next_update_check` is less than now to decide whether
      * we should request the update check service (http://updates.ghost.org) or not.
      *
-     * @returns {Promise}
+     * @typedef {{checked: true, notificationsReceived: number} | {checked: false, reason: 'gate' | 'error'}} UpdateCheckSummary
+     * @returns {Promise<UpdateCheckSummary>}
      */
     async check() {
         this.logging.info({
@@ -327,7 +328,7 @@ class UpdateCheckService {
                     event: {name: 'update-check.check.skipped-by-gate'},
                     nextCheckAt
                 }, 'Update check skipped, next check is scheduled in the future');
-                return;
+                return {checked: false, reason: 'gate'};
             }
 
             const response = await this.updateCheckRequest();
@@ -338,15 +339,19 @@ class UpdateCheckService {
                 notificationCount: notifications.length
             }, 'Update check response received');
 
-            const result2 = await this.updateCheckResponse(response);
+            await this.updateCheckResponse(response);
 
             this.logging.info({
                 event: {name: 'update-check.check.complete'}
             }, 'Update check completed');
 
-            return result2;
+            // Counted before updateCheckResponse applies the notificationGroups
+            // filter, so this is what the service sent us, not what we stored
+            return {checked: true, notificationsReceived: notifications.length};
         } catch (err) {
+            // Rethrows when configured to, so this only returns on the swallowed path
             this.updateCheckError(err);
+            return {checked: false, reason: 'error'};
         }
     }
 }

@@ -15,7 +15,7 @@ const {NotificationEmailService} = require('../notifications/notification-email'
  * @param {boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
  * @param {boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
  * @param {string} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
- * @returns {Promise<any>}
+ * @returns {Promise<import('./update-check-service').UpdateCheckSummary | {checked: false, reason: 'environment'}>}
  */
 module.exports = async ({
     rethrowErrors = false,
@@ -25,7 +25,7 @@ module.exports = async ({
     if (!forceUpdate) {
         // CASE: The check will not happen if your env is not in the allowed defined environments
         if (!config.isProductionOrDevelopment()) {
-            return;
+            return {checked: false, reason: 'environment'};
         }
     }
 
@@ -63,7 +63,7 @@ module.exports = async ({
         notificationEmailService
     });
 
-    await updateChecker.check();
+    return updateChecker.check();
 };
 
 module.exports.scheduleRecurringJobs = () => {

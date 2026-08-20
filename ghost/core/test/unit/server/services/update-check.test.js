@@ -592,4 +592,91 @@ describe('Update Check', function () {
             }
         });
     });
+
+    describe('Result summary', function () {
+        it('reports how many notifications the service returned', async function () {
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify({
+                    notifications: [{
+                        id: 1312,
+                        version: 'v6.44.1',
+                        messages: [{
+                            id: '0f17c191-87ab-46ad-8884-5d99aa3fdee8',
+                            version: '^6',
+                            content: 'Ghost v6.44.1 has been released.',
+                            type: 'info'
+                        }],
+                        created_at: '2026-06-05T16:53:08.000Z',
+                        custom: false
+                    }],
+                    next_check: moment().add(1, 'day').unix()
+                }), {'Content-Type': 'application/json'});
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        read: settingsStub,
+                        edit: settingsStub
+                    },
+                    users: {
+                        browse: sinon.stub().resolves({users: []})
+                    },
+                    notifications: {
+                        add: sinon.stub().resolves()
+                    }
+                },
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    ghostVersion: '6.44.0'
+                },
+                request: request
+            });
+
+            const result = await updateCheckService.check();
+
+            assert.deepEqual(result, {checked: true, notificationsReceived: 1});
+        });
+
+        it('reports the gate as the reason when the check is skipped', async function () {
+            const lateSettingStub = sinon.stub().resolves({
+                settings: [{
+                    value: moment().add('10', 'minutes').unix()
+                }]
+            });
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        read: lateSettingStub
+                    }
+                },
+                config: {},
+                request: requestStub
+            });
+
+            const result = await updateCheckService.check();
+
+            assert.deepEqual(result, {checked: false, reason: 'gate'});
+        });
+
+        it('reports an error as the reason when the error is swallowed', async function () {
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        read: sinon.stub().rejects(new Error('settings are unavailable')),
+                        edit: settingsStub
+                    }
+                },
+                config: {},
+                request: requestStub
+            });
+
+            const result = await updateCheckService.check();
+
+            assert.deepEqual(result, {checked: false, reason: 'error'});
+        });
+    });
 });
