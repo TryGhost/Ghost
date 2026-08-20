@@ -142,20 +142,9 @@ const DesignAndThemeModal: React.FC = () => {
         const handleThemeLimitError = (error: string) => {
             // Immediately prevent any installation attempts
             setInstallationAllowed(false);
-
-            if (noThemeChangesAllowed) {
-                // Single theme - show limit modal and redirect to /theme
-                showThemeLimitModal(error);
-                // Strip the query from the history entry so back doesn't re-trigger the install
-                updateRoute({route: 'theme/install', replace: true});
-                updateRoute('theme');
-            } else {
-                // Multiple themes allowed - show limit modal and then redirect
-                showThemeLimitModal(error);
-                // Don't redirect to change-theme modal - just stay on current route
-                // This prevents both modals from being visible at the same time
-                updateRoute('theme');
-            }
+            showThemeLimitModal(error);
+            // Replace the install entry so back doesn't re-trigger it
+            updateRoute({route: 'theme', replace: true});
         };
 
         const checkThemeInstallation = async () => {

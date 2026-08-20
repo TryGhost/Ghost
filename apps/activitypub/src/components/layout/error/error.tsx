@@ -12,7 +12,9 @@ const Error = ({statusCode, errorCode}: {statusCode?: number, errorCode?: string
 
     const toAnalytics = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-        navigate('/analytics/');
+        // This component is also used by the standalone ActivityPub app, whose
+        // router does not own the Admin analytics route.
+        navigate('/analytics/', {crossApp: true});
     };
 
     if (routeError) {
