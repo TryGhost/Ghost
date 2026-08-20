@@ -17,6 +17,14 @@ const AUTOMATION_STAT_COLUMNS = [
     {key: 'inProgressEntries', label: 'In progress', widthClassName: 'w-32', skeletonWidthClassName: 'w-10'}
 ] as const;
 
+const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+    if (event.defaultPrevented || !(event.target instanceof Element) || event.target.closest('a, button, input, select, textarea')) {
+        return;
+    }
+
+    event.currentTarget.querySelector('a')?.click();
+};
+
 interface AutomationsListProps {
     automations?: AutomationBrowseItem[];
     isLoading?: boolean;
@@ -94,12 +102,13 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                     return (
                         <TableRow
                             key={automation.slug}
-                            className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 p-2 hover:bg-table-row-hover lg:table-row lg:p-0"
+                            className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 p-2 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:p-0"
                             data-testid="automation-list-row"
+                            onClick={handleRowClick}
                         >
-                            <TableHead className="static h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4" scope="row">
+                            <TableHead className="h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4" scope="row">
                                 <Link
-                                    className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
+                                    className="rounded-sm focus-visible:outline-hidden"
                                     to={`/automations/${automation.id}`}
                                 >
                                     <span className="block text-md font-semibold">

@@ -402,7 +402,7 @@ const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId
     }, []);
 
     return (
-        <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
+        <div className='fixed inset-0 z-50 flex flex-col bg-background' data-sentry-mask='true' data-testid='automation-editor'>
             <AutomationHeader
                 automation={draft}
                 isLoadingAutomation={isEditorLoading}

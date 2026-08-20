@@ -6,6 +6,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const notify = require('./notify');
+const {flushLogs} = require('../shared/flush-logs');
 const moment = require('moment');
 const stoppable = require('stoppable');
 
@@ -58,6 +59,9 @@ class GhostServer {
 
         // Tasks that should be run before the server exits
         this.cleanupTasks = [];
+
+        // Tasks that should be run at the very start of shutdown
+        this.preStopTasks = [];
     }
 
     /**
@@ -148,14 +152,12 @@ class GhostServer {
             this.isShuttingDown = true;
             logging.warn(tpl(messages.ghostIsShuttingDown));
             await this.stop();
-            setTimeout(() => {
-                process.exit(code);
-            }, 100);
+            await flushLogs();
+            process.exit(code);
         } catch (error) {
             logging.error(error);
-            setTimeout(() => {
-                process.exit(1);
-            }, 100);
+            await flushLogs();
+            process.exit(1);
         }
     }
 
@@ -168,6 +170,10 @@ class GhostServer {
      */
     async stop() {
         try {
+            // Signal "stop taking new work" before the HTTP server drain, so background
+            // workers aren't still claiming tasks during it
+            this._preStop();
+
             // If we never fully started, there's nothing to stop
             if (this.httpServer && this.httpServer.listening) {
                 // Time how long it takes to close all in-flight requests
@@ -208,6 +214,17 @@ class GhostServer {
     }
 
     /**
+     * Add a task that runs at the very start of shutdown, before the HTTP server drain.
+     * Synchronous on purpose: this is the shutdown critical path, so it's for cheap "stop
+     * claiming new work" signals only. Draining belongs in a cleanup task.
+     * @param {() => void} task
+     * @param {string} [label] - name used in shutdown timing logs
+     */
+    registerPreStopTask(task, label) {
+        this.preStopTasks.push({task, label: label || `pre-stop task #${this.preStopTasks.length + 1}`});
+    }
+
+    /**
      * ### Stop Server
      * Does the work of stopping the server using stoppable
      * This handles closing connections:
@@ -227,16 +244,52 @@ class GhostServer {
         }
     }
 
+    /**
+     * Best-effort: a throwing task must not skip the ones after it, nor the drain and
+     * cleanup that follow.
+     */
+    _preStop() {
+        for (const {task, label} of this.preStopTasks) {
+            try {
+                task();
+            } catch (error) {
+                logging.error(new errors.InternalServerError({
+                    err: error,
+                    message: `Shutdown: ${label} failed`
+                }));
+            }
+        }
+    }
+
+    /**
+     * Runs cleanup tasks concurrently, timing each so a slow one is identifiable.
+     * Every task runs to completion regardless of its siblings: a rejection escaping the
+     * map would exit the process mid-drain and orphan email batches in `submitting`.
+     */
     async _cleanup() {
-        // Wait for all cleanup tasks to finish, timing each so a slow one is identifiable
-        return Promise.all(this.cleanupTasks.map(async ({task, label}) => {
+        const failed = [];
+
+        await Promise.all(this.cleanupTasks.map(async ({task, label}) => {
             const startTime = Date.now();
             try {
-                return await task();
+                await task();
+            } catch (error) {
+                failed.push(label);
+                logging.error(new errors.InternalServerError({
+                    err: error,
+                    message: `Shutdown: ${label} failed`
+                }));
             } finally {
                 logging.info(`Shutdown: ${label} finished in ${Date.now() - startTime}ms`);
             }
         }));
+
+        // Surface a non-zero exit, but only once every task has settled
+        if (failed.length > 0) {
+            throw new errors.InternalServerError({
+                message: `Shutdown: ${failed.length} cleanup task(s) failed: ${failed.join(', ')}`
+            });
+        }
     }
 
     /**

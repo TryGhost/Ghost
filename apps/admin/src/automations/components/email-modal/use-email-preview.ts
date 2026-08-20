@@ -33,6 +33,8 @@ const preparePreviewHtml = (html: string) => {
     const parser = new DOMParser();
     const parsed = parser.parseFromString(html, 'text/html');
 
+    parsed.body.setAttribute('data-sentry-mask', 'true');
+
     parsed.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((link) => {
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
