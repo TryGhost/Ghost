@@ -130,7 +130,7 @@ export class EmailAnalyticsServiceWrapper {
             `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
         ].join(' | ');
 
-        logging.info(logMessage);
+        jobLogging.info(logMessage);
 
         // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
         if (jobType === 'latest-opened') {
@@ -271,7 +271,7 @@ export class EmailAnalyticsServiceWrapper {
             jobLogging.error(e, `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`);
 
             // Log again only the error, otherwise we lose the stack trace
-            logging.error(e);
+            jobLogging.error(e);
         }
         this.#fetching = false;
     }

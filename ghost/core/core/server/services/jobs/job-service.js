@@ -12,7 +12,7 @@ const domainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
 const WorkerModelEventBridge = require('./worker-model-event-bridge');
 const errorHandler = (error, workerMeta) => {
-    logging.error(error, `[Background Job] ${workerMeta.name} failed`);
+    jobLogging.error(error, `[Background Job] ${workerMeta.name} failed`);
     sentry.captureException(error);
 };
 const events = require('../../lib/common/events');

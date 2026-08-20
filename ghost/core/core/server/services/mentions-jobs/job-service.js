@@ -11,7 +11,7 @@ const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
 
 const errorHandler = (error, workerMeta) => {
-    logging.error(error, `[Background Job] ${workerMeta.name} failed`);
+    jobLogging.error(error, `[Background Job] ${workerMeta.name} failed`);
     sentry.captureException(error);
 };
 
