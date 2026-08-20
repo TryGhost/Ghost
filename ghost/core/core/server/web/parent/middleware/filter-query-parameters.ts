@@ -1,13 +1,10 @@
 import logging from '@tryghost/logging';
 import type {NextFunction, Request, Response} from 'express';
 
-import {
-    CONTENT_API_QUERY_PARAMETER_ALLOWLIST,
-    QUERY_PARAMETER_ALLOWLIST
-} from './query-parameter-allowlist';
+import {queryParameterPolicy} from '../../query-parameter-policy';
 
-const allowedQueryParameters: ReadonlySet<string> = new Set(QUERY_PARAMETER_ALLOWLIST);
-const allowedContentApiQueryParameters: ReadonlySet<string> = new Set(CONTENT_API_QUERY_PARAMETER_ALLOWLIST);
+const allowedQueryParameters: ReadonlySet<string> = new Set(queryParameterPolicy.public.map(entry => entry.name));
+const allowedContentApiQueryParameters: ReadonlySet<string> = new Set(queryParameterPolicy.contentApi.map(entry => entry.name));
 
 const CONTENT_API_PATH_PATTERN = /\/ghost\/api\/(?:(?:v[0-9]+|canary)\/content|content)(?:\/|$)/;
 
