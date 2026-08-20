@@ -404,8 +404,7 @@ describe('useKoenigFileUpload', () => {
     it('accepts a limit that arrives as a string', async () => {
         // Self-hosters configure limits through environment variables, where
         // every value reaches the config as a string.
-        const stringLimit = String(200 * MB) as unknown as number;
-        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: stringLimit}));
+        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: String(200 * MB)}));
 
         const file = makeFileOfSize('huge.jpg', 250 * MB);
         await act(async () => {
