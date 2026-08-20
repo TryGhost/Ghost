@@ -417,4 +417,33 @@ describe('useKoenigFileUpload', () => {
             'The file you uploaded is larger than the maximum file size of 200MB.'
         );
     });
+    it('accepts a file sized exactly at the limit', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image', {maxUploadSize: 200 * MB}));
+
+        const file = makeFileOfSize('photo.jpg', 200 * MB);
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).not.toBeNull();
+        expect(result.current.errors).toHaveLength(0);
+    });
+
+    it('fills in the placeholders in a configured limit error', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image', {
+            maxUploadSize: 200 * MB,
+            // hostSettings.limits.uploads.error is a template that
+            // @tryghost/limit-service interpolates when it raises the error
+            // server-side, so the placeholders must not reach the user raw.
+            maxUploadError: 'This file is {{count}}, above your {{max}} limit.'
+        }));
+
+        const file = makeFileOfSize('huge.jpg', 250 * MB);
+        await act(async () => {
+            await result.current.upload([file]);
+        });
+
+        expect(requestLog.find(request => request.method === 'POST')).toBeUndefined();
+        expect(result.current.errors[0].message).toBe('This file is 250MB, above your 200MB limit.');
+    });
 });

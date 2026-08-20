@@ -83,7 +83,8 @@ const EmailEditorInner: React.FC<{
     const {EmailEditor} = editor.read();
     const {config} = useGlobalData();
     const maxUploadSize = config?.hostSettings?.limits?.uploads?.max;
-    const fileUploader = useMemo(() => createKoenigFileUploader(maxUploadSize), [maxUploadSize]);
+    const maxUploadError = config?.hostSettings?.limits?.uploads?.error;
+    const fileUploader = useMemo(() => createKoenigFileUploader(maxUploadSize, maxUploadError), [maxUploadError, maxUploadSize]);
 
     return (
         <div className={cn('koenig-react-editor w-full', baseEditorStyles, className)}>

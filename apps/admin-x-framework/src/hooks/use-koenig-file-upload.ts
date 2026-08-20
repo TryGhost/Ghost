@@ -84,6 +84,11 @@ interface KoenigFileUploadOptions {
      * ever reaches the API, so the host limit's error never gets a chance to run.
      */
     maxUploadSize?: number;
+    /**
+     * Message from `hostSettings.limits.uploads.error`, shown in place of the
+     * default when the size check fails.
+     */
+    maxUploadError?: string;
 }
 
 // Config can reach the browser via environment variables, where every value is a
@@ -97,7 +102,21 @@ const resolveUploadLimit = (limit: undefined | number): null | number => {
 // back rather than switching to mebibytes.
 const formatUploadLimit = (bytes: number): string => `${Math.round((bytes / 1000000) * 10) / 10}MB`;
 
-export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image', {maxUploadSize}: KoenigFileUploadOptions = {}): FileUploadHook => {
+// Configured limit errors are templates that @tryghost/limit-service interpolates
+// when it raises the error on the server, so the same placeholders have to be
+// filled in here — otherwise the message reaches the user with a raw `{{max}}` in
+// it. Mirrors the interpolation pattern the limit service uses.
+const interpolateUploadError = (error: string, limitBytes: number, fileBytes: number): string => {
+    const values: Record<string, string> = {
+        max: formatUploadLimit(limitBytes),
+        count: formatUploadLimit(fileBytes),
+        name: 'uploads'
+    };
+
+    return error.replace(/{{([\s\S]+?)}}/g, (_match, token) => values[token.trim()] ?? '');
+};
+
+export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image', {maxUploadSize, maxUploadError}: KoenigFileUploadOptions = {}): FileUploadHook => {
     const [progress, setProgress] = useState(0);
     const [isLoading, setLoading] = useState(false);
     const [errors, setErrors] = useState<UploadError[]>([]);
@@ -129,7 +148,9 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image', {maxUp
         // Size is checked ahead of the early return below: the file card accepts
         // any file type, and is the one most likely to be handed something huge.
         if (uploadLimit !== null && file.size > uploadLimit) {
-            return `The file you uploaded is larger than the maximum file size of ${formatUploadLimit(uploadLimit)}.`;
+            return maxUploadError
+                ? interpolateUploadError(maxUploadError, uploadLimit, file.size)
+                : `The file you uploaded is larger than the maximum file size of ${formatUploadLimit(uploadLimit)}.`;
         }
 
         // if type is file we don't need to validate since the card can accept any file type
@@ -279,9 +300,9 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image', {maxUp
  * applied. Memoize the result on `maxUploadSize` so the editor's context value
  * stays stable across renders.
  */
-export const createKoenigFileUploader = (maxUploadSize: undefined | number) => ({
+export const createKoenigFileUploader = (maxUploadSize: undefined | number, maxUploadError?: string) => ({
     fileTypes: koenigFileUploadTypes,
     useFileUpload: function useFileUpload(type: KoenigFileUploadType = 'image') {
-        return useKoenigFileUpload(type, {maxUploadSize});
+        return useKoenigFileUpload(type, {maxUploadSize, maxUploadError});
     }
 });

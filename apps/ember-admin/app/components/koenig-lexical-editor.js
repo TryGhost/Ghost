@@ -184,8 +184,8 @@ const TKCountPlugin = ({editorResource, ...props}) => {
 
 const NOOP = () => {};
 
-const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, maxUploadSize, onError}) => {
-    const fileUploader = React.useMemo(() => createKoenigFileUploader(maxUploadSize), [maxUploadSize]);
+const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, maxUploadError, maxUploadSize, onError}) => {
+    const fileUploader = React.useMemo(() => createKoenigFileUploader(maxUploadSize, maxUploadError), [maxUploadError, maxUploadSize]);
 
     return (
         <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
@@ -517,6 +517,7 @@ export default class KoenigLexicalEditor extends Component {
             darkMode: this.feature.nightShift,
             editorArgs: this.args,
             editorResource: this.editorResource,
+            maxUploadError: this.config.hostSettings?.limits?.uploads?.error,
             maxUploadSize: this.config.hostSettings?.limits?.uploads?.max,
             onError: this.onError
         };
