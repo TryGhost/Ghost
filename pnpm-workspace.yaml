@@ -100,7 +100,6 @@ catalog:
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4
-  '@types/jest': 29.5.14
   '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
   '@types/node': 22.20.1

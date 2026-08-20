@@ -58,11 +58,7 @@ export default (function viteConfig() {
             environment: 'jsdom',
             include: ['./test/unit/**/*'],
             setupFiles: ['./test/setup.ts'],
-            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
+            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000
         }
     });
 });
