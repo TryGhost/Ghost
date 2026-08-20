@@ -6,17 +6,23 @@ describe('JobService', function () {
     const jobServicePath = '../../../../../core/server/services/jobs/job-service';
     let originalLoad;
     let workerMessageHandler;
+    let workerErrorHandler;
     let handleModelEvent;
+    let info;
+    let errorLog;
 
     beforeEach(function () {
         originalLoad = Module._load;
         handleModelEvent = sinon.stub().resolves(true);
+        info = sinon.stub();
+        errorLog = sinon.stub();
 
         Module._load = function (request, parent, isMain) {
             if (request === '@tryghost/job-manager') {
                 return class JobManager {
                     constructor(options) {
                         workerMessageHandler = options.workerMessageHandler;
+                        workerErrorHandler = options.errorHandler;
                     }
                 };
             }
@@ -35,9 +41,9 @@ describe('JobService', function () {
 
             if (request === '@tryghost/logging') {
                 return {
-                    info: sinon.stub(),
+                    info,
                     warn: sinon.stub(),
-                    error: sinon.stub()
+                    error: errorLog
                 };
             }
 
@@ -99,6 +105,28 @@ describe('JobService', function () {
         // No reserved `event` key, so job-manager will not dispatch it as a raw domain event
         assert.equal(message.event, undefined);
         assert.equal(message.eventName, 'member.edited');
+    });
+
+    it('adds the common marker to worker messages', function () {
+        workerMessageHandler({name: 'clean-tokens', message: 'completed'});
+
+        sinon.assert.calledOnceWithExactly(info, '[Background Job] clean-tokens: completed');
+    });
+
+    it('does not log worker control messages', function () {
+        workerMessageHandler({name: 'clean-tokens', message: 'done'});
+        workerMessageHandler({name: 'clean-tokens', message: 'cancelled'});
+
+        sinon.assert.notCalled(info);
+    });
+
+    it('adds the common marker to worker failures', function () {
+        const error = new Error('Job failed');
+
+        workerErrorHandler(error, {name: 'clean-tokens'});
+
+        sinon.assert.calledOnceWithExactly(errorLog, error, '[Background Job] clean-tokens failed');
+        sinon.assert.notCalled(info);
     });
 });
 

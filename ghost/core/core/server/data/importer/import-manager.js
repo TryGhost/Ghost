@@ -507,11 +507,24 @@ class ImportManager {
 
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {
+            logging.info('[Background Job] content-import queued');
             return jobManager.addJob({
-                job: () => this.importFromFile(file, Object.assign({}, importOptions, {
-                    runningInJob: true,
-                    data: importData
-                })),
+                job: async () => {
+                    const startedAt = Date.now();
+                    logging.info('[Background Job] content-import started');
+                    try {
+                        const result = await this.importFromFile(file, Object.assign({}, importOptions, {
+                            runningInJob: true,
+                            data: importData
+                        }));
+                        const state = result === undefined ? 'finished after failure' : 'completed';
+                        logging.info(`[Background Job] content-import ${state} in ${Date.now() - startedAt}ms`);
+                        return result;
+                    } catch (err) {
+                        logging.error(err, `[Background Job] content-import failed after ${Date.now() - startedAt}ms`);
+                        throw err;
+                    }
+                },
                 offloaded: false
             });
         }
@@ -530,7 +543,7 @@ class ImportManager {
 
             return importResult;
         } catch (err) {
-            logging.error(err, 'Content import was unsuccessful');
+            logging.error(err, '[Background Job] content-import failed');
             const errorDetails = err.errorDetails || [err];
             importResult = {data: {errors: errorDetails}};
         } finally {

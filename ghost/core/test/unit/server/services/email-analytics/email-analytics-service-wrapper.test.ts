@@ -1,4 +1,6 @@
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 import {EmailAnalyticsServiceWrapper} from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
 import {EventProcessingResult} from '../../../../../core/server/services/email-analytics/event-processing-result';
 import {Queries} from '../../../../../core/server/services/email-analytics/lib/queries';
@@ -73,6 +75,8 @@ describe('EmailAnalyticsServiceWrapper', function () {
             memberAggregationTimeMs: 200,
             result: new EventProcessingResult()
         }, 2000);
+
+        return wrapper;
     }
 
     it('uses existing open throughput metric name for newsletters', function () {
@@ -93,5 +97,36 @@ describe('EmailAnalyticsServiceWrapper', function () {
             events: 10,
             duration: 2000
         });
+    });
+
+    it('logs and preserves initial schedule restoration failures', async function () {
+        const errorLog = sinon.stub(logging, 'error');
+        const wrapper = logLatestOpenedJob('newsletters');
+        const restoreError = new Error('Restore failed');
+        sinon.stub(wrapper.service, 'restoreScheduled').rejects(restoreError);
+
+        await assert.rejects(wrapper.startFetch(), error => error === restoreError);
+
+        sinon.assert.calledOnceWithExactly(
+            errorLog,
+            restoreError,
+            sinon.match('[Background Job] email-analytics-fetch-latest failed while restoring scheduled events')
+        );
+    });
+
+    it('logs one terminal completion for a successful fetch', async function () {
+        const infoLog = sinon.stub(logging, 'info');
+        const wrapper = logLatestOpenedJob('newsletters');
+        infoLog.resetHistory();
+        sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+        sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(1);
+        sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+        sinon.stub(wrapper, 'fetchMissing').resolves(0);
+        sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+
+        await wrapper.startFetch();
+
+        const completions = infoLog.args.filter(([message]) => typeof message === 'string' && message.startsWith('[Background Job] email-analytics-fetch-latest completed'));
+        assert.equal(completions.length, 1);
     });
 });

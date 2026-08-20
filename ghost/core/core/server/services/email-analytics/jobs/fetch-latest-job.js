@@ -5,12 +5,11 @@ const {parentPort} = require('worker_threads');
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
 // where it left off on next run
 /**
- * @param {string} logName
  * @returns {void}
  */
-function cancel(logName) {
+function cancel() {
     if (parentPort) {
-        parentPort.postMessage(`Email analytics fetch-latest job for ${logName} cancelled before completion`);
+        parentPort.postMessage('cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -22,17 +21,15 @@ function cancel(logName) {
 /**
  * @param {object} options
  * @param {{name: string}} options.event
- * @param {string} options.logName
  * @returns {void}
  */
 exports.run = ({
-    event,
-    logName
+    event
 }) => {
     if (parentPort) {
         parentPort.once('message', (message) => {
             if (message === 'cancel') {
-                cancel(logName);
+                cancel();
                 return;
             }
         });
@@ -45,6 +42,7 @@ exports.run = ({
             }
         });
 
+        parentPort.postMessage('dispatched to main process');
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit

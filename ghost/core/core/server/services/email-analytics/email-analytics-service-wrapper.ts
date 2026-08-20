@@ -21,6 +21,12 @@ export class EmailAnalyticsServiceWrapper {
         return `[EmailAnalytics:${this.#logName}]`;
     }
 
+    get #backgroundJobName(): string {
+        return this.#logName === 'newsletters'
+            ? 'email-analytics-fetch-latest'
+            : 'email-analytics-automation-fetch-latest';
+    }
+
     constructor({logName}: {logName: string}) {
         this.#logName = logName;
     }
@@ -106,7 +112,7 @@ export class EmailAnalyticsServiceWrapper {
         const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
 
         const logMessage = [
-            `${this.#logPrefix} Job complete: ${jobType}`,
+            `[Background Job] ${this.#backgroundJobName} processed ${jobType} | ${this.#logPrefix}`,
             `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
             `Mode: ${batchMode}`,
             `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
@@ -197,13 +203,19 @@ export class EmailAnalyticsServiceWrapper {
     }
 
     async startFetch(): Promise<void> {
+        const startedAt = Date.now();
         if (!this.#restoredSchedule) {
             this.#restoredSchedule = true;
-            await this.service.restoreScheduled();
+            try {
+                await this.service.restoreScheduled();
+            } catch (e) {
+                logging.error(e, `[Background Job] ${this.#backgroundJobName} failed while restoring scheduled events after ${Date.now() - startedAt}ms`);
+                throw e;
+            }
         }
 
         if (this.#fetching) {
-            logging.info(`Email analytics fetch for ${this.#logName} already running, skipping`);
+            logging.info(`[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`);
             return;
         }
         this.#fetching = true;
@@ -236,14 +248,16 @@ export class EmailAnalyticsServiceWrapper {
                 return;
             }
 
-            // Log summary if no events were found across all jobs
+            // Log one terminal outcome for the whole fetch
             if (c1 + c2 + c3 + c4 === 0) {
-                logging.info(`${this.#logPrefix} Job complete - No events`);
+                logging.info(`[Background Job] ${this.#backgroundJobName} completed with no events | ${this.#logPrefix}`);
+            } else {
+                logging.info(`[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms | ${this.#logPrefix}`);
             }
 
             this.#fetching = false;
         } catch (e) {
-            logging.error(e, `Error while fetching email analytics for ${this.#logName}`);
+            logging.error(e, `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`);
 
             // Log again only the error, otherwise we lose the stack trace
             logging.error(e);
@@ -253,7 +267,7 @@ export class EmailAnalyticsServiceWrapper {
 
     _restartFetch(reason: string): void {
         this.#fetching = false;
-        logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
+        logging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
         this.startFetch();
     }
 }

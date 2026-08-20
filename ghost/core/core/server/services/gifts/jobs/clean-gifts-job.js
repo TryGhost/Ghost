@@ -10,7 +10,7 @@ const StartGiftCleanupEvent = require('../events/start-gift-cleanup-event');
 // off on next run
 function cancel() {
     if (parentPort) {
-        parentPort.postMessage('Gift cleanup job cancelled before completion');
+        parentPort.postMessage('cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -37,6 +37,7 @@ if (parentPort) {
                 type: StartGiftCleanupEvent.name
             }
         });
+        parentPort.postMessage('dispatched to main process');
         parentPort.postMessage('done');
     } else {
         setTimeout(() => {

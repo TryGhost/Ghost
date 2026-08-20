@@ -10,7 +10,7 @@ const StartGiftReminderFlushEvent = require('../events/start-gift-reminder-flush
 // its reminder recorded will be picked up on the next run
 function cancel() {
     if (parentPort) {
-        parentPort.postMessage('Gift reminder job cancelled before completion');
+        parentPort.postMessage('cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -37,6 +37,7 @@ if (parentPort) {
                 type: StartGiftReminderFlushEvent.name
             }
         });
+        parentPort.postMessage('dispatched to main process');
         parentPort.postMessage('done');
     } else {
         setTimeout(() => {

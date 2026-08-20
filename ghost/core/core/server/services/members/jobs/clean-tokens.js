@@ -6,7 +6,7 @@ const moment = require('moment');
 // where it left off on next run
 function cancel() {
     if (parentPort) {
-        parentPort.postMessage('Expired complimentary subscriptions cleanup cancelled before completion');
+        parentPort.postMessage('cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -26,6 +26,9 @@ if (parentPort) {
 (async () => {
     const cleanupStartDate = new Date();
     const db = require('../../../data/db');
+    if (parentPort) {
+        parentPort.postMessage('execution started');
+    }
     debug(`Starting cleanup of tokens`);
 
     // We delete all tokens that are older than 24 hours.
@@ -39,7 +42,7 @@ if (parentPort) {
     debug(`Removed ${deletedTokens} tokens created before ${d.toISOString()} in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
 
     if (parentPort) {
-        parentPort.postMessage(`Removed ${deletedTokens} tokens created before ${d.toISOString()} in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
+        parentPort.postMessage(`completed: removed ${deletedTokens} tokens created before ${d.toISOString()} in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit

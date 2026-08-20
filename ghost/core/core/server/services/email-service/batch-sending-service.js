@@ -138,6 +138,7 @@ class BatchSendingService {
      * @returns {void}
      */
     scheduleEmail(email) {
+        logging.info('[Background Job] batch-sending-service-job queued');
         return this.#jobsService.addJob({
             name: 'batch-sending-service-job',
             job: this.emailJob.bind(this),
@@ -151,20 +152,26 @@ class BatchSendingService {
      * @param {{emailId: string}} data Data passed from the job service. We only need the emailId because we need to refetch the email anyway to make sure the status is right and 'locked'.
      */
     async emailJob({emailId}) {
-        logging.info(`Starting email job for email ${emailId}`);
+        logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
         const startTime = Date.now();
 
         // Check if email is 'pending' only + change status to submitting in one transaction.
         // This allows us to have a lock around the email job that makes sure an email can only have one active job.
-        let email = await this.retryDb(
-            async () => {
-                return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
-            },
-            {...this.#BEFORE_RETRY_CONFIG, description: `updateStatusLock email ${emailId} -> submitting`}
-        );
+        let email;
+        try {
+            email = await this.retryDb(
+                async () => {
+                    return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
+                },
+                {...this.#BEFORE_RETRY_CONFIG, description: `updateStatusLock email ${emailId} -> submitting`}
+            );
+        } catch (err) {
+            logging.error(err, `[Background Job] batch-sending-service-job failed while acquiring the status lock after ${Date.now() - startTime}ms`);
+            throw err;
+        }
         if (!email) {
-            logging.error(`Tried sending email that is not pending or failed ${emailId}`);
+            logging.error(`[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed`);
             return;
         }
 
@@ -186,9 +193,10 @@ class BatchSendingService {
                     error: null
                 }, {patch: true, autoRefresh: false});
             }, {...this.#AFTER_RETRY_CONFIG, description: `email ${emailId} -> submitted`});
+            logging.info(`[Background Job] batch-sending-service-job completed in ${Date.now() - startTime}ms`);
         } catch (e) {
             if (e && e.code === SHUTDOWN_CODE) {
-                logging.info(`Email ${email.id} send stopped because the container is shutting down — leaving status=submitting so it can resume on next boot`);
+                logging.info(`[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`);
                 return;
             }
             const ghostError = new errors.EmailError({
@@ -197,7 +205,7 @@ class BatchSendingService {
                 message: `Error sending email ${email.id}`
             });
 
-            logging.error(ghostError);
+            logging.error(ghostError, `[Background Job] batch-sending-service-job failed after ${Date.now() - startTime}ms`);
             if (this.#sentry) {
                 // Log the original error to Sentry
                 this.#sentry.captureException(e);

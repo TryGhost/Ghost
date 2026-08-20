@@ -118,12 +118,13 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
     DomainEvents.subscribe(StartGiftReminderFlushEvent, async () => {
         const start = Date.now();
+        logging.info('[Background Job] send-gift-reminders started in main process');
         try {
             const {remindedCount, skippedCount, failedCount} = await giftService.processReminders();
 
-            logging.info(`Sent ${remindedCount} gift reminders, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
+            logging.info(`[Background Job] send-gift-reminders completed: sent ${remindedCount}, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
         } catch (err) {
-            logging.error(err, 'Failed to process gift reminders');
+            logging.error(err, '[Background Job] send-gift-reminders failed');
         }
     });
 
@@ -138,41 +139,45 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
+        logging.info('[Background Job] clean-gifts started in main process');
+
         const checkoutStart = Date.now();
         try {
             const {deletedCount} = await giftService.processAbandonedCheckouts();
 
-            logging.info(`Deleted ${deletedCount} abandoned gift checkouts in ${Date.now() - checkoutStart}ms`);
+            logging.info(`[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`);
         } catch (err) {
-            logging.error(err, 'Failed to clean abandoned gift checkouts');
+            logging.error(err, '[Background Job] clean-gifts failed to process abandoned checkouts');
         }
 
         const consumedStart = Date.now();
         try {
             const {consumedCount, updatedMemberCount} = await giftService.processConsumed();
 
-            logging.info(`Consumed ${consumedCount} gifts, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`);
+            logging.info(`[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`);
         } catch (err) {
-            logging.error(err, 'Failed to process consumed gifts');
+            logging.error(err, '[Background Job] clean-gifts failed to process consumed gifts');
         }
 
         const expiredStart = Date.now();
         try {
             const {expiredCount} = await giftService.processExpired();
 
-            logging.info(`Expired ${expiredCount} gifts in ${Date.now() - expiredStart}ms`);
+            logging.info(`[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`);
         } catch (err) {
-            logging.error(err, 'Failed to process expired gifts');
+            logging.error(err, '[Background Job] clean-gifts failed to process expired gifts');
         }
 
         try {
             const {sentCount, skippedCount, failedCount} = await giftDeliveryService.recoverPending();
             if (sentCount + skippedCount + failedCount > 0) {
-                logging.info(`Gift delivery recovery during cleanup: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
+                logging.info(`[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
             }
         } catch (err) {
-            logging.error(err, 'Failed to recover pending gift deliveries during cleanup');
+            logging.error(err, '[Background Job] clean-gifts failed to process pending gift deliveries');
         }
+
+        logging.info('[Background Job] clean-gifts finished in main process');
     });
 
     jobs.scheduleGiftCleanupJob();
