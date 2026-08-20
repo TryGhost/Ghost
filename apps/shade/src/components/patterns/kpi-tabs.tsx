@@ -5,38 +5,8 @@ import {type LucideIcon} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {Button, ButtonProps} from '@/components/ui/button';
 import {MetricValue} from '@/components/ui/metric-value';
-import {Tabs, TabsContent, TabsList, TabsProps, TabsTrigger} from '@/components/ui/tabs';
+import {TabsTrigger} from '@/components/ui/tabs';
 import {TrendBadge} from '@/components/ui/trend-badge';
-
-/**
- * KPI variant of the Tabs primitives. Wraps the generic Tabs / TabsList /
- * TabsTrigger / TabsContent and pins the `kpis` cva variant so consumers don't
- * have to pass `variant='kpis'` themselves. The `kpis` cva variant lives in
- * `ui/tabs.tsx` as a private implementation detail used only here.
- */
-const KpiTabs = React.forwardRef<
-    React.ElementRef<typeof Tabs>,
-    Omit<TabsProps, 'variant'>
->(({...props}, ref) => (
-    <Tabs ref={ref} variant='kpis' {...props} />
-));
-KpiTabs.displayName = 'KpiTabs';
-
-const KpiTabsList = React.forwardRef<
-    React.ElementRef<typeof TabsList>,
-    React.ComponentPropsWithoutRef<typeof TabsList>
->((props, ref) => (
-    <TabsList ref={ref} {...props} />
-));
-KpiTabsList.displayName = 'KpiTabsList';
-
-const KpiTabsContent = React.forwardRef<
-    React.ElementRef<typeof TabsContent>,
-    React.ComponentPropsWithoutRef<typeof TabsContent>
->((props, ref) => (
-    <TabsContent ref={ref} {...props} />
-));
-KpiTabsContent.displayName = 'KpiTabsContent';
 
 interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
     children: React.ReactNode;
@@ -127,9 +97,6 @@ const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonP
 KpiDropdownButton.displayName = 'KpiDropdownButton';
 
 export {
-    KpiTabs,
-    KpiTabsList,
-    KpiTabsContent,
     KpiTabTrigger,
     KpiTabValue,
     KpiDropdownButton
