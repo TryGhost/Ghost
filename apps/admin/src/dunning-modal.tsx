@@ -64,7 +64,7 @@ export function DunningModal({currentUser}: DunningModalProps) {
                 dismiss();
             }
         }}>
-            <DialogContent className='relative' onPointerDownOutside={event => event.preventDefault()}>
+            <DialogContent onPointerDownOutside={event => event.preventDefault()}>
                 <Button
                     aria-label='Close'
                     className='absolute top-3 right-3 text-muted-foreground hover:text-foreground'

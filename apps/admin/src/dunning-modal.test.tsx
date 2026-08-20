@@ -106,6 +106,15 @@ describe('DunningModal', () => {
         expect(screen.getByRole('button', {name: 'Update payment details'})).toBeInTheDocument();
     });
 
+    it('keeps the dialog fixed to the viewport', () => {
+        createStateBridge(overdueState());
+
+        render(<DunningModal currentUser={owner} />);
+
+        expect(screen.getByRole('dialog')).toHaveClass('fixed');
+        expect(screen.getByRole('dialog')).not.toHaveClass('relative');
+    });
+
     it('uses generic owner copy when the attempt count is unavailable', () => {
         createStateBridge(overdueState({paymentAttempts: null}));
 
