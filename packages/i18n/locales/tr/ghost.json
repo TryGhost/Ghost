@@ -115,6 +115,7 @@
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "{siteTitle} için {duration} yıllık {tierName} aboneliği hediyeniz var",
     "You've been gifted a membership to {siteTitle}": "",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Ücretsiz denemeniz {date} tarihinde sona eriyor, bu tarihten sonra düzenli fiyat uygulanacaktır. O zamana kadar her zaman iptal edebilirsiniz.",
+    "Your gift can be opened on {date}.": "",
     "Your gift has been sent": "",
     "Your gift is on its way": "",
     "Your gift is ready": "Hediyeniz hazır",

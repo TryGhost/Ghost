@@ -2,9 +2,8 @@ import AppContext from '../../app-context';
 import CalendarIcon from '../../images/icons/calendar.svg?react';
 import {DayPicker} from 'react-day-picker';
 import {createPortal} from 'react-dom';
-// Portal is on React 17, so no useId here — and nothing needs to reference the
-// popover by id anyway.
 import {useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import {parseDateValue, toDateValue} from '../../utils/date-time';
 
 export const DatePickerStyles = `
     .gh-portal-datepicker {
@@ -15,16 +14,13 @@ export const DatePickerStyles = `
         position: relative;
     }
 
-    /* Matches the sibling text inputs exactly — no fixed height, so it tracks
-       the base input height at every breakpoint. */
     .gh-portal-datepicker-field .gh-portal-input {
         width: 100%;
         margin-bottom: 0;
         box-sizing: border-box;
     }
 
-    /* Only while unfocused: focusing the field for keyboard editing shows the
-       real segments again (the overlay yields below), so the date can be typed. */
+    /* Focusing the field reveals the real segments so the date stays typable. */
     .gh-portal-datepicker-field .gh-portal-input.has-min-label:not(:focus),
     .gh-portal-datepicker-field .gh-portal-input.has-min-label:not(:focus)::-webkit-datetime-edit {
         color: transparent;
@@ -50,18 +46,11 @@ export const DatePickerStyles = `
         display: none;
     }
 
-    /* Chrome and Safari only; Firefox has no equivalent pseudo-element, so it
-       keeps its native button and never reaches this block. */
     @supports selector(::-webkit-calendar-picker-indicator) {
-        /* The field stays typable; only the browser's own calendar goes. */
         .gh-portal-datepicker-field .gh-portal-input::-webkit-calendar-picker-indicator {
             display: none;
         }
 
-        /* Aligned to the field's 12px padding like any trailing icon. 18px
-           keeps it a field affordance, clearly below the 20px brand marks
-           heading each question while still reading larger than the 15px
-           value beside it. */
         .gh-portal-datepicker-toggle {
             display: flex;
             align-items: center;
@@ -85,12 +74,8 @@ export const DatePickerStyles = `
         }
     }
 
-    /* Rendered into the popup container rather than next to the field, and
-       placed from the field's measured rect (see position()).
-       .gh-portal-gift-checkout-reveal animates its height from its content
-       (grid-template-rows: 0fr -> 1fr) and clips with overflow: hidden — so a
-       popover living inside it grew the reveal by its own height, shoving
-       everything below down the page, and got clipped for its trouble. */
+    /* Portalled outside the animated, overflow-hidden gift reveal to avoid
+       clipping and layout shifts; placed from the field's measured rect. */
     .gh-portal-datepicker-popover {
         position: absolute;
         z-index: 100;
@@ -145,9 +130,6 @@ export const DatePickerStyles = `
         color: var(--grey0);
     }
 
-    /* At the first or last selectable month. react-day-picker marks these
-       aria-disabled rather than disabled — the click is already a no-op, so
-       this is only about not looking live. */
     .gh-portal-datepicker-nav button[aria-disabled='true'] {
         opacity: 0.3;
         cursor: default;
@@ -204,9 +186,6 @@ export const DatePickerStyles = `
         background: var(--grey96);
     }
 
-    /* Today is marked with a dot under the number rather than by recolouring
-       it: brand-coloured text reads as a selected or otherwise special state,
-       and it competed with the actual selection sitting next to it. */
     .gh-portal-datepicker-today .gh-portal-datepicker-day-button::after {
         content: '';
         position: absolute;
@@ -219,8 +198,6 @@ export const DatePickerStyles = `
         background: var(--brandcolor);
     }
 
-    /* The selected day is already filled with the brand colour, so its dot
-       flips to white to stay visible. */
     .gh-portal-datepicker-selected .gh-portal-datepicker-day-button::after {
         background: var(--white);
     }
@@ -230,9 +207,7 @@ export const DatePickerStyles = `
         color: var(--white);
     }
 
-    /* Same hover as the primary action button (see ActionButtonStyles): dim the
-       brand fill rather than swapping it for the grey used by unselected days,
-       which left white text on a near-white background. */
+    /* Dim the brand fill on hover to preserve the selected day's white text. */
     .gh-portal-datepicker-selected .gh-portal-datepicker-day-button:hover:not(:disabled) {
         background: var(--brandcolor);
         opacity: 0.92;
@@ -249,9 +224,8 @@ export const DatePickerStyles = `
     }
 `;
 
-// react-day-picker's own class names are dropped in favour of these so its
-// stylesheet doesn't have to be shipped — Portal injects CSS as a string, and
-// only the elements below are actually styled.
+// Map only the classes Portal styles so react-day-picker's stylesheet doesn't
+// have to be shipped.
 const classNames = {
     months: 'gh-portal-datepicker-months',
     month_caption: 'gh-portal-datepicker-month-caption',
@@ -268,16 +242,14 @@ const classNames = {
 
 const POPOVER_GAP = 6;
 
-// Where the popover is rendered: the popup container, which sits outside the
-// gift page's animated reveal and clips nothing. Falling back to the body keeps
-// the component usable anywhere else in Portal.
+// Render outside the clipped gift reveal, falling back to the owning
+// document's body.
 function getPopoverHost(node) {
     return node?.closest('.gh-portal-popup-container') || node?.ownerDocument?.body || null;
 }
 
-// What the reader can actually see at once. Portal's popup is a scrolling box
-// inside a full-height iframe, so the window is the wrong yardstick — the
-// nearest scrolling ancestor is the real viewport here.
+// The nearest scrolling ancestor is the real viewport: Portal's popup is a
+// scrolling box inside a full-height iframe.
 function getVisibleBox(node) {
     const view = node?.ownerDocument?.defaultView;
     for (let el = node?.parentElement; el && view; el = el.parentElement) {
@@ -290,30 +262,10 @@ function getVisibleBox(node) {
     return height ? {top: 0, bottom: height} : null;
 }
 
-// "2026-08-03" as a local date. `new Date(string)` would read it as UTC and
-// land on the previous day for anyone west of Greenwich.
-function parseDateValue(value) {
-    if (!value) {
-        return undefined;
-    }
-    const [year, month, day] = value.split('-').map(Number);
-    if (!year || !month || !day) {
-        return undefined;
-    }
-    return new Date(year, month - 1, day);
-}
 
-function toDateValue(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-// Which day the week starts on, per the locale rather than a fixed Sunday.
-// Intl reports 1–7 (Monday–Sunday); react-day-picker counts 0–6 from Sunday.
-// Older browsers expose the info as a property instead of a method, and the
-// oldest have neither — Sunday is date-fns' own default, so fall back to that.
+// Intl reports the week start as 1–7 (Monday–Sunday); react-day-picker counts
+// 0–6 from Sunday. Older browsers expose weekInfo as a property instead of a
+// method, or not at all — fall back to Sunday.
 function getWeekStart(locale) {
     try {
         const info = new Intl.Locale(locale).getWeekInfo?.() ?? new Intl.Locale(locale).weekInfo;
@@ -325,11 +277,8 @@ function getWeekStart(locale) {
 }
 
 /**
- * A date field whose editing surface is a calendar rather than the browser's
- * own control, which looks different on every platform.
- *
- * Values are `YYYY-MM-DD` strings in and out, matching what an `<input
- * type="date">` would give, so callers keep comparing them as strings.
+ * A native date input with a custom calendar popover. Values are `YYYY-MM-DD`
+ * strings in and out, matching an `<input type="date">`.
  */
 const DatePicker = ({
     id,
@@ -340,10 +289,10 @@ const DatePicker = ({
     hasError = false,
     // Shown in place of the date while the value sits on `min` — the gift flow
     // reads today as "Now" rather than a date.
-    minLabel,
+    minLabel = null,
     ariaLabel
 }) => {
-    const {locale = 'en', dir = 'ltr'} = useContext(AppContext);
+    const {locale: siteLocale = 'en', dir = 'ltr'} = useContext(AppContext);
     const [isOpen, setIsOpen] = useState(false);
     const [popoverStyle, setPopoverStyle] = useState(null);
     const containerRef = useRef(null);
@@ -355,6 +304,18 @@ const DatePicker = ({
     const minDate = parseDateValue(min);
     const maxDate = parseDateValue(max);
 
+    // The publication locale is stored unvalidated ('en_US' passes the
+    // settings check but Intl rejects it), so fall back to English rather
+    // than crash the field mid-render.
+    const locale = useMemo(() => {
+        try {
+            new Intl.DateTimeFormat(siteLocale);
+            return siteLocale;
+        } catch (e) {
+            return 'en';
+        }
+    }, [siteLocale]);
+
     // Rebuilt only when the locale changes: constructing a DateTimeFormat is
     // the expensive part, and these run for every cell on every render.
     const formats = useMemo(() => ({
@@ -365,13 +326,8 @@ const DatePicker = ({
 
     const weekStartsOn = useMemo(() => getWeekStart(locale), [locale]);
 
-    // The popover is portalled to the popup container, so its coordinates are
-    // measured in that element's space. Both rects are viewport-relative and
-    // the container carries no scale, so subtracting is exact.
-    //
-    // Runs after the calendar has rendered because the decision needs its real
-    // height — a month spanning six weeks is a row taller than one spanning
-    // five, and the field sits low enough in the form for that to matter.
+    // Measures after render in the portal host's coordinate space — the
+    // calendar's height varies by month.
     const position = useCallback(() => {
         const field = fieldRef.current;
         const target = getPopoverHost(field);
@@ -384,15 +340,10 @@ const DatePicker = ({
         const visible = getVisibleBox(field);
         const height = popover.offsetHeight;
 
-        // Below by default; above only when it genuinely doesn't fit below and
-        // there's more room up there.
         const spaceBelow = visible ? visible.bottom - rect.bottom : Infinity;
         const spaceAbove = visible ? rect.top - visible.top : 0;
         const flip = spaceBelow < height + POPOVER_GAP && spaceAbove > spaceBelow;
 
-        // Right-aligned: the calendar is narrower than the field, and hanging
-        // it from the same edge as the icon that opens it keeps the two
-        // visually tied together.
         setPopoverStyle({
             top: flip
                 ? rect.top - host.top - height - POPOVER_GAP
@@ -456,17 +407,13 @@ const DatePicker = ({
         toggleRef.current?.focus();
     };
 
-    // The input keeps the real value underneath: this only covers its rendered
-    // text, and yields as soon as the field is focused for typing.
     const showMinLabel = !!minLabel && !!value && value === min;
 
     return (
         <div ref={containerRef} className='gh-portal-datepicker'>
             <div ref={fieldRef} className='gh-portal-datepicker-field'>
-                {/* Still a native date input: segment-by-segment typing, in the
-                    reader's own locale order, is worth keeping. Only the
-                    browser's calendar is replaced — see the @supports block,
-                    which hides its picker button in favour of ours. */}
+                {/* Keeps a native date input for locale-aware keyboard
+                    editing; only the browser's calendar is replaced. */}
                 <input
                     className={'gh-portal-input' + (hasError ? ' error' : '') + (showMinLabel ? ' has-min-label' : '')}
                     data-test-input={id}
@@ -475,10 +422,8 @@ const DatePicker = ({
                     min={min}
                     type='date'
                     value={value}
-                    // Never rests empty: a cleared field snaps back to the
-                    // minimum once focus leaves. Only on blur — mid-edit the
-                    // input reports '' while its segments are incomplete, and
-                    // restoring a value then would fight the typing.
+                    // Restores the minimum on blur; date inputs report ''
+                    // mid-edit while their segments are incomplete.
                     onBlur={event => !event.target.value && onChange(min)}
                     onChange={event => onChange(event.target.value)}
                 />

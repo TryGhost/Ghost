@@ -115,6 +115,7 @@
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "Du har fått en {duration}-årig {tierName}-prenumeration på {siteTitle}",
     "You've been gifted a membership to {siteTitle}": "",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Din kostnadsfria provperiod slutar {date}, efter vilket du kommer bli debiterad det vanliga priset. Du kan alltid avbryta innan dess.",
+    "Your gift can be opened on {date}.": "",
     "Your gift has been sent": "",
     "Your gift is on its way": "",
     "Your gift is ready": "Din gåva är färdig",

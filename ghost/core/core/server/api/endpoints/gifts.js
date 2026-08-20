@@ -1,6 +1,6 @@
 const domainEvents = require('@tryghost/domain-events');
 const StartGiftReminderFlushEvent = require('../../services/gifts/events/start-gift-reminder-flush-event');
-const StartGiftDeliveryFlushEvent = require('../../services/gifts/events/start-gift-delivery-flush-event');
+const {StartGiftDeliveryFlushEvent} = require('../../services/gifts/events/start-gift-delivery-flush-event');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

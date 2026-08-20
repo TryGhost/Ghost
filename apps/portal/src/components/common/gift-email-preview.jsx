@@ -1,8 +1,8 @@
-import {useRef} from 'react';
+import {useEffect, useState} from 'react';
 import Interpolate from '@doist/react-interpolate';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import QuoteIcon from '../../images/icons/quote.svg?react';
-import {getDateString} from '../../utils/date-time';
+import {getDateString, parseDateValue} from '../../utils/date-time';
 import {getGiftIntroduction} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 
@@ -12,20 +12,15 @@ import {t} from '../../utils/i18n';
 // it — same order, same palette, same accent-coloured redeem button — so what
 // the buyer watches fill in is what the recipient actually opens.
 
-const parseLocalDate = (value) => {
-    const [year, month, day] = (value || '').split('-').map(Number);
-    if (!year || !month || !day) {
-        return null;
-    }
-    return new Date(year, month - 1, day);
-};
-
 const GiftEmailPreview = ({
     recipientName,
     recipientEmail,
     buyerName,
     giftMessage,
+    // The effective delivery date, always set — isScheduled says whether it
+    // is a future pick or just "today".
     deliveryDate,
+    isScheduled = false,
     cadence,
     duration,
     tierName,
@@ -38,12 +33,18 @@ const GiftEmailPreview = ({
     const fromName = buyerName.trim();
     const message = giftMessage.trim();
 
-    const isScheduled = !!deliveryDate;
-    const scheduledDate = isScheduled ? getDateString(parseLocalDate(deliveryDate)) : '';
     const todayDate = getDateString(new Date());
-    const lastScheduledDate = useRef('');
-    const scheduledLabel = isScheduled ? scheduledDate : lastScheduledDate.current;
-    lastScheduledDate.current = scheduledLabel;
+    const scheduledDate = getDateString(parseDateValue(deliveryDate)) || todayDate;
+    // The last future date is kept so the scheduled label stays legible while
+    // its side of the date stack cross-fades out after switching back to
+    // "now" — otherwise it would hard-swap to today's date mid-fade.
+    const [lastScheduledDate, setLastScheduledDate] = useState('');
+    useEffect(() => {
+        if (isScheduled) {
+            setLastScheduledDate(scheduledDate);
+        }
+    }, [isScheduled, scheduledDate]);
+    const scheduledLabel = isScheduled ? scheduledDate : (lastScheduledDate || todayDate);
 
     // "Name <address>" is how a mail client identifies a recipient; fall back to
     // whichever half the buyer has filled in so far.

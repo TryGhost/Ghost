@@ -12,6 +12,7 @@ import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {isCookiesDisabled} from '../../utils/helpers';
+import {addCalendarDays, getDateInputValue} from '../../utils/date-time';
 import {getActiveGiftDuration, getAvailableGiftDurations, getGiftPrice, getGiftProducts} from '../../utils/gift-subscriptions';
 import {getGiftDurationAttributiveLabel, getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import {ValidateInputForm} from '../../utils/form';
@@ -1328,24 +1329,9 @@ function GiftDurationSwitch({offeredDurations, activeDuration, setSelectedDurati
 const GIFT_EMAIL_MAX_LENGTH = 191;
 const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_MESSAGE_MAX_LENGTH = 250;
+// Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost/core's gifts constants (the server
+// allows one extra day of clock-skew slack) — change them together.
 const GIFT_MAX_SCHEDULE_DAYS = 365;
-
-function getDateInputValue(date, timeZone = 'Etc/UTC') {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-        timeZone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).formatToParts(date);
-    const part = type => parts.find(item => item.type === type)?.value;
-    return `${part('year')}-${part('month')}-${part('day')}`;
-}
-
-function addCalendarDays(value, days) {
-    const [year, month, day] = value.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day + days));
-    return date.toISOString().slice(0, 10);
-}
 
 function getTierPriceLabel(product, months) {
     return formatGiftValue(getGiftPrice(product, months));
@@ -1362,7 +1348,10 @@ const BetaGiftPage = () => {
     const [buyerName, setBuyerName] = useState(member?.name || '');
     const [giftMessage, setGiftMessage] = useState('');
     const [deliveryMethod, setDeliveryMethod] = useState('email');
-    const [deliveryDate, setDeliveryDate] = useState(() => getDateInputValue(new Date(), site?.timezone));
+    // null means untouched: the effective date then tracks "today" in the
+    // site's timezone on every render, so an untouched form still means
+    // "send now" after the page sits open across site-midnight.
+    const [deliveryDate, setDeliveryDate] = useState(null);
     const [errors, setErrors] = useState({});
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
 
@@ -1457,7 +1446,7 @@ const BetaGiftPage = () => {
     const isPurchasing = action === 'checkoutGift:running';
     const hasErrors = step === 'plan'
         ? !!(errors.email || errors.buyerName)
-        : !!errors.recipientEmail;
+        : !!(errors.recipientEmail || errors.deliveryDate);
     const isDisabled = isCookiesDisabled() || isPurchasing || hasErrors;
     const isLoggedIn = !!member;
     const showBuyerName = !(member?.name || '').trim();
@@ -1469,6 +1458,7 @@ const BetaGiftPage = () => {
     const showEmailPreview = step === 'delivery' && deliveryMethod === 'email';
     const minDeliveryDate = getDateInputValue(new Date(), site.timezone);
     const maxDeliveryDate = addCalendarDays(minDeliveryDate, GIFT_MAX_SCHEDULE_DAYS);
+    const effectiveDeliveryDate = deliveryDate ?? minDeliveryDate;
 
     const emailField = {
         type: 'email',
@@ -1545,7 +1535,9 @@ const BetaGiftPage = () => {
             ...currentErrors,
             deliveryDate: ''
         }));
-        setDeliveryDate(nextDate);
+        // Store today as null so "send now" keeps tracking the site day across
+        // midnight; a typed past date stays put for validation to call out.
+        setDeliveryDate(nextDate === minDeliveryDate ? null : nextDate);
     };
 
     const handleContinueToDelivery = (e) => {
@@ -1581,7 +1573,7 @@ const BetaGiftPage = () => {
         const trimmedBuyerName = buyerName.trim();
         const trimmedGiftMessage = giftMessage.trim();
         const isEmailDelivery = deliveryMethod === 'email';
-        const isScheduled = isEmailDelivery && deliveryDate > minDeliveryDate;
+        const isScheduled = isEmailDelivery && effectiveDeliveryDate > minDeliveryDate;
 
         const fieldsToValidate = [];
         if (!isLoggedIn) {
@@ -1603,8 +1595,14 @@ const BetaGiftPage = () => {
             formErrors.recipientEmail = t('Enter the recipient\'s email address');
         }
 
-        if (isEmailDelivery && (!deliveryDate || deliveryDate < minDeliveryDate || deliveryDate > maxDeliveryDate)) {
-            formErrors.deliveryDate = deliveryDate ? t('Choose a date within the next year') : t('Choose a delivery date');
+        if (isEmailDelivery) {
+            if (!effectiveDeliveryDate) {
+                formErrors.deliveryDate = t('Choose a delivery date');
+            } else if (effectiveDeliveryDate < minDeliveryDate) {
+                formErrors.deliveryDate = t('Choose a date from today onwards');
+            } else if (effectiveDeliveryDate > maxDeliveryDate) {
+                formErrors.deliveryDate = t('Choose a date within the next year');
+            }
         }
 
         const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
@@ -1627,7 +1625,7 @@ const BetaGiftPage = () => {
             ...(isEmailDelivery && trimmedRecipientName ? {recipientName: trimmedRecipientName} : {}),
             ...(trimmedBuyerName ? {buyerName: trimmedBuyerName} : {}),
             ...(isEmailDelivery && trimmedGiftMessage ? {personalMessage: trimmedGiftMessage} : {}),
-            ...(isScheduled ? {deliveryDate} : {})
+            ...(isScheduled ? {deliveryDate: effectiveDeliveryDate} : {})
         });
     };
 
@@ -1835,7 +1833,7 @@ const BetaGiftPage = () => {
                                                 max={maxDeliveryDate}
                                                 min={minDeliveryDate}
                                                 minLabel={t('Now')}
-                                                value={deliveryDate}
+                                                value={effectiveDeliveryDate}
                                                 onChange={handleDeliveryDateChange}
                                             />
                                             {errors.deliveryDate && (
@@ -1912,7 +1910,8 @@ const BetaGiftPage = () => {
                                             buyerName={buyerName}
                                             cadence={emailDuration.cadence}
                                             duration={emailDuration.duration}
-                                            deliveryDate={deliveryDate > minDeliveryDate ? deliveryDate : ''}
+                                            deliveryDate={effectiveDeliveryDate}
+                                            isScheduled={effectiveDeliveryDate > minDeliveryDate}
                                             giftMessage={giftMessage}
                                             recipientEmail={recipientEmail}
                                             recipientName={recipientName}

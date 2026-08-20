@@ -10,8 +10,8 @@ export interface GiftDeliveryRepository {
     getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
     getByGiftId(giftId: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
     getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
-    findRecoverableForPurchasedGifts(now: Date, staleBefore: Date | number, limit?: number): Promise<GiftDeliveryData[]>;
-    findScheduledForPurchasedGifts(now: Date): Promise<Array<{id: string; redeemableAt: Date}>>;
+    findRecoverableForPurchasedGifts(now: Date, staleBefore: Date, limit: number): Promise<GiftDeliveryData[]>;
+    findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]>;
     tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
     markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
     recordCancelledAcceptance(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
@@ -74,13 +74,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
     }
 
-    async findRecoverableForPurchasedGifts(now: Date, staleBefore: Date | number, limit?: number): Promise<GiftDeliveryData[]> {
-        if (typeof staleBefore === 'number') {
-            limit = staleBefore;
-            staleBefore = now;
-            now = new Date();
-        }
-
+    async findRecoverableForPurchasedGifts(now: Date, staleBefore: Date, limit: number): Promise<GiftDeliveryData[]> {
         const rows = await this.knex('gift_deliveries')
             .select('gift_deliveries.*')
             .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
@@ -88,23 +82,23 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
             .whereRaw('COALESCE(gifts.redeemable_at, gifts.purchased_at) <= ?', [toDatabaseDate(now)])
             .modify(recoverableDeliveries, staleBefore)
             .orderByRaw('COALESCE(gifts.redeemable_at, gifts.purchased_at) ASC')
-            .limit(limit ?? 1000);
+            .limit(limit);
 
         return rows.map(decodeGiftDeliveryRow);
     }
 
-    async findScheduledForPurchasedGifts(now: Date): Promise<Array<{id: string; redeemableAt: Date}>> {
+    // Distinct times only: the scheduler arms one flush job per availability
+    // time, so scheduled gifts clustering on a popular date collapse to a
+    // single row instead of one per delivery.
+    async findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]> {
         const rows = await this.knex('gift_deliveries')
-            .select('gift_deliveries.id', 'gifts.redeemable_at')
+            .distinct('gifts.redeemable_at')
             .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
             .where('gift_deliveries.status', 'pending')
             .where('gifts.status', 'purchased')
             .where('gifts.redeemable_at', '>', toDatabaseDate(now));
 
-        return rows.map(row => ({
-            id: row.id,
-            redeemableAt: fromDatabaseDate(row.redeemable_at)
-        }));
+        return rows.map(row => fromDatabaseDate(row.redeemable_at));
     }
 
     async tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null> {

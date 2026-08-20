@@ -1,4 +1,5 @@
 import {getMemberTierName, getSubscriptionExpiry} from './helpers';
+import {getDateString, parseDateValue} from './date-time';
 import {t} from './i18n';
 
 // Standalone form, for when the duration stands on its own as a noun phrase:
@@ -85,10 +86,9 @@ export function getGiftRedemptionErrorMessage(error) {
             subtitle = t('You already have an active subscription.');
             break;
         case 'GIFT_NOT_YET_REDEEMABLE': {
-            const [year, month, day] = (error.context || '').split('-').map(Number);
-            const date = year && month && day ? new Date(year, month - 1, day) : null;
+            const date = parseDateValue(error.context);
             subtitle = date
-                ? t('This gift will be available on {date}.', {date: new Intl.DateTimeFormat(undefined, {day: 'numeric', month: 'short', year: 'numeric'}).format(date)})
+                ? t('This gift will be available on {date}.', {date: getDateString(date)})
                 : t('This gift is not available yet.');
             break;
         }

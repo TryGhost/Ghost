@@ -200,6 +200,7 @@ describe('GiftService interface', function () {
         const successUrl = new URL(checkoutAdapter.createSession.firstCall.firstArg.successUrl);
         assert.equal(gift.redeemableAt.toISOString(), '2026-12-25T17:00:00.000Z');
         assert.equal(successUrl.searchParams.get('gift_delivery_date'), '2026-12-25');
+        assert.equal(successUrl.searchParams.get('gift_redeemable_at'), String(gift.redeemableAt.getTime()));
         clock.restore();
     });
 
@@ -207,11 +208,13 @@ describe('GiftService interface', function () {
         const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
         const {service, checkoutAdapter} = createService({customizationEnabled: true});
 
+        // The bound carries one day of slack over the picker's 365 to absorb
+        // client-server clock skew, so the first rejected day is today+367
         await assert.rejects(() => service.startCheckout({
             tierId: 'tier_1',
             cadence: 'year',
             deliveryMethod: 'email',
-            deliveryDate: '2027-08-19',
+            deliveryDate: '2027-08-20',
             recipientEmail: 'recipient@example.com',
             buyerName: 'Buyer',
             successUrl: 'https://example.com/',

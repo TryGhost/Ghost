@@ -50,7 +50,7 @@ describe('GiftDeliveryService', function () {
             getByGiftId: sinon.stub().resolves(null),
             getByProviderMessageId: sinon.stub().resolves(null),
             findRecoverableForPurchasedGifts: sinon.stub().resolves([]),
-            findScheduledForPurchasedGifts: sinon.stub().resolves([]),
+            findScheduledTimesForPurchasedGifts: sinon.stub().resolves([]),
             tryStartDelivery: sinon.stub().resolves(buildGiftDelivery({status: 'sending'})),
             markSent: sinon.stub().resolves(true),
             recordCancelledAcceptance: sinon.stub().resolves(false),
@@ -102,19 +102,32 @@ describe('GiftDeliveryService', function () {
         giftDeliveryRepository.getByGiftId.resolves(buildGiftDelivery({id: 'delivery_1', recipientEmail: 'recipient@example.com'}));
         const service = createService();
 
-        assert.equal(await service.dispatchForGift('gift_1'), 'recipient@example.com');
+        assert.equal(await service.dispatchForGift({giftId: 'gift_1', redeemableAt: null}), 'recipient@example.com');
         assert.deepEqual(dispatchDelivery.firstCall.firstArg.data, {deliveryId: 'delivery_1'});
     });
 
     it('schedules a future delivery instead of dispatching it immediately', async function () {
         const redeemableAt = new Date(Date.now() + 60_000);
-        giftRepository.getById.resolves(buildGift({redeemableAt}));
         giftDeliveryRepository.getByGiftId.resolves(buildGiftDelivery({id: 'delivery_1'}));
         const service = createService();
 
-        assert.equal(await service.dispatchForGift('gift_1'), 'recipient@example.com');
+        assert.equal(await service.dispatchForGift({giftId: 'gift_1', redeemableAt}), 'recipient@example.com');
         sinon.assert.calledOnceWithExactly(giftDeliveryScheduler.scheduleFor, 'delivery_1', redeemableAt);
         sinon.assert.notCalled(dispatchDelivery);
+    });
+
+    it('sends immediately when availability passes while the flush is being armed', async function () {
+        const clock = sinon.useFakeTimers(new Date('2026-12-25T08:59:59.900Z'));
+        const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
+        giftDeliveryRepository.getByGiftId.resolves(buildGiftDelivery({id: 'delivery_1'}));
+        giftDeliveryScheduler.scheduleFor.callsFake(async () => {
+            clock.tick(200);
+        });
+        const service = createService();
+
+        assert.equal(await service.dispatchForGift({giftId: 'gift_1', redeemableAt}), 'recipient@example.com');
+        assert.deepEqual(dispatchDelivery.firstCall.firstArg.data, {deliveryId: 'delivery_1'});
+        clock.restore();
     });
 
     it('recovers pending deliveries for purchased gifts one at a time', async function () {
@@ -151,6 +164,30 @@ describe('GiftDeliveryService', function () {
         assert.equal(maxInFlight, 1);
         sinon.assert.calledWith(giftDeliveryRepository.markSent, 'delivery_1');
         sinon.assert.calledWith(giftDeliveryRepository.markSent, 'delivery_2');
+    });
+
+    it('drains recovery in batches until nothing recoverable remains', async function () {
+        giftDeliveryRepository.findRecoverableForPurchasedGifts
+            .onFirstCall().resolves([
+                buildGiftDelivery({id: 'delivery_1'}),
+                buildGiftDelivery({id: 'delivery_2'})
+            ])
+            .onSecondCall().resolves([
+                buildGiftDelivery({id: 'delivery_3'})
+            ]);
+        giftDeliveryRepository.tryStartDelivery
+            .withArgs('delivery_1').resolves(buildGiftDelivery({id: 'delivery_1', status: 'sending'}))
+            .withArgs('delivery_2').resolves(buildGiftDelivery({id: 'delivery_2', status: 'sending'}))
+            .withArgs('delivery_3').resolves(buildGiftDelivery({id: 'delivery_3', status: 'sending'}));
+        const service = createService();
+
+        assert.deepEqual(await service.recoverPending(2), {
+            sentCount: 3,
+            skippedCount: 0,
+            failedCount: 0
+        });
+        sinon.assert.calledTwice(giftDeliveryRepository.findRecoverableForPurchasedGifts);
+        sinon.assert.calledWithExactly(giftDeliveryRepository.findRecoverableForPurchasedGifts, sinon.match.date, sinon.match.date, 2);
     });
 
     it('re-arms future deliveries during boot recovery', async function () {

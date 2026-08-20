@@ -23,6 +23,7 @@ export class GiftEmailRenderer {
     private reminderTemplate: HandlebarsTemplateDelegate | null = null;
     private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
     private sentConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
+    private buyerNoticeLayoutRegistered = false;
 
     constructor({t}: {t: Translate}) {
         this.t = t;
@@ -43,7 +44,16 @@ export class GiftEmailRenderer {
         };
     }
 
+    private async ensureBuyerNoticeLayout(): Promise<void> {
+        if (!this.buyerNoticeLayoutRegistered) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-buyer-notice-layout.hbs'), 'utf8');
+            this.handlebars.registerPartial('giftBuyerNoticeLayout', source);
+            this.buyerNoticeLayoutRegistered = true;
+        }
+    }
+
     async renderDeliveryFailure(data: GiftDeliveryFailureData): Promise<{html: string; text: string}> {
+        await this.ensureBuyerNoticeLayout();
         if (!this.deliveryFailureTemplate) {
             const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery-failure.hbs'), 'utf8');
             this.deliveryFailureTemplate = this.handlebars.compile(source);
@@ -81,6 +91,7 @@ export class GiftEmailRenderer {
     }
 
     async renderSentConfirmation(data: GiftSentConfirmationData): Promise<{html: string; text: string}> {
+        await this.ensureBuyerNoticeLayout();
         if (!this.sentConfirmationTemplate) {
             const source = await fs.readFile(path.join(__dirname, './email-templates/gift-sent-confirmation.hbs'), 'utf8');
             this.sentConfirmationTemplate = this.handlebars.compile(source);
