@@ -26,7 +26,8 @@ export {useFeaturebase} from './hooks/use-featurebase';
 export {trackEvent, trackFilterApplications} from './utils/analytics';
 
 // Currency utilities
-export {getSymbol} from './utils/currency';
+export {currencies, currencyFromDecimal, currencyGroups, currencySelectGroups, currencyToDecimal, getSymbol, minimumAmountForCurrency, validateCurrencyAmount} from './utils/currency';
+export type {CurrencySelectOptionGroup} from './utils/currency';
 
 // Post utilities
 export type {Post} from './api/posts';

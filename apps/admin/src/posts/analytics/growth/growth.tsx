@@ -6,7 +6,7 @@ import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, Skeleton, SkeletonTable} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {buildMembersUrl} from '@/members/member-route';
-import {centsToDollars} from '@/posts/analytics/growth/growth-helpers';
+import {centsToDollars} from '@tryghost/shade/app';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';

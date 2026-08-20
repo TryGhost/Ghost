@@ -2,7 +2,6 @@ import React from 'react';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator, Switch} from '@tryghost/shade/components';
 import {toast} from 'sonner';
 import {useDisableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
-import {useQueryClient} from '@tanstack/react-query';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 interface MemberDisableCommentingModalProps {
@@ -25,7 +24,6 @@ const DISABLE_REASON = 'Disabled from member settings';
  * changes the outcome, not just a yes/no choice.
  */
 const MemberDisableCommentingModal: React.FC<MemberDisableCommentingModalProps> = ({open, onOpenChange, member}) => {
-    const queryClient = useQueryClient();
     const disable = useDisableMemberCommenting();
     const [hideComments, setHideComments] = React.useState(false);
 
@@ -46,16 +44,8 @@ const MemberDisableCommentingModal: React.FC<MemberDisableCommentingModalProps> 
             toast.error('Couldn’t disable commenting. Please try again.');
             return;
         }
-        // Commit the success UX first, then fire-and-forget the extra
-        // members-cache refresh. If the follow-up refetch fails we do NOT
-        // want to flip an already-shown success toast to an error — the
-        // disable itself succeeded and is reflected server-side.
         toast.success(`Commenting has been disabled for ${displayName}.`);
         onOpenChange(false);
-        // The framework hook only invalidates CommentsResponseType; refresh
-        // the members cache so the actions-menu label flips to "Enable
-        // commenting" on the next render.
-        void queryClient.invalidateQueries({queryKey: ['MembersResponseType']});
     };
 
     return (

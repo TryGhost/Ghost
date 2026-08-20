@@ -4,7 +4,7 @@ import {Button} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Text} from '@tryghost/shade/primitives';
 import {type TierFormState} from './tier-detail-modal';
-import {currencyToDecimal, getSymbol} from '@/settings/utils/currency';
+import {currencyToDecimal, getSymbol} from '@tryghost/admin-x-framework';
 
 interface TierDetailPreviewProps {
     tier: TierFormState;

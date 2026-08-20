@@ -116,7 +116,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
-    invalidateQueries?: { dataType: string; } | {
+    invalidateQueries?: { dataType: string | string[]; } | {
         filters?: InvalidateQueryFilters,
         options?: InvalidateOptions,
     };
@@ -154,8 +154,11 @@ export const createMutation = <ResponseData, Payload>({path, searchParams, defau
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
         if (invalidateQueries && 'dataType' in invalidateQueries) {
-            queryClient.invalidateQueries({queryKey: [invalidateQueries.dataType]});
-            onInvalidate(invalidateQueries.dataType);
+            const dataTypes = Array.isArray(invalidateQueries.dataType) ? invalidateQueries.dataType : [invalidateQueries.dataType];
+            for (const dataType of dataTypes) {
+                queryClient.invalidateQueries({queryKey: [dataType]});
+                onInvalidate(dataType);
+            }
         } else if (invalidateQueries) {
             queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
         }
