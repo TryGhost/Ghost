@@ -194,11 +194,8 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal(await deliveryRepository.tryStartDelivery(future.delivery.id, now, new Date('2026-08-18T11:00:00.000Z')), null);
         assert.deepEqual(await deliveryRepository.findRecoverableForPurchasedGifts(now, new Date('2026-08-18T11:00:00.000Z'), 100), []);
 
-        const scheduled = await deliveryRepository.findScheduledForPurchasedGifts(now);
-        assert.deepEqual(scheduled, [{
-            id: future.delivery.id,
-            redeemableAt: new Date('2026-12-25T09:00:00.000Z')
-        }]);
+        const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(now);
+        assert.deepEqual(scheduled, [new Date('2026-12-25T09:00:00.000Z')]);
     });
 
     it('allows exactly one concurrent caller to reclaim a stale sending delivery', async function () {

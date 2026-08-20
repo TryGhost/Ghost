@@ -113,6 +113,7 @@
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "有人贈送了您 {siteTitle} 的 {duration} 年 {tierName} 會員資格",
     "You've been gifted a membership to {siteTitle}": "",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "您的免費試用將會在{date}結束，結束後您將會被收取標準價格。您可以在試用期結束前取消。",
+    "Your gift can be opened on {date}.": "",
     "Your gift has been sent": "",
     "Your gift is on its way": "",
     "Your gift is ready": "您的禮物已準備就緒",

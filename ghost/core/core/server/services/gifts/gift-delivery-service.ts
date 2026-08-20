@@ -95,46 +95,59 @@ export class GiftDeliveryService {
         return delivery.id;
     }
 
-    async dispatchForGift(giftId: string): Promise<string | null> {
+    async dispatchForGift({giftId, redeemableAt}: {giftId: string; redeemableAt: Date | null}): Promise<string | null> {
         const delivery = await this.deps.giftDeliveryRepository.getByGiftId(giftId);
         if (!delivery || delivery.status !== 'pending') {
             return delivery?.recipientEmail ?? null;
         }
 
-        const gift = await this.deps.giftRepository.getById(giftId);
-        if (gift?.redeemableAt && gift.redeemableAt.getTime() > Date.now()) {
-            await this.deps.giftDeliveryScheduler.scheduleFor(delivery.id, gift.redeemableAt);
-            return delivery.recipientEmail;
+        if (redeemableAt && redeemableAt.getTime() > Date.now()) {
+            await this.deps.giftDeliveryScheduler.scheduleFor(delivery.id, redeemableAt);
+            // Availability can pass while the flush was being armed, in which
+            // case the armed check skipped the job — fall through and send
+            // now rather than leaving the delivery for the daily backstop.
+            if (redeemableAt.getTime() > Date.now()) {
+                return delivery.recipientEmail;
+            }
         }
 
         DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId: delivery.id}));
         return delivery.recipientEmail;
     }
 
-    async recoverPending(limit = 1000): Promise<GiftDeliveryRecoveryResult> {
-        const now = new Date();
-        const staleBefore = new Date(now.getTime() - GIFT_DELIVERY_STALE_AFTER_MS);
-        const deliveries = await this.deps.giftDeliveryRepository.findRecoverableForPurchasedGifts(now, staleBefore, limit);
+    async recoverPending(batchSize = 1000): Promise<GiftDeliveryRecoveryResult> {
         const result: GiftDeliveryRecoveryResult = {
             sentCount: 0,
             skippedCount: 0,
             failedCount: 0
         };
 
-        // Sequential on purpose: recovery can find many deliveries at once and each
-        // send holds a mail transport call, so fanning out through events would open
-        // them all concurrently
-        for (const delivery of deliveries) {
-            try {
-                const deliveryResult = await this.send(delivery.id);
-                result[`${deliveryResult}Count`] += 1;
-            } catch (err) {
-                result.failedCount += 1;
-                logging.error({
-                    event: {name: 'gift_delivery.recovery_failed'},
-                    err,
-                    deliveryId: delivery.id
-                }, 'Failed to recover gift delivery');
+        // A scheduled flush fires once, so drain until nothing recoverable
+        // remains; the batch cap only bounds a pathological send that leaves
+        // rows in the recoverable set.
+        const maxBatches = 100;
+        for (let batch = 0; batch < maxBatches; batch++) {
+            const now = new Date();
+            const staleBefore = new Date(now.getTime() - GIFT_DELIVERY_STALE_AFTER_MS);
+            const deliveries = await this.deps.giftDeliveryRepository.findRecoverableForPurchasedGifts(now, staleBefore, batchSize);
+
+            // Sequential to avoid opening many mail transport calls at once
+            for (const delivery of deliveries) {
+                try {
+                    const deliveryResult = await this.send(delivery.id);
+                    result[`${deliveryResult}Count`] += 1;
+                } catch (err) {
+                    result.failedCount += 1;
+                    logging.error({
+                        event: {name: 'gift_delivery.recovery_failed'},
+                        err,
+                        deliveryId: delivery.id
+                    }, 'Failed to recover gift delivery');
+                }
+            }
+
+            if (deliveries.length < batchSize) {
+                break;
             }
         }
 
@@ -289,6 +302,8 @@ export class GiftDeliveryService {
 
         const wasScheduled = gift.redeemableAt && gift.purchasedAt && gift.redeemableAt.getTime() > gift.purchasedAt.getTime();
         if (persisted && wasScheduled) {
+            // Best effort: buyer confirmations have no durable retry state;
+            // recipient delivery is unaffected.
             try {
                 await this.deps.giftEmailService.sendGiftSentConfirmation({
                     buyerEmail: gift.buyerEmail,

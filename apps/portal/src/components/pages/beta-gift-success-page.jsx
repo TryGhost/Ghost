@@ -7,7 +7,7 @@ import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {getAvailableProducts} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import {getGiftPrice} from '../../utils/gift-subscriptions';
-import {getDateString} from '../../utils/date-time';
+import {getDateString, parseDateValue} from '../../utils/date-time';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
@@ -132,6 +132,7 @@ const BetaGiftSuccessPage = () => {
     const duration = pageData?.duration || 1;
     const deliveryMethod = pageData?.deliveryMethod;
     const deliveryDate = pageData?.deliveryDate;
+    const redeemableAt = pageData?.redeemableAt;
     const siteUrl = site?.url || '';
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
@@ -148,11 +149,14 @@ const BetaGiftSuccessPage = () => {
 
     const isEmailed = deliveryMethod === 'email';
 
+    // A delivery date without a future gift_redeemable_at means the server
+    // already sent the gift.
+    const isStillScheduled = isEmailed && deliveryDate && redeemableAt && redeemableAt > Date.now();
+
     let titleText = t('Your gift is ready');
     let subtitleText = t('Send the link below to share it with whoever you\'d like.');
-    if (isEmailed && deliveryDate) {
-        const [year, month, day] = deliveryDate.split('-').map(Number);
-        const formattedDate = getDateString(new Date(year, month - 1, day));
+    if (isStillScheduled) {
+        const formattedDate = getDateString(parseDateValue(deliveryDate));
         titleText = t('Your gift is scheduled');
         subtitleText = t('We\'ll email it to the recipient on {deliveryDate}. A copy is in your inbox too.', {deliveryDate: formattedDate});
     } else if (isEmailed) {

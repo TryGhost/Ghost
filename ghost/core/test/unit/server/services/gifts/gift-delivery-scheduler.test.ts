@@ -7,7 +7,7 @@ import type {InternalApiKey, InternalIntegrationSlug} from '../../../../../core/
 const HEX_CURRENT = 'aa'.repeat(32);
 const HEX_OLD = '55'.repeat(32);
 
-function buildDeps(pending: Array<{id: string; redeemableAt: Date}> = []) {
+function buildDeps(pending: Date[] = []) {
     const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(
         slug => Promise.reject(new Error(`Missing test key for ${slug}`))
     );
@@ -32,12 +32,13 @@ describe('GiftDeliveryScheduler', function () {
 
     it('registers with the scheduler adapter', function () {
         const deps = buildDeps();
-        const scheduler = new GiftDeliveryScheduler(deps);
+        new GiftDeliveryScheduler(deps);
 
-        sinon.assert.calledOnceWithExactly(deps.adapter.register, scheduler);
+        sinon.assert.calledOnce(deps.adapter.register);
+        assert.equal(typeof deps.adapter.register.firstCall.firstArg.rescheduleAll, 'function');
     });
 
-    it('schedules the flush callback at gift redemption availability', async function () {
+    it('schedules the flush callback just past gift redemption availability', async function () {
         const deps = buildDeps();
         const scheduler = new GiftDeliveryScheduler(deps);
         const redeemableAt = new Date(Date.now() + 60_000);
@@ -45,9 +46,32 @@ describe('GiftDeliveryScheduler', function () {
         await scheduler.scheduleFor('delivery_1', redeemableAt);
 
         const job = deps.adapter.schedule.firstCall.firstArg;
-        assert.equal(job.time, redeemableAt.getTime());
+        // The adapter can ping up to 50ms early and the flush query truncates
+        // "now" to whole seconds, so an exactly on-time job could find nothing
+        // due — the job is armed a second late instead.
+        assert.equal(job.time, redeemableAt.getTime() + 1000);
         assert.equal(job.extra.httpMethod, 'PUT');
         assert.ok(job.url.startsWith(`${deps.apiUrl}/gifts/flush_deliveries?token=`));
+    });
+
+    it('retries scheduling a time whose earlier attempt failed to fetch a key', async function () {
+        const deps = buildDeps();
+        const failingKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(
+            slug => Promise.reject(new Error(`Missing test key for ${slug}`))
+        );
+        const rejection = Promise.reject(new Error('Transient key failure'));
+        rejection.catch(() => {});
+        failingKeys.set('ghost-scheduler', rejection);
+        const scheduler = new GiftDeliveryScheduler({...deps, internalKeys: failingKeys});
+        const redeemableAt = new Date(Date.now() + 60_000);
+
+        await scheduler.scheduleFor('delivery_1', redeemableAt);
+        sinon.assert.notCalled(deps.adapter.schedule);
+
+        failingKeys.set('ghost-scheduler', Promise.resolve({id: 'key', secret: HEX_CURRENT}));
+        await scheduler.scheduleFor('delivery_2', redeemableAt);
+
+        sinon.assert.calledOnce(deps.adapter.schedule);
     });
 
     it('schedules one batch flush for deliveries with the same availability', async function () {
@@ -72,11 +96,7 @@ describe('GiftDeliveryScheduler', function () {
 
     it('re-signs each pending future delivery time once during key rotation', async function () {
         const redeemableAt = new Date(Date.now() + 60_000);
-        const pending = [
-            {id: 'delivery_1', redeemableAt},
-            {id: 'delivery_2', redeemableAt}
-        ];
-        const deps = buildDeps(pending);
+        const deps = buildDeps([redeemableAt]);
         const scheduler = new GiftDeliveryScheduler(deps);
 
         await scheduler.rescheduleAll({previousKey: {id: 'key', secret: HEX_OLD}});

@@ -1,78 +1,119 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { generateGiftPreviewImage } = require('./image');
-const { t } = require('../../services/i18n');
+const {generateGiftPreviewImage} = require('./image');
+const {t} = require('../../services/i18n');
 
 function getCadenceLabel(cadence, duration) {
-  if (cadence === 'year') {
-    return t('{count} year', { count: duration });
-  }
+    if (cadence === 'year') {
+        return t('{count} year', {count: duration});
+    }
 
-  return t('{count} month', { count: duration });
+    return t('{count} month', {count: duration});
 }
 
-function getOgTitle({ cadence, duration, tierName, siteTitle }) {
-  if (cadence === 'year') {
-    return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
-      duration,
-      tierName,
-      siteTitle,
-      interpolation: { escapeValue: false },
-    });
-  }
+function getOgTitle({cadence, duration, tierName, siteTitle}) {
+    if (cadence === 'year') {
+        return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
+            duration,
+            tierName,
+            siteTitle,
+            interpolation: {escapeValue: false}
+        });
+    }
 
-  return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
-    duration,
-    tierName,
-    siteTitle,
-    interpolation: { escapeValue: false },
-  });
+    return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
+        duration,
+        tierName,
+        siteTitle,
+        interpolation: {escapeValue: false}
+    });
 }
 
 function escapeHtml(str) {
-  return str
-    .replaceAll('&', '&amp;')
-    .replaceAll('"', '&quot;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
+    return str
+        .replaceAll('&', '&amp;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+}
+
+// "2026-12-25" as a localized human date, in the same day/short-month/year
+// shape the gift emails use for this date. The locale setting is stored
+// unvalidated, so fall back to English rather than fail the preview.
+const AVAILABLE_ON_FORMAT = {day: 'numeric', month: 'short', year: 'numeric'};
+
+function formatAvailableOn(availableOn, locale) {
+    const {DateTime} = require('luxon');
+    const date = DateTime.fromFormat(availableOn, 'yyyy-MM-dd', {zone: 'utc'});
+
+    try {
+        return date.setLocale(locale || 'en').toLocaleString(AVAILABLE_ON_FORMAT);
+    } catch (err) {
+        return date.setLocale('en').toLocaleString(AVAILABLE_ON_FORMAT);
+    }
 }
 
 async function giftPreview(req, res) {
-  const giftService = require('../../services/gifts').service;
-  const urlUtils = require('../../../shared/url-utils').default;
-  const settingsCache = require('../../../shared/settings-cache');
+    const giftService = require('../../services/gifts').service;
+    const urlUtils = require('../../../shared/url-utils').default;
+    const settingsCache = require('../../../shared/settings-cache');
 
-  const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+    const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
-  const { token } = req.params;
-  const siteTitle = settingsCache.get('title') || 'Ghost';
+    const {token} = req.params;
+    const siteTitle = settingsCache.get('title') || 'Ghost';
 
-  let preview;
+    let preview;
 
-  try {
-    preview = await giftService.getPreview(token);
+    try {
+        preview = await giftService.getPreview(token);
 
-    if (!preview) {
-      throw new errors.NotFoundError({ message: `Gift not found for token` });
+        if (!preview) {
+            throw new errors.NotFoundError({message: `Gift not found for token`});
+        }
+    } catch (err) {
+        logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
+
+        return res.redirect(302, siteUrl + '/');
     }
-  } catch (err) {
-    logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
-    return res.redirect(302, siteUrl + '/');
-  }
+    // Before redemption availability the bearer may see the availability date
+    // but no gift details, so the tier and duration stay out of the page and
+    // its unfurl card until the scheduled date arrives.
+    const isAvailable = preview.available;
+    const ogTitle = isAvailable
+        ? getOgTitle({
+            cadence: preview.cadence,
+            duration: preview.duration,
+            tierName: preview.tier.name,
+            siteTitle
+        })
+        : t(`You've been gifted a membership to {siteTitle}`, {
+            siteTitle,
+            interpolation: {escapeValue: false}
+        });
+    const ogDescription = isAvailable
+        ? t('Open this link to redeem your gift.')
+        : t('Your gift can be opened on {date}.', {
+            date: formatAvailableOn(preview.availableOn, settingsCache.get('locale')),
+            interpolation: {escapeValue: false}
+        });
+    const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
+    const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
+    const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
 
-  const ogTitle = getOgTitle({
-    cadence: preview.cadence,
-    duration: preview.duration,
-    tierName: preview.tier.name,
-    siteTitle,
-  });
-  const ogDescription = t('Open this link to redeem your gift.');
-  const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
-  const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
-  const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
+    // The generated card image names the tier, so it only exists once the
+    // gift is available; unfurls fall back to a plain summary until then.
+    const imageMeta = isAvailable
+        ? `<meta property="og:image" content="${escapeHtml(ogImage)}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">`
+        : '';
+    const twitterImageMeta = isAvailable
+        ? `\n    <meta name="twitter:image" content="${escapeHtml(ogImage)}">`
+        : '';
 
-  const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -85,15 +126,12 @@ async function giftPreview(req, res) {
     <meta property="og:title" content="${escapeHtml(ogTitle)}">
     <meta property="og:description" content="${escapeHtml(ogDescription)}">
     <meta property="og:url" content="${escapeHtml(ogUrl)}">
-    <meta property="og:image" content="${escapeHtml(ogImage)}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    ${imageMeta}
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="${isAvailable ? 'summary_large_image' : 'summary'}">
     <meta name="twitter:title" content="${escapeHtml(ogTitle)}">
-    <meta name="twitter:description" content="${escapeHtml(ogDescription)}">
-    <meta name="twitter:image" content="${escapeHtml(ogImage)}">
+    <meta name="twitter:description" content="${escapeHtml(ogDescription)}">${twitterImageMeta}
 
     <!-- Redirect -->
     <meta http-equiv="refresh" content="0;url=${escapeHtml(redirectUrl)}">
@@ -104,47 +142,57 @@ async function giftPreview(req, res) {
 </body>
 </html>`;
 
-  res.set('Cache-Control', 'public, max-age=3600');
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  res.send(html);
+    // A cached pre-availability page must not outlive the availability time,
+    // or the neutral card would linger after the gift becomes redeemable.
+    const maxAge = isAvailable
+        ? 3600
+        : Math.max(1, Math.min(3600, Math.ceil((preview.redeemableAt.getTime() - Date.now()) / 1000)));
+
+    res.set('Cache-Control', `public, max-age=${maxAge}`);
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
 }
 
 async function giftPreviewImage(req, res) {
-  const giftService = require('../../services/gifts').service;
-  const settingsCache = require('../../../shared/settings-cache');
+    const giftService = require('../../services/gifts').service;
+    const settingsCache = require('../../../shared/settings-cache');
 
-  const accentColor = settingsCache.get('accent_color') || '#15171A';
-  const siteTitle = settingsCache.get('title') || 'Ghost';
-  const { token } = req.params;
+    const accentColor = settingsCache.get('accent_color') || '#15171A';
+    const siteTitle = settingsCache.get('title') || 'Ghost';
+    const {token} = req.params;
 
-  try {
-    const preview = await giftService.getPreview(token);
+    try {
+        const preview = await giftService.getPreview(token);
 
-    if (!preview) {
-      throw new errors.NotFoundError({ message: `Gift not found for token` });
+        if (!preview) {
+            throw new errors.NotFoundError({message: `Gift not found for token`});
+        }
+
+        if (!preview.available) {
+            return res.sendStatus(404);
+        }
+
+        const png = await generateGiftPreviewImage({
+            accentColor,
+            siteTitle,
+            tierLabel: t('{tierName} membership', {
+                tierName: preview.tier.name,
+                interpolation: {escapeValue: false}
+            }),
+            cadenceLabel: getCadenceLabel(preview.cadence, preview.duration)
+        });
+
+        res.set('Content-Type', 'image/png');
+        res.set('Cache-Control', 'public, max-age=86400');
+        res.send(png);
+    } catch (err) {
+        logging.error('Gift OG image generation failed', err);
+
+        res.sendStatus(404);
     }
-
-    const png = await generateGiftPreviewImage({
-      accentColor,
-      siteTitle,
-      tierLabel: t('{tierName} membership', {
-        tierName: preview.tier.name,
-        interpolation: { escapeValue: false },
-      }),
-      cadenceLabel: getCadenceLabel(preview.cadence, preview.duration),
-    });
-
-    res.set('Content-Type', 'image/png');
-    res.set('Cache-Control', 'public, max-age=86400');
-    res.send(png);
-  } catch (err) {
-    logging.error('Gift OG image generation failed', err);
-
-    res.sendStatus(404);
-  }
 }
 
 module.exports = {
-  giftPreview,
-  giftPreviewImage,
+    giftPreview,
+    giftPreviewImage
 };

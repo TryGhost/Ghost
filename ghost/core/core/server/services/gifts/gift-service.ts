@@ -10,7 +10,7 @@ import type {GiftDeliveryService} from './gift-delivery-service';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import {GiftCadenceSchema, type GiftCadence} from './gift-schema';
 import tpl from '@tryghost/tpl';
-import {GIFT_EXPIRY_DAYS, GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+import {GIFT_EXPIRY_DAYS, GIFT_MAX_SCHEDULE_DAYS, GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS, GIFT_SEND_HOUR} from './constants';
 import {
     resolveGiftDuration,
     validateGiftCheckoutOffer,
@@ -286,14 +286,21 @@ export interface GiftMemberPresentation {
     amount: number;
 }
 
-export interface GiftPreview {
+export type GiftPreview = {
+    available: true;
     cadence: GiftCadence;
     duration: number;
     tier: {
         id: string;
         name: string;
     };
-}
+} | {
+    // Before redemption availability a link bearer may see the availability
+    // date but no gift details.
+    available: false;
+    availableOn: string;
+    redeemableAt: Date;
+};
 
 export class GiftService {
     private readonly deps: GiftServiceDeps;
@@ -430,8 +437,12 @@ export class GiftService {
         successUrl.searchParams.set('gift_tier', tierId);
         successUrl.searchParams.set('gift_cadence', cadence);
         successUrl.searchParams.set('gift_delivery', delivery.deliveryMethod);
-        if (scheduledDelivery.date) {
+        if (scheduledDelivery.date && scheduledDelivery.redeemableAt) {
             successUrl.searchParams.set('gift_delivery_date', scheduledDelivery.date);
+            // The exact send instant, so the success page can tell "still
+            // scheduled" from "already sent" without re-deriving the send
+            // hour client-side.
+            successUrl.searchParams.set('gift_redeemable_at', String(scheduledDelivery.redeemableAt.getTime()));
         }
         if (totalMonths !== undefined) {
             successUrl.searchParams.set('gift_duration', String(totalMonths));
@@ -522,26 +533,30 @@ export class GiftService {
         return this.completeLegacyPurchase(input);
     }
 
-    private getClaimDeadline(redeemableAt: Date): Date {
+    // The publication timezone setting, falling back to UTC when unset or
+    // when the bundled tz data doesn't know the zone — an unknown name would
+    // otherwise resolve to the host's zone and date gift lifecycle values
+    // against the wrong calendar.
+    private siteZone(): string {
         const timezoneSetting = this.deps.settingsCache.get('timezone');
         const zone = typeof timezoneSetting === 'string' && timezoneSetting ? timezoneSetting : DEFAULT_TIMEZONE;
-        let availability = DateTime.fromJSDate(redeemableAt, {zone});
 
-        // A zone name the bundled tz data doesn't know would otherwise resolve
-        // to the host's zone and date the deadline against the wrong calendar.
-        if (!availability.isValid) {
-            logging.warn(`Unknown publication timezone "${zone}", dating the gift claim deadline in ${DEFAULT_TIMEZONE}`);
-            availability = DateTime.fromJSDate(redeemableAt, {zone: DEFAULT_TIMEZONE});
+        if (zone !== DEFAULT_TIMEZONE && !DateTime.now().setZone(zone).isValid) {
+            logging.warn(`Unknown publication timezone "${zone}", dating gift lifecycle values in ${DEFAULT_TIMEZONE}`);
+            return DEFAULT_TIMEZONE;
         }
+
+        return zone;
+    }
+
+    private getClaimDeadline(redeemableAt: Date): Date {
+        const availability = DateTime.fromJSDate(redeemableAt, {zone: this.siteZone()});
 
         return availability.plus({days: GIFT_EXPIRY_DAYS}).endOf('day').toJSDate();
     }
 
     private getSiteDateValue(date: Date): string {
-        const timezoneSetting = this.deps.settingsCache.get('timezone');
-        const zone = typeof timezoneSetting === 'string' && timezoneSetting ? timezoneSetting : DEFAULT_TIMEZONE;
-        const siteDate = DateTime.fromJSDate(date, {zone});
-        return (siteDate.isValid ? siteDate : DateTime.fromJSDate(date, {zone: DEFAULT_TIMEZONE})).toFormat('yyyy-MM-dd');
+        return DateTime.fromJSDate(date, {zone: this.siteZone()}).toFormat('yyyy-MM-dd');
     }
 
     private resolveDeliveryDate(deliveryDate: string | null): {date: string | null; redeemableAt: Date | null} {
@@ -549,19 +564,17 @@ export class GiftService {
             return {date: null, redeemableAt: null};
         }
 
-        const timezoneSetting = this.deps.settingsCache.get('timezone');
-        let zone = typeof timezoneSetting === 'string' && timezoneSetting ? timezoneSetting : DEFAULT_TIMEZONE;
-        let today = DateTime.now().setZone(zone).startOf('day');
-        if (!today.isValid) {
-            zone = DEFAULT_TIMEZONE;
-            today = DateTime.now().setZone(zone).startOf('day');
-        }
+        const zone = this.siteZone();
+        const today = DateTime.now().setZone(zone).startOf('day');
         const selected = DateTime.fromFormat(deliveryDate, 'yyyy-MM-dd', {zone}).startOf('day');
 
-        if (!selected.isValid || selected.toMillis() < today.toMillis() || selected.toMillis() > today.plus({days: 365}).toMillis()) {
+        // One day of slack over what the picker offers: a buyer whose clock
+        // sits minutes ahead of the server near site-midnight can otherwise
+        // pick a last day the server would reject.
+        if (!selected.isValid || selected.toMillis() < today.toMillis() || selected.toMillis() > today.plus({days: GIFT_MAX_SCHEDULE_DAYS + 1}).toMillis()) {
             throw new errors.BadRequestError({
                 message: 'Bad Request.',
-                context: 'Gift delivery date must be today or within the next 365 days'
+                context: `Gift delivery date must be today or within the next ${GIFT_MAX_SCHEDULE_DAYS} days`
             });
         }
 
@@ -571,7 +584,7 @@ export class GiftService {
 
         return {
             date: deliveryDate,
-            redeemableAt: selected.set({hour: 9}).toJSDate()
+            redeemableAt: selected.set({hour: GIFT_SEND_HOUR}).toJSDate()
         };
     }
 
@@ -643,7 +656,10 @@ export class GiftService {
 
         let recipientEmail: string | null = null;
         try {
-            recipientEmail = await this.deps.giftDeliveryService.dispatchForGift(data.giftId);
+            recipientEmail = await this.deps.giftDeliveryService.dispatchForGift({
+                giftId: data.giftId,
+                redeemableAt: completed.redeemableAt ?? null
+            });
         } catch (err) {
             logging.error({
                 event: {name: 'gift_delivery.dispatch_failed'},
@@ -1003,6 +1019,17 @@ export class GiftService {
             return null;
         }
 
+        // Only a live, not-yet-redeemable gift gets an availability preview; a
+        // dead gift (e.g. refunded) falls through to the regular one.
+        const redeemableCheck = gift.checkRedeemable(null);
+        if (!redeemableCheck.redeemable && redeemableCheck.reason === 'not-yet-redeemable' && gift.redeemableAt) {
+            return {
+                available: false,
+                availableOn: this.getSiteDateValue(gift.redeemableAt),
+                redeemableAt: gift.redeemableAt
+            };
+        }
+
         const tier = await this.deps.tiersService.api.read(gift.tierId);
 
         if (!tier) {
@@ -1012,6 +1039,7 @@ export class GiftService {
         const tierJSON = tier.toJSON();
 
         return {
+            available: true,
             cadence: gift.cadence,
             duration: gift.duration,
             tier: {

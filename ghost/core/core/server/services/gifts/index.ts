@@ -12,7 +12,7 @@ import {SendGiftDeliveryEvent} from './events/send-gift-delivery-event';
 
 export interface GiftServiceInitOptions {
     apiUrl: string;
-    schedulerAdapter: SchedulerAdapter;
+    schedulerAdapter: SchedulerAdapter & {rescheduleOnBoot?: boolean};
     internalKeys: InternalKeys;
 }
 
@@ -24,6 +24,10 @@ export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
 
 export let deliveryService: GiftDeliveryService | undefined;
+
+// Persistent scheduling adapters keep their queue across restarts and opt out
+// of boot-time rebuilds (same contract post scheduling honours in boot.js).
+let rescheduleDeliveriesOnBoot = true;
 
 export async function init(options: GiftServiceInitOptions): Promise<void> {
     if (service) {
@@ -40,7 +44,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const jobLogging = require('../jobs/job-logging');
     const {SubscriptionActivatedEvent} = require('../../../shared/events');
     const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
-    const StartGiftDeliveryFlushEvent = require('./events/start-gift-delivery-flush-event');
+    const {StartGiftDeliveryFlushEvent} = require('./events/start-gift-delivery-flush-event');
     const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
     const jobs = require('./jobs');
     const emailAnalyticsJobs = require('../email-analytics/jobs');
@@ -82,7 +86,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         apiUrl: options.apiUrl,
         adapter: options.schedulerAdapter,
         internalKeys: options.internalKeys,
-        findScheduled: () => deliveryRepository.findScheduledForPurchasedGifts(new Date())
+        findScheduled: () => deliveryRepository.findScheduledTimesForPurchasedGifts(new Date())
     });
     const giftDeliveryService = new GiftDeliveryService({
         giftRepository: repository,
@@ -120,6 +124,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
     service = giftService;
     deliveryService = giftDeliveryService;
+    rescheduleDeliveriesOnBoot = Boolean(options.schedulerAdapter.rescheduleOnBoot);
     controller = new GiftController({service: giftService});
 
     DomainEvents.subscribe(SubscriptionActivatedEvent, async (event: {data: {memberId: string}}) => {
@@ -209,9 +214,9 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     jobs.scheduleGiftReminderJob();
 }
 
-// Re-arms future deliveries and retries sends interrupted by a previous shutdown.
-// Sending needs the tiers and members services, which boot alongside this one, so
-// this must run once every service has finished initialising rather than from init().
+// Re-arms future deliveries and retries sends interrupted by a previous
+// shutdown. Runs after all services initialise because recovery sends need
+// tiers and members.
 export async function recoverPendingDeliveries(): Promise<void> {
     if (!deliveryService) {
         return;
@@ -219,10 +224,12 @@ export async function recoverPendingDeliveries(): Promise<void> {
 
     const logging = require('@tryghost/logging');
 
-    try {
-        await deliveryService.reschedulePending();
-    } catch (err) {
-        logging.error(err, 'Failed to reschedule pending gift deliveries');
+    if (rescheduleDeliveriesOnBoot) {
+        try {
+            await deliveryService.reschedulePending();
+        } catch (err) {
+            logging.error(err, 'Failed to reschedule pending gift deliveries');
+        }
     }
 
     try {

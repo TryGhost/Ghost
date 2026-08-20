@@ -117,6 +117,7 @@
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "Te han regalado una membresía {tierName} de {duration} años de {siteTitle}",
     "You've been gifted a membership to {siteTitle}": "",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Tu prueba gratuita termina el {date}, fecha en la que se te aplicará la cuota normal. Puedes cancelar en cualquier momento antes de esa fecha.",
+    "Your gift can be opened on {date}.": "",
     "Your gift has been sent": "",
     "Your gift is on its way": "",
     "Your gift is ready": "",
