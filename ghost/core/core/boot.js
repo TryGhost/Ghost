@@ -361,7 +361,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
-    const automations = require('./server/services/automations');
+    const {automationsService} = require('./server/services/automations');
     const automationsApi = require('./server/services/automations/automations-api');
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
@@ -424,7 +424,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
             internalKeys
         }),
         machinePaymentsService.init(),
-        automations.init({
+        automationsService.init({
             domainEvents,
             apiUrl,
             schedulerAdapter,
