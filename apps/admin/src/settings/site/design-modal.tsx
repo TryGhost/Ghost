@@ -191,19 +191,13 @@ const DesignModal: React.FC = () => {
     }
   };
 
-  let selectedTabURL = getHomepageUrl(siteData);
-  switch (selectedPreviewTab) {
-    case 'homepage':
-      selectedTabURL = getHomepageUrl(siteData);
-      break;
-    case 'post':
-      selectedTabURL = latestPost.url;
-      break;
-  }
+  // One preview per tab, all mounted up front, so switching needs no refetch.
+  const previewTargets = [
+    { id: 'homepage', url: getHomepageUrl(siteData) },
+    ...(latestPost ? [{ id: 'post', url: latestPost.url }] : []),
+  ];
 
-  const rawPreviewContent = (
-    <ThemePreview
-      settings={{
+  const previewSettings = {
         description,
         accentColor,
         icon,
@@ -211,10 +205,20 @@ const DesignModal: React.FC = () => {
         coverImage,
         themeSettings: formState.themeSettings,
         headingFont,
-        bodyFont,
-      }}
-      url={selectedTabURL}
-    />
+    bodyFont,
+  };
+
+  const rawPreviewContent = (
+    <div className="relative size-full">
+      {previewTargets.map(({ id, url }) => (
+        <ThemePreview
+          key={id}
+          isVisible={selectedPreviewTab === id}
+          settings={previewSettings}
+          url={url}
+        />
+      ))}
+    </div>
   );
   const previewContent =
     previewDevice === 'desktop' ? (
