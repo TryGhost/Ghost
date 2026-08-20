@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {X} from 'lucide-react';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {decideDunningIntervention} from '@tryghost/admin-x-framework/utils/dunning-intervention';
 import {isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import type {UserRoleType} from '@tryghost/admin-x-framework/api/roles';
@@ -28,6 +29,7 @@ function getTitle(copyVariant: 'owner-counted' | 'owner-generic' | 'staff', paym
 }
 
 export function DunningModal({currentUser}: DunningModalProps) {
+    const {data: configData} = useBrowseConfig();
     const subscriptionState = useSubscriptionStatus();
     const [dismissed, setDismissed] = useState(false);
     const audience = isOwnerUser(currentUser) ? 'owner' : 'staff';
@@ -39,7 +41,9 @@ export function DunningModal({currentUser}: DunningModalProps) {
         modalDismissed: dismissed
     });
 
-    if (!decision.copyVariant) {
+    const billingEnabled = configData?.config.hostSettings?.billing?.enabled === true;
+
+    if (!billingEnabled || !decision.copyVariant) {
         return null;
     }
 

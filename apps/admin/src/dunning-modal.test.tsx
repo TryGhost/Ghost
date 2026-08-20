@@ -5,6 +5,13 @@ import type {StateBridge, StateBridgeEventMap, SubscriptionState} from './ember-
 import {DunningModal} from './dunning-modal';
 
 const navigateTo = vi.fn();
+const {mockUseBrowseConfig} = vi.hoisted(() => ({
+    mockUseBrowseConfig: vi.fn()
+}));
+
+vi.mock('@tryghost/admin-x-framework/api/config', () => ({
+    useBrowseConfig: mockUseBrowseConfig
+}));
 
 vi.mock('./utils/navigation', () => ({
     navigateTo: (route: string) => {
@@ -59,6 +66,17 @@ function overdueState(overrides: Partial<NonNullable<SubscriptionState['subscrip
 
 beforeEach(() => {
     navigateTo.mockReset();
+    mockUseBrowseConfig.mockReturnValue({
+        data: {
+            config: {
+                hostSettings: {
+                    billing: {
+                        enabled: true
+                    }
+                }
+            }
+        }
+    });
 });
 
 afterEach(() => {
@@ -66,6 +84,19 @@ afterEach(() => {
 });
 
 describe('DunningModal', () => {
+    it.each([
+        ['disabled', {data: {config: {hostSettings: {billing: {enabled: false}}}}}],
+        ['missing', {data: {config: {hostSettings: {}}}}],
+        ['still loading', {data: undefined}]
+    ])('does not render when hosted Billing is %s', (_case, configResult) => {
+        mockUseBrowseConfig.mockReturnValue(configResult);
+        createStateBridge(overdueState());
+
+        render(<DunningModal currentUser={owner} />);
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
     it.each(['past_due', 'unpaid'])('shows counted owner copy for %s', (status) => {
         createStateBridge(overdueState({status}));
 
