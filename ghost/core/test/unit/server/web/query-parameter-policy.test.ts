@@ -61,12 +61,12 @@ describe('Query parameter policy', function () {
 
     it('exports the validated canonical policy deterministically', async function () {
         const outputDirectory = await mkdtemp(path.join(tmpdir(), 'ghost-query-parameter-policy-'));
-        const scriptPath = path.resolve(__dirname, '../../../../../../scripts/export-query-parameter-policy.mjs');
+        const scriptPath = path.resolve(__dirname, '../../../../scripts/export-query-parameter-policy.ts');
         const manifestPath = path.resolve(__dirname, '../../../../core/server/web/query-parameter-policy/policy.json');
         const outputPath = path.join(outputDirectory, 'query-parameter-policy.json');
 
         try {
-            const {stdout, stderr} = await execFileAsync(process.execPath, [scriptPath, '--output', outputDirectory]);
+            const {stdout, stderr} = await execFileAsync(process.execPath, ['--import=tsx', scriptPath, '--output', outputDirectory]);
 
             assert.equal(stderr, '');
             assert.equal(stdout.trim(), outputPath);
