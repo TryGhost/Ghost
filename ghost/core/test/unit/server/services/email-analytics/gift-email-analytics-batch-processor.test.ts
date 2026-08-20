@@ -13,7 +13,7 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
         const failedAt = new Date('2026-08-05T12:10:00.000Z');
 
         await processor.processBatch([
-            {type: 'delivered', providerId: '<provider-123>', timestamp: deliveredAt},
+            {type: 'delivered', providerId: '<provider-123>', timestamp: deliveredAt, error: {code: 250, message: 'OK'}},
             {type: 'failed', severity: 'temporary', providerId: 'provider-123', timestamp: failedAt, error: {code: 421, message: 'try later'}},
             {type: 'opened', providerId: 'provider-123', timestamp: new Date('2026-08-05T12:20:00.000Z')}
         ], result, fetchData);

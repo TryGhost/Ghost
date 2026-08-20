@@ -150,30 +150,42 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     }
 
     async recordOutcome({providerMessageId, outcome, timestamp, error}: {providerMessageId: string; outcome: GiftDeliveryOutcome; timestamp: Date; error: string | null}): Promise<GiftDeliveryOutcomeRecordResult> {
-        return this.knex.transaction(async (transacting) => {
-            const outcomeAt = toDatabaseDate(timestamp);
-            const updated = await transacting('gift_deliveries')
-                .where({email_provider_message_id: providerMessageId})
-                .where((builder) => {
-                    builder.whereNull('outcome_at').orWhere('outcome_at', '<', outcomeAt);
-                })
-                .update({
-                    outcome,
-                    outcome_at: outcomeAt,
-                    outcome_error: error
-                });
+        const outcomeAt = toDatabaseDate(timestamp);
+        const lowerPriorityOutcomes: GiftDeliveryOutcome[] = outcome === 'permanent_failed'
+            ? ['temporary_failed', 'delivered']
+            : outcome === 'delivered'
+                ? ['temporary_failed']
+                : [];
+        const updated = await this.knex('gift_deliveries')
+            .where({email_provider_message_id: providerMessageId})
+            .where((builder) => {
+                builder.whereNull('outcome_at').orWhere('outcome_at', '<', outcomeAt);
 
-            if (updated === 1) {
-                return 'recorded';
-            }
+                // Database dates have second precision. Allow a same-second outcome
+                // to advance, while preventing refetches from regressing or replaying it.
+                if (lowerPriorityOutcomes.length > 0) {
+                    builder.orWhere((sameSecond) => {
+                        sameSecond.where('outcome_at', '=', outcomeAt)
+                            .whereIn('outcome', lowerPriorityOutcomes);
+                    });
+                }
+            })
+            .update({
+                outcome,
+                outcome_at: outcomeAt,
+                outcome_error: error
+            });
 
-            const delivery = await transacting('gift_deliveries')
-                .select('id')
-                .where({email_provider_message_id: providerMessageId})
-                .first();
+        if (updated === 1) {
+            return 'recorded';
+        }
 
-            return delivery ? 'stale' : 'not_found';
-        });
+        const delivery = await this.knex('gift_deliveries')
+            .select('id')
+            .where({email_provider_message_id: providerMessageId})
+            .first();
+
+        return delivery ? 'stale' : 'not_found';
     }
 
     async create(delivery: GiftDeliveryData, options: RepositoryTransactionOptions = {}): Promise<void> {

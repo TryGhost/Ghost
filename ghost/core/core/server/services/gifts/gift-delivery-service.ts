@@ -306,7 +306,7 @@ export class GiftDeliveryService {
             }
 
             const gift = await this.deps.giftRepository.getById(delivery.giftId);
-            if (!gift || gift.status !== 'purchased' || !gift.expiresAt || !gift.buyerEmail || gift.expiresAt.getTime() <= Date.now()) {
+            if (!gift || !gift.checkRedeemable(null).redeemable || !gift.expiresAt || !gift.buyerEmail) {
                 logging.warn({
                     event: {name: 'gift_delivery.failure_notification.skipped'},
                     reason: gift ? 'gift_not_redeemable' : 'gift_missing',

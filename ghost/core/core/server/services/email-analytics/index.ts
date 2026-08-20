@@ -29,6 +29,7 @@ import {AutomationEmailAnalyticsBatchProcessor} from './automation-email-analyti
 import {GiftEmailAnalyticsBatchProcessor} from './gift-email-analytics-batch-processor';
 import {StartGiftEmailAnalyticsJobEvent} from './events/start-gift-email-analytics-job-event';
 import {deliveryService as giftDeliveryService} from '../gifts';
+import {GIFT_DELIVERY_EMAIL_TAG} from '../gifts/constants';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters'
@@ -168,7 +169,7 @@ export const init = ({
         domainEvents,
         event: StartGiftEmailAnalyticsJobEvent,
         queries,
-        mailgunTags: ['gift-delivery'],
+        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG],
         jobNames: {
             latestNonOpened: 'email-analytics-gifts-latest-others',
             missing: 'email-analytics-gifts-missing',

@@ -48,7 +48,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
                 providerMessageId: normalizeMailgunMessageId(event.providerId),
                 outcome,
                 timestamp: event.timestamp,
-                error: event.error ? JSON.stringify(event.error) : null
+                error: outcome !== 'delivered' && event.error ? JSON.stringify(event.error) : null
             });
 
             if (recordResult === 'not_found') {

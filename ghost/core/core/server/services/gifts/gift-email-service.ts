@@ -3,6 +3,7 @@ import type {GiftCadence} from './gift-schema';
 import {Color} from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
 import {getMailgunMessageId} from '../lib/mailgun-message-id';
+import {GIFT_DELIVERY_EMAIL_TAG} from './constants';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
@@ -283,7 +284,7 @@ export class GiftEmailService {
                 text,
                 from: this.getFromAddress(),
                 forceTextContent: true,
-                tags: ['gift-delivery'],
+                tags: [GIFT_DELIVERY_EMAIL_TAG],
                 disableTracking: true
             });
 
@@ -295,7 +296,7 @@ export class GiftEmailService {
             html,
             plaintext: text,
             from: this.getFromAddress(),
-            tags: ['gift-delivery'],
+            tags: [GIFT_DELIVERY_EMAIL_TAG],
             disable_tracking: true
         }, {[recipientEmail]: {}}, []);
         const providerMessageId = getMailgunMessageId(response) ?? null;

@@ -262,4 +262,30 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal(reloaded?.outcomeError, null);
         assert.equal((await deliveryRepository.getByProviderMessageId('provider-123'))?.id, delivery.id);
     });
+
+    it('advances outcomes within the same database second without replaying them', async function () {
+        const {delivery} = await createPendingEmailGift();
+        await delivery.save({email_provider_message_id: 'provider-123'}, {patch: true});
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'temporary_failed',
+            timestamp: new Date('2026-08-11T10:00:00.300Z'),
+            error: 'temporary rejection'
+        }), 'recorded');
+
+        const permanentFailure = {
+            providerMessageId: 'provider-123',
+            outcome: 'permanent_failed' as const,
+            timestamp: new Date('2026-08-11T10:00:00.900Z'),
+            error: 'permanent rejection'
+        };
+        assert.equal(await deliveryRepository.recordOutcome(permanentFailure), 'recorded');
+        assert.equal(await deliveryRepository.recordOutcome(permanentFailure), 'stale');
+
+        const reloaded = await deliveryRepository.getById(delivery.id);
+        assert.equal(reloaded?.outcome, 'permanent_failed');
+        assert.equal(reloaded?.outcomeAt?.toISOString(), '2026-08-11T10:00:00.000Z');
+        assert.equal(reloaded?.outcomeError, 'permanent rejection');
+    });
 });

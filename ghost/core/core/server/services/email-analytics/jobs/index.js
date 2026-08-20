@@ -34,7 +34,7 @@ exports.scheduleRecurringAutomationsJob = async (...args) => {
  * @returns {Promise<void>}
  */
 exports.scheduleRecurringGiftDeliveriesJob = async (...args) => {
-    if (!process.env.NODE_ENV.startsWith('test')) {
+    if (!process.env.NODE_ENV?.startsWith('test')) {
         await emailAnalyticsJobScheduler.scheduleRecurringGiftDeliveriesJob(...args);
     }
 };
