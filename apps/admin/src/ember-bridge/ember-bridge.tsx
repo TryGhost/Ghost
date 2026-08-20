@@ -15,6 +15,7 @@ export type StateBridgeEventMap = {
   sidebarVisibilityChange: SidebarVisibilityChangeEvent;
   routeChange: RouteChangeEvent;
   openGiftLinkModal: OpenGiftLinkModalEvent;
+    openArtifactBuilder: OpenArtifactBuilderEvent;
   featureFlagsChange: undefined;
 };
 
@@ -28,6 +29,8 @@ export interface StateBridge {
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
+  completeArtifactBuilder?: (result: ArtifactBuilderResult) => boolean;
+  getPendingArtifactBuilderRequests?: () => OpenArtifactBuilderEvent[];
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -82,6 +85,33 @@ export interface OpenGiftLinkModalEvent {
   id: string;
   resource: 'posts' | 'pages';
 }
+
+export interface ArtifactBuilderPayload {
+    id: string;
+    artifactVersion: number;
+    title: string;
+    description: string;
+    html: string;
+}
+
+export interface OpenArtifactBuilderEvent {
+    requestId: string;
+    cardId: string;
+    artifact: ArtifactBuilderPayload;
+}
+
+export type ArtifactBuilderResult = {
+    requestId: string;
+    status: 'saved';
+    artifact: ArtifactBuilderPayload;
+} | {
+    requestId: string;
+    status: 'cancelled';
+} | {
+    requestId: string;
+    status: 'error';
+    message: string;
+};
 
 export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
@@ -141,7 +171,7 @@ function waitForStateBridge(onReady: (stateBridge: StateBridge) => void): () => 
 function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
   event: K,
   handler: (event: StateBridgeEventMap[K]) => void,
-  onReady?: () => void,
+  onReady?: (stateBridge: StateBridge) => void,
 ): () => void {
   let unsubscribe: (() => void) | null = null;
   let isMounted = true;
@@ -152,7 +182,7 @@ function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
     }
     stateBridge.on(event, handler);
     unsubscribe = () => stateBridge.off(event, handler);
-    onReady?.();
+        onReady?.(stateBridge);
   });
 
   return () => {
@@ -338,6 +368,16 @@ export const emberMutationHandlers = {
     window.EmberBridge?.state.onDelete(dataType, id);
   },
 };
+
+export function subscribeOpenArtifactBuilder(handler: (event: OpenArtifactBuilderEvent) => void): () => void {
+    return onEmberStateBridgeEvent('openArtifactBuilder', handler, (stateBridge) => {
+        stateBridge.getPendingArtifactBuilderRequests?.().forEach(request => handler(request));
+    });
+}
+
+export function respondToArtifactBuilder(result: ArtifactBuilderResult): boolean {
+    return window.EmberBridge?.state.completeArtifactBuilder?.(result) ?? false;
+}
 
 // External store for sidebar visibility state
 function subscribeSidebarVisibility(callback: () => void): () => void {

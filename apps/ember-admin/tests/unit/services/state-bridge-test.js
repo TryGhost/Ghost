@@ -502,6 +502,82 @@ describe('Unit: Service: state-bridge', function () {
         });
     });
 
+    describe('Artifact Builder requests', function () {
+        const artifact = {
+            id: 'artifact-1',
+            artifactVersion: 1,
+            title: 'Calculator',
+            description: 'A useful calculator',
+            html: '<!doctype html><html></html>'
+        };
+
+        it('resolves only the request matching a saved Artifact', async function () {
+            const openHandler = sinon.spy();
+            service.on('openArtifactBuilder', openHandler);
+
+            const first = service.requestArtifactBuilder({cardId: 'card-1', artifact});
+            const second = service.requestArtifactBuilder({cardId: 'card-2', artifact: {...artifact, id: 'artifact-2'}});
+
+            expect(openHandler.calledTwice).to.be.true;
+            const firstRequest = openHandler.firstCall.args[0];
+            const secondRequest = openHandler.secondCall.args[0];
+            expect(firstRequest.requestId).not.to.equal(secondRequest.requestId);
+
+            service.completeArtifactBuilder({
+                requestId: secondRequest.requestId,
+                status: 'saved',
+                artifact: {...artifact, id: 'artifact-2', title: 'Updated calculator'}
+            });
+
+            expect(await second).to.deep.equal({...artifact, id: 'artifact-2', title: 'Updated calculator'});
+
+            service.completeArtifactBuilder({requestId: firstRequest.requestId, status: 'cancelled'});
+            expect(await first).to.equal(null);
+        });
+
+        it('rejects the matching request when React reports an error', async function () {
+            const openHandler = sinon.spy();
+            service.on('openArtifactBuilder', openHandler);
+
+            const result = service.requestArtifactBuilder({cardId: 'card-1', artifact});
+            const {requestId} = openHandler.firstCall.args[0];
+
+            service.completeArtifactBuilder({requestId, status: 'error', message: 'Builder is unavailable'});
+
+            let error;
+            try {
+                await result;
+            } catch (caught) {
+                error = caught;
+            }
+            expect(error).to.be.an('error').with.property('message', 'Builder is unavailable');
+        });
+
+        it('ignores an unknown response without settling another request', async function () {
+            const openHandler = sinon.spy();
+            service.on('openArtifactBuilder', openHandler);
+
+            const result = service.requestArtifactBuilder({cardId: 'card-1', artifact});
+            const {requestId} = openHandler.firstCall.args[0];
+
+            expect(service.completeArtifactBuilder({requestId: 'missing', status: 'cancelled'})).to.be.false;
+            service.completeArtifactBuilder({requestId, status: 'cancelled'});
+            expect(await result).to.equal(null);
+        });
+
+        it('keeps pending open requests available for a late React subscriber', async function () {
+            const result = service.requestArtifactBuilder({cardId: 'card-1', artifact});
+
+            const [pending] = service.getPendingArtifactBuilderRequests();
+            expect(pending).to.include({cardId: 'card-1', artifact});
+            expect(pending.requestId).to.be.a('string');
+
+            service.completeArtifactBuilder({requestId: pending.requestId, status: 'cancelled'});
+            expect(await result).to.equal(null);
+            expect(service.getPendingArtifactBuilderRequests()).to.deep.equal([]);
+        });
+    });
+
     describe('#setSidebarVisible', function () {
         it('triggers sidebarVisibilityChange event with correct parameters', function () {
             const handler = sinon.spy();

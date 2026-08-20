@@ -42,6 +42,9 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @inject config;
 
+    artifactBuilderRequests = new Map();
+    artifactBuilderRequestSequence = 0;
+
     /**
      * Gives React the same synchronous Labs route-ownership decision Ember
      * uses. Both routers must share one authority or they can each defer to
@@ -77,6 +80,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
     willDestroy() {
         super.willDestroy(...arguments);
         this.router.off('routeDidChange', this, this.handleRouteDidChange);
+        for (const {reject} of this.artifactBuilderRequests.values()) {
+            reject(new Error('Artifact Builder closed before responding'));
+        }
+        this.artifactBuilderRequests.clear();
     }
 
     @action
@@ -266,6 +273,47 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @action
     triggerOpenGiftLinkModal({id, resource}) {
         this.trigger('openGiftLinkModal', {id, resource});
+    }
+
+    @action
+    requestArtifactBuilder({cardId, artifact}) {
+        this.artifactBuilderRequestSequence += 1;
+        const requestId = `artifact-builder-${Date.now()}-${this.artifactBuilderRequestSequence}`;
+        const openRequest = {requestId, cardId, artifact};
+
+        const response = new Promise((resolve, reject) => {
+            this.artifactBuilderRequests.set(requestId, {openRequest, resolve, reject});
+        });
+
+        this.trigger('openArtifactBuilder', openRequest);
+        return response;
+    }
+
+    @action
+    getPendingArtifactBuilderRequests() {
+        return Array.from(this.artifactBuilderRequests.values(), request => request.openRequest);
+    }
+
+    @action
+    completeArtifactBuilder(result) {
+        const request = this.artifactBuilderRequests.get(result.requestId);
+        if (!request) {
+            return false;
+        }
+
+        this.artifactBuilderRequests.delete(result.requestId);
+        if (result.status === 'saved') {
+            if (!result.artifact) {
+                request.reject(new Error('Artifact Builder returned an empty saved result'));
+            } else {
+                request.resolve(result.artifact);
+            }
+        } else if (result.status === 'cancelled') {
+            request.resolve(null);
+        } else {
+            request.reject(new Error(result.message || 'Artifact Builder could not open'));
+        }
+        return true;
     }
 
     get sidebarVisible() {

@@ -57,6 +57,7 @@ function createMockStateBridge(sidebarVisible = true) {
     stateBridge,
     emit,
     onSpy: on,
+        offSpy: off,
   };
 }
 
@@ -71,18 +72,69 @@ let useEmberAuthSync: typeof import('./ember-bridge').useEmberAuthSync;
 let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;
 let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
 let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
+let respondToArtifactBuilder: typeof import('./ember-bridge').respondToArtifactBuilder;
+let subscribeOpenArtifactBuilder: typeof import('./ember-bridge').subscribeOpenArtifactBuilder;
 
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();
-  ({
-    useEmberDataSync,
-    useEmberAuthSync,
-    useEmberFeatureFlag,
-    useSidebarVisibility,
-    useEmberRouting,
-  } = await import('./ember-bridge'));
+    ({ useEmberDataSync, useEmberAuthSync, useEmberFeatureFlag, useSidebarVisibility, useEmberRouting, respondToArtifactBuilder, subscribeOpenArtifactBuilder } = await import('./ember-bridge'));
   delete window.EmberBridge;
+});
+
+describe('Artifact Builder bridge', () => {
+    const request = {
+        requestId: 'request-1',
+        cardId: 'card-1',
+        artifact: {
+            id: 'artifact-1',
+            artifactVersion: 1,
+            title: 'Calculator',
+            description: '',
+            html: '<!doctype html><html></html>'
+        }
+    } as const;
+
+    baseTest('subscribes to correlated open requests from Ember', () => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = {state: mock.stateBridge};
+        const handler = vi.fn();
+
+        const unsubscribe = subscribeOpenArtifactBuilder(handler);
+        mock.emit('openArtifactBuilder', request);
+
+        expect(handler).toHaveBeenCalledWith(request);
+        unsubscribe();
+        expect(mock.offSpy).toHaveBeenCalledWith('openArtifactBuilder', handler);
+    });
+
+    baseTest('replays a pending request when React subscribes after Ember emitted it', () => {
+        const mock = createMockStateBridge();
+        mock.stateBridge.getPendingArtifactBuilderRequests = vi.fn(() => [request]);
+        window.EmberBridge = {state: mock.stateBridge};
+        const handler = vi.fn();
+
+        const unsubscribe = subscribeOpenArtifactBuilder(handler);
+
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler).toHaveBeenCalledWith(request);
+        unsubscribe();
+    });
+
+    baseTest('sends a correlated result back to Ember', () => {
+        const mock = createMockStateBridge();
+        const completeArtifactBuilder = vi.fn().mockReturnValue(true);
+        mock.stateBridge.completeArtifactBuilder = completeArtifactBuilder;
+        window.EmberBridge = {state: mock.stateBridge};
+        const result = {requestId: request.requestId, status: 'cancelled'} as const;
+
+        expect(respondToArtifactBuilder(result)).toBe(true);
+        expect(completeArtifactBuilder).toHaveBeenCalledWith(result);
+    });
+
+    baseTest('reports that no response channel is available without Ember', () => {
+        expect(respondToArtifactBuilder({requestId: request.requestId, status: 'cancelled'})).toBe(false);
+    });
 });
 
 afterEach(() => {

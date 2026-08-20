@@ -12,6 +12,8 @@ export {
   useEmberRouting,
   useForceUpgrade,
   subscribeOpenGiftLinkModal,
+  respondToArtifactBuilder,
+  subscribeOpenArtifactBuilder,
   isEmberThemeManaged,
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
@@ -19,6 +21,9 @@ export {
 } from './ember-bridge';
 export type {
   AdminThemeMode,
+  ArtifactBuilderPayload,
+  ArtifactBuilderResult,
+  OpenArtifactBuilderEvent,
   EmberDataChangeEvent,
   EmberRouting,
   OpenGiftLinkModalEvent,
