@@ -1137,12 +1137,14 @@ jobs:
         run: npm install -g ghost-cli@latest
 
       # Test against the same tarball that npm-publish ships, not a parallel rebuild.
+      # Ghost-CLI still requires the package/ prefix; switch this to
+      # ghost-release-tarball once it accepts a prefix-free archive too.
       - name: Download npm tarball
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ghost-npm-tarball
 
-      - run: mv ghost-*.tgz ghost.tgz
+      - run: mv ghost-*-npm.tgz ghost.tgz
 
       - name: Verify packaged package.json
         run: tar -xOf ghost.tgz package/package.json | jq -e '.packageManager' >/dev/null
@@ -1373,11 +1375,24 @@ jobs:
         # dependsOn would rebuild admin/tsc/assets we already have).
         run: pnpm --filter ghost run archive
 
+      # pack.mjs emits the same tree in two layouts. The prefix-free tarball is
+      # the release asset; the -npm one carries the package/ prefix npm and
+      # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
+      - name: Upload release tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ghost-release-tarball
+          path: |
+            ghost/core/ghost-*.tgz
+            !ghost/core/ghost-*-npm.tgz
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Upload npm tarball
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ghost-npm-tarball
-          path: ghost/core/ghost-*.tgz
+          path: ghost/core/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
@@ -2388,14 +2403,14 @@ jobs:
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
+        run: tar -xOf ghost-*-npm.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       # --provenance is explicit so a publish without an attestation fails the
       # job instead of warning. Safe with no repo checkout: the SLSA statement
       # is built from the GITHUB_* env vars plus the tarball digest, and the
       # subject comes from the packed manifest — nothing reads a working tree.
       - name: Publish to npm
-        run: npm publish ghost-*.tgz --access public --provenance
+        run: npm publish ghost-*-npm.tgz --access public --provenance
 
   # NOTE: Publishing the other workspace packages (koenig/*, packages/*, ...) is
   # NOT a job here. The release tag triggers publish-packages.yml directly, in
@@ -2462,12 +2477,22 @@ jobs:
           fi
           cat /tmp/release-notes.md
 
+      # Attach the prefix-free tarball so the release is installable without an
+      # npm client. Same build tree as the npm package, just without the
+      # package/ wrapper dir.
+      - name: Download release tarball
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ghost-release-tarball
+          path: release-assets
+
       - name: Create GitHub Release
         id: create_release
         run: |
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
-            --notes-file /tmp/release-notes.md
+            --notes-file /tmp/release-notes.md \
+            release-assets/ghost-*.tgz
 
       # Gate on create_release, not notes, so a failed release can't announce success
       - name: Notify Slack

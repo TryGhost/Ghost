@@ -13,7 +13,7 @@ import {glob, readFile} from 'node:fs/promises';
 //     in a published manifest and only adds noise + phantom workspace refs
 //
 // Applied to the `ghost` package only (the Ghost-CLI release archive built by
-// ghost/core/scripts/pack.js):
+// ghost/core/scripts/pack.mjs):
 //   - rewrite its workspace deps to the bundled `file:components/*.tgz`
 //     tarballs shipped in the archive (name→filename map via GHOST_COMPONENTS)
 //   - strip `scripts` to the runtime set — Ghost-CLI starts Ghost with `node`,
