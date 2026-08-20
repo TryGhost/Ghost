@@ -63,6 +63,10 @@ export type Config = {
         disabled?: boolean;
         error?: string;
       };
+      uploads?: {
+        max?: number; // Maximum accepted upload size, in bytes
+        error?: string;
+      };
       customThemes?: {
         allowlist?: string[];
         error?: string;
