@@ -2,7 +2,6 @@ const CURRENT_DUNNING_STATUSES = new Set(['past_due', 'unpaid']);
 
 export type DunningAudience = 'owner' | 'staff';
 export type DunningCopyVariant = 'owner-counted' | 'owner-generic' | 'staff';
-export type DunningBillingHandoff = 'none' | 'owner-reminder' | 'locked-owner' | 'locked-staff';
 
 export interface DunningInterventionInput {
     subscriptionStatus: unknown;
@@ -13,12 +12,14 @@ export interface DunningInterventionInput {
 }
 
 export interface DunningInterventionDecision {
-    isCurrentDunning: boolean;
-    bannerVisible: boolean;
     reminderModalVisible: boolean;
     copyVariant: DunningCopyVariant | null;
     visiblePaymentAttempts: number | null;
-    billingHandoff: DunningBillingHandoff;
+    showBillingAction: boolean;
+}
+
+export function isDunningSubscriptionStatus(subscriptionStatus: unknown): boolean {
+    return typeof subscriptionStatus === 'string' && CURRENT_DUNNING_STATUSES.has(subscriptionStatus);
 }
 
 function getVisiblePaymentAttempts(paymentAttempts: unknown, audience: DunningAudience): number | null {
@@ -40,16 +41,12 @@ export function decideDunningIntervention({
     audience,
     modalDismissed
 }: DunningInterventionInput): DunningInterventionDecision {
-    const isCurrentDunning = typeof subscriptionStatus === 'string' && CURRENT_DUNNING_STATUSES.has(subscriptionStatus);
-
-    if (!isCurrentDunning) {
+    if (!isDunningSubscriptionStatus(subscriptionStatus)) {
         return {
-            isCurrentDunning: false,
-            bannerVisible: false,
             reminderModalVisible: false,
             copyVariant: null,
             visiblePaymentAttempts: null,
-            billingHandoff: 'none'
+            showBillingAction: false
         };
     }
 
@@ -59,19 +56,10 @@ export function decideDunningIntervention({
         : visiblePaymentAttempts === null ? 'owner-generic' : 'owner-counted';
     const reminderModalVisible = !forceUpgrade && !modalDismissed;
 
-    let billingHandoff: DunningBillingHandoff = 'none';
-    if (forceUpgrade) {
-        billingHandoff = audience === 'owner' ? 'locked-owner' : 'locked-staff';
-    } else if (reminderModalVisible && audience === 'owner') {
-        billingHandoff = 'owner-reminder';
-    }
-
     return {
-        isCurrentDunning: true,
-        bannerVisible: true,
         reminderModalVisible,
         copyVariant,
         visiblePaymentAttempts,
-        billingHandoff
+        showBillingAction: reminderModalVisible && audience === 'owner'
     };
 }

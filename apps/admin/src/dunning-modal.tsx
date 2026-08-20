@@ -8,7 +8,7 @@ import {formatNumber} from '@tryghost/shade/utils';
 import {useSubscriptionStatus} from './ember-bridge';
 import {navigateTo} from './utils/navigation';
 
-interface DunningInterventionHostProps {
+interface DunningModalProps {
     currentUser: {
         roles: Array<{name: UserRoleType}>;
     };
@@ -27,14 +27,14 @@ function getTitle(copyVariant: 'owner-counted' | 'owner-generic' | 'staff', paym
     return 'Your payment has failed';
 }
 
-export function DunningInterventionHost({currentUser}: DunningInterventionHostProps) {
+export function DunningModal({currentUser}: DunningModalProps) {
     const subscriptionState = useSubscriptionStatus();
     const [dismissed, setDismissed] = useState(false);
     const audience = isOwnerUser(currentUser) ? 'owner' : 'staff';
     const decision = decideDunningIntervention({
         subscriptionStatus: subscriptionState?.subscription?.status,
-        paymentAttempts: subscriptionState?.paymentAttempts,
-        forceUpgrade: subscriptionState?.forceUpgrade === true,
+        paymentAttempts: subscriptionState?.subscription?.paymentAttempts,
+        forceUpgrade: subscriptionState?.subscription?.forceUpgrade === true,
         audience,
         modalDismissed: dismissed
     });
@@ -77,7 +77,7 @@ export function DunningInterventionHost({currentUser}: DunningInterventionHostPr
                 </DialogHeader>
                 <DialogFooter>
                     <Button type='button' variant='outline' onClick={dismiss}>Dismiss for now</Button>
-                    {decision.billingHandoff === 'owner-reminder' && (
+                    {decision.showBillingAction && (
                         <Button type='button' onClick={openBilling}>Update payment details</Button>
                     )}
                 </DialogFooter>

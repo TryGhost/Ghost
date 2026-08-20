@@ -2,7 +2,7 @@ import {act} from 'react';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {StateBridge, StateBridgeEventMap, SubscriptionState} from './ember-bridge/ember-bridge';
-import {DunningInterventionHost} from './dunning-intervention-host';
+import {DunningModal} from './dunning-modal';
 
 const navigateTo = vi.fn();
 
@@ -46,12 +46,14 @@ function createStateBridge(subscriptionState: SubscriptionState | null) {
     return stateBridge;
 }
 
-function overdueState(overrides: Partial<SubscriptionState> = {}): SubscriptionState {
+function overdueState(overrides: Partial<NonNullable<SubscriptionState['subscription']>> = {}): SubscriptionState {
     return {
-        subscription: {status: 'past_due'},
-        paymentAttempts: 3,
-        forceUpgrade: false,
-        ...overrides
+        subscription: {
+            status: 'past_due',
+            paymentAttempts: 3,
+            forceUpgrade: false,
+            ...overrides
+        }
     };
 }
 
@@ -63,11 +65,11 @@ afterEach(() => {
     delete window.EmberBridge;
 });
 
-describe('DunningInterventionHost', () => {
+describe('DunningModal', () => {
     it.each(['past_due', 'unpaid'])('shows counted owner copy for %s', (status) => {
-        createStateBridge(overdueState({subscription: {status}}));
+        createStateBridge(overdueState({status}));
 
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         expect(screen.getByRole('dialog', {name: 'Your payment has failed 3 times'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Update payment details'})).toBeInTheDocument();
@@ -76,7 +78,7 @@ describe('DunningInterventionHost', () => {
     it('uses generic owner copy when the attempt count is unavailable', () => {
         createStateBridge(overdueState({paymentAttempts: null}));
 
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         expect(screen.getByRole('dialog', {name: 'Your payment has failed'})).toBeInTheDocument();
     });
@@ -84,7 +86,7 @@ describe('DunningInterventionHost', () => {
     it('uses singular copy for the first failed payment attempt', () => {
         createStateBridge(overdueState({paymentAttempts: 1}));
 
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         expect(screen.getByRole('dialog', {name: 'Your payment has failed 1 time'})).toBeInTheDocument();
     });
@@ -92,7 +94,7 @@ describe('DunningInterventionHost', () => {
     it('shows non-sensitive staff copy without attempts or Billing controls', () => {
         createStateBridge(overdueState({paymentAttempts: 5}));
 
-        render(<DunningInterventionHost currentUser={staff} />);
+        render(<DunningModal currentUser={staff} />);
 
         expect(screen.getByRole('dialog', {name: 'This site’s billing needs attention'})).toBeInTheDocument();
         expect(screen.queryByText(/5/)).not.toBeInTheDocument();
@@ -102,14 +104,14 @@ describe('DunningInterventionHost', () => {
     it('does not show the reminder after forceUpgrade activates', () => {
         createStateBridge(overdueState({forceUpgrade: true}));
 
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('stays dismissed through later subscription events in the same Admin load', () => {
         const stateBridge = createStateBridge(overdueState());
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         fireEvent.click(screen.getByRole('button', {name: 'Dismiss for now'}));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -120,7 +122,7 @@ describe('DunningInterventionHost', () => {
 
     it('dismisses with Escape', () => {
         createStateBridge(overdueState());
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         fireEvent.keyDown(document, {key: 'Escape'});
 
@@ -129,7 +131,7 @@ describe('DunningInterventionHost', () => {
 
     it('does not dismiss from a backdrop interaction', () => {
         createStateBridge(overdueState());
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
         const dialog = screen.getByRole('dialog');
         const backdrop = dialog.parentElement?.firstElementChild;
 
@@ -142,18 +144,18 @@ describe('DunningInterventionHost', () => {
 
     it('can show again after a full React host remount', () => {
         createStateBridge(overdueState());
-        const firstLoad = render(<DunningInterventionHost currentUser={owner} />);
+        const firstLoad = render(<DunningModal currentUser={owner} />);
         fireEvent.click(screen.getByRole('button', {name: 'Dismiss for now'}));
         firstLoad.unmount();
 
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
     it('dismisses before handing an owner to Billing', () => {
         createStateBridge(overdueState());
-        render(<DunningInterventionHost currentUser={owner} />);
+        render(<DunningModal currentUser={owner} />);
 
         fireEvent.click(screen.getByRole('button', {name: 'Update payment details'}));
 

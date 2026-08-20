@@ -254,6 +254,9 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     triggerSubscriptionChange(data) {
+        // Cache a minimal snapshot before emitting. React may mount after this
+        // event, and retaining the full Billing payload here would expose user
+        // and customer details that the Admin intervention does not need.
         const status = typeof data?.subscription?.status === 'string' ? data.subscription.status : null;
         const paymentAttempts = Number.isSafeInteger(data?.user?.payment_attempts) && data.user.payment_attempts > 0
             ? data.user.payment_attempts
@@ -263,10 +266,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
             subscription: status ? {
                 status,
                 isActiveTrial: data.subscription?.isActiveTrial === true,
-                trial_end: typeof data.subscription?.trial_end === 'string' ? data.subscription.trial_end : null
-            } : null,
-            paymentAttempts,
-            forceUpgrade: data?.forceUpgrade === true
+                trial_end: typeof data.subscription?.trial_end === 'string' ? data.subscription.trial_end : null,
+                paymentAttempts,
+                forceUpgrade: data?.forceUpgrade === true
+            } : null
         };
         this.trigger('subscriptionChange', this.subscriptionState);
     }

@@ -43,9 +43,11 @@ afterEach(() => {
 describe('useSubscriptionStatus', () => {
     it('reads a subscription snapshot published before React subscribes', () => {
         const snapshot: SubscriptionState = {
-            subscription: {status: 'past_due'},
-            paymentAttempts: 3,
-            forceUpgrade: false
+            subscription: {
+                status: 'past_due',
+                paymentAttempts: 3,
+                forceUpgrade: false
+            }
         };
         const stateBridge = createStateBridge(snapshot);
         window.EmberBridge = {state: stateBridge};
@@ -62,16 +64,20 @@ describe('useSubscriptionStatus', () => {
 
         act(() => {
             stateBridge.emitSubscriptionChange({
-                subscription: {status: 'unpaid'},
-                paymentAttempts: 4,
-                forceUpgrade: false
+                subscription: {
+                    status: 'unpaid',
+                    paymentAttempts: 4,
+                    forceUpgrade: false
+                }
             });
         });
 
         expect(result.current).toEqual({
-            subscription: {status: 'unpaid'},
-            paymentAttempts: 4,
-            forceUpgrade: false
+            subscription: {
+                status: 'unpaid',
+                paymentAttempts: 4,
+                forceUpgrade: false
+            }
         });
     });
 });

@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {decideDunningIntervention} from '@tryghost/admin-x-framework/utils/dunning-intervention';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
+import {isDunningSubscriptionStatus} from '@tryghost/admin-x-framework/utils/dunning-intervention';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -169,16 +169,9 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        const dunningIntervention = decideDunningIntervention({
-            subscriptionStatus: data.subscription.status,
-            paymentAttempts: data.user?.payment_attempts,
-            forceUpgrade: this.config.hostSettings?.forceUpgrade === true,
-            audience: this.session.user?.isOwnerOnly ? 'owner' : 'staff',
-            modalDismissed: false
-        });
-
-        // Keep the existing overdue banner independent from the React-owned modal.
-        if (dunningIntervention.bannerVisible) {
+        // The existing banner depends only on subscription state. React owns
+        // the separate reminder modal and its per-session dismissal state.
+        if (isDunningSubscriptionStatus(data.subscription.status)) {
             // This notification needs to be shown to every user regardless their permissions to see billing
             this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {

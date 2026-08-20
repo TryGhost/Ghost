@@ -53,9 +53,9 @@ export interface SubscriptionState {
         isActiveTrial?: boolean;
         trial_end?: string | null;
         status: string;
+        paymentAttempts: number | null;
+        forceUpgrade: boolean;
     } | null;
-    paymentAttempts: number | null;
-    forceUpgrade: boolean;
 }
 
 export interface SidebarVisibilityChangeEvent {
@@ -213,6 +213,11 @@ function subscribeSubscriptionStatus(callback: () => void): () => void {
     return onEmberStateBridgeEvent('subscriptionChange', callback, callback);
 }
 
+/**
+ * Read the cached bridge value rather than relying on the event alone. Ember
+ * can publish Billing's initial subscription state before React mounts, so an
+ * event-only effect can miss the update for the rest of the Admin session.
+ */
 function getSubscriptionStatusSnapshot(): SubscriptionState | null {
     return window.EmberBridge?.state.subscriptionState ?? null;
 }

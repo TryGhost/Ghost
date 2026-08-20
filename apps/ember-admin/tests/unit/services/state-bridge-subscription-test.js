@@ -31,10 +31,10 @@ describe('Unit: Service: state-bridge subscription snapshot', function () {
             subscription: {
                 status: 'past_due',
                 isActiveTrial: false,
-                trial_end: null
-            },
-            paymentAttempts: 3,
-            forceUpgrade: false
+                trial_end: null,
+                paymentAttempts: 3,
+                forceUpgrade: false
+            }
         });
         expect(stateObservedByListener).to.equal(stateBridge.subscriptionState);
     });
@@ -49,9 +49,7 @@ describe('Unit: Service: state-bridge subscription snapshot', function () {
         });
 
         expect(stateBridge.subscriptionState).to.deep.equal({
-            subscription: null,
-            paymentAttempts: null,
-            forceUpgrade: false
+            subscription: null
         });
     });
 });
