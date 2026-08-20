@@ -628,6 +628,26 @@ module.exports = class StripeAPI {
         // is unchanged.
         Object.assign(stripeSessionOptions, stripeCheckoutCollectionOptions(options.checkout));
 
+        // Stripe refuses to collect a tax id for a customer it may not rename:
+        //
+        //   Tax ID collection requires updating business name on the customer. To enable tax
+        //   ID collection for an existing customer, please set `customer_update[name]`.
+        //
+        // Measured against the live API rather than read — `pnpm --filter @tryghost/e2e
+        // stripe:probe` — because the same probe shows shipping and phone collection need no
+        // such thing. Every signed-in checkout carries a customer, so without this a tier
+        // that collects a tax number cannot be bought by an existing member.
+        //
+        // Merged rather than assigned: automatic tax sets this too, and whichever ran first
+        // must not lose its keys. Still never set without a customer, which is the shape
+        // that took the tax beta down.
+        if (stripeSessionOptions.tax_id_collection && customerId) {
+            stripeSessionOptions.customer_update = {
+                ...stripeSessionOptions.customer_update,
+                name: 'auto'
+            };
+        }
+
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
         return session;

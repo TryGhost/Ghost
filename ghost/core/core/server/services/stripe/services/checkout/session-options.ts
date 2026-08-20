@@ -18,10 +18,11 @@ import type {ResolvedCheckout, ResolvedQuestion} from '../../../tier-checkout-co
  * fail a session create years later. Anything that would be refused is dropped and logged
  * instead — a missing question costs one answer, and a rejected session costs the sale.
  *
- * `customer_update` is deliberately never set. It is only valid alongside `customer`, and
- * setting it without one is the exact reproduction of the incident that took the automatic
- * tax beta down. Nothing here needs it: the shipping address is read off the completed
- * session, not off the customer.
+ * `customer_update` is never set *here*, because nothing here knows whether the session has
+ * a customer, and setting it without one is the exact reproduction of the incident that took
+ * the automatic tax beta down. Collecting a tax id does require it for an existing customer
+ * — Stripe will not collect one for a customer it may not rename — so that pairing is made
+ * where the customer is known, alongside the same rule automatic tax already follows.
  */
 
 export interface StripeCheckoutCollectionOptions {

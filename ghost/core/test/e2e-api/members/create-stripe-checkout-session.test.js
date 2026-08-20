@@ -639,7 +639,7 @@ describe('Create Stripe Checkout Session', function () {
                     // A signed-in checkout looks its member's customer up before creating a
                     // session, which is the whole difference between it and an anonymous one.
                     if (match && resource === 'customers') {
-                        return [200, {id, email: 'member1@test.com', subscriptions: {data: []}}];
+                        return [200, {id: id.split('?')[0], email: 'member1@test.com', subscriptions: {data: []}}];
                     }
                     return [500];
                 });
@@ -911,10 +911,77 @@ describe('Create Stripe Checkout Session', function () {
             assert.equal(sessionBody['shipping_address_collection[allowed_countries][0]'], 'GB');
         });
 
+        // Stripe will not collect a tax id for a customer it may not rename, so a signed-in
+        // member could not buy a tier that collects a tax number until Ghost sent the pair.
+        // Every other collection test here checks out anonymously and would miss it.
+        it('lets a member with a customer buy a tier that collects a tax number', async function () {
+            const {body: {members_custom_fields: [vat]}} = await adminAgent
+                .post('/members/custom_fields/')
+                .body({members_custom_fields: [{name: 'VAT number', type: 'short_text'}]});
+
+            await adminAgent
+                .put(`/tiers/${paidTier.id}/checkout_config/`)
+                .body({tiers_checkout_config: [{
+                    tax_number: {collect: true, custom_field_key: vat.key}
+                }]})
+                .expectStatus(200);
+
+            // Automatic tax asks for the same pairing, and is on by default here, so it would
+            // satisfy this whatever collection did. Off, the assertion is about collection.
+            mockManager.mockLabsDisabled('stripeAutomaticTax');
+
+            let sessionBody;
+            mockStripe((body) => {
+                sessionBody = body;
+            });
+
+            const member = await models.Member.findOne({email: 'member1@test.com'});
+            const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({identity, tierId: paidTier.id, cadence: 'month'})
+                .expectStatus(200);
+
+            assert.ok(sessionBody.customer, 'a signed-in checkout carries a customer');
+            assert.equal(sessionBody['tax_id_collection[enabled]'], 'true');
+            assert.equal(sessionBody['customer_update[name]'], 'auto');
+        });
+
+        // Both automatic tax and collection write `customer_update`, so the second one to run
+        // must add to it rather than replace it. Assigning would drop the address automatic
+        // tax needs, and break tax calculation on a site that had it working.
+        it('keeps what automatic tax asks for when a tier also collects a tax number', async function () {
+            const {body: {members_custom_fields: [vat]}} = await adminAgent
+                .post('/members/custom_fields/')
+                .body({members_custom_fields: [{name: 'VAT number', type: 'short_text'}]});
+
+            await adminAgent
+                .put(`/tiers/${paidTier.id}/checkout_config/`)
+                .body({tiers_checkout_config: [{
+                    tax_number: {collect: true, custom_field_key: vat.key}
+                }]})
+                .expectStatus(200);
+
+            let sessionBody;
+            mockStripe((body) => {
+                sessionBody = body;
+            });
+
+            const member = await models.Member.findOne({email: 'member1@test.com'});
+            const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({identity, tierId: paidTier.id, cadence: 'month'})
+                .expectStatus(200);
+
+            assert.equal(sessionBody['customer_update[address]'], 'auto');
+            assert.equal(sessionBody['customer_update[name]'], 'auto');
+        });
+
         // `customer_update` is only valid alongside `customer`, and sending it without one
-        // is the exact shape that took the automatic tax beta down. Nothing here needs it:
-        // the shipping address is read off the completed session, not off the customer.
-        it('never sends customer_update, however much a tier collects', async function () {
+        // is the exact shape that took the automatic tax beta down. Collection asks for it
+        // only for tax, and only once there is a customer to update.
+        it('never sends customer_update for a checkout without a customer', async function () {
             const {body: {members_custom_fields: [address]}} = await adminAgent
                 .post('/members/custom_fields/')
                 .body({members_custom_fields: [{name: 'Delivery address', type: 'address'}]});
@@ -923,7 +990,8 @@ describe('Create Stripe Checkout Session', function () {
                 .put(`/tiers/${paidTier.id}/checkout_config/`)
                 .body({tiers_checkout_config: [{
                     shipping: {collect: true, allowed_countries: ['GB'], address: {custom_field_key: address.key}}
-                }]});
+                }]})
+                .expectStatus(200);
 
             const sessionBody = await startCheckout();
 
