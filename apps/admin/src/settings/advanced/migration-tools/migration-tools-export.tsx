@@ -1,12 +1,11 @@
 import ExportAllModal, {type ExportMode} from './export-all-modal';
 import React from 'react';
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {downloadAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const MigrationToolsExport: React.FC = () => {
     const [isExportingPosts, setIsExportingPosts] = React.useState(false);

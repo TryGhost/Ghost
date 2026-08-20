@@ -3,7 +3,6 @@ import EmailPreview from '@/settings/email-design/email-preview';
 import HeaderImageField from '@/settings/email-design/header-image-field';
 import ShowBadgeField from '@/settings/email-design/show-badge-field';
 import WelcomeEmailPreviewContent from '@/settings/email-design/welcome-email-preview-content';
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import validator from 'validator';
 import {useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
 import {
@@ -30,7 +29,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmailSenders} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useWelcomeEmailSenderDetails} from '@/settings/hooks/use-welcome-email-sender-details';
 

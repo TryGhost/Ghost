@@ -1,11 +1,10 @@
 import React, {useState} from 'react';
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {Button, Dropzone} from '@tryghost/shade/components';
 import {ExternalLink} from 'lucide-react';
 import {Inline} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 import {useImportContentCSV} from '@tryghost/admin-x-framework/api/posts';
 

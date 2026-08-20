@@ -1,12 +1,11 @@
 import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
-import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {data: {roles} = {}} = useBrowseRoles();
-    const {config} = useGlobalData();
-    const editorBeta = config.labs.superEditors;
+    const editorBeta = useFeatureFlag('superEditors');
 
     let optionsArray = [
         {

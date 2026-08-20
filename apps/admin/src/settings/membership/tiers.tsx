@@ -14,7 +14,7 @@ import {currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/cur
 import {formatNumber} from '@tryghost/shade/utils';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useGlobalData} from '@/settings/providers/global-data-context';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 import {withErrorBoundary} from '@/settings/components/with-error-boundary';
@@ -64,7 +64,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const llmsEnabled = llmsEnabledValue !== false;
     const machinePaymentsEnabled = machinePaymentsEnabledValue === true;
-    const hasMachinePaymentsLab = config?.labs?.machinePayments === true;
+    const hasMachinePaymentsLab = useFeatureFlag('machinePayments');
     // Admin and core deploy independently — only render controls once the
     // settings key exists in the browse payload (labs alone is not enough).
     const backendSupportsMachinePayments = settings?.some(s => s.key === 'machine_payments_enabled');

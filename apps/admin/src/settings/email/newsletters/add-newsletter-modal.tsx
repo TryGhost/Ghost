@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
@@ -9,7 +8,7 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
-import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC = () => {
     const {updateRoute} = useSettingsNavigation();
