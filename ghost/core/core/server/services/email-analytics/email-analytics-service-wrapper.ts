@@ -9,6 +9,8 @@ import type {BatchEventProcessor} from './batch-event-processor';
 import type {Queries} from './lib/queries';
 import {fetchMailgunEvents} from './fetch-mailgun-events';
 
+const jobLogging = require('../jobs/job-logging');
+
 export class EmailAnalyticsServiceWrapper {
     #logName: string;
     #config?: Pick<ConfigInstance, 'get'>;
@@ -209,13 +211,13 @@ export class EmailAnalyticsServiceWrapper {
             try {
                 await this.service.restoreScheduled();
             } catch (e) {
-                logging.error(e, `[Background Job] ${this.#backgroundJobName} failed while restoring scheduled events after ${Date.now() - startedAt}ms`);
+                jobLogging.error(e, `[Background Job] ${this.#backgroundJobName} failed while restoring scheduled events after ${Date.now() - startedAt}ms`);
                 throw e;
             }
         }
 
         if (this.#fetching) {
-            logging.info(`[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`);
+            jobLogging.info(`[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`);
             return;
         }
         this.#fetching = true;
@@ -248,16 +250,14 @@ export class EmailAnalyticsServiceWrapper {
                 return;
             }
 
-            // Log one terminal outcome for the whole fetch
+            // Log a summary when no event-specific completion logs were emitted
             if (c1 + c2 + c3 + c4 === 0) {
-                logging.info(`[Background Job] ${this.#backgroundJobName} completed with no events | ${this.#logPrefix}`);
-            } else {
-                logging.info(`[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms | ${this.#logPrefix}`);
+                jobLogging.info(`[Background Job] ${this.#backgroundJobName} completed with no events | ${this.#logPrefix}`);
             }
 
             this.#fetching = false;
         } catch (e) {
-            logging.error(e, `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`);
+            jobLogging.error(e, `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`);
 
             // Log again only the error, otherwise we lose the stack trace
             logging.error(e);
@@ -267,7 +267,7 @@ export class EmailAnalyticsServiceWrapper {
 
     _restartFetch(reason: string): void {
         this.#fetching = false;
-        logging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
+        jobLogging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
         this.startFetch();
     }
 }

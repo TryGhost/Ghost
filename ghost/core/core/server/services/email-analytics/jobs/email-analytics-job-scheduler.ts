@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import moment from 'moment';
-import logging from '@tryghost/logging';
+
+const jobLogging = require('../../jobs/job-logging');
 
 type CountableQuery = {
     where(column: string, operator: string, value: unknown): CountableQuery;
@@ -84,7 +85,7 @@ export class EmailAnalyticsJobScheduler {
 
         if (emailCount > 0 && !this.#hasScheduledNewslettersJob) {
             const at = randomFiveMinuteCron();
-            logging.info(`[Background Job] email-analytics-fetch-latest scheduled at ${at}`);
+            jobLogging.info(`[Background Job] email-analytics-fetch-latest scheduled at ${at}`);
             this.#jobManager.addJob({
                 at,
                 job: path.resolve(__dirname, 'fetch-latest/index.js'),
@@ -119,7 +120,7 @@ export class EmailAnalyticsJobScheduler {
         }
 
         const at = randomFiveMinuteCron();
-        logging.info(`[Background Job] email-analytics-automation-fetch-latest scheduled at ${at}`);
+        jobLogging.info(`[Background Job] email-analytics-automation-fetch-latest scheduled at ${at}`);
         this.#jobManager.addJob({
             at,
             job: path.resolve(__dirname, 'automation-fetch-latest/index.js'),

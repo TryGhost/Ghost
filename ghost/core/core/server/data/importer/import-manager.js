@@ -9,6 +9,7 @@ const {extract} = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
+const jobLogging = require('../../services/jobs/job-logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
 const ImporterContentFileHandler = require('./handlers/importer-content-file-handler');
@@ -507,21 +508,21 @@ class ImportManager {
 
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-            logging.info('[Background Job] content-import queued');
+            jobLogging.info('[Background Job] content-import queued');
             return jobManager.addJob({
                 job: async () => {
                     const startedAt = Date.now();
-                    logging.info('[Background Job] content-import started');
+                    jobLogging.info('[Background Job] content-import started');
                     try {
                         const result = await this.importFromFile(file, Object.assign({}, importOptions, {
                             runningInJob: true,
                             data: importData
                         }));
                         const state = result === undefined ? 'finished after failure' : 'completed';
-                        logging.info(`[Background Job] content-import ${state} in ${Date.now() - startedAt}ms`);
+                        jobLogging.info(`[Background Job] content-import ${state} in ${Date.now() - startedAt}ms`);
                         return result;
                     } catch (err) {
-                        logging.error(err, `[Background Job] content-import failed after ${Date.now() - startedAt}ms`);
+                        jobLogging.error(err, `[Background Job] content-import failed after ${Date.now() - startedAt}ms`);
                         throw err;
                     }
                 },

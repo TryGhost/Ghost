@@ -8,7 +8,7 @@ import type {RowSpool, SpooledRows} from './spool';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
+const jobLogging = require('../../../jobs/job-logging');
 const tpl = require('@tryghost/tpl');
 
 // The members CSV importer, sliced into one concern per method. Two entry points by
@@ -265,7 +265,7 @@ class MembersCSVImporter {
         const emailRecipient: string = requestUserEmail ?? await this._email.getDefaultRecipient();
         const spooled = await this._spool.write(rows);
 
-        logging.info('[Background Job] members-import queued');
+        jobLogging.info('[Background Job] members-import queued');
         this._addJob({
             job: () => this.runImportJob(spooled, {labelName, extraLabels, emailRecipient}, verificationTrigger),
             offloaded: false,
@@ -281,7 +281,7 @@ class MembersCSVImporter {
         verificationTrigger: VerificationTrigger
     ): Promise<void> {
         const startedAt = Date.now();
-        logging.info('[Background Job] members-import started');
+        jobLogging.info('[Background Job] members-import started');
         // Null until the import produces one: parsing and mapping already happened inside
         // the request, so anything failing from here is ours rather than the file's.
         let result: ImportResult | null = null;
@@ -305,9 +305,9 @@ class MembersCSVImporter {
         })));
 
         if (result) {
-            logging.info(`[Background Job] members-import finished: imported ${result.imported}, failed ${result.errors.length} in ${Date.now() - startedAt}ms`);
+            jobLogging.info(`[Background Job] members-import finished: imported ${result.imported}, failed ${result.errors.length} in ${Date.now() - startedAt}ms`);
         } else {
-            logging.info(`[Background Job] members-import finished after failure in ${Date.now() - startedAt}ms`);
+            jobLogging.info(`[Background Job] members-import finished after failure in ${Date.now() - startedAt}ms`);
         }
     }
 

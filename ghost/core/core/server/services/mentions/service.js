@@ -14,7 +14,7 @@ const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/ser
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
-const logging = require('@tryghost/logging');
+const jobLogging = require('../jobs/job-logging');
 const jobsService = require('../mentions-jobs');
 
 // Serializes a post model to the data the URL service needs, loading the
@@ -85,21 +85,9 @@ module.exports = {
             api,
             jobService: {
                 async addJob(name, fn) {
-                    logging.info(`[Background Job] ${name} queued`);
                     jobsService.addJob({
                         name,
-                        job: async () => {
-                            const startedAt = Date.now();
-                            logging.info(`[Background Job] ${name} started`);
-                            try {
-                                const result = await fn();
-                                logging.info(`[Background Job] ${name} finished in ${Date.now() - startedAt}ms`);
-                                return result;
-                            } catch (err) {
-                                logging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
-                                throw err;
-                            }
-                        },
+                        job: fn,
                         offloaded: false
                     });
                 }
@@ -132,18 +120,18 @@ module.exports = {
             isEnabled: () => !settingsCache.get('is_private'),
             jobService: {
                 async addJob(name, fn) {
-                    logging.info(`[Background Job] ${name} queued`);
+                    jobLogging.info(`[Background Job] ${name} queued`);
                     jobsService.addJob({
                         name,
                         job: async () => {
                             const startedAt = Date.now();
-                            logging.info(`[Background Job] ${name} started`);
+                            jobLogging.info(`[Background Job] ${name} started`);
                             try {
                                 const result = await fn();
-                                logging.info(`[Background Job] ${name} finished in ${Date.now() - startedAt}ms`);
+                                jobLogging.info(`[Background Job] ${name} finished in ${Date.now() - startedAt}ms`);
                                 return result;
                             } catch (err) {
-                                logging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
+                                jobLogging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
                                 throw err;
                             }
                         },

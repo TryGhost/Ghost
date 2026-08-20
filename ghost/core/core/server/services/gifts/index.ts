@@ -36,6 +36,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const staffService = require('../staff');
     const DomainEvents = require('@tryghost/domain-events');
     const logging = require('@tryghost/logging');
+    const jobLogging = require('../jobs/job-logging');
     const {SubscriptionActivatedEvent} = require('../../../shared/events');
     const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
     const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
@@ -118,13 +119,13 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
     DomainEvents.subscribe(StartGiftReminderFlushEvent, async () => {
         const start = Date.now();
-        logging.info('[Background Job] send-gift-reminders started in main process');
+        jobLogging.info('[Background Job] send-gift-reminders started in main process');
         try {
             const {remindedCount, skippedCount, failedCount} = await giftService.processReminders();
 
-            logging.info(`[Background Job] send-gift-reminders completed: sent ${remindedCount}, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
+            jobLogging.info(`[Background Job] send-gift-reminders completed: sent ${remindedCount}, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
         } catch (err) {
-            logging.error(err, '[Background Job] send-gift-reminders failed');
+            jobLogging.error(err, '[Background Job] send-gift-reminders failed');
         }
     });
 
@@ -139,45 +140,45 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
-        logging.info('[Background Job] clean-gifts started in main process');
+        jobLogging.info('[Background Job] clean-gifts started in main process');
 
         const checkoutStart = Date.now();
         try {
             const {deletedCount} = await giftService.processAbandonedCheckouts();
 
-            logging.info(`[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`);
+            jobLogging.info(`[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`);
         } catch (err) {
-            logging.error(err, '[Background Job] clean-gifts failed to process abandoned checkouts');
+            jobLogging.error(err, '[Background Job] clean-gifts failed to process abandoned checkouts');
         }
 
         const consumedStart = Date.now();
         try {
             const {consumedCount, updatedMemberCount} = await giftService.processConsumed();
 
-            logging.info(`[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`);
+            jobLogging.info(`[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`);
         } catch (err) {
-            logging.error(err, '[Background Job] clean-gifts failed to process consumed gifts');
+            jobLogging.error(err, '[Background Job] clean-gifts failed to process consumed gifts');
         }
 
         const expiredStart = Date.now();
         try {
             const {expiredCount} = await giftService.processExpired();
 
-            logging.info(`[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`);
+            jobLogging.info(`[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`);
         } catch (err) {
-            logging.error(err, '[Background Job] clean-gifts failed to process expired gifts');
+            jobLogging.error(err, '[Background Job] clean-gifts failed to process expired gifts');
         }
 
         try {
             const {sentCount, skippedCount, failedCount} = await giftDeliveryService.recoverPending();
             if (sentCount + skippedCount + failedCount > 0) {
-                logging.info(`[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
+                jobLogging.info(`[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
             }
         } catch (err) {
-            logging.error(err, '[Background Job] clean-gifts failed to process pending gift deliveries');
+            jobLogging.error(err, '[Background Job] clean-gifts failed to process pending gift deliveries');
         }
 
-        logging.info('[Background Job] clean-gifts finished in main process');
+        jobLogging.info('[Background Job] clean-gifts finished in main process');
     });
 
     jobs.scheduleGiftCleanupJob();

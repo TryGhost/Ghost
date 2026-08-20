@@ -42,7 +42,6 @@ exports.run = ({
             }
         });
 
-        parentPort.postMessage('dispatched to main process');
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit

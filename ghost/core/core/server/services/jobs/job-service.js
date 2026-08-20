@@ -5,6 +5,7 @@
 
 const JobManager = require('@tryghost/job-manager');
 const logging = require('@tryghost/logging');
+const jobLogging = require('./job-logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
@@ -26,7 +27,7 @@ const workerMessageHandler = ({name, message}) => {
     }
 
     if (typeof message === 'string' && !['done', 'cancelled'].includes(message)) {
-        logging.info(`[Background Job] ${name}: ${message}`);
+        jobLogging.info(`[Background Job] ${name}: ${message}`);
     }
 };
 

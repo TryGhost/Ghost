@@ -9,6 +9,7 @@ const {resolveInlineThreshold} = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
+const jobLogging = require('../jobs/job-logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
@@ -175,19 +176,19 @@ module.exports = {
         if (!env?.startsWith('testing')) {
             const membersMigrationJobName = 'members-migrations';
             if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
-                logging.info(`[Background Job] ${membersMigrationJobName} queued`);
+                jobLogging.info(`[Background Job] ${membersMigrationJobName} queued`);
                 jobsService.addOneOffJob({
                     name: membersMigrationJobName,
                     offloaded: false,
                     job: async () => {
                         const startedAt = Date.now();
-                        logging.info(`[Background Job] ${membersMigrationJobName} started`);
+                        jobLogging.info(`[Background Job] ${membersMigrationJobName} started`);
                         try {
                             const result = await stripeService.migrations.execute();
-                            logging.info(`[Background Job] ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`);
+                            jobLogging.info(`[Background Job] ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`);
                             return result;
                         } catch (err) {
-                            logging.error(err, `[Background Job] ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`);
+                            jobLogging.error(err, `[Background Job] ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`);
                             throw err;
                         }
                     }
@@ -195,7 +196,7 @@ module.exports = {
 
                 await jobsService.awaitOneOffCompletion(membersMigrationJobName);
             } else {
-                logging.info(`[Background Job] ${membersMigrationJobName} skipped because it has already run`);
+                jobLogging.info(`[Background Job] ${membersMigrationJobName} skipped because it has already run`);
             }
         }
 

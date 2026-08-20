@@ -14,10 +14,11 @@ const simulateSleep = async (ms, clock) => {
 
 describe('Batch Sending Service', function () {
     let errorLog;
+    let infoLog;
 
     beforeEach(function () {
         errorLog = sinon.stub(logging, 'error');
-        sinon.stub(logging, 'info');
+        infoLog = sinon.stub(logging, 'info');
     });
 
     afterEach(function () {
@@ -123,6 +124,33 @@ describe('Batch Sending Service', function () {
             assert.equal(afterEmailModel.get('status'), 'submitted', 'The email status is submitted after sending');
             assert.ok(afterEmailModel.get('submitted_at'));
             assert.equal(afterEmailModel.get('error'), null);
+        });
+
+        it('keeps the email submitted when completion logging fails', async function () {
+            const Email = createModelClass({
+                findOne: {
+                    status: 'pending'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {Email}
+            });
+            let emailModel;
+            sinon.stub(service, 'sendEmail').callsFake((email) => {
+                emailModel = email;
+                return Promise.resolve();
+            });
+            infoLog.callsFake((message) => {
+                if (message.startsWith('[Background Job] batch-sending-service-job completed')) {
+                    throw new Error('Logger unavailable');
+                }
+            });
+
+            await service.emailJob({emailId: '123'});
+
+            assert.equal(emailModel.get('status'), 'submitted');
+            assert.equal(emailModel.get('error'), null);
+            sinon.assert.notCalled(errorLog);
         });
 
         it('saves error state if sending fails', async function () {
