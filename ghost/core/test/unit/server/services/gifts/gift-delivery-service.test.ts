@@ -285,6 +285,17 @@ describe('GiftDeliveryService', function () {
         sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
     });
 
+    it('cancels a started delivery when the gift claim deadline has passed', async function () {
+        giftRepository.getById.resolves(buildGift({expiresAt: new Date(Date.now() - 1000)}));
+        const service = createService();
+
+        const result = await service.send('delivery_1');
+
+        assert.equal(result, 'skipped');
+        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markCancelled, 'delivery_1');
+        sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+    });
+
     it('fails a delivery when the mail transport does not accept it', async function () {
         sinon.stub(logging, 'error');
         giftEmailService.sendGiftDelivery.rejects(new Error('421 Try again later'));

@@ -169,7 +169,8 @@ describe('GiftEmailService', function () {
         const expectedDate = new Intl.DateTimeFormat('fr', {
             day: 'numeric',
             month: 'short',
-            year: 'numeric'
+            year: 'numeric',
+            timeZone: 'Etc/UTC'
         }).format(defaultData.expiresAt);
 
         sinon.assert.match(msg.html, sinon.match(expectedDate));
@@ -265,6 +266,78 @@ describe('GiftEmailService', function () {
             sinon.assert.match(message.html, sinon.match('Redeem your gift:'));
             sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
             sinon.assert.match(message.html, sinon.match('on behalf of Buyer (<a href="mailto:buyer@example.com"'));
+        });
+
+        it('formats the claim deadline in the publication locale and timezone', async function () {
+            const siteSettingsCache = {
+                get: (key) => {
+                    if (key === 'title') {
+                        return 'Test Site';
+                    }
+                    if (key === 'accent_color') {
+                        return '#ff5500';
+                    }
+                    if (key === 'locale') {
+                        return 'en-GB';
+                    }
+                    if (key === 'timezone') {
+                        return 'America/Los_Angeles';
+                    }
+                    return '';
+                }
+            };
+            const siteDateService = new GiftEmailService({transactionalMailer, bulkMailer, settingsCache: siteSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+
+            await siteDateService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerEmail: 'buyer@example.com',
+                buyerName: 'Buyer',
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07T01:00:00.000Z')
+            });
+
+            const message = bulkMailer.send.firstCall.firstArg;
+            sinon.assert.match(message.html, sinon.match('6 Apr 2027'));
+            sinon.assert.match(message.plaintext, sinon.match('6 Apr 2027'));
+        });
+
+        it('keeps the publication timezone when its locale is not a valid tag', async function () {
+            const invalidLocaleSettingsCache = {
+                get: (key) => {
+                    if (key === 'locale') {
+                        return 'en_US';
+                    }
+                    if (key === 'timezone') {
+                        return 'America/Los_Angeles';
+                    }
+                    return settingsCache.get(key);
+                }
+            };
+            const invalidLocaleService = new GiftEmailService({transactionalMailer, bulkMailer, settingsCache: invalidLocaleSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+
+            await invalidLocaleService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerEmail: 'buyer@example.com',
+                buyerName: 'Buyer',
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07T01:00:00.000Z')
+            });
+
+            const message = bulkMailer.send.firstCall.firstArg;
+            sinon.assert.match(message.html, sinon.match('6 Apr 2027'));
+            sinon.assert.match(message.plaintext, sinon.match('6 Apr 2027'));
         });
 
         it('falls back to transactional email when bulk Mailgun is not configured', async function () {
@@ -452,7 +525,8 @@ describe('GiftEmailService', function () {
             const expectedDate = new Intl.DateTimeFormat('en-gb', {
                 day: 'numeric',
                 month: 'short',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'Etc/UTC'
             }).format(reminderData.consumesAt);
 
             for (const field of ['html', 'text']) {
@@ -522,7 +596,8 @@ describe('GiftEmailService', function () {
             const expectedDate = new Intl.DateTimeFormat('fr', {
                 day: 'numeric',
                 month: 'short',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'Etc/UTC'
             }).format(reminderData.consumesAt);
 
             for (const field of ['html', 'text']) {

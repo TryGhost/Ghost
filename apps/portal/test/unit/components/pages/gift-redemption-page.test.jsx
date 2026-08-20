@@ -132,6 +132,12 @@ describe('BetaGiftRedemptionPage', () => {
             expires_at: '2030-01-01T00:00:00.000Z'
         };
         const {container, getByLabelText, getByTestId, getByText} = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+            site: {
+                ...testSite,
+                url: 'https://example.com/',
+                locale: 'en-GB',
+                timezone: 'America/Los_Angeles'
+            },
             pageData: {
                 token: 'gift-token-123',
                 gift: personalizedGift
@@ -144,5 +150,25 @@ describe('BetaGiftRedemptionPage', () => {
         expect(getByTestId('gift-message')).toHaveTextContent('Enjoy this!');
         expect(getByTestId('gift-message')).toHaveTextContent('Jamie');
         expect(getByText(/This gift can only be redeemed once and expires on/i)).toBeInTheDocument();
+    });
+
+    test('presents the claim deadline in the publication locale and timezone', () => {
+        const personalizedGift = {
+            ...gift,
+            expires_at: '2030-01-01T01:00:00.000Z'
+        };
+        const {getByText} = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+            site: {
+                ...testSite,
+                locale: 'en-GB',
+                timezone: 'America/Los_Angeles'
+            },
+            pageData: {
+                token: 'gift-token-123',
+                gift: personalizedGift
+            }
+        });
+
+        expect(getByText(/expires on 31 Dec 2029\./i)).toBeInTheDocument();
     });
 });
