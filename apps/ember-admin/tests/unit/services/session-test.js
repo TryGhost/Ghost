@@ -151,4 +151,18 @@ describe('Unit: Service: session', function () {
             expect(transition.retry.called, 'retry').to.be.false;
         });
     });
+
+    describe('#handleInvalidation', function () {
+        it('notifies React that the Admin session ended', function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const authChange = sinon.spy();
+            stateBridge.on('emberAuthChange', authChange);
+            sinon.stub(service, 'triggerAuthorizationFailed');
+            sinon.stub(service, 'isAuthenticated').get(() => false);
+
+            service.handleInvalidation();
+
+            expect(authChange.calledOnceWith({isAuthenticated: false})).to.be.true;
+        });
+    });
 });

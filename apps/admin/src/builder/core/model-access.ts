@@ -1,10 +1,28 @@
 import type {BuilderToolDefinition, BuilderToolResult} from './tool-types';
+import type {BuilderSelectionContext} from './workspace';
+
+export type BuilderConversationToolCall = {
+    id: string;
+    name: string;
+    input: Record<string, unknown>;
+    status: 'running' | 'complete' | 'interrupted';
+    result?: BuilderToolResult<unknown>;
+};
 
 export type BuilderConversationMessage = {
     id: string;
     role: 'user' | 'assistant';
     text: string;
     status: 'pending' | 'complete' | 'interrupted';
+    toolCalls?: readonly BuilderConversationToolCall[];
+};
+
+export type BuilderModelWorkspaceContext = {
+    id: string;
+    kind: string;
+    title: string;
+    revision: string;
+    selection: BuilderSelectionContext | null;
 };
 
 export type BuilderStreamEvent =
@@ -18,6 +36,7 @@ export type BuilderStreamEvent =
 export type BuilderModelTurnRequest = {
     messages: readonly BuilderConversationMessage[];
     tools: readonly BuilderToolDefinition[];
+    workspace: BuilderModelWorkspaceContext;
     signal: AbortSignal;
     onEvent: (event: BuilderStreamEvent) => void;
 };

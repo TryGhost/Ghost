@@ -44,6 +44,9 @@ const emptyWorkspaceState: BuilderWorkspaceState = {
     validation: null
 };
 
+const userOnlyToolNames = new Set(['apply', 'commit', 'preview', 'publish']);
+const maxUserMessageCharacters = 32_000;
+
 function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
@@ -116,6 +119,9 @@ export class BuilderSession {
         if (!text) {
             throw new Error('A Builder message cannot be empty.');
         }
+        if (text.length > maxUserMessageCharacters) {
+            throw new Error('A Builder message must be 32,000 characters or fewer.');
+        }
 
         const turnId = this.nextId('turn');
         const userMessageId = this.nextId('message');
@@ -146,12 +152,21 @@ export class BuilderSession {
         try {
             await this.modelAccess.runTurn({
                 messages: messages.slice(0, -1),
-                tools: this.workspace.getTools(),
+                tools: this.workspace.getTools().filter(tool => !userOnlyToolNames.has(tool.name.toLowerCase())),
+                workspace: {
+                    id: this.workspace.id,
+                    kind: this.workspace.kind,
+                    title: this.workspace.title,
+                    revision: this.currentState.workspace.revision,
+                    selection: this.workspace.getSelectionContext()
+                },
                 signal: controller.signal,
                 onEvent: event => this.handleEvent(activeTurn, event)
             });
         } catch (error) {
-            if (!activeTurn.stopRequested && !isAbortError(error)) {
+            if (isAbortError(error)) {
+                activeTurn.streamAborted = true;
+            } else if (!activeTurn.stopRequested) {
                 activeTurn.streamError = errorMessage(error);
             }
         }
@@ -161,7 +176,9 @@ export class BuilderSession {
             try {
                 await this.workspace.promoteCandidate(controller.signal);
             } catch (error) {
-                if (!activeTurn.stopRequested && !isAbortError(error)) {
+                if (isAbortError(error)) {
+                    activeTurn.streamAborted = true;
+                } else if (!activeTurn.stopRequested) {
                     activeTurn.streamError ??= errorMessage(error);
                 }
             }
@@ -170,7 +187,11 @@ export class BuilderSession {
         const interrupted = activeTurn.stopRequested || activeTurn.streamAborted || Boolean(activeTurn.streamError);
         const finalMessages = this.currentState.messages.map(message => message.id === assistantMessageId ? {
             ...message,
-            status: interrupted ? 'interrupted' as const : 'complete' as const
+            status: interrupted ? 'interrupted' as const : 'complete' as const,
+            toolCalls: message.toolCalls?.map(toolCall => interrupted && toolCall.status === 'running' ? {
+                ...toolCall,
+                status: 'interrupted' as const
+            } : toolCall)
         } : message);
         this.activeTurn = null;
         this.setState({
@@ -254,6 +275,26 @@ export class BuilderSession {
         }
         if (event.type === 'assistant-text-delta') {
             this.updateMessage(turn.assistantMessageId, message => ({...message, text: `${message.text}${event.text}`}));
+        } else if (event.type === 'tool-start') {
+            this.updateMessage(turn.assistantMessageId, message => ({
+                ...message,
+                toolCalls: [...(message.toolCalls ?? []), {
+                    id: event.callId,
+                    name: event.name,
+                    input: event.input,
+                    status: 'running'
+                }]
+            }));
+        } else if (event.type === 'tool-end') {
+            this.updateMessage(turn.assistantMessageId, message => ({
+                ...message,
+                toolCalls: (message.toolCalls ?? []).map(toolCall => toolCall.id === event.callId ? {
+                    ...toolCall,
+                    name: event.name,
+                    status: turn.stopRequested || turn.controller.signal.aborted || turn.streamAborted ? 'interrupted' : 'complete',
+                    result: event.result
+                } : toolCall)
+            }));
         } else if (event.type === 'run-error') {
             turn.streamError = event.message;
         } else if (event.type === 'run-aborted') {

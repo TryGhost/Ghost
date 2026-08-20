@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState, useSyncExternalStore } fr
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { EmberContext } from './ember-context';
+import {clearBuilderSessionCredentials} from '@/builder/models/session-credential-store';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -224,6 +225,8 @@ export function useEmberAuthSync() {
     const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
       if (event.isAuthenticated) {
         void queryClient.invalidateQueries();
+            } else {
+                clearBuilderSessionCredentials();
       }
     };
 

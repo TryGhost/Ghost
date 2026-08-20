@@ -410,6 +410,28 @@ describe('useEmberAuthSync', () => {
 
     unmount();
   });
+
+    queryTest('clears Builder credentials but preserves unrelated session state on sign out', async ({wrapper}) => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = {state: mock.stateBridge};
+        window.sessionStorage.setItem('ghost-builder.credential.openai', 'openai-secret');
+        window.sessionStorage.setItem('ghost-builder.credential.anthropic', 'anthropic-secret');
+        window.sessionStorage.setItem('unrelated', 'keep-me');
+
+        const {unmount} = renderHook(() => useEmberAuthSync(), {wrapper});
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberAuthChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberAuthChange', {isAuthenticated: false});
+        });
+
+        expect(window.sessionStorage.getItem('ghost-builder.credential.openai')).toBeNull();
+        expect(window.sessionStorage.getItem('ghost-builder.credential.anthropic')).toBeNull();
+        expect(window.sessionStorage.getItem('unrelated')).toBe('keep-me');
+        unmount();
+    });
 });
 
 describe('useSidebarVisibility', () => {

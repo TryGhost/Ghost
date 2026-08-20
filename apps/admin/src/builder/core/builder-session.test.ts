@@ -17,9 +17,11 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
     loadCalls = 0;
     publishCalls = 0;
     promoteCalls = 0;
+    promoteError: Error | null = null;
     loadError: Error | null = null;
     restoreGate: Promise<void> | null = null;
     invalidCandidate: ArtifactPayload | null = null;
+    selection: {id: string; label: string; data?: unknown} | null = null;
     private payload: ArtifactPayload = {value: 'initial'};
     private draftRevision = 'revision-0';
     private lastValidCandidate: WorkspaceSnapshot | null = null;
@@ -77,6 +79,9 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
             throw new DOMException('Aborted', 'AbortError');
         }
         this.promoteCalls += 1;
+        if (this.promoteError) {
+            return Promise.reject(this.promoteError);
+        }
         if (this.lastValidCandidate) {
             this.payload = structuredClone(this.lastValidCandidate.payload as ArtifactPayload);
             this.draftRevision = this.lastValidCandidate.revision;
@@ -131,8 +136,8 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
         return this.preview;
     }
 
-    getSelectionContext(): null {
-        return null;
+    getSelectionContext(): {id: string; label: string; data?: unknown} | null {
+        return this.selection;
     }
 
     publish(signal: AbortSignal): Promise<PublishResult> {
@@ -228,6 +233,45 @@ describe('BuilderSession', () => {
         expect(session.state.messages).toEqual([]);
     });
 
+    it('passes transport-neutral workspace context and records canonical tool lifecycle on the assistant message', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        workspace.selection = {id: 'marker-42', label: 'Revenue heading', data: {source: 'index.hbs:12:3'}};
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue((request) => {
+            request.onEvent({type: 'tool-start', callId: 'call-1', name: 'set_value', input: {value: 'revised'}});
+            request.onEvent({
+                type: 'tool-end',
+                callId: 'call-1',
+                name: 'set_value',
+                result: {ok: true, revision: 'revision-1', data: {value: 'revised'}}
+            });
+            request.onEvent({type: 'run-end'});
+            return Promise.resolve();
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        await session.startTurn('Update this heading');
+
+        expect(modelAccess.requests[0]?.workspace).toEqual({
+            id: 'artifact-1',
+            kind: 'artifact',
+            title: 'Revenue chart',
+            revision: 'revision-0',
+            selection: workspace.selection
+        });
+        expect(session.state.messages.at(-1)).toMatchObject({
+            role: 'assistant',
+            toolCalls: [{
+                id: 'call-1',
+                name: 'set_value',
+                input: {value: 'revised'},
+                status: 'complete',
+                result: {ok: true, revision: 'revision-1', data: {value: 'revised'}}
+            }]
+        });
+    });
+
     it('retains the last valid candidate when a later mutation is invalid', async () => {
         const workspace = new FakeArtifactWorkspace();
         const modelAccess = new ScriptedModelAccess();
@@ -275,6 +319,42 @@ describe('BuilderSession', () => {
         expect(await session.publish()).toEqual({ok: true, revision: 'revision-0'});
     });
 
+    it('marks an in-flight tool card interrupted when the user stops the turn', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        let toolStarted: (() => void) | undefined;
+        const started = new Promise<void>((resolve) => {
+            toolStarted = resolve;
+        });
+        modelAccess.enqueue(async (request) => {
+            request.onEvent({type: 'tool-start', callId: 'call-1', name: 'set_value', input: {value: 'pending'}});
+            toolStarted?.();
+            await new Promise<void>((_resolve, reject) => {
+                request.signal.addEventListener('abort', () => {
+                    request.onEvent({
+                        type: 'tool-end',
+                        callId: 'call-1',
+                        name: 'set_value',
+                        result: {ok: false, revision: 'revision-0', error: {code: 'aborted', message: 'Stopped', retryable: true}}
+                    });
+                    reject(new DOMException('Aborted', 'AbortError'));
+                }, {once: true});
+            });
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const turn = session.startTurn('Start and stop');
+        await started;
+        session.stop();
+        await turn;
+
+        expect(session.state.messages.at(-1)).toMatchObject({
+            status: 'interrupted',
+            toolCalls: [{id: 'call-1', status: 'interrupted'}]
+        });
+    });
+
     it('marks provider failures interrupted without losing a valid candidate', async () => {
         const workspace = new FakeArtifactWorkspace();
         const modelAccess = new ScriptedModelAccess();
@@ -290,6 +370,34 @@ describe('BuilderSession', () => {
         expect(session.state).toMatchObject({status: 'interrupted', error: 'Provider unavailable'});
         expect(workspace.snapshot()).toEqual({revision: 'revision-0', payload: {value: 'initial'}});
         expect(workspace.candidateSnapshot).toEqual({revision: 'revision-1', payload: {value: 'before-error'}});
+    });
+
+    it('treats an uncoupled provider AbortError as interrupted and does not promote', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(() => Promise.reject(new DOMException('Aborted', 'AbortError')));
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const result = await session.startTurn('Start a request');
+
+        expect(result.status).toBe('interrupted');
+        expect(session.state.status).toBe('interrupted');
+        expect(workspace.promoteCalls).toBe(0);
+    });
+
+    it('treats an aborted candidate promotion as interrupted', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        workspace.promoteError = new DOMException('Aborted', 'AbortError');
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(completeWith('Done'));
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        const result = await session.startTurn('Finish the candidate');
+
+        expect(result.status).toBe('interrupted');
+        expect(session.state.status).toBe('interrupted');
     });
 
     it('rewinds conversation and discards the later branch before continuing', async () => {
@@ -331,6 +439,31 @@ describe('BuilderSession', () => {
         expect(workspace.publishCalls).toBe(1);
     });
 
+    it('does not expose publish-like workspace tools to the model', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const safeTools = workspace.getTools();
+        workspace.getTools = () => [...safeTools, {
+            name: 'publish',
+            description: 'Publish without confirmation',
+            inputSchema: {type: 'object'},
+            execute: async () => {
+                await workspace.publish(new AbortController().signal);
+                return {ok: true, revision: workspace.state.revision, data: {}};
+            }
+        }];
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(() => {
+            return Promise.resolve();
+        });
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+
+        await session.startTurn('Finish the work');
+
+        expect(modelAccess.requests[0]?.tools.map(item => item.name)).toEqual(['set_value']);
+        expect(workspace.publishCalls).toBe(0);
+    });
+
     it('notifies subscribers for deterministic state transitions', async () => {
         const workspace = new FakeArtifactWorkspace();
         const modelAccess = new ScriptedModelAccess();
@@ -361,6 +494,15 @@ describe('BuilderSession', () => {
         await expect(session.startTurn('Second')).rejects.toThrow('A Builder turn is already running.');
         release?.();
         await running;
+    });
+
+    it('rejects a user prompt that exceeds the bounded turn input', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const session = new BuilderSession({workspace, modelAccess: new ScriptedModelAccess()});
+        await session.load();
+
+        await expect(session.startTurn('x'.repeat(32_001))).rejects.toThrow('32,000 characters or fewer');
+        expect(session.state.messages).toEqual([]);
     });
 
     it('keeps a failed load unusable and allows an explicit retry', async () => {

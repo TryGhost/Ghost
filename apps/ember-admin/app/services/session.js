@@ -157,6 +157,7 @@ export default class SessionService extends ESASessionService {
     }
 
     handleInvalidation() {
+        this.stateBridge.triggerEmberAuthChange();
         let transition = this.appLoadTransition;
 
         if (transition) {

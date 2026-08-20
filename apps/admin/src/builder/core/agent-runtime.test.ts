@@ -107,6 +107,79 @@ describe('agent runtime', () => {
         expect(events.at(-1)).toBe('run-end');
     });
 
+    it('marks a canonical failed tool envelope as an error while preserving its structured details', async () => {
+        const providerCalls: Context[] = [];
+        const responses = [
+            message([{type: 'toolCall', id: 'invalid-call', name: 'change', arguments: {}}], 'toolUse'),
+            message([{type: 'text', text: 'repaired'}], 'stop')
+        ];
+        const runtime = createAgentRuntime({
+            model,
+            getApiKey: () => 'session-key',
+            streamFn: (_model, context) => {
+                providerCalls.push(context);
+                const response = responses.shift();
+                if (!response) {
+                    throw new Error('Unexpected provider call');
+                }
+                return completedStream(response);
+            },
+            tools: [{
+                name: 'change',
+                description: 'Change the candidate',
+                inputSchema: {type: 'object', properties: {}, additionalProperties: false},
+                execute: () => Promise.resolve({
+                    text: '{"ok":false,"revision":"revision-0","error":{"code":"render_failed"}}',
+                    details: {ok: false, revision: 'revision-0', error: {code: 'render_failed', message: 'Invalid template', retryable: true}}
+                })
+            }]
+        });
+
+        await runtime.prompt('Make a change');
+
+        expect(providerCalls[1]?.messages.at(-1)).toMatchObject({
+            role: 'toolResult',
+            isError: true,
+            details: {ok: false, revision: 'revision-0', error: {code: 'render_failed'}}
+        });
+    });
+
+    it('compacts an active tool cycle when image payloads exceed the request budget', async () => {
+        const providerCalls: Context[] = [];
+        const responses = [
+            message([{type: 'toolCall', id: 'screenshot-call', name: 'screenshot', arguments: {}}], 'toolUse'),
+            message([{type: 'text', text: 'continued'}], 'stop')
+        ];
+        const runtime = createAgentRuntime({
+            model,
+            getApiKey: () => 'session-key',
+            maxImageCharacters: 100,
+            streamFn: (_model, context) => {
+                providerCalls.push(context);
+                const response = responses.shift();
+                if (!response) {
+                    throw new Error('Unexpected provider call');
+                }
+                return completedStream(response);
+            },
+            tools: [{
+                name: 'screenshot',
+                description: 'Capture the preview',
+                inputSchema: {type: 'object', properties: {}, additionalProperties: false},
+                execute: () => Promise.resolve({
+                    text: 'Screenshot captured',
+                    attachments: [{type: 'image', mediaType: 'image/png', data: 'A'.repeat(1_000)}]
+                })
+            }]
+        });
+
+        await runtime.prompt('Inspect the preview');
+
+        expect(providerCalls[1]?.messages.map(item => item.role)).toEqual(['user']);
+        expect(JSON.stringify(providerCalls[1]?.messages)).toContain('image omitted from compacted context');
+        expect(JSON.stringify(providerCalls[1]?.messages)).not.toContain('A'.repeat(100));
+    });
+
     it('propagates abort to an active provider stream', async () => {
         let receivedSignal: AbortSignal | undefined;
         const streamFn: StreamFn = (_model, _context, options) => {
@@ -194,8 +267,63 @@ describe('agent runtime', () => {
         expect(runtime.messages.every(item => item.role === 'user' || item.role === 'assistant' || item.role === 'tool')).toBe(true);
     });
 
-    it('keeps a tool-using turn intact when the message bound falls inside its results', async () => {
+    it('bounds imported Builder conversation history at a user-turn boundary', async () => {
+        const contexts: Context[] = [];
+        const streamFn: StreamFn = (_model, context) => {
+            contexts.push(context);
+            return completedStream(message([{type: 'text', text: 'ok'}], 'stop'));
+        };
+        const runtime = createAgentRuntime({
+            model,
+            getApiKey: () => 'session-key',
+            streamFn,
+            maxMessages: 3,
+            initialMessages: [
+                {role: 'user', text: 'old request'},
+                {role: 'assistant', text: 'old answer'},
+                {role: 'user', text: 'recent request'},
+                {role: 'assistant', text: 'recent answer'}
+            ]
+        });
+
+        await runtime.prompt('current request');
+
+        expect(contexts[0]?.messages.map(item => item.role)).toEqual(['user', 'assistant', 'user']);
+        expect(contexts[0]?.messages.map(item => 'content' in item ? item.content : null)).toEqual([
+            'recent request',
+            [{type: 'text', text: 'recent answer'}],
+            [{type: 'text', text: 'current request'}]
+        ]);
+    });
+
+    it('drops whole older turns when imported history exceeds the character budget', async () => {
+        const contexts: Context[] = [];
+        const runtime = createAgentRuntime({
+            model,
+            getApiKey: () => 'session-key',
+            streamFn: (_model, context) => {
+                contexts.push(context);
+                return completedStream(message([{type: 'text', text: 'ok'}], 'stop'));
+            },
+            maxMessages: 20,
+            maxCharacters: 50,
+            initialMessages: [
+                {role: 'user', text: 'old request '.repeat(20)},
+                {role: 'assistant', text: 'old answer'},
+                {role: 'user', text: 'recent request'},
+                {role: 'assistant', text: 'recent answer'}
+            ]
+        });
+
+        await runtime.prompt('current request');
+
+        expect(contexts[0]?.messages.map(item => item.role)).toEqual(['user', 'assistant', 'user']);
+        expect(JSON.stringify(contexts[0]?.messages)).not.toContain('old request');
+    });
+
+    it('compacts an oversized current tool cycle without sending orphaned tool results', async () => {
         const contextRoles: string[][] = [];
+        const contexts: Context[] = [];
         const responses = [
             message([
                 {type: 'toolCall', id: 'first', name: 'record', arguments: {value: 'one'}},
@@ -205,6 +333,7 @@ describe('agent runtime', () => {
             message([{type: 'text', text: 'Next'}], 'stop')
         ];
         const streamFn: StreamFn = (_model, context) => {
+            contexts.push(context);
             contextRoles.push(context.messages.map(item => item.role));
             const response = responses.shift();
             if (!response) {
@@ -228,10 +357,45 @@ describe('agent runtime', () => {
         await runtime.prompt('Use both tools');
         await runtime.prompt('Start another turn');
 
-        expect(contextRoles).toEqual([
-            ['user'],
-            ['user', 'assistant', 'toolResult', 'toolResult'],
-            ['user']
-        ]);
+        expect(contextRoles).toEqual([['user'], ['user'], ['user']]);
+        expect(JSON.stringify(contexts[1]?.messages)).toContain('Earlier Builder tool activity compacted');
+        expect(JSON.stringify(contexts[1]?.messages)).toContain('Recorded');
+    });
+
+    it('preserves the complete current user request when compacting older tool cycles', async () => {
+        const contexts: Context[] = [];
+        const currentRequest = 'Keep the hero blue. FINAL CONSTRAINT: do not change the navigation.';
+        const responses = [
+            message([{type: 'toolCall', id: 'first', name: 'record', arguments: {value: 'first'}}], 'toolUse'),
+            message([{type: 'toolCall', id: 'second', name: 'record', arguments: {value: 'second'}}], 'toolUse'),
+            message([{type: 'text', text: 'Finished'}], 'stop')
+        ];
+        const runtime = createAgentRuntime({
+            model,
+            getApiKey: () => 'session-key',
+            maxCharacters: 180,
+            streamFn: (_model, context) => {
+                contexts.push(context);
+                const response = responses.shift();
+                if (!response) {
+                    throw new Error('Unexpected provider call');
+                }
+                return completedStream(response);
+            },
+            tools: [{
+                name: 'record',
+                description: 'Record a value',
+                inputSchema: {type: 'object', properties: {value: {type: 'string'}}},
+                execute: input => Promise.resolve({
+                    text: input.value === 'first' ? 'Older result '.repeat(20) : 'Newest result'
+                })
+            }]
+        });
+
+        await runtime.prompt(currentRequest);
+
+        const compactedUser = contexts[2]?.messages[0];
+        expect(compactedUser?.role).toBe('user');
+        expect(JSON.stringify(compactedUser && 'content' in compactedUser ? compactedUser.content : '')).toContain(currentRequest);
     });
 });
