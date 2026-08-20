@@ -3,7 +3,7 @@
 /**
  * prune.mts — Strip files no consumer loads from a built Ghost tree.
  *
- * Two callers, two profiles:
+ * Two profiles:
  *
  *   image   — Dockerfile.production's deploy stage, against /home/ghost (Ghost's
  *             `files` set + a resolved production node_modules). The COPY layer
@@ -12,6 +12,12 @@
  *   archive — scripts/pack.mjs, against the extracted package/ dir. No
  *             node_modules there (the consumer installs its own), so only the
  *             source rules apply.
+ *
+ * This file ships inside the release tarballs (a ghost/core `files` entry), so a
+ * downstream Docker build can run the `image` profile against its own installed
+ * tree the same way Dockerfile.production does:
+ *
+ *   node scripts/prune.mts . --profile=image
  *
  * Run directly by node (type stripping, no build step) — `scripts/` is outside
  * the tsconfig `include`, so nothing compiles this.
@@ -41,6 +47,9 @@ export interface PruneResult {
     byRule: Record<string, {files: number, bytes: number}>;
 }
 
+// Path of this file, relative to the roots both profiles are pointed at.
+const SELF = 'scripts/prune.mts';
+
 // Script files are never build inputs, whatever directory they sit in.
 const isScript = (base: string): boolean => /\.(js|json|mjs|cjs|node)$/.test(base);
 
@@ -53,7 +62,9 @@ const RULES: Rule[] = [
         // runs node with --enable-source-maps (Sentry resolves frames from maps
         // uploaded at release time, not from disk). `[cm]?ts` covers the
         // declaration variants too — .d.ts, .d.mts, .d.cts.
-        match: rel => /\.(?:[cm]?ts|tsx|map)$/.test(rel)
+        // This file ships in the archive so downstream Docker builds can prune
+        // their own tree; it has to survive its own rule.
+        match: rel => rel !== SELF && /\.(?:[cm]?ts|tsx|map)$/.test(rel)
     },
     {
         name: 'docs',

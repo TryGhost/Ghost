@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * pack.mjs — Build the Ghost-CLI release archive.
+ * pack.mjs — Build the Ghost release tarballs.
  *
- * Produces ghost/core/ghost-<version>.tgz, the archive consumed by
- * `ghost install --archive` and `ghost update --archive` (Ghost-CLI). It is not
- * published to npm; it is the release artifact uploaded to GitHub.
+ * Produces two tarballs from one build tree, differing only in layout:
+ *
+ *   ghost-<version>.tgz      entries at the tarball root, no wrapper dir.
+ *                            Attached to the GitHub Release.
+ *   ghost-<version>-npm.tgz  everything under a top-level package/ dir (npm
+ *                            layout). Published to npm as `ghost`, and the
+ *                            input to today's `ghost install|update --archive`.
+ *
+ * The npm publish goes away in 7.0 and Ghost-CLI is gaining support for both
+ * layouts, at which point the -npm tarball and its CI jobs can be deleted
+ * outright — nothing else depends on the package/ prefix.
  *
  * Built with `pnpm pack` (see the root .pnpmfile.mjs `beforePacking` hook):
  *
@@ -19,7 +27,11 @@
  *     tarball overrides, release-age check off).
  *  4. Seed the root lockfile, then regenerate it against the packed manifest so
  *     dependency versions match exactly what this build was tested against.
- *  5. Tar package/ into the Ghost-CLI archive (package/ prefix, no node_modules).
+ *  5. Tar the build tree into both layouts (no node_modules in either).
+ *
+ * scripts/prune.mts ships inside both (see ghost/core `files`) so a downstream
+ * Docker build can run the `image` profile against its own installed tree, the
+ * same way Dockerfile.production does.
  */
 
 import fs from 'node:fs/promises';
@@ -221,7 +233,7 @@ console.log('\nPruning build output...');
 reportPrune(await prune(BUILD_DIR, {profile: 'archive'}));
 
 console.log('\nValidating build output...');
-const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'index.js'];
+const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'index.js', 'scripts/prune.mts'];
 const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount, packagedFiles] = await Promise.all([
     readJson(pkgPath),
     readYaml(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
@@ -260,12 +272,28 @@ if (!packagedWorkspace?.overrides || Object.keys(packagedWorkspace.overrides).le
     throw new Error('Packaged pnpm-workspace.yaml is missing overrides');
 }
 
-// 6. Create the tarball (npm layout: top-level package/ dir, no node_modules).
+// 6. Create the tarballs. Same tree, two layouts — see the header.
 const version = pkg.version;
-const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
+const tarballs = [
+    // Prefix-free: entries sit at the tarball root (as `./name`). Attached to
+    // the GitHub Release; this is the layout that outlives the npm publish.
+    {
+        file: `ghost-${version}.tgz`,
+        args: ['-C', BUILD_DIR, '.']
+    },
+    // npm layout: everything under a top-level package/ dir. Consumed by
+    // `npm publish` and by today's Ghost-CLI --archive. Drop this entry (and its
+    // CI jobs) when the npm publish goes away in 7.0.
+    {
+        file: `ghost-${version}-npm.tgz`,
+        args: ['-C', CORE_DIR, 'package']
+    }
+];
 
-console.log(`\nCreating tarball: ghost-${version}.tgz`);
-await execFileAsync('tar', ['czf', tgzPath, 'package'], {cwd: CORE_DIR});
-
-const {size} = await fs.stat(tgzPath);
-console.log(`\nDone: ${tgzPath} (${(size / 1024 / 1024).toFixed(1)} MiB)`);
+console.log('\nCreating tarballs...');
+for (const {file, args} of tarballs) {
+    const tgzPath = path.join(CORE_DIR, file);
+    await execFileAsync('tar', ['czf', tgzPath, ...args]);
+    const {size} = await fs.stat(tgzPath);
+    console.log(`  ${file} (${(size / 1024 / 1024).toFixed(1)} MiB)`);
+}
