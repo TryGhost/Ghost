@@ -543,7 +543,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('Gift not found')
+                giftError: Object.assign(new Error('Gift not found'), {code: 'GIFT_NOT_FOUND'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -551,7 +551,7 @@ describe('Portal Data links:', () => {
 
             await expectGiftRedemptionErrorToast({
                 utils,
-                subtitle: /Something went wrong, please try again later\./i
+                subtitle: /This gift link is invalid\./i
             });
         });
 

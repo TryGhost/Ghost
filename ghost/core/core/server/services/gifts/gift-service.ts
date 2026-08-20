@@ -708,7 +708,10 @@ export class GiftService {
         if (!redeemableCheck.redeemable) {
             switch (redeemableCheck.reason) {
             case 'payment-pending':
-                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+                throw new errors.NotFoundError({
+                    message: tpl(errorMessages.giftNotFound),
+                    code: 'GIFT_NOT_FOUND'
+                });
             case 'redeemed':
                 throw new errors.BadRequestError({
                     message: tpl(errorMessages.giftAlreadyRedeemed),
@@ -751,7 +754,10 @@ export class GiftService {
         const gift = await this.deps.giftRepository.getByToken(input.token);
 
         if (!gift) {
-            throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+            throw new errors.NotFoundError({
+                message: tpl(errorMessages.giftNotFound),
+                code: 'GIFT_NOT_FOUND'
+            });
         }
 
         this.assertRedeemable(gift, input.memberStatus);
@@ -822,7 +828,10 @@ export class GiftService {
 
         const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
         if (!gift) {
-            throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+            throw new errors.NotFoundError({
+                message: tpl(errorMessages.giftNotFound),
+                code: 'GIFT_NOT_FOUND'
+            });
         }
 
         if (options.newMember) {

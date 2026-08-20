@@ -265,7 +265,39 @@ describe('GiftEmailService', function () {
             sinon.assert.match(message.plaintext, sinon.match('This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).'));
             sinon.assert.match(message.html, sinon.match('Redeem your gift:'));
             sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
-            sinon.assert.match(message.html, sinon.match('on behalf of Buyer (<a href="mailto:buyer@example.com"'));
+            sinon.assert.match(message.html, sinon.match(/on behalf of Buyer \(<a[^>]+href="mailto:buyer@example\.com"/));
+            sinon.assert.match(message.html, sinon.match('background:#fff3ed'));
+            sinon.assert.match(message.html, sinon.match('color:#bd460c'));
+        });
+
+        it('shows the publication title when the publication has no icon', async function () {
+            const iconlessService = new GiftEmailService({
+                transactionalMailer,
+                bulkMailer,
+                settingsCache,
+                urlUtils,
+                getFromAddress,
+                blogIcon: {getIconUrl: () => null},
+                t: translate()
+            });
+
+            await iconlessService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerEmail: 'buyer@example.com',
+                buyerName: 'Buyer',
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const html = bulkMailer.send.firstCall.firstArg.html;
+            assert.match(html, /<a href="https:\/\/example\.com\/"[^>]*>Test Site<\/a>/);
+            assert.doesNotMatch(html, /<img /);
         });
 
         it('formats the claim deadline in the publication locale and timezone', async function () {
@@ -338,6 +370,31 @@ describe('GiftEmailService', function () {
             const message = bulkMailer.send.firstCall.firstArg;
             sinon.assert.match(message.html, sinon.match('6 Apr 2027'));
             sinon.assert.match(message.plaintext, sinon.match('6 Apr 2027'));
+        });
+
+        it('falls back to neutral delivery colors when the accent color is invalid', async function () {
+            const invalidColorSettingsCache = {
+                get: key => key === 'accent_color' ? 'invalid' : settingsCache.get(key)
+            };
+            const invalidColorService = new GiftEmailService({transactionalMailer, bulkMailer, settingsCache: invalidColorSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+
+            await invalidColorService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Recipient',
+                buyerEmail: 'buyer@example.com',
+                buyerName: 'Buyer',
+                personalMessage: 'Enjoy this gift',
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const html = bulkMailer.send.firstCall.firstArg.html;
+            sinon.assert.match(html, sinon.match('background:#F4F5F6'));
+            sinon.assert.match(html, sinon.match('color:#738A94'));
         });
 
         it('falls back to transactional email when bulk Mailgun is not configured', async function () {

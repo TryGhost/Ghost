@@ -113,7 +113,7 @@ describe.each([
                 closeable: true,
                 message: {
                     title: 'Gift could not be redeemed',
-                    subtitle: 'Something went wrong, please try again later.'
+                    subtitle: 'This gift link is invalid.'
                 }
             });
         });
