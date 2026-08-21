@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
@@ -14,6 +14,8 @@ import {
   type Theme,
 } from '@test-utils/acceptance';
 import * as sel from '@tryghost/test-data/selectors/settings';
+import { STICKY_FOOTER_TESTID } from '@/settings/components/confirmation-modal';
+import { THEME_PROBLEM_LIST_TESTID } from '@/settings/site/theme/theme-validation-details';
 import { settingsScreen } from '@/settings/settings.screen';
 
 function themes(): Theme[] {
@@ -46,6 +48,51 @@ async function fakeThemeDownload(name: string): Promise<void> {
   });
 }
 
+/**
+ * This tier serves no Ember CSS, so a collision with Ghost's legacy unlayered
+ * stylesheet only shows up here if it is staged deliberately.
+ */
+function stageLegacyGhostCss(css: string): void {
+  const style = document.createElement('style');
+  style.textContent = css;
+  document.head.appendChild(style);
+  onTestFinished(() => style.remove());
+}
+
+/** Verbatim from `ghost/core/core/built/admin/assets/ghost.css`. */
+const LEGACY_CODE_CSS = `code, tt {
+    padding: 0.2rem 0.3rem;
+    border: 1px solid hsl(203, 12.29%, 91.14%);
+    background: hsl(205, 12.29%, 95.14%);
+    border-radius: 2px;
+    color: hsl(332.04, 96.26%, 43.04%);
+    vertical-align: middle;
+    white-space: pre-wrap;
+    font-size: 0.85em;
+    line-height: 1em;
+}`;
+
+/** Tachyons' `.rotate-180`, which Tailwind v4 expresses as `rotate` rather than `transform`. */
+const LEGACY_TACHYONS_CSS = '.rotate-180 { transform: rotate(180deg); }';
+
+function themeProblem(overrides: {
+  code: string;
+  level?: string;
+  rule?: string;
+  details?: string;
+  fatal?: boolean;
+}) {
+  return {
+    level: 'warning',
+    rule: 'Replace {{@blog.url}} with {{@site.url}}',
+    details:
+      'The helper {{@blog.url}} is deprecated and will be removed in a future version of Ghost.',
+    failures: [{ ref: 'default.hbs', message: 'line 12' }],
+    fatal: false,
+    ...overrides,
+  };
+}
+
 function installedTheme(name: string) {
   return settingsScreen
     .themeModal()
@@ -61,6 +108,32 @@ async function uploadThemeFile(file: File): Promise<void> {
     throw new Error('Theme upload input was not rendered');
   }
   await page.elementLocator(input).upload(file);
+}
+
+/** Whole-pixel distance between two box edges; 0 means flush, either way round. */
+function edgeGap(a: number, b: number): number {
+  return Math.abs(Math.round(a - b));
+}
+
+/** Line height as a multiple of font size, so sizes of different scale compare. */
+function lineRatio(style: CSSStyleDeclaration): number {
+  return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+}
+
+/** The one `<code>` in the open dialog reading exactly `text`. */
+function codeSpan(text: string): HTMLElement {
+  const dialog = settingsScreen.confirmationModal().element();
+  const match = [...dialog.querySelectorAll('code')].find((node) => node.textContent === text);
+  if (!match) {
+    throw new Error(`No <code> reading ${text} was rendered`);
+  }
+  return match;
+}
+
+/** Every bordered problem list in the open dialog, in document order. */
+function problemLists(): HTMLElement[] {
+  const dialog = settingsScreen.confirmationModal().element();
+  return [...dialog.querySelectorAll<HTMLElement>(`[data-testid="${THEME_PROBLEM_LIST_TESTID}"]`)];
 }
 
 async function editorTextbox() {
@@ -158,8 +231,162 @@ describe('Theme settings', () => {
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'theme.zip', { type: 'application/zip' }));
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/successful/i);
+    await expect
+      .element(settingsScreen.confirmationModal())
+      .toHaveTextContent('mytheme was uploaded successfully. Do you want to activate it?');
     expect(uploadApi.requests).toHaveLength(1);
+  });
+
+  it('summarises non-blocking issues on the installed-theme dialog', async () => {
+    fakeThemeWorld();
+    const uploaded = theme({
+      name: 'mytheme',
+      errors: [
+        themeProblem({
+          code: 'GS005-TPL-ERR',
+          level: 'error',
+          rule: 'Templates must contain valid Handlebars',
+        }),
+      ],
+      warnings: [
+        themeProblem({ code: 'GS001-DEPR-PURL', rule: 'Replace {{@blog.url}} with {{@site.url}}' }),
+        themeProblem({ code: 'GS002-DISQUS-ID', rule: 'Disqus id should be present' }),
+      ],
+    });
+    fakeAdminEndpoint('POST', '/themes/upload/', { themes: [uploaded] });
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
+
+    const installedModal = settingsScreen.confirmationModal();
+    // Errors and warnings are merged into one list, so the sentence says
+    // "issues" rather than contradicting the "1 error" in the heading.
+    await expect
+      .element(installedModal)
+      .toHaveTextContent(
+        'mytheme was uploaded, but it has some issues. Do you want to activate it?',
+      );
+    await expect.element(installedModal).toHaveTextContent('1 error, 2 warnings');
+    // Errors are the only severity that restricts anything, so only they are
+    // explained — and the button says what activating now would accept.
+    await expect
+      .element(installedModal)
+      .toHaveTextContent('Highly recommended to fix, functionality could be restricted');
+    await expect
+      .element(installedModal.getByRole('button', { name: 'Activate with errors' }))
+      .toBeVisible();
+
+    // A summary that says "error" can't be headed by a warning-coloured
+    // icon: it takes the same red as the ERROR badge in the list below.
+    const heading = installedModal.element().querySelector('h3')!;
+    const badge = installedModal.getByText('Error', { exact: true }).element();
+    expect(getComputedStyle(heading.querySelector('svg')!).color).toBe(
+      getComputedStyle(badge).color,
+    );
+
+    // The gscan code sits on the same row as the badge, so the two read as
+    // one line rather than the code out-sizing the label beside it.
+    const problemCode = installedModal.getByText('GS005-TPL-ERR', { exact: true }).element();
+    expect(getComputedStyle(problemCode).fontSize).toBe(getComputedStyle(badge).fontSize);
+
+    // Every issue is listed up front; each one expands on its own.
+    await expect(installedModal.getByRole('button', { name: /GS001-DEPR-PURL/ })).toHaveCount(1);
+    await expect(installedModal.getByText(/deprecated/)).toHaveCount(0);
+    await installedModal.getByRole('button', { name: /GS001-DEPR-PURL/ }).click();
+    await expect.element(installedModal.getByText(/deprecated/)).toBeVisible();
+    await expect.element(installedModal).toHaveTextContent('Affected files');
+  });
+
+  it("flips an expanding issue row's chevron a single half turn", async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint('POST', '/themes/upload/', {
+      themes: [theme({ name: 'mytheme', warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })] })],
+    });
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
+
+    // Legacy Tachyons `.rotate-180` (transform) and Tailwind v4's (rotate)
+    // both apply to that literal class, turning the icon a full circle. The
+    // chevron must rotate via a selector the legacy rule cannot match.
+    stageLegacyGhostCss(LEGACY_TACHYONS_CSS);
+
+    const row = settingsScreen.confirmationModal().getByRole('button', { name: /GS001-DEPR-PURL/ });
+    await expect.element(row).toBeVisible();
+    const chevron = () => (row.element() as HTMLElement).querySelector('svg')!;
+    expect(getComputedStyle(chevron()).rotate).toBe('none');
+
+    await row.click();
+
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('180deg');
+    // Nothing may add a second rotation on top of that one.
+    expect(getComputedStyle(chevron()).transform).toBe('none');
+  });
+
+  it("renders gscan's inline code plainly under the legacy code rule", async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint('POST', '/themes/upload/', {
+      themes: [
+        theme({
+          name: 'mytheme',
+          warnings: [
+            themeProblem({
+              code: 'GS001-DEPR-PURL',
+              rule: 'Replace <code>{{@blog.url}}</code> with <code>{{@site.url}}</code>',
+              details: 'The <code>{{@blog.title}}</code> helper is deprecated.',
+            }),
+          ],
+        }),
+      ],
+    });
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
+    stageLegacyGhostCss(LEGACY_CODE_CSS);
+
+    const row = settingsScreen.confirmationModal().getByRole('button', { name: /GS001-DEPR-PURL/ });
+    await expect.element(row).toBeVisible();
+    await row.click();
+    await expect.element(settingsScreen.confirmationModal().getByText(/deprecated/)).toBeVisible();
+
+    // gscan's own markup: mono, inheriting the line it sits on, no chip.
+    for (const text of ['{{@blog.url}}', '{{@blog.title}}']) {
+      const code = codeSpan(text);
+      const surrounding = getComputedStyle(code.parentElement!);
+      const style = getComputedStyle(code);
+      expect(style.fontFamily).toContain('mono');
+      expect(style.color).toBe(surrounding.color);
+      expect(style.fontSize).toBe(surrounding.fontSize);
+      // The legacy `line-height: 1em` computes to exactly the font size.
+      expect(style.lineHeight).not.toBe(style.fontSize);
+      expect(lineRatio(style)).toBeCloseTo(lineRatio(surrounding), 2);
+      expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(style.borderTopWidth).toBe('0px');
+      expect(style.borderTopLeftRadius).toBe('0px');
+      expect(style.paddingLeft).toBe('0px');
+      expect(style.verticalAlign).toBe('baseline');
+    }
+
+    // An affected file is inline mono too, with no chip left behind.
+    const filenameCode = codeSpan('default.hbs');
+    const filename = getComputedStyle(filenameCode);
+    const detailsCode = getComputedStyle(codeSpan('{{@blog.title}}'));
+    expect(filename.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(filename.borderTopWidth).toBe('0px');
+    expect(filename.borderTopLeftRadius).toBe('0px');
+    expect(filename.paddingLeft).toBe('0px');
+    expect(filename.verticalAlign).toBe('baseline');
+    expect(filename.fontSize).toBe(detailsCode.fontSize);
+    expect(filename.fontFamily).toBe(detailsCode.fontFamily);
+    expect(filename.fontWeight).toBe(detailsCode.fontWeight);
+    // Same foreground as the line it sits on, i.e. not the legacy pink.
+    expect(filename.color).toBe(getComputedStyle(filenameCode.parentElement!).color);
   });
 
   it('keeps the installed-theme dialog open when activation fails', async () => {
@@ -189,7 +416,83 @@ describe('Theme settings', () => {
     expect(activateApi.requests).toHaveLength(1);
   });
 
-  it('reports blocking upload errors and retries the upload from the error dialog', async () => {
+  it('seats the sticky footer flush against the issue list, with no empty band and no shadow rule', async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint('POST', '/themes/upload/', {
+      themes: [
+        theme({
+          name: 'mytheme',
+          errors: [
+            themeProblem({
+              code: 'GS005-TPL-ERR',
+              level: 'error',
+              rule: 'Templates must contain valid Handlebars',
+            }),
+          ],
+          // Enough rows that the dialog scrolls, so the footer both
+          // floats mid-scroll and lands in flow at the bottom.
+          warnings: Array.from({ length: 8 }, (_, index) =>
+            themeProblem({ code: `GS10${index}-DEPR-PURL` }),
+          ),
+        }),
+      ],
+    });
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
+    stageLegacyGhostCss(LEGACY_CODE_CSS);
+
+    const dialog = settingsScreen.confirmationModal();
+    await expect.element(dialog).toHaveTextContent('1 error, 8 warnings');
+
+    const scroller = dialog.element() as HTMLElement;
+    const [list] = problemLists();
+    const footer = scroller.querySelector<HTMLElement>(`[data-testid="${STICKY_FOOTER_TESTID}"]`)!;
+    // The part of the footer the buttons sit in; the rest is decoration.
+    const okButton = dialog.getByTestId('ok-modal').element();
+    const mask = [...footer.children].find((part) => part.contains(okButton)) as HTMLElement;
+    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
+    expect(getComputedStyle(mask).backgroundColor).not.toMatch(/rgba\(.*, 0\)$/);
+
+    // StickyFooter's decorative scroll rule lands as a hairline across the
+    // buttons here, so it must not render — and nothing may replace it.
+    const rule = footer.lastElementChild as HTMLElement;
+    expect(rule).not.toBe(mask);
+    expect(getComputedStyle(rule).boxShadow).not.toBe('none');
+    expect(getComputedStyle(rule).display).toBe('none');
+    expect(rule.getBoundingClientRect().height).toBe(0);
+    for (const part of [footer, ...footer.children]) {
+      if (part !== rule) {
+        expect(getComputedStyle(part).boxShadow).toBe('none');
+      }
+    }
+
+    // Mid-scroll: pinned to the scroll port, rows running underneath.
+    scroller.scrollTop = Math.floor((scroller.scrollHeight - scroller.clientHeight) / 2);
+    await expect
+      .poll(() => Math.round(mask.getBoundingClientRect().bottom))
+      .toBe(Math.round(scroller.getBoundingClientRect().bottom));
+    await expect.poll(() => Math.round(mask.getBoundingClientRect().height)).toBe(84);
+    expect(list.getBoundingClientRect().bottom).toBeGreaterThan(mask.getBoundingClientRect().top);
+
+    // Scrolled to the end the footer returns to flow and must close up:
+    // slack anywhere in its 84px box reads as an empty band.
+    scroller.scrollTop = scroller.scrollHeight;
+    await expect
+      .poll(() => edgeGap(mask.getBoundingClientRect().top, list.getBoundingClientRect().bottom))
+      .toBe(0);
+    expect(
+      edgeGap(footer.getBoundingClientRect().bottom, scroller.getBoundingClientRect().bottom),
+    ).toBe(0);
+    expect(
+      edgeGap(mask.getBoundingClientRect().bottom, footer.getBoundingClientRect().bottom),
+    ).toBe(0);
+    expect(Math.round(mask.getBoundingClientRect().height)).toBe(84);
+  });
+
+  it('reports blocking upload errors and re-opens the upload dialog from the error dialog', async () => {
     fakeThemeWorld();
     const uploadApi = fakeAdminEndpoint(
       'POST',
@@ -205,18 +508,81 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/design/change-theme');
 
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
-    await uploadThemeFile(new File([buffer], 'theme.zip', { type: 'application/zip' }));
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
 
     const errorModal = settingsScreen.confirmationModal();
     await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+    await expect
+      .element(errorModal)
+      .toHaveTextContent("mytheme couldn't be uploaded. Fix the errors below and try again.");
     await expect.element(errorModal).toHaveTextContent('Missing index.hbs');
     expect(uploadApi.requests).toHaveLength(1);
 
-    await errorModal.getByRole('button', { name: 'Retry' }).click();
+    await errorModal.getByRole('button', { name: 'Re-upload' }).click();
     await expect
       .element(page.getByText('Click to select or drag & drop zip file', { exact: true }))
       .toBeVisible();
     await expect(page.getByText('Theme not uploaded')).toHaveCount(0);
+  });
+
+  it('tells a blocking problem apart from the errors reported alongside it', async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/themes/upload/',
+      {
+        errors: [
+          {
+            message: 'Theme is not compatible or contains errors.',
+            details: {
+              errors: [
+                themeProblem({
+                  code: 'GS010-PJ-REQ',
+                  level: 'error',
+                  rule: 'package.json must be present',
+                  fatal: true,
+                }),
+                themeProblem({
+                  code: 'GS005-TPL-ERR',
+                  level: 'error',
+                  rule: 'Templates must contain valid Handlebars',
+                }),
+              ],
+            },
+          },
+        ],
+      },
+      { status: 422 },
+    );
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
+    stageLegacyGhostCss(LEGACY_CODE_CSS);
+
+    const errorModal = settingsScreen.confirmationModal();
+    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+
+    // Both groups are errors; only one stopped the upload.
+    const lists = problemLists();
+    expect(lists).toHaveLength(2);
+    expect(lists[0].textContent).toContain('GS010-PJ-REQ');
+    expect(lists[0].textContent).toContain('Blocking');
+    expect(lists[0].textContent).not.toContain('Error');
+    expect(lists[1].textContent).toContain('GS005-TPL-ERR');
+    expect(lists[1].textContent).toContain('Error');
+    expect(lists[1].textContent).not.toContain('Blocking');
+
+    // Both read as shouted labels — the difference is the word, not the style.
+    const blocking = errorModal.getByText('Blocking', { exact: true }).element();
+    const error = errorModal.getByText('Error', { exact: true }).element();
+    expect(getComputedStyle(blocking).textTransform).toBe('uppercase');
+    expect(getComputedStyle(blocking).backgroundColor).toBe(
+      getComputedStyle(error).backgroundColor,
+    );
+    // The blocking group is stated first.
+    expect(blocking.getBoundingClientRect().top).toBeLessThan(error.getBoundingClientRect().top);
   });
 
   it('reports blocking activation errors for an installed theme', async () => {
@@ -242,7 +608,7 @@ describe('Theme settings', () => {
     await expect.element(errorModal).toHaveTextContent('Missing post.hbs');
     expect(activateApi.requests).toHaveLength(1);
 
-    await errorModal.getByRole('button', { name: 'Close' }).click();
+    await errorModal.getByRole('button', { name: 'Cancel' }).click();
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.element(modal).toBeVisible();
   });

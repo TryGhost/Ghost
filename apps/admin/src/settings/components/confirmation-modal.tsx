@@ -13,6 +13,8 @@ import {
 } from '@tryghost/shade/components';
 import { cn } from '@tryghost/shade/utils';
 
+export const STICKY_FOOTER_TESTID = 'modal-sticky-footer';
+
 export interface ConfirmationModalProps {
   title?: React.ReactNode;
   prompt?: React.ReactNode;
@@ -82,7 +84,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
   };
 
   const defaultFooter = (
-    <AlertDialogFooter>
+    <AlertDialogFooter className={cn(stickyFooter && 'gap-2')}>
       {cancelLabel && (
         <Button
           data-testid="cancel-modal"
@@ -117,6 +119,9 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
       <AlertDialogContent
         className={cn(
           'z-[1100] max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] overflow-y-auto bg-background',
+          // A sticky element never sticks inside a grid item, so the footer
+          // needs a flex column to stick within.
+          stickyFooter && 'flex flex-col gap-0 pb-0',
         )}
         data-testid={testId}
         overlayClassName={cn(
@@ -133,10 +138,15 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
         </AlertDialogHeader>
         {footer &&
           (stickyFooter ? (
+            // StickyFooter sizes its box in raw pixels but spaces its parts
+            // with `h-6`/`-mb-6`, which render at 38.4px on Shade's `0.4rem`
+            // scale — hence the explicit sizing overrides.
             <StickyFooter
-              className="-mx-6 -mb-6 w-[calc(100%+3rem)]"
-              contentClassName="px-6"
+              className="-mx-6 w-auto [&>div:first-child]:hidden [&>div:last-child]:hidden"
+              contentClassName="px-6 mb-0 *:w-full"
+              data-testid={STICKY_FOOTER_TESTID}
               height={84}
+              style={{ bottom: 0, height: '84px' }}
             >
               {footer}
             </StickyFooter>
