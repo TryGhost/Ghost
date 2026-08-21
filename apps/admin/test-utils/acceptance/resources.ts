@@ -21,7 +21,7 @@ import {
   type Tier,
 } from '@tryghost/test-data';
 
-import { record418, registerAdminApiHandler, registerRoute } from './worker';
+import { fakeAdminEndpoint, record418, registerAdminApiHandler, registerRoute } from './worker';
 
 export interface BrowseQuery {
   /** Full request URL, for raw assertions on encoding. */
@@ -232,6 +232,17 @@ export const fakePosts = defineResource<Post>({
   semantics: { kind: 'passthrough' },
 });
 
+/**
+ * Pages list fake (passthrough). The pages list screen browses this endpoint
+ * once per status bucket, exactly as the posts one does — declare the response
+ * (a function of the query, if a test needs each bucket to differ) and assert
+ * the outgoing filters.
+ */
+export const fakePages = defineResource<Post>({
+  resource: 'pages',
+  semantics: { kind: 'passthrough' },
+});
+
 /** Tiers list fake (passthrough): serves the declared tiers and captures every browse request. */
 export const fakeTiers = defineResource<Tier>({
   resource: 'tiers',
@@ -364,6 +375,25 @@ export function fakeSettingsScreens(): void {
     }
     return undefined;
   });
+}
+
+/**
+ * Declares the chrome every posts/pages list mount reads: the batched
+ * analytics counts the metric columns request, and the tag/author worlds the
+ * filter bar and its slug lookups probe. Screen-specific data a spec asserts
+ * on is declared in the spec — a fake registered after this one wins.
+ */
+export function fakePostsListScreen(): void {
+  fakeAdminEndpoint('POST', '/stats/posts-visitor-counts/', {
+    stats: [{ data: { visitor_counts: {} } }],
+  });
+  fakeAdminEndpoint('POST', '/stats/posts-member-counts/', {
+    stats: [{ data: { member_counts: {} } }],
+  });
+  fakeTags([]);
+  fakeUsers([]);
+  fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, { tags: [] });
+  fakeAdminEndpoint('GET', /^\/users\/\?.*slug/, { users: [] });
 }
 
 type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };

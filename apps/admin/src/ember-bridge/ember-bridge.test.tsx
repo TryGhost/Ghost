@@ -171,6 +171,82 @@ describe('useEmberDataSync', () => {
     unmount();
   });
 
+  /**
+   * Saving a post in the editor can *create* tags: a tag typed into the post
+   * is written as part of the post's own save, as an embedded relation. Ember
+   * therefore reports a `post` change and never a `tag` one — so the posts
+   * list's tag filter kept serving a cached list, and a tag you had just
+   * made was missing from it until a full browser reload.
+   */
+  queryTest(
+    'invalidates tags when Ember saves a post, which can create them',
+    async ({ queryClient, wrapper }) => {
+      const mock = createMockStateBridge();
+      window.EmberBridge = { state: mock.stateBridge };
+
+      // Without a gcTime these are collected before the assertion runs, and
+      // `every` on an empty array passes vacuously.
+      queryClient.setQueryDefaults(['TagsResponseType', '/tags'], { gcTime: Infinity });
+      queryClient.setQueryDefaults(['MembersResponseType', '/members'], { gcTime: Infinity });
+      queryClient.setQueryData(['TagsResponseType', '/tags'], { tags: [] });
+      queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
+
+      renderHook(() => useEmberDataSync(), { wrapper });
+
+      await waitFor(() => {
+        expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+      });
+
+      act(() => {
+        mock.emit('emberDataChange', {
+          operation: 'update',
+          modelName: 'post',
+          id: '1',
+          data: null,
+        });
+      });
+
+      await waitFor(() => {
+        const queries = queryClient.getQueryCache().getAll();
+        const tagQueries = queries.filter((q) => q.queryKey[0] === 'TagsResponseType');
+        const memberQueries = queries.filter((q) => q.queryKey[0] === 'MembersResponseType');
+
+        expect(tagQueries.length).toBeGreaterThan(0);
+        expect(tagQueries.every((q) => q.state.isInvalidated)).toBe(true);
+        // ...and nothing unrelated is dragged along with it.
+        expect(memberQueries.every((q) => !q.state.isInvalidated)).toBe(true);
+      });
+    },
+  );
+
+  queryTest('invalidates tags when Ember saves a page too', async ({ queryClient, wrapper }) => {
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    queryClient.setQueryDefaults(['TagsResponseType', '/tags'], { gcTime: Infinity });
+    queryClient.setQueryData(['TagsResponseType', '/tags'], { tags: [] });
+
+    renderHook(() => useEmberDataSync(), { wrapper });
+
+    await waitFor(() => {
+      expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+    });
+
+    act(() => {
+      mock.emit('emberDataChange', { operation: 'update', modelName: 'page', id: '1', data: null });
+    });
+
+    await waitFor(() => {
+      const tagQueries = queryClient
+        .getQueryCache()
+        .getAll()
+        .filter((q) => q.queryKey[0] === 'TagsResponseType');
+
+      expect(tagQueries.length).toBeGreaterThan(0);
+      expect(tagQueries.every((q) => q.state.isInvalidated)).toBe(true);
+    });
+  });
+
   queryTest(
     'invalidates the sidebar member count query for Ember member changes',
     async ({ queryClient, wrapper }) => {
