@@ -53,7 +53,7 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & {onClose: () => v
         okVariant='default'
         prompt={
             <div className='space-y-5'>
-                <p className='text-sm text-foreground'>{status}</p>
+                <p className='text-base text-foreground'>{status}</p>
                 <ThemeValidationIssueList problems={problems} />
             </div>
         }
