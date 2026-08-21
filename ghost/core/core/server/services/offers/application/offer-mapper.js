@@ -123,4 +123,4 @@ class OfferMapper {
     }
 }
 
-module.exports = OfferMapper;
+exports.OfferMapper = OfferMapper;
