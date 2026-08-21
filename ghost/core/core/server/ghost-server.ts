@@ -135,11 +135,11 @@ export class GhostServer {
 
       this.httpServer.on('listening', () => {
         debug('...Started');
-        this._logStartMessages();
+        this.#logStartMessages();
 
         // Debug logs output in testmode only
         if (testmode) {
-          this._startTestMode();
+          this.#startTestMode();
         }
 
         debug('Notifying server ready (success)');
@@ -195,7 +195,7 @@ export class GhostServer {
     try {
       // Signal "stop taking new work" before the HTTP server drain, so background
       // workers aren't still claiming tasks during it
-      this._preStop();
+      this.#preStop();
 
       // If we never fully started, there's nothing to stop
       if (this.httpServer && this.httpServer.listening) {
@@ -203,7 +203,7 @@ export class GhostServer {
         const startTime = Date.now();
 
         // We stop the server first so that no new long running requests or processes can be started
-        await this._stopServer();
+        await this.#stopServer();
 
         const shutdownDuration = Date.now() - startTime;
         if (shutdownDuration > 15000) {
@@ -211,11 +211,11 @@ export class GhostServer {
         }
       }
       // Do all of the cleanup tasks
-      await this._cleanup();
+      await this.#cleanup();
     } finally {
       // Wrap up
       this.httpServer = null;
-      this._logStopMessages();
+      this.#logStopMessages();
     }
   }
 
@@ -271,7 +271,7 @@ export class GhostServer {
    *
    * If server.shutdownTimeout is reached, requests are terminated in-flight
    */
-  async _stopServer() {
+  async #stopServer() {
     const { httpServer } = this;
     assert(httpServer, 'httpServer must be set before stopping server');
 
@@ -288,7 +288,7 @@ export class GhostServer {
    * Best-effort: a throwing task must not skip the ones after it, nor the drain and
    * cleanup that follow.
    */
-  _preStop() {
+  #preStop() {
     for (const { task, label } of this.preStopTasks) {
       try {
         task();
@@ -308,7 +308,7 @@ export class GhostServer {
    * Every task runs to completion regardless of its siblings: a rejection escaping the
    * map would exit the process mid-drain and orphan email batches in `submitting`.
    */
-  async _cleanup() {
+  async #cleanup() {
     const failed: string[] = [];
 
     await Promise.all(
@@ -341,7 +341,7 @@ export class GhostServer {
   /**
    * Internal Method for TestMode.
    */
-  _startTestMode() {
+  #startTestMode() {
     const { httpServer } = this;
     assert(httpServer, 'httpServer must be set before starting test mode');
 
@@ -364,7 +364,7 @@ export class GhostServer {
   /**
    * Log Start Messages
    */
-  _logStartMessages() {
+  #logStartMessages() {
     logging.info(tpl(messages.ghostIsRunningIn, { env: this.env }));
 
     if (this.env === 'production') {
@@ -385,7 +385,7 @@ export class GhostServer {
   /**
    * Log Stop Messages
    */
-  _logStopMessages() {
+  #logStopMessages() {
     logging.warn(tpl(messages.ghostHasShutdown));
 
     // Extra clear message for production mode
