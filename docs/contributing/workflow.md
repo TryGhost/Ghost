@@ -49,6 +49,22 @@ area requires them. CI uses the Nx affected graph and path filters to select the
 relevant lint, unit, integration, acceptance, build, and browser-test jobs for a
 pull request.
 
+## Formatting
+
+Source formatting is owned by [Oxfmt](https://oxc.rs/docs/guide/usage/formatter),
+configured in the root `.oxfmtrc.json`: Oxfmt defaults plus single quotes, with
+embedded-language formatting disabled so string contents are never rewritten.
+CI rejects unformatted code, and the pre-commit hook formats staged files
+automatically, so there is usually nothing to do. To format manually:
+
+```bash
+pnpm format path/to/file.ts
+```
+
+`pnpm format` with no arguments formats the whole repository, and
+`pnpm format:check` reports without writing. Do not add per-package formatter
+configuration; the root config is the only one.
+
 ## Record package release intent
 
 Changes that affect a publishable `@tryghost/*` package under `koenig/` or
@@ -81,7 +97,6 @@ not affect a publishable package do not need one.
 ## Commit Messages
 
 Follow the canonical [commit message guidelines](../../.github/CONTRIBUTING.md#commit-messages).
-
 
 ## Publish the branch
 

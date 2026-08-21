@@ -31,7 +31,7 @@ env:
   # runner was Nx's default before the native one existed; parallelism is
   # unaffected and output/colour is preserved (FORCE_COLOR is set above), so
   # there's no meaningful cost in CI.
-  NX_NATIVE_COMMAND_RUNNER: "false"
+  NX_NATIVE_COMMAND_RUNNER: 'false'
 
 concurrency:
   # Tag pushes get a unique uninterruptible group so a release CI run always
@@ -429,6 +429,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Check formatting
+        run: pnpm format:check
+
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -714,7 +717,7 @@ jobs:
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
-          timezoneLinux: "America/New_York"
+          timezoneLinux: 'America/New_York'
 
       - name: Run unit tests
         # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
@@ -836,7 +839,7 @@ jobs:
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
-          timezoneLinux: "America/New_York"
+          timezoneLinux: 'America/New_York'
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -1047,7 +1050,7 @@ jobs:
         timeout-minutes: 10
         env:
           DEBIAN_FRONTEND: noninteractive
-          DEBCONF_NONINTERACTIVE_SEEN: "true"
+          DEBCONF_NONINTERACTIVE_SEEN: 'true'
         run: |
           FONT_CACHE="$HOME/.cache/msttcorefonts"
           FONT_DIR=/usr/share/fonts/truetype/msttcorefonts
@@ -1964,7 +1967,6 @@ jobs:
 
           node scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
 
-
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
       image-core-tags: ${{ steps.meta-core.outputs.tags }}
@@ -2282,12 +2284,7 @@ jobs:
 
   job_coverage:
     name: Coverage
-    needs: [
-      job_setup,
-      job_admin-tests,
-      job_acceptance-tests,
-      job_unit-tests
-    ]
+    needs: [job_setup, job_admin-tests, job_acceptance-tests, job_unit-tests]
     if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -2354,7 +2351,7 @@ jobs:
         job_apps_acceptance-tests,
         job_build_e2e_public_apps,
         job_e2e_tests,
-        publish_public_apps
+        publish_public_apps,
       ]
     if: always()
     runs-on: ubuntu-slim
@@ -2371,12 +2368,7 @@ jobs:
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
   publish_public_apps:
-    needs: [
-      job_setup,
-      job_lint,
-      job_unit-tests,
-      job_build_e2e_public_apps
-    ]
+    needs: [job_setup, job_lint, job_unit-tests, job_build_e2e_public_apps]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     # Serialize per-app publishes so two quick main merges can't both compute the
@@ -2667,10 +2659,19 @@ jobs:
   # --------------------------------------------------------------------------- #
   notify_release_failure:
     name: Notify release failure
-    needs: [job_setup, job_build_admin, job_pack, job_docker, job_ghost-cli, publish_ghost, create_github_release]
+    needs:
+      [
+        job_setup,
+        job_build_admin,
+        job_pack,
+        job_docker,
+        job_ghost-cli,
+        publish_ghost,
+        create_github_release,
+      ]
     if: failure() && startsWith(github.ref, 'refs/tags/v') && github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-slim
-    permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
+    permissions: {} # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
     steps:
       - name: Notify Slack
         env:
