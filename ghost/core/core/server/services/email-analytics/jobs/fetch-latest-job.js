@@ -27,6 +27,7 @@ exports.run = ({
     event
 }) => {
     if (parentPort) {
+        parentPort.postMessage('execution started');
         parentPort.once('message', (message) => {
             if (message === 'cancel') {
                 cancel();

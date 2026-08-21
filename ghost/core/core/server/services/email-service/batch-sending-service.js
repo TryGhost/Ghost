@@ -191,7 +191,7 @@ class BatchSendingService {
      * @returns {void}
      */
     scheduleEmail(email) {
-        jobLogging.info('[Background Job] batch-sending-service-job queued');
+        jobLogging.info(`[Background Job] batch-sending-service-job queued for email ${email.id}`);
         return this.#jobsService.addJob({
             name: 'batch-sending-service-job',
             job: this.emailJob.bind(this),
@@ -246,7 +246,7 @@ class BatchSendingService {
                     error: null
                 }, {patch: true, autoRefresh: false});
             }, {...this.#getAfterRetryConfig(), description: `email ${emailId} -> submitted`});
-            jobLogging.info(`[Background Job] batch-sending-service-job completed in ${Date.now() - startTime}ms`);
+            jobLogging.info(`[Background Job] batch-sending-service-job completed for email ${emailId} in ${Date.now() - startTime}ms`);
         } catch (e) {
             // Any failure while shutting down counts as interrupted, not failed:
             // collapsed budgets surface transient errors as hard failures, and `failed`
@@ -261,7 +261,7 @@ class BatchSendingService {
                 message: `Error sending email ${email.id}`
             });
 
-            jobLogging.error(ghostError, `[Background Job] batch-sending-service-job failed after ${Date.now() - startTime}ms`);
+            jobLogging.error(ghostError, `[Background Job] batch-sending-service-job failed for email ${emailId} after ${Date.now() - startTime}ms`);
             if (this.#sentry) {
                 // Log the original error to Sentry
                 this.#sentry.captureException(e);

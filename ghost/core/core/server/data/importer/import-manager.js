@@ -508,21 +508,26 @@ class ImportManager {
 
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-            jobLogging.info('[Background Job] content-import queued');
+            jobLogging.info('[Background Job] site-content-import queued');
             return jobManager.addJob({
                 job: async () => {
                     const startedAt = Date.now();
-                    jobLogging.info('[Background Job] content-import started');
+                    jobLogging.info('[Background Job] site-content-import started');
                     try {
                         const result = await this.importFromFile(file, Object.assign({}, importOptions, {
                             runningInJob: true,
                             data: importData
                         }));
-                        const state = result === undefined ? 'finished after failure' : 'completed';
-                        jobLogging.info(`[Background Job] content-import ${state} in ${Date.now() - startedAt}ms`);
+                        // importFromFile swallows its own failures and returns undefined,
+                        // so an absent result is the only signal that the import failed.
+                        if (result === undefined) {
+                            jobLogging.info(`[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`);
+                        } else {
+                            jobLogging.info(`[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`);
+                        }
                         return result;
                     } catch (err) {
-                        jobLogging.error(err, `[Background Job] content-import failed after ${Date.now() - startedAt}ms`);
+                        jobLogging.error(err, `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`);
                         throw err;
                     }
                 },
@@ -544,7 +549,7 @@ class ImportManager {
 
             return importResult;
         } catch (err) {
-            logging.error(err, '[Background Job] content-import failed');
+            jobLogging.error(err, '[Background Job] site-content-import error');
             const errorDetails = err.errorDetails || [err];
             importResult = {data: {errors: errorDetails}};
         } finally {

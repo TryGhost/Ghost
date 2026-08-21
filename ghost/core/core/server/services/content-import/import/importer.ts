@@ -141,6 +141,7 @@ class ContentCSVImporter {
         logLifecycle('started');
         let urlFailureCount = 0;
         let firstUrlFailure: unknown;
+        let failed = false;
 
         try {
             const htmlToLexical = this._getHtmlToLexical();
@@ -229,11 +230,13 @@ class ContentCSVImporter {
             this.reportUrlFailures(urlFailureCount, firstUrlFailure);
             this._store.finish(runId);
         } catch (error) {
+            failed = true;
             this.reportUrlFailures(urlFailureCount, firstUrlFailure);
             this._report(error);
             this._store.fail(runId, messageOf(error));
         } finally {
-            logLifecycle(`finished in ${Date.now() - startedAt}ms`);
+            const outcome = failed ? 'failed after' : 'completed in';
+            logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
         }
     }
 

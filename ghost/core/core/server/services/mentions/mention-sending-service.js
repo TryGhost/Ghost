@@ -190,7 +190,7 @@ module.exports = class MentionSendingService {
                 try {
                     await this.send({source: url, target, endpoint});
                 } catch (e) {
-                    logging.error('[Background Job] sendWebmentions failed sending via ' + endpoint.href + ': ' + e.message);
+                    logging.error('[Webmention] Failed sending via ' + endpoint.href + ': ' + e.message);
                 }
             }
         }

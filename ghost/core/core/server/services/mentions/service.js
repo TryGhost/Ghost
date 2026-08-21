@@ -38,6 +38,33 @@ function getPostUrl(id, postData) {
     return jsonModel.url;
 }
 
+// Reports the same queued/started/finished/failed lifecycle for every mentions
+// background job. The wrapped callback's result and errors pass through unchanged,
+// so job manager outcomes and retries are unaffected.
+function makeLoggingJobService() {
+    return {
+        async addJob(name, fn) {
+            jobLogging.info(`[Background Job] ${name} queued`);
+            jobsService.addJob({
+                name,
+                job: async () => {
+                    const startedAt = Date.now();
+                    jobLogging.info(`[Background Job] ${name} started`);
+                    try {
+                        const result = await fn();
+                        jobLogging.info(`[Background Job] ${name} completed in ${Date.now() - startedAt}ms`);
+                        return result;
+                    } catch (err) {
+                        jobLogging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
+                        throw err;
+                    }
+                },
+                offloaded: false
+            });
+        }
+    };
+}
+
 module.exports = {
     /** @type {import('./mentions-api')} */
     api: null,
@@ -83,15 +110,7 @@ module.exports = {
 
         this.controller.init({
             api,
-            jobService: {
-                async addJob(name, fn) {
-                    jobsService.addJob({
-                        name,
-                        job: fn,
-                        offloaded: false
-                    });
-                }
-            },
+            jobService: makeLoggingJobService(),
             mentionResourceService: {
                 async getByID(id) {
                     if (!id) {
@@ -118,27 +137,7 @@ module.exports = {
             getPostData: post => getPostData(post),
             getPostUrl: (id, data) => getPostUrl(id, data),
             isEnabled: () => !settingsCache.get('is_private'),
-            jobService: {
-                async addJob(name, fn) {
-                    jobLogging.info(`[Background Job] ${name} queued`);
-                    jobsService.addJob({
-                        name,
-                        job: async () => {
-                            const startedAt = Date.now();
-                            jobLogging.info(`[Background Job] ${name} started`);
-                            try {
-                                const result = await fn();
-                                jobLogging.info(`[Background Job] ${name} finished in ${Date.now() - startedAt}ms`);
-                                return result;
-                            } catch (err) {
-                                jobLogging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
-                                throw err;
-                            }
-                        },
-                        offloaded: false
-                    });
-                }
-            }
+            jobService: makeLoggingJobService()
         });
         sendingService.listen(events);
 
@@ -149,3 +148,4 @@ module.exports = {
 // exposed for testing
 module.exports.getPostData = getPostData;
 module.exports.getPostUrl = getPostUrl;
+module.exports.makeLoggingJobService = makeLoggingJobService;

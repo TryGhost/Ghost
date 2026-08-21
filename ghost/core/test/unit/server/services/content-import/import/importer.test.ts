@@ -109,7 +109,7 @@ describe('ContentCSVImporter', function () {
 
         sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import queued');
         sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import started');
-        sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import finished in \d+ms$/);
+        sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import completed in \d+ms$/);
     });
 
     it('keeps lifecycle logging best-effort', async function () {
@@ -270,6 +270,7 @@ describe('ContentCSVImporter', function () {
         assert.equal(h.store.get('run_test')?.status, 'failed');
         assert.equal(h.store.get('run_test')?.failureReason, 'converter unavailable');
         assert.ok(h.store.get('run_test')?.finishedAt instanceof Date);
+        sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import failed after \d+ms$/);
     });
 
     it('keeps a successfully written post created when its URL cannot be resolved', async function () {

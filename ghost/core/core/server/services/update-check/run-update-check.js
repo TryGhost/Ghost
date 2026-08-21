@@ -29,6 +29,7 @@ if (parentPort) {
 }
 
 (async () => {
+    const startedAt = Date.now();
     postParentPortMessage('execution started');
     const updateCheck = require('./');
 
@@ -49,7 +50,7 @@ if (parentPort) {
         updateCheckUrl: workerData.updateCheckUrl
     });
 
-    postParentPortMessage('completed');
+    postParentPortMessage(`completed in ${Date.now() - startedAt}ms`);
 
     if (parentPort) {
         postParentPortMessage('done');

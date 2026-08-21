@@ -139,7 +139,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
         );
     });
 
-    it('does not duplicate event-specific completion logs with a terminal log', async function () {
+    it('logs exactly one terminal event with a run duration', async function () {
         const infoLog = sinon.stub(logging, 'info');
         const wrapper = logLatestOpenedJob('newsletters');
         infoLog.resetHistory();
@@ -152,7 +152,8 @@ describe('EmailAnalyticsServiceWrapper', function () {
         await wrapper.startFetch();
 
         const completions = infoLog.args.filter(([message]) => typeof message === 'string' && message.startsWith('[Background Job] email-analytics-fetch-latest completed'));
-        assert.equal(completions.length, 0);
+        assert.equal(completions.length, 1);
+        assert.match(completions[0][0] as string, /^\[Background Job\] email-analytics-fetch-latest completed in \d+ms with 1 events /);
     });
 
     it('does not let failure logging escape the fetch error handler', async function () {

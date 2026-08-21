@@ -305,9 +305,9 @@ class MembersCSVImporter {
         })));
 
         if (result) {
-            jobLogging.info(`[Background Job] members-import finished: imported ${result.imported}, failed ${result.errors.length} in ${Date.now() - startedAt}ms`);
+            jobLogging.info(`[Background Job] members-import completed in ${Date.now() - startedAt}ms: imported ${result.imported}, ${result.errors.length} row(s) rejected`);
         } else {
-            jobLogging.info(`[Background Job] members-import finished after failure in ${Date.now() - startedAt}ms`);
+            jobLogging.info(`[Background Job] members-import failed after ${Date.now() - startedAt}ms`);
         }
     }
 

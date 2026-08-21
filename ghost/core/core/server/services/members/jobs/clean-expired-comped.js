@@ -119,7 +119,7 @@ if (parentPort) {
     debug(`Removed ${deletedExpiredSubs} expired subscriptions, updated ${updatedMembers} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
 
     if (parentPort) {
-        parentPort.postMessage(`completed: removed ${deletedExpiredSubs} expired subscriptions and updated ${updatedMembers} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
+        parentPort.postMessage(`completed in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms: removed ${deletedExpiredSubs} expired subscriptions and updated ${updatedMembers} members`);
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit

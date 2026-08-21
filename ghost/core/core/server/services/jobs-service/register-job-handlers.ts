@@ -10,17 +10,18 @@ export default function registerJobHandlers(): void {
 
     jobsService.handle(CleanTokensJob, async () => {
         const startedAt = Date.now();
-        jobLogging.info('[Background Job] clean-tokens execution started');
+        jobLogging.info('[Background Job] clean-tokens started');
 
         try {
             const deletedCount = await cleanTokens({db});
+            const durationMs = Date.now() - startedAt;
             jobLogging.info({
                 system: {
                     event: 'clean_tokens.completed',
                     deleted_count: deletedCount,
-                    duration_ms: Date.now() - startedAt
+                    duration_ms: durationMs
                 }
-            }, `Removed ${deletedCount} tokens older than 24 hours`);
+            }, `[Background Job] clean-tokens completed in ${durationMs}ms: removed ${deletedCount} tokens older than 24 hours`);
         } catch (error) {
             jobLogging.error(error, `[Background Job] clean-tokens failed after ${Date.now() - startedAt}ms`);
             throw error;

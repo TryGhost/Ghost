@@ -123,13 +123,13 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
     DomainEvents.subscribe(StartGiftReminderFlushEvent, async () => {
         const start = Date.now();
-        jobLogging.info('[Background Job] send-gift-reminders started in main process');
+        jobLogging.info('[Background Job] send-gift-reminders started');
         try {
             const {remindedCount, skippedCount, failedCount} = await giftService.processReminders();
 
-            jobLogging.info(`[Background Job] send-gift-reminders completed: sent ${remindedCount}, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
+            jobLogging.info(`[Background Job] send-gift-reminders completed in ${Date.now() - start}ms: ${remindedCount} sent, ${skippedCount} not due, ${failedCount} rejected`);
         } catch (err) {
-            jobLogging.error(err, '[Background Job] send-gift-reminders failed');
+            jobLogging.error(err, `[Background Job] send-gift-reminders failed after ${Date.now() - start}ms`);
         }
     });
 
@@ -144,7 +144,8 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
-        jobLogging.info('[Background Job] clean-gifts started in main process');
+        const cleanupStart = Date.now();
+        jobLogging.info('[Background Job] clean-gifts started');
 
         const checkoutStart = Date.now();
         try {
@@ -152,7 +153,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
             jobLogging.info(`[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`);
         } catch (err) {
-            jobLogging.error(err, '[Background Job] clean-gifts failed to process abandoned checkouts');
+            jobLogging.error(err, '[Background Job] clean-gifts error processing abandoned checkouts');
         }
 
         const consumedStart = Date.now();
@@ -161,7 +162,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
             jobLogging.info(`[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`);
         } catch (err) {
-            jobLogging.error(err, '[Background Job] clean-gifts failed to process consumed gifts');
+            jobLogging.error(err, '[Background Job] clean-gifts error processing consumed gifts');
         }
 
         const expiredStart = Date.now();
@@ -170,19 +171,19 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
             jobLogging.info(`[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`);
         } catch (err) {
-            jobLogging.error(err, '[Background Job] clean-gifts failed to process expired gifts');
+            jobLogging.error(err, '[Background Job] clean-gifts error processing expired gifts');
         }
 
         try {
             const {sentCount, skippedCount, failedCount} = await giftDeliveryService.recoverPending();
             if (sentCount + skippedCount + failedCount > 0) {
-                jobLogging.info(`[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
+                jobLogging.info(`[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} not due, ${failedCount} rejected`);
             }
         } catch (err) {
-            jobLogging.error(err, '[Background Job] clean-gifts failed to process pending gift deliveries');
+            jobLogging.error(err, '[Background Job] clean-gifts error processing pending gift deliveries');
         }
 
-        jobLogging.info('[Background Job] clean-gifts finished in main process');
+        jobLogging.info(`[Background Job] clean-gifts completed in ${Date.now() - cleanupStart}ms`);
     });
 
     jobs.scheduleGiftCleanupJob();

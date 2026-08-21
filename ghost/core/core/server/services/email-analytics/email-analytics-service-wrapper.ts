@@ -261,10 +261,7 @@ export class EmailAnalyticsServiceWrapper {
                 return;
             }
 
-            // Log a summary when no event-specific completion logs were emitted
-            if (c1 + c2 + c3 + c4 === 0) {
-                jobLogging.info(`[Background Job] ${this.#backgroundJobName} completed with no events | ${this.#logPrefix}`);
-            }
+            jobLogging.info(`[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`);
 
             this.#fetching = false;
         } catch (e) {
