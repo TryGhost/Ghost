@@ -29,7 +29,7 @@ function makeImporter(): ContentCSVImporter {
     // offloaded worker path only, so a throw here would be seen by nobody.
     const report: FailureReporter = (error) => {
         try {
-            logging.error({event: {name: 'content.import.error'}, err: error}, 'Content import failure');
+            logging.error({event: {name: 'content.import.error'}, err: error}, '[Background Job] content-import error');
             sentry.captureException(error);
         } catch {
             // Callers report from catch blocks, so this must not throw.

@@ -1,4 +1,6 @@
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 import {EmailAnalyticsServiceWrapper} from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
 import {EventProcessingResult} from '../../../../../core/server/services/email-analytics/event-processing-result';
 import {Queries} from '../../../../../core/server/services/email-analytics/lib/queries';
@@ -73,6 +75,8 @@ describe('EmailAnalyticsServiceWrapper', function () {
             memberAggregationTimeMs: 200,
             result: new EventProcessingResult()
         }, 2000);
+
+        return wrapper;
     }
 
     it('uses existing open throughput metric name for newsletters', function () {
@@ -93,6 +97,72 @@ describe('EmailAnalyticsServiceWrapper', function () {
             events: 10,
             duration: 2000
         });
+    });
+
+    it('uses the gift analytics job name in lifecycle logs', function () {
+        const infoLog = sinon.stub(logging, 'info');
+
+        logLatestOpenedJob('gifts');
+
+        sinon.assert.calledWith(infoLog, sinon.match('[Background Job] email-analytics-gift-fetch-latest processed'));
+    });
+
+    it('does not let completion logging failures interrupt event processing', function () {
+        const wrapper = logLatestOpenedJob('newsletters');
+        sinon.stub(logging, 'info').throws(new Error('Logger unavailable'));
+
+        assert.doesNotThrow(() => wrapper._logJobCompletion('latest-opened', {
+            eventCount: 10,
+            apiPollingTimeMs: 500,
+            processingTimeMs: 1000,
+            aggregationTimeMs: 500,
+            emailAggregationTimeMs: 300,
+            memberAggregationTimeMs: 200,
+            result: new EventProcessingResult()
+        }, 2000));
+
+        assert.equal(metricStub.callCount, 2);
+    });
+
+    it('logs and preserves initial schedule restoration failures', async function () {
+        const errorLog = sinon.stub(logging, 'error');
+        const wrapper = logLatestOpenedJob('newsletters');
+        const restoreError = new Error('Restore failed');
+        sinon.stub(wrapper.service, 'restoreScheduled').rejects(restoreError);
+
+        await assert.rejects(wrapper.startFetch(), error => error === restoreError);
+
+        sinon.assert.calledOnceWithExactly(
+            errorLog,
+            restoreError,
+            sinon.match('[Background Job] email-analytics-fetch-latest failed while restoring scheduled events')
+        );
+    });
+
+    it('logs exactly one terminal event with a run duration', async function () {
+        const infoLog = sinon.stub(logging, 'info');
+        const wrapper = logLatestOpenedJob('newsletters');
+        infoLog.resetHistory();
+        sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+        sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(1);
+        sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+        sinon.stub(wrapper, 'fetchMissing').resolves(0);
+        sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+
+        await wrapper.startFetch();
+
+        const completions = infoLog.args.filter(([message]) => typeof message === 'string' && message.startsWith('[Background Job] email-analytics-fetch-latest completed'));
+        assert.equal(completions.length, 1);
+        assert.match(completions[0][0] as string, /^\[Background Job\] email-analytics-fetch-latest completed in \d+ms with 1 events /);
+    });
+
+    it('does not let failure logging escape the fetch error handler', async function () {
+        const wrapper = logLatestOpenedJob('newsletters');
+        sinon.stub(logging, 'error').throws(new Error('Logger unavailable'));
+        sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+        sinon.stub(wrapper, 'fetchLatestOpenedEvents').rejects(new Error('Fetch failed'));
+
+        await assert.doesNotReject(wrapper.startFetch());
     });
 
     it('skips opened event polling when the cursor seed has no opened column', async function () {

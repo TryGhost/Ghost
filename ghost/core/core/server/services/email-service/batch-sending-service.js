@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const jobLogging = require('../jobs/job-logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -190,6 +191,7 @@ class BatchSendingService {
      * @returns {void}
      */
     scheduleEmail(email) {
+        jobLogging.info(`[Background Job] batch-sending-service-job queued for email ${email.id}`);
         return this.#jobsService.addJob({
             name: 'batch-sending-service-job',
             job: this.emailJob.bind(this),
@@ -203,20 +205,26 @@ class BatchSendingService {
      * @param {{emailId: string}} data Data passed from the job service. We only need the emailId because we need to refetch the email anyway to make sure the status is right and 'locked'.
      */
     async emailJob({emailId}) {
-        logging.info(`Starting email job for email ${emailId}`);
+        jobLogging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
         const startTime = Date.now();
 
         // Check if email is 'pending' only + change status to submitting in one transaction.
         // This allows us to have a lock around the email job that makes sure an email can only have one active job.
-        let email = await this.retryDb(
-            async () => {
-                return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
-            },
-            {...this.#getBeforeRetryConfig(), description: `updateStatusLock email ${emailId} -> submitting`}
-        );
+        let email;
+        try {
+            email = await this.retryDb(
+                async () => {
+                    return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
+                },
+                {...this.#getBeforeRetryConfig(), description: `updateStatusLock email ${emailId} -> submitting`}
+            );
+        } catch (err) {
+            jobLogging.error(err, `[Background Job] batch-sending-service-job failed while acquiring the status lock after ${Date.now() - startTime}ms`);
+            throw err;
+        }
         if (!email) {
-            logging.error(`Tried sending email that is not pending or failed ${emailId}`);
+            jobLogging.error(`[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed`);
             return;
         }
 
@@ -238,12 +246,13 @@ class BatchSendingService {
                     error: null
                 }, {patch: true, autoRefresh: false});
             }, {...this.#getAfterRetryConfig(), description: `email ${emailId} -> submitted`});
+            jobLogging.info(`[Background Job] batch-sending-service-job completed for email ${emailId} in ${Date.now() - startTime}ms`);
         } catch (e) {
             // Any failure while shutting down counts as interrupted, not failed:
             // collapsed budgets surface transient errors as hard failures, and `failed`
             // drops the email out of the boot resume scan.
             if ((e && e.code === SHUTDOWN_CODE) || this.#shuttingDown) {
-                logging.info(`Email ${email.id} send stopped because the container is shutting down — leaving status=submitting so it can resume on next boot`);
+                jobLogging.info(`[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`);
                 return;
             }
             const ghostError = new errors.EmailError({
@@ -252,7 +261,7 @@ class BatchSendingService {
                 message: `Error sending email ${email.id}`
             });
 
-            logging.error(ghostError);
+            jobLogging.error(ghostError, `[Background Job] batch-sending-service-job failed for email ${emailId} after ${Date.now() - startTime}ms`);
             if (this.#sentry) {
                 // Log the original error to Sentry
                 this.#sentry.captureException(e);

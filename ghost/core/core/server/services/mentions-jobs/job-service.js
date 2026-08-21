@@ -5,19 +5,19 @@
 
 const JobManager = require('@tryghost/job-manager');
 const logging = require('@tryghost/logging');
+const jobLogging = require('../jobs/job-logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
 
 const errorHandler = (error, workerMeta) => {
-    logging.info(`Capturing error for worker during execution of job: ${workerMeta.name}`);
-    logging.error(error);
+    jobLogging.error(error, `[Background Job] ${workerMeta.name} failed`);
     sentry.captureException(error);
 };
 
 const workerMessageHandler = ({name, message}) => {
-    if (typeof message === 'string') {
-        logging.info(`Worker for job ${name} sent a message: ${message}`);
+    if (typeof message === 'string' && !['done', 'cancelled'].includes(message)) {
+        jobLogging.info(`[Background Job] ${name}: ${message}`);
     }
 };
 

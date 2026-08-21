@@ -14,10 +14,11 @@ const simulateSleep = async (ms, clock) => {
 
 describe('Batch Sending Service', function () {
     let errorLog;
+    let infoLog;
 
     beforeEach(function () {
         errorLog = sinon.stub(logging, 'error');
-        sinon.stub(logging, 'info');
+        infoLog = sinon.stub(logging, 'info');
     });
 
     afterEach(function () {
@@ -52,6 +53,20 @@ describe('Batch Sending Service', function () {
     });
 
     describe('emailJob', function () {
+        it('logs and preserves status lock failures', async function () {
+            const lockError = new Error('Database unavailable');
+            const service = new BatchSendingService({});
+            sinon.stub(service, 'retryDb').rejects(lockError);
+
+            await assert.rejects(service.emailJob({emailId: '123'}), error => error === lockError);
+
+            sinon.assert.calledOnceWithExactly(
+                errorLog,
+                lockError,
+                sinon.match('[Background Job] batch-sending-service-job failed while acquiring the status lock')
+            );
+        });
+
         it('does not send if already submitting', async function () {
             const Email = createModelClass({
                 findOne: {
@@ -64,7 +79,7 @@ describe('Batch Sending Service', function () {
             const result = await service.emailJob({emailId: '123'});
             assert.equal(result, undefined);
             sinon.assert.calledOnce(errorLog);
-            sinon.assert.calledWith(errorLog, 'Tried sending email that is not pending or failed 123');
+            sinon.assert.calledWith(errorLog, '[Background Job] batch-sending-service-job skipped because email 123 is not pending or failed');
         });
 
         it('does not send if already submitted', async function () {
@@ -79,7 +94,7 @@ describe('Batch Sending Service', function () {
             const result = await service.emailJob({emailId: '123'});
             assert.equal(result, undefined);
             sinon.assert.calledOnce(errorLog);
-            sinon.assert.calledWith(errorLog, 'Tried sending email that is not pending or failed 123');
+            sinon.assert.calledWith(errorLog, '[Background Job] batch-sending-service-job skipped because email 123 is not pending or failed');
         });
 
         it('does send email if pending', async function () {
@@ -109,6 +124,33 @@ describe('Batch Sending Service', function () {
             assert.equal(afterEmailModel.get('status'), 'submitted', 'The email status is submitted after sending');
             assert.ok(afterEmailModel.get('submitted_at'));
             assert.equal(afterEmailModel.get('error'), null);
+        });
+
+        it('keeps the email submitted when completion logging fails', async function () {
+            const Email = createModelClass({
+                findOne: {
+                    status: 'pending'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {Email}
+            });
+            let emailModel;
+            sinon.stub(service, 'sendEmail').callsFake((email) => {
+                emailModel = email;
+                return Promise.resolve();
+            });
+            infoLog.callsFake((message) => {
+                if (message.startsWith('[Background Job] batch-sending-service-job completed')) {
+                    throw new Error('Logger unavailable');
+                }
+            });
+
+            await service.emailJob({emailId: '123'});
+
+            assert.equal(emailModel.get('status'), 'submitted');
+            assert.equal(emailModel.get('error'), null);
+            sinon.assert.notCalled(errorLog);
         });
 
         it('saves error state if sending fails', async function () {

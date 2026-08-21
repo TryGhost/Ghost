@@ -105,7 +105,7 @@ export function makeImporter(deps: ImporterServices) {
     // offloaded worker path only, so a throw here would be seen by nobody.
     const report: FailureReporter = (error) => {
         try {
-            logging.error({event: {name: 'members.import.error'}, err: error}, 'Members import failure');
+            logging.error({event: {name: 'members.import.error'}, err: error}, '[Background Job] members-import error');
             sentry.captureException(error);
         } catch {
             // Callers report from catch and finally blocks, so this must not throw.

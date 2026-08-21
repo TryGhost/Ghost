@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {describe, it, beforeEach, afterEach} from 'vitest';
+import logging from '@tryghost/logging';
 
 // require, not import: these must resolve to the same CommonJS module
 // instances that core/server/services/members/jobs/index.js loads, so the
@@ -29,8 +30,9 @@ describe('member jobs: token cleanup scheduling', function () {
         assert.ok(scheduleStub.notCalled, 'token cleanup must not be scheduled under NODE_ENV=test*');
     });
 
-    it('schedules a daily clean-tokens job outside the test environment', async function () {
+    it('schedules a daily clean-tokens job outside the test environment even when logging fails', async function () {
         const originalEnv = process.env.NODE_ENV;
+        sinon.stub(logging, 'info').throws(new Error('Logger unavailable'));
         process.env.NODE_ENV = 'production';
         try {
             await memberJobs.scheduleTokenCleanupJob();

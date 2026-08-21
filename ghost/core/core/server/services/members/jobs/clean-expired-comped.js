@@ -10,7 +10,7 @@ const moment = require('moment');
 // where it left off on next run
 function cancel() {
     if (parentPort) {
-        parentPort.postMessage('Expired complimentary subscriptions cleanup cancelled before completion');
+        parentPort.postMessage('cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -30,6 +30,9 @@ if (parentPort) {
 (async () => {
     const cleanupStartDate = new Date();
     const db = require('../../../data/db');
+    if (parentPort) {
+        parentPort.postMessage('execution started');
+    }
     debug(`Starting cleanup of expired comp subscriptions`);
     const expiredCompedRows = await db.knex('members_products')
         .where('expiry_at', '<', moment.utc().startOf('day').toISOString())
@@ -116,7 +119,7 @@ if (parentPort) {
     debug(`Removed ${deletedExpiredSubs} expired subscriptions, updated ${updatedMembers} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
 
     if (parentPort) {
-        parentPort.postMessage(`Removed ${deletedExpiredSubs} expired subscriptions, updated ${updatedMembers} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
+        parentPort.postMessage(`completed in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms: removed ${deletedExpiredSubs} expired subscriptions and updated ${updatedMembers} members`);
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit

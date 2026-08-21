@@ -9,6 +9,8 @@ import type {BatchEventProcessor} from './batch-event-processor';
 import type {Queries} from './lib/queries';
 import {fetchMailgunEvents} from './fetch-mailgun-events';
 
+const jobLogging = require('../jobs/job-logging');
+
 export class EmailAnalyticsServiceWrapper {
     #logName: string;
     #config?: Pick<ConfigInstance, 'get'>;
@@ -20,6 +22,19 @@ export class EmailAnalyticsServiceWrapper {
 
     get #logPrefix(): string {
         return `[EmailAnalytics:${this.#logName}]`;
+    }
+
+    get #backgroundJobName(): string {
+        switch (this.#logName) {
+        case 'newsletters':
+            return 'email-analytics-fetch-latest';
+        case 'automations':
+            return 'email-analytics-automation-fetch-latest';
+        case 'gifts':
+            return 'email-analytics-gift-fetch-latest';
+        default:
+            return `email-analytics-${this.#logName}-fetch-latest`;
+        }
     }
 
     constructor({logName}: {logName: string}) {
@@ -108,14 +123,14 @@ export class EmailAnalyticsServiceWrapper {
         const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
 
         const logMessage = [
-            `${this.#logPrefix} Job complete: ${jobType}`,
+            `[Background Job] ${this.#backgroundJobName} processed ${jobType} | ${this.#logPrefix}`,
             `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
             `Mode: ${batchMode}`,
             `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
             `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
         ].join(' | ');
 
-        logging.info(logMessage);
+        jobLogging.info(logMessage);
 
         // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
         if (jobType === 'latest-opened') {
@@ -199,13 +214,19 @@ export class EmailAnalyticsServiceWrapper {
     }
 
     async startFetch(): Promise<void> {
+        const startedAt = Date.now();
         if (!this.#restoredSchedule) {
             this.#restoredSchedule = true;
-            await this.service.restoreScheduled();
+            try {
+                await this.service.restoreScheduled();
+            } catch (e) {
+                jobLogging.error(e, `[Background Job] ${this.#backgroundJobName} failed while restoring scheduled events after ${Date.now() - startedAt}ms`);
+                throw e;
+            }
         }
 
         if (this.#fetching) {
-            logging.info(`Email analytics fetch for ${this.#logName} already running, skipping`);
+            jobLogging.info(`[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`);
             return;
         }
         this.#fetching = true;
@@ -240,24 +261,21 @@ export class EmailAnalyticsServiceWrapper {
                 return;
             }
 
-            // Log summary if no events were found across all jobs
-            if (c1 + c2 + c3 + c4 === 0) {
-                logging.info(`${this.#logPrefix} Job complete - No events`);
-            }
+            jobLogging.info(`[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`);
 
             this.#fetching = false;
         } catch (e) {
-            logging.error(e, `Error while fetching email analytics for ${this.#logName}`);
+            jobLogging.error(e, `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`);
 
             // Log again only the error, otherwise we lose the stack trace
-            logging.error(e);
+            jobLogging.error(e);
         }
         this.#fetching = false;
     }
 
     _restartFetch(reason: string): void {
         this.#fetching = false;
-        logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
+        jobLogging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
         this.startFetch();
     }
 }

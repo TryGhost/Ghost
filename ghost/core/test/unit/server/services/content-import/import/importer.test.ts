@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
 import ContentCSVImporter from '../../../../../../core/server/services/content-import/import/importer';
 import {ImportRunStore} from '../../../../../../core/server/services/content-import/import/store';
 import type {PostImportRow} from '../../../../../../core/server/services/content-import/import/row';
@@ -77,6 +79,16 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
 }
 
 describe('ContentCSVImporter', function () {
+    let infoLog: sinon.SinonStub;
+
+    beforeEach(function () {
+        infoLog = sinon.stub(logging, 'info');
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('accepts the upload with the row count and defers the writes to one inline job', async function () {
         const h = harness();
 
@@ -88,6 +100,28 @@ describe('ContentCSVImporter', function () {
         assert.equal(h.jobs[0].offloaded, false);
         assert.equal(h.created.length, 0, 'nothing is written until the job runs');
         assert.equal(h.store.get('run_test')?.status, 'running', 'the run is registered before the job starts');
+    });
+
+    it('logs the searchable lifecycle of the inline job', async function () {
+        const h = harness();
+
+        await h.run();
+
+        sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import queued');
+        sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import started');
+        sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import completed in \d+ms$/);
+    });
+
+    it('keeps lifecycle logging best-effort', async function () {
+        const h = harness();
+        infoLog.throws(new Error('Logging unavailable'));
+
+        const accepted = await h.run();
+
+        assert.deepEqual(accepted, {importId: 'run_test', total: 2});
+        assert.equal(h.jobs.length, 1, 'the job is queued even when the queued log fails');
+        assert.equal(h.store.get('run_test')?.status, 'complete', 'the job still resolves and finalizes its run');
+        assert.equal(h.created.length, 2);
     });
 
     it('writes one post per row, in order, under the importing options', async function () {
@@ -236,6 +270,7 @@ describe('ContentCSVImporter', function () {
         assert.equal(h.store.get('run_test')?.status, 'failed');
         assert.equal(h.store.get('run_test')?.failureReason, 'converter unavailable');
         assert.ok(h.store.get('run_test')?.finishedAt instanceof Date);
+        sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import failed after \d+ms$/);
     });
 
     it('keeps a successfully written post created when its URL cannot be resolved', async function () {

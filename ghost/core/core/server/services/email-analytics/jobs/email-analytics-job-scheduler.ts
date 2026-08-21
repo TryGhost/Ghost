@@ -1,6 +1,8 @@
 import * as path from 'node:path';
 import moment from 'moment';
 
+const jobLogging = require('../../jobs/job-logging');
+
 type CountableQuery = {
     where(column: string, operator: string, value: unknown): CountableQuery;
     count(): Promise<string | number>;
@@ -86,8 +88,10 @@ export class EmailAnalyticsJobScheduler {
             .count());
 
         if (emailCount > 0 && !this.#hasScheduledNewslettersJob) {
+            const at = randomFiveMinuteCron();
+            jobLogging.info(`[Background Job] email-analytics-fetch-latest scheduled at ${at}`);
             this.#jobManager.addJob({
-                at: randomFiveMinuteCron(),
+                at,
                 job: path.resolve(__dirname, 'fetch-latest/index.js'),
                 name: 'email-analytics-fetch-latest'
             });
@@ -119,8 +123,10 @@ export class EmailAnalyticsJobScheduler {
             return;
         }
 
+        const at = randomFiveMinuteCron();
+        jobLogging.info(`[Background Job] email-analytics-automation-fetch-latest scheduled at ${at}`);
         this.#jobManager.addJob({
-            at: randomFiveMinuteCron(),
+            at,
             job: path.resolve(__dirname, 'automation-fetch-latest/index.js'),
             name: 'email-analytics-automation-fetch-latest'
         });
@@ -145,8 +151,10 @@ export class EmailAnalyticsJobScheduler {
             return;
         }
 
+        const at = randomFiveMinuteCron();
+        jobLogging.info(`[Background Job] email-analytics-gift-fetch-latest scheduled at ${at}`);
         this.#jobManager.addJob({
-            at: randomFiveMinuteCron(),
+            at,
             job: path.resolve(__dirname, 'gift-fetch-latest/index.js'),
             name: 'email-analytics-gift-fetch-latest'
         });
