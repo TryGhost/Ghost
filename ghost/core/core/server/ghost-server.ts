@@ -14,6 +14,7 @@ import stoppable from 'stoppable';
 import type { Promisable } from 'type-fest';
 import type * as express from 'express';
 import type * as http from 'node:http';
+import { promisify } from 'node:util';
 
 type ServerConfig = {
   host: string;
@@ -21,6 +22,8 @@ type ServerConfig = {
   shutdownTimeout: number;
   testmode: boolean;
 };
+
+type StoppableHttpServer = http.Server & stoppable.WithStop;
 
 const debug = createDebug('server');
 
@@ -106,9 +109,9 @@ export class GhostServer {
     const { host, port, testmode, shutdownTimeout } = this.serverConfig;
 
     return new Promise((resolve, reject) => {
-      this.httpServer = rootApp.listen(port, host);
+      const httpServer = rootApp.listen(port, host);
 
-      this.httpServer.on('error', (error) => {
+      httpServer.on('error', (error) => {
         let ghostError;
 
         if ('code' in error && error.code === 'EADDRINUSE') {
@@ -133,7 +136,7 @@ export class GhostServer {
         });
       });
 
-      this.httpServer.on('listening', () => {
+      httpServer.on('listening', () => {
         debug('...Started');
         this.#logStartMessages();
 
@@ -148,7 +151,7 @@ export class GhostServer {
         });
       });
 
-      stoppable(this.httpServer, shutdownTimeout);
+      this.httpServer = stoppable(httpServer, shutdownTimeout);
 
       // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
       process
@@ -275,10 +278,9 @@ export class GhostServer {
     const { httpServer } = this;
     assert(httpServer, 'httpServer must be set before stopping server');
 
-    const util = require('util');
     const startTime = Date.now();
     try {
-      return await util.promisify(httpServer.close.bind(httpServer))();
+      return await promisify(httpServer.stop.bind(httpServer))();
     } finally {
       logging.info(`Shutdown: stopped HTTP server in ${Date.now() - startTime}ms`);
     }
