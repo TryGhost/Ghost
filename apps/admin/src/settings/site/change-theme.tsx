@@ -5,7 +5,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
-import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {downloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
@@ -72,8 +72,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
             return;
         }
 
-        const {apiRoot} = getGhostPaths();
-        downloadFile(`${apiRoot}/themes/${activeTheme.name}/download`);
+        downloadFromEndpoint(`/themes/${activeTheme.name}/download`);
     };
 
     const values = (

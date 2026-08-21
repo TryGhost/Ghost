@@ -1,6 +1,13 @@
 import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnauthorizedError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from '../errors';
 
-const handleResponse = async (response: Response) => {
+export type ResponseType = 'blob' | 'arraybuffer';
+
+// The API serves YAML files (routes, redirects) as application/yaml
+const isTextContentType = (contentType: string | null) => {
+    return !!contentType && (contentType.startsWith('text/') || contentType.includes('application/yaml'));
+};
+
+const handleResponse = async (response: Response, {responseType}: {responseType?: ResponseType} = {}) => {
     if (response.status === 0) {
         throw new ServerUnreachableError();
     } else if (response.status === 503) {
@@ -40,7 +47,11 @@ const handleResponse = async (response: Response) => {
         }
     } else if (response.status === 204) {
         return;
-    } else if (response.headers.get('content-type')?.includes('text/csv')) {
+    } else if (responseType === 'blob') {
+        return await response.blob();
+    } else if (responseType === 'arraybuffer') {
+        return await response.arrayBuffer();
+    } else if (isTextContentType(response.headers.get('content-type'))) {
         return await response.text();
     } else {
         return await response.json();

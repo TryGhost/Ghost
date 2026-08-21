@@ -6,7 +6,7 @@ import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {ModalPage} from '@tryghost/shade/page-templates';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
-import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {downloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
@@ -83,8 +83,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleDownload = () => {
-        const {apiRoot} = getGhostPaths();
-        downloadFile(`${apiRoot}/themes/${theme.name}/download`);
+        downloadFromEndpoint(`/themes/${theme.name}/download`);
     };
 
     const handleDelete = () => {

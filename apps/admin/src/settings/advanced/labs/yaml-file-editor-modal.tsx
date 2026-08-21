@@ -4,9 +4,9 @@ import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {apiUrl} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFetchApi, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export interface YamlFileEditorModalProps {
     title: string;
@@ -41,6 +41,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     onUpload,
     onClose
 }) => {
+    const fetchApi = useFetchApi();
     const handleError = useHandleError();
 
     const [content, setContent] = useState('');
@@ -59,25 +60,19 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
             setLoadError(null);
 
             try {
-                const {apiRoot} = getGhostPaths();
-                const response = await fetch(`${apiRoot}${downloadPath}`, {
-                    credentials: 'include',
-                    headers: {
-                        Accept: 'text/yaml, text/plain, */*'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to load ${uploadFilename} (${response.status})`);
-                }
-
-                const text = await response.text();
+                const text = await fetchApi<string>(apiUrl(downloadPath));
 
                 if (isMounted) {
                     setContent(text);
                 }
             } catch (error) {
-                if (isMounted) {
+                if (!isMounted) {
+                    return;
+                }
+
+                if (error instanceof APIError && error.response) {
+                    setLoadError(`Failed to load ${uploadFilename} (${error.response.status})`);
+                } else {
                     setLoadError(error instanceof Error ? error.message : `Failed to load ${uploadFilename}`);
                 }
             } finally {
@@ -92,7 +87,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
         return () => {
             isMounted = false;
         };
-    }, [downloadPath, uploadFilename]);
+    }, [downloadPath, uploadFilename, fetchApi]);
 
     const handleSave = async () => {
         if (isSaving || isLoading || loadError) {
