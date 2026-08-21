@@ -49,6 +49,7 @@ export function invite(overrides: Partial<StaffInvite> = {}): StaffInvite {
 export const allRoles = (): StaffRole[] => [
   role('Administrator'),
   role('Editor'),
+  role('Super Editor'),
   role('Author'),
   role('Contributor'),
   role('Owner'),

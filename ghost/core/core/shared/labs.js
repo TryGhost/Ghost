@@ -30,7 +30,7 @@ const messages = {
 const GA_FEATURES = ['automationAnalytics'];
 
 // These features are considered publicly available and can be enabled/disabled by users
-const PUBLIC_BETA_FEATURES = ['superEditors', 'editorExcerpt', 'additionalPaymentMethods'];
+const PUBLIC_BETA_FEATURES = ['editorExcerpt', 'additionalPaymentMethods'];
 
 // These features are considered private they live in the private tab of the labs settings page
 // Which is only visible if the developer experiments flag is enabled
