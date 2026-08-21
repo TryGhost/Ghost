@@ -110,9 +110,14 @@ export const useInstallTheme = createMutation<ThemesInstallResponseType, string>
   },
 });
 
-export const useUploadTheme = createMutation<ThemesInstallResponseType, { file: File }>({
+export const useUploadTheme = createMutation<
+  ThemesInstallResponseType,
+  { file: File; copySettingsFrom?: string }
+>({
   method: 'POST',
   path: () => '/themes/upload/',
+  searchParams: ({ copySettingsFrom }): Record<string, string> =>
+    copySettingsFrom ? { copy_settings_from: copySettingsFrom } : {},
   body: ({ file }) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -121,11 +126,17 @@ export const useUploadTheme = createMutation<ThemesInstallResponseType, { file: 
   updateQueries: {
     dataType,
     emberUpdateType: 'createOrUpdate',
-    // Assume that all invite queries should include this new one
+    // Uploading can replace an existing theme, so swap it out by name
+    // instead of appending a duplicate entry
     update: (newData, currentData) =>
       currentData && {
         ...(currentData as ThemesResponseType),
-        themes: [...(currentData as ThemesResponseType).themes, ...newData.themes],
+        themes: [
+          ...(currentData as ThemesResponseType).themes.filter(
+            (theme) => !newData.themes.some(({ name }) => name === theme.name),
+          ),
+          ...newData.themes,
+        ],
       },
   },
 });

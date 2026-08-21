@@ -81,8 +81,10 @@ export { useNavigationStack } from './providers/navigation-stack-provider';
 export {
   Link,
   Outlet,
+  useBlocker,
   useLocation,
   useParams,
+  useRouteError,
   useSearchParams,
   redirect,
   matchRoutes,

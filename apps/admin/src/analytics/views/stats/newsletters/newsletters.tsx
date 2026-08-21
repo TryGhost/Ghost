@@ -33,6 +33,7 @@ import {
 import { Navigate, useAppContext, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getRangeDates } from '@tryghost/shade/app';
+import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
@@ -63,10 +64,7 @@ const NewsletterTableRows: React.FC<{
   const navigate = useNavigate();
   const { settings } = useAnalyticsData();
 
-  // Get site timezone from settings for displaying dates consistently
-  const siteTimezone = String(
-    settings.find((setting) => setting.key === 'timezone')?.value || 'Etc/UTC',
-  );
+  const siteTimezone = getSiteTimezone(settings);
 
   // Fetch newsletter stats with reactive sort order - isolated to this component
   const {
@@ -185,6 +183,7 @@ const NewsletterTableRows: React.FC<{
     emailTrackClicksEnabled,
     emailTrackOpensEnabled,
     range,
+    siteTimezone,
   ]);
 
   // Show loading rows while data is loading

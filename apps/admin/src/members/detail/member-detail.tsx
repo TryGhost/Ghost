@@ -7,13 +7,6 @@ import MemberNewslettersField from './member-newsletters-field';
 import MemberSubscriptionsSection from './member-subscriptions-section';
 import React from 'react';
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -29,14 +22,8 @@ import {
 } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { DetailPage } from '@tryghost/shade/page-templates';
-import {
-  Link,
-  useConfirmUnload,
-  useLocation,
-  useNavigate,
-  useParams,
-} from '@tryghost/admin-x-framework';
-import { PageHeader } from '@tryghost/shade/patterns';
+import { Link, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import {
   buildMemberFieldEditPayload,
   getDefaultNewsletterIdsForNewMember,
@@ -53,12 +40,10 @@ import { formatMemberName } from '@tryghost/shade/app';
 import { getMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
-import { NavigationType, useBlocker } from 'react-router';
-import { isOnRouterHistoryEntry } from '@/hooks/use-router-history-entry';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useHashLinkNavigationGuard } from '@/hooks/use-hash-link-navigation-guard';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { MemberEditableFields } from './member-detail-edit';
 
 // The create screen reuses this route with the sentinel id "new". Safe because
@@ -139,8 +124,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   // One-shot flag: have we seeded create-mode newsletter defaults yet? Reset
   // when re-entering create mode (draftMemberIdRef flips off CREATE_ID).
   const newsletterDefaultsSeededRef = React.useRef(false);
-  // Lets the post-create redirect through the unsaved-changes blocker.
-  const bypassGuardRef = React.useRef(false);
   React.useEffect(() => {
     if (isCreating) {
       if (draftMemberIdRef.current !== CREATE_ID) {
@@ -171,11 +154,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       isDraftInSyncWithServer(prev, previousServerSlice) ? nextServerSlice : prev,
     );
   }, [member, isCreating]);
-
-  // Reset the create-redirect bypass whenever the route target changes.
-  React.useEffect(() => {
-    bypassGuardRef.current = false;
-  }, [memberId]);
 
   // Seed the create-mode draft with the Ember default newsletter set the
   // first time the newsletters query resolves. Runs at most once per
@@ -219,6 +197,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       : undefined;
   const hasUnsavedChanges =
     !!draft && !!serverSlice && !dequal(normalizeDraftForComparison(draft), serverSlice);
+  const { dialogProps, bypassNextNavigation } = useUnsavedChangesGuard({
+    when: hasUnsavedChanges,
+    confirmUnloadWhen: activeMutation.isPending || hasUnsavedChanges,
+  });
   const emailValid = !!draft && isValidMemberEmail(draft.email);
   // `touched` is set on the email field's first blur. That keeps the New
   // member screen from painting an "Email is required." error before the
@@ -301,7 +283,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             }
             // Skip the unsaved-changes guard for our own redirect to the
             // freshly-created member.
-            bypassGuardRef.current = true;
+            bypassNextNavigation();
             toast.success('Member created');
             navigate(`/members/${created.id}`, { replace: true });
           },
@@ -335,27 +317,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       },
     );
   };
-
-  useConfirmUnload(activeMutation.isPending || hasUnsavedChanges);
-  const blocker = useBlocker(({ currentLocation, nextLocation, historyAction }) => {
-    // A POP can only be undone from a router-created entry; elsewhere the router
-    // would miscount the delta and jump or reload, so let those through.
-    if (historyAction === NavigationType.Pop && !isOnRouterHistoryEntry()) {
-      return false;
-    }
-    return (
-      !bypassGuardRef.current &&
-      hasUnsavedChanges &&
-      currentLocation.pathname !== nextLocation.pathname
-    );
-  });
-  // Native `<a href="#/…">` navigations (the sidebar, links into Ember
-  // routes) never reach the react-router blocker above — see the hook.
-  // Ember's own guard (`trailing-hash.js`) can't cover this screen either,
-  // since the screen has no Ember route to register into the
-  // `unsaved-changes` service.
-  const anchorGuard = useHashLinkNavigationGuard(hasUnsavedChanges);
-  const isBlocked = blocker.state === 'blocked' || anchorGuard.isBlocked;
 
   // Save button state (Save / Saving / Saved / Retry), mirroring the Ember task button.
   let saveLabel: React.ReactNode = 'Save';
@@ -434,9 +395,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                         // modal is open.
                         <MemberActionsMenu
                           key={member.id}
-                          allowLeaveWithUnsavedChanges={() => {
-                            bypassGuardRef.current = true;
-                          }}
+                          allowLeaveWithUnsavedChanges={bypassNextNavigation}
                           member={member}
                         />
                       )}
@@ -567,39 +526,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
           </DetailPage.Body>
 
-          <AlertDialog
-            open={isBlocked}
-            onOpenChange={(open) => {
-              if (!open && isBlocked) {
-                blocker.reset?.();
-                anchorGuard.reset();
-              }
-            }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Your changes will be lost if you leave this member.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep editing</AlertDialogCancel>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    if (anchorGuard.isBlocked) {
-                      anchorGuard.proceed();
-                    } else {
-                      blocker.proceed?.();
-                    }
-                  }}
-                >
-                  Leave
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DirtyConfirmDialog {...dialogProps} />
         </DetailPage>
       </Container>
     </Box>

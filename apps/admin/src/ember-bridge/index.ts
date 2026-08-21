@@ -14,4 +14,3 @@ export {
   subscribeOpenGiftLinkModal,
 } from './ember-bridge';
 export type { EmberDataChangeEvent, EmberRouting, OpenGiftLinkModalEvent } from './ember-bridge';
-export type { RouteHandle } from './force-upgrade-guard';

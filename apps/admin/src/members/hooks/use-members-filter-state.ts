@@ -7,7 +7,7 @@ import {
   serializeMemberFilters,
 } from '@/members/member-filter-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams } from '@tryghost/admin-x-framework';
 import type { MemberFields } from '@/members/member-fields';
 
 interface SetFiltersOptions {

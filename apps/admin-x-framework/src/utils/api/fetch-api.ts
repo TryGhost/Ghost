@@ -10,7 +10,7 @@ import {
   UnauthorizedError,
 } from '../errors';
 import { getGhostPaths } from '../helpers';
-import handleResponse from './handle-response';
+import handleResponse, { ResponseType } from './handle-response';
 
 export interface RequestOptions {
   method?: string;
@@ -21,6 +21,8 @@ export interface RequestOptions {
   credentials?: 'include' | 'omit' | 'same-origin';
   timeout?: number;
   retry?: boolean;
+  /** Resolve the raw response body instead of parsing it as JSON/text */
+  responseType?: ResponseType;
   onUploadProgress?: (progress: number) => void;
 }
 
@@ -169,6 +171,7 @@ export const useFetchApi = () => {
         credentials = 'include',
         timeout,
         retry = true,
+        responseType,
         onUploadProgress,
       }: RequestOptions = {},
     ): Promise<ResponseData> => {
@@ -226,7 +229,7 @@ export const useFetchApi = () => {
           try {
             const response = await fetchFn(endpoint, requestInit);
             // Awaited so response errors reject inside the try/catch
-            return (await handleResponse(response)) as ResponseData;
+            return (await handleResponse(response, { responseType })) as ResponseData;
           } catch (error) {
             retryingMs = Date.now() - startTime;
 

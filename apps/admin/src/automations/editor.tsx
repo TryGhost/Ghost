@@ -14,6 +14,7 @@ import {
   type ButtonProps,
   LoadingIndicator,
 } from '@tryghost/shade/components';
+import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
@@ -22,8 +23,8 @@ import type {
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useBlocker } from 'react-router';
-import { useConfirmUnload, useParams } from '@tryghost/admin-x-framework';
+import { useParams } from '@tryghost/admin-x-framework';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
@@ -71,7 +72,6 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
   const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
   const isEmailModalDirtyRef = React.useRef(false);
-  const navigationBlockerReasonRef = React.useRef<'automation' | 'email' | null>(null);
   const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
   // Keep the saved snapshot separate from the live query result. Later query updates or errors
@@ -384,39 +384,28 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     }
   };
 
-  useConfirmUnload(isEditRequestActive || hasUnsavedChanges || isEmailModalDirty);
-  const navigationBlocker = useBlocker(({ currentLocation, nextLocation }) => {
-    const currentEmailStep = new URLSearchParams(currentLocation.search).get(
-      EMAIL_STEP_QUERY_PARAM,
-    );
-    const nextEmailStep = new URLSearchParams(nextLocation.search).get(EMAIL_STEP_QUERY_PARAM);
-    if (isEmailModalDirtyRef.current && currentEmailStep && currentEmailStep !== nextEmailStep) {
-      navigationBlockerReasonRef.current = 'email';
-      isBlockedEmailNavigationLeavingEditorRef.current =
-        currentLocation.pathname !== nextLocation.pathname;
-      return true;
-    }
+  // The dirty email modal claims navigations that change its `emailStep`
+  // query param (closing the modal, back button, leaving the editor) so the
+  // canvas can run its own discard flow instead of the page-level dialog.
+  const { dialogProps: discardDialogProps, interceptedNavigation } = useUnsavedChangesGuard({
+    when: hasUnsavedChanges || isEmailModalDirty,
+    confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
+    interceptNavigation: ({ currentLocation, nextLocation }) => {
+      const currentEmailStep = new URLSearchParams(currentLocation.search).get(
+        EMAIL_STEP_QUERY_PARAM,
+      );
+      const nextEmailStep = new URLSearchParams(nextLocation.search).get(EMAIL_STEP_QUERY_PARAM);
+      if (isEmailModalDirtyRef.current && currentEmailStep && currentEmailStep !== nextEmailStep) {
+        isBlockedEmailNavigationLeavingEditorRef.current =
+          currentLocation.pathname !== nextLocation.pathname;
+        return true;
+      }
 
-    if (hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname) {
-      navigationBlockerReasonRef.current = 'automation';
       isBlockedEmailNavigationLeavingEditorRef.current = false;
-      return true;
-    }
-
-    navigationBlockerReasonRef.current = null;
-    isBlockedEmailNavigationLeavingEditorRef.current = false;
-    return false;
+      return false;
+    },
   });
-  const isEmailNavigationBlocked =
-    navigationBlocker.state === 'blocked' && navigationBlockerReasonRef.current === 'email';
-  const isAutomationNavigationBlocked =
-    navigationBlocker.state === 'blocked' && navigationBlockerReasonRef.current === 'automation';
-
-  const onConfirmDiscardOpenChange = (open: boolean): void => {
-    if (!open && isAutomationNavigationBlocked) {
-      navigationBlocker.reset();
-    }
-  };
+  const isEmailNavigationBlocked = interceptedNavigation.isBlocked;
 
   const onEmailDirtyChange = React.useCallback((dirty: boolean) => {
     isEmailModalDirtyRef.current = dirty;
@@ -455,37 +444,22 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           onEmailDirtyChange(false);
           if (isBlockedEmailNavigationLeavingEditorRef.current) {
             isBlockedEmailNavigationLeavingEditorRef.current = false;
-            navigationBlocker.reset?.();
+            interceptedNavigation.reset();
             closeEmailModal();
             return;
           }
 
           isBlockedEmailNavigationLeavingEditorRef.current = false;
-          navigationBlocker.proceed?.();
+          interceptedNavigation.proceed();
         }}
         onEmailDirtyChange={onEmailDirtyChange}
         onKeepEditingAfterBlockedEmailNavigation={() => {
           isBlockedEmailNavigationLeavingEditorRef.current = false;
-          navigationBlocker.reset?.();
+          interceptedNavigation.reset();
         }}
       />
 
-      <AlertDialog open={isAutomationNavigationBlocked} onOpenChange={onConfirmDiscardOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your changes will be lost if you leave this automation.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep working</AlertDialogCancel>
-            <Button variant="destructive" onClick={() => navigationBlocker.proceed?.()}>
-              Discard changes
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DirtyConfirmDialog {...discardDialogProps} />
 
       <AlertDialog open={isConfirmPublishAlertOpen} onOpenChange={onConfirmPublishOpenChange}>
         <AlertDialogContent>
