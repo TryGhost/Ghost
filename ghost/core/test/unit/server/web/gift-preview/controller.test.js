@@ -80,6 +80,7 @@ describe('Gift Preview Controller', function () {
 
     it('returns HTML with OG tags for a valid gift', async function () {
       giftService.getPreview.resolves({
+        available: true,
         tier: { id: 'tier_1', name: 'Premium' },
         cadence: 'year',
         duration: 1,
@@ -113,6 +114,7 @@ describe('Gift Preview Controller', function () {
     it('escapes HTML in site title', async function () {
       settingsCache.get.withArgs('title').returns('Blog <script>alert("xss")</script>');
       giftService.getPreview.resolves({
+        available: true,
         tier: { id: 'tier_1', name: 'Premium' },
         cadence: 'month',
         duration: 3,
@@ -128,6 +130,7 @@ describe('Gift Preview Controller', function () {
 
     it('uses monthly cadence label', async function () {
       giftService.getPreview.resolves({
+        available: true,
         tier: { id: 'tier_1', name: 'Premium' },
         cadence: 'month',
         duration: 3,
@@ -141,9 +144,51 @@ describe('Gift Preview Controller', function () {
       assert.ok(html.includes('Open this link to redeem your gift.'));
     });
 
+    it('hides gift details before redemption availability', async function () {
+      const redeemableAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      giftService.getPreview.resolves({
+        available: false,
+        availableOn: '2026-12-25',
+        redeemableAt,
+      });
+
+      await controller.giftPreview(req, res);
+
+      sinon.assert.calledOnce(res.send);
+      const html = res.send.firstCall.args[0];
+
+      assert.ok(html.includes("You've been gifted a membership to Test Blog"));
+      assert.ok(html.includes('Your gift can be opened on'));
+      assert.ok(!html.includes('Premium'));
+      assert.ok(!html.includes('og:image'));
+      assert.ok(html.includes('<meta name="twitter:card" content="summary">'));
+      assert.ok(
+        html.includes('content="0;url=https://example.com/#/portal/gift/redeem/test-token-123"'),
+      );
+    });
+
+    it('caps pre-availability caching at the availability time', async function () {
+      const redeemableAt = new Date(Date.now() + 10 * 60 * 1000);
+      giftService.getPreview.resolves({
+        available: false,
+        availableOn: '2026-12-25',
+        redeemableAt,
+      });
+
+      await controller.giftPreview(req, res);
+
+      const cacheControl = res.set.getCalls().find((call) => call.args[0] === 'Cache-Control')
+        .args[1];
+      const maxAge = Number(cacheControl.match(/max-age=(\d+)/)[1]);
+
+      assert.ok(maxAge <= 601, `expected max-age <= 601, got ${maxAge}`);
+      assert.ok(maxAge > 0, `expected max-age > 0, got ${maxAge}`);
+    });
+
     it('defaults site title to Ghost', async function () {
       settingsCache.get.withArgs('title').returns(null);
       giftService.getPreview.resolves({
+        available: true,
         tier: { id: 'tier_1', name: 'Premium' },
         cadence: 'year',
         duration: 1,
@@ -158,8 +203,22 @@ describe('Gift Preview Controller', function () {
   });
 
   describe('giftPreviewImage', function () {
+    it('returns 404 before redemption availability', async function () {
+      giftService.getPreview.resolves({
+        available: false,
+        availableOn: '2026-12-25',
+        redeemableAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+
+      await controller.giftPreviewImage(req, res);
+
+      sinon.assert.calledOnceWithExactly(res.sendStatus, 404);
+      sinon.assert.notCalled(res.send);
+    });
+
     it('returns a PNG image for a valid gift', async function () {
       giftService.getPreview.resolves({
+        available: true,
         tier: { id: 'tier_1', name: 'Gold' },
         cadence: 'year',
         duration: 1,

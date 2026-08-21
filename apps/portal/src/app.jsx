@@ -639,6 +639,15 @@ export default class App extends React.Component {
       const cadence = qParams.get('gift_cadence');
       const duration = Number(qParams.get('gift_duration'));
       const deliveryMethod = qParams.get('gift_delivery');
+      const deliveryDateParam = qParams.get('gift_delivery_date');
+      const deliveryDate = /^\d{4}-\d{2}-\d{2}$/.test(deliveryDateParam || '')
+        ? deliveryDateParam
+        : null;
+      // Exact send instant in epoch ms; a delivery date without it means
+      // the send already happened.
+      const redeemableAtParam = Number(qParams.get('gift_redeemable_at'));
+      const redeemableAt =
+        Number.isFinite(redeemableAtParam) && redeemableAtParam > 0 ? redeemableAtParam : null;
       clearURLParams([
         'stripe',
         'gift_token',
@@ -646,6 +655,8 @@ export default class App extends React.Component {
         'gift_cadence',
         'gift_duration',
         'gift_delivery',
+        'gift_delivery_date',
+        'gift_redeemable_at',
       ]);
       if (token) {
         return {
@@ -657,6 +668,8 @@ export default class App extends React.Component {
             cadence,
             duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
             deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link',
+            deliveryDate,
+            redeemableAt,
           },
         };
       }

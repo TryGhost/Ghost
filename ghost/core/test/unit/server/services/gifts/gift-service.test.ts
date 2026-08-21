@@ -303,7 +303,10 @@ describe('GiftService', function () {
       assert.equal(purchased.amount, 5000);
       assert.equal(purchased.stripePaymentIntentId, 'pi_pending');
       sinon.assert.notCalled(giftRepository.create);
-      sinon.assert.calledOnceWithExactly(giftDeliveryService.dispatchForGift, 'gift_1');
+      sinon.assert.calledOnceWithExactly(
+        giftDeliveryService.dispatchForGift,
+        sinon.match.has('giftId', 'gift_1'),
+      );
     });
 
     function buildAnonymousPendingGift() {
@@ -438,6 +441,86 @@ describe('GiftService', function () {
           buyerEmail: 'stripe-buyer@example.com',
         }),
       );
+    });
+
+    it('anchors the claim window to scheduled redemption availability', async function () {
+      const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+      const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
+      const pending = Gift.fromCheckout({
+        token: 'pending-token',
+        buyerEmail: 'buyer@example.com',
+        buyerMemberId: null,
+        buyerName: 'Buyer',
+        recipientName: 'Recipient',
+        personalMessage: null,
+        redeemableAt,
+        tierId: 'tier_1',
+        cadence: 'year',
+        duration: 1,
+        currency: 'usd',
+        amount: 5000,
+      }).bindCheckoutSession('cs_pending')!;
+      giftRepository.getById.resolves(pending);
+      const service = createService({ timezone: 'Etc/UTC' });
+
+      await service.completePurchase({
+        giftId: 'gift_1',
+        buyerEmail: null,
+        stripeCustomerId: null,
+        currency: 'usd',
+        amount: 5000,
+        stripeCheckoutSessionId: 'cs_pending',
+        stripePaymentIntentId: 'pi_pending',
+      });
+
+      const purchased = giftRepository.update.firstCall.firstArg;
+      assert.equal(purchased.redeemableAt.toISOString(), '2026-12-25T09:00:00.000Z');
+      assert.equal(purchased.expiresAt.toISOString(), '2027-12-25T23:59:59.999Z');
+      sinon.assert.calledWith(
+        giftEmailService.sendPurchaseConfirmation,
+        sinon.match({ redeemableAt }),
+      );
+      clock.restore();
+    });
+
+    it('starts availability and the claim window at purchase when scheduled checkout completes late', async function () {
+      const purchasedAt = new Date('2026-12-26T12:00:00.000Z');
+      const clock = sinon.useFakeTimers(purchasedAt);
+      const pending = Gift.fromCheckout({
+        token: 'pending-token',
+        buyerEmail: 'buyer@example.com',
+        buyerMemberId: null,
+        buyerName: 'Buyer',
+        recipientName: 'Recipient',
+        personalMessage: null,
+        redeemableAt: new Date('2026-12-25T09:00:00.000Z'),
+        tierId: 'tier_1',
+        cadence: 'year',
+        duration: 1,
+        currency: 'usd',
+        amount: 5000,
+      }).bindCheckoutSession('cs_pending')!;
+      giftRepository.getById.resolves(pending);
+      const service = createService({ timezone: 'Etc/UTC' });
+
+      await service.completePurchase({
+        giftId: 'gift_1',
+        buyerEmail: null,
+        stripeCustomerId: null,
+        currency: 'usd',
+        amount: 5000,
+        stripeCheckoutSessionId: 'cs_pending',
+        stripePaymentIntentId: 'pi_pending',
+      });
+
+      const purchased = giftRepository.update.firstCall.firstArg;
+      assert.equal(purchased.redeemableAt.toISOString(), purchasedAt.toISOString());
+      assert.equal(purchased.expiresAt.toISOString(), '2027-12-26T23:59:59.999Z');
+      sinon.assert.calledWith(
+        giftEmailService.sendPurchaseConfirmation,
+        sinon.match({ redeemableAt: purchasedAt }),
+      );
+      clock.restore();
     });
 
     it('falls back to the Stripe customer member email when Stripe omits customer details', async function () {
@@ -703,6 +786,54 @@ describe('GiftService', function () {
     });
   });
 
+  describe('getPreview', function () {
+    it('returns full gift details once the gift is available', async function () {
+      const gift = buildGift({ redeemableAt: new Date(Date.now() - 60_000) });
+      giftRepository.getByToken.resolves(gift);
+      const service = createService();
+
+      const preview = await service.getPreview(gift.token);
+
+      assert.ok(preview);
+      assert.equal(preview.available, true);
+      if (preview.available) {
+        assert.equal(preview.tier.name, 'Bronze');
+        assert.equal(preview.duration, gift.duration);
+      }
+    });
+
+    it('hides gift details before scheduled redemption availability', async function () {
+      const gift = buildGift({ redeemableAt: new Date('2099-12-25T17:00:00.000Z') });
+      giftRepository.getByToken.resolves(gift);
+      const service = createService({ timezone: 'America/Los_Angeles' });
+
+      const preview = await service.getPreview(gift.token);
+
+      assert.ok(preview);
+      assert.equal(preview.available, false);
+      if (!preview.available) {
+        assert.equal(preview.availableOn, '2099-12-25');
+        assert.equal(preview.redeemableAt.getTime(), gift.redeemableAt!.getTime());
+      }
+      sinon.assert.notCalled(tiersService.api.read);
+    });
+
+    it('does not promise an availability date for a refunded scheduled gift', async function () {
+      const gift = buildGift({
+        status: 'refunded',
+        refundedAt: new Date('2026-06-01T00:00:00.000Z'),
+        redeemableAt: new Date('2099-12-25T17:00:00.000Z'),
+      });
+      giftRepository.getByToken.resolves(gift);
+      const service = createService();
+
+      const preview = await service.getPreview(gift.token);
+
+      assert.ok(preview);
+      assert.equal(preview.available, true);
+    });
+  });
+
   describe('getRedeemable', function () {
     it('returns a redemption read model when the gift is redeemable', async function () {
       const gift = buildGift();
@@ -727,6 +858,25 @@ describe('GiftService', function () {
           assert.equal(err.errorType, 'NotFoundError');
           assert.equal(err.message, 'This gift does not exist.');
           assert.equal(err.code, 'GIFT_NOT_FOUND');
+          return true;
+        },
+      );
+    });
+
+    it('returns a privacy-safe availability date before a scheduled gift is redeemable', async function () {
+      const gift = buildGift({
+        redeemableAt: new Date('2099-12-25T17:00:00.000Z'),
+      });
+      giftRepository.getByToken.resolves(gift);
+
+      const service = createService({ timezone: 'America/Los_Angeles' });
+      await assert.rejects(
+        () => service.getRedeemable({ token: gift.token, memberStatus: null }),
+        (err: any) => {
+          assert.equal(err.errorType, 'BadRequestError');
+          assert.equal(err.message, 'This gift is not available yet.');
+          assert.equal(err.code, 'GIFT_NOT_YET_REDEEMABLE');
+          assert.equal(err.context, '2099-12-25');
           return true;
         },
       );

@@ -201,6 +201,17 @@ describe('Gift', function () {
       });
     });
 
+    it('blocks redemption before the gift availability time', function () {
+      const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
+      const gift = buildGift({ redeemableAt });
+
+      assert.deepEqual(gift.checkRedeemable(null, new Date('2026-12-25T08:59:59.999Z')), {
+        redeemable: false,
+        reason: 'not-yet-redeemable',
+      });
+      assert.deepEqual(gift.checkRedeemable(null, redeemableAt), { redeemable: true });
+    });
+
     for (const { name, overrides, memberStatus, reason } of testCases) {
       it(`returns ${reason} error when state is ${name}`, function () {
         const gift = buildGift(overrides);
@@ -288,6 +299,25 @@ describe('Gift', function () {
       });
 
       assert.equal(redeemed.consumesAt?.toISOString(), '2026-07-11T12:00:00.000Z');
+    });
+
+    it('starts the full paid duration at redemption for a scheduled gift', function () {
+      const gift = buildGift({
+        cadence: 'month',
+        duration: 6,
+        redeemableAt: new Date('2026-12-25T09:00:00.000Z'),
+      });
+      const redeemedAt = new Date('2027-02-10T12:00:00.000Z');
+
+      const redeemed = gift.redeem({
+        memberId: 'member_2',
+        redeemedAt,
+      });
+
+      assert.equal(redeemed.consumesAt?.getFullYear(), 2027);
+      assert.equal(redeemed.consumesAt?.getMonth(), 7);
+      assert.equal(redeemed.consumesAt?.getDate(), redeemedAt.getDate());
+      assert.equal(redeemed.consumesAt?.getHours(), redeemedAt.getHours());
     });
 
     it('keeps month-end redemption math stable for shorter months', function () {

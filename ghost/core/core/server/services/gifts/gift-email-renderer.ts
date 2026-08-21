@@ -9,6 +9,8 @@ import type { GiftReminderData } from './email-templates/gift-reminder';
 import { renderText as renderReminderText } from './email-templates/gift-reminder';
 import type { GiftDeliveryEmailData } from './email-templates/gift-delivery';
 import { renderText as renderDeliveryText } from './email-templates/gift-delivery';
+import type { GiftSentConfirmationData } from './email-templates/gift-sent-confirmation';
+import { renderText as renderSentConfirmationText } from './email-templates/gift-sent-confirmation';
 
 export type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -20,6 +22,8 @@ export class GiftEmailRenderer {
   private deliveryFailureTemplate: HandlebarsTemplateDelegate | null = null;
   private reminderTemplate: HandlebarsTemplateDelegate | null = null;
   private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
+  private sentConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
+  private buyerNoticeLayoutRegistered = false;
 
   constructor({ t }: { t: Translate }) {
     this.t = t;
@@ -45,9 +49,21 @@ export class GiftEmailRenderer {
     };
   }
 
+  private async ensureBuyerNoticeLayout(): Promise<void> {
+    if (!this.buyerNoticeLayoutRegistered) {
+      const source = await fs.readFile(
+        path.join(__dirname, './email-templates/gift-buyer-notice-layout.hbs'),
+        'utf8',
+      );
+      this.handlebars.registerPartial('giftBuyerNoticeLayout', source);
+      this.buyerNoticeLayoutRegistered = true;
+    }
+  }
+
   async renderDeliveryFailure(
     data: GiftDeliveryFailureData,
   ): Promise<{ html: string; text: string }> {
+    await this.ensureBuyerNoticeLayout();
     if (!this.deliveryFailureTemplate) {
       const source = await fs.readFile(
         path.join(__dirname, './email-templates/gift-delivery-failure.hbs'),
@@ -90,6 +106,24 @@ export class GiftEmailRenderer {
     return {
       html: this.deliveryTemplate(data),
       text: renderDeliveryText(data, this.t),
+    };
+  }
+
+  async renderSentConfirmation(
+    data: GiftSentConfirmationData,
+  ): Promise<{ html: string; text: string }> {
+    await this.ensureBuyerNoticeLayout();
+    if (!this.sentConfirmationTemplate) {
+      const source = await fs.readFile(
+        path.join(__dirname, './email-templates/gift-sent-confirmation.hbs'),
+        'utf8',
+      );
+      this.sentConfirmationTemplate = this.handlebars.compile(source);
+    }
+
+    return {
+      html: this.sentConfirmationTemplate(data),
+      text: renderSentConfirmationText(data, this.t),
     };
   }
 

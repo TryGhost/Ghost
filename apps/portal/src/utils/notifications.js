@@ -14,13 +14,15 @@ const getURLParam = ({ searchParams, hashParams }, name) => {
   return searchParams.get(name) ?? hashParams.get(name);
 };
 
-export const handleGiftRedemptionAction = ({ success, errorCode }) => {
+export const handleGiftRedemptionAction = ({ success, errorCode, errorContext }) => {
   return {
     type: 'giftRedeem',
     status: success ? 'success' : 'error',
     duration: success ? 5000 : 3000,
     autoHide: success,
-    ...(!success ? { message: getGiftRedemptionErrorMessage({ code: errorCode }) } : {}),
+    ...(!success
+      ? { message: getGiftRedemptionErrorMessage({ code: errorCode, context: errorContext }) }
+      : {}),
   };
 };
 
@@ -102,7 +104,8 @@ export default function NotificationParser({ billingOnly = false } = {}) {
   if (giftRedemption && successStatus) {
     const success = successStatus === 'true';
     const errorCode = getURLParam({ searchParams, hashParams }, 'errorCode');
-    return handleGiftRedemptionAction({ success, errorCode });
+    const errorContext = getURLParam({ searchParams, hashParams }, 'errorContext');
+    return handleGiftRedemptionAction({ success, errorCode, errorContext });
   }
 
   if (action && successStatus && !billingOnly) {

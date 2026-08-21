@@ -15,6 +15,7 @@ export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[
     stripeCheckoutSessionId: 'cs_123',
     stripePaymentIntentId: 'pi_456',
     checkoutStartedAt: new Date('2026-01-01T00:00:00.000Z'),
+    redeemableAt: new Date('2026-01-01T00:00:00.000Z'),
     consumesAt: null,
     expiresAt: new Date('2030-01-01T00:00:00.000Z'),
     status: 'purchased',

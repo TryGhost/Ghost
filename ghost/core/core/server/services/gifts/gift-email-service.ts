@@ -1,4 +1,5 @@
 import { GiftEmailRenderer, Translate } from './gift-email-renderer';
+import type { GiftRecipientNoticeData } from './email-templates/gift-buyer-notice';
 import type { GiftCadence } from './gift-schema';
 import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
@@ -58,6 +59,7 @@ interface PurchaseConfirmationData {
   cadence: GiftCadence;
   duration: number;
   expiresAt: Date;
+  redeemableAt: Date;
   recipientEmail?: string | null;
 }
 
@@ -82,12 +84,17 @@ interface GiftDeliverySendData {
   expiresAt: Date;
 }
 
-interface GiftDeliveryFailureNotificationData {
+// Buyer notices about a delivery share one payload today; the neutral name
+// keeps either email free to grow fields without silently widening the other.
+interface GiftDeliveryNoticeData {
   buyerEmail: string;
   recipientEmail: string;
   token: string;
   expiresAt: Date;
 }
+
+type GiftDeliveryFailureNotificationData = GiftDeliveryNoticeData;
+type GiftSentConfirmationData = GiftDeliveryNoticeData;
 
 export class GiftEmailService {
   private readonly transactionalMailer: TransactionalMailer;
@@ -196,6 +203,7 @@ export class GiftEmailService {
     cadence,
     duration,
     expiresAt,
+    redeemableAt,
     recipientEmail = null,
   }: PurchaseConfirmationData): Promise<void> {
     const siteDomain = this.siteDomain;
@@ -203,6 +211,8 @@ export class GiftEmailService {
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
     const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+    const scheduled = Boolean(recipientEmail) && redeemableAt.getTime() > Date.now();
+    const deliveryDate = scheduled ? this.formatDate(redeemableAt) : null;
     const { html, text } = await this.renderer.renderPurchaseConfirmation({
       siteTitle,
       siteUrl,
@@ -217,12 +227,20 @@ export class GiftEmailService {
         link: giftLink,
         expiresAt: this.formatDate(expiresAt),
         recipientEmail,
+        deliveryDate,
       },
     });
 
     await this.transactionalMailer.send({
       to: buyerEmail,
-      subject: recipientEmail ? this.t('Your gift is on its way') : this.t('Your gift is ready'),
+      subject: scheduled
+        ? this.t('Your gift will be sent on {deliveryDate}', {
+            deliveryDate,
+            interpolation: { escapeValue: false },
+          })
+        : recipientEmail
+          ? this.t('Your gift is on its way')
+          : this.t('Your gift is ready'),
       html,
       text,
       from: this.getFromAddress(),
@@ -231,17 +249,35 @@ export class GiftEmailService {
     });
   }
 
-  async sendDeliveryFailureNotification({
-    buyerEmail,
-    recipientEmail,
-    token,
-    expiresAt,
-  }: GiftDeliveryFailureNotificationData): Promise<void> {
+  async sendGiftSentConfirmation(data: GiftSentConfirmationData): Promise<void> {
+    await this.sendBuyerNotice(data, {
+      subject: this.t('Your gift has been sent'),
+      render: (payload) => this.renderer.renderSentConfirmation(payload),
+    });
+  }
+
+  async sendDeliveryFailureNotification(data: GiftDeliveryFailureNotificationData): Promise<void> {
+    await this.sendBuyerNotice(data, {
+      subject: this.t("We couldn't deliver your gift"),
+      render: (payload) => this.renderer.renderDeliveryFailure(payload),
+    });
+  }
+
+  private async sendBuyerNotice(
+    { buyerEmail, recipientEmail, token, expiresAt }: GiftDeliveryNoticeData,
+    {
+      subject,
+      render,
+    }: {
+      subject: string;
+      render: (_payload: GiftRecipientNoticeData) => Promise<{ html: string; text: string }>;
+    },
+  ): Promise<void> {
     const siteDomain = this.siteDomain;
     const siteUrl = this.urlUtils.getSiteUrl();
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
     const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
-    const { html, text } = await this.renderer.renderDeliveryFailure({
+    const { html, text } = await render({
       siteTitle,
       siteUrl,
       siteIconUrl: this.blogIcon.getIconUrl({ absolute: true, fallbackToDefault: false }),
@@ -256,7 +292,7 @@ export class GiftEmailService {
 
     await this.transactionalMailer.send({
       to: buyerEmail,
-      subject: this.t("We couldn't deliver your gift"),
+      subject,
       html,
       text,
       from: this.getFromAddress(),

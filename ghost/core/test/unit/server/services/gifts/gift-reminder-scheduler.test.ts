@@ -72,9 +72,10 @@ describe('GiftReminderScheduler', function () {
 
   it('registers itself with the adapter on construction', function () {
     const deps = buildDeps();
-    const scheduler = new GiftReminderScheduler(deps);
+    new GiftReminderScheduler(deps);
 
-    sinon.assert.calledOnceWithExactly(deps.adapter.register, scheduler);
+    sinon.assert.calledOnce(deps.adapter.register);
+    assert.equal(typeof deps.adapter.register.firstCall.firstArg.rescheduleAll, 'function');
   });
 
   describe('scheduleFor', function () {
@@ -87,7 +88,10 @@ describe('GiftReminderScheduler', function () {
 
       sinon.assert.calledOnce(deps.adapter.schedule);
       const [job] = deps.adapter.schedule.getCall(0).args;
-      assert.equal(job.time, gift.consumesAt!.getTime() - SEVEN_DAYS_MS);
+      // Armed a second past the reminder time: the adapter can ping up
+      // to 50ms early and the flush query truncates "now" to whole
+      // seconds, so an exactly on-time job could find nothing due.
+      assert.equal(job.time, gift.consumesAt!.getTime() - SEVEN_DAYS_MS + 1000);
       assert.equal(job.extra.httpMethod, 'PUT');
       assert.ok(
         job.url.startsWith(`${deps.apiUrl}/gifts/flush_reminders?token=`),

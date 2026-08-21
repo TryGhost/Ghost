@@ -4,6 +4,7 @@ export type { GiftCadence, GiftStatus } from './gift-schema';
 
 export type RedeemableCheckFailureReason =
   | 'payment-pending'
+  | 'not-yet-redeemable'
   | 'redeemed'
   | 'consumed'
   | 'expired'
@@ -38,6 +39,7 @@ export type GiftFromPurchaseData = Pick<
   | 'stripePaymentIntentId'
 > & {
   purchasedAt: Date;
+  redeemableAt?: Date;
   expiresAt: Date;
 };
 
@@ -54,6 +56,7 @@ export type GiftFromCheckoutData = Pick<
   | 'buyerName'
   | 'recipientName'
   | 'personalMessage'
+  | 'redeemableAt'
 >;
 
 export interface CompleteGiftPurchaseData {
@@ -62,6 +65,7 @@ export interface CompleteGiftPurchaseData {
   stripeCheckoutSessionId: string;
   stripePaymentIntentId: string;
   purchasedAt: Date;
+  redeemableAt?: Date;
   expiresAt: Date;
 }
 
@@ -81,6 +85,7 @@ export class Gift implements GiftData {
   stripeCheckoutSessionId: string | null;
   stripePaymentIntentId: string | null;
   checkoutStartedAt: Date | null;
+  redeemableAt: Date | null;
   consumesAt: Date | null;
   expiresAt: Date | null;
   status: GiftStatus;
@@ -107,6 +112,7 @@ export class Gift implements GiftData {
     this.stripeCheckoutSessionId = data.stripeCheckoutSessionId;
     this.stripePaymentIntentId = data.stripePaymentIntentId;
     this.checkoutStartedAt = data.checkoutStartedAt ?? null;
+    this.redeemableAt = data.redeemableAt ?? null;
     this.consumesAt = data.consumesAt;
     this.purchasedAt = data.purchasedAt;
     this.expiresAt = data.expiresAt;
@@ -124,6 +130,7 @@ export class Gift implements GiftData {
       redeemerMemberId: null,
       consumesAt: null,
       checkoutStartedAt: data.purchasedAt,
+      redeemableAt: data.redeemableAt ?? data.purchasedAt,
       expiresAt: data.expiresAt,
       status: 'purchased',
       purchasedAt: data.purchasedAt,
@@ -142,6 +149,7 @@ export class Gift implements GiftData {
       stripeCheckoutSessionId: null,
       stripePaymentIntentId: null,
       checkoutStartedAt: new Date(),
+      redeemableAt: data.redeemableAt,
       consumesAt: null,
       expiresAt: null,
       status: 'payment_pending',
@@ -162,6 +170,7 @@ export class Gift implements GiftData {
     return new Gift({
       ...this,
       ...data,
+      redeemableAt: data.redeemableAt ?? data.purchasedAt,
       status: 'purchased',
     });
   }
@@ -215,6 +224,10 @@ export class Gift implements GiftData {
 
     if (this.isRefunded()) {
       return { redeemable: false, reason: 'refunded' };
+    }
+
+    if (this.redeemableAt !== null && now < this.redeemableAt) {
+      return { redeemable: false, reason: 'not-yet-redeemable' };
     }
 
     if (this.isExpired() || this.isPastClaimDeadline(now)) {
