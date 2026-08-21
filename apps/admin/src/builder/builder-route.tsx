@@ -63,14 +63,6 @@ function compatibleSettings(settings: Setting[]): Array<{key: string; value: str
     return settings.flatMap(setting => typeof setting.value === 'string' || typeof setting.value === 'boolean' || setting.value === null ? [{key: setting.key, value: setting.value}] : []);
 }
 
-function providerDefaultModel(provider: BuilderProvider): string {
-    const model = CURATED_MODELS.find(item => item.provider === provider);
-    if (!model) {
-        throw new Error(`No Builder model is configured for ${provider}.`);
-    }
-    return model.id;
-}
-
 async function fetchContentSettings(siteUrl: string, contentApiKey: string, signal: AbortSignal): Promise<Record<string, unknown>> {
     const url = new URL(`${siteUrl.replace(/\/$/, '')}/ghost/api/content/settings/`);
     url.searchParams.set('key', contentApiKey);
@@ -152,13 +144,15 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     installedThemeNames: string[];
     siteUrl: string;
 }) => {
+    const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
+    const initialModel = useMemo(() => modelAccess.selectedModel, [modelAccess]);
     const [iframe, setIframe] = useState<HTMLIFrameElement | null>(null);
     const [session, setSession] = useState<BuilderSession | null>(null);
     const [state, setState] = useState<BuilderSessionState>(loadingState);
     const [selection, setSelection] = useState<BuilderSelectionContext | null>(null);
     const [attachmentList, setAttachmentList] = useState<readonly BuilderAttachmentSummary[]>([]);
-    const [provider, setProvider] = useState<BuilderProvider>('openai');
-    const [modelId, setModelId] = useState(() => providerDefaultModel('openai'));
+    const [provider, setProvider] = useState<BuilderProvider>(initialModel.provider);
+    const [modelId, setModelId] = useState(initialModel.modelId);
     const [publishState, setPublishState] = useState<ThemePublishState>({status: 'idle', stage: 'idle'});
     const [previewMode, setPreviewMode] = useState<PreviewInteractionMode>('browse');
     const [previewUrl, setPreviewUrl] = useState('');
@@ -168,7 +162,6 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const [inlineEditAnnouncement, setInlineEditAnnouncement] = useState<{id: number; message: string} | null>(null);
     const [publishTheme, setPublishTheme] = useState({name: theme.name, builtIn: isDefaultOrLegacyTheme(theme)});
     const [, setCredentialVersion] = useState(0);
-    const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
     const {mutateAsync: uploadImage} = useUploadImage();
     const uploadImageRef = useRef(uploadImage);
     uploadImageRef.current = uploadImage;

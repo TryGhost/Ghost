@@ -135,9 +135,9 @@ describe('Design Builder route', () => {
         const rendered = page.getByTestId('rewind-proof-rendered');
         await expect.element(rendered).toHaveTextContent(/Rendered path: \/second\/$/);
 
-        await page.getByRole('button', {name: 'Return to before this message'}).first().click();
-        await expect.element(page.getByRole('heading', {name: 'Return to this checkpoint?'})).toBeVisible();
-        await page.getByRole('button', {name: 'Return and discard later work'}).click();
+        await page.getByRole('button', {name: 'Undo this message'}).first().click();
+        await expect.element(page.getByRole('heading', {name: 'Undo this message?'})).toBeVisible();
+        await page.getByRole('button', {name: 'Undo and discard later work'}).click();
 
         await expect.element(rendered).toHaveTextContent('Initial');
         expect(page.getByText('First edit', {exact: true}).query()).toBeNull();

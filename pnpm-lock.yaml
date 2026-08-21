@@ -572,6 +572,9 @@ catalogs:
     mingo:
       specifier: 2.5.3
       version: 2.5.3
+    motion:
+      specifier: ^13.1.0
+      version: 13.1.0
     mppx:
       specifier: 0.6.20
       version: 0.6.20
@@ -1062,6 +1065,9 @@ importers:
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
+      motion:
+        specifier: 'catalog:'
+        version: 13.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       papaparse:
         specifier: 5.5.4
         version: 5.5.4
@@ -15038,6 +15044,17 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
+  framer-motion@13.1.0:
+    resolution: {integrity: sha512-QSZrF0Id3QGuHJ+OL+9PSY9pk86C8ERFalwAGSchzTm65+ZoGH/RM26lmEARLljcHj2lqhv0jZOOks+EI3COOw==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
     engines: {node: '>= 0.6'}
@@ -18023,6 +18040,23 @@ packages:
   morgan@1.11.0:
     resolution: {integrity: sha512-zSkVu3t18r39pw4ixfBKvfZi3y2UOqr7d4WYwcj3m8nXpEQK4rPO6GLzs/CExoRgmX3y9EjmmcXqv6jq0SK46g==}
     engines: {node: '>= 0.8.0'}
+
+  motion-dom@13.0.0:
+    resolution: {integrity: sha512-Xk+SJas70uMAUIApg+m3lZDShxI3LBFHq7mFGbBKoRXc2PVPDyAKmzN64Bbzt4CZdP/CItTiJxWtn4TA0v53Ng==}
+
+  motion-utils@13.0.0:
+    resolution: {integrity: sha512-7DnN7TmbLcYXcG4RVadXIihWlyuM9afoUww8Y5Agg431kGKiuL2/OMyP4mJ5wLz+pvN3t5ySClLOaVXJ+wekRQ==}
+
+  motion@13.1.0:
+    resolution: {integrity: sha512-qtvscq59uCPdWnNW4SdSkrxR+BS/QYsa923bx7ocA+4p+ZGNbbVQwkSnG4aukB81QWjtl3AxX36plxNyZLmHCA==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   mout@1.2.4:
     resolution: {integrity: sha512-mZb9uOruMWgn/fw28DG4/yE3Kehfk1zKCLhuDU2O3vlKdnBBr4XaOCqVTflJ5aODavGUPqFHZgrFX3NJVuxGhQ==}
@@ -37307,6 +37341,15 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
+  framer-motion@13.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      motion-dom: 13.0.0
+      motion-utils: 13.0.0
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   fresh@0.5.2: {}
 
   from2@2.3.0:
@@ -41254,6 +41297,20 @@ snapshots:
       on-headers: 1.1.0
     transitivePeerDependencies:
       - supports-color
+
+  motion-dom@13.0.0:
+    dependencies:
+      motion-utils: 13.0.0
+
+  motion-utils@13.0.0: {}
+
+  motion@13.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      framer-motion: 13.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   mout@1.2.4: {}
 

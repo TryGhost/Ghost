@@ -113,7 +113,7 @@ export const ArtifactBuilderHost = ({Experience}: ArtifactBuilderHostProps) => {
                 className='inset-0 top-0 left-0 h-dvh max-h-none w-screen max-w-none translate-x-0 gap-0 overflow-hidden rounded-none p-0 sm:rounded-none'
                 onEscapeKeyDown={event => event.preventDefault()}
             >
-                <DialogTitle className='sr-only' id='artifact-builder-title'>Artifact Builder</DialogTitle>
+                <DialogTitle className='sr-only' id='artifact-builder-title'>Artifact editor</DialogTitle>
                 <DialogDescription className='sr-only' id='artifact-builder-description'>Create or edit an interactive embed for this post.</DialogDescription>
                 <ArtifactBuilderLoadBoundary onError={fail}>
                     <Suspense fallback={

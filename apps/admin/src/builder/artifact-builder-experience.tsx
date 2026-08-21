@@ -31,26 +31,19 @@ const loadingState: BuilderSessionState = {
     workspace: {revision: '', dirty: false, validation: null}
 };
 
-function providerDefaultModel(provider: BuilderProvider): string {
-    const model = CURATED_MODELS.find(item => item.provider === provider);
-    if (!model) {
-        throw new Error(`No Builder model is configured for ${provider}.`);
-    }
-    return model.id;
-}
-
 const ArtifactBuilderExperience = ({request, onCancel, onSave}: ArtifactBuilderExperienceProps) => {
+    const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
+    const initialModel = useMemo(() => modelAccess.selectedModel, [modelAccess]);
     const [iframe, setIframe] = useState<HTMLIFrameElement | null>(null);
     const [session, setSession] = useState<BuilderSession | null>(null);
     const [state, setState] = useState<BuilderSessionState>(loadingState);
     const [selection, setSelection] = useState<ReturnType<ArtifactWorkspaceInstance['getSelectionContext']>>(null);
     const [attachmentsList, setAttachmentsList] = useState<readonly BuilderAttachmentSummary[]>([]);
-    const [provider, setProvider] = useState<BuilderProvider>('openai');
-    const [modelId, setModelId] = useState(() => providerDefaultModel('openai'));
+    const [provider, setProvider] = useState<BuilderProvider>(initialModel.provider);
+    const [modelId, setModelId] = useState(initialModel.modelId);
     const [previewMode, setPreviewMode] = useState<PreviewInteractionMode>('browse');
     const [confirmCancel, setConfirmCancel] = useState(false);
     const [, setCredentialVersion] = useState(0);
-    const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
     const {mutateAsync: uploadImage} = useUploadImage();
     const uploadImageRef = useRef(uploadImage);
     const previewRef = useRef<ArtifactPreviewAdapter | null>(null);
@@ -179,7 +172,7 @@ const ArtifactBuilderExperience = ({request, onCancel, onSave}: ArtifactBuilderE
                 }
                 selection={selection}
                 state={state}
-                title='Artifact Builder'
+                title='Artifact editor'
                 onAddAttachments={async (files) => {
                     const result = await attachments.add(files);
                     if (result.errors.length) {

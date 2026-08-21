@@ -4,6 +4,18 @@ import {describe, expect, it} from 'vitest';
 import {ToolGroup} from './tool';
 
 describe('ToolGroup', () => {
+    it('keeps the latest step shimmering while the turn is still in progress between tool calls', () => {
+        const {container} = render(<ToolGroup messageStatus='pending' toolCalls={[{
+            id: 'completed-tool',
+            name: 'read_file',
+            input: {path: 'index.hbs'},
+            status: 'complete',
+            result: {ok: true, revision: 'revision-1', data: {}}
+        }]} />);
+
+        expect(container.querySelector('.builder-shimmer')).toHaveTextContent('Inspecting the template');
+    });
+
     it('presents failed work without exposing internal tool details', () => {
         render(<ToolGroup toolCalls={[{
             id: 'failed-tool',
@@ -13,10 +25,8 @@ describe('ToolGroup', () => {
             result: {ok: false, revision: 'revision-1', error: {code: 'render_failed', message: 'Template error', retryable: true}}
         }]} />);
 
-        expect(screen.getByText('Failed')).toBeInTheDocument();
-        expect(screen.queryByText('Complete')).not.toBeInTheDocument();
-        fireEvent.click(screen.getByText('Some changes need attention'));
-        expect(screen.getByText('Saving design changes')).toBeVisible();
+        fireEvent.click(screen.getByLabelText('Editing the template. Some changes need attention. Failed'));
+        expect(screen.getAllByText('Editing the template')).toHaveLength(2);
         expect(screen.getByText('Needs attention')).toBeVisible();
         expect(screen.queryByText('write_file')).not.toBeInTheDocument();
         expect(screen.queryByText('Template error')).not.toBeInTheDocument();
@@ -24,7 +34,7 @@ describe('ToolGroup', () => {
 
     it('summarizes completed visual checks without rendering result payloads', () => {
         const image = 'A'.repeat(20_000);
-        render(<ToolGroup toolCalls={[{
+        const {container} = render(<ToolGroup toolCalls={[{
             id: 'screenshot-tool',
             name: 'screenshot',
             input: {kind: 'viewport'},
@@ -37,9 +47,14 @@ describe('ToolGroup', () => {
             }
         }]} />);
 
-        fireEvent.click(screen.getByText('Review complete'));
+        const trigger = screen.getByLabelText('Inspecting screenshot. Review complete. Complete');
+        expect(trigger.querySelector('.lucide-chevron-right')).toHaveClass('opacity-0', 'group-hover/trigger:opacity-100', 'group-open:rotate-90');
+        expect(trigger.querySelector('.lucide-camera')).toHaveClass('stroke-[1.5px]');
+        fireEvent.click(trigger);
         expect(screen.queryByText(image)).not.toBeInTheDocument();
-        expect(screen.getByText('Reviewing how the page looks')).toBeVisible();
+        expect(screen.getAllByText('Inspecting screenshot')).toHaveLength(2);
+        expect(container.querySelectorAll('.lucide-camera')).toHaveLength(2);
+        expect(screen.queryByText('Done')).not.toBeInTheDocument();
         expect(screen.queryByText(/image payload omitted/)).not.toBeInTheDocument();
         expect(screen.queryByText(/result truncated/)).not.toBeInTheDocument();
     });
@@ -53,8 +68,8 @@ describe('ToolGroup', () => {
             result: {ok: true, revision: 'revision-2', data: {}}
         }]} />);
 
-        fireEvent.click(screen.getByText('Changes complete'));
-        expect(screen.getByText('Building the embed')).toBeVisible();
+        fireEvent.click(screen.getByLabelText('Editing the artifact. Changes complete. Complete'));
+        expect(screen.getAllByText('Editing the artifact')).toHaveLength(2);
         expect(screen.queryByText('write_html')).not.toBeInTheDocument();
     });
 
@@ -67,9 +82,7 @@ describe('ToolGroup', () => {
             result: {ok: true, revision: 'revision-1', data: {}}
         }]} />);
 
-        expect(screen.getByText('Work stopped')).toBeInTheDocument();
-        expect(screen.getByText('Interrupted')).toBeInTheDocument();
-        expect(screen.queryByText('Changes complete')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Editing the template. Work stopped. Interrupted')).toBeInTheDocument();
     });
 
     it('gives an interrupted tool precedence while the turn is still settling', () => {
@@ -80,9 +93,7 @@ describe('ToolGroup', () => {
             status: 'interrupted'
         }]} />);
 
-        expect(screen.getByText('Work stopped')).toBeInTheDocument();
-        expect(screen.getByText('Interrupted')).toBeInTheDocument();
-        expect(screen.queryByText('Making changes')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Editing the template. Work stopped. Interrupted')).toBeInTheDocument();
     });
 
     it('summarizes the final repaired outcome instead of an earlier failed attempt', () => {
@@ -103,10 +114,9 @@ describe('ToolGroup', () => {
             }
         ]} />);
 
-        expect(screen.getByText('Changes complete')).toBeInTheDocument();
-        expect(screen.getByText('Complete')).toBeInTheDocument();
-        expect(screen.queryByText('Some changes need attention')).not.toBeInTheDocument();
-        fireEvent.click(screen.getByText('Changes complete'));
+        const task = screen.getByLabelText('Editing the template. Changes complete. Complete');
+        expect(task).toBeInTheDocument();
+        fireEvent.click(task);
         expect(screen.getByText('Retried')).toBeVisible();
         expect(screen.queryByText('Needs attention')).not.toBeInTheDocument();
     });
@@ -129,8 +139,7 @@ describe('ToolGroup', () => {
             }
         ]} />);
 
-        expect(screen.getByText('Some changes need attention')).toBeInTheDocument();
-        expect(screen.getByText('Failed')).toBeInTheDocument();
+        expect(screen.getByLabelText('Inspecting the preview. Some changes need attention. Failed')).toBeInTheDocument();
     });
 
     it('does not treat a successful change to another file as a repair', () => {
@@ -151,7 +160,6 @@ describe('ToolGroup', () => {
             }
         ]} />);
 
-        expect(screen.getByText('Some changes need attention')).toBeInTheDocument();
-        expect(screen.getByText('Failed')).toBeInTheDocument();
+        expect(screen.getByLabelText('Editing the template. Some changes need attention. Failed')).toBeInTheDocument();
     });
 });

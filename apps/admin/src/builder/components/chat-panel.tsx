@@ -46,12 +46,14 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
     const providerKeyRef = useRef<HTMLInputElement>(null);
     const rewindSequence = useRef(0);
     const [rewindAnnouncement, setRewindAnnouncement] = useState<{id: number; message: string} | null>(null);
+    const [draftToRestore, setDraftToRestore] = useState<{id: number; value: string} | null>(null);
 
-    const returnToCheckpoint = async (messageId: string) => {
+    const returnToCheckpoint = async (messageId: string, messageText: string) => {
         try {
             await onRewind(messageId);
             rewindSequence.current += 1;
-            setRewindAnnouncement({id: rewindSequence.current, message: 'Returned to the selected checkpoint.'});
+            setRewindAnnouncement({id: rewindSequence.current, message: 'Undid the selected message.'});
+            setDraftToRestore({id: rewindSequence.current, value: messageText});
             if (hasCredential) {
                 promptRef.current?.focus();
             } else {
@@ -63,7 +65,7 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
     };
 
     return (
-        <Stack className='size-full min-h-0 bg-background' gap='none'>
+        <Stack className='size-full min-h-0 bg-preview-canvas' gap='none'>
             <Conversation>
                 <ConversationContent className='min-h-full'>
                     {state.messages.length === 0 ? (
@@ -76,24 +78,26 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
                         <>
                         {state.messages.map((message, messageIndex) => (
                             <Message key={message.id} from={message.role}>
-                                <Stack className={message.role === 'user' ? 'items-end' : ''} gap='sm'>
-                                    {message.toolCalls?.length ? <ToolGroup messageStatus={message.status} toolCalls={message.toolCalls} /> : null}
+                                <Stack className={message.role === 'user' ? 'relative items-end' : ''} gap={message.role === 'user' ? 'none' : 'sm'}>
                                     <MessageContent from={message.role} status={message.status}>
                                         {message.role === 'assistant'
-                                            ? <MessageResponse>{message.text || (message.status === 'pending' ? 'Working…' : '')}</MessageResponse>
-                                            : <Text className='wrap-break-word whitespace-pre-wrap'>{message.text}</Text>}
+                                            ? <Stack className='gap-4' gap='none'>
+                                                {message.toolCalls?.length ? <ToolGroup messageStatus={message.status} toolCalls={message.toolCalls} /> : null}
+                                                {(message.text || !message.toolCalls?.length) && <MessageResponse>{message.text || (message.status === 'pending' ? 'Working…' : '')}</MessageResponse>}
+                                            </Stack>
+                                            : <Text className='wrap-break-word whitespace-pre-wrap text-surface-inverse-foreground'>{message.text}</Text>}
                                     </MessageContent>
                                     {message.role === 'assistant' && message.status === 'pending' && (
-                                        <span aria-label='Assistant is responding' className='inline-flex text-muted-foreground'>
-                                            <LucideIcon.LoaderCircle aria-hidden='true' className='size-4 animate-spin motion-reduce:animate-none' />
-                                        </span>
+                                        <span className='sr-only' role='status'>Assistant is responding</span>
                                     )}
                                     {message.role === 'user' && (
-                                        <Checkpoint
-                                            disabled={!canPrompt}
-                                            discardLaterWork={state.messages.slice(messageIndex + 1).some(laterMessage => laterMessage.role === 'user')}
-                                            onReturn={() => returnToCheckpoint(message.id)}
-                                        />
+                                        <Box className='absolute right-0 -bottom-6 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100'>
+                                            <Checkpoint
+                                                disabled={!canPrompt}
+                                                discardLaterWork={state.messages.slice(messageIndex + 1).some(laterMessage => laterMessage.role === 'user')}
+                                                onReturn={() => returnToCheckpoint(message.id, message.text)}
+                                            />
+                                        </Box>
                                     )}
                                 </Stack>
                             </Message>
@@ -113,12 +117,13 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
                 </ConversationContent>
             </Conversation>
             {rewindAnnouncement && <span key={rewindAnnouncement.id} className='sr-only' role='status'>{rewindAnnouncement.message}</span>}
-            <Stack className='border-t border-border-default bg-surface-elevated p-3' gap='sm'>
+            <Stack className='bg-preview-canvas p-4 pt-0' gap='sm'>
                 <ProviderSetup connected={hasCredential} disabled={controlsDisabled} inputRef={providerKeyRef} provider={provider} onForget={onForgetApiKey} onSave={onSaveApiKey} />
                 <PromptInput
                     attachments={attachments}
                     context={selection}
                     disabled={!hasCredential || !canPrompt}
+                    draftToRestore={draftToRestore}
                     inputRef={promptRef}
                     isRunning={isRunning}
                     modelPicker={<ModelPicker disabled={controlsDisabled} modelId={modelId} models={models} provider={provider} onSelect={onSelectModel} />}

@@ -65,6 +65,7 @@
     "mingo": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
+        "motion": "catalog:",
     "papaparse": "5.5.4",
     "react": "catalog:",
     "react-dom": "catalog:",

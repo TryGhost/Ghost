@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 import {Button, Textarea} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
@@ -13,13 +13,14 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
-export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker, attachments = [], onAddAttachments, onRemoveAttachment, onRemoveContext, onSubmit, onStop}: {
+export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker, attachments = [], draftToRestore, onAddAttachments, onRemoveAttachment, onRemoveContext, onSubmit, onStop}: {
     disabled?: boolean;
     isRunning: boolean;
     context?: {label: string} | null;
     inputRef?: Ref<HTMLTextAreaElement>;
     modelPicker?: ReactNode;
     attachments?: readonly BuilderAttachmentSummary[];
+    draftToRestore?: {id: number; value: string} | null;
     onAddAttachments?: (files: readonly File[]) => void | Promise<unknown>;
     onRemoveAttachment?: (id: string) => void;
     onRemoveContext?: () => void;
@@ -31,6 +32,12 @@ export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker
     const [attachmentError, setAttachmentError] = useState<string>();
     const [addingAttachments, setAddingAttachments] = useState(false);
     const attachmentInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (draftToRestore) {
+            setValue(current => current.trim() ? current : draftToRestore.value);
+        }
+    }, [draftToRestore]);
 
     const submit = (event?: FormEvent) => {
         event?.preventDefault();
@@ -86,7 +93,7 @@ export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker
     };
 
     return (
-        <form className='rounded-xl bg-surface-elevated p-2 shadow-sm' onSubmit={submit}>
+        <form className='builder-raised-surface rounded-2xl bg-surface-elevated p-2 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25' onSubmit={submit}>
             <Stack gap='sm'>
                 {context && (
                     <Inline>
@@ -112,7 +119,7 @@ export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker
                     ref={inputRef}
                     aria-invalid={Boolean(submissionError)}
                     aria-label='Describe a change'
-                    className='min-h-20 resize-none'
+                    className='min-h-14 resize-none border-transparent bg-transparent px-2 py-1 shadow-none focus-visible:border-transparent focus-visible:ring-0 disabled:border-transparent disabled:bg-transparent'
                     disabled={disabled}
                     maxLength={maxBuilderPromptLength}
                     placeholder='Describe what you want to change…'
@@ -139,7 +146,7 @@ export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker
                                     onChange={event => void addAttachments(event.target.files)}
                                 />
                                 <Button aria-label='Attach files' disabled={disabled || isRunning || addingAttachments} size='icon' type='button' variant='ghost' onClick={() => attachmentInputRef.current?.click()}>
-                                    {addingAttachments ? <LucideIcon.LoaderCircle aria-hidden='true' className='animate-spin motion-reduce:animate-none' /> : <LucideIcon.Paperclip aria-hidden='true' />}
+                                    {addingAttachments ? <LucideIcon.LoaderCircle aria-hidden='true' className='animate-spin motion-reduce:animate-none' /> : <LucideIcon.Plus aria-hidden='true' />}
                                 </Button>
                             </>
                         )}
@@ -150,7 +157,7 @@ export const PromptInput = ({disabled, isRunning, context, inputRef, modelPicker
                             <LucideIcon.Square aria-hidden='true' />
                         </Button>
                     ) : (
-                        <Button aria-label='Send message' disabled={disabled || addingAttachments || !value.trim()} size='icon' type='submit'>
+                        <Button aria-label='Send message' className='builder-raised-dark builder-raised-surface rounded-full' disabled={disabled || addingAttachments || !value.trim()} size='icon' type='submit'>
                             <LucideIcon.ArrowUp aria-hidden='true' />
                         </Button>
                     )}

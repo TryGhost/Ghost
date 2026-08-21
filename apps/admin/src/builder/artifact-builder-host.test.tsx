@@ -59,7 +59,7 @@ describe('ArtifactBuilderHost', () => {
         render(<ArtifactBuilderHost Experience={FakeExperience} />);
 
         act(() => openHandler?.(request));
-        expect(screen.getByRole('dialog', {name: 'Artifact Builder'})).toBeInTheDocument();
+        expect(screen.getByRole('dialog', {name: 'Artifact editor'})).toBeInTheDocument();
         expect(screen.getByText('Artifact overlay')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', {name: 'Save'}));
 
@@ -112,7 +112,7 @@ describe('ArtifactBuilderHost', () => {
         render(<ArtifactBuilderHost Experience={FakeExperience} />);
 
         act(() => openHandler?.(request));
-        expect(screen.getByRole('dialog', {name: 'Artifact Builder'})).toContainElement(document.activeElement as HTMLElement);
+        expect(screen.getByRole('dialog', {name: 'Artifact editor'})).toContainElement(document.activeElement as HTMLElement);
 
         fireEvent.click(screen.getByRole('button', {name: 'Cancel'}));
         expect(trigger).toHaveFocus();
@@ -134,7 +134,7 @@ describe('ArtifactBuilderHost', () => {
             status: 'error',
             message: 'Artifact Builder could not load. Please try again.'
         });
-        expect(screen.queryByRole('dialog', {name: 'Artifact Builder'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog', {name: 'Artifact editor'})).not.toBeInTheDocument();
         consoleError.mockRestore();
     });
 
@@ -147,6 +147,6 @@ describe('ArtifactBuilderHost', () => {
         view.rerender(<ArtifactBuilderHost Experience={FakeExperience} />);
 
         expect(respond).toHaveBeenCalledWith({requestId: 'request-1', status: 'cancelled'});
-        expect(screen.queryByRole('dialog', {name: 'Artifact Builder'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog', {name: 'Artifact editor'})).not.toBeInTheDocument();
     });
 });

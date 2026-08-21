@@ -1,6 +1,7 @@
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 import {MemoryRouter} from 'react-router';
+import {useState} from 'react';
 
 import type {BuilderSessionState} from './core/builder-session';
 import type {BuilderSelectionContext} from './core/workspace';
@@ -67,7 +68,17 @@ const defaultProps = {
     onSelectModel: vi.fn()
 };
 
+const StatefulPublishAction = () => {
+    const [open, setOpen] = useState(false);
+
+    return open ? <input aria-label='Theme copy name' defaultValue='casper-edited' /> : <button type='button' onClick={() => setOpen(true)}>Publish changes</button>;
+};
+
 describe('BuilderShell', () => {
+    afterEach(() => {
+        Object.defineProperty(window, 'innerWidth', {configurable: true, value: 1200, writable: true});
+    });
+
     it('wraps the canvas in preview navigation and explicit selection and editing modes', () => {
         const onNavigatePreview = vi.fn();
         const onPreviewBack = vi.fn();
@@ -79,6 +90,7 @@ describe('BuilderShell', () => {
                 previewCanGoForward={false}
                 previewMode='browse'
                 previewUrl='http://localhost:2368/about/'
+                publishAction={<button type='button'>Publish test</button>}
                 previewCanGoBack
                 onNavigatePreview={onNavigatePreview}
                 onPreviewBack={onPreviewBack}
@@ -91,6 +103,7 @@ describe('BuilderShell', () => {
         expect(screen.getByRole('textbox', {name: 'Preview address'})).toHaveValue('http://localhost:2368/about/');
         expect(screen.getByRole('button', {name: 'Back in preview'})).toBeEnabled();
         expect(screen.getByRole('button', {name: 'Forward in preview'})).toBeDisabled();
+        expect(screen.getByRole('button', {name: 'Publish test'}).closest('[aria-label="Builder actions"]')).not.toBeNull();
 
         fireEvent.click(screen.getByRole('button', {name: 'Back in preview'}));
         fireEvent.click(screen.getByRole('button', {name: 'Select preview content'}));
@@ -103,6 +116,27 @@ describe('BuilderShell', () => {
         expect(onSetPreviewMode).toHaveBeenNthCalledWith(1, 'select');
         expect(onSetPreviewMode).toHaveBeenNthCalledWith(2, 'edit');
         expect(onNavigatePreview).toHaveBeenCalledWith('/archive/');
+    });
+
+    it('keeps the publish action mounted across the responsive breakpoint', () => {
+        Object.defineProperty(window, 'innerWidth', {configurable: true, value: 1200, writable: true});
+        render(<BuilderShell {...defaultProps} publishAction={<StatefulPublishAction />} onSetPreviewMode={vi.fn()} />, {wrapper: MemoryRouter});
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.change(screen.getByRole('textbox', {name: 'Theme copy name'}), {target: {value: 'my-custom-theme'}});
+
+        Object.defineProperty(window, 'innerWidth', {configurable: true, value: 600, writable: true});
+        fireEvent(window, new Event('resize'));
+
+        expect(screen.getByRole('textbox', {name: 'Theme copy name'})).toHaveValue('my-custom-theme');
+        expect(screen.queryByRole('textbox', {name: 'Preview address'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Select preview content'})).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('tab', {name: 'Preview'}));
+
+        expect(screen.getByRole('textbox', {name: 'Preview address'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Select preview content'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Back in preview'})).not.toBeInTheDocument();
     });
 
     it('configures the shared shell as a single-page Artifact preview', () => {
@@ -183,14 +217,17 @@ describe('BuilderShell', () => {
         />, {wrapper: MemoryRouter});
 
         expect(screen.getByRole('heading', {name: 'Done'})).toBeInTheDocument();
-        expect(screen.getByText('Builder is running')).toBeInTheDocument();
-        expect(screen.getByLabelText('Assistant is responding')).toBeInTheDocument();
-        const tools = screen.getByText('Making changes');
+        expect(screen.getByRole('status', {name: 'Builder is running'})).toBeInTheDocument();
+        expect(screen.getByText('Assistant is responding')).toHaveClass('sr-only');
+        expect(screen.getByText('Update the hero').closest('article')?.parentElement).toHaveClass('gap-4');
+        const tools = screen.getAllByText('Editing the template').find(element => element.closest('summary'))!;
+        expect(tools).toHaveClass('builder-shimmer');
+        expect(tools.closest('.gap-4')).not.toBeNull();
         expect(tools.compareDocumentPosition(screen.getByRole('heading', {name: 'Done'})) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(tools.closest('details')).not.toHaveAttribute('open');
         fireEvent.click(tools);
-        expect(screen.getByText('Reviewing the current design')).toBeVisible();
-        expect(screen.getByText('Updating the design')).toBeVisible();
+        expect(screen.getByText('Inspecting the template')).toBeVisible();
+        expect(screen.getAllByText('Editing the template')).toHaveLength(2);
         expect(screen.queryByText('read_file')).not.toBeInTheDocument();
         expect(screen.queryByText('replace_in_file')).not.toBeInTheDocument();
     });
@@ -241,7 +278,12 @@ describe('BuilderShell', () => {
         fireEvent.click(modelPicker);
         fireEvent.click(screen.getByText('Claude Test'));
         fireEvent.click(screen.getByRole('button', {name: 'Retry last message'}));
-        fireEvent.click(screen.getByRole('button', {name: 'Return to before this message'}));
+        const undo = screen.getByRole('button', {name: 'Undo this message'});
+        expect(undo).not.toHaveTextContent('Undo this message');
+        expect(undo.parentElement).toHaveClass('absolute', '-bottom-6', 'right-0', 'opacity-0', 'group-hover:opacity-100', 'group-focus-within:opacity-100', '[@media(hover:none)]:opacity-100');
+        expect(undo).toHaveClass('size-6', '[&_svg]:size-3');
+        expect(undo.querySelector('.lucide-undo-2')).not.toBeNull();
+        fireEvent.click(undo);
         expect(onRetry).toHaveBeenCalledOnce();
         expect(onRewind).toHaveBeenCalledWith('user-1');
         expect(onSelectModel).toHaveBeenCalledWith('anthropic', 'claude-test');
@@ -280,7 +322,7 @@ describe('BuilderShell', () => {
             })}
         />, {wrapper: MemoryRouter});
 
-        expect(screen.getByRole('button', {name: 'Return to before this message'})).toBeDisabled();
+        expect(screen.getByRole('button', {name: 'Undo this message'})).toBeDisabled();
     });
 
     it('confirms before an earlier checkpoint discards later work and restores stable focus', async () => {
@@ -298,25 +340,28 @@ describe('BuilderShell', () => {
             onRewind={onRewind}
         />, {wrapper: MemoryRouter});
 
-        const checkpoints = screen.getAllByRole('button', {name: 'Return to before this message'});
+        const checkpoints = screen.getAllByRole('button', {name: 'Undo this message'});
         fireEvent.click(checkpoints[0]);
 
         expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-        expect(screen.getByRole('heading', {name: 'Return to this checkpoint?'})).toBeInTheDocument();
+        expect(screen.getByRole('heading', {name: 'Undo this message?'})).toBeInTheDocument();
         expect(onRewind).not.toHaveBeenCalled();
         fireEvent.click(screen.getByRole('button', {name: 'Keep current work'}));
         expect(onRewind).not.toHaveBeenCalled();
 
         fireEvent.click(checkpoints[0]);
-        fireEvent.click(screen.getByRole('button', {name: 'Return and discard later work'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Undo and discard later work'}));
         expect(onRewind).toHaveBeenCalledWith('user-1');
-        await waitFor(() => expect(screen.getByRole('textbox', {name: 'Describe a change'})).toHaveFocus());
+        const prompt = screen.getByRole('textbox', {name: 'Describe a change'});
+        await waitFor(() => expect(prompt).toHaveFocus());
+        expect(prompt).toHaveValue('First turn');
         const firstAnnouncement = screen.getByRole('status');
-        expect(firstAnnouncement).toHaveTextContent('Returned to the selected checkpoint.');
+        expect(firstAnnouncement).toHaveTextContent('Undid the selected message.');
 
         fireEvent.click(checkpoints[1]);
         expect(onRewind).toHaveBeenCalledWith('user-2');
-        await waitFor(() => expect(screen.getByRole('textbox', {name: 'Describe a change'})).toHaveFocus());
+        await waitFor(() => expect(prompt).toHaveFocus());
+        expect(prompt).toHaveValue('First turn');
         expect(screen.getByRole('status')).not.toBe(firstAnnouncement);
     });
 
@@ -329,7 +374,7 @@ describe('BuilderShell', () => {
             onRewind={onRewind}
         />, {wrapper: MemoryRouter});
 
-        fireEvent.click(screen.getByRole('button', {name: 'Return to before this message'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Undo this message'}));
 
         await waitFor(() => expect(screen.getByLabelText('OpenAI API key')).toHaveFocus());
     });
@@ -340,7 +385,7 @@ describe('BuilderShell', () => {
             state={state({workspace: {revision: 'revision-2', dirty: true, validation: {valid: true, diagnostics: [], revision: 'revision-2'}}})}
         />, {wrapper: MemoryRouter});
 
-        expect(screen.getByText('Unsaved')).toBeInTheDocument();
+        expect(screen.getByRole('status', {name: 'Unsaved changes'})).toBeInTheDocument();
     });
 
     it('keeps the header compact when status indicators are visible', () => {
@@ -353,7 +398,7 @@ describe('BuilderShell', () => {
         />, {wrapper: MemoryRouter});
 
         expect(screen.getByRole('heading', {name: 'Casper'})).toHaveClass('truncate');
-        expect(screen.getByText('Unsaved')).toHaveClass('hidden', 'sm:block');
-        expect(screen.getByText('Running')).toHaveClass('hidden', 'sm:block');
+        expect(screen.getByRole('status', {name: 'Unsaved changes'})).toBeInTheDocument();
+        expect(screen.getByRole('status', {name: 'Builder is running'})).toBeInTheDocument();
     });
 });

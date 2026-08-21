@@ -21,7 +21,7 @@ export const MessageContent = ({from, status, className, children, ...props}: HT
     <div
         className={cn(
             'max-w-[92%] min-w-0 space-y-2',
-            from === 'user' ? 'rounded-xl bg-secondary px-4 py-3 text-foreground' : 'text-foreground',
+            from === 'user' ? 'builder-raised-dark builder-raised-surface rounded-2xl bg-surface-inverse px-4 py-3 text-surface-inverse-foreground' : 'text-foreground',
             className
         )}
         {...props}

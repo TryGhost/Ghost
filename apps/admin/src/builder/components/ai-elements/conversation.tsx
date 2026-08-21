@@ -51,7 +51,7 @@ export const Conversation = ({className, children, ...props}: HTMLAttributes<HTM
 };
 
 export const ConversationContent = ({className, ...props}: HTMLAttributes<HTMLDivElement>) => (
-    <Stack className={cn('mx-auto w-full max-w-3xl p-5', className)} gap='lg' {...props} />
+    <Stack className={cn('mx-auto w-full max-w-3xl gap-4 p-5', className)} gap='none' {...props} />
 );
 
 export const ConversationEmptyState = ({icon, title, description}: {icon?: ReactNode; title: string; description: string}) => (

@@ -42,7 +42,7 @@ export const ProviderSetup = ({provider, connected, disabled, inputRef, onSave, 
     }
 
     return (
-        <Stack className='rounded-lg border border-border-default bg-surface-elevated p-3' gap='sm'>
+        <Stack className='builder-raised-surface rounded-lg bg-surface-elevated p-3' gap='sm'>
             <Text weight='medium'>Connect {name}</Text>
             <Text size='sm' tone='secondary'>
                 {isCodex

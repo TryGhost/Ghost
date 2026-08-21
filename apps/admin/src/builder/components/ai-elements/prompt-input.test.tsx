@@ -4,6 +4,17 @@ import {describe, expect, it, vi} from 'vitest';
 import {maxBuilderPromptLength, PromptInput} from './prompt-input';
 
 describe('PromptInput', () => {
+    it('restores an undone message only when the editor is empty', () => {
+        const {rerender} = render(<PromptInput draftToRestore={{id: 1, value: 'First message'}} isRunning={false} onStop={vi.fn()} onSubmit={vi.fn()} />);
+        const input = screen.getByRole('textbox', {name: 'Describe a change'});
+
+        expect(input).toHaveValue('First message');
+        fireEvent.change(input, {target: {value: 'Keep this draft'}});
+        rerender(<PromptInput draftToRestore={{id: 2, value: 'Second message'}} isRunning={false} onStop={vi.fn()} onSubmit={vi.fn()} />);
+
+        expect(input).toHaveValue('Keep this draft');
+    });
+
     it('keeps and explains a rejected prompt', async () => {
         const onSubmit = vi.fn().mockRejectedValue(new Error('The provider is unavailable.'));
         render(<PromptInput isRunning={false} onStop={vi.fn()} onSubmit={onSubmit} />);

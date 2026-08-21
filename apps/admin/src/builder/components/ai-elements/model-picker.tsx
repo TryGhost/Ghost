@@ -43,7 +43,6 @@ export const ModelPicker = ({provider, modelId, models, disabled, onSelect}: {
                     type='button'
                     variant='ghost'
                 >
-                    <LucideIcon.Bot aria-hidden='true' className='size-4 shrink-0 text-muted-foreground' />
                     <Text className='truncate' size='sm'>{selectedLabel}</Text>
                     <LucideIcon.ChevronDown aria-hidden='true' className='size-4 shrink-0 text-muted-foreground' />
                 </Button>

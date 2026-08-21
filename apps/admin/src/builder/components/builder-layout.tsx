@@ -1,9 +1,17 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 import {Button} from '@tryghost/shade/components';
 import {Box, Inline} from '@tryghost/shade/primitives';
 
+import {BuilderToolbarHostContext} from './builder-toolbar-context';
+
 import type {KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode} from 'react';
+
+type BuilderLayoutSlot = ReactNode | ((isNarrow: boolean) => ReactNode);
+
+function renderSlot(slot: BuilderLayoutSlot, isNarrow: boolean): ReactNode {
+    return typeof slot === 'function' ? slot(isNarrow) : slot;
+}
 
 export const builderChatWidthStorageKey = 'ghost-builder.chat-panel-width';
 const defaultWidth = 420;
@@ -27,7 +35,7 @@ function initialWidth(): number {
     return Number.isFinite(stored) && stored > 0 ? clampWidth(stored) : defaultWidth;
 }
 
-export const BuilderLayout = ({chat, preview}: {chat: ReactNode; preview: ReactNode}) => {
+export const BuilderLayout = ({chat, preview, header}: {chat: ReactNode; preview: BuilderLayoutSlot; header?: BuilderLayoutSlot}) => {
     const [width, setWidth] = useState(initialWidth);
     const widthRef = useRef(width);
     const preferredWidthRef = useRef(Number(sessionStorage.getItem(builderChatWidthStorageKey)) || defaultWidth);
@@ -39,6 +47,13 @@ export const BuilderLayout = ({chat, preview}: {chat: ReactNode; preview: ReactN
     const previewTabRef = useRef<HTMLButtonElement>(null);
     const chatPanelRef = useRef<HTMLElement>(null);
     const previewPanelRef = useRef<HTMLElement>(null);
+    const toolbarHostRef = useRef<HTMLElement | null>(null);
+    const [toolbarHost, setToolbarHost] = useState<HTMLElement | null>(null);
+
+    const registerToolbarHost = useCallback((element: HTMLElement | null) => {
+        toolbarHostRef.current = element;
+        setToolbarHost(element);
+    }, []);
 
     const updateWidth = (value: number, persist = false) => {
         const preferred = Math.min(absoluteMaxWidth, Math.max(minWidth, value));
@@ -54,12 +69,23 @@ export const BuilderLayout = ({chat, preview}: {chat: ReactNode; preview: ReactN
     useEffect(() => {
         const handleResize = () => {
             const nextNarrow = window.innerWidth < narrowBreakpoint;
-            if (!isNarrowRef.current && nextNarrow) {
-                const focused = document.activeElement;
-                if (focused && previewPanelRef.current?.contains(focused)) {
+            const crossingBreakpoint = isNarrowRef.current !== nextNarrow;
+            if (crossingBreakpoint) {
+                const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                const focusedPreviewControl = focused?.closest('[data-preview-controls]') ? focused : null;
+                const focusLabel = focusedPreviewControl?.getAttribute('aria-label');
+                if (focused && (previewPanelRef.current?.contains(focused) || focusedPreviewControl)) {
                     setActiveView('preview');
                 } else {
                     setActiveView('chat');
+                }
+                if (focusLabel) {
+                    requestAnimationFrame(() => {
+                        const root = nextNarrow ? previewPanelRef.current : toolbarHostRef.current;
+                        const match = [...(root?.querySelectorAll<HTMLElement>('[aria-label]') ?? [])]
+                            .find(element => element.getAttribute('aria-label') === focusLabel);
+                        match?.focus();
+                    });
                 }
             }
             isNarrowRef.current = nextNarrow;
@@ -140,20 +166,30 @@ export const BuilderLayout = ({chat, preview}: {chat: ReactNode; preview: ReactN
     const currentMaxWidth = availableMaxWidth();
 
     return (
-        <Box className='flex min-h-0 flex-1 flex-col bg-background'>
-            {isNarrow && (
-                <Inline aria-label='Builder view' className='border-b border-border-default bg-surface-elevated p-2' gap='sm' role='tablist'>
-                    <Button ref={chatTabRef} aria-controls='builder-chat-panel' aria-selected={activeView === 'chat'} id='builder-chat-tab' role='tab' size='sm' tabIndex={activeView === 'chat' ? 0 : -1} type='button' variant={activeView === 'chat' ? 'default' : 'ghost'} onClick={() => activateView('chat')} onKeyDown={handleTabKeyDown}>Chat</Button>
-                    <Button ref={previewTabRef} aria-controls='builder-preview-panel' aria-selected={activeView === 'preview'} id='builder-preview-tab' role='tab' size='sm' tabIndex={activeView === 'preview' ? 0 : -1} type='button' variant={activeView === 'preview' ? 'default' : 'ghost'} onClick={() => activateView('preview')} onKeyDown={handleTabKeyDown}>Preview</Button>
-                </Inline>
-            )}
-            <Box className='relative flex min-h-0 flex-1 overflow-hidden'>
+        <BuilderToolbarHostContext.Provider value={{element: toolbarHost, isNarrow}}>
+            <Box className='flex min-h-0 flex-1 flex-col bg-preview-canvas'>
+                {header && (
+                    <Box className='shrink-0 bg-preview-canvas min-[768px]:flex min-[768px]:h-16'>
+                        <Box className={isNarrow ? 'h-16 w-full' : 'h-16 shrink-0'} style={isNarrow ? undefined : {width: `${width}px`}}>
+                            {renderSlot(header, isNarrow)}
+                        </Box>
+                        <Box className='hidden w-1 shrink-0 bg-preview-canvas min-[768px]:block' />
+                        <Box ref={registerToolbarHost} className='h-16 min-w-0 flex-1 bg-preview-canvas' data-testid='builder-toolbar-host' />
+                    </Box>
+                )}
+                {isNarrow && (
+                    <Inline aria-label='Builder view' className='bg-preview-canvas p-2' gap='sm' role='tablist'>
+                        <Button ref={chatTabRef} aria-controls='builder-chat-panel' aria-selected={activeView === 'chat'} id='builder-chat-tab' role='tab' size='sm' tabIndex={activeView === 'chat' ? 0 : -1} type='button' variant={activeView === 'chat' ? 'default' : 'ghost'} onClick={() => activateView('chat')} onKeyDown={handleTabKeyDown}>Chat</Button>
+                        <Button ref={previewTabRef} aria-controls='builder-preview-panel' aria-selected={activeView === 'preview'} id='builder-preview-tab' role='tab' size='sm' tabIndex={activeView === 'preview' ? 0 : -1} type='button' variant={activeView === 'preview' ? 'default' : 'ghost'} onClick={() => activateView('preview')} onKeyDown={handleTabKeyDown}>Preview</Button>
+                    </Inline>
+                )}
+                <Box className='relative flex min-h-0 flex-1 overflow-hidden min-[768px]:overflow-visible'>
                 <section
                     ref={chatPanelRef}
                     aria-hidden={isNarrow ? activeView !== 'chat' : undefined}
                     aria-label='Builder chat'
                     aria-labelledby={isNarrow ? 'builder-chat-tab' : undefined}
-                    className={isNarrow ? `absolute inset-0 min-w-0 transition-transform motion-reduce:transition-none ${activeView === 'chat' ? 'translate-x-0' : 'pointer-events-none -translate-x-full'}` : 'min-w-0 shrink-0'}
+                    className={isNarrow ? `absolute inset-0 min-w-0 bg-preview-canvas transition-transform motion-reduce:transition-none ${activeView === 'chat' ? 'translate-x-0' : 'pointer-events-none -translate-x-full'}` : 'min-w-0 shrink-0 bg-preview-canvas'}
                     data-testid='builder-chat-panel'
                     id='builder-chat-panel'
                     role={isNarrow ? 'tabpanel' : undefined}
@@ -168,13 +204,13 @@ export const BuilderLayout = ({chat, preview}: {chat: ReactNode; preview: ReactN
                         aria-valuemax={currentMaxWidth}
                         aria-valuemin={minWidth}
                         aria-valuenow={width}
-                        className='group relative w-1 shrink-0 cursor-col-resize bg-border-default outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring'
+                        className='group relative w-1 shrink-0 cursor-col-resize bg-preview-canvas outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring'
                         role='separator'
                         tabIndex={0}
                         onKeyDown={resizeWithKeyboard}
                         onPointerDown={startResize}
                     >
-                        <span className='absolute inset-y-0 -left-1.5 w-4 group-hover:bg-interactive-hover/50' />
+                        <span className='absolute inset-y-0 -left-1.5 w-4 group-hover:bg-interactive-hover/30' />
                     </div>
                 )}
                 <section
@@ -182,14 +218,15 @@ export const BuilderLayout = ({chat, preview}: {chat: ReactNode; preview: ReactN
                     aria-hidden={isNarrow ? activeView !== 'preview' : undefined}
                     aria-label='Builder preview'
                     aria-labelledby={isNarrow ? 'builder-preview-tab' : undefined}
-                    className={isNarrow ? `absolute inset-0 min-w-0 transition-transform motion-reduce:transition-none ${activeView === 'preview' ? 'translate-x-0' : 'pointer-events-none translate-x-full'}` : 'min-w-0 flex-1'}
+                    className={isNarrow ? `absolute inset-0 min-w-0 bg-preview-canvas transition-transform motion-reduce:transition-none ${activeView === 'preview' ? 'translate-x-0' : 'pointer-events-none translate-x-full'}` : 'relative z-10 min-w-0 flex-1 bg-preview-canvas'}
                     data-testid='builder-preview-panel'
                     id='builder-preview-panel'
                     role={isNarrow ? 'tabpanel' : undefined}
                 >
-                    {preview}
+                    {renderSlot(preview, isNarrow)}
                 </section>
+                </Box>
             </Box>
-        </Box>
+        </BuilderToolbarHostContext.Provider>
     );
 };

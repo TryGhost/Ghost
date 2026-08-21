@@ -4,6 +4,7 @@ import {BuilderHeader} from './components/builder-header';
 import {BuilderLayout} from './components/builder-layout';
 import {ChatPanel} from './components/chat-panel';
 import {PreviewPanel} from './components/preview-panel';
+import './builder-chrome.css';
 
 import type {ChatPanelProps} from './components/chat-panel';
 import type {PreviewInteractionMode} from './components/preview-panel';
@@ -33,12 +34,13 @@ export type BuilderShellProps = ChatPanelProps & {
 };
 
 export const BuilderShell = ({title, preview, backTo, backLabel, backAction, publishAction, previewUrl, previewCanGoBack, previewCanGoForward, previewMode, previewEditingButtonRef, previewControlsDisabled, previewAddress, previewEdit, previewHistory, previewResponsive, onNavigatePreview, onPreviewBack, onPreviewForward, onSetPreviewMode, ...chatProps}: BuilderShellProps) => (
-    <Stack className='fixed inset-0 z-50 min-h-0 overflow-hidden bg-background' gap='none'>
-        <BuilderHeader backAction={backAction} backLabel={backLabel} backTo={backTo} publishAction={publishAction} state={chatProps.state} title={title} />
+    <Stack className='fixed inset-0 z-50 min-h-0 overflow-hidden bg-preview-canvas' gap='none'>
         <BuilderLayout
             chat={<ChatPanel {...chatProps} />}
-            preview={
+            header={<BuilderHeader backAction={backAction} backLabel={backLabel} backTo={backTo} state={chatProps.state} title={title} />}
+            preview={(
                 <PreviewPanel
+                    action={publishAction}
                     canGoBack={previewCanGoBack}
                     canGoForward={previewCanGoForward}
                     disabled={previewControlsDisabled || !['ready', 'interrupted'].includes(chatProps.state.status)}
@@ -56,7 +58,7 @@ export const BuilderShell = ({title, preview, backTo, backLabel, backAction, pub
                 >
                     {preview}
                 </PreviewPanel>
-            }
+            )}
         />
     </Stack>
 );

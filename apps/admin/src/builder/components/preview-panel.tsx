@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
+import {createPortal} from 'react-dom';
 
-import {Button} from '@tryghost/shade/components';
 import {Box, Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 
 import {WebPreview, WebPreviewBody, WebPreviewNavigation, WebPreviewNavigationButton, WebPreviewUrl} from './ai-elements/web-preview';
+import {useBuilderToolbarHost} from './builder-toolbar-context';
 
 import type {FormEvent, ReactNode, Ref} from 'react';
 
@@ -18,8 +19,9 @@ const viewportWidths: Record<ResponsiveViewport, string> = {
     mobile: '390px'
 };
 
-export const PreviewPanel = ({children, url = '', canGoBack = false, canGoForward = false, mode = 'browse', editButtonRef, disabled = false, showAddress = true, showEdit = true, showHistory = true, responsive = false, onBack, onForward, onNavigate, onSetMode}: {
+export const PreviewPanel = ({children, action, url = '', canGoBack = false, canGoForward = false, mode = 'browse', editButtonRef, disabled = false, showAddress = true, showEdit = true, showHistory = true, responsive = false, onBack, onForward, onNavigate, onSetMode}: {
     children: ReactNode;
+    action?: ReactNode;
     url?: string;
     canGoBack?: boolean;
     canGoForward?: boolean;
@@ -38,6 +40,7 @@ export const PreviewPanel = ({children, url = '', canGoBack = false, canGoForwar
     const [address, setAddress] = useState(url);
     const [navigationError, setNavigationError] = useState('');
     const [viewport, setViewport] = useState<ResponsiveViewport>('desktop');
+    const {element: toolbarHost, isNarrow} = useBuilderToolbarHost();
 
     useEffect(() => {
         setAddress(url);
@@ -58,10 +61,9 @@ export const PreviewPanel = ({children, url = '', canGoBack = false, canGoForwar
         }
     };
 
-    return (
-        <WebPreview>
-            <WebPreviewNavigation aria-label='Preview controls'>
-                {showHistory && (
+    const previewControls = (
+        <>
+                {showHistory && !isNarrow && (
                     <>
                         <WebPreviewNavigationButton aria-label='Back in preview' disabled={disabled || !canGoBack} onClick={onBack}>
                             <LucideIcon.ArrowLeft aria-hidden='true' />
@@ -72,56 +74,64 @@ export const PreviewPanel = ({children, url = '', canGoBack = false, canGoForwar
                     </>
                 )}
                 {showAddress ? (
-                    <form className='min-w-0 flex-1' onSubmit={submitAddress}>
+                    <form className='mx-auto max-w-3xl min-w-0 flex-1' onSubmit={submitAddress}>
                         <WebPreviewUrl aria-label='Preview address' disabled={disabled} value={address} onChange={event => setAddress(event.target.value)} />
                     </form>
                 ) : <Box className='min-w-0 flex-1' />}
-                {responsive && (
+                {responsive && !isNarrow && (
                     <Inline align='center' gap='xs'>
-                        <WebPreviewNavigationButton aria-label='Desktop preview' aria-pressed={viewport === 'desktop'} disabled={disabled} onClick={() => setViewport('desktop')}>
+                        <WebPreviewNavigationButton aria-label='Desktop preview' aria-pressed={viewport === 'desktop'} className={viewport === 'desktop' ? 'builder-raised-surface bg-surface-elevated hover:bg-surface-elevated' : undefined} disabled={disabled} onClick={() => setViewport('desktop')}>
                             <LucideIcon.Monitor aria-hidden='true' />
                         </WebPreviewNavigationButton>
-                        <WebPreviewNavigationButton aria-label='Tablet preview' aria-pressed={viewport === 'tablet'} disabled={disabled} onClick={() => setViewport('tablet')}>
+                        <WebPreviewNavigationButton aria-label='Tablet preview' aria-pressed={viewport === 'tablet'} className={viewport === 'tablet' ? 'builder-raised-surface bg-surface-elevated hover:bg-surface-elevated' : undefined} disabled={disabled} onClick={() => setViewport('tablet')}>
                             <LucideIcon.Tablet aria-hidden='true' />
                         </WebPreviewNavigationButton>
-                        <WebPreviewNavigationButton aria-label='Mobile preview' aria-pressed={viewport === 'mobile'} disabled={disabled} onClick={() => setViewport('mobile')}>
+                        <WebPreviewNavigationButton aria-label='Mobile preview' aria-pressed={viewport === 'mobile'} className={viewport === 'mobile' ? 'builder-raised-surface bg-surface-elevated hover:bg-surface-elevated' : undefined} disabled={disabled} onClick={() => setViewport('mobile')}>
                             <LucideIcon.Smartphone aria-hidden='true' />
                         </WebPreviewNavigationButton>
                     </Inline>
                 )}
                 {onSetMode && (
                     <Inline align='center' gap='xs'>
-                        <Button
+                        <WebPreviewNavigationButton
                             aria-label='Select preview content'
                             aria-pressed={mode === 'select'}
+                            className={`w-auto gap-2 px-3 ${mode === 'select' ? 'builder-raised-surface bg-surface-elevated hover:bg-surface-elevated' : ''}`}
                             disabled={disabled}
-                            size='sm'
-                            type='button'
-                            variant={mode === 'select' ? 'default' : 'ghost'}
                             onClick={() => onSetMode(mode === 'select' ? 'browse' : 'select')}
                         >
                             <LucideIcon.MousePointer2 aria-hidden='true' />
-                            Select
-                        </Button>
-                        {showEdit && <Button
+                            <span className='hidden min-[768px]:inline'>Select</span>
+                        </WebPreviewNavigationButton>
+                        {showEdit && <WebPreviewNavigationButton
                             ref={editButtonRef}
                             aria-label='Edit preview'
                             aria-pressed={mode === 'edit'}
+                            className={`w-auto gap-2 px-3 ${mode === 'edit' ? 'builder-raised-surface bg-surface-elevated hover:bg-surface-elevated' : ''}`}
                             disabled={disabled}
-                            size='sm'
-                            type='button'
-                            variant={mode === 'edit' ? 'default' : 'ghost'}
                             onClick={() => onSetMode(mode === 'edit' ? 'browse' : 'edit')}
                         >
                             <LucideIcon.Pencil aria-hidden='true' />
-                            Edit
-                        </Button>}
+                            <span className='hidden min-[768px]:inline'>Edit</span>
+                        </WebPreviewNavigationButton>}
                     </Inline>
                 )}
+        </>
+    );
+    const hostNavigation = (
+            <WebPreviewNavigation aria-label='Builder actions' className='h-16 w-full'>
+                {isNarrow ? <Box className='min-w-0 flex-1' /> : <Inline align='center' className='min-w-0 flex-1' data-preview-controls='' gap='xs'>{previewControls}</Inline>}
+                {action && <Box className='builder-raised-action ml-2 shrink-0 [&>button]:min-w-24 [&>button]:rounded-full [&>button]:px-6'>{action}</Box>}
             </WebPreviewNavigation>
+    );
+
+    return (
+        <WebPreview>
+            {toolbarHost ? createPortal(hostNavigation, toolbarHost) : hostNavigation}
+            {isNarrow && <WebPreviewNavigation aria-label='Preview controls' className='h-16 w-full' data-preview-controls=''>{previewControls}</WebPreviewNavigation>}
             {navigationError && <Text className='border-b border-border-default px-3 py-2 text-destructive' role='alert' size='sm'>{navigationError}</Text>}
-            <WebPreviewBody className={`${responsive ? 'flex justify-center overflow-auto bg-secondary' : ''} ${disabled ? 'pointer-events-none' : ''}`} inert={disabled}>
-                <Box className='h-full max-w-full overflow-hidden bg-background transition-[width]' style={responsive ? {width: viewportWidths[viewport]} : undefined}>{children}</Box>
+            <WebPreviewBody className={`flex justify-center overflow-auto p-4 pt-0 min-[768px]:overflow-visible min-[768px]:pl-0 ${disabled ? 'pointer-events-none' : ''}`} inert={disabled}>
+                <Box className='builder-raised-surface-strong h-full max-w-full overflow-hidden rounded-xl bg-background transition-[width]' style={responsive ? {width: viewportWidths[viewport]} : {width: '100%'}}>{children}</Box>
             </WebPreviewBody>
         </WebPreview>
     );

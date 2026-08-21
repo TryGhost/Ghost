@@ -5,7 +5,8 @@ import {openAIResponsesApi} from '@earendil-works/pi-ai/api/openai-responses.laz
 import type {FetchFunction, ProviderStreams} from '@earendil-works/pi-ai';
 import {createAgentRuntime} from '@/builder/core/agent-runtime';
 import {findCuratedModel} from '@/builder/models/curated-models';
-import {SessionCredentialStore} from '@/builder/models/session-credential-store';
+import {BuilderModelPreferenceStore, initialBuilderModelSelection} from '@/builder/models/model-preference-store';
+import {createBuilderCredentialStore} from '@/builder/models/session-credential-store';
 
 import type {AgentRuntime, BuilderRuntimeEvent, BuilderRuntimePromptMessage, BuilderTool} from '@/builder/core/agent-runtime';
 import type {BuilderConversationMessage, BuilderModelTurnRequest, BuilderStreamEvent, ModelAccessAdapter} from '@/builder/core/model-access';
@@ -15,6 +16,7 @@ import type {BuilderCredentialStore} from '@/builder/models/session-credential-s
 
 type BrowserPiModelAccessOptions = {
     credentialStore?: BuilderCredentialStore;
+    modelPreferenceStore?: BuilderModelPreferenceStore;
     getApiKey?: (provider: BuilderProvider) => string | undefined;
     provider?: BuilderProvider;
     modelId?: string;
@@ -310,27 +312,35 @@ export class BrowserPiModelAccess implements ModelAccessAdapter {
 
     private readonly credentialStore: BuilderCredentialStore;
     private readonly getApiKeyOverride?: BrowserPiModelAccessOptions['getApiKey'];
+    private readonly modelPreferenceStore: BuilderModelPreferenceStore;
     private readonly fetch?: FetchFunction;
     private readonly maxMessages: number;
     private readonly maxHistoryCharacters: number;
     private provider: BuilderProvider;
     private modelId: string;
 
-    constructor({credentialStore = new SessionCredentialStore(), getApiKey, provider = 'openai', modelId = 'gpt-5.6-sol', fetch, maxMessages = 80, maxHistoryCharacters = defaultHistoryCharacterLimit}: BrowserPiModelAccessOptions = {}) {
+    constructor({credentialStore = createBuilderCredentialStore(), modelPreferenceStore = new BuilderModelPreferenceStore(), getApiKey, provider, modelId, fetch, maxMessages = 80, maxHistoryCharacters = defaultHistoryCharacterLimit}: BrowserPiModelAccessOptions = {}) {
+        const initial = provider && modelId ? {provider, modelId} : initialBuilderModelSelection(credentialStore, modelPreferenceStore);
         this.credentialStore = credentialStore;
+        this.modelPreferenceStore = modelPreferenceStore;
         this.getApiKeyOverride = getApiKey;
-        this.provider = provider;
-        this.modelId = modelId;
+        this.provider = initial.provider;
+        this.modelId = initial.modelId;
         this.fetch = fetch;
         this.maxMessages = maxMessages;
         this.maxHistoryCharacters = maxHistoryCharacters;
-        findCuratedModel(provider, modelId);
+        findCuratedModel(initial.provider, initial.modelId);
+    }
+
+    get selectedModel(): Readonly<{provider: BuilderProvider; modelId: string}> {
+        return {provider: this.provider, modelId: this.modelId};
     }
 
     selectModel(provider: BuilderProvider, modelId: string): void {
         findCuratedModel(provider, modelId);
         this.provider = provider;
         this.modelId = modelId;
+        this.modelPreferenceStore.set({provider, modelId});
     }
 
     setApiKey(provider: BuilderProvider, credential: string): void {

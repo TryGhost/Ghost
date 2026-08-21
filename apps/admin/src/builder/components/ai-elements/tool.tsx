@@ -1,31 +1,30 @@
-import {Badge} from '@tryghost/shade/components';
-import {Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 
+import {Shimmer} from './shimmer';
 import {Task, TaskContent, TaskItem, TaskTrigger} from './task';
 
 import type {BuilderConversationMessage, BuilderConversationToolCall} from '@/builder/core/model-access';
 
 const actionLabels: Record<string, string> = {
-    list_files: 'Reviewing the theme',
-    search_files: 'Finding the right place to make changes',
-    read_file: 'Reviewing the current design',
-    replace_in_file: 'Updating the design',
-    write_file: 'Saving design changes',
-    delete_file: 'Removing an unused part of the design',
-    list_design_settings: 'Reviewing design settings',
-    update_design_settings: 'Updating design settings',
-    read_html: 'Reviewing the embed',
-    find_in_html: 'Finding the right part of the embed',
-    replace_in_html: 'Updating the embed',
-    write_html: 'Building the embed',
-    inspect: 'Checking the embed preview',
-    inspect_page: 'Checking the preview',
-    inspect_element: 'Checking the selected area',
-    navigate: 'Opening another preview page',
-    screenshot: 'Reviewing how the page looks',
-    read_attachment: 'Reviewing an attachment',
-    search_attachment: 'Finding information in an attachment'
+    list_files: 'Inspecting theme files',
+    search_files: 'Searching theme files',
+    read_file: 'Inspecting the template',
+    replace_in_file: 'Editing the template',
+    write_file: 'Editing the template',
+    delete_file: 'Removing the template',
+    list_design_settings: 'Inspecting design settings',
+    update_design_settings: 'Editing design settings',
+    read_html: 'Inspecting the artifact',
+    find_in_html: 'Searching the artifact',
+    replace_in_html: 'Editing the artifact',
+    write_html: 'Editing the artifact',
+    inspect: 'Inspecting the artifact preview',
+    inspect_page: 'Inspecting the preview',
+    inspect_element: 'Inspecting the selection',
+    navigate: 'Opening the preview page',
+    screenshot: 'Inspecting screenshot',
+    read_attachment: 'Inspecting an attachment',
+    search_attachment: 'Searching an attachment'
 };
 
 const fileMutationActions = new Set([
@@ -38,6 +37,47 @@ const fileMutationActions = new Set([
 
 function actionLabel(name: string): string {
     return actionLabels[name] ?? 'Working on your design';
+}
+
+function actionIcon(name: string) {
+    const className = 'size-4 shrink-0 stroke-[1.5px] text-muted-foreground';
+
+    switch (name) {
+    case 'list_files':
+        return <LucideIcon.Files aria-hidden='true' className={className} />;
+    case 'search_files':
+    case 'find_in_html':
+    case 'search_attachment':
+        return <LucideIcon.Search aria-hidden='true' className={className} />;
+    case 'read_file':
+        return <LucideIcon.FileText aria-hidden='true' className={className} />;
+    case 'replace_in_file':
+    case 'write_file':
+        return <LucideIcon.FilePenLine aria-hidden='true' className={className} />;
+    case 'delete_file':
+        return <LucideIcon.Trash2 aria-hidden='true' className={className} />;
+    case 'list_design_settings':
+    case 'update_design_settings':
+        return <LucideIcon.SlidersHorizontal aria-hidden='true' className={className} />;
+    case 'read_html':
+        return <LucideIcon.Code2 aria-hidden='true' className={className} />;
+    case 'replace_in_html':
+    case 'write_html':
+        return <LucideIcon.Braces aria-hidden='true' className={className} />;
+    case 'inspect':
+    case 'inspect_page':
+        return <LucideIcon.Eye aria-hidden='true' className={className} />;
+    case 'inspect_element':
+        return <LucideIcon.MousePointer2 aria-hidden='true' className={className} />;
+    case 'navigate':
+        return <LucideIcon.Compass aria-hidden='true' className={className} />;
+    case 'screenshot':
+        return <LucideIcon.Camera aria-hidden='true' className={className} />;
+    case 'read_attachment':
+        return <LucideIcon.Paperclip aria-hidden='true' className={className} />;
+    default:
+        return <LucideIcon.Sparkles aria-hidden='true' className={className} />;
+    }
 }
 
 function actionTarget(toolCall: BuilderConversationToolCall): string | null {
@@ -82,32 +122,21 @@ export const ToolGroup = ({messageStatus, toolCalls}: {messageStatus?: BuilderCo
     const changed = toolCalls.some(toolCall => (fileMutationActions.has(toolCall.name) || toolCall.name === 'update_design_settings') && toolCall.status === 'complete' && toolCall.result?.ok === true);
     const label = running ? 'Making changes' : interrupted ? 'Work stopped' : failed ? 'Some changes need attention' : changed ? 'Changes complete' : 'Review complete';
     const status = interrupted ? 'Interrupted' : running ? 'Running' : failed ? 'Failed' : 'Complete';
+    const latestToolCall = toolCalls.at(-1);
+    const latestStep = latestToolCall ? actionLabel(latestToolCall.name) : label;
+    const latestIcon = actionIcon(latestToolCall?.name ?? '');
 
     return (
         <Task>
-            <TaskTrigger>
-                <Inline align='center' gap='sm'>
-                    <LucideIcon.ListChecks aria-hidden='true' className='size-4 text-muted-foreground' />
-                    <Text size='sm' weight='medium'>{label}</Text>
-                    <Badge variant={failed ? 'destructive' : interrupted ? 'warning' : running ? 'secondary' : 'success'}>
-                        {status}
-                    </Badge>
-                </Inline>
-            </TaskTrigger>
+            <TaskTrigger aria-label={`${latestStep}. ${label}. ${status}`} icon={latestIcon} title={running ? <Shimmer as='span'>{latestStep}</Shimmer> : latestStep} />
             <TaskContent>
                 {toolCalls.map((toolCall, index) => {
                     const resolved = toolCall.result?.ok === false && toolCalls.slice(index + 1).some(laterCall => repairs(toolCall, laterCall));
                     return (
                     <TaskItem
                         key={toolCall.id}
-                        icon={toolCall.status === 'running'
-                            ? <LucideIcon.LoaderCircle aria-hidden='true' className='size-4 animate-spin text-muted-foreground motion-reduce:animate-none' />
-                            : toolCall.status === 'interrupted'
-                                ? <LucideIcon.CircleStop aria-hidden='true' className='size-4 text-muted-foreground' />
-                                : toolCall.result?.ok === false && !resolved
-                                    ? <LucideIcon.CircleX aria-hidden='true' className='size-4 text-destructive' />
-                                    : <LucideIcon.CircleCheck aria-hidden='true' className='text-success size-4' />}
-                        status={toolCall.status === 'running' ? 'In progress' : toolCall.status === 'interrupted' ? 'Stopped' : resolved ? 'Retried' : toolCall.result?.ok === false ? 'Needs attention' : 'Done'}
+                        icon={actionIcon(toolCall.name)}
+                        status={toolCall.status === 'running' ? 'In progress' : toolCall.status === 'interrupted' ? 'Stopped' : resolved ? 'Retried' : toolCall.result?.ok === false ? 'Needs attention' : undefined}
                         title={actionLabel(toolCall.name)}
                     />
                     );
