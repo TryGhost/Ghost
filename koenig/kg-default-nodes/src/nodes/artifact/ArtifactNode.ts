@@ -15,11 +15,7 @@ export class ArtifactNode extends generateDecoratorNode({
     nodeType: 'artifact',
     properties: artifactProperties,
     defaultRenderFn: renderArtifactNode
-}) {
-    isEmpty() {
-        return !this.__html;
-    }
-}
+}) {}
 
 export function $createArtifactNode(dataset: ArtifactData = {}) {
     return new ArtifactNode(dataset);

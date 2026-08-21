@@ -317,12 +317,20 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         snippets,
         createSnippet,
         deleteSnippet,
-        openArtifact: searchParams.get('artifactBuilderResult') === 'saved' ? async ({artifact}) => ({
+        openArtifact: searchParams.get('artifactBuilderResult') === 'saved' ? async ({artifact}) => {
+            if (searchParams.get('artifactBuilderDeferred') === 'true') {
+                await new Promise<void>((resolve) => {
+                    window.addEventListener('artifact-builder-save', () => resolve(), {once: true});
+                });
+            }
+
+            return {
             ...artifact,
             title: 'Saved calculator',
             description: 'A calculator saved by Builder',
             html: '<!doctype html><html><head><title>Saved calculator</title></head><body><output>42</output></body></html>'
-        }) : defaultCardConfig.openArtifact,
+            };
+        } : defaultCardConfig.openArtifact,
         feature: {
             ...defaultCardConfig.feature,
             transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor

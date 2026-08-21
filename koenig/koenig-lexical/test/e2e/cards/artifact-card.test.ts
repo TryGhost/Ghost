@@ -76,6 +76,54 @@ test.describe('Artifact card', function () {
         }]);
     });
 
+    test('keeps the originating empty card while Builder is open', async function ({page}) {
+        await initialize({page, uri: '/#/?content=false&artifactBuilderResult=saved&artifactBuilderDeferred=true'});
+        await page.evaluate(() => {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        artifactVersion: 1,
+                        description: 'Existing embed',
+                        html: '<!doctype html><html><head><title>Existing</title></head><body>Existing</body></html>',
+                        id: 'existing-artifact',
+                        title: 'Existing',
+                        type: 'artifact',
+                        version: 1
+                    }, {
+                        artifactVersion: 1,
+                        description: '',
+                        html: '',
+                        id: 'new-artifact',
+                        title: '',
+                        type: 'artifact',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editor = window.lexicalEditor;
+            editor.setEditorState(editor.parseEditorState(serializedState));
+        });
+
+        const cards = page.locator('[data-kg-card="artifact"]');
+        await cards.nth(1).getByRole('button', {name: 'Create artifact'}).click();
+        await cards.nth(0).click();
+        await expect(cards).toHaveCount(2);
+        await expect(cards.nth(1).getByRole('button', {name: 'Create artifact'})).toBeVisible();
+
+        await page.evaluate(() => window.dispatchEvent(new Event('artifact-builder-save')));
+
+        await expect(cards.nth(1).locator('iframe[title="Saved calculator"]')).toBeVisible();
+        await expect.poll(() => page.evaluate(() => {
+            return window.lexicalEditor.getEditorState().toJSON().root.children;
+        })).toHaveLength(2);
+    });
+
     test('shows a sandboxed preview and edit action for saved content', async function ({page}) {
         await initialize({page});
         await page.evaluate(() => {
