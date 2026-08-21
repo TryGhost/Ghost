@@ -11,6 +11,7 @@ export {
   fakeIntegrations,
   fakeInvites,
   fakeLabels,
+  fakeMemberCustomFields,
   fakeMembers,
   fakeNewsletters,
   fakeOffers,

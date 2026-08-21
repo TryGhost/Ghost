@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 
-import { fakeAdminEndpoint, fakeMembers, member, renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeMemberCustomFields,
+  fakeMembers,
+  member,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import { membersScreen } from './members.screen';
 
 const CSV = 'email,name\nada@example.com,Ada Lovelace\n';
@@ -17,9 +22,7 @@ const CSV = 'email,name\nada@example.com,Ada Lovelace\n';
  */
 async function openMappingStep(labs: Record<string, boolean>) {
   fakeMembers([member({ name: 'Ada Lovelace' })]);
-  fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/(\\?|$)'), {
-    members_custom_fields: [],
-  });
+  fakeMemberCustomFields([]);
   await renderAdminApp('/members', { labs });
 
   await membersScreen.openActionsMenu();

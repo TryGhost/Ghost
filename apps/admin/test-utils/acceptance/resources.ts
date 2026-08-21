@@ -57,8 +57,8 @@ export type ResourceSemantics<TEntity> =
   | { kind: 'passthrough' };
 
 export interface ResourceOptions<TEntity> {
-  /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
+  envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
   skip?: (apiPath: string) => boolean;
@@ -114,7 +114,12 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
  *     trivial behaviors; filter components outside `covers` respond 418
  *     instead of silently serving the full world.
  */
-export function defineResource<TEntity>({ resource, semantics, skip }: ResourceOptions<TEntity>) {
+export function defineResource<TEntity>({
+  resource,
+  envelopeKey = resource,
+  semantics,
+  skip,
+}: ResourceOptions<TEntity>) {
   return function fakeResource(respondWith: RespondWith<TEntity>): ResourceCapture {
     const requests: BrowseQuery[] = [];
 
@@ -152,7 +157,7 @@ export function defineResource<TEntity>({ resource, semantics, skip }: ResourceO
       }
 
       return HttpResponse.json(
-        browseResponse(resource, matching, {
+        browseResponse(envelopeKey, matching, {
           page: query.page,
           limit: query.limit,
         }),
@@ -296,6 +301,13 @@ export const fakeRoles = defineResource<StaffRole>({
   resource: 'roles',
   semantics: { kind: 'passthrough' },
 });
+const memberCustomFieldsResource = defineResource({
+  resource: 'members/custom_fields',
+  envelopeKey: 'members_custom_fields',
+  semantics: { kind: 'passthrough' },
+});
+export const fakeMemberCustomFields = memberCustomFieldsResource;
+
 const themesResource = defineResource({ resource: 'themes', semantics: { kind: 'passthrough' } });
 /** Themes list fake (passthrough): installed/active state is declared by the spec. */
 export const fakeThemes = themesResource;

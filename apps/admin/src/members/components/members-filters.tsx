@@ -1,3 +1,5 @@
+import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
+import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@tryghost/shade/components';
@@ -9,7 +11,6 @@ import {
   toOfferFilterDisplayValues,
   useMemberFilterFields,
 } from '@/members/use-member-filter-fields';
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -40,6 +41,31 @@ interface MembersFiltersProps {
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
 const EMPTY_CUSTOM_FIELDS: MemberCustomField[] = [];
+const EMPTY_NEWSLETTERS: NonNullable<
+  ReturnType<typeof useBrowseNewsletters>['data']
+>['newsletters'] = [];
+const NO_KEYS: string[] = [];
+
+// The keys a set of filters names under a given prefix.
+//
+// Keyed on the keys themselves rather than on the filters holding them, because these feed the
+// field catalog, and rebuilding that means rebuilding every field's codec. Editing a filter
+// almost never changes which newsletters or custom fields are named, and when it doesn't, this
+// hands back the identical array and the catalog is left alone.
+function useReferencedKeys(filters: Filter[], prefix: string): string[] {
+  const signature = [
+    ...new Set(
+      filters
+        .map((filter) => filter.field)
+        .map((field) => keyBelow(field, prefix))
+        .filter((name) => name !== null),
+    ),
+  ]
+    .sort()
+    .join('\n');
+
+  return useMemo(() => (signature ? signature.split('\n') : NO_KEYS), [signature]);
+}
 
 function mapOfferRedemptionFilters(filters: Filter[], mapValues: (values: string[]) => string[]) {
   return filters.map((filter) => {
@@ -76,23 +102,13 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
   const siteTimezone = getSiteTimezone(settings);
 
-  const newsletters = newslettersData?.newsletters || [];
+  const newsletters = newslettersData?.newsletters ?? EMPTY_NEWSLETTERS;
   const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
 
   const offersOptions = useMemo(() => {
     return buildOfferOptions(offers);
   }, [offers]);
-  const hydratedNewsletterSlugs = useMemo(() => {
-    return [
-      ...new Set(
-        filters
-          .map((filter) => filter.field)
-          .filter((field) => field.startsWith('newsletters.'))
-          .map((field) => field.slice('newsletters.'.length))
-          .filter(Boolean),
-      ),
-    ];
-  }, [filters]);
+  const hydratedNewsletterSlugs = useReferencedKeys(filters, 'newsletters.');
 
   const displayFilters = useMemo(() => {
     return mapOfferRedemptionFilters(filters, (values) =>
@@ -119,16 +135,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   // The picker lists active fields — the endpoint the members page has always used.
   const { data: customFieldsData } = useBrowseMemberCustomFields({ enabled: customFieldsEnabled });
   const customFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
+  const referencedCustomFieldNames = useReferencedKeys(filters, CUSTOM_FIELDS_PREFIX);
   const referencedCustomFieldKeys = useMemo(
-    () =>
-      new Set(
-        filters
-          .map((filter) => filter.field)
-          .filter((field) => field.startsWith(CUSTOM_FIELDS_PREFIX))
-          .map((field) => field.slice(CUSTOM_FIELDS_PREFIX.length))
-          .filter(Boolean),
-      ),
-    [filters],
+    () => new Set(referencedCustomFieldNames),
+    [referencedCustomFieldNames],
   );
   // Only when the current filter references a custom field do we also pull the archived
   // ones, so a saved segment on a since-archived field still renders its read-only pill.

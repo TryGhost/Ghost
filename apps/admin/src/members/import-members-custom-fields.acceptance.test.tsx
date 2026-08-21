@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { fakeAdminEndpoint, fakeMembers, member, renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  fakeMemberCustomFields,
+  fakeMembers,
+  member,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import { membersScreen } from './members.screen';
 
 const FLAGS = { labs: { membersCustomFields: true } };
@@ -18,11 +24,6 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 
 // A Ghost export re-imported somewhere its field no longer exists: archived since, or a
 // different site. The header says what the column is even though nothing matches it.
-// Every browse of the field list, whether or not it carries a status filter: the members
-// screen behind this modal asks for archived fields too, and an exact-path fake would
-// leave that request unhandled.
-const customFieldsBrowsePath = new RegExp('^/members/custom_fields/(\\?|$)');
-
 const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 
 /**
@@ -33,7 +34,7 @@ const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 function fakeCustomFieldsWorld() {
   const fields: Array<Record<string, unknown>> = [];
   fakeMembers([member({ name: 'Ada Lovelace' })]);
-  fakeAdminEndpoint('GET', customFieldsBrowsePath, () => ({ members_custom_fields: fields }));
+  fakeMemberCustomFields(() => fields);
   const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
@@ -323,7 +324,6 @@ describe('Import members custom fields', () => {
       {
         errors: [
           {
-            // As Ghost serialises a host limit: a generic summary in `message`, the sentence
             // that explains the refusal in `context`.
             message: 'Cannot create custom field.',
             context:
@@ -495,7 +495,6 @@ describe('Import members custom fields', () => {
         {
           errors: [
             {
-              // As Ghost serialises it: generic summary in `message`, the sentence that
               // explains the refusal in `context`.
               message: 'Cannot import members.',
               context: 'Woah there, that is a lot of members.',
@@ -535,7 +534,7 @@ describe('Import members custom fields', () => {
     fakeMembers([member({ name: 'Ada Lovelace' })]);
     fakeAdminEndpoint(
       'GET',
-      customFieldsBrowsePath,
+      /^\/members\/custom_fields\/(\?|$)/,
       { errors: [{ message: 'nope' }] },
       { status: 500 },
     );

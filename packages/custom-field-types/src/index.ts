@@ -21,7 +21,7 @@ import { z } from 'zod';
  * cleared. That is why every part accepts empty regardless of its own rule — emptying is
  * a statement about the write, not about the part.
  *
- * A name nobody recognises is an error rather than a silent drop, at both depths. A
+ * A name nobody recognizes is an error rather than a silent drop, at both depths. A
  * misspelled field key is refused by the values service, which alone knows which fields a
  * site has defined; a misspelled part is refused here, because a type's parts are declared
  * in this file and nowhere else. Each is enforced where the names are known.
@@ -59,6 +59,20 @@ import { z } from 'zod';
 export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'address'] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 export const FieldTypeSchema = z.enum(FIELD_TYPE_IDS);
+
+/**
+ * What kind of thing a type's value is, as anything comparing values needs to know.
+ *
+ * Coarser than the type: `short_text` and `long_text` are both text, and differ only in how
+ * much of it. This is the level at which a value can be ordered, matched or grouped, so it
+ * is what a filter, a sort or an export reads to decide how to treat a value — without
+ * either of them enumerating the types themselves.
+ *
+ * Deliberately not presentation: it says a value is a date, not that its operator is called
+ * "is before". Naming the operators stays with whoever renders them.
+ */
+export const FIELD_KINDS = ['text', 'date', 'number', 'record'] as const;
+export type FieldKind = (typeof FIELD_KINDS)[number];
 
 /**
  * Bytes, not characters, because MySQL TEXT holds 65,535 of them: a character bound would
@@ -100,7 +114,7 @@ const postalCode = () => text().max(32, { error: 'Use 32 characters or fewer.' }
  * arbiter of it for every member of every site. The collection form can offer countries to
  * pick from without this deciding which ones exist.
  *
- * Case is normalised so that `gb` and `GB` are not two values for one place, which a
+ * Case is normalized so that `gb` and `GB` are not two values for one place, which a
  * filter for either would silently half-miss.
  *
  * Checked as two ASCII letters on the way in rather than by length on the way out, because
@@ -130,6 +144,8 @@ const clearable = <T extends PartSchema>(part: T) =>
     .optional();
 
 export interface FieldTypeDefinition {
+  /** What kind of value this is, for anything that has to compare one. */
+  kind: FieldKind;
   value: z.ZodType;
   /**
    * A record type's parts, in declaration order. Each part's own rule, and nothing
@@ -138,22 +154,13 @@ export interface FieldTypeDefinition {
   fields?: Record<string, PartSchema>;
 }
 
-type FieldTypeDeclaration = PartSchema | FieldTypeDefinition;
-
-type Defined<D> = D extends z.ZodType ? { value: D } : D;
-
-/** A type that is simply a value is declared as one; a record announces itself. */
-function defineFieldTypes<D extends Record<FieldType, FieldTypeDeclaration>>(
-  declarations: D,
-): { [K in keyof D]: Defined<D[K]> } {
-  // Restated for the type system, which cannot follow a conditional through
-  // `Object.fromEntries`.
-  return Object.fromEntries(
-    Object.entries(declarations).map(([type, declared]) => [
-      type,
-      declared instanceof z.ZodType ? { value: declared } : declared,
-    ]),
-  ) as { [K in keyof D]: Defined<D[K]> };
+/**
+ * Every type states its kind alongside its schema, so no type can exist that nothing knows
+ * how to compare. The `Record<FieldType, …>` is what makes that exhaustive: an id added to
+ * `FIELD_TYPE_IDS` fails to compile until it is declared here.
+ */
+function defineFieldTypes<D extends Record<FieldType, FieldTypeDefinition>>(declarations: D): D {
+  return declarations;
 }
 
 /**
@@ -179,14 +186,14 @@ function record<F extends Record<string, PartSchema>>(fields: F, { error }: { er
     .strictObject(shape)
     .refine((parts) => Object.values(parts).some((part) => typeof part === 'string'), { error });
 
-  return { value, fields };
+  return { kind: 'record' as const, value, fields };
 }
 
 export const FIELD_TYPES = defineFieldTypes({
-  short_text: shortText(),
-  long_text: longText(),
+  short_text: { kind: 'text', value: shortText() },
+  long_text: { kind: 'text', value: longText() },
   // An address is a delivery address, so its bounds are what a courier will accept
-  // rather than what the column could hold. Modelled on Stripe's Address object.
+  // rather than what the column could hold. Modeled on Stripe's Address object.
   address: record(
     {
       line1: shortText(),
