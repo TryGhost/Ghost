@@ -1,26 +1,32 @@
-/**
- * Utility functions for URL and referrer attribution parsing
- */
+/** Utility functions for URL and referrer attribution parsing */
 
-/**
- * @typedef {Object} AttributionData
- * @property {string|null} source - Primary attribution source (ref || source || utm_source)
- * @property {string|null} medium - UTM medium parameter
- * @property {string|null} url - Browser's document.referrer
- * @property {string|null} utmSource - UTM source parameter
- * @property {string|null} utmMedium - UTM medium parameter
- * @property {string|null} utmTerm - UTM term/keyword parameter
- * @property {string|null} utmCampaign - UTM campaign parameter
- * @property {string|null} utmContent - UTM content/variant parameter
- */
+type AttributionData = {
+  /** Primary attribution source (ref || source || utm_source) */
+  source: string | null;
+  /** UTM medium parameter */
+  medium: string | null;
+  /** Browser's document.referrer */
+  url: string | null;
+  /** UTM source parameter */
+  utmSource: string | null;
+  /** UTM medium parameter */
+  utmMedium: string | null;
+  /** UTM term/keyword parameter */
+  utmTerm: string | null;
+  /** UTM campaign parameter */
+  utmCampaign: string | null;
+  /** UTM content/variant parameter */
+  utmContent: string | null;
+};
 
 /**
  * Extracts attribution parameters from URL search params
+ *
  * @private
- * @param {URLSearchParams} searchParams - The search params to parse
- * @returns {AttributionData} Parsed attribution data with all UTM parameters
+ * @param searchParams - The search params to parse
+ * @returns Parsed attribution data with all UTM parameters
  */
-function extractParams(searchParams) {
+function extractParams(searchParams: Readonly<URLSearchParams>): AttributionData {
   const refParam = searchParams.get('ref');
   const sourceParam = searchParams.get('source');
   const utmSourceParam = searchParams.get('utm_source');
@@ -47,10 +53,10 @@ function extractParams(searchParams) {
 /**
  * Parses URL parameters to extract complete referrer/attribution data
  *
- * @param {string} url - The URL to parse (defaults to current URL)
- * @returns {AttributionData} Complete attribution data including all UTM parameters
+ * @param url - The URL to parse (defaults to current URL)
+ * @returns Complete attribution data including all UTM parameters
  */
-export function parseReferrerData(url) {
+export function parseReferrerData(url?: string): AttributionData {
   // Extract current URL parameters
   const currentUrl = new URL(url || window.location.href);
   let searchParams = currentUrl.searchParams;
@@ -66,13 +72,16 @@ export function parseReferrerData(url) {
 
 /**
  * Selects the primary referrer value from parsed attribution data
+ *
  * Prioritizes: source → medium → url
+ *
  * Filters out same-domain referrers
+ *
  * @private
- * @param {AttributionData} referrerData - Parsed referrer data
- * @returns {string|null} Primary referrer value or null
+ * @param referrerData - Parsed referrer data
+ * @returns Primary referrer value or null
  */
-function selectPrimaryReferrer(referrerData) {
+function selectPrimaryReferrer(referrerData: AttributionData): string | null {
   const { source, medium, url } = referrerData;
   const finalReferrer = source || medium || url || null;
 
@@ -84,7 +93,7 @@ function selectPrimaryReferrer(referrerData) {
       if (referrerHost === currentHost) {
         return null;
       }
-    } catch (e) {
+    } catch {
       // If URL parsing fails (e.g., for non-URL refs like "ghost-newsletter")
       return finalReferrer;
     }
@@ -96,10 +105,10 @@ function selectPrimaryReferrer(referrerData) {
 /**
  * One-step function to get the final referrer from a URL
  *
- * @param {string} [url] - URL to parse (defaults to current URL)
- * @returns {string|null} Final referrer value
+ * @param url - URL to parse (defaults to current URL)
+ * @returns Final referrer value
  */
-export function getReferrer(url) {
+export function getReferrer(url?: string): string | null {
   const referrerData = parseReferrerData(url);
   return selectPrimaryReferrer(referrerData);
 }

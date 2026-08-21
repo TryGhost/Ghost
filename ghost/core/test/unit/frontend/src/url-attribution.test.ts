@@ -1,24 +1,32 @@
-const assert = require('node:assert/strict');
-const { assertExists } = require('../../../utils/assertions');
-const sinon = require('sinon');
-const { JSDOM } = require('jsdom');
-
-// Use path relative to test file
-const {
+import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
+import sinon from 'sinon';
+import { assertExists } from '../../../utils/assertions';
+import {
   parseReferrerData,
   getReferrer,
-} = require('../../../../core/frontend/src/utils/url-attribution');
+} from '../../../../core/frontend/src/utils/url-attribution';
+
+type TestGlobal = {
+  window: JSDOM['window'];
+  URL: typeof URL;
+  document: JSDOM['window']['document'] | undefined;
+};
+
+const testGlobal = global as unknown as TestGlobal;
+
+function mockGlobal(property: keyof TestGlobal, value: TestGlobal[keyof TestGlobal]) {
+  if (Object.hasOwn(testGlobal, property)) {
+    sinon.replace(testGlobal, property, value);
+  } else {
+    sinon.define(testGlobal, property, value);
+  }
+}
 
 describe('URL Attribution Utils', function () {
-  let dom;
-  let originalWindow;
-  let originalURL;
+  let dom: JSDOM;
 
   beforeEach(function () {
-    // Save original globals
-    originalWindow = global.window;
-    originalURL = global.URL;
-
     // Set up JSDOM environment
     dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
       url: 'https://example.com/path',
@@ -28,9 +36,9 @@ describe('URL Attribution Utils', function () {
     });
 
     // Set global window and URL
-    global.window = dom.window;
-    global.URL = dom.window.URL;
-    global.document = dom.window.document;
+    mockGlobal('window', dom.window);
+    mockGlobal('URL', dom.window.URL);
+    mockGlobal('document', dom.window.document);
   });
 
   afterEach(function () {
@@ -38,11 +46,6 @@ describe('URL Attribution Utils', function () {
 
     // Clean up JSDOM
     dom.window.close();
-
-    // Restore globals
-    global.window = originalWindow;
-    global.URL = originalURL;
-    global.document = undefined;
   });
 
   describe('parseReferrerData', function () {
