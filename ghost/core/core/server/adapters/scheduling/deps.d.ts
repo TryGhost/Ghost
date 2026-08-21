@@ -1,1 +1,1 @@
-declare module "@tryghost/request"
+declare module '@tryghost/request';

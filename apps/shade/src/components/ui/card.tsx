@@ -1,177 +1,141 @@
 import * as React from 'react';
-import {cn} from '@/lib/utils';
-import {cva} from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { cva } from 'class-variance-authority';
 
 type CardsVariant = 'outline' | 'plain';
 const CardsVariantContext = React.createContext<CardsVariant>('outline');
 
 export interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
-    variant?: CardsVariant;
+  variant?: CardsVariant;
 }
 
-const cardVariants = cva(
-    'flex flex-col bg-card text-card-foreground',
-    {
-        variants: {
-            variant: {
-                outline: 'rounded-xl border border-border-default transition-all hover:shadow-xs',
-                plain: ''
-            }
-        },
-        defaultVariants: {
-            variant: 'outline'
-        }
-    }
-);
+const cardVariants = cva('flex flex-col bg-card text-card-foreground', {
+  variants: {
+    variant: {
+      outline: 'rounded-xl border border-border-default transition-all hover:shadow-xs',
+      plain: '',
+    },
+  },
+  defaultVariants: {
+    variant: 'outline',
+  },
+});
 
-const Card = React.forwardRef<
-    HTMLDivElement,
-    CardProps
->(({variant = 'outline', className, ...props}, ref) => (
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ variant = 'outline', className, ...props }, ref) => (
     <CardsVariantContext.Provider value={variant}>
-        <div
-            ref={ref}
-            className={cn(cardVariants({variant, className}))}
-            {...props}
-        />
+      <div ref={ref} className={cn(cardVariants({ variant, className }))} {...props} />
     </CardsVariantContext.Provider>
-));
+  ),
+);
 Card.displayName = 'Card';
 
-const cardHeaderVariants = cva(
-    'flex flex-col gap-y-1.5',
-    {
-        variants: {
-            variant: {
-                outline: 'p-6',
-                plain: 'border-b border-border-default py-5'
-            }
-        },
-        defaultVariants: {
-            variant: 'outline'
-        }
-    }
-);
-
-const CardHeader = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({className, ...props}, ref) => {
-    const variant = React.useContext(CardsVariantContext);
-    return (
-        <div
-            ref={ref}
-            className={cn(cardHeaderVariants({variant, className}))}
-            {...props}
-        />
-    );
+const cardHeaderVariants = cva('flex flex-col gap-y-1.5', {
+  variants: {
+    variant: {
+      outline: 'p-6',
+      plain: 'border-b border-border-default py-5',
+    },
+  },
+  defaultVariants: {
+    variant: 'outline',
+  },
 });
+
+const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const variant = React.useContext(CardsVariantContext);
+    return <div ref={ref} className={cn(cardHeaderVariants({ variant, className }))} {...props} />;
+  },
+);
 CardHeader.displayName = 'CardHeader';
 
-const CardTitle = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({className, ...props}, ref) => (
+const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
     <div
-        ref={ref}
-        className={cn('leading-none font-semibold tracking-tight', className)}
-        {...props}
+      ref={ref}
+      className={cn('leading-none font-semibold tracking-tight', className)}
+      {...props}
     />
-));
+  ),
+);
 CardTitle.displayName = 'CardTitle';
 
-const CardDescription = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({className, ...props}, ref) => (
-    <div
-        ref={ref}
-        className={cn('text-sm text-muted-foreground', className)}
-        {...props}
-    />
-));
+const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+  ),
+);
 CardDescription.displayName = 'CardDescription';
 
-const cardContentVariants = cva(
-    '',
-    {
-        variants: {
-            variant: {
-                outline: 'p-6 pt-0',
-                plain: 'border-b border-border-default'
-            }
-        },
-        defaultVariants: {
-            variant: 'outline'
-        }
-    }
-);
-
-const CardContent = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({className, ...props}, ref) => {
-    const variant = React.useContext(CardsVariantContext);
-    return (
-        <div ref={ref} className={cn(cardContentVariants({variant, className}))} {...props} />
-    );
+const cardContentVariants = cva('', {
+  variants: {
+    variant: {
+      outline: 'p-6 pt-0',
+      plain: 'border-b border-border-default',
+    },
+  },
+  defaultVariants: {
+    variant: 'outline',
+  },
 });
+
+const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const variant = React.useContext(CardsVariantContext);
+    return <div ref={ref} className={cn(cardContentVariants({ variant, className }))} {...props} />;
+  },
+);
 CardContent.displayName = 'CardContent';
 
-const cardFooterVariants = cva(
-    'flex w-full items-center',
-    {
-        variants: {
-            variant: {
-                outline: 'p-6 pt-0',
-                plain: 'py-5'
-            }
-        },
-        defaultVariants: {
-            variant: 'outline'
-        }
-    }
-);
+const cardFooterVariants = cva('flex w-full items-center', {
+  variants: {
+    variant: {
+      outline: 'p-6 pt-0',
+      plain: 'py-5',
+    },
+  },
+  defaultVariants: {
+    variant: 'outline',
+  },
+});
 
-const CardFooter = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({className, ...props}, ref) => {
+const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
     const variant = React.useContext(CardsVariantContext);
     return (
-        <div className='flex grow items-end'>
-            <div
-                ref={ref}
-                className={cn(cardFooterVariants({variant, className}))}
-                {...props}
-            />
-        </div>
+      <div className="flex grow items-end">
+        <div ref={ref} className={cn(cardFooterVariants({ variant, className }))} {...props} />
+      </div>
     );
-});
+  },
+);
 CardFooter.displayName = 'CardFooter';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EmptyCardProps extends React.ComponentPropsWithoutRef<'div'> {}
 
-const EmptyCard = React.forwardRef<
-    HTMLDivElement,
-    EmptyCardProps
->(({className, ...props}, ref) => (
+const EmptyCard = React.forwardRef<HTMLDivElement, EmptyCardProps>(
+  ({ className, ...props }, ref) => (
     <div
-        ref={ref}
-        className={cn('flex flex-col rounded-xl border border-border-default bg-card p-6 text-card-foreground transition-all hover:shadow-xs', className)}
-        {...props}
+      ref={ref}
+      className={cn(
+        'flex flex-col rounded-xl border border-border-default bg-card p-6 text-card-foreground transition-all hover:shadow-xs',
+        className,
+      )}
+      {...props}
     />
-));
+  ),
+);
 EmptyCard.displayName = 'EmptyCard';
 
 export {
-    Card,
-    CardHeader,
-    CardFooter,
-    CardTitle,
-    CardDescription,
-    CardContent,
-    EmptyCard,
-    cardVariants
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  EmptyCard,
+  cardVariants,
 };

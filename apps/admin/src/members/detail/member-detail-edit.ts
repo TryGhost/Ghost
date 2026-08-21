@@ -1,8 +1,14 @@
 import moment from 'moment-timezone';
-import {MEMBER_CUSTOM_FIELD_TYPES, memberCustomFieldParts} from '@tryghost/admin-x-framework/api/member-custom-fields';
-import {dequal} from 'dequal';
-import type {EditMemberData, Member} from '@tryghost/admin-x-framework/api/members';
-import type {MemberCustomField, MemberCustomFieldAddress} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {
+  MEMBER_CUSTOM_FIELD_TYPES,
+  memberCustomFieldParts,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { dequal } from 'dequal';
+import type { EditMemberData, Member } from '@tryghost/admin-x-framework/api/members';
+import type {
+  MemberCustomField,
+  MemberCustomFieldAddress,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // The parts of the address composite, in the order its value schema declares them, each
 // with the label every other surface shows it under.
@@ -14,30 +20,30 @@ export type EditableAddressValue = Partial<MemberCustomFieldAddress>;
 export type EditableCustomFieldValue = string | EditableAddressValue;
 
 export interface MemberEditableLabel {
-    name: string;
-    slug: string;
+  name: string;
+  slug: string;
 }
 
 export interface MemberEditableFields {
-    name: string;
-    email: string;
-    note: string;
-    labels: MemberEditableLabel[];
-    // Subscribed-newsletter ids, sorted, so order changes never look dirty.
-    newsletters: string[];
-    // Custom field values are deliberately NOT part of this slice: they save
-    // individually through their own per-field editor (one field, one Save),
-    // never through the page's draft/Save flow.
+  name: string;
+  email: string;
+  note: string;
+  labels: MemberEditableLabel[];
+  // Subscribed-newsletter ids, sorted, so order changes never look dirty.
+  newsletters: string[];
+  // Custom field values are deliberately NOT part of this slice: they save
+  // individually through their own per-field editor (one field, one Save),
+  // never through the page's draft/Save flow.
 }
 
 // The members API returns null (not just undefined) for unset name/email/note,
 // so accept both here rather than casting at the call sites.
 interface MemberFieldSource {
-    name?: string | null;
-    email?: string | null;
-    note?: string | null;
-    labels?: Array<{name: string; slug: string}> | null;
-    newsletters?: Array<{id: string}> | null;
+  name?: string | null;
+  email?: string | null;
+  note?: string | null;
+  labels?: Array<{ name: string; slug: string }> | null;
+  newsletters?: Array<{ id: string }> | null;
 }
 
 // Same shape as the import-members validator already used in this app.
@@ -54,19 +60,17 @@ export const NOTE_MAX_LENGTH = 500;
  * null field and a draft with '' don't read as dirty.
  */
 export function getMemberEditableSlice(member: MemberFieldSource): MemberEditableFields {
-    return {
-        name: (member.name ?? '').trim(),
-        email: (member.email ?? '').trim(),
-        note: member.note ?? '',
-        // Sorted by slug (deterministic byte-order, not locale-dependent) so label
-        // order — or a reordered server response — never reads as a dirty change.
-        labels: (member.labels ?? [])
-            .map(label => ({name: label.name, slug: label.slug}))
-            .sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0)),
-        newsletters: (member.newsletters ?? [])
-            .map(nl => nl.id)
-            .sort()
-    };
+  return {
+    name: (member.name ?? '').trim(),
+    email: (member.email ?? '').trim(),
+    note: member.note ?? '',
+    // Sorted by slug (deterministic byte-order, not locale-dependent) so label
+    // order — or a reordered server response — never reads as a dirty change.
+    labels: (member.labels ?? [])
+      .map((label) => ({ name: label.name, slug: label.slug }))
+      .sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0)),
+    newsletters: (member.newsletters ?? []).map((nl) => nl.id).sort(),
+  };
 }
 
 /**
@@ -76,19 +80,21 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
  * reads identically however it's represented. Feeds the read-only value rows
  * and seeds the per-field editor.
  */
-export function getEditableCustomFieldValues(customFields: Record<string, unknown> | null | undefined): Record<string, EditableCustomFieldValue> {
-    const values: Record<string, EditableCustomFieldValue> = {};
-    for (const [key, value] of Object.entries(customFields ?? {})) {
-        if (typeof value === 'string' && value.trim() !== '') {
-            values[key] = value.trim();
-        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            const address = normalizeAddressValue(value as Record<string, unknown>);
-            if (address) {
-                values[key] = address;
-            }
-        }
+export function getEditableCustomFieldValues(
+  customFields: Record<string, unknown> | null | undefined,
+): Record<string, EditableCustomFieldValue> {
+  const values: Record<string, EditableCustomFieldValue> = {};
+  for (const [key, value] of Object.entries(customFields ?? {})) {
+    if (typeof value === 'string' && value.trim() !== '') {
+      values[key] = value.trim();
+    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const address = normalizeAddressValue(value as Record<string, unknown>);
+      if (address) {
+        values[key] = address;
+      }
     }
-    return values;
+  }
+  return values;
 }
 
 /**
@@ -100,14 +106,14 @@ export function getEditableCustomFieldValues(customFields: Record<string, unknow
  * left in it is a cleared field, which the caller says with `null` instead.
  */
 function addressToSave(value: Record<string, unknown>): EditableAddressValue | undefined {
-    const address: EditableAddressValue = {};
-    for (const {key} of ADDRESS_PARTS) {
-        const subvalue = value[key];
-        if (typeof subvalue === 'string') {
-            address[key] = subvalue.trim();
-        }
+  const address: EditableAddressValue = {};
+  for (const { key } of ADDRESS_PARTS) {
+    const subvalue = value[key];
+    if (typeof subvalue === 'string') {
+      address[key] = subvalue.trim();
     }
-    return Object.values(address).some(part => part !== '') ? address : undefined;
+  }
+  return Object.values(address).some((part) => part !== '') ? address : undefined;
 }
 
 /**
@@ -116,14 +122,14 @@ function addressToSave(value: Record<string, unknown>): EditableAddressValue | u
  * normalizes to "no value" exactly like an empty string does.
  */
 function normalizeAddressValue(value: Record<string, unknown>): EditableAddressValue | undefined {
-    const address: EditableAddressValue = {};
-    for (const {key} of ADDRESS_PARTS) {
-        const subvalue = value[key];
-        if (typeof subvalue === 'string' && subvalue.trim() !== '') {
-            address[key] = subvalue.trim();
-        }
+  const address: EditableAddressValue = {};
+  for (const { key } of ADDRESS_PARTS) {
+    const subvalue = value[key];
+    if (typeof subvalue === 'string' && subvalue.trim() !== '') {
+      address[key] = subvalue.trim();
     }
-    return Object.keys(address).length ? address : undefined;
+  }
+  return Object.keys(address).length ? address : undefined;
 }
 
 /**
@@ -131,15 +137,15 @@ function normalizeAddressValue(value: Record<string, unknown>): EditableAddressV
  * Idempotent by construction so a repeated toggle round-trips to no change.
  */
 export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: string): string[] {
-    if (subscribedIds.includes(newsletterId)) {
-        return subscribedIds.filter(id => id !== newsletterId);
-    }
-    return [...subscribedIds, newsletterId].sort();
+  if (subscribedIds.includes(newsletterId)) {
+    return subscribedIds.filter((id) => id !== newsletterId);
+  }
+  return [...subscribedIds, newsletterId].sort();
 }
 
 /** Client-side email sanity check for the save gate; the server remains authoritative. */
 export function isValidMemberEmail(email: string): boolean {
-    return MEMBER_EMAIL_REGEX.test(email.trim());
+  return MEMBER_EMAIL_REGEX.test(email.trim());
 }
 
 /**
@@ -150,24 +156,24 @@ export function isValidMemberEmail(email: string): boolean {
  * (`ghost/admin/app/validators/member.js:15`).
  */
 export function getEmailErrorMessage(email: string, touched: boolean): string | null {
-    if (!touched) {
-        return null;
-    }
-    if (email.trim() === '') {
-        return 'Email is required.';
-    }
-    if (!isValidMemberEmail(email)) {
-        return 'Invalid email.';
-    }
+  if (!touched) {
     return null;
+  }
+  if (email.trim() === '') {
+    return 'Email is required.';
+  }
+  if (!isValidMemberEmail(email)) {
+    return 'Invalid email.';
+  }
+  return null;
 }
 
 export interface MemberSuppressionInfo {
-    // Undefined for a `suppressed:true` member without a bounce/complaint history —
-    // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
-    // that case, just without the reason line.
-    reason?: string;
-    label: string | null;
+  // Undefined for a `suppressed:true` member without a bounce/complaint history —
+  // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
+  // that case, just without the reason line.
+  reason?: string;
+  label: string | null;
 }
 
 /**
@@ -179,25 +185,25 @@ export interface MemberSuppressionInfo {
  * match the Ember copy exactly.
  */
 export function getMemberSuppressionInfo(
-    emailSuppression: Member['email_suppression']
+  emailSuppression: Member['email_suppression'],
 ): MemberSuppressionInfo | null {
-    if (!emailSuppression?.suppressed) {
-        return null;
-    }
-    const info = emailSuppression.info;
-    if (!info) {
-        return {label: null};
-    }
-    const {reason, timestamp} = info;
-    const date = moment(new Date(timestamp)).format('D MMM YYYY');
-    switch (reason) {
+  if (!emailSuppression?.suppressed) {
+    return null;
+  }
+  const info = emailSuppression.info;
+  if (!info) {
+    return { label: null };
+  }
+  const { reason, timestamp } = info;
+  const date = moment(new Date(timestamp)).format('D MMM YYYY');
+  switch (reason) {
     case 'fail':
-        return {reason, label: `Bounced on ${date}`};
+      return { reason, label: `Bounced on ${date}` };
     case 'spam':
-        return {reason, label: `Flagged as spam on ${date}`};
+      return { reason, label: `Flagged as spam on ${date}` };
     default:
-        return {reason, label: `Email disabled on ${date}`};
-    }
+      return { reason, label: `Email disabled on ${date}` };
+  }
 }
 
 /**
@@ -217,18 +223,23 @@ export function getMemberSuppressionInfo(
  * POST payload so the server never has to fall back to its own default.
  */
 export function getDefaultNewsletterIdsForNewMember(
-    newsletters: Array<{id: string; subscribe_on_signup?: boolean; visibility?: string | null}> | undefined | null
+  newsletters:
+    | Array<{ id: string; subscribe_on_signup?: boolean; visibility?: string | null }>
+    | undefined
+    | null,
 ): string[] {
-    if (!newsletters) {
-        return [];
-    }
-    return newsletters
-        .filter(nl => nl.subscribe_on_signup === true && nl.visibility === 'members')
-        .map(nl => nl.id);
+  if (!newsletters) {
+    return [];
+  }
+  return newsletters
+    .filter((nl) => nl.subscribe_on_signup === true && nl.visibility === 'members')
+    .map((nl) => nl.id);
 }
 
-export function getMemberNewslettersUiEnabled(editorDefaultEmailRecipients: string | null | undefined): boolean {
-    return editorDefaultEmailRecipients !== 'disabled';
+export function getMemberNewslettersUiEnabled(
+  editorDefaultEmailRecipients: string | null | undefined,
+): boolean {
+  return editorDefaultEmailRecipients !== 'disabled';
 }
 
 /**
@@ -238,7 +249,7 @@ export function getMemberNewslettersUiEnabled(editorDefaultEmailRecipients: stri
  * the limit is exceeded.
  */
 export function getNoteCharactersLeft(note: string): number {
-    return NOTE_MAX_LENGTH - [...note].length;
+  return NOTE_MAX_LENGTH - [...note].length;
 }
 
 /**
@@ -250,22 +261,22 @@ export function getNoteCharactersLeft(note: string): number {
  * so we can tell "unchanged" from "all newsletters removed".
  */
 export function buildMemberFieldEditPayload(
-    id: string,
-    draft: MemberEditableFields,
-    serverBaseline: MemberEditableFields
+  id: string,
+  draft: MemberEditableFields,
+  serverBaseline: MemberEditableFields,
 ): EditMemberData {
-    const normalized = normalizeDraftForComparison(draft);
-    const payload: EditMemberData = {
-        id,
-        name: normalized.name,
-        email: normalized.email,
-        note: normalized.note,
-        labels: normalized.labels
-    };
-    if (!dequal(normalized.newsletters, serverBaseline.newsletters)) {
-        payload.newsletters = normalized.newsletters.map(nlId => ({id: nlId}));
-    }
-    return payload;
+  const normalized = normalizeDraftForComparison(draft);
+  const payload: EditMemberData = {
+    id,
+    name: normalized.name,
+    email: normalized.email,
+    note: normalized.note,
+    labels: normalized.labels,
+  };
+  if (!dequal(normalized.newsletters, serverBaseline.newsletters)) {
+    payload.newsletters = normalized.newsletters.map((nlId) => ({ id: nlId }));
+  }
+  return payload;
 }
 
 /**
@@ -276,8 +287,10 @@ export function buildMemberFieldEditPayload(
  * display form drops it, and a check run against the second cannot see what the first
  * would be told about.
  */
-function customFieldValueToSave(value: EditableCustomFieldValue): EditableCustomFieldValue | undefined {
-    return typeof value === 'string' ? (value.trim() || undefined) : addressToSave(value);
+function customFieldValueToSave(
+  value: EditableCustomFieldValue,
+): EditableCustomFieldValue | undefined {
+  return typeof value === 'string' ? value.trim() || undefined : addressToSave(value);
 }
 
 /**
@@ -286,11 +299,11 @@ function customFieldValueToSave(value: EditableCustomFieldValue): EditableCustom
  * address is sent whole (the merge is per field, not per sub-field).
  */
 export function buildCustomFieldSavePayload(
-    memberId: string,
-    fieldKey: string,
-    value: EditableCustomFieldValue
+  memberId: string,
+  fieldKey: string,
+  value: EditableCustomFieldValue,
 ): EditMemberData {
-    return {id: memberId, custom_fields: {[fieldKey]: customFieldValueToSave(value) ?? null}};
+  return { id: memberId, custom_fields: { [fieldKey]: customFieldValueToSave(value) ?? null } };
 }
 
 /**
@@ -303,34 +316,34 @@ export function buildCustomFieldSavePayload(
  * through one map. Cleared/empty values are always valid — fields are optional.
  */
 export function getCustomFieldValidationErrors(
-    draftCustomFields: Record<string, EditableCustomFieldValue>,
-    fields: MemberCustomField[]
+  draftCustomFields: Record<string, EditableCustomFieldValue>,
+  fields: MemberCustomField[],
 ): Record<string, string> {
-    const errors: Record<string, string> = {};
-    for (const field of fields) {
-        const draft = draftCustomFields[field.key];
-        // Checked as the save would send it, so what passes here is what the server is
-        // asked to accept. A value that clears the field is always valid: no field is
-        // required, and a clear says nothing for a rule to be about.
-        const value = draft === undefined ? undefined : customFieldValueToSave(draft);
-        if (value === undefined) {
-            continue;
-        }
-        // Runtime guard for a future type this build doesn't know; the server
-        // remains authoritative for those.
-        const definition = MEMBER_CUSTOM_FIELD_TYPES[field.type];
-        if (!definition) {
-            continue;
-        }
-        const result = definition.value.safeParse(value);
-        if (!result.success) {
-            for (const issue of result.error.issues) {
-                const key = [field.key, ...issue.path].join('.');
-                errors[key] ??= issue.message;
-            }
-        }
+  const errors: Record<string, string> = {};
+  for (const field of fields) {
+    const draft = draftCustomFields[field.key];
+    // Checked as the save would send it, so what passes here is what the server is
+    // asked to accept. A value that clears the field is always valid: no field is
+    // required, and a clear says nothing for a rule to be about.
+    const value = draft === undefined ? undefined : customFieldValueToSave(draft);
+    if (value === undefined) {
+      continue;
     }
-    return errors;
+    // Runtime guard for a future type this build doesn't know; the server
+    // remains authoritative for those.
+    const definition = MEMBER_CUSTOM_FIELD_TYPES[field.type];
+    if (!definition) {
+      continue;
+    }
+    const result = definition.value.safeParse(value);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const key = [field.key, ...issue.path].join('.');
+        errors[key] ??= issue.message;
+      }
+    }
+  }
+  return errors;
 }
 
 /**
@@ -342,14 +355,25 @@ export function getCustomFieldValidationErrors(
  * back to the generic toast.
  */
 export function parseCustomFieldServerErrors(error: unknown): Record<string, string> | undefined {
-    const data = (error as {data?: {errors?: Array<{property?: string | null; context?: string | null; message?: string | null}>}} | null)?.data;
-    const errors: Record<string, string> = {};
-    for (const apiError of data?.errors ?? []) {
-        if (apiError.property?.startsWith('custom_fields.')) {
-            errors[apiError.property.slice('custom_fields.'.length)] = apiError.context || apiError.message || 'Invalid value.';
-        }
+  const data = (
+    error as {
+      data?: {
+        errors?: Array<{
+          property?: string | null;
+          context?: string | null;
+          message?: string | null;
+        }>;
+      };
+    } | null
+  )?.data;
+  const errors: Record<string, string> = {};
+  for (const apiError of data?.errors ?? []) {
+    if (apiError.property?.startsWith('custom_fields.')) {
+      errors[apiError.property.slice('custom_fields.'.length)] =
+        apiError.context || apiError.message || 'Invalid value.';
     }
-    return Object.keys(errors).length ? errors : undefined;
+  }
+  return Object.keys(errors).length ? errors : undefined;
 }
 
 /**
@@ -359,10 +383,10 @@ export function parseCustomFieldServerErrors(error: unknown): Record<string, str
  * real name is never lost (which would make the server create a duplicate).
  */
 export function resolveSlugsToLabels(
-    slugs: string[],
-    known: ReadonlyMap<string, MemberEditableLabel>
+  slugs: string[],
+  known: ReadonlyMap<string, MemberEditableLabel>,
 ): MemberEditableLabel[] {
-    return slugs.map(slug => known.get(slug) ?? {name: slug, slug});
+  return slugs.map((slug) => known.get(slug) ?? { name: slug, slug });
 }
 
 /**
@@ -372,13 +396,13 @@ export function resolveSlugsToLabels(
  * Trims strings so whitespace-only differences don't read as dirty.
  */
 export function normalizeDraftForComparison(draft: MemberEditableFields): MemberEditableFields {
-    return {
-        name: draft.name.trim(),
-        email: draft.email.trim(),
-        note: draft.note,
-        labels: draft.labels,
-        newsletters: draft.newsletters
-    };
+  return {
+    name: draft.name.trim(),
+    email: draft.email.trim(),
+    note: draft.note,
+    labels: draft.labels,
+    newsletters: draft.newsletters,
+  };
 }
 
 /**
@@ -389,8 +413,8 @@ export function normalizeDraftForComparison(draft: MemberEditableFields): Member
  * Comparison is on the normalized slice so whitespace-only differences don't count.
  */
 export function isDraftInSyncWithServer(
-    draft: MemberEditableFields | undefined,
-    serverBaseline: MemberEditableFields | undefined
+  draft: MemberEditableFields | undefined,
+  serverBaseline: MemberEditableFields | undefined,
 ): boolean {
-    return !draft || (!!serverBaseline && dequal(normalizeDraftForComparison(draft), serverBaseline));
+  return !draft || (!!serverBaseline && dequal(normalizeDraftForComparison(draft), serverBaseline));
 }

@@ -1,21 +1,21 @@
-import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 
 export const useLimiter = () => {
-    const {config} = useAnalyticsData();
+  const { config } = useAnalyticsData();
 
-    const isLimited = (limitName: string): boolean => {
-        if (!config?.hostSettings?.limits) {
-            return false;
-        }
+  const isLimited = (limitName: string): boolean => {
+    if (!config?.hostSettings?.limits) {
+      return false;
+    }
 
-        if (limitName === 'limitAnalytics') {
-            return config.hostSettings.limits.limitAnalytics?.disabled === true;
-        }
+    if (limitName === 'limitAnalytics') {
+      return config.hostSettings.limits.limitAnalytics?.disabled === true;
+    }
 
-        return false;
-    };
+    return false;
+  };
 
-    return {
-        isLimited
-    };
+  return {
+    isLimited,
+  };
 };

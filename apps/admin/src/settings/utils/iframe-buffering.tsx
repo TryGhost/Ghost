@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
-import React, {useEffect, useRef, useState} from 'react';
-import {debounce} from './debounce';
+import React, { useEffect, useRef, useState } from 'react';
+import { debounce } from './debounce';
 
 type IframeBufferingProps = {
   generateContent: (iframe: HTMLIFrameElement) => void;
@@ -14,105 +14,114 @@ type IframeBufferingProps = {
   addDelay?: boolean;
 };
 
-const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, updateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
-    const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
-    const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];  
-    const [scrollPosition, setScrollPosition] = useState(0);
+const IframeBuffering: React.FC<IframeBufferingProps> = ({
+  generateContent,
+  updateContent,
+  className,
+  height,
+  width,
+  parentClassName,
+  testId,
+  addDelay = false,
+}) => {
+  const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
+  const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];
+  const [scrollPosition, setScrollPosition] = useState(0);
 
-    useEffect(() => {
-        const invisibleIframeIndex = visibleIframeIndex === 0 ? 1 : 0;
-        const iframe = iframes[invisibleIframeIndex].current;
+  useEffect(() => {
+    const invisibleIframeIndex = visibleIframeIndex === 0 ? 1 : 0;
+    const iframe = iframes[invisibleIframeIndex].current;
 
-        if (iframe) {
-            // Start generating the content for the invisible iframe
-            generateContent(iframe);
+    if (iframe) {
+      // Start generating the content for the invisible iframe
+      generateContent(iframe);
 
-            // Attach a load listener to the iframe
-            const onLoad = () => {
-                // Once content is loaded, introduce a delay before swapping visibility
-                if (addDelay) {
-                    setTimeout(() => {
-                        setVisibleIframeIndex(invisibleIframeIndex);
-                    }, 500); // 500ms delay
-                } else {
-                    setVisibleIframeIndex(invisibleIframeIndex);
-                }
-            };
-
-            iframe.addEventListener('load', onLoad);
-
-            return () => {
-                // Cleanup: Remove the event listener to prevent memory leaks
-                iframe.removeEventListener('load', onLoad);
-            };
+      // Attach a load listener to the iframe
+      const onLoad = () => {
+        // Once content is loaded, introduce a delay before swapping visibility
+        if (addDelay) {
+          setTimeout(() => {
+            setVisibleIframeIndex(invisibleIframeIndex);
+          }, 500); // 500ms delay
+        } else {
+          setVisibleIframeIndex(invisibleIframeIndex);
         }
-    }, [generateContent]);
+      };
 
-    useEffect(() => {
-        const iframe = iframes[visibleIframeIndex].current;
+      iframe.addEventListener('load', onLoad);
 
-        const onScroll = debounce(() => {
-            setScrollPosition(iframe?.contentWindow?.scrollY || 0);
-        }, 250);
+      return () => {
+        // Cleanup: Remove the event listener to prevent memory leaks
+        iframe.removeEventListener('load', onLoad);
+      };
+    }
+  }, [generateContent]);
 
-        iframe?.contentWindow?.addEventListener('scroll', onScroll);
+  useEffect(() => {
+    const iframe = iframes[visibleIframeIndex].current;
 
-        return () => {
-            iframe?.contentWindow?.removeEventListener('scroll', onScroll);
-        };
-    }, [visibleIframeIndex, iframes]);
+    const onScroll = debounce(() => {
+      setScrollPosition(iframe?.contentWindow?.scrollY || 0);
+    }, 250);
 
-    useEffect(() => {
-        const iframe = iframes[visibleIframeIndex].current;
+    iframe?.contentWindow?.addEventListener('scroll', onScroll);
 
-        if (iframe) {
-            // refs https://ghost-foundation.sentry.io/issues/5024564293/
-            // Customer reported that code they injected caused Settings to crash.
-            // According to Sentry this the line that caused the crash.
-            // We are adding a try catch block to attempt to catch the error for further investigation and prevent the crash.
-            try {
-                iframe.contentWindow?.scrollTo(0, scrollPosition);
-            } catch (e) {
-                Sentry.captureException(e);
-            }
-        }
-    }, [scrollPosition, visibleIframeIndex, iframes]);
+    return () => {
+      iframe?.contentWindow?.removeEventListener('scroll', onScroll);
+    };
+  }, [visibleIframeIndex, iframes]);
 
-    useEffect(() => {
-        if (!updateContent) {
-            return;
-        }
+  useEffect(() => {
+    const iframe = iframes[visibleIframeIndex].current;
 
-        iframes.forEach(({current}) => {
-            if (current) {
-                updateContent(current);
-            }
-        });
-    }, [updateContent]);
+    if (iframe) {
+      // refs https://ghost-foundation.sentry.io/issues/5024564293/
+      // Customer reported that code they injected caused Settings to crash.
+      // According to Sentry this the line that caused the crash.
+      // We are adding a try catch block to attempt to catch the error for further investigation and prevent the crash.
+      try {
+        iframe.contentWindow?.scrollTo(0, scrollPosition);
+      } catch (e) {
+        Sentry.captureException(e);
+      }
+    }
+  }, [scrollPosition, visibleIframeIndex, iframes]);
 
-    return (
-        <div className={parentClassName} data-testid={testId}>
-            <iframe
-                ref={iframes[0]}
-                className={`${className} ${visibleIframeIndex !== 0 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
-                data-visible={visibleIframeIndex === 0}
-                frameBorder="0"
-                height={height}
-                title="Buffered Preview 1"
-                width={width}
-            ></iframe>
+  useEffect(() => {
+    if (!updateContent) {
+      return;
+    }
 
-            <iframe
-                ref={iframes[1]}
-                className={`${className} ${visibleIframeIndex !== 1 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
-                data-visible={visibleIframeIndex === 1}
-                frameBorder="0"
-                height={height}
-                title="Buffered Preview 2"
-                width={width}
-            ></iframe>
-        </div>
-    );
+    iframes.forEach(({ current }) => {
+      if (current) {
+        updateContent(current);
+      }
+    });
+  }, [updateContent]);
+
+  return (
+    <div className={parentClassName} data-testid={testId}>
+      <iframe
+        ref={iframes[0]}
+        className={`${className} ${visibleIframeIndex !== 0 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
+        data-visible={visibleIframeIndex === 0}
+        frameBorder="0"
+        height={height}
+        title="Buffered Preview 1"
+        width={width}
+      ></iframe>
+
+      <iframe
+        ref={iframes[1]}
+        className={`${className} ${visibleIframeIndex !== 1 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
+        data-visible={visibleIframeIndex === 1}
+        frameBorder="0"
+        height={height}
+        title="Buffered Preview 2"
+        width={width}
+      ></iframe>
+    </div>
+  );
 };
 
 export default IframeBuffering;

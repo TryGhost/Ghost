@@ -7,7 +7,7 @@ const settings = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils').default;
 const events = require('../../lib/common/events');
 const models = require('../../models');
-const {getConfig} = require('./config');
+const { getConfig } = require('./config');
 const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations');
 const giftService = require('../gifts');
@@ -16,70 +16,80 @@ const labs = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 
 async function configureApi() {
-    const cfg = getConfig({settingsHelpers, config, urlUtils});
-    if (cfg) {
-        cfg.testEnv = config.isTestEnv();
-        await module.exports.configure(cfg);
-        return true;
-    }
-    return false;
+  const cfg = getConfig({ settingsHelpers, config, urlUtils });
+  if (cfg) {
+    cfg.testEnv = config.isTestEnv();
+    await module.exports.configure(cfg);
+    return true;
+  }
+  return false;
 }
 
 const debouncedConfigureApi = _.debounce(() => {
-    configureApi().catch((err) => {
-        logging.error(err);
-    });
+  configureApi().catch((err) => {
+    logging.error(err);
+  });
 }, 600);
 
 module.exports = new StripeService({
-    labs,
-    membersService,
-    models: _.pick(models, [
-        'Product',
-        'StripePrice',
-        'StripeCustomerSubscription',
-        'StripeProduct',
-        'MemberStripeCustomer',
-        'Offer',
-        'Settings'
-    ]),
-    StripeWebhook: {
-        async get() {
-            return {
-                webhook_id: settings.get('members_stripe_webhook_id'),
-                secret: settings.get('members_stripe_webhook_secret')
-            };
-        },
-        async save(data) {
-            await models.Settings.edit([{
-                key: 'members_stripe_webhook_id',
-                value: data.webhook_id
-            }, {
-                key: 'members_stripe_webhook_secret',
-                value: data.secret
-            }]);
-        }
+  labs,
+  membersService,
+  models: _.pick(models, [
+    'Product',
+    'StripePrice',
+    'StripeCustomerSubscription',
+    'StripeProduct',
+    'MemberStripeCustomer',
+    'Offer',
+    'Settings',
+  ]),
+  StripeWebhook: {
+    async get() {
+      return {
+        webhook_id: settings.get('members_stripe_webhook_id'),
+        secret: settings.get('members_stripe_webhook_secret'),
+      };
     },
-    donationService,
-    giftService,
-    staffService,
-    settingsCache
+    async save(data) {
+      await models.Settings.edit([
+        {
+          key: 'members_stripe_webhook_id',
+          value: data.webhook_id,
+        },
+        {
+          key: 'members_stripe_webhook_secret',
+          value: data.secret,
+        },
+      ]);
+    },
+  },
+  donationService,
+  giftService,
+  staffService,
+  settingsCache,
 });
 
 function stripeSettingsChanged(model) {
-    if (['stripe_publishable_key', 'stripe_secret_key', 'stripe_connect_publishable_key', 'stripe_connect_secret_key'].includes(model.get('key'))) {
-        debouncedConfigureApi();
-    }
+  if (
+    [
+      'stripe_publishable_key',
+      'stripe_secret_key',
+      'stripe_connect_publishable_key',
+      'stripe_connect_secret_key',
+    ].includes(model.get('key'))
+  ) {
+    debouncedConfigureApi();
+  }
 }
 
 module.exports.init = async function init() {
-    try {
-        await configureApi();
-    } catch (err) {
-        logging.error(err);
-    }
+  try {
+    await configureApi();
+  } catch (err) {
+    logging.error(err);
+  }
 
-    events
-        .removeListener('settings.edited', stripeSettingsChanged)
-        .on('settings.edited', stripeSettingsChanged);
+  events
+    .removeListener('settings.edited', stripeSettingsChanged)
+    .on('settings.edited', stripeSettingsChanged);
 };

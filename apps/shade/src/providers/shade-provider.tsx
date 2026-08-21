@@ -1,95 +1,101 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import {Toaster} from '../components/ui/sonner';
-import {createPortal} from 'react-dom';
-import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Toaster } from '../components/ui/sonner';
+import { createPortal } from 'react-dom';
+import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
-import {SHADE_APP_NAMESPACES} from '@/shade-app';
+import { SHADE_APP_NAMESPACES } from '@/shade-app';
 
 export type FetchKoenigLexical = () => Promise<unknown>;
 
 interface ShadeContextType {
-    isAnyTextFieldFocused: boolean;
-    setFocusState: (value: boolean) => void;
-    fetchKoenigLexical: FetchKoenigLexical | null;
-    darkMode: boolean;
+  isAnyTextFieldFocused: boolean;
+  setFocusState: (value: boolean) => void;
+  fetchKoenigLexical: FetchKoenigLexical | null;
+  darkMode: boolean;
 }
 
 const ShadeContext = createContext<ShadeContextType>({
-    isAnyTextFieldFocused: false,
-    setFocusState: () => {},
-    fetchKoenigLexical: null,
-    darkMode: false
+  isAnyTextFieldFocused: false,
+  setFocusState: () => {},
+  fetchKoenigLexical: null,
+  darkMode: false,
 });
 
 export const useShade = () => useContext(ShadeContext);
 
 export const useFocusContext = () => {
-    const context = useShade();
-    if (!context) {
-        throw new Error('useFocusContext must be used within a FocusProvider');
-    }
-    return context;
+  const context = useShade();
+  if (!context) {
+    throw new Error('useFocusContext must be used within a FocusProvider');
+  }
+  return context;
 };
 
 const ToasterPortal = () => {
-    const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
-    return mounted
-        ? createPortal(
-            <div className={SHADE_APP_NAMESPACES} style={{width: 'unset', height: 'unset'}}>
-                <Toaster
-                    duration={5000}
-                    icons={{
-                        error: <Icon.ErrorFill className='text-red' />,
-                        success: <Icon.SuccessFill className='text-green' />,
-                        info: <Icon.InfoFill className='text-text-tertiary' />
-                    }}
-                    position='bottom-left'
-                    toastOptions={{
-                        classNames: {
-                            title: 'mt-[-1px]! text-md! font-semibold! leading-tighter! tracking-[0.1px]!',
-                            description: 'text-text-primary! text-sm! mt-px!',
-                            icon: 'ml-0!'
-                        },
-                        style: {
-                            alignItems: 'flex-start',
-                            maxWidth: '290px'
-                        }
-                    }}
-                    closeButton
-                />
-            </div>,
-            document.body
-        )
-        : null;
+  return mounted
+    ? createPortal(
+        <div className={SHADE_APP_NAMESPACES} style={{ width: 'unset', height: 'unset' }}>
+          <Toaster
+            duration={5000}
+            icons={{
+              error: <Icon.ErrorFill className="text-red" />,
+              success: <Icon.SuccessFill className="text-green" />,
+              info: <Icon.InfoFill className="text-text-tertiary" />,
+            }}
+            position="bottom-left"
+            toastOptions={{
+              classNames: {
+                title: 'mt-[-1px]! text-md! font-semibold! leading-tighter! tracking-[0.1px]!',
+                description: 'text-text-primary! text-sm! mt-px!',
+                icon: 'ml-0!',
+              },
+              style: {
+                alignItems: 'flex-start',
+                maxWidth: '290px',
+              },
+            }}
+            closeButton
+          />
+        </div>,
+        document.body,
+      )
+    : null;
 };
 
 interface ShadeProviderProps {
-    fetchKoenigLexical: FetchKoenigLexical | null;
-    darkMode: boolean;
-    children: React.ReactNode;
+  fetchKoenigLexical: FetchKoenigLexical | null;
+  darkMode: boolean;
+  children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, fetchKoenigLexical, children}) => {
-    const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
+const ShadeProvider: React.FC<ShadeProviderProps> = ({
+  darkMode,
+  fetchKoenigLexical,
+  children,
+}) => {
+  const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
-    const setFocusState = (value: boolean) => {
-        setIsAnyTextFieldFocused(value);
-    };
+  const setFocusState = (value: boolean) => {
+    setIsAnyTextFieldFocused(value);
+  };
 
-    return (
-        <ShadeContext.Provider value={{isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode}}>
-            <GlobalDirtyStateProvider>
-                {children}
-                <ToasterPortal />
-            </GlobalDirtyStateProvider>
-        </ShadeContext.Provider>
-    );
+  return (
+    <ShadeContext.Provider
+      value={{ isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode }}
+    >
+      <GlobalDirtyStateProvider>
+        {children}
+        <ToasterPortal />
+      </GlobalDirtyStateProvider>
+    </ShadeContext.Provider>
+  );
 };
 
 export default ShadeProvider;

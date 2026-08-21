@@ -18,17 +18,17 @@ reviews:
       - app/tryghost-renovate
       - dependabot[bot]
   path_filters:
-    - "!**/dist/**"
-    - "!**/build/**"
-    - "!**/built/**"
-    - "!**/umd/**"
-    - "!**/coverage/**"
+    - '!**/dist/**'
+    - '!**/build/**'
+    - '!**/built/**'
+    - '!**/umd/**'
+    - '!**/coverage/**'
   pre_merge_checks:
     docstrings:
-      mode: "off"
+      mode: 'off'
     custom_checks:
-      - name: "Type-safe boundaries"
-        mode: "warning"
+      - name: 'Type-safe boundaries'
+        mode: 'warning'
         instructions: |
           Fail only if the PR:
           - consumes boundary data (HTTP input, external API/SDK responses, env/config,
@@ -40,15 +40,15 @@ reviews:
           - hand-writes a type duplicating a shape a Zod schema describes (use z.infer).
           Never fail for: internal function/module calls (no runtime validation needed),
           pre-existing JS files touched incidentally, tests, scripts, or config files.
-      - name: "New files are TypeScript"
-        mode: "error"
+      - name: 'New files are TypeScript'
+        mode: 'error'
         instructions: |
           Fail if the PR adds a new .js/.jsx/.cjs/.mjs source file, unless it is: a DB
           migration (ghost/core/core/server/data/migrations/), under apps/ember-admin/,
           a tool/config file, under scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
   path_instructions:
-    - path: "**/*"
+    - path: '**/*'
       instructions: |
         Prioritise concrete correctness, security, data-integrity, compatibility,
         and regression risks. Explain the failure mode and point to the affected
@@ -58,7 +58,7 @@ reviews:
         documentation, or tests unrelated to changed behaviour. Treat nearby
         AGENTS.md files and mapped codebase documentation as authoritative; do not
         enforce proposals, plans, or historical guidance as current policy.
-    - path: "**/*.{ts,tsx,mts,cts}"
+    - path: '**/*.{ts,tsx,mts,cts}'
       instructions: |
         Review lens: "where does this data become trusted?"
         - Boundary data (HTTP input, external API/SDK responses, env/config,
@@ -72,7 +72,7 @@ reviews:
         - ghost/core golden path: schema.ts owns Zod schemas + inferred types, with
           codec/serializer modules at the edges (see core/server/services/gift-links).
         - Looser typing in tests is fine unless it hides a real defect.
-    - path: "**/*.{js,jsx,cjs,mjs}"
+    - path: '**/*.{js,jsx,cjs,mjs}'
       instructions: |
         New source files must be TypeScript: flag new JS files as a required change
         unless exempt (DB migrations, apps/ember-admin/, tool/config files, scripts/,
@@ -84,7 +84,7 @@ reviews:
         exempt areas.
         If the PR adds or changes a runtime boundary (parsing HTTP input, JSON, config,
         external responses), suggest validating it — ideally with TS + Zod.
-    - path: "ghost/core/core/server/api/**"
+    - path: 'ghost/core/core/server/api/**'
       instructions: |
         Review API contract semantics: authentication and permissions, validation at
         untrusted boundaries, writable-field allowlists, accidental response-data
@@ -92,7 +92,7 @@ reviews:
         invalidation, and compatibility with existing clients. Require tests only for
         changed behaviour or a credible regression path. Do not repeat endpoint
         complexity, filenames, typing, or other ESLint/schema failures.
-    - path: "ghost/core/core/server/services/**"
+    - path: 'ghost/core/core/server/services/**'
       instructions: |
         Review new or changed service boundaries for explicit dependency ownership,
         deterministic/idempotent initialisation, boot ordering, transaction and event
@@ -100,34 +100,34 @@ reviews:
         services default to TypeScript; extending an existing JavaScript service is an
         accepted exception. Do not enforce unapproved repository, ORM, or dependency-
         injection proposals as current architecture.
-    - path: "ghost/core/core/server/data/{migrations,schema}/**"
+    - path: 'ghost/core/core/server/data/{migrations,schema}/**'
       instructions: |
         Review migration safety beyond lint: schema and migration parity, existing-data
         shape and volume, deploy/rollback compatibility, transaction and locking risk,
         idempotency, export/integrity updates, and preservation of constraints/defaults.
         Do not duplicate migration filename, loop, schema-field, or integrity-check CI.
-    - path: "packages/**"
+    - path: 'packages/**'
       instructions: |
         Review package boundaries and production consumption: minimal explicit exports,
         declared runtime dependencies, source-condition versus built-output parity,
         copied runtime assets, ESM/NodeNext compatibility, and consumer-facing release
         impact. Respect ghostPackage migration/exempt metadata and public/browser/test-
         only exceptions. Do not repeat fields enforced by lint:packages or changeset CI.
-    - path: "apps/{admin,activitypub,admin-x-framework,shade}/**/*.{ts,tsx}"
+    - path: 'apps/{admin,activitypub,admin-x-framework,shade}/**/*.{ts,tsx}'
       instructions: |
         Review Admin UI for existing Shade reuse, correct component layer, semantic
         tokens, accessible interaction states, and whole-sentence translations. New UI
         that depends on backend settings, endpoints, or config must feature-detect old
         backend support and cover the not-yet-deployed backend case. Do not apply these
         rules to independent public UMD apps. Do not repeat ESLint/Tailwind findings.
-    - path: "apps/{portal,comments-ui,signup-form,sodo-search,announcement-bar}/**/*.{js,jsx,ts,tsx}"
+    - path: 'apps/{portal,comments-ui,signup-form,sodo-search,announcement-bar}/**/*.{js,jsx,ts,tsx}'
       instructions: |
         These are independent public UMD/CDN surfaces, not embedded Shade apps. Review
         backwards-compatible browser behaviour, bundle/runtime assumptions, accessible
         recovery states, namespace-correct whole-sentence translations, and safe
         handling of server-provided data. Do not request Shade adoption or Admin-only
         Tailwind conventions.
-    - path: "e2e/tests/**/*.ts"
+    - path: 'e2e/tests/**/*.ts'
       instructions: |
         Review semantic E2E quality that static checks miss: test the user-visible
         integration at the lowest useful layer; prefer web-first assertions and
@@ -136,19 +136,19 @@ reviews:
         Per-file environment reuse is the default, so request per-test isolation only
         for state-heavy cases that genuinely need it. A direct semantic locator is fine
         for a small one-off assertion. Do not repeat Playwright ESLint or CI failures.
-    - path: "e2e/helpers/**/*.ts"
+    - path: 'e2e/helpers/**/*.ts'
       instructions: |
         Review fixture/page-object lifecycle, concurrency, reset timing, reusable
         readiness guards, and stable public locators. Page objects may use necessary
         structural selectors for iframe/editor/theme internals but must not contain
         business assertions. Preserve the documented per-file/per-test isolation model.
-    - path: "**/*{.,-}{test,spec}.{js,jsx,ts,tsx}"
+    - path: '**/*{.,-}{test,spec}.{js,jsx,ts,tsx}'
       instructions: |
         Review whether tests prove changed behaviour, meaningful error/edge paths, and
         externally observable contracts without coupling to implementation details.
         Prefer the lowest useful test layer. Do not demand broad E2E coverage for
         isolated logic or repeat test-run failures already visible in GitHub checks.
-    - path: "docs/**/*.md"
+    - path: 'docs/**/*.md'
       instructions: |
         Check technical claims, paths, commands, and declared authority/status against
         the current repository. Flag contradictions and stale instructions with a
@@ -186,27 +186,27 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
-      - files: "docs/practices/api-design.md"
-        applyTo: "ghost/core/core/server/api/**,packages/admin-api-schema/**"
-      - files: "docs/practices/database-migrations.md"
-        applyTo: "ghost/core/core/server/data/migrations/**,ghost/core/core/server/data/schema/**"
-      - files: "docs/practices/error-handling.md"
-        applyTo: "ghost/core/core/server/**,apps/**/*.{js,jsx,ts,tsx}"
-      - files: "docs/practices/internationalization.md"
-        applyTo: "apps/**/*.{js,jsx,ts,tsx},packages/i18n/**"
-      - files: "docs/contributing/testing.md"
-        applyTo: "**/{test,tests}/**,**/*{.,-}{test,spec}.{js,jsx,ts,tsx}"
-      - files: "docs/codebase/monorepo-structure.md"
-        applyTo: "package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,ghost/core/**,koenig/**"
-      - files: "docs/codebase/configuration.md"
-        applyTo: "ghost/core/core/shared/config/**,ghost/core/config*.json*"
-      - files: "docs/codebase/internal-caching.md"
-        applyTo: "ghost/core/core/server/adapters/cache/**,ghost/core/core/server/adapters/lib/redis/**,ghost/core/core/server/**/*cache*.{js,ts},ghost/core/core/shared/config/**,packages/adapters/cache-base/**"
-      - files: "docs/codebase/jobs.md"
-        applyTo: "ghost/core/core/server/services/**"
-      - files: "packages/README.md"
-        applyTo: "packages/**"
-      - files: "apps/shade/AGENTS.md"
-        applyTo: "apps/admin/**,apps/activitypub/**,apps/admin-x-framework/**,apps/shade/**"
-      - files: "e2e/README.md,e2e/AGENTS.md"
-        applyTo: "e2e/**"
+      - files: 'docs/practices/api-design.md'
+        applyTo: 'ghost/core/core/server/api/**,packages/admin-api-schema/**'
+      - files: 'docs/practices/database-migrations.md'
+        applyTo: 'ghost/core/core/server/data/migrations/**,ghost/core/core/server/data/schema/**'
+      - files: 'docs/practices/error-handling.md'
+        applyTo: 'ghost/core/core/server/**,apps/**/*.{js,jsx,ts,tsx}'
+      - files: 'docs/practices/internationalization.md'
+        applyTo: 'apps/**/*.{js,jsx,ts,tsx},packages/i18n/**'
+      - files: 'docs/contributing/testing.md'
+        applyTo: '**/{test,tests}/**,**/*{.,-}{test,spec}.{js,jsx,ts,tsx}'
+      - files: 'docs/codebase/monorepo-structure.md'
+        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,ghost/core/**,koenig/**'
+      - files: 'docs/codebase/configuration.md'
+        applyTo: 'ghost/core/core/shared/config/**,ghost/core/config*.json*'
+      - files: 'docs/codebase/internal-caching.md'
+        applyTo: 'ghost/core/core/server/adapters/cache/**,ghost/core/core/server/adapters/lib/redis/**,ghost/core/core/server/**/*cache*.{js,ts},ghost/core/core/shared/config/**,packages/adapters/cache-base/**'
+      - files: 'docs/codebase/jobs.md'
+        applyTo: 'ghost/core/core/server/services/**'
+      - files: 'packages/README.md'
+        applyTo: 'packages/**'
+      - files: 'apps/shade/AGENTS.md'
+        applyTo: 'apps/admin/**,apps/activitypub/**,apps/admin-x-framework/**,apps/shade/**'
+      - files: 'e2e/README.md,e2e/AGENTS.md'
+        applyTo: 'e2e/**'

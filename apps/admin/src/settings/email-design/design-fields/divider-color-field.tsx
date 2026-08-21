@@ -1,27 +1,27 @@
 import ColorPickerField from '@/settings/components/color-picker-field';
-import {useEmailDesign} from '@/settings/email-design/email-design-context';
+import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const DividerColorField = () => {
-    const {settings, onSettingsChange, accentColor} = useEmailDesign();
+  const { settings, onSettingsChange, accentColor } = useEmailDesign();
 
-    return (
-        <ColorPickerField
-            accentColor={accentColor}
-            swatches={[
-                {
-                    title: 'Light',
-                    value: null,
-                    hex: '#e0e7eb'
-                },
-                {
-                    title: 'Accent',
-                    value: 'accent',
-                    hex: accentColor
-                }
-            ]}
-            title="Divider color"
-            value={settings.divider_color}
-            onChange={color => onSettingsChange({divider_color: color})}
-        />
-    );
+  return (
+    <ColorPickerField
+      accentColor={accentColor}
+      swatches={[
+        {
+          title: 'Light',
+          value: null,
+          hex: '#e0e7eb',
+        },
+        {
+          title: 'Accent',
+          value: 'accent',
+          hex: accentColor,
+        },
+      ]}
+      title="Divider color"
+      value={settings.divider_color}
+      onChange={(color) => onSettingsChange({ divider_color: color })}
+    />
+  );
 };

@@ -7,20 +7,20 @@
  */
 
 module.exports = class MemberCreatedEvent {
-    /**
-     * @param {MemberCreatedEventData} data
-     * @param {Date} timestamp
-     */
-    constructor(data, timestamp) {
-        this.data = data;
-        this.timestamp = timestamp;
-    }
+  /**
+   * @param {MemberCreatedEventData} data
+   * @param {Date} timestamp
+   */
+  constructor(data, timestamp) {
+    this.data = data;
+    this.timestamp = timestamp;
+  }
 
-    /**
-     * @param {MemberCreatedEventData} data
-     * @param {Date} [timestamp]
-     */
-    static create(data, timestamp) {
-        return new MemberCreatedEvent(data, timestamp ?? new Date);
-    }
+  /**
+   * @param {MemberCreatedEventData} data
+   * @param {Date} [timestamp]
+   */
+  static create(data, timestamp) {
+    return new MemberCreatedEvent(data, timestamp ?? new Date());
+  }
 };

@@ -9,16 +9,16 @@ describes.
 Give each topic one canonical home. Link to that source instead of copying it
 into another documentation surface.
 
-| Content | Home |
-| --- | --- |
-| Codebase-wide setup, workflow, architecture, and practices | `/docs` |
-| Package, service, app, or test-suite details | A README beside the code |
-| Canonical domain language | A `CONTEXT.md` beside the domain |
-| Relationships between bounded contexts | The root `CONTEXT-MAP.md` |
-| Contribution policy and the contributor entry point | `.github/CONTRIBUTING.md` |
-| Agent-only execution rules and constraints | The nearest `AGENTS.md` or repository skill |
-| Product, API, theme, and self-hosting documentation | [ghost.org/docs](https://ghost.org/docs/) |
-| Proposals, company process, private operations, and temporary work | The internal Ghost workspace |
+| Content                                                            | Home                                        |
+| ------------------------------------------------------------------ | ------------------------------------------- |
+| Codebase-wide setup, workflow, architecture, and practices         | `/docs`                                     |
+| Package, service, app, or test-suite details                       | A README beside the code                    |
+| Canonical domain language                                          | A `CONTEXT.md` beside the domain            |
+| Relationships between bounded contexts                             | The root `CONTEXT-MAP.md`                   |
+| Contribution policy and the contributor entry point                | `.github/CONTRIBUTING.md`                   |
+| Agent-only execution rules and constraints                         | The nearest `AGENTS.md` or repository skill |
+| Product, API, theme, and self-hosting documentation                | [ghost.org/docs](https://ghost.org/docs/)   |
+| Proposals, company process, private operations, and temporary work | The internal Ghost workspace                |
 
 - Keep the root README focused on introducing Ghost and directing contributors
   to the codebase documentation.

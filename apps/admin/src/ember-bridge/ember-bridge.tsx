@@ -1,72 +1,81 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 
 export interface EmberBridge {
-    state: StateBridge;
+  state: StateBridge;
 }
 
 export type StateBridgeEventMap = {
-    emberDataChange: EmberDataChangeEvent;
-    emberAuthChange: EmberAuthChangeEvent;
-    subscriptionChange: SubscriptionState;
-    sidebarVisibilityChange: SidebarVisibilityChangeEvent;
-    routeChange: RouteChangeEvent;
-    openGiftLinkModal: OpenGiftLinkModalEvent;
-    featureFlagsChange: undefined;
-}
+  emberDataChange: EmberDataChangeEvent;
+  emberAuthChange: EmberAuthChangeEvent;
+  subscriptionChange: SubscriptionState;
+  sidebarVisibilityChange: SidebarVisibilityChangeEvent;
+  routeChange: RouteChangeEvent;
+  openGiftLinkModal: OpenGiftLinkModalEvent;
+  featureFlagsChange: undefined;
+};
 
 export interface StateBridge {
-    onUpdate: (dataType: string, response: unknown) => void;
-    onInvalidate: (dataType: string) => void;
-    onDelete: (dataType: string, id: string) => void;
-    isFeatureEnabled?: (name: string) => boolean | undefined;
-    preloadAdminThemeStylesheet?: () => Promise<void>;
-    applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
-    on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
-    off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
-    sidebarVisible: boolean;
-    getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
-    isRouteActive: (routeNames: string | string[], queryParams?: Record<string, string | null> | null) => boolean;
+  onUpdate: (dataType: string, response: unknown) => void;
+  onInvalidate: (dataType: string) => void;
+  onDelete: (dataType: string, id: string) => void;
+  isFeatureEnabled?: (name: string) => boolean | undefined;
+  preloadAdminThemeStylesheet?: () => Promise<void>;
+  applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
+  on<K extends keyof StateBridgeEventMap>(
+    event: K,
+    callback: (event: StateBridgeEventMap[K]) => void,
+  ): void;
+  off<K extends keyof StateBridgeEventMap>(
+    event: K,
+    callback: (event: StateBridgeEventMap[K]) => void,
+  ): void;
+  sidebarVisible: boolean;
+  getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
+  isRouteActive: (
+    routeNames: string | string[],
+    queryParams?: Record<string, string | null> | null,
+  ) => boolean;
 }
 
 declare global {
-    interface Window {
-        EmberBridge?: EmberBridge;
-    }
+  interface Window {
+    EmberBridge?: EmberBridge;
+  }
 }
 
 export interface EmberDataChangeEvent {
-    operation: 'update' | 'create' | 'delete';
-    modelName: string;
-    id: string;
-    data: Record<string, unknown> | null;
+  operation: 'update' | 'create' | 'delete';
+  modelName: string;
+  id: string;
+  data: Record<string, unknown> | null;
 }
 
 export interface EmberAuthChangeEvent {
-    isAuthenticated: boolean;
+  isAuthenticated: boolean;
 }
 
 export interface SubscriptionState {
-    subscription?: {
-        isActiveTrial: boolean;
-        trial_end: string | null;
-        status: string;
-    };
+  subscription?: {
+    isActiveTrial: boolean;
+    trial_end: string | null;
+    status: string;
+  };
 }
 
 export interface SidebarVisibilityChangeEvent {
-    isVisible: boolean;
+  isVisible: boolean;
 }
 
 export interface RouteChangeEvent {
-    routeName: string;
-    queryParams: Record<string, unknown>;
+  routeName: string;
+  queryParams: Record<string, unknown>;
 }
 
 export interface OpenGiftLinkModalEvent {
-    id: string;
-    resource: 'posts' | 'pages';
+  id: string;
+  resource: 'posts' | 'pages';
 }
 
 export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
@@ -76,21 +85,21 @@ export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
  * This is the inverse of emberDataTypeMapping in state-bridge.js
  */
 const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
-    'integration': 'IntegrationsResponseType',
-    'invite': 'InvitesResponseType',
-    'offer': 'OffersResponseType',
-    'newsletter': 'NewslettersResponseType',
-    'recommendation': 'RecommendationResponseType',
-    'setting': 'SettingsResponseType',
-    'theme': 'ThemesResponseType',
-    'tier': 'TiersResponseType',
-    'user': 'UsersResponseType',
-    'post': 'PostsResponseType',
-    'member': 'MembersResponseType',
-    'comment': 'CommentsResponseType',
-    'tag': 'TagsResponseType',
-    'label': 'LabelsResponseType',
-    'webhook': 'WebhooksResponseType'
+  integration: 'IntegrationsResponseType',
+  invite: 'InvitesResponseType',
+  offer: 'OffersResponseType',
+  newsletter: 'NewslettersResponseType',
+  recommendation: 'RecommendationResponseType',
+  setting: 'SettingsResponseType',
+  theme: 'ThemesResponseType',
+  tier: 'TiersResponseType',
+  user: 'UsersResponseType',
+  post: 'PostsResponseType',
+  member: 'MembersResponseType',
+  comment: 'CommentsResponseType',
+  tag: 'TagsResponseType',
+  label: 'LabelsResponseType',
+  webhook: 'WebhooksResponseType',
 };
 
 /**
@@ -102,47 +111,47 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
  * @returns Function to unsubscribe from the StateBridge polling
  */
 function waitForStateBridge(onReady: (stateBridge: StateBridge) => void): () => void {
-    if (typeof window === 'undefined') {
-        return () => {};
-    }
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
 
+  if (window.EmberBridge?.state) {
+    onReady(window.EmberBridge.state);
+    return () => {};
+  }
+
+  const interval = setInterval(() => {
     if (window.EmberBridge?.state) {
-        onReady(window.EmberBridge.state);
-        return () => {};
+      clearInterval(interval);
+      onReady(window.EmberBridge.state);
     }
+  }, 100);
 
-    const interval = setInterval(() => {
-        if (window.EmberBridge?.state) {
-            clearInterval(interval);
-            onReady(window.EmberBridge.state);
-        }
-    }, 100);
-
-    return () => clearInterval(interval);
+  return () => clearInterval(interval);
 }
 
 function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
-    event: K,
-    handler: (event: StateBridgeEventMap[K]) => void,
-    onReady?: () => void
+  event: K,
+  handler: (event: StateBridgeEventMap[K]) => void,
+  onReady?: () => void,
 ): () => void {
-    let unsubscribe: (() => void) | null = null;
-    let isMounted = true;
+  let unsubscribe: (() => void) | null = null;
+  let isMounted = true;
 
-    const stopPolling = waitForStateBridge((stateBridge) => {
-        if (!isMounted) {
-            return;
-        }
-        stateBridge.on(event, handler);
-        unsubscribe = () => stateBridge.off(event, handler);
-        onReady?.();
-    });
+  const stopPolling = waitForStateBridge((stateBridge) => {
+    if (!isMounted) {
+      return;
+    }
+    stateBridge.on(event, handler);
+    unsubscribe = () => stateBridge.off(event, handler);
+    onReady?.();
+  });
 
-    return () => {
-        isMounted = false;
-        stopPolling();
-        unsubscribe?.();
-    };
+  return () => {
+    isMounted = false;
+    stopPolling();
+    unsubscribe?.();
+  };
 }
 
 /**
@@ -155,30 +164,29 @@ function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
  * called once at the app level. It will be removed once the migration is complete.
  */
 export function useEmberDataSync() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const handleEmberDataChange = (event: EmberDataChangeEvent) => {
-            const { modelName } = event;
-            const reactDataType = EMBER_TO_REACT_TYPE_MAPPING[modelName];
+  useEffect(() => {
+    const handleEmberDataChange = (event: EmberDataChangeEvent) => {
+      const { modelName } = event;
+      const reactDataType = EMBER_TO_REACT_TYPE_MAPPING[modelName];
 
-            if (!reactDataType) {
-                // Model not configured for syncing, ignore
-                return;
-            }
+      if (!reactDataType) {
+        // Model not configured for syncing, ignore
+        return;
+      }
 
-            // Invalidate all queries matching this data type
-            void queryClient.invalidateQueries({
-                predicate: (query) => {
-                    // Query keys are structured as [dataType, url]
-                    return query.queryKey[0] === reactDataType;
-                }
-            });
-        };
+      // Invalidate all queries matching this data type
+      void queryClient.invalidateQueries({
+        predicate: (query) => {
+          // Query keys are structured as [dataType, url]
+          return query.queryKey[0] === reactDataType;
+        },
+      });
+    };
 
-        return onEmberStateBridgeEvent('emberDataChange', handleEmberDataChange);
-    }, [queryClient]);
-
+    return onEmberStateBridgeEvent('emberDataChange', handleEmberDataChange);
+  }, [queryClient]);
 }
 
 /**
@@ -192,32 +200,31 @@ export function useEmberDataSync() {
  */
 
 export function useEmberAuthSync() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
-            if (event.isAuthenticated) {
-                void queryClient.invalidateQueries();
-            }
-        };
+  useEffect(() => {
+    const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
+      if (event.isAuthenticated) {
+        void queryClient.invalidateQueries();
+      }
+    };
 
-        return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
-    }, [queryClient]);
-
+    return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
+  }, [queryClient]);
 }
 
 export function useSubscriptionStatus() {
-    const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
 
-    useEffect(() => {
-        const handleSubscriptionChange = (payload: SubscriptionState) => {
-            setSubscriptionStatus(payload);
-        };
+  useEffect(() => {
+    const handleSubscriptionChange = (payload: SubscriptionState) => {
+      setSubscriptionStatus(payload);
+    };
 
-        return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
-    }, []);
+    return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
+  }, []);
 
-    return subscriptionStatus;
+  return subscriptionStatus;
 }
 
 /**
@@ -226,18 +233,18 @@ export function useSubscriptionStatus() {
  * `undefined` means there is no Ember feature reader (standalone React).
  */
 export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
-    const subscribe = useCallback((callback: () => void) => {
-        return onEmberStateBridgeEvent('featureFlagsChange', callback, callback);
-    }, []);
-    const getSnapshot = useCallback(() => {
-        const stateBridge = window.EmberBridge?.state;
-        if (!stateBridge?.isFeatureEnabled) {
-            return undefined;
-        }
-        return stateBridge.isFeatureEnabled(flag) ?? null;
-    }, [flag]);
+  const subscribe = useCallback((callback: () => void) => {
+    return onEmberStateBridgeEvent('featureFlagsChange', callback, callback);
+  }, []);
+  const getSnapshot = useCallback(() => {
+    const stateBridge = window.EmberBridge?.state;
+    if (!stateBridge?.isFeatureEnabled) {
+      return undefined;
+    }
+    return stateBridge.isFeatureEnabled(flag) ?? null;
+  }, [flag]);
 
-    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 /**
@@ -248,18 +255,20 @@ export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
  * modal's open/close state and just reacts to each request. Returns an
  * unsubscribe function.
  */
-export function subscribeOpenGiftLinkModal(handler: (event: OpenGiftLinkModalEvent) => void): () => void {
-    return onEmberStateBridgeEvent('openGiftLinkModal', handler);
+export function subscribeOpenGiftLinkModal(
+  handler: (event: OpenGiftLinkModalEvent) => void,
+): () => void {
+  return onEmberStateBridgeEvent('openGiftLinkModal', handler);
 }
 
 // External store for sidebar visibility state
 function subscribeSidebarVisibility(callback: () => void): () => void {
-    return onEmberStateBridgeEvent('sidebarVisibilityChange', callback);
+  return onEmberStateBridgeEvent('sidebarVisibilityChange', callback);
 }
 
 function getSidebarVisibility(): boolean {
-    // Always read from Ember as the source of truth
-    return window.EmberBridge?.state.sidebarVisible ?? true;
+  // Always read from Ember as the source of truth
+  return window.EmberBridge?.state.sidebarVisible ?? true;
 }
 
 /**
@@ -272,17 +281,17 @@ function getSidebarVisibility(): boolean {
  * removed once the editor is ported to React.
  */
 export function useSidebarVisibility(): boolean {
-    return useSyncExternalStore(
-        subscribeSidebarVisibility,
-        getSidebarVisibility,
-        getSidebarVisibility // Server snapshot (same as client for now)
-    );
+  return useSyncExternalStore(
+    subscribeSidebarVisibility,
+    getSidebarVisibility,
+    getSidebarVisibility, // Server snapshot (same as client for now)
+  );
 }
 
 // Default no-op routing for when the bridge isn't available yet
 const defaultRouting: EmberRouting = {
-    getRouteUrl: (routeName) => routeName,
-    isRouteActive: () => false
+  getRouteUrl: (routeName) => routeName,
+  isRouteActive: () => false,
 };
 
 /**
@@ -298,33 +307,33 @@ const defaultRouting: EmberRouting = {
  * ```
  */
 export function useEmberRouting(): EmberRouting {
-    const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
-    const [, forceUpdate] = useState(0);
+  const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
+  const [, forceUpdate] = useState(0);
 
-    useEffect(() => {
-        // Wait for bridge to be available
-        if (!bridge) {
-            return waitForStateBridge(setBridge);
-        }
-
-        // Subscribe to route changes to force re-renders
-        const handleRouteChange = () => {
-            forceUpdate(n => n + 1);
-        };
-
-        bridge.on('routeChange', handleRouteChange);
-        return () => bridge.off('routeChange', handleRouteChange);
-    }, [bridge]);
-
-    // Return default no-op routing until bridge is available
+  useEffect(() => {
+    // Wait for bridge to be available
     if (!bridge) {
-        return defaultRouting;
+      return waitForStateBridge(setBridge);
     }
 
-    return {
-        getRouteUrl: bridge.getRouteUrl,
-        isRouteActive: bridge.isRouteActive
+    // Subscribe to route changes to force re-renders
+    const handleRouteChange = () => {
+      forceUpdate((n) => n + 1);
     };
+
+    bridge.on('routeChange', handleRouteChange);
+    return () => bridge.off('routeChange', handleRouteChange);
+  }, [bridge]);
+
+  // Return default no-op routing until bridge is available
+  if (!bridge) {
+    return defaultRouting;
+  }
+
+  return {
+    getRouteUrl: bridge.getRouteUrl,
+    isRouteActive: bridge.isRouteActive,
+  };
 }
 
 /**
@@ -337,21 +346,21 @@ export function useEmberRouting(): EmberRouting {
  * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
  */
 export function useForceUpgrade(): boolean {
-    const { data: config } = useBrowseConfig();
-    const subscriptionStatus = useSubscriptionStatus();
+  const { data: config } = useBrowseConfig();
+  const subscriptionStatus = useSubscriptionStatus();
 
-    const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
+  const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
 
-    // If config doesn't have forceUpgrade, we're not in force upgrade mode
-    if (!configForceUpgrade) {
-        return false;
-    }
+  // If config doesn't have forceUpgrade, we're not in force upgrade mode
+  if (!configForceUpgrade) {
+    return false;
+  }
 
-    // If subscription has become active, billing was completed successfully
-    // The server config hasn't restarted yet, but we can clear forceUpgrade locally
-    if (subscriptionStatus?.subscription?.status === 'active') {
-        return false;
-    }
+  // If subscription has become active, billing was completed successfully
+  // The server config hasn't restarted yet, but we can clear forceUpgrade locally
+  if (subscriptionStatus?.subscription?.status === 'active') {
+    return false;
+  }
 
-    return true;
+  return true;
 }

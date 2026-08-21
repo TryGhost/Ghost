@@ -1,151 +1,164 @@
-import {renderHook} from '@testing-library/react';
-import {type AddressInfo} from 'node:net';
+import { renderHook } from '@testing-library/react';
+import { type AddressInfo } from 'node:net';
 import http from 'node:http';
-import {setTimeout as sleep} from 'node:timers/promises';
-import {promisify} from 'node:util';
-import React, {ReactNode} from 'react';
-import {FrameworkProvider} from '../../../../src/providers/framework-provider';
-import {useFetchApi} from '../../../../src/utils/api/fetch-api';
-import {TimeoutError} from '../../../../src/utils/errors';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { promisify } from 'node:util';
+import React, { ReactNode } from 'react';
+import { FrameworkProvider } from '../../../../src/providers/framework-provider';
+import { useFetchApi } from '../../../../src/utils/api/fetch-api';
+import { TimeoutError } from '../../../../src/utils/errors';
 
-const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
-    <FrameworkProvider
-        externalNavigate={() => {}}
-        ghostVersion='5.x'
-        sentryDSN=''
-        unsplashConfig={{
-            Authorization: '',
-            'Accept-Version': '',
-            'Content-Type': '',
-            'App-Pragma': '',
-            'X-Unsplash-Cache': true
-        }}
-        onDelete={() => {}}
-        onInvalidate={() => {}}
-        onUpdate={() => {}}
-    >
-        {children}
-    </FrameworkProvider>
+const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
+  <FrameworkProvider
+    externalNavigate={() => {}}
+    ghostVersion="5.x"
+    sentryDSN=""
+    unsplashConfig={{
+      Authorization: '',
+      'Accept-Version': '',
+      'Content-Type': '',
+      'App-Pragma': '',
+      'X-Unsplash-Cache': true,
+    }}
+    onDelete={() => {}}
+    onInvalidate={() => {}}
+    onUpdate={() => {}}
+  >
+    {children}
+  </FrameworkProvider>
 );
 
 type TestResponseBody = Pick<http.IncomingMessage, 'method' | 'headers'> & {
-    body: string;
+  body: string;
 };
 
 describe('useFetchApi', () => {
-    let server: http.Server;
-    let baseUrl: string;
-    let requestCounts: Map<string, number>;
+  let server: http.Server;
+  let baseUrl: string;
+  let requestCounts: Map<string, number>;
 
-    beforeEach(async () => {
-        requestCounts = new Map();
+  beforeEach(async () => {
+    requestCounts = new Map();
 
-        server = http.createServer((req, res) => {
-            const chunks: Buffer[] = [];
-            req.on('data', (chunk: Buffer) => {
-                chunks.push(chunk);
-            });
-            req.on('end', async () => {
-                const url = req.url ?? '';
-                const requestCount = (requestCounts.get(url) ?? 0) + 1;
-                requestCounts.set(url, requestCount);
+    server = http.createServer((req, res) => {
+      const chunks: Buffer[] = [];
+      req.on('data', (chunk: Buffer) => {
+        chunks.push(chunk);
+      });
+      req.on('end', async () => {
+        const url = req.url ?? '';
+        const requestCount = (requestCounts.get(url) ?? 0) + 1;
+        requestCounts.set(url, requestCount);
 
-                if (url.includes('maintenance') && requestCount === 1) {
-                    res.writeHead(503);
-                    res.end('Maintenance');
-                    return;
-                }
+        if (url.includes('maintenance') && requestCount === 1) {
+          res.writeHead(503);
+          res.end('Maintenance');
+          return;
+        }
 
-                if (url.includes('slow')) {
-                    await sleep(100);
-                }
-                res.writeHead(200, {
-                    'Content-Type': 'application/json',
-                    // jsdom's `XMLHttpRequest` needs these CORS headers.
-                    'Access-Control-Allow-Origin': req.headers.origin || '*',
-                    'Access-Control-Allow-Methods': '*',
-                    'Access-Control-Allow-Headers': '*',
-                    'Access-Control-Allow-Credentials': 'true'
-                });
-                res.end(JSON.stringify({
-                    method: req.method,
-                    headers: req.headers,
-                    body: Buffer.concat(chunks).toString('utf8')
-                } satisfies TestResponseBody));
-            });
+        if (url.includes('slow')) {
+          await sleep(100);
+        }
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+          // jsdom's `XMLHttpRequest` needs these CORS headers.
+          'Access-Control-Allow-Origin': req.headers.origin || '*',
+          'Access-Control-Allow-Methods': '*',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Allow-Credentials': 'true',
         });
-
-        await new Promise<void>((resolve) => {
-            server.listen(0, '127.0.0.1', () => {
-                resolve();
-            });
-        });
-
-        const address = server.address() as AddressInfo;
-        baseUrl = `http://127.0.0.1:${address.port}`;
+        res.end(
+          JSON.stringify({
+            method: req.method,
+            headers: req.headers,
+            body: Buffer.concat(chunks).toString('utf8'),
+          } satisfies TestResponseBody),
+        );
+      });
     });
 
-    afterEach(async () => {
-        const close = promisify(server.close.bind(server));
-        await close();
-
-        vi.restoreAllMocks();
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        resolve();
+      });
     });
 
-    it('makes an API request', async () => {
-        const {result} = renderHook(() => useFetchApi(), {wrapper});
+    const address = server.address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${address.port}`;
+  });
 
-        const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
-            method: 'POST',
-            body: 'test',
-            retry: false
-        });
+  afterEach(async () => {
+    const close = promisify(server.close.bind(server));
+    await close();
 
-        expect(data.method).toBe('POST');
-        expect(data.headers['x-ghost-version']).toBe('5.x');
-        expect(data.headers['app-pragma']).toBe('no-cache');
-        expect(data.headers['content-type']).toBe('application/json');
-        expect(data.body).toBe('test');
+    vi.restoreAllMocks();
+  });
+
+  it('makes an API request', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
+      method: 'POST',
+      body: 'test',
+      retry: false,
     });
 
-    it('retries maintenance errors until the API recovers', async () => {
-        const {result} = renderHook(() => useFetchApi(), {wrapper});
+    expect(data.method).toBe('POST');
+    expect(data.headers['x-ghost-version']).toBe('5.x');
+    expect(data.headers['app-pragma']).toBe('no-cache');
+    expect(data.headers['content-type']).toBe('application/json');
+    expect(data.body).toBe('test');
+  });
 
-        const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/maintenance/`);
+  it('retries maintenance errors until the API recovers', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
 
-        expect(data.method).toBe('GET');
-        expect(requestCounts.get('/ghost/api/admin/maintenance/')).toBe(2);
+    const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/maintenance/`);
+
+    expect(data.method).toBe('GET');
+    expect(requestCounts.get('/ghost/api/admin/maintenance/')).toBe(2);
+  });
+
+  it('throws a timeout error when request exceeds timeout', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+        timeout: 20,
+        retry: false,
+      }),
+    ).rejects.toBeInstanceOf(TimeoutError);
+  });
+
+  it('emits upload progress when onUploadProgress is provided', async () => {
+    const realXhrSend = XMLHttpRequest.prototype.send;
+    vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function (
+      this: XMLHttpRequest,
+      ...args
+    ) {
+      this.upload.dispatchEvent(
+        new ProgressEvent('progress', { lengthComputable: false, loaded: 2, total: 3 }),
+      );
+      this.upload.dispatchEvent(
+        new ProgressEvent('progress', { lengthComputable: true, loaded: 1, total: 10 }),
+      );
+      this.upload.dispatchEvent(
+        new ProgressEvent('progress', { lengthComputable: true, loaded: 9, total: 10 }),
+      );
+      realXhrSend.apply(this, args);
+    });
+    const onUploadProgress = vi.fn();
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
+      method: 'POST',
+      body: 'test',
+      retry: false,
+      onUploadProgress,
     });
 
-    it('throws a timeout error when request exceeds timeout', async () => {
-        const {result} = renderHook(() => useFetchApi(), {wrapper});
-
-        await expect(result.current(`${baseUrl}/ghost/api/admin/slow/`, {
-            timeout: 20,
-            retry: false
-        })).rejects.toBeInstanceOf(TimeoutError);
-    });
-
-    it('emits upload progress when onUploadProgress is provided', async () => {
-        const realXhrSend = XMLHttpRequest.prototype.send;
-        vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function (this: XMLHttpRequest, ...args) {
-            this.upload.dispatchEvent(new ProgressEvent('progress', {lengthComputable: false, loaded: 2, total: 3}));
-            this.upload.dispatchEvent(new ProgressEvent('progress', {lengthComputable: true, loaded: 1, total: 10}));
-            this.upload.dispatchEvent(new ProgressEvent('progress', {lengthComputable: true, loaded: 9, total: 10}));
-            realXhrSend.apply(this, args);
-        });
-        const onUploadProgress = vi.fn();
-        const {result} = renderHook(() => useFetchApi(), {wrapper});
-
-        const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
-            method: 'POST',
-            body: 'test',
-            retry: false,
-            onUploadProgress
-        });
-
-        expect(data.body).toBe('test');
-        expect(onUploadProgress).toHaveBeenCalledWith(10);
-        expect(onUploadProgress).toHaveBeenCalledWith(90);
-    });
+    expect(data.body).toBe('test');
+    expect(onUploadProgress).toHaveBeenCalledWith(10);
+    expect(onUploadProgress).toHaveBeenCalledWith(90);
+  });
 });

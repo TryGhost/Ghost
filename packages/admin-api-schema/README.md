@@ -5,8 +5,8 @@ The package serves as a single source of truth when validating requests coming i
 This is a private workspace package used by Ghost Core. It is bundled into the
 Ghost release artifact and is not published independently.
 
-
 ## Usage
+
 ```ts
 import * as jsonSchema from '@tryghost/admin-api-schema';
 
@@ -61,6 +61,7 @@ validate();
 ```
 
 When used from Ghost core in validation layer:
+
 ```js
 const jsonSchema = require('@tryghost/admin-api-schema');
 const validate = async (apiConfig, frame) => await jsonSchema.validate({
@@ -78,9 +79,6 @@ pnpm --filter @tryghost/admin-api-schema test
 pnpm --filter @tryghost/admin-api-schema lint
 pnpm --filter @tryghost/admin-api-schema build
 ```
-
-
-
 
 # Copyright & License
 

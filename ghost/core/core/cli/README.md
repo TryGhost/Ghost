@@ -5,6 +5,7 @@
 Commands are classes which extend the base `Command` class (see [`command.js`](command.js)).
 
 The only required override is the `handle()` method, which defines the logic for the command:
+
 ```javascript
 const Command = require('./command');
 
@@ -18,6 +19,7 @@ module.exports = class REPL extends Command {
 ### Arguments
 
 Optionally, you can override the `setup()` method, where you can define any command-line arguments and help text etc:
+
 ```javascript
     setup() {
         this.help('A brief explanation of what your command does, shown when the --help flag is used');
@@ -27,6 +29,7 @@ Optionally, you can override the `setup()` method, where you can define any comm
 ```
 
 Arguments specified in `setup()` are accessed from the `argv` object passed to the `handle()` method:
+
 ```javascript
 async handle(argv = {}) {
     this.log(`Your color is ${argv.color}`);
@@ -36,6 +39,7 @@ async handle(argv = {}) {
 ### Output
 
 You can write console output using a number of helper methods:
+
 ```javascript
 this.log('Writes a line to the console');
 ```
@@ -45,6 +49,7 @@ Available helpers are `log`, `ok`, `info`, `error`, `fatal`, `warn`, and `debug`
 ### Interactive input
 
 **Confirm an action** with:
+
 ```javascript
 const confirm = await this.confirm('Are you sure you want to continue?');
 if (!confirm) {
@@ -53,12 +58,14 @@ if (!confirm) {
 ```
 
 **Ask for user input** with:
+
 ```javascript
 const fruit = await this.ask('Favorite fruit?');
 this.info(`You answered: ${fruit}`);
 ```
 
 **Get masked input** with:
+
 ```javascript
 const password = await this.secret('Password:');
 this.log(`Your password is: ${password}`);

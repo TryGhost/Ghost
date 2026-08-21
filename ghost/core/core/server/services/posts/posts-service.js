@@ -1,603 +1,653 @@
 const nql = require('@tryghost/nql');
-const {BadRequestError} = require('@tryghost/errors');
+const { BadRequestError } = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
-const {validateAdminApiBulkFilterTransformer} = require('../../api/endpoints/utils/api-filter-utils');
+const {
+  validateAdminApiBulkFilterTransformer,
+} = require('../../api/endpoints/utils/api-filter-utils');
 
 const messages = {
-    invalidVisibilityFilter: 'Invalid visibility filter.',
-    invalidVisibility: 'Invalid visibility value.',
-    invalidTiers: 'Invalid tiers value.',
-    invalidTags: 'Invalid tags value.',
-    unsupportedBulkAction: 'Unsupported bulk action',
-    postNotFound: 'Post not found.'
+  invalidVisibilityFilter: 'Invalid visibility filter.',
+  invalidVisibility: 'Invalid visibility value.',
+  invalidTiers: 'Invalid tiers value.',
+  invalidTags: 'Invalid tags value.',
+  unsupportedBulkAction: 'Unsupported bulk action',
+  postNotFound: 'Post not found.',
 };
 
 class PostsService {
-    constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
-        this.urlUtils = urlUtils;
-        this.models = models;
-        this.isSet = isSet;
-        this.stats = stats;
-        this.emailService = emailService;
-        this.postsExporter = postsExporter;
-        this.postEmailHandler = new PostEmailHandler({models, emailService});
+  constructor({ urlUtils, models, isSet, stats, emailService, postsExporter }) {
+    this.urlUtils = urlUtils;
+    this.models = models;
+    this.isSet = isSet;
+    this.stats = stats;
+    this.emailService = emailService;
+    this.postsExporter = postsExporter;
+    this.postEmailHandler = new PostEmailHandler({ models, emailService });
+  }
+
+  #getFilteredBulkPostQuery(options) {
+    return this.models.Post.getFilteredCollectionQuery({
+      filter: options.filter,
+      status: 'all',
+      transacting: options.transacting,
+      mongoTransformer: validateAdminApiBulkFilterTransformer,
+    });
+  }
+
+  /**
+   *
+   * @param {Object} options - frame options
+   * @returns {Promise<Object>}
+   */
+  async browsePosts(options) {
+    const posts = await this.models.Post.findPage(options);
+    return posts;
+  }
+
+  async readPost(frame) {
+    const model = await this.models.Post.findOne(frame.data, frame.options);
+
+    if (!model) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.postNotFound),
+      });
     }
 
-    #getFilteredBulkPostQuery(options) {
-        return this.models.Post.getFilteredCollectionQuery({
-            filter: options.filter,
-            status: 'all',
-            transacting: options.transacting,
-            mongoTransformer: validateAdminApiBulkFilterTransformer
-        });
+    return model.toJSON(frame.options);
+  }
+
+  /**
+   * @typedef {'published_updated' | 'scheduled_updated' | 'draft_updated' | 'unpublished'} EventString
+   */
+
+  /**
+   *
+   * @param {import('@tryghost/api-framework').Frame} frame
+   * @param {object} [options]
+   * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
+   * @returns
+   */
+  async editPost(frame, options) {
+    const preflight = await this.postEmailHandler.validateBeforeSave(frame);
+
+    const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
+
+    await this.postEmailHandler.createOrRetryEmail(model, { preflight });
+
+    const dto = model.toJSON(frame.options);
+
+    if (typeof options?.eventHandler === 'function') {
+      await options.eventHandler(this.getChanges(model), dto);
     }
 
-    /**
-     *
-     * @param {Object} options - frame options
-     * @returns {Promise<Object>}
-     */
-    async browsePosts(options) {
-        const posts = await this.models.Post.findPage(options);
-        return posts;
+    return dto;
+  }
+
+  /**
+   * @param {any} model
+   * @returns {EventString}
+   */
+  getChanges(model) {
+    if (model.get('status') === 'published' && model.wasChanged()) {
+      return 'published_updated';
     }
 
-    async readPost(frame) {
-        const model = await this.models.Post.findOne(frame.data, frame.options);
-
-        if (!model) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.postNotFound)
-            });
-        }
-
-        return model.toJSON(frame.options);
+    if (model.get('status') === 'draft' && model.previous('status') === 'published') {
+      return 'unpublished';
     }
 
-    /**
-     * @typedef {'published_updated' | 'scheduled_updated' | 'draft_updated' | 'unpublished'} EventString
-     */
-
-    /**
-     *
-     * @param {import('@tryghost/api-framework').Frame} frame
-     * @param {object} [options]
-     * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
-     * @returns
-     */
-    async editPost(frame, options) {
-        const preflight = await this.postEmailHandler.validateBeforeSave(frame);
-
-        const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
-
-        await this.postEmailHandler.createOrRetryEmail(model, {preflight});
-
-        const dto = model.toJSON(frame.options);
-
-        if (typeof options?.eventHandler === 'function') {
-            await options.eventHandler(this.getChanges(model), dto);
-        }
-
-        return dto;
+    if (model.get('status') === 'draft' && model.previous('status') !== 'published') {
+      return 'draft_updated';
     }
 
-    /**
-     * @param {any} model
-     * @returns {EventString}
-     */
-    getChanges(model) {
-        if (model.get('status') === 'published' && model.wasChanged()) {
-            return 'published_updated';
-        }
-
-        if (model.get('status') === 'draft' && model.previous('status') === 'published') {
-            return 'unpublished';
-        }
-
-        if (model.get('status') === 'draft' && model.previous('status') !== 'published') {
-            return 'draft_updated';
-        }
-
-        if (model.get('status') === 'scheduled' && model.wasChanged()) {
-            return 'scheduled_updated';
-        }
+    if (model.get('status') === 'scheduled' && model.wasChanged()) {
+      return 'scheduled_updated';
     }
+  }
 
-    #mergeFilters(...filters) {
-        return filters.filter(filter => filter).map(f => `(${f})`).join('+');
+  #mergeFilters(...filters) {
+    return filters
+      .filter((filter) => filter)
+      .map((f) => `(${f})`)
+      .join('+');
+  }
+
+  async bulkEdit(data, options) {
+    const {
+      PostsBulkAddTagsEvent,
+      PostsBulkUnpublishedEvent,
+      PostsBulkFeaturedEvent,
+      PostsBulkUnfeaturedEvent,
+      PostsBulkUnscheduledEvent,
+    } = require('../../../shared/events-ts');
+
+    if (data.action === 'unpublish') {
+      const updateResult = await this.#updatePosts(
+        { status: 'draft' },
+        {
+          filter: this.#mergeFilters('status:published', options.filter),
+          context: options.context,
+          actionName: 'unpublished',
+        },
+      );
+      DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
+
+      return updateResult;
     }
+    if (data.action === 'unschedule') {
+      const updateResult = await this.#updatePosts(
+        { status: 'draft', published_at: null },
+        {
+          filter: this.#mergeFilters('status:scheduled', options.filter),
+          context: options.context,
+          actionName: 'unscheduled',
+        },
+      );
+      // makes sure `email_only` value is reverted for the unscheduled posts
+      await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
+        data: { email_only: false },
+        column: 'post_id',
+        transacting: options.transacting,
+        throwErrors: true,
+      });
+      DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
 
-    async bulkEdit(data, options) {
-        const {
-            PostsBulkAddTagsEvent,
-            PostsBulkUnpublishedEvent,
-            PostsBulkFeaturedEvent,
-            PostsBulkUnfeaturedEvent,
-            PostsBulkUnscheduledEvent
-        } = require('../../../shared/events-ts');
+      return updateResult;
+    }
+    if (data.action === 'feature') {
+      const updateResult = await this.#updatePosts(
+        { featured: true },
+        { filter: options.filter, context: options.context, actionName: 'featured' },
+      );
+      DomainEvents.dispatch(PostsBulkFeaturedEvent.create(updateResult.editIds));
 
-        if (data.action === 'unpublish') {
-            const updateResult = await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
-            DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
+      return updateResult;
+    }
+    if (data.action === 'unfeature') {
+      const updateResult = await this.#updatePosts(
+        { featured: false },
+        { filter: options.filter, context: options.context, actionName: 'unfeatured' },
+      );
+      DomainEvents.dispatch(PostsBulkUnfeaturedEvent.create(updateResult.editIds));
 
-            return updateResult;
-        }
-        if (data.action === 'unschedule') {
-            const updateResult = await this.#updatePosts({status: 'draft', published_at: null}, {filter: this.#mergeFilters('status:scheduled', options.filter), context: options.context, actionName: 'unscheduled'});
-            // makes sure `email_only` value is reverted for the unscheduled posts
-            await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
-                data: {email_only: false},
-                column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
-            });
-            DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
-
-            return updateResult;
-        }
-        if (data.action === 'feature') {
-            const updateResult = await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
-            DomainEvents.dispatch(PostsBulkFeaturedEvent.create(updateResult.editIds));
-
-            return updateResult;
-        }
-        if (data.action === 'unfeature') {
-            const updateResult = await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
-            DomainEvents.dispatch(PostsBulkUnfeaturedEvent.create(updateResult.editIds));
-
-            return updateResult;
-        }
-        if (data.action === 'access') {
-            if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.invalidVisibility)
-                });
-            }
-            let tiers = undefined;
-            if (data.meta.visibility === 'tiers') {
-                if (!Array.isArray(data.meta.tiers)) {
-                    throw new errors.IncorrectUsageError({
-                        message: tpl(messages.invalidTiers)
-                    });
-                }
-                tiers = data.meta.tiers;
-            }
-            return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter, context: options.context});
-        }
-        if (data.action === 'addTag') {
-            if (!Array.isArray(data.meta.tags)) {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.invalidTags)
-                });
-            }
-            // null and undefined mean the field was not supplied, anything else
-            // that is not a string is a malformed value rather than an absent one
-            const isMalformed = value => value !== undefined && value !== null && typeof value !== 'string';
-
-            for (const tag of data.meta.tags) {
-                if (!tag || typeof tag !== 'object') {
-                    throw new errors.IncorrectUsageError({
-                        message: tpl(messages.invalidTags)
-                    });
-                }
-                if (!tag.id && !tag.name) {
-                    throw new errors.IncorrectUsageError({
-                        message: tpl(messages.invalidTags)
-                    });
-                }
-                if (isMalformed(tag.id) || isMalformed(tag.name)) {
-                    throw new errors.IncorrectUsageError({
-                        message: tpl(messages.invalidTags)
-                    });
-                }
-            }
-
-            const bulkResult = await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
-            DomainEvents.dispatch(PostsBulkAddTagsEvent.create(bulkResult.editIds));
-
-            return bulkResult;
-        }
+      return updateResult;
+    }
+    if (data.action === 'access') {
+      if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
         throw new errors.IncorrectUsageError({
-            message: tpl(messages.unsupportedBulkAction)
+          message: tpl(messages.invalidVisibility),
         });
-    }
-
-    /**
-     * @param {object} data
-     * @param {string[]} data.tags - Array of tag ids to add to the post
-     * @param {object} options
-     * @param {string} options.filter - An NQL Filter
-     * @param {object} options.context
-     * @param {object} [options.transacting]
-     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
-     */
-    async #bulkAddTags(data, options) {
-        if (!options.transacting) {
-            return await this.models.Post.transaction(async (transacting) => {
-                return await this.#bulkAddTags(data, {
-                    ...options,
-                    transacting
-                });
-            });
+      }
+      let tiers = undefined;
+      if (data.meta.visibility === 'tiers') {
+        if (!Array.isArray(data.meta.tiers)) {
+          throw new errors.IncorrectUsageError({
+            message: tpl(messages.invalidTiers),
+          });
         }
-
-        // The same tag can be passed more than once in a single request. Dedupe
-        // before creating, otherwise a repeated name-only tag is created twice
-        const seen = new Set();
-        const tags = data.tags.filter((tag) => {
-            const key = tag.id ? `id:${tag.id}` : `name:${tag.name.toLocaleLowerCase()}`;
-
-            if (seen.has(key)) {
-                return false;
-            }
-
-            seen.add(key);
-            return true;
+        tiers = data.meta.tiers;
+      }
+      return await this.#updatePosts(
+        { visibility: data.meta.visibility, tiers },
+        { filter: options.filter, context: options.context },
+      );
+    }
+    if (data.action === 'addTag') {
+      if (!Array.isArray(data.meta.tags)) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.invalidTags),
         });
+      }
+      // null and undefined mean the field was not supplied, anything else
+      // that is not a string is a malformed value rather than an absent one
+      const isMalformed = (value) =>
+        value !== undefined && value !== null && typeof value !== 'string';
 
-        // Create tags that don't exist
-        for (const tag of tags) {
-            if (tag.id) {
-                continue;
-            }
-
-            // The tag may already exist. Match on the slug it generates rather
-            // than the name, because the slug is unique and case insensitive on
-            // every supported database. Derive it the way Tag.onSaving does, so
-            // a supplied slug is looked up rather than silently ignored
-            const slug = await this.models.Base.Model.generateSlug(this.models.Tag, tag.slug || tag.name, {skipDuplicateChecks: true});
-            const existingTag = await this.models.Tag.findOne({slug}, {transacting: options.transacting});
-
-            if (existingTag) {
-                tag.id = existingTag.id;
-                continue;
-            }
-
-            const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
-            tag.id = createdTag.id;
+      for (const tag of data.meta.tags) {
+        if (!tag || typeof tag !== 'object') {
+          throw new errors.IncorrectUsageError({
+            message: tpl(messages.invalidTags),
+          });
         }
-
-        const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
-        const postIds = postRows.map(post => post.id);
-
-        const tagIds = [...new Set(tags.map(tag => tag.id))];
-
-        // Posts in the selection may already carry the tag, filter those pairs out
-        const existingRows = tagIds.length && postIds.length ?
-            await options.transacting('posts_tags')
-                .whereIn('tag_id', tagIds)
-                .whereIn('post_id', postIds)
-                .select('post_id', 'tag_id') :
-            [];
-        const existing = new Set(existingRows.map(row => `${row.post_id}:${row.tag_id}`));
-
-        const postTags = [];
-        for (const tagId of tagIds) {
-            for (const postId of postIds) {
-                if (existing.has(`${postId}:${tagId}`)) {
-                    continue;
-                }
-
-                postTags.push({
-                    id: (new ObjectId()).toHexString(),
-                    post_id: postId,
-                    tag_id: tagId,
-                    sort_order: 0
-                });
-            }
+        if (!tag.id && !tag.name) {
+          throw new errors.IncorrectUsageError({
+            message: tpl(messages.invalidTags),
+          });
         }
-
-        if (postTags.length) {
-            await options.transacting('posts_tags').insert(postTags);
+        if (isMalformed(tag.id) || isMalformed(tag.name)) {
+          throw new errors.IncorrectUsageError({
+            message: tpl(messages.invalidTags),
+          });
         }
+      }
 
-        await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
+      const bulkResult = await this.#bulkAddTags(
+        { tags: data.meta.tags },
+        { filter: options.filter, context: options.context },
+      );
+      DomainEvents.dispatch(PostsBulkAddTagsEvent.create(bulkResult.editIds));
 
-        return {
-            editIds: postRows.map(p => p.id),
-            successful: postRows.length,
-            unsuccessful: 0
-        };
+      return bulkResult;
     }
+    throw new errors.IncorrectUsageError({
+      message: tpl(messages.unsupportedBulkAction),
+    });
+  }
 
-    /**
-     *
-     * @param {Object} options
-     * @returns Promise<{successful: number, unsuccessful: number, deleteIds: string[], allDraft: boolean}>
-     */
-    async #bulkDestroy(options) {
-        if (!options.transacting) {
-            return await this.models.Post.transaction(async (transacting) => {
-                return await this.#bulkDestroy({
-                    ...options,
-                    transacting
-                });
-            });
-        }
-
-        const postRows = await this.#getFilteredBulkPostQuery(options)
-            .leftJoin('emails', 'posts.id', 'emails.post_id')
-            .select('posts.id', 'posts.status', 'emails.id as email_id');
-        const deleteIds = postRows.map(row => row.id);
-        const allDraft = postRows.length > 0 && postRows.every(row => row.status === 'draft');
-
-        // We also need to collect the email ids because the email relation doesn't have cascase, and we need to delete the related relations of the post
-        const deleteEmailIds = postRows.map(row => row.email_id).filter(id => !!id);
-
-        const postTablesToDelete = [
-            'posts_authors',
-            'posts_tags',
-            'posts_meta',
-            'mobiledoc_revisions',
-            'post_revisions',
-            'posts_products'
-        ];
-        const emailTablesToDelete = [
-            'email_recipient_failures',
-            'email_recipients',
-            'email_batches',
-            'email_spam_complaint_events'
-        ];
-
-        // Don't clear, but set relation to null
-        const emailTablesToSetNull = [
-            'suppressions'
-        ];
-
-        for (const table of postTablesToDelete) {
-            await this.models.Post.bulkDestroy(deleteIds, table, {
-                column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
-            });
-        }
-
-        for (const table of emailTablesToDelete) {
-            await this.models.Post.bulkDestroy(deleteEmailIds, table, {
-                column: 'email_id',
-                transacting: options.transacting,
-                throwErrors: true
-            });
-        }
-
-        for (const table of emailTablesToSetNull) {
-            await this.models.Post.bulkEdit(deleteEmailIds, table, {
-                data: {email_id: null},
-                column: 'email_id',
-                transacting: options.transacting,
-                throwErrors: true
-            });
-        }
-
-        // The `comments.in_reply_to_id` references form chains between a post's
-        // comments, which MySQL cannot resolve while cascade-deleting them
-        // alongside `comments.parent_id`. Clear the references first so the
-        // `comments.post_id` cascade delete can do its job
-        await this.models.Post.bulkEdit(deleteIds, 'comments', {
-            data: {in_reply_to_id: null},
-            column: 'post_id',
-            transacting: options.transacting,
-            throwErrors: true
+  /**
+   * @param {object} data
+   * @param {string[]} data.tags - Array of tag ids to add to the post
+   * @param {object} options
+   * @param {string} options.filter - An NQL Filter
+   * @param {object} options.context
+   * @param {object} [options.transacting]
+   * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
+   */
+  async #bulkAddTags(data, options) {
+    if (!options.transacting) {
+      return await this.models.Post.transaction(async (transacting) => {
+        return await this.#bulkAddTags(data, {
+          ...options,
+          transacting,
         });
-
-        // Posts and emails
-        await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
-        const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
-
-        result.deleteIds = deleteIds;
-        result.allDraft = allDraft;
-
-        return result;
+      });
     }
 
-    async bulkDestroy(options) {
-        const result = await this.#bulkDestroy(options);
-        const {PostsBulkDestroyedEvent} = require('../../../shared/events-ts');
-        DomainEvents.dispatch(PostsBulkDestroyedEvent.create(result.deleteIds));
+    // The same tag can be passed more than once in a single request. Dedupe
+    // before creating, otherwise a repeated name-only tag is created twice
+    const seen = new Set();
+    const tags = data.tags.filter((tag) => {
+      const key = tag.id ? `id:${tag.id}` : `name:${tag.name.toLocaleLowerCase()}`;
 
-        return result;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+
+    // Create tags that don't exist
+    for (const tag of tags) {
+      if (tag.id) {
+        continue;
+      }
+
+      // The tag may already exist. Match on the slug it generates rather
+      // than the name, because the slug is unique and case insensitive on
+      // every supported database. Derive it the way Tag.onSaving does, so
+      // a supplied slug is looked up rather than silently ignored
+      const slug = await this.models.Base.Model.generateSlug(
+        this.models.Tag,
+        tag.slug || tag.name,
+        { skipDuplicateChecks: true },
+      );
+      const existingTag = await this.models.Tag.findOne(
+        { slug },
+        { transacting: options.transacting },
+      );
+
+      if (existingTag) {
+        tag.id = existingTag.id;
+        continue;
+      }
+
+      const createdTag = await this.models.Tag.add(tag, {
+        transacting: options.transacting,
+        context: options.context,
+      });
+      tag.id = createdTag.id;
     }
 
-    async export(options) {
-        return await this.postsExporter.export(options);
-    }
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const postIds = postRows.map((post) => post.id);
 
-    async #updatePosts(data, options) {
-        if (!options.transacting) {
-            return await this.models.Post.transaction(async (transacting) => {
-                return await this.#updatePosts(data, {
-                    ...options,
-                    transacting
-                });
-            });
+    const tagIds = [...new Set(tags.map((tag) => tag.id))];
+
+    // Posts in the selection may already carry the tag, filter those pairs out
+    const existingRows =
+      tagIds.length && postIds.length
+        ? await options
+            .transacting('posts_tags')
+            .whereIn('tag_id', tagIds)
+            .whereIn('post_id', postIds)
+            .select('post_id', 'tag_id')
+        : [];
+    const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
+
+    const postTags = [];
+    for (const tagId of tagIds) {
+      for (const postId of postIds) {
+        if (existing.has(`${postId}:${tagId}`)) {
+          continue;
         }
 
-        const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
-
-        const editIds = postRows.map(row => row.id);
-
-        let tiers = undefined;
-        if (data.tiers) {
-            tiers = data.tiers;
-            delete data.tiers;
-        }
-
-        const result = await this.models.Post.bulkEdit(editIds, 'posts', {
-            ...options,
-            data,
-            throwErrors: true
+        postTags.push({
+          id: new ObjectId().toHexString(),
+          post_id: postId,
+          tag_id: tagId,
+          sort_order: 0,
         });
+      }
+    }
 
-        // Update tiers
-        if (tiers) {
-            // First delete all
-            await this.models.Post.bulkDestroy(editIds, 'posts_products', {
-                column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+    if (postTags.length) {
+      await options.transacting('posts_tags').insert(postTags);
+    }
+
+    await this.models.Post.addActions(
+      'edited',
+      postRows.map((p) => p.id),
+      options,
+    );
+
+    return {
+      editIds: postRows.map((p) => p.id),
+      successful: postRows.length,
+      unsuccessful: 0,
+    };
+  }
+
+  /**
+   *
+   * @param {Object} options
+   * @returns Promise<{successful: number, unsuccessful: number, deleteIds: string[], allDraft: boolean}>
+   */
+  async #bulkDestroy(options) {
+    if (!options.transacting) {
+      return await this.models.Post.transaction(async (transacting) => {
+        return await this.#bulkDestroy({
+          ...options,
+          transacting,
+        });
+      });
+    }
+
+    const postRows = await this.#getFilteredBulkPostQuery(options)
+      .leftJoin('emails', 'posts.id', 'emails.post_id')
+      .select('posts.id', 'posts.status', 'emails.id as email_id');
+    const deleteIds = postRows.map((row) => row.id);
+    const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
+
+    // We also need to collect the email ids because the email relation doesn't have cascase, and we need to delete the related relations of the post
+    const deleteEmailIds = postRows.map((row) => row.email_id).filter((id) => !!id);
+
+    const postTablesToDelete = [
+      'posts_authors',
+      'posts_tags',
+      'posts_meta',
+      'mobiledoc_revisions',
+      'post_revisions',
+      'posts_products',
+    ];
+    const emailTablesToDelete = [
+      'email_recipient_failures',
+      'email_recipients',
+      'email_batches',
+      'email_spam_complaint_events',
+    ];
+
+    // Don't clear, but set relation to null
+    const emailTablesToSetNull = ['suppressions'];
+
+    for (const table of postTablesToDelete) {
+      await this.models.Post.bulkDestroy(deleteIds, table, {
+        column: 'post_id',
+        transacting: options.transacting,
+        throwErrors: true,
+      });
+    }
+
+    for (const table of emailTablesToDelete) {
+      await this.models.Post.bulkDestroy(deleteEmailIds, table, {
+        column: 'email_id',
+        transacting: options.transacting,
+        throwErrors: true,
+      });
+    }
+
+    for (const table of emailTablesToSetNull) {
+      await this.models.Post.bulkEdit(deleteEmailIds, table, {
+        data: { email_id: null },
+        column: 'email_id',
+        transacting: options.transacting,
+        throwErrors: true,
+      });
+    }
+
+    // The `comments.in_reply_to_id` references form chains between a post's
+    // comments, which MySQL cannot resolve while cascade-deleting them
+    // alongside `comments.parent_id`. Clear the references first so the
+    // `comments.post_id` cascade delete can do its job
+    await this.models.Post.bulkEdit(deleteIds, 'comments', {
+      data: { in_reply_to_id: null },
+      column: 'post_id',
+      transacting: options.transacting,
+      throwErrors: true,
+    });
+
+    // Posts and emails
+    await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {
+      transacting: options.transacting,
+      throwErrors: true,
+    });
+    const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {
+      ...options,
+      throwErrors: true,
+    });
+
+    result.deleteIds = deleteIds;
+    result.allDraft = allDraft;
+
+    return result;
+  }
+
+  async bulkDestroy(options) {
+    const result = await this.#bulkDestroy(options);
+    const { PostsBulkDestroyedEvent } = require('../../../shared/events-ts');
+    DomainEvents.dispatch(PostsBulkDestroyedEvent.create(result.deleteIds));
+
+    return result;
+  }
+
+  async export(options) {
+    return await this.postsExporter.export(options);
+  }
+
+  async #updatePosts(data, options) {
+    if (!options.transacting) {
+      return await this.models.Post.transaction(async (transacting) => {
+        return await this.#updatePosts(data, {
+          ...options,
+          transacting,
+        });
+      });
+    }
+
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+
+    const editIds = postRows.map((row) => row.id);
+
+    let tiers = undefined;
+    if (data.tiers) {
+      tiers = data.tiers;
+      delete data.tiers;
+    }
+
+    const result = await this.models.Post.bulkEdit(editIds, 'posts', {
+      ...options,
+      data,
+      throwErrors: true,
+    });
+
+    // Update tiers
+    if (tiers) {
+      // First delete all
+      await this.models.Post.bulkDestroy(editIds, 'posts_products', {
+        column: 'post_id',
+        transacting: options.transacting,
+        throwErrors: true,
+      });
+
+      // Then add again
+      const toInsert = [];
+      for (const postId of editIds) {
+        for (const [index, tier] of tiers.entries()) {
+          if (typeof tier.id === 'string') {
+            toInsert.push({
+              id: ObjectId().toHexString(),
+              post_id: postId,
+              product_id: tier.id,
+              sort_order: index,
             });
-
-            // Then add again
-            const toInsert = [];
-            for (const postId of editIds) {
-                for (const [index, tier] of tiers.entries()) {
-                    if (typeof tier.id === 'string') {
-                        toInsert.push({
-                            id: ObjectId().toHexString(),
-                            post_id: postId,
-                            product_id: tier.id,
-                            sort_order: index
-                        });
-                    }
-                }
-            }
-            await this.models.Post.bulkAdd(toInsert, 'posts_products', {
-                transacting: options.transacting,
-                throwErrors: true
-            });
+          }
         }
-
-        result.editIds = editIds;
-
-        return result;
+      }
+      await this.models.Post.bulkAdd(toInsert, 'posts_products', {
+        transacting: options.transacting,
+        throwErrors: true,
+      });
     }
 
-    async getProductsFromVisibilityFilter(visibilityFilter) {
-        try {
-            const allProducts = await this.models.Product.findAll();
-            const visibilityFilterJson = nql(visibilityFilter).toJSON();
-            const productsData = (visibilityFilterJson.product ? [visibilityFilterJson] : visibilityFilterJson.$or) || [];
-            const tiers = productsData
-                .map((data) => {
-                    return allProducts.find((p) => {
-                        return p.get('slug') === data.product;
-                    });
-                }).filter(p => !!p).map((d) => {
-                    return d.toJSON();
-                });
-            return tiers;
-        } catch (err) {
-            return Promise.reject(new BadRequestError({
-                message: tpl(messages.invalidVisibilityFilter),
-                context: err.message
-            }));
-        }
+    result.editIds = editIds;
+
+    return result;
+  }
+
+  async getProductsFromVisibilityFilter(visibilityFilter) {
+    try {
+      const allProducts = await this.models.Product.findAll();
+      const visibilityFilterJson = nql(visibilityFilter).toJSON();
+      const productsData =
+        (visibilityFilterJson.product ? [visibilityFilterJson] : visibilityFilterJson.$or) || [];
+      const tiers = productsData
+        .map((data) => {
+          return allProducts.find((p) => {
+            return p.get('slug') === data.product;
+          });
+        })
+        .filter((p) => !!p)
+        .map((d) => {
+          return d.toJSON();
+        });
+      return tiers;
+    } catch (err) {
+      return Promise.reject(
+        new BadRequestError({
+          message: tpl(messages.invalidVisibilityFilter),
+          context: err.message,
+        }),
+      );
+    }
+  }
+
+  handleCacheInvalidation(model) {
+    let cacheInvalidate;
+
+    if (
+      (model.get('status') === 'published' && model.wasChanged()) ||
+      (model.get('status') === 'draft' && model.previous('status') === 'published')
+    ) {
+      cacheInvalidate = true;
+    } else if (
+      (model.get('status') === 'draft' && model.previous('status') !== 'published') ||
+      (model.get('status') === 'scheduled' && model.wasChanged())
+    ) {
+      const baseUrl = this.urlUtils.urlJoin('/p', model.get('uuid'), '/');
+      cacheInvalidate = {
+        value: [
+          baseUrl,
+          `${baseUrl}?member_status=anonymous`,
+          `${baseUrl}?member_status=free`,
+          `${baseUrl}?member_status=paid`,
+        ].join(', '),
+      };
+    } else {
+      cacheInvalidate = false;
     }
 
-    handleCacheInvalidation(model) {
-        let cacheInvalidate;
+    return cacheInvalidate;
+  }
 
-        if (
-            model.get('status') === 'published' && model.wasChanged() ||
-            model.get('status') === 'draft' && model.previous('status') === 'published'
-        ) {
-            cacheInvalidate = true;
-        } else if (
-            model.get('status') === 'draft' && model.previous('status') !== 'published' ||
-            model.get('status') === 'scheduled' && model.wasChanged()
-        ) {
-            const baseUrl = this.urlUtils.urlJoin('/p', model.get('uuid'), '/');
-            cacheInvalidate = {
-                value: [
-                    baseUrl,
-                    `${baseUrl}?member_status=anonymous`,
-                    `${baseUrl}?member_status=free`,
-                    `${baseUrl}?member_status=paid`
-                ].join(', ')
-            };
-        } else {
-            cacheInvalidate = false;
-        }
+  async copyPost(frame) {
+    const existingPost = await this.models.Post.findOne(
+      {
+        id: frame.options.id,
+        status: 'all',
+      },
+      frame.options,
+    );
 
-        return cacheInvalidate;
+    const newPostData = pick(existingPost.attributes, [
+      'title',
+      'mobiledoc',
+      'lexical',
+      'html',
+      'plaintext',
+      'feature_image',
+      'featured',
+      'type',
+      'locale',
+      'visibility',
+      'email_recipient_filter',
+      'custom_excerpt',
+      'codeinjection_head',
+      'codeinjection_foot',
+      'custom_template',
+    ]);
+
+    newPostData.title = `${existingPost.attributes.title} (Copy)`;
+    newPostData.status = 'draft';
+    newPostData.authors = existingPost
+      .related('authors')
+      .map((author) => ({ id: author.get('id') }));
+    newPostData.tags = existingPost.related('tags').map((tag) => ({ id: tag.get('id') }));
+
+    const existingPostMeta = existingPost.related('posts_meta');
+
+    if (existingPostMeta.isNew() === false) {
+      newPostData.posts_meta = pick(existingPostMeta.attributes, [
+        'og_image',
+        'og_title',
+        'og_description',
+        'twitter_image',
+        'twitter_title',
+        'twitter_description',
+        'meta_title',
+        'meta_description',
+        'frontmatter',
+        'feature_image_alt',
+        'feature_image_caption',
+        'hide_title_and_feature_image',
+      ]);
     }
 
-    async copyPost(frame) {
-        const existingPost = await this.models.Post.findOne({
-            id: frame.options.id,
-            status: 'all'
-        }, frame.options);
+    const existingPostTiers = existingPost.related('tiers');
 
-        const newPostData = pick(
-            existingPost.attributes,
-            [
-                'title',
-                'mobiledoc',
-                'lexical',
-                'html',
-                'plaintext',
-                'feature_image',
-                'featured',
-                'type',
-                'locale',
-                'visibility',
-                'email_recipient_filter',
-                'custom_excerpt',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'custom_template'
-            ]
-        );
-
-        newPostData.title = `${existingPost.attributes.title} (Copy)`;
-        newPostData.status = 'draft';
-        newPostData.authors = existingPost.related('authors')
-            .map(author => ({id: author.get('id')}));
-        newPostData.tags = existingPost.related('tags')
-            .map(tag => ({id: tag.get('id')}));
-
-        const existingPostMeta = existingPost.related('posts_meta');
-
-        if (existingPostMeta.isNew() === false) {
-            newPostData.posts_meta = pick(
-                existingPostMeta.attributes,
-                [
-                    'og_image',
-                    'og_title',
-                    'og_description',
-                    'twitter_image',
-                    'twitter_title',
-                    'twitter_description',
-                    'meta_title',
-                    'meta_description',
-                    'frontmatter',
-                    'feature_image_alt',
-                    'feature_image_caption',
-                    'hide_title_and_feature_image'
-                ]
-            );
-        }
-
-        const existingPostTiers = existingPost.related('tiers');
-
-        if (existingPostTiers.length > 0) {
-            newPostData.tiers = existingPostTiers.map(tier => ({id: tier.get('id')}));
-        }
-
-        return this.models.Post.add(newPostData, frame.options);
+    if (existingPostTiers.length > 0) {
+      newPostData.tiers = existingPostTiers.map((tier) => ({ id: tier.get('id') }));
     }
 
-    /**
-     * Generates a location url for a copied post based on the original url generated by the API framework
-     *
-     * @param {string} url
-     * @returns {string}
-     */
-    generateCopiedPostLocationFromUrl(url) {
-        const urlParts = url.split('/');
-        const pageId = urlParts[urlParts.length - 2];
+    return this.models.Post.add(newPostData, frame.options);
+  }
 
-        return urlParts
-            .slice(0, -4)
-            .concat(pageId)
-            .concat('')
-            .join('/');
-    }
+  /**
+   * Generates a location url for a copied post based on the original url generated by the API framework
+   *
+   * @param {string} url
+   * @returns {string}
+   */
+  generateCopiedPostLocationFromUrl(url) {
+    const urlParts = url.split('/');
+    const pageId = urlParts[urlParts.length - 2];
+
+    return urlParts.slice(0, -4).concat(pageId).concat('').join('/');
+  }
 }
 
 module.exports = PostsService;

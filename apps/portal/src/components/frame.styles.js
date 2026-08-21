@@ -1,36 +1,36 @@
 /** By default, CRAs webpack bundle combines and appends the main css at root level, so they are not applied inside iframe
  * This uses a hack where we append `<style> </style>` tag with all CSS inside the head of iframe dynamically, thus making it available easily
  * We can create separate variables to keep styles grouped logically, and export them as one appended string
-*/
+ */
 
-import {GlobalStyles} from './global.styles';
-import {ActionButtonStyles} from './common/action-button';
-import {BackButtonStyles} from './common/back-button';
-import {SwitchStyles} from './common/switch';
+import { GlobalStyles } from './global.styles';
+import { ActionButtonStyles } from './common/action-button';
+import { BackButtonStyles } from './common/back-button';
+import { SwitchStyles } from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
-import {AccountPlanPageStyles} from './pages/account-plan-page';
-import {InputFieldStyles} from './common/input-field';
-import {SignupPageStyles} from './pages/signup-page';
-import {ProductsSectionStyles} from './common/products-section';
-import {AvatarStyles} from './common/member-gravatar';
-import {MagicLinkStyles} from './pages/magic-link-page';
-import {PopupNotificationStyles} from './common/popup-notification';
-import {OfferPageStyles} from './pages/offer-page';
-import {FeedbackPageStyles} from './pages/feedback-page';
+import { AccountPlanPageStyles } from './pages/account-plan-page';
+import { InputFieldStyles } from './common/input-field';
+import { SignupPageStyles } from './pages/signup-page';
+import { ProductsSectionStyles } from './common/products-section';
+import { AvatarStyles } from './common/member-gravatar';
+import { MagicLinkStyles } from './pages/magic-link-page';
+import { PopupNotificationStyles } from './common/popup-notification';
+import { OfferPageStyles } from './pages/offer-page';
+import { FeedbackPageStyles } from './pages/feedback-page';
 import EmailSuppressedPage from './pages/email-suppressed-page.css?inline';
 import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
 import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
-import {TipsAndDonationsSuccessStyle} from './pages/support-success';
-import {GiftRedemptionStyles} from './pages/gift-redemption-page';
-import {BetaGiftRedemptionStyles} from './pages/beta-gift-redemption-page';
-import {GiftPageStyles} from './pages/gift-page';
-import {BetaGiftPageStyles} from './pages/beta-gift-page';
-import {GiftSuccessStyle} from './pages/gift-success-page';
-import {BetaGiftSuccessStyle} from './pages/beta-gift-success-page';
-import {TipsAndDonationsErrorStyle} from './pages/support-error';
-import {RecommendationsPageStyles} from './pages/recommendations-page';
-import {ShareModalStyles} from './pages/share/share-modal.styles';
-import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
+import { TipsAndDonationsSuccessStyle } from './pages/support-success';
+import { GiftRedemptionStyles } from './pages/gift-redemption-page';
+import { BetaGiftRedemptionStyles } from './pages/beta-gift-redemption-page';
+import { GiftPageStyles } from './pages/gift-page';
+import { BetaGiftPageStyles } from './pages/beta-gift-page';
+import { GiftSuccessStyle } from './pages/gift-success-page';
+import { BetaGiftSuccessStyle } from './pages/beta-gift-success-page';
+import { TipsAndDonationsErrorStyle } from './pages/support-error';
+import { RecommendationsPageStyles } from './pages/recommendations-page';
+import { ShareModalStyles } from './pages/share/share-modal.styles';
+import { TransistorPodcastsActionStyles } from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 
 // Global styles
@@ -1350,36 +1350,36 @@ const MultipleProductsGlobalStyles = `
 }
 `;
 
-export function getFrameStyles({site}) {
-    const FrameStyle =
-        GlobalStyles +
-        FrameStyles +
-        AccountHomePageStyles +
-        AccountPlanPageStyles +
-        InputFieldStyles +
-        ProductsSectionStyles({site}) +
-        SwitchStyles +
-        ActionButtonStyles +
-        BackButtonStyles +
-        AvatarStyles +
-        MagicLinkStyles +
-        SignupPageStyles +
-        OfferPageStyles({site}) +
-        NotificationStyle +
-        PopupNotificationStyles +
-        MobileStyles +
-        MultipleProductsGlobalStyles +
-        FeedbackPageStyles +
-        EmailSuppressedPage +
-        EmailSuppressionFAQ +
-        EmailReceivingFAQ +
-        TipsAndDonationsSuccessStyle +
-        (site?.labs?.giftSubCustomization ? BetaGiftRedemptionStyles : GiftRedemptionStyles) +
-        (site?.labs?.giftSubCustomization ? BetaGiftPageStyles : GiftPageStyles) +
-        TipsAndDonationsErrorStyle +
-        (site?.labs?.giftSubCustomization ? BetaGiftSuccessStyle : GiftSuccessStyle) +
-        RecommendationsPageStyles +
-        ShareModalStyles +
-        TransistorPodcastsActionStyles;
-    return FrameStyle;
+export function getFrameStyles({ site }) {
+  const FrameStyle =
+    GlobalStyles +
+    FrameStyles +
+    AccountHomePageStyles +
+    AccountPlanPageStyles +
+    InputFieldStyles +
+    ProductsSectionStyles({ site }) +
+    SwitchStyles +
+    ActionButtonStyles +
+    BackButtonStyles +
+    AvatarStyles +
+    MagicLinkStyles +
+    SignupPageStyles +
+    OfferPageStyles({ site }) +
+    NotificationStyle +
+    PopupNotificationStyles +
+    MobileStyles +
+    MultipleProductsGlobalStyles +
+    FeedbackPageStyles +
+    EmailSuppressedPage +
+    EmailSuppressionFAQ +
+    EmailReceivingFAQ +
+    TipsAndDonationsSuccessStyle +
+    (site?.labs?.giftSubCustomization ? BetaGiftRedemptionStyles : GiftRedemptionStyles) +
+    (site?.labs?.giftSubCustomization ? BetaGiftPageStyles : GiftPageStyles) +
+    TipsAndDonationsErrorStyle +
+    (site?.labs?.giftSubCustomization ? BetaGiftSuccessStyle : GiftSuccessStyle) +
+    RecommendationsPageStyles +
+    ShareModalStyles +
+    TransistorPodcastsActionStyles;
+  return FrameStyle;
 }

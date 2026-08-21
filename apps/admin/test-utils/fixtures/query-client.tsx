@@ -1,6 +1,6 @@
-import { QueryClient } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import { TestWrapper } from "@tryghost/admin-x-framework/test/test-utils";
+import { QueryClient } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import { TestWrapper } from '@tryghost/admin-x-framework/test/test-utils';
 
 export type TestWrapperComponent = ({ children }: { children: ReactNode }) => JSX.Element;
 
@@ -13,18 +13,18 @@ export type TestWrapperComponent = ({ children }: { children: ReactNode }) => JS
  * - No caching (tests should be isolated)
  */
 function createTestQueryClient(): QueryClient {
-    return new QueryClient({
-        defaultOptions: {
-            queries: {
-                retry: false,
-                gcTime: 0,
-                staleTime: 0,
-            },
-            mutations: {
-                retry: false,
-            },
-        },
-    });
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+        staleTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
 }
 
 /**
@@ -64,22 +64,25 @@ function createTestQueryClient(): QueryClient {
  * Can be composed with other fixtures using spread syntax.
  */
 export const queryClientFixtures = {
-    // Test-scoped fixture: create fresh QueryClient for each test
-    queryClient: async ({ task }: { task: unknown }, provide: (value: QueryClient) => Promise<void>) => {
-        void task;
-        const client = createTestQueryClient();
-        await provide(client);
-        client.clear();
-    },
+  // Test-scoped fixture: create fresh QueryClient for each test
+  queryClient: async (
+    { task }: { task: unknown },
+    provide: (value: QueryClient) => Promise<void>,
+  ) => {
+    void task;
+    const client = createTestQueryClient();
+    await provide(client);
+    client.clear();
+  },
 
-    // Wrapper depends on queryClient fixture
-    wrapper: async (
-        { queryClient }: { queryClient: QueryClient },
-        provide: (value: TestWrapperComponent) => Promise<void>
-    ) => {
-        const wrapper: TestWrapperComponent = ({ children }) => (
-            <TestWrapper queryClient={queryClient}>{children}</TestWrapper>
-        );
-        await provide(wrapper);
-    },
+  // Wrapper depends on queryClient fixture
+  wrapper: async (
+    { queryClient }: { queryClient: QueryClient },
+    provide: (value: TestWrapperComponent) => Promise<void>,
+  ) => {
+    const wrapper: TestWrapperComponent = ({ children }) => (
+      <TestWrapper queryClient={queryClient}>{children}</TestWrapper>
+    );
+    await provide(wrapper);
+  },
 } as const;

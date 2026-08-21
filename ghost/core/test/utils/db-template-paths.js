@@ -11,8 +11,8 @@
 
 // MySQL: the per-fork suffix is `_<8 hex>` appended to a database name.
 const deriveMySQLTemplateDatabase = (database) => {
-    const base = database.replace(/_[a-f0-9]{8}$/i, '');
-    return `${base}_template`;
+  const base = database.replace(/_[a-f0-9]{8}$/i, '');
+  return `${base}_template`;
 };
 
 // SQLite: the per-fork suffix is `-pool_<N>` (or `-<8 hex>` when there is no
@@ -23,12 +23,12 @@ const deriveMySQLTemplateDatabase = (database) => {
 // globalSetup passes the un-suffixed base (e.g. `/tmp/ghost-test.db`); a fork
 // passes its own suffixed filename — both resolve to `<base>-template.db`.
 const deriveSQLiteTemplateFilename = (filename) => {
-    const withoutDb = filename.replace(/\.db$/i, '');
-    const base = withoutDb.replace(/-(?:pool_\d+|[a-f0-9]{8})$/i, '');
-    return `${base}-template.db`;
+  const withoutDb = filename.replace(/\.db$/i, '');
+  const base = withoutDb.replace(/-(?:pool_\d+|[a-f0-9]{8})$/i, '');
+  return `${base}-template.db`;
 };
 
 module.exports = {
-    deriveMySQLTemplateDatabase,
-    deriveSQLiteTemplateFilename
+  deriveMySQLTemplateDatabase,
+  deriveSQLiteTemplateFilename,
 };

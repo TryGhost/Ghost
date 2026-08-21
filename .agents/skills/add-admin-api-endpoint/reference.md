@@ -111,6 +111,7 @@ options: ['include', 'filter', 'page', 'limit', 'order']
 ```
 
 Can also be a function:
+
 ```javascript
 options: (frame) => {
     return frame.apiType === 'content'
@@ -152,6 +153,7 @@ validation: {
 ```
 
 **Global validators** (automatically applied when parameters are present):
+
 - `id` - Must match `/^[a-f\d]{24}$|^1$|me/i`
 - `page` - Must be a number
 - `limit` - Must be a number or 'all'
@@ -161,6 +163,7 @@ validation: {
 - `order` - Must match `/^[a-z0-9_,. ]+$/i`
 
 For custom validation, use a function:
+
 ```javascript
 validation(frame) {
     if (!frame.data.posts[0].title) {

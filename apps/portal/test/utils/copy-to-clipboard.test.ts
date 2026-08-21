@@ -1,50 +1,50 @@
 import copyTextToClipboard from '../../src/utils/copy-to-clipboard';
 
 describe('copy-to-clipboard', () => {
-    afterEach(() => {
-        vi.restoreAllMocks();
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('returns true when clipboard API succeeds', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText,
+      },
     });
 
-    test('returns true when clipboard API succeeds', async () => {
-        const writeText = vi.fn().mockResolvedValue(undefined);
+    const result = await copyTextToClipboard('hello world');
 
-        Object.defineProperty(window.navigator, 'clipboard', {
-            configurable: true,
-            value: {
-                writeText
-            }
-        });
+    expect(result).toBe(true);
+    expect(writeText).toHaveBeenCalledWith('hello world');
+  });
 
-        const result = await copyTextToClipboard('hello world');
+  test('returns false when clipboard API rejects', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('blocked'));
 
-        expect(result).toBe(true);
-        expect(writeText).toHaveBeenCalledWith('hello world');
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText,
+      },
     });
 
-    test('returns false when clipboard API rejects', async () => {
-        const writeText = vi.fn().mockRejectedValue(new Error('blocked'));
+    const result = await copyTextToClipboard('hello world');
 
-        Object.defineProperty(window.navigator, 'clipboard', {
-            configurable: true,
-            value: {
-                writeText
-            }
-        });
+    expect(result).toBe(false);
+    expect(writeText).toHaveBeenCalledWith('hello world');
+  });
 
-        const result = await copyTextToClipboard('hello world');
-
-        expect(result).toBe(false);
-        expect(writeText).toHaveBeenCalledWith('hello world');
+  test('returns false when clipboard API is unavailable', async () => {
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      value: undefined,
     });
 
-    test('returns false when clipboard API is unavailable', async () => {
-        Object.defineProperty(window.navigator, 'clipboard', {
-            configurable: true,
-            value: undefined
-        });
+    const result = await copyTextToClipboard('hello world');
 
-        const result = await copyTextToClipboard('hello world');
-
-        expect(result).toBe(false);
-    });
+    expect(result).toBe(false);
+  });
 });

@@ -1,17 +1,18 @@
-import type {ReadonlyDeep} from 'type-fest';
+import type { ReadonlyDeep } from 'type-fest';
 
 type EmailTemplateData = ReadonlyDeep<{
-    result: {
-        data?: {
-            errors?: unknown[];
-        };
+  result: {
+    data?: {
+      errors?: unknown[];
     };
-    siteUrl: URL;
-    postsUrl: URL;
-    emailRecipient: string;
+  };
+  siteUrl: URL;
+  postsUrl: URL;
+  emailRecipient: string;
 }>;
 
-const escapeHtml = (value: string): string => value
+const escapeHtml = (value: string): string =>
+  value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -19,31 +20,47 @@ const escapeHtml = (value: string): string => value
     .replace(/'/g, '&#39;');
 
 const getErrorMessage = (importError: unknown): string => {
-    if (importError && typeof importError === 'object' && 'message' in importError && typeof importError.message === 'string' && importError.message) {
-        return importError.message;
-    }
-    return 'Unknown error';
+  if (
+    importError &&
+    typeof importError === 'object' &&
+    'message' in importError &&
+    typeof importError.message === 'string' &&
+    importError.message
+  ) {
+    return importError.message;
+  }
+  return 'Unknown error';
 };
 
 const MAX_LISTED_ERRORS = 5;
 
 const renderErrorList = (importErrors: ReadonlyDeep<unknown[]>): string => {
-    const items = importErrors
-        .slice(0, MAX_LISTED_ERRORS)
-        .map((importError: unknown) => `<li style="margin-bottom: 6px;">${escapeHtml(getErrorMessage(importError))}</li>`);
+  const items = importErrors
+    .slice(0, MAX_LISTED_ERRORS)
+    .map(
+      (importError: unknown) =>
+        `<li style="margin-bottom: 6px;">${escapeHtml(getErrorMessage(importError))}</li>`,
+    );
 
-    const remaining = importErrors.length - MAX_LISTED_ERRORS;
-    if (remaining > 0) {
-        items.push(`<li style="margin-bottom: 6px;">and ${remaining} more &mdash; check the server logs for the full list</li>`);
-    }
+  const remaining = importErrors.length - MAX_LISTED_ERRORS;
+  if (remaining > 0) {
+    items.push(
+      `<li style="margin-bottom: 6px;">and ${remaining} more &mdash; check the server logs for the full list</li>`,
+    );
+  }
 
-    return items.join('\n                          ');
+  return items.join('\n                          ');
 };
 
-export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: EmailTemplateData): string => {
-    const importErrors = result?.data?.errors;
+export const emailTemplate = ({
+  result,
+  siteUrl,
+  postsUrl,
+  emailRecipient,
+}: EmailTemplateData): string => {
+  const importErrors = result?.data?.errors;
 
-    return `
+  return `
 <!doctype html>
 <html>
   <head>
@@ -170,7 +187,9 @@ export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: Email
                         <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${importErrors ? 'Import unsuccessful' : 'Your content import has finished successfully'}</p>
                       </td>
                     </tr>
-                    ${importErrors ? `
+                    ${
+                      importErrors
+                        ? `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;"><p style="margin: 0 0 8px 0;">One or more errors occurred while importing your content:</p>
                         <ul style="margin: 8px 0; padding-left: 20px;">
@@ -179,13 +198,15 @@ export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: Email
                         <p style="margin: 12px 0 0 0;">Please fix the listed issues and try again, or ask for help on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</p>
                       </td>
                     </tr>
-                    ` : `
+                    `
+                        : `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 12px; padding-top: 16px;">
                         <a href="${postsUrl.href}" target="_blank" style="display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;">View posts</a>
                       </td>
                     </tr>
-                    `}
+                    `
+                    }
                   </table>
                 </td>
               </tr>

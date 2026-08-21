@@ -2,13 +2,16 @@
   "name": "@tryghost/kg-utils",
   "version": "1.1.4",
   "description": "Shared utilities for Ghost's Koenig editor packages",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "koenig/kg-utils"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -20,6 +23,9 @@
       "require": "./build/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -29,11 +35,8 @@
     "lint": "eslint . --cache",
     "posttest": "pnpm lint"
   },
-  "files": [
-    "build"
-  ],
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "semver": "7.8.5"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -45,8 +48,5 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
-  },
-  "dependencies": {
-    "semver": "7.8.5"
   }
 }

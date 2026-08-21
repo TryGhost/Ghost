@@ -11,6 +11,7 @@ Shared runtime for Ghost's React admin surfaces: the admin shell (`apps/admin`),
 This is a monorepo package.
 
 Follow the instructions for the top-level repo.
+
 1. `git clone` this repo & `cd` into it as usual
 2. Run `pnpm setup` to install the workspace and initialize submodules.
 

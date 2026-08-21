@@ -3,10 +3,6 @@
  * `@tryghost/test-data` builders (see test-utils/acceptance/README.md).
  */
 
-export { mockUser } from "./user";
+export { mockUser } from './user';
 
-export {
-    createRawChangelogEntry,
-    createChangelogResponse,
-    changelogFixtures,
-} from "./changelog";
+export { createRawChangelogEntry, createChangelogResponse, changelogFixtures } from './changelog';

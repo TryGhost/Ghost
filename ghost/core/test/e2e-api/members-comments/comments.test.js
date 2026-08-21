@@ -1,6 +1,25 @@
 const assert = require('node:assert/strict');
-const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils, cacheRules} = require('../../utils/e2e-framework');
-const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean, stringMatching} = matchers;
+const {
+  agentProvider,
+  mockManager,
+  fixtureManager,
+  matchers,
+  configUtils,
+  dbUtils,
+  cacheRules,
+} = require('../../utils/e2e-framework');
+const {
+  nullable,
+  anyEtag,
+  anyObjectId,
+  anyLocationFor,
+  anyISODateTime,
+  anyErrorId,
+  anyUuid,
+  anyNumber,
+  anyBoolean,
+  stringMatching,
+} = matchers;
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -14,130 +33,130 @@ let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 let emailMockReceiver;
 
 async function getPaidProduct() {
-    return await models.Product.findOne({type: 'paid'});
+  return await models.Product.findOne({ type: 'paid' });
 }
 
 const dbFns = {
-    /**
-     * @typedef {Object} AddCommentData
-     * @property {string} [post_id=postId]
-     * @property {string} member_id
-     * @property {string} [parent_id]
-     * @property {string} [in_reply_to_id]
-     * @property {string} [html='This is a comment']
-     * @property {string} [status]
-     * @property {Date} [created_at]
-     * @property {Date} [pinned_at]
-     */
-    /**
-     * @typedef {Object} AddCommentReplyData
-     * @property {string} member_id
-     * @property {string} [html='This is a reply']
-     * @property {Date} [created_at]
-     * @property {string} [status]
-     */
-    /**
-     * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
-     */
+  /**
+   * @typedef {Object} AddCommentData
+   * @property {string} [post_id=postId]
+   * @property {string} member_id
+   * @property {string} [parent_id]
+   * @property {string} [in_reply_to_id]
+   * @property {string} [html='This is a comment']
+   * @property {string} [status]
+   * @property {Date} [created_at]
+   * @property {Date} [pinned_at]
+   */
+  /**
+   * @typedef {Object} AddCommentReplyData
+   * @property {string} member_id
+   * @property {string} [html='This is a reply']
+   * @property {Date} [created_at]
+   * @property {string} [status]
+   */
+  /**
+   * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
+   */
 
-    /**
-     * @param {AddCommentData} data
-     * @returns {Promise<any>}
-     */
-    addComment: async (data) => {
-        return await models.Comment.add({
-            post_id: data.post_id || postId,
-            member_id: data.member_id,
-            parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>',
-            created_at: data.created_at,
-            pinned_at: data.pinned_at,
-            in_reply_to_id: data.in_reply_to_id,
-            status: data.status || 'published'
-        });
-    },
-    /**
-     * @param {AddCommentWithRepliesData}  data
-     * @returns {Promise<any>}
-     */
-    addCommentWithReplies: async (data) => {
-        const {replies, ...commentData} = data;
+  /**
+   * @param {AddCommentData} data
+   * @returns {Promise<any>}
+   */
+  addComment: async (data) => {
+    return await models.Comment.add({
+      post_id: data.post_id || postId,
+      member_id: data.member_id,
+      parent_id: data.parent_id,
+      html: data.html || '<p>This is a comment</p>',
+      created_at: data.created_at,
+      pinned_at: data.pinned_at,
+      in_reply_to_id: data.in_reply_to_id,
+      status: data.status || 'published',
+    });
+  },
+  /**
+   * @param {AddCommentWithRepliesData}  data
+   * @returns {Promise<any>}
+   */
+  addCommentWithReplies: async (data) => {
+    const { replies, ...commentData } = data;
 
-        const parent = await dbFns.addComment(commentData);
-        const createdReplies = [];
+    const parent = await dbFns.addComment(commentData);
+    const createdReplies = [];
 
-        for (const reply of replies) {
-            const createdReply = await dbFns.addComment({
-                post_id: parent.get('post_id'),
-                member_id: reply.member_id,
-                parent_id: parent.get('id'),
-                in_reply_to_id: reply.in_reply_to_id,
-                html: reply.html || '<p>This is a reply</p>',
-                status: reply.status
-            });
-            createdReplies.push(createdReply);
-        }
-
-        return {parent, replies: createdReplies};
-    },
-    /**
-     * @param {Object} data
-     * @param {string} data.comment_id
-     * @param {string} data.member_id
-     * @returns {Promise<any>}
-     */
-    addLike: async (data) => {
-        return await models.CommentLike.add({
-            comment_id: data.comment_id,
-            member_id: data.member_id,
-            score: data.score ?? 1
-        });
-    },
-    /**
-     * @param {Object} data
-     * @param {string} data.comment_id
-     * @param {string} data.member_id
-     * @returns {Promise<any>}
-     */
-    addDislike: async (data) => {
-        return await models.CommentLike.add({
-            comment_id: data.comment_id,
-            member_id: data.member_id,
-            score: -1
-        });
-    },
-    /**
-     * @param {Object} data
-     * @param {string} data.comment_id
-     * @param {string} data.member_id
-     * @returns {Promise<any>}
-     */
-    addReport: async (data) => {
-        return await models.CommentReport.add({
-            comment_id: data.comment_id,
-            member_id: data.member_id
-        });
+    for (const reply of replies) {
+      const createdReply = await dbFns.addComment({
+        post_id: parent.get('post_id'),
+        member_id: reply.member_id,
+        parent_id: parent.get('id'),
+        in_reply_to_id: reply.in_reply_to_id,
+        html: reply.html || '<p>This is a reply</p>',
+        status: reply.status,
+      });
+      createdReplies.push(createdReply);
     }
+
+    return { parent, replies: createdReplies };
+  },
+  /**
+   * @param {Object} data
+   * @param {string} data.comment_id
+   * @param {string} data.member_id
+   * @returns {Promise<any>}
+   */
+  addLike: async (data) => {
+    return await models.CommentLike.add({
+      comment_id: data.comment_id,
+      member_id: data.member_id,
+      score: data.score ?? 1,
+    });
+  },
+  /**
+   * @param {Object} data
+   * @param {string} data.comment_id
+   * @param {string} data.member_id
+   * @returns {Promise<any>}
+   */
+  addDislike: async (data) => {
+    return await models.CommentLike.add({
+      comment_id: data.comment_id,
+      member_id: data.member_id,
+      score: -1,
+    });
+  },
+  /**
+   * @param {Object} data
+   * @param {string} data.comment_id
+   * @param {string} data.member_id
+   * @returns {Promise<any>}
+   */
+  addReport: async (data) => {
+    return await models.CommentReport.add({
+      comment_id: data.comment_id,
+      member_id: data.member_id,
+    });
+  },
 };
 
 const commentMatcher = {
+  id: anyObjectId,
+  parent_id: nullable(anyObjectId),
+  created_at: anyISODateTime,
+  member: {
     id: anyObjectId,
-    parent_id: nullable(anyObjectId),
-    created_at: anyISODateTime,
-    member: {
-        id: anyObjectId,
-        uuid: anyUuid
-    },
-    count: {
-        likes: anyNumber
-    },
-    liked: anyBoolean,
-    pinned: anyBoolean
+    uuid: anyUuid,
+  },
+  count: {
+    likes: anyNumber,
+  },
+  liked: anyBoolean,
+  pinned: anyBoolean,
 };
 
 const labsCommentMatcher = {
-    ...commentMatcher,
-    in_reply_to_id: nullable(anyObjectId)
+  ...commentMatcher,
+  in_reply_to_id: nullable(anyObjectId),
 };
 
 /**
@@ -147,22 +166,22 @@ const labsCommentMatcher = {
  * @returns
  */
 function commentMatcherWithReplies(options) {
-    const defaultOptions = {replies: 0, commentMatcher};
-    options = {...defaultOptions, ...options};
+  const defaultOptions = { replies: 0, commentMatcher };
+  options = { ...defaultOptions, ...options };
 
-    return {
-        ...options.commentMatcher,
-        replies: new Array(options.replies).fill(options.commentMatcher),
-        count: {
-            likes: anyNumber,
-            replies: anyNumber,
-            direct_replies: anyNumber
-        }
-    };
+  return {
+    ...options.commentMatcher,
+    replies: new Array(options.replies).fill(options.commentMatcher),
+    count: {
+      likes: anyNumber,
+      replies: anyNumber,
+      direct_replies: anyNumber,
+    },
+  };
 }
 
 function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -173,14 +192,14 @@ function escapeRegExp(string) {
  * @returns {any} ExpectRequest
  */
 function testBasicErrorResponse(method, url, status, errors) {
-    if (!errors) {
-        errors = [{id: anyUuid}];
-    }
+  if (!errors) {
+    errors = [{ id: anyUuid }];
+  }
 
-    return membersAgent[method](url)
-        .expectStatus(status)
-        .matchHeaderSnapshot({etag: anyEtag})
-        .matchBodySnapshot({errors});
+  return membersAgent[method](url)
+    .expectStatus(status)
+    .matchHeaderSnapshot({ etag: anyEtag })
+    .matchBodySnapshot({ errors });
 }
 
 /**
@@ -190,10 +209,10 @@ function testBasicErrorResponse(method, url, status, errors) {
  * @returns {any} ExpectRequest
  */
 function testBasicEmptyResponse(method, url, status, headerMatchers = {}) {
-    return membersAgent[method](url)
-        .expectStatus(status)
-        .matchHeaderSnapshot({etag: anyEtag, ...headerMatchers})
-        .expectEmptyBody();
+  return membersAgent[method](url)
+    .expectStatus(status)
+    .matchHeaderSnapshot({ etag: anyEtag, ...headerMatchers })
+    .expectEmptyBody();
 }
 
 /**
@@ -201,15 +220,15 @@ function testBasicEmptyResponse(method, url, status, headerMatchers = {}) {
  * @param {Object} commentsMatcher
  */
 function testGetComments(url, commentsMatcher) {
-    return membersAgent
-        .get(url)
-        .expectStatus(200)
-        .matchHeaderSnapshot({
-            etag: anyEtag
-        })
-        .matchBodySnapshot({
-            comments: commentsMatcher
-        });
+  return membersAgent
+    .get(url)
+    .expectStatus(200)
+    .matchHeaderSnapshot({
+      etag: anyEtag,
+    })
+    .matchBodySnapshot({
+      comments: commentsMatcher,
+    });
 }
 
 /**
@@ -224,2436 +243,2793 @@ function testGetComments(url, commentsMatcher) {
  * @param {Object} [options.matchBodySnapshot]
  * @returns {any} ExpectRequest
  */
-function testPostComment({post_id, html, parent_id, in_reply_to_id}, {status = 201, matchHeaderSnapshot = {}, matchBodySnapshot} = {}) {
-    return membersAgent
-        .post(`/api/comments/`)
-        .body({comments: [{
-            post_id,
-            parent_id,
-            in_reply_to_id,
-            html
-        }]})
-        .expectStatus(status)
-        .matchHeaderSnapshot({
-            etag: anyEtag,
-            location: anyLocationFor('comments'),
-            'x-cache-invalidate': stringMatching(
-                parent_id
-                    ? new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
-                    : new RegExp('/api/members/comments/post/[0-9a-f]{24}/')
-
-            ),
-            ...matchHeaderSnapshot
-        })
-        .matchBodySnapshot({
-            comments: [commentMatcher],
-            ...matchBodySnapshot
-        });
+function testPostComment(
+  { post_id, html, parent_id, in_reply_to_id },
+  { status = 201, matchHeaderSnapshot = {}, matchBodySnapshot } = {},
+) {
+  return membersAgent
+    .post(`/api/comments/`)
+    .body({
+      comments: [
+        {
+          post_id,
+          parent_id,
+          in_reply_to_id,
+          html,
+        },
+      ],
+    })
+    .expectStatus(status)
+    .matchHeaderSnapshot({
+      etag: anyEtag,
+      location: anyLocationFor('comments'),
+      'x-cache-invalidate': stringMatching(
+        parent_id
+          ? new RegExp(
+              '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/',
+            )
+          : new RegExp('/api/members/comments/post/[0-9a-f]{24}/'),
+      ),
+      ...matchHeaderSnapshot,
+    })
+    .matchBodySnapshot({
+      comments: [commentMatcher],
+      ...matchBodySnapshot,
+    });
 }
 
 function assertAuthorEmailSent(email, title, extraAssertions = {}) {
-    mockManager.assert.sentEmail({
-        subject: '💬 New comment on your post: ' + title,
-        to: email,
-        ...extraAssertions
-    });
+  mockManager.assert.sentEmail({
+    subject: '💬 New comment on your post: ' + title,
+    to: email,
+    ...extraAssertions,
+  });
 }
 
 async function testCanCommentOnPost(member) {
-    await models.Member.edit({last_seen_at: null, last_commented_at: null}, {id: member.get('id')});
+  await models.Member.edit(
+    { last_seen_at: null, last_commented_at: null },
+    { id: member.get('id') },
+  );
 
-    await testPostComment({
-        post_id: postId,
-        html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>'
-    });
+  await testPostComment({
+    post_id: postId,
+    html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>',
+  });
 
-    // Check if author got an email
-    emailMockReceiver.assertSentEmailCount(1);
-    assertAuthorEmailSent(postAuthorEmail, postTitle, {
-        // Note that the <strong> tag is removed by the sanitizer
-        html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>'))
-    });
+  // Check if author got an email
+  emailMockReceiver.assertSentEmailCount(1);
+  assertAuthorEmailSent(postAuthorEmail, postTitle, {
+    // Note that the <strong> tag is removed by the sanitizer
+    html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>')),
+  });
 
-    // Wait for the dispatched events (because this happens async)
-    await DomainEvents.allSettled();
+  // Wait for the dispatched events (because this happens async)
+  await DomainEvents.allSettled();
 
-    // Check last_updated_at changed?
-    member = await models.Member.findOne({id: member.id});
-    assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after posting a comment.');
+  // Check last_updated_at changed?
+  member = await models.Member.findOne({ id: member.id });
+  assert.notEqual(
+    member.get('last_seen_at'),
+    null,
+    'The member should have a `last_seen_at` property after posting a comment.',
+  );
 
-    // Check last_commented_at changed?
-    assert.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
+  // Check last_commented_at changed?
+  assert.notEqual(
+    member.get('last_commented_at'),
+    null,
+    'The member should have a `last_commented_at` property after posting a comment.',
+  );
 }
 
 async function testCanReply(member, emailMatchers = {}) {
-    const parentComment = await dbFns.addComment({
-        member_id: fixtureManager.get('members', 2).id
-    });
+  const parentComment = await dbFns.addComment({
+    member_id: fixtureManager.get('members', 2).id,
+  });
 
-    const date = new Date(0);
-    await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
+  const date = new Date(0);
+  await models.Member.edit(
+    { last_seen_at: date, last_commented_at: date },
+    { id: member.get('id') },
+  );
 
-    await testPostComment({
-        post_id: postId,
-        parent_id: parentComment.get('id'),
-        html: 'This is a reply'
-    });
+  await testPostComment({
+    post_id: postId,
+    parent_id: parentComment.get('id'),
+    html: 'This is a reply',
+  });
 
-    emailMockReceiver.assertSentEmailCount(2);
-    assertAuthorEmailSent(postAuthorEmail, postTitle);
+  emailMockReceiver.assertSentEmailCount(2);
+  assertAuthorEmailSent(postAuthorEmail, postTitle);
 
-    mockManager.assert.sentEmail({
-        ...emailMatchers,
-        subject: '↪️ New reply to your comment on Ghost',
-        to: fixtureManager.get('members', 2).email
-    });
+  mockManager.assert.sentEmail({
+    ...emailMatchers,
+    subject: '↪️ New reply to your comment on Ghost',
+    to: fixtureManager.get('members', 2).email,
+  });
 
-    // Wait for the dispatched events (because this happens async)
-    await DomainEvents.allSettled();
+  // Wait for the dispatched events (because this happens async)
+  await DomainEvents.allSettled();
 
-    // Check last_updated_at changed?
-    member = await models.Member.findOne({id: member.id});
-    assert.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
+  // Check last_updated_at changed?
+  member = await models.Member.findOne({ id: member.id });
+  assert.notEqual(
+    member.get('last_seen_at').getTime(),
+    date.getTime(),
+    'Should update `last_seen_at` property after posting a comment.',
+  );
 
-    // Check last_commented_at changed?
-    assert.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
+  // Check last_commented_at changed?
+  assert.notEqual(
+    member.get('last_commented_at').getTime(),
+    date.getTime(),
+    'Should update `last_commented_at` property after posting a comment.',
+  );
 }
 
 async function testCannotCommentOnPost(status = 403) {
-    await membersAgent
-        .post(`/api/comments/`)
-        .body({comments: [{
-            post_id: postId,
-            html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>'
-        }]})
-        .expectStatus(status)
-        .matchHeaderSnapshot({
-            etag: anyEtag
-        })
-        .matchBodySnapshot({
-            errors: [{
-                id: anyErrorId
-            }]
-        });
+  await membersAgent
+    .post(`/api/comments/`)
+    .body({
+      comments: [
+        {
+          post_id: postId,
+          html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>',
+        },
+      ],
+    })
+    .expectStatus(status)
+    .matchHeaderSnapshot({
+      etag: anyEtag,
+    })
+    .matchBodySnapshot({
+      errors: [
+        {
+          id: anyErrorId,
+        },
+      ],
+    });
 }
 
 async function testCannotReply(parentId, status = 403) {
-    await membersAgent
-        .post(`/api/comments/`)
-        .body({comments: [{
-            post_id: postId,
-            parent_id: parentId,
-            html: 'This is a reply'
-        }]})
-        .expectStatus(status)
-        .matchHeaderSnapshot({
-            etag: anyEtag
-        })
-        .matchBodySnapshot({
-            errors: [{
-                id: anyErrorId
-            }]
-        });
+  await membersAgent
+    .post(`/api/comments/`)
+    .body({
+      comments: [
+        {
+          post_id: postId,
+          parent_id: parentId,
+          html: 'This is a reply',
+        },
+      ],
+    })
+    .expectStatus(status)
+    .matchHeaderSnapshot({
+      etag: anyEtag,
+    })
+    .matchBodySnapshot({
+      errors: [
+        {
+          id: anyErrorId,
+        },
+      ],
+    });
 }
 
 describe('Comments API', function () {
-    let loggedInMember;
+  let loggedInMember;
 
-    beforeAll(async function () {
-        membersAgent = await agentProvider.getMembersAPIAgent();
-        membersAgent2 = membersAgent.duplicate();
+  beforeAll(async function () {
+    membersAgent = await agentProvider.getMembersAPIAgent();
+    membersAgent2 = membersAgent.duplicate();
 
-        await fixtureManager.init('posts', 'members');
+    await fixtureManager.init('posts', 'members');
 
-        postId = fixtureManager.get('posts', 0).id;
-        postTitle = fixtureManager.get('posts', 0).title;
-        postAuthorEmail = fixtureManager.get('users', 0).email;
+    postId = fixtureManager.get('posts', 0).id;
+    postTitle = fixtureManager.get('posts', 0).title;
+    postAuthorEmail = fixtureManager.get('users', 0).email;
+  });
+
+  beforeEach(async function () {
+    emailMockReceiver = mockManager.mockMail();
+
+    // ensure we don't have data dependencies across tests
+    await dbUtils.truncate('comments');
+    await dbUtils.truncate('comment_likes');
+    await dbUtils.truncate('comment_reports');
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
+    mockManager.restore();
+  });
+
+  describe('when commenting enabled for all', function () {
+    describe('when not authenticated', function () {
+      beforeEach(function () {
+        const getStub = sinon.stub(settingsCache, 'get');
+        getStub.callsFake((key, options) => {
+          if (key === 'comments_enabled') {
+            return 'all';
+          }
+          return getStub.wrappedMethod.call(settingsCache, key, options);
+        });
+      });
+
+      afterEach(async function () {
+        sinon.restore();
+      });
+
+      async function setupBrowseCommentsData() {
+        await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: [
+            {
+              member_id: fixtureManager.get('members', 1).id,
+            },
+          ],
+        });
+      }
+
+      it('Can browse all comments of a post (legacy)', async function () {
+        await setupBrowseCommentsData();
+        await testGetComments(`/api/comments/?filter=post_id:'${postId}'`, [
+          commentMatcherWithReplies({ replies: 1 }),
+        ]);
+      });
+
+      it('Can browse all comments of a post', async function () {
+        await setupBrowseCommentsData();
+        await testGetComments(`/api/comments/post/${postId}/`, [
+          commentMatcherWithReplies({ replies: 1 }),
+        ]);
+      });
+
+      it('excludes hidden comments', async function () {
+        const hiddenComment = await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 2).id,
+          html: 'This is a hidden comment',
+          status: 'hidden',
+        });
+
+        const data2 = await membersAgent.get(`/api/comments/post/${postId}/`).expectStatus(200);
+
+        // check that hiddenComment.id is not in the response
+        assert(!data2.body.comments.some((c) => c.id === hiddenComment.id));
+        assert.equal(data2.body.comments.length, 0);
+      });
+
+      it('excludes deleted comments', async function () {
+        await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 2).id,
+          html: 'This is a deleted comment',
+          status: 'deleted',
+        });
+
+        const data2 = await membersAgent.get(`/api/comments/post/${postId}/`).expectStatus(200);
+
+        // go through all comments and check if the deleted comment is not there
+        data2.body.comments.forEach((comment) => {
+          assert.notEqual(comment.html, 'This is a deleted comment');
+        });
+
+        assert.equal(data2.body.comments.length, 0);
+      });
+
+      it('shows hidden and deleted comment where there is a reply', async function () {
+        await setupBrowseCommentsData();
+        const hiddenComment = await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 2).id,
+          html: 'This is a hidden comment',
+          status: 'hidden',
+        });
+
+        const deletedComment = await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 2).id,
+          html: 'This is a deleted comment',
+          status: 'deleted',
+        });
+
+        await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 2).id,
+          parent_id: hiddenComment.get('id'),
+          html: 'This is a reply to a hidden comment',
+        });
+
+        await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 2).id,
+          parent_id: deletedComment.get('id'),
+          html: 'This is a reply to a deleted comment',
+        });
+
+        const data2 = await membersAgent.get(`/api/comments/post/${postId}`).expectStatus(200);
+
+        // check if hidden and deleted comments have their html removed
+        data2.body.comments.forEach((comment) => {
+          assert.notEqual(comment.html, 'This is a hidden comment');
+          assert.notEqual(comment.html, 'This is a deleted comment');
+        });
+
+        // check if hiddenComment.id and deletedComment.id are in the response
+        assert(data2.body.comments.map((c) => c.id).includes(hiddenComment.id));
+        assert(data2.body.comments.map((c) => c.id).includes(deletedComment.id));
+
+        // check if the replies to hidden and deleted comments are in the response
+        data2.body.comments.forEach((comment) => {
+          if (comment.id === hiddenComment.id) {
+            assert.equal(comment.replies.length, 1);
+            assert.equal(comment.replies[0].html, 'This is a reply to a hidden comment');
+          } else if (comment.id === deletedComment.id) {
+            assert.equal(comment.replies.length, 1);
+            assert.equal(comment.replies[0].html, 'This is a reply to a deleted comment');
+          }
+        });
+      });
+
+      it('Returns nothing if both parent and reply are hidden', async function () {
+        const hiddenComment = await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 0).id,
+          html: 'This is a hidden comment',
+          status: 'hidden',
+        });
+
+        await dbFns.addComment({
+          post_id: postId,
+          member_id: fixtureManager.get('members', 1).id,
+          parent_id: hiddenComment.get('id'),
+          html: 'This is a reply to a hidden comment',
+          status: 'hidden',
+        });
+
+        const data2 = await membersAgent.get(`/api/comments/post/${postId}`).expectStatus(200);
+
+        assert.equal(data2.body.comments.length, 0);
+      });
+
+      it('cannot comment on a post', async function () {
+        await testCannotCommentOnPost(401);
+      });
+
+      it('cannot reply on a post', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+        });
+        await testCannotReply(comment.get('id'), 401);
+      });
+
+      it('cannot report a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        await membersAgent
+          .post(`/api/comments/${comment.get('id')}/report/`)
+          .expectStatus(401)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+          })
+          .matchBodySnapshot({
+            errors: [
+              {
+                id: anyUuid,
+              },
+            ],
+          });
+      });
+
+      it('cannot like a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 401);
+      });
+
+      it('cannot unlike a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+        await dbFns.addLike({
+          comment_id: comment.get('id'),
+          member_id: fixtureManager.get('members', 0).id,
+        });
+
+        await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 401);
+      });
+
+      it('cannot dislike a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/dislike/`, 401);
+      });
+
+      it('cannot undislike a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+        await dbFns.addDislike({
+          comment_id: comment.get('id'),
+          member_id: fixtureManager.get('members', 0).id,
+        });
+
+        await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 401);
+      });
     });
 
-    beforeEach(async function () {
-        emailMockReceiver = mockManager.mockMail();
+    describe('when authenticated', function () {
+      let getStub;
 
-        // ensure we don't have data dependencies across tests
-        await dbUtils.truncate('comments');
-        await dbUtils.truncate('comment_likes');
-        await dbUtils.truncate('comment_reports');
+      beforeAll(async function () {
+        await membersAgent.loginAs('member@example.com');
+        loggedInMember = await models.Member.findOne(
+          { email: 'member@example.com' },
+          { require: true },
+        );
+        await membersAgent2.loginAs('member2@example.com');
+      });
+
+      beforeEach(function () {
+        getStub = sinon.stub(settingsCache, 'get');
+        getStub.callsFake((key, options) => {
+          if (key === 'comments_enabled') {
+            return 'all';
+          }
+          return getStub.wrappedMethod.call(settingsCache, key, options);
+        });
+      });
+
+      afterEach(async function () {
+        sinon.restore();
+      });
+
+      it('Can comment on a post', async function () {
+        await testCanCommentOnPost(loggedInMember);
+      });
+
+      async function setupBrowseCommentsData() {
+        await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: [
+            {
+              member_id: fixtureManager.get('members', 1).id,
+            },
+          ],
+        });
+        await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+      }
+
+      it('Can browse all comments of a post (legacy)', async function () {
+        await setupBrowseCommentsData();
+        // uses explicit order to match db ordering
+        await testGetComments(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`, [
+          commentMatcherWithReplies({ replies: 1 }),
+          commentMatcher,
+        ]);
+      });
+
+      it('Can browse all comments of a post', async function () {
+        await setupBrowseCommentsData();
+        // uses explicit order to match db ordering
+        await testGetComments(`/api/comments/post/${postId}/?order=id%20ASC`, [
+          commentMatcherWithReplies({ replies: 1 }),
+          commentMatcher,
+        ]);
+      });
+
+      it('Can browse all comments of a post with default order', async function () {
+        await setupBrowseCommentsData();
+        await testGetComments(`/api/comments/post/${postId}/`, [
+          commentMatcher,
+          commentMatcherWithReplies({ replies: 1 }),
+        ]);
+      });
+
+      it('Browsing comments does not return the member unsubscribe_url', async function () {
+        await setupBrowseCommentsData();
+        const response = await testGetComments(`/api/comments/post/${postId}/`, [
+          commentMatcher,
+          commentMatcherWithReplies({ replies: 1 }),
+        ]);
+        assert.equal(response.body.comments[0].unsubscribe_url, undefined);
+      });
+
+      describe('browse by post', function () {
+        it('excludes deleted comments', async function () {
+          await dbFns.addComment({
+            member_id: fixtureManager.get('members', 2).id,
+            status: 'deleted',
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, []);
+          assert.equal(result.body.comments.length, 0);
+          assert.equal(result.body.meta.pagination.total, 0);
+        });
+
+        it('includes deleted comments if they have published replies', async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            status: 'deleted',
+            html: 'This is a deleted comment',
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'published',
+              },
+            ],
+          });
+
+          await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 1 }),
+          ]);
+        });
+
+        it('excludes deleted comments if all replies are hidden or deleted', async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            status: 'deleted',
+            html: 'This is a deleted comment',
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'deleted',
+              },
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'hidden',
+              },
+            ],
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, []);
+          assert.equal(result.body.comments.length, 0);
+          assert.equal(result.body.meta.pagination.total, 0);
+        });
+
+        it('excludes hidden comments', async function () {
+          await dbFns.addComment({
+            member_id: fixtureManager.get('members', 2).id,
+            status: 'hidden',
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, []);
+          assert.equal(result.body.comments.length, 0);
+          assert.equal(result.body.meta.pagination.total, 0);
+        });
+
+        it('includes hidden comments if they have published replies', async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            status: 'hidden',
+            html: 'This is a hidden comment',
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'published',
+              },
+            ],
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 1 }),
+          ]);
+          assert.equal(result.body.comments.length, 1);
+          assert.equal(result.body.comments[0].html, null);
+          assert.equal(result.body.comments[0].count.replies, 1);
+          assert.equal(result.body.comments[0].count.direct_replies, 1);
+          assert.equal(result.body.meta.pagination.total, 1);
+        });
+
+        it('includes hidden comments when only a nested descendant is published', async function () {
+          const root = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 0).id,
+            status: 'hidden',
+            html: 'This is a hidden comment',
+          });
+
+          const hiddenReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            status: 'hidden',
+            html: '<p>This is hidden</p>',
+          });
+
+          const publishedReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            in_reply_to_id: hiddenReply.get('id'),
+            status: 'published',
+            html: '<p>This is published</p>',
+          });
+
+          const result = await membersAgent.get(`/api/comments/post/${postId}/`).expectStatus(200);
+          const comment = result.body.comments[0];
+
+          assert.equal(result.body.comments.length, 1);
+          assert.equal(comment.id, root.get('id'));
+          assert.equal(comment.html, null);
+          assert.equal(comment.count.replies, 1);
+          assert.equal(comment.count.direct_replies, 0);
+          assert.deepEqual(
+            comment.replies.map((reply) => reply.id),
+            [hiddenReply.get('id'), publishedReply.get('id')],
+          );
+          assert.equal(comment.replies[0].html, null);
+          assert.equal(comment.replies[1].html, '<p>This is published</p>');
+          assert.equal(result.body.meta.pagination.total, 1);
+        });
+
+        it('excludes hidden comments if all replies are hidden or deleted', async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            status: 'hidden',
+            html: 'This is a hidden comment',
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'deleted',
+              },
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'hidden',
+              },
+            ],
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, []);
+          assert.equal(result.body.comments.length, 0);
+          assert.equal(result.body.meta.pagination.total, 0);
+        });
+
+        it('excludes deleted replies', async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'deleted',
+              },
+            ],
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 0 }),
+          ]);
+          assert.equal(result.body.comments[0].replies.length, 0);
+        });
+
+        it('excludes hidden replies', async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'hidden',
+              },
+            ],
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 0 }),
+          ]);
+          assert.equal(result.body.comments[0].replies.length, 0);
+        });
+
+        it('includes deleted and hidden reply tombstones when they have published descendants', async function () {
+          const root = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 0).id,
+          });
+
+          const hiddenReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            status: 'hidden',
+            html: '<p>This is hidden</p>',
+          });
+
+          const deletedReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            in_reply_to_id: hiddenReply.get('id'),
+            status: 'deleted',
+            html: '<p>This is deleted</p>',
+          });
+
+          const publishedReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            in_reply_to_id: deletedReply.get('id'),
+            status: 'published',
+            html: '<p>This is published</p>',
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 3, commentMatcher: labsCommentMatcher }),
+          ]);
+          const replies = result.body.comments[0].replies;
+
+          assert.deepEqual(
+            replies.map((reply) => reply.id),
+            [hiddenReply.get('id'), deletedReply.get('id'), publishedReply.get('id')],
+          );
+          assert.equal(replies[0].html, null);
+          assert.equal(replies[1].html, null);
+          assert.equal(replies[2].html, '<p>This is published</p>');
+          assert.equal(replies[2].in_reply_to_id, deletedReply.get('id'));
+        });
+
+        it('excludes deleted and hidden reply tombstones when they have no published descendants', async function () {
+          const root = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 0).id,
+          });
+
+          const hiddenReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            status: 'hidden',
+          });
+
+          await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            in_reply_to_id: hiddenReply.get('id'),
+            status: 'deleted',
+          });
+
+          const result = await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 0, commentMatcher: labsCommentMatcher }),
+          ]);
+          assert.equal(result.body.comments[0].replies.length, 0);
+        });
+
+        it("doesn't count deleted or hidden comments in replies count", async function () {
+          await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 0).id,
+            status: 'deleted',
+            html: 'This is a deleted comment',
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'published',
+              },
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'hidden',
+              },
+              {
+                member_id: fixtureManager.get('members', 1).id,
+                status: 'deleted',
+              },
+            ],
+          });
+
+          // Deleted parent returned with full data, only 1 published reply visible
+          const result = await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 1 }),
+          ]);
+          assert.equal(result.body.comments[0].replies.length, 1);
+        });
+      });
+
+      it('can show most liked comment first when order param = best followed by most recent', async function () {
+        await setupBrowseCommentsData();
+        await dbFns.addComment({
+          html: 'This is the newest comment',
+          member_id: fixtureManager.get('members', 2).id,
+          created_at: new Date('2024-08-18'),
+        });
+
+        const secondBest = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: 'This will be the second best comment',
+          created_at: new Date('2022-01-01'),
+        });
+
+        await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          created_at: new Date('2023-01-01'),
+        });
+
+        const bestComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+          html: 'This will be the best comment',
+          created_at: new Date('2021-01-01'),
+        });
+
+        const oldestComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          html: 'ancient comment',
+          created_at: new Date('2019-01-01'),
+        });
+
+        await dbFns.addLike({
+          comment_id: secondBest.id,
+          member_id: loggedInMember.id,
+        });
+
+        await dbFns.addLike({
+          comment_id: bestComment.id,
+          member_id: loggedInMember.id,
+        });
+
+        await dbFns.addLike({
+          comment_id: bestComment.id,
+          member_id: fixtureManager.get('members', 0).id,
+        });
+
+        await dbFns.addLike({
+          comment_id: bestComment.id,
+          member_id: fixtureManager.get('members', 1).id,
+        });
+
+        const data2 = await membersAgent
+          .get(
+            `/api/comments/post/${postId}/?page=1&order=count__likes%20desc%2C%20created_at%20desc`,
+          )
+          .expectStatus(200);
+
+        // get the LAST comment from data2
+        let lastComment = data2.body.comments[data2.body.comments.length - 1];
+
+        assert.equal(lastComment.id, oldestComment.id);
+      });
+
+      it('shows pinned top-level comments first regardless of requested sort order', async function () {
+        const unpinnedOlder = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Older unpinned</p>',
+          created_at: new Date('2023-01-01T00:00:00.000Z'),
+        });
+        const pinnedOlder = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Older pinned</p>',
+          created_at: new Date('2023-02-01T00:00:00.000Z'),
+          pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+        });
+        const pinnedNewer = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Newer pinned</p>',
+          created_at: new Date('2023-03-01T00:00:00.000Z'),
+          pinned_at: new Date('2025-02-01T00:00:00.000Z'),
+        });
+        const unpinnedNewer = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Newer unpinned</p>',
+          created_at: new Date('2023-04-01T00:00:00.000Z'),
+        });
+
+        const result = await membersAgent
+          .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('created_at asc')}`)
+          .expectStatus(200);
+
+        assert.deepEqual(
+          result.body.comments.map((comment) => comment.id),
+          [pinnedNewer.id, pinnedOlder.id, unpinnedOlder.id, unpinnedNewer.id],
+        );
+        assert.deepEqual(
+          result.body.comments.map((comment) => comment.pinned),
+          [true, true, false, false],
+        );
+      });
+
+      it('preserves pinned state when fields are requested', async function () {
+        const pinnedComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Pinned with fields</p>',
+          pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+        });
+
+        const result = await membersAgent
+          .get(`/api/comments/post/${postId}/?fields=id,pinned`)
+          .expectStatus(200);
+        const [comment] = result.body.comments;
+
+        assert.equal(comment.id, pinnedComment.id);
+        assert.equal(comment.pinned, true);
+        assert.equal(Object.hasOwn(comment, 'parent_id'), false);
+        assert.equal(Object.hasOwn(comment, 'status'), false);
+        assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
+      });
+
+      it('preserves pinned state when fields are requested for a single comment', async function () {
+        const pinnedComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Pinned single comment</p>',
+          pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+        });
+
+        const result = await membersAgent
+          .get(`/api/comments/${pinnedComment.id}/?fields=id,pinned`)
+          .expectStatus(200);
+        const [comment] = result.body.comments;
+
+        assert.equal(comment.id, pinnedComment.id);
+        assert.equal(comment.pinned, true);
+        assert.equal(Object.hasOwn(comment, 'parent_id'), false);
+        assert.equal(Object.hasOwn(comment, 'status'), false);
+        assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
+      });
+
+      it('does not add redacted html when fields do not request html', async function () {
+        const hiddenComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Hidden pinned comment</p>',
+          status: 'hidden',
+          pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+        });
+        const deletedComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Deleted pinned comment</p>',
+          status: 'deleted',
+          pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+        });
+        await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          parent_id: hiddenComment.id,
+          html: '<p>Visible reply</p>',
+        });
+        await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          parent_id: deletedComment.id,
+          html: '<p>Visible reply</p>',
+        });
+
+        const result = await membersAgent
+          .get(`/api/comments/post/${postId}/?fields=id,pinned`)
+          .expectStatus(200);
+        const hiddenResult = result.body.comments.find(
+          (comment) => comment.id === hiddenComment.id,
+        );
+        const deletedResult = result.body.comments.find(
+          (comment) => comment.id === deletedComment.id,
+        );
+
+        assert.equal(hiddenResult.pinned, false);
+        assert.equal(deletedResult.pinned, false);
+        assert.equal(Object.hasOwn(hiddenResult, 'html'), false);
+        assert.equal(Object.hasOwn(deletedResult, 'html'), false);
+      });
+
+      it('does not pin hidden placeholders in public ordering', async function () {
+        const visibleComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Visible comment</p>',
+          created_at: new Date('2023-01-01T00:00:00.000Z'),
+        });
+        const hiddenPinnedComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Hidden pinned comment</p>',
+          status: 'hidden',
+          created_at: new Date('2023-02-01T00:00:00.000Z'),
+          pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+        });
+        await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          parent_id: hiddenPinnedComment.id,
+          html: '<p>Visible reply</p>',
+        });
+
+        const result = await membersAgent
+          .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('created_at asc')}`)
+          .expectStatus(200);
+
+        assert.equal(result.body.comments[0].id, visibleComment.id);
+        assert.equal(result.body.comments[1].id, hiddenPinnedComment.id);
+        assert.equal(result.body.comments[1].pinned, false);
+      });
+
+      it('Can reply to your own comment', async function () {
+        // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
+        const timezone = settingsCache.get('timezone');
+        const date = moment.utc(new Date()).tz(timezone).startOf('day').toDate();
+        await models.Member.edit(
+          { last_seen_at: date, last_commented_at: date },
+          { id: loggedInMember.get('id') },
+        );
+
+        const parentComment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+
+        await testPostComment({
+          post_id: postId,
+          parent_id: parentComment.id,
+          html: 'This is a reply',
+        });
+
+        // Check only the author got an email (because we are the author of this parent comment)
+        emailMockReceiver.assertSentEmailCount(1);
+        assertAuthorEmailSent(postAuthorEmail, postTitle);
+
+        // Wait for the dispatched events (because this happens async)
+        await DomainEvents.allSettled();
+
+        // Check last updated_at is not changed?
+        loggedInMember = await models.Member.findOne({ id: loggedInMember.id });
+        assert.equal(
+          loggedInMember.get('last_seen_at').getTime(),
+          date.getTime(),
+          'The member should not update `last_seen_at` if last seen at is same day',
+        );
+
+        // Check last_commented_at changed?
+        assert.equal(
+          loggedInMember.get('last_commented_at').getTime(),
+          date.getTime(),
+          'The member should not update `last_commented_at` f last seen at is same day',
+        );
+      });
+
+      it('Can reply to a comment', async function () {
+        await testCanReply(loggedInMember);
+      });
+
+      it('Returns all replies when reading a single comment', async function () {
+        const { parent } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(5).fill({
+            member_id: fixtureManager.get('members', 1).id,
+          }),
+        });
+
+        // All 5 are direct replies (in_reply_to_id IS NULL)
+        // count.replies = 5 (all descendants)
+        // count.direct_replies = 5 (all are direct)
+        await testGetComments(`/api/comments/${parent.get('id')}/`, [
+          commentMatcherWithReplies({ replies: 5 }),
+        ]).expect(({ body }) => {
+          assert.equal(body.comments[0].count.replies, 5);
+          assert.equal(body.comments[0].count.direct_replies, 5);
+        });
+      });
+
+      it('Returns all replies for every parent when browsing multiple comments', async function () {
+        // Create two parent comments, each with 5 replies
+        const { parent: parentA } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(5).fill({
+            member_id: fixtureManager.get('members', 1).id,
+          }),
+        });
+
+        const { parent: parentB } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(5).fill({
+            member_id: fixtureManager.get('members', 1).id,
+          }),
+        });
+
+        const res = await membersAgent.get(`/api/comments/post/${postId}/`).expectStatus(200);
+
+        const commentA = res.body.comments.find((c) => c.id === parentA.get('id'));
+        const commentB = res.body.comments.find((c) => c.id === parentB.get('id'));
+
+        // Both parents should have all 5 replies loaded
+        assert.equal(
+          commentA.replies.length,
+          5,
+          `Parent A should have 5 replies, got ${commentA.replies.length}`,
+        );
+        assert.equal(
+          commentB.replies.length,
+          5,
+          `Parent B should have 5 replies, got ${commentB.replies.length}`,
+        );
+
+        // Counts should reflect the true totals
+        assert.equal(commentA.count.replies, 5);
+        assert.equal(commentB.count.replies, 5);
+      });
+
+      it('hidden replies are not included in the count', async function () {
+        const { parent } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(5).fill({
+            member_id: fixtureManager.get('members', 1).id,
+            status: 'hidden',
+          }),
+        });
+
+        const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
+
+        assert.equal(res.body.comments[0].count.replies, 0);
+        assert.equal(res.body.comments[0].count.direct_replies, 0);
+      });
+
+      it('deleted replies are not included in the count', async function () {
+        const { parent } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(5).fill({
+            member_id: fixtureManager.get('members', 1).id,
+            status: 'deleted',
+          }),
+        });
+
+        const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
+
+        assert.equal(res.body.comments[0].count.replies, 0);
+        assert.equal(res.body.comments[0].count.direct_replies, 0);
+      });
+
+      it('returns correct count.replies and count.direct_replies for threaded comments', async function () {
+        const member0 = fixtureManager.get('members', 0).id;
+        const member1 = fixtureManager.get('members', 1).id;
+
+        // Root A
+        const rootA = await dbFns.addComment({ member_id: member0, html: '<p>Root A</p>' });
+
+        // Reply B to A (direct reply — in_reply_to_id is null)
+        const replyB = await dbFns.addComment({
+          member_id: member1,
+          parent_id: rootA.get('id'),
+          html: '<p>Reply B</p>',
+        });
+
+        // Reply C to B (in_reply_to_id = B)
+        await dbFns.addComment({
+          member_id: member0,
+          parent_id: rootA.get('id'),
+          in_reply_to_id: replyB.get('id'),
+          html: '<p>Reply C to B</p>',
+        });
+
+        // Reply D to B (in_reply_to_id = B)
+        await dbFns.addComment({
+          member_id: member1,
+          parent_id: rootA.get('id'),
+          in_reply_to_id: replyB.get('id'),
+          html: '<p>Reply D to B</p>',
+        });
+
+        // Fetch root comment
+        // count.replies = 3 (B, C, D all have parent_id=A)
+        // count.direct_replies = 1 (only B is direct: parent_id=A AND in_reply_to_id IS NULL)
+        const result = await membersAgent.get(`/api/comments/${rootA.get('id')}/`);
+        assert.equal(result.body.comments[0].count.replies, 3);
+        assert.equal(result.body.comments[0].count.direct_replies, 1);
+
+        // Fetch replies — child B should have count.direct_replies = 2 (C, D have in_reply_to_id=B)
+        const repliesResult = await membersAgent.get(`/api/comments/${rootA.get('id')}/replies/`);
+        const childB = repliesResult.body.comments.find((c) => c.id === replyB.get('id'));
+        assert.equal(childB.count.direct_replies, 2);
+      });
+
+      it('count.replies and count.direct_replies exclude hidden/deleted for public', async function () {
+        const member0 = fixtureManager.get('members', 0).id;
+        const member1 = fixtureManager.get('members', 1).id;
+
+        const root = await dbFns.addComment({ member_id: member0, html: '<p>Root</p>' });
+
+        // Direct reply (visible)
+        const replyA = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          html: '<p>Reply A</p>',
+        });
+        // Direct reply (hidden — excluded from public counts)
+        await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          html: '<p>Reply B hidden</p>',
+          status: 'hidden',
+        });
+        // Reply-to-reply (visible, to replyA)
+        await dbFns.addComment({
+          member_id: member0,
+          parent_id: root.get('id'),
+          in_reply_to_id: replyA.get('id'),
+          html: '<p>Reply C to A</p>',
+        });
+        // Reply-to-reply (deleted, to replyA — excluded)
+        await dbFns.addComment({
+          member_id: member0,
+          parent_id: root.get('id'),
+          in_reply_to_id: replyA.get('id'),
+          html: '<p>Reply D deleted</p>',
+          status: 'deleted',
+        });
+
+        const result = await membersAgent.get(`/api/comments/${root.get('id')}/`);
+        // count.replies = all descendants excluding hidden/deleted: replyA + replyC = 2
+        assert.equal(result.body.comments[0].count.replies, 2);
+        // count.direct_replies = direct replies excluding hidden/deleted: only replyA
+        assert.equal(result.body.comments[0].count.direct_replies, 1);
+      });
+
+      it('count.replies and count.direct_replies exclude hidden/deleted tombstones returned for structure', async function () {
+        const member0 = fixtureManager.get('members', 0).id;
+        const member1 = fixtureManager.get('members', 1).id;
+
+        const root = await dbFns.addComment({
+          member_id: member0,
+          html: '<p>Root</p>',
+        });
+
+        const hiddenReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          status: 'hidden',
+          html: '<p>Hidden reply</p>',
+        });
+
+        const deletedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          in_reply_to_id: hiddenReply.get('id'),
+          status: 'deleted',
+          html: '<p>Deleted reply</p>',
+        });
+
+        const publishedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          in_reply_to_id: deletedReply.get('id'),
+          status: 'published',
+          html: '<p>Published reply</p>',
+        });
+
+        const result = await membersAgent.get(`/api/comments/${root.get('id')}/`);
+        const comment = result.body.comments[0];
+
+        assert.deepEqual(
+          comment.replies.map((reply) => reply.id),
+          [hiddenReply.get('id'), deletedReply.get('id'), publishedReply.get('id')],
+        );
+        assert.equal(comment.count.replies, 1);
+        assert.equal(comment.count.direct_replies, 0);
+      });
+
+      it('reply endpoint includes deleted and hidden tombstones when they have published descendants', async function () {
+        const member0 = fixtureManager.get('members', 0).id;
+        const member1 = fixtureManager.get('members', 1).id;
+
+        const root = await dbFns.addComment({
+          member_id: member0,
+          html: '<p>Root</p>',
+        });
+
+        const hiddenReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          status: 'hidden',
+          html: '<p>Hidden reply</p>',
+        });
+
+        const deletedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          in_reply_to_id: hiddenReply.get('id'),
+          status: 'deleted',
+          html: '<p>Deleted reply</p>',
+        });
+
+        const publishedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          in_reply_to_id: deletedReply.get('id'),
+          status: 'published',
+          html: '<p>Published reply</p>',
+        });
+
+        const result = await membersAgent.get(`/api/comments/${root.get('id')}/replies/`);
+        const replies = result.body.comments;
+
+        assert.deepEqual(
+          replies.map((reply) => reply.id),
+          [hiddenReply.get('id'), deletedReply.get('id'), publishedReply.get('id')],
+        );
+        assert.equal(replies[0].html, null);
+        assert.equal(replies[1].html, null);
+        assert.equal(replies[2].html, '<p>Published reply</p>');
+        assert.equal(replies[0].count.direct_replies, 0);
+        assert.equal(replies[1].count.direct_replies, 1);
+        assert.equal(result.body.meta.pagination.total, 3);
+      });
+
+      it('reply endpoint paginates tombstones before the published descendant that makes them displayable', async function () {
+        const member0 = fixtureManager.get('members', 0).id;
+        const member1 = fixtureManager.get('members', 1).id;
+
+        const root = await dbFns.addComment({
+          member_id: member0,
+          html: '<p>Root</p>',
+        });
+
+        const hiddenReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          status: 'hidden',
+          html: '<p>Hidden reply</p>',
+        });
+
+        const deletedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          in_reply_to_id: hiddenReply.get('id'),
+          status: 'deleted',
+          html: '<p>Deleted reply</p>',
+        });
+
+        const publishedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          in_reply_to_id: deletedReply.get('id'),
+          status: 'published',
+          html: '<p>Published reply</p>',
+        });
+
+        const firstPage = await membersAgent.get(
+          `/api/comments/${root.get('id')}/replies/?limit=2`,
+        );
+        assert.deepEqual(
+          firstPage.body.comments.map((reply) => reply.id),
+          [hiddenReply.get('id'), deletedReply.get('id')],
+        );
+        assert.equal(firstPage.body.comments[0].html, null);
+        assert.equal(firstPage.body.comments[1].html, null);
+        assert.equal(firstPage.body.meta.pagination.total, 3);
+        assert.equal(firstPage.body.meta.pagination.next, 2);
+
+        const secondPage = await membersAgent.get(
+          `/api/comments/${root.get('id')}/replies/?limit=2&page=2`,
+        );
+        assert.deepEqual(
+          secondPage.body.comments.map((reply) => reply.id),
+          [publishedReply.get('id')],
+        );
+        assert.equal(secondPage.body.comments[0].html, '<p>Published reply</p>');
+        assert.equal(secondPage.body.meta.pagination.total, 3);
+        assert.equal(secondPage.body.meta.pagination.next, null);
+      });
+
+      it('reply endpoint excludes deleted and hidden leaf replies while keeping published siblings', async function () {
+        const member0 = fixtureManager.get('members', 0).id;
+        const member1 = fixtureManager.get('members', 1).id;
+
+        const root = await dbFns.addComment({
+          member_id: member0,
+          html: '<p>Root</p>',
+        });
+
+        await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          status: 'hidden',
+          html: '<p>Hidden reply</p>',
+        });
+
+        await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          status: 'deleted',
+          html: '<p>Deleted reply</p>',
+        });
+
+        const publishedReply = await dbFns.addComment({
+          member_id: member1,
+          parent_id: root.get('id'),
+          status: 'published',
+          html: '<p>Published reply</p>',
+        });
+
+        const result = await membersAgent.get(`/api/comments/${root.get('id')}/replies/`);
+        const replies = result.body.comments;
+
+        assert.deepEqual(
+          replies.map((reply) => reply.id),
+          [publishedReply.get('id')],
+        );
+        assert.equal(replies[0].html, '<p>Published reply</p>');
+        assert.equal(result.body.meta.pagination.total, 1);
+      });
+
+      it('Can reply to a comment with www domain', async function () {
+        // Test that the www. is stripped from the default
+        configUtils.set('url', 'http://www.domain.example/');
+        await testCanReply(loggedInMember, { from: '"Ghost" <noreply@domain.example>' });
+      });
+
+      it('Can reply to a comment with custom support email', async function () {
+        // Test that the www. is stripped from the default
+        getStub.callsFake((key, options) => {
+          if (key === 'members_support_address') {
+            return 'support@example.com';
+          }
+          if (key === 'comments_enabled') {
+            return 'all';
+          }
+          return getStub.wrappedMethod.call(settingsCache, key, options);
+        });
+        await testCanReply(loggedInMember, { from: '"Ghost" <support@example.com>' });
+      });
+
+      it('Can like a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        // Like the comment
+        await membersAgent
+          .post(`/api/comments/${comment.get('id')}/like/`)
+          .expectStatus(204)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+            'x-cache-invalidate': stringMatching(
+              new RegExp(
+                '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$',
+              ),
+            ),
+          })
+          .expectEmptyBody();
+
+        // Check liked
+        await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher]).expect(
+          ({ body }) => {
+            assert.equal(body.comments[0].liked, true);
+            assert.equal(body.comments[0].count.likes, 1);
+          },
+        );
+      });
+
+      it('Can dislike a comment without exposing public dislike counts', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        await membersAgent
+          .post(`/api/comments/${comment.get('id')}/dislike/`)
+          .expectStatus(204)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+            'x-cache-invalidate': stringMatching(
+              new RegExp(
+                '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$',
+              ),
+            ),
+          })
+          .expectEmptyBody();
+
+        await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher]).expect(
+          ({ body }) => {
+            assert.equal(body.comments[0].disliked, true);
+            assert.equal(
+              Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'),
+              false,
+            );
+          },
+        );
+      });
+
+      it('Can remove a dislike', async function () {
+        const comment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+        await dbFns.addDislike({
+          comment_id: comment.get('id'),
+          member_id: loggedInMember.id,
+        });
+
+        await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204, {
+          'x-cache-invalidate': stringMatching(
+            new RegExp(
+              '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$',
+            ),
+          ),
+        });
+
+        await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher]).expect(
+          ({ body }) => {
+            assert.equal(body.comments[0].disliked, false);
+            assert.equal(
+              Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'),
+              false,
+            );
+          },
+        );
+      });
+
+      it('can order by net score without exposing the net score', async function () {
+        const bestComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 0).id,
+          html: '<p>Best comment</p>',
+        });
+        const likedComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          html: '<p>Liked comment</p>',
+        });
+        const dislikedComment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+          html: '<p>Disliked comment</p>',
+        });
+
+        await dbFns.addLike({
+          comment_id: bestComment.get('id'),
+          member_id: fixtureManager.get('members', 0).id,
+        });
+        await dbFns.addLike({
+          comment_id: bestComment.get('id'),
+          member_id: fixtureManager.get('members', 1).id,
+        });
+        await dbFns.addLike({
+          comment_id: likedComment.get('id'),
+          member_id: fixtureManager.get('members', 0).id,
+        });
+        await dbFns.addDislike({
+          comment_id: dislikedComment.get('id'),
+          member_id: fixtureManager.get('members', 0).id,
+        });
+
+        const { body } = await membersAgent
+          .get(
+            `/api/comments/post/${postId}/?order=${encodeURIComponent('count__net_score desc, created_at desc')}`,
+          )
+          .expectStatus(200);
+
+        assert.deepEqual(
+          body.comments.map((comment) => comment.id),
+          [bestComment.get('id'), likedComment.get('id'), dislikedComment.get('id')],
+        );
+        assert.equal(
+          Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'),
+          false,
+        );
+        assert.equal(
+          Object.prototype.hasOwnProperty.call(body.comments[0].count, 'net_score'),
+          false,
+        );
+      });
+
+      it('Cannot like a comment multiple times', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+        await dbFns.addLike({
+          comment_id: comment.get('id'),
+          member_id: loggedInMember.id,
+        });
+
+        // Comment was already liked above
+        await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 400);
+      });
+
+      it('Can like a reply', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+        const reply = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 1).id,
+          parent_id: comment.get('id'),
+        });
+
+        // Like the reply
+        await membersAgent
+          .post(`/api/comments/${reply.get('id')}/like/`)
+          .expectStatus(204)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+            'x-cache-invalidate': stringMatching(
+              new RegExp(
+                '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/',
+              ),
+            ),
+          })
+          .expectEmptyBody();
+
+        // Check liked
+        await testGetComments(`/api/comments/${reply.id}/`, [commentMatcher]).expect(({ body }) => {
+          assert.equal(body.comments[0].liked, true);
+          assert.equal(body.comments[0].count.likes, 1);
+        });
+      });
+
+      it('Can return replies', async function () {
+        const { parent, replies } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(7).fill({
+            member_id: fixtureManager.get('members', 1).id,
+          }),
+        });
+        await dbFns.addLike({
+          comment_id: replies[2].get('id'),
+          member_id: loggedInMember.id,
+        });
+
+        await testGetComments(
+          `/api/comments/${parent.get('id')}/replies/`,
+          new Array(7).fill(commentMatcher),
+        ).expect(({ body }) => {
+          assert.equal(body.comments[0].count.replies, undefined);
+          assert.equal(body.meta.pagination.total, 7);
+          assert.equal(body.meta.pagination.next, null);
+
+          // Check liked + likes working for replies too
+          assert.equal(body.comments[2].id, replies[2].get('id'));
+          assert.equal(body.comments[2].count.likes, 1);
+          assert.equal(body.comments[2].liked, true);
+        });
+      });
+
+      it('Can request last page of replies', async function () {
+        const { parent } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 0).id,
+          replies: new Array(7).fill({
+            member_id: fixtureManager.get('members', 1).id,
+          }),
+        });
+
+        await testGetComments(`/api/comments/${parent.get('id')}/replies/?page=3&limit=3`, [
+          commentMatcher,
+        ]).expect(({ body }) => {
+          assert.equal(body.comments[0].count.replies, undefined);
+          assert.equal(body.meta.pagination.total, 7);
+          assert.equal(body.meta.pagination.next, null);
+        });
+      });
+
+      it('Can remove a like (unlike)', async function () {
+        const comment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+        await dbFns.addLike({
+          comment_id: comment.get('id'),
+          member_id: loggedInMember.id,
+        });
+
+        // Unlike
+        await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204, {
+          'x-cache-invalidate': stringMatching(
+            new RegExp(
+              '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$',
+            ),
+          ),
+        });
+
+        // Check not liked
+        await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher]).expect(
+          ({ body }) => {
+            assert.equal(body.comments[0].liked, false);
+            assert.equal(body.comments[0].count.likes, 0);
+          },
+        );
+      });
+
+      it('Cannot unlike a comment if it has not been liked', async function () {
+        const comment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+
+        await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 404);
+      });
+
+      it('Can report a comment', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+          html: '<p>This is a message</p><p></p><p>New line</p>',
+        });
+
+        await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
+
+        // Check report
+        const reports = await models.CommentReport.findAll({
+          filter: "comment_id:'" + comment.get('id') + "'",
+        });
+        assert.equal(reports.models.length, 1);
+
+        const report = reports.models[0];
+        assert.equal(report.get('member_id'), loggedInMember.id);
+
+        mockManager.assert.sentEmail({
+          subject: '🚩 A comment has been reported on your post',
+          to: postAuthorEmail,
+          html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>')),
+          text: new RegExp(escapeRegExp('This is a message\n\nNew line')),
+        });
+      });
+
+      it('Cannot report a comment twice', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+        await dbFns.addReport({
+          comment_id: comment.get('id'),
+          member_id: loggedInMember.id,
+        });
+
+        await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
+
+        // Check report should be the same (no extra created)
+        const reports = await models.CommentReport.findAll({
+          filter: "comment_id:'" + comment.get('id') + "'",
+        });
+        assert.equal(reports.models.length, 1);
+
+        const report = reports.models[0];
+        assert.equal(report.get('member_id'), loggedInMember.id);
+
+        emailMockReceiver.assertSentEmailCount(0);
+      });
+
+      it('Does not expose reports count in public API', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        // Add multiple reports to this comment
+        await dbFns.addReport({
+          comment_id: comment.get('id'),
+          member_id: fixtureManager.get('members', 0).id,
+        });
+        await dbFns.addReport({
+          comment_id: comment.get('id'),
+          member_id: fixtureManager.get('members', 1).id,
+        });
+
+        // Verify the reports count is NOT included in public API response
+        const res = await membersAgent.get(`/api/comments/${comment.get('id')}/`);
+        assert.equal(res.body.comments[0].count.reports, undefined);
+        // Verify other counts are still there
+        assert.equal(res.body.comments[0].count.likes, 0);
+      });
+
+      it('Can edit a comment on a post', async function () {
+        const comment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+
+        const { body } = await membersAgent
+          .put(`/api/comments/${comment.get('id')}`)
+          .body({
+            comments: [
+              {
+                html: 'Updated comment',
+              },
+            ],
+          })
+          .expectStatus(200)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+            'x-cache-invalidate': stringMatching(
+              new RegExp(
+                '/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$',
+              ),
+            ),
+          })
+          .matchBodySnapshot({
+            comments: [
+              {
+                ...commentMatcher,
+                edited_at: anyISODateTime,
+              },
+            ],
+          });
+
+        assert(body.comments[0].edited_at, 'The edited_at field should be populated');
+      });
+
+      it('Can not edit a comment post_id', async function () {
+        const comment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+
+        const anotherPostId = fixtureManager.get('posts', 1).id;
+
+        await membersAgent.put(`/api/comments/${comment.get('id')}`).body({
+          comments: [
+            {
+              post_id: anotherPostId,
+            },
+          ],
+        });
+
+        const { body } = await membersAgent.get(`/api/comments/?filter=post_id:'${anotherPostId}'`);
+
+        assert(
+          !body.comments.find((c) => c.id === comment.get('id')),
+          'The comment should not have moved post',
+        );
+      });
+
+      it('Can not edit a comment which does not belong to you', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        await membersAgent2
+          .put(`/api/comments/${comment.get('id')}`)
+          .body({
+            comments: [
+              {
+                html: 'Illegal comment update',
+              },
+            ],
+          })
+          .expectStatus(403)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+          })
+          .matchBodySnapshot({
+            errors: [
+              {
+                type: 'NoPermissionError',
+                id: anyUuid,
+              },
+            ],
+          });
+      });
+
+      it('Can not delete a comment which does not belong to you', async function () {
+        const comment = await dbFns.addComment({
+          member_id: fixtureManager.get('members', 2).id,
+        });
+
+        // Members delete comments by setting status to 'deleted' via PUT
+        await membersAgent2
+          .put(`/api/comments/${comment.get('id')}`)
+          .body({
+            comments: [
+              {
+                status: 'deleted',
+              },
+            ],
+          })
+          .expectStatus(403)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+          })
+          .matchBodySnapshot({
+            errors: [
+              {
+                type: 'NoPermissionError',
+                id: anyUuid,
+              },
+            ],
+          });
+      });
+
+      it('Can not edit a comment as a member who is not you', async function () {
+        const comment = await dbFns.addComment({
+          member_id: loggedInMember.id,
+        });
+        const memberId = fixtureManager.get('members', 1).id;
+        await membersAgent.put(`/api/comments/${comment.get('id')}`).body({
+          comments: [
+            {
+              html: 'Illegal comment update',
+              member_id: memberId,
+            },
+          ],
+        });
+
+        const {
+          body: {
+            comments: [fetchedComment],
+          },
+        } = await testGetComments(`/api/comments/${comment.get('id')}`, [
+          {
+            ...commentMatcher,
+            edited_at: anyISODateTime,
+          },
+        ]);
+
+        assert(fetchedComment.member.id !== memberId);
+      });
+
+      it('Can not reply to a reply', async function () {
+        const { replies } = await dbFns.addCommentWithReplies({
+          member_id: fixtureManager.get('members', 1).id,
+          html: 'Parent',
+          replies: [
+            {
+              member_id: fixtureManager.get('members', 3).id,
+              html: 'Reply',
+            },
+          ],
+        });
+
+        await membersAgent
+          .post(`/api/comments/`)
+          .body({
+            comments: [
+              {
+                post_id: postId,
+                parent_id: replies[0].get('id'),
+                html: 'Reply to a reply!',
+              },
+            ],
+          })
+          .expectStatus(400)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+          })
+          .matchBodySnapshot({
+            errors: [
+              {
+                type: 'BadRequestError',
+                id: anyUuid,
+              },
+            ],
+          });
+      });
+
+      it('Can not edit a replies parent', async function () {
+        const parentId = (
+          await dbFns.addComment({
+            member_id: loggedInMember.id,
+            html: 'Parent',
+          })
+        ).get('id');
+
+        const newParentId = (
+          await dbFns.addComment({
+            member_id: loggedInMember.id,
+            html: 'New Parent',
+          })
+        ).get('id');
+
+        const replyId = (
+          await dbFns.addComment({
+            member_id: loggedInMember.id,
+            parent_id: parentId,
+            html: 'Reply',
+          })
+        ).get('id');
+
+        // Attempt to edit the parent
+        await membersAgent.put(`/api/comments/${replyId}/`).body({
+          comments: [
+            {
+              parent_id: newParentId,
+              html: 'Changed parent',
+            },
+          ],
+        });
+
+        const {
+          body: {
+            comments: [comment],
+          },
+        } = await membersAgent.get(`api/comments/${newParentId}`);
+
+        assert(comment.replies.length === 0, 'The parent comment should not have changed');
+      });
+
+      it('Can fetch counts', async function () {
+        const ids = [
+          fixtureManager.get('posts', 0).id,
+          fixtureManager.get('posts', 1).id,
+          fixtureManager.get('posts', 2).id,
+        ];
+
+        for (const i of ids.keys()) {
+          // add i+1 comments so we have a different count for each post
+          for (let j = 0; j < i + 1; j++) {
+            await dbFns.addComment({
+              post_id: ids[i],
+              member_id: loggedInMember.id,
+            });
+          }
+        }
+
+        await membersAgent
+          .get(`api/comments/counts/?ids=${ids.join(',')}`)
+          .expectStatus(200)
+          .matchHeaderSnapshot({
+            etag: anyEtag,
+          })
+          .matchBodySnapshot();
+      });
+
+      it('Can delete a comment, and it is redacted from', async function () {
+        const commentToDeleteId = (
+          await dbFns.addComment({
+            member_id: loggedInMember.id,
+            html: 'Comment to delete',
+          })
+        ).get('id');
+
+        const {
+          body: {
+            comments: [deletedComment],
+          },
+        } = await membersAgent.put(`/api/comments/${commentToDeleteId}`).body({
+          comments: [
+            {
+              status: 'deleted',
+            },
+          ],
+        });
+
+        assert(!deletedComment.html);
+      });
+
+      it('Clears pinned state when a member deletes their pinned comment', async function () {
+        const commentToDeleteId = (
+          await dbFns.addComment({
+            member_id: loggedInMember.id,
+            html: 'Pinned comment to delete',
+            pinned_at: new Date('2025-01-01T00:00:00.000Z'),
+          })
+        ).get('id');
+
+        await membersAgent
+          .put(`/api/comments/${commentToDeleteId}`)
+          .body({
+            comments: [
+              {
+                status: 'deleted',
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        const deletedComment = await models.Comment.findOne({ id: commentToDeleteId });
+        assert.equal(deletedComment.get('status'), 'deleted');
+        assert.equal(deletedComment.get('pinned_at'), null);
+      });
+
+      describe('replies to replies', function () {
+        it('can browse comments with replies to replies', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+                html: '<p>This is what was replied to</p>',
+              },
+            ],
+          });
+
+          await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: reply.get('parent_id'),
+            in_reply_to_id: reply.get('id'),
+            html: '<p>This is a reply to a reply</p>',
+          });
+
+          await testGetComments(`/api/comments/post/${postId}/`, [
+            commentMatcherWithReplies({ replies: 2, commentMatcher: labsCommentMatcher }),
+          ]);
+        });
+
+        it('can set in_reply_to_id when creating a reply', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+              },
+            ],
+          });
+
+          const {
+            body: {
+              comments: [newComment],
+            },
+          } = await testPostComment(
+            {
+              post_id: postId,
+              parent_id: reply.get('parent_id'),
+              in_reply_to_id: reply.get('id'),
+              html: '<p>This is a reply to a reply</p>',
+            },
+            {
+              matchBodySnapshot: {
+                comments: [labsCommentMatcher],
+              },
+            },
+          );
+
+          // in_reply_to is set
+          assert.equal(newComment.in_reply_to_id, reply.get('id'));
+          assert.equal(newComment.in_reply_to_snippet, 'This is a reply');
+
+          // replied-to comment author is notified
+          // parent comment author is notified
+          emailMockReceiver.assertSentEmailCount(3);
+          assertAuthorEmailSent(postAuthorEmail, postTitle);
+          mockManager.assert.sentEmail({
+            subject: '↪️ New reply to your comment on Ghost',
+            to: fixtureManager.get('members', 1).email,
+          });
+          mockManager.assert.sentEmail({
+            subject: '↪️ New reply to your comment on Ghost',
+            to: fixtureManager.get('members', 2).email,
+          });
+        });
+
+        it('cannot set in_reply_to_id to a deleted comment', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+                status: 'deleted',
+              },
+            ],
+          });
+
+          const {
+            body: {
+              comments: [newComment],
+            },
+          } = await testPostComment({
+            post_id: postId,
+            parent_id: reply.get('parent_id'),
+            in_reply_to_id: reply.get('id'),
+            html: '<p>This is a reply to a reply</p>',
+          });
+
+          // in_reply_to is not set
+          assert.equal(newComment.in_reply_to_id, null);
+          assert.equal(newComment.in_reply_to_snippet, null);
+
+          // only author and parent email sent
+          emailMockReceiver.assertSentEmailCount(2);
+        });
+
+        it('can set in_reply_to_id to a hidden comment with a redacted snippet', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+                status: 'hidden',
+              },
+            ],
+          });
+
+          const {
+            body: {
+              comments: [newComment],
+            },
+          } = await membersAgent
+            .post(`/api/comments/`)
+            .body({
+              comments: [
+                {
+                  post_id: postId,
+                  parent_id: reply.get('parent_id'),
+                  in_reply_to_id: reply.get('id'),
+                  html: '<p>This is a reply to a reply</p>',
+                },
+              ],
+            })
+            .expectStatus(201);
+
+          assert.equal(newComment.in_reply_to_id, reply.get('id'));
+          assert.equal(newComment.in_reply_to_snippet, '[removed]');
+
+          // only author and parent email sent
+          emailMockReceiver.assertSentEmailCount(2);
+        });
+
+        it('in_reply_to_id is ignored when no parent specified', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+              },
+            ],
+          });
+
+          const {
+            body: {
+              comments: [newComment],
+            },
+          } = await testPostComment({
+            post_id: postId,
+            in_reply_to_id: reply.get('id'),
+            html: '<p>This is a reply to a reply</p>',
+          });
+
+          // in_reply_to is not set
+          assert.equal(newComment.in_reply_to_id, null);
+          assert.equal(newComment.in_reply_to_snippet, null);
+
+          assert.equal(newComment.parent_id, null);
+
+          // only author email sent
+          emailMockReceiver.assertSentEmailCount(1);
+        });
+
+        it('in_reply_to_id is ignored id in_reply_to_id has a different parent', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+              },
+            ],
+          });
+
+          const diffParentComment = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+          });
+
+          const {
+            body: {
+              comments: [newComment],
+            },
+          } = await testPostComment(
+            {
+              post_id: postId,
+              parent_id: diffParentComment.get('id'),
+              in_reply_to_id: reply.get('id'),
+              html: '<p>This is a reply to a reply</p>',
+            },
+            {
+              matchBodySnapshot: {
+                comments: [labsCommentMatcher],
+              },
+            },
+          );
+
+          // in_reply_to is not set
+          assert.equal(newComment.in_reply_to_id, null);
+          assert.equal(newComment.in_reply_to_snippet, null);
+        });
+
+        it('includes in_reply_to_snippet in response', async function () {
+          const {
+            replies: [reply],
+          } = await dbFns.addCommentWithReplies({
+            member_id: fixtureManager.get('members', 1).id,
+            replies: [
+              {
+                member_id: fixtureManager.get('members', 2).id,
+                html: '<p><b>This is what was replied to</b></p>',
+              },
+            ],
+          });
+
+          const {
+            body: {
+              comments: [newComment],
+            },
+          } = await testPostComment(
+            {
+              post_id: postId,
+              parent_id: reply.get('parent_id'),
+              in_reply_to_id: reply.get('id'),
+              html: '<p>This is a reply to a reply</p>',
+            },
+            {
+              matchBodySnapshot: {
+                comments: [labsCommentMatcher],
+              },
+            },
+          );
+
+          const {
+            body: {
+              comments: [comment],
+            },
+          } = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
+
+          // in_reply_to_snippet is included
+          assert.equal(comment.in_reply_to_snippet, 'This is what was replied to');
+        });
+
+        ['deleted', 'hidden'].forEach((status) => {
+          it(`has redacted in_reply_to_snippet when referenced comment is ${status}`, async function () {
+            const {
+              replies: [reply],
+            } = await dbFns.addCommentWithReplies({
+              member_id: fixtureManager.get('members', 1).id,
+              replies: [
+                {
+                  member_id: fixtureManager.get('members', 2).id,
+                  html: `<p>This is a ${status} reply</p>`,
+                  status,
+                },
+              ],
+            });
+
+            const newComment = await dbFns.addComment({
+              member_id: loggedInMember.id,
+              parent_id: reply.get('parent_id'),
+              in_reply_to_id: reply.get('id'),
+            });
+
+            const {
+              body: {
+                comments: [comment],
+              },
+            } = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
+
+            assert.equal(comment.in_reply_to_snippet, '[removed]');
+          });
+        });
+      });
+    });
+  });
+
+  describe('When authenticated as post author', function () {
+    beforeAll(async function () {
+      await membersAgent.loginAs(postAuthorEmail);
+    });
+
+    beforeEach(function () {
+      const getStub = sinon.stub(settingsCache, 'get');
+      getStub.callsFake((key, options) => {
+        if (key === 'comments_enabled') {
+          return 'all';
+        }
+        return getStub.wrappedMethod.call(settingsCache, key, options);
+      });
+    });
+
+    it('does NOT notify post author when they comment on their own post', async function () {
+      await testPostComment({
+        post_id: postId,
+        html: 'This is a comment',
+      });
+
+      // Post author should NOT receive a notification for their own comment
+      emailMockReceiver.assertSentEmailCount(0);
+    });
+
+    it('does NOT notify post author when they reply to a comment on their own post', async function () {
+      // Create a parent comment from another member
+      const parentComment = await dbFns.addComment({
+        member_id: fixtureManager.get('members', 1).id,
+      });
+
+      // Post author replies
+      await testPostComment({
+        post_id: postId,
+        parent_id: parentComment.get('id'),
+        html: 'Reply from post author',
+      });
+
+      // Post author should NOT receive a notification for their own reply
+      emailMockReceiver.assertSentEmailCount(1); // Only the parent comment author is notified
+      mockManager.assert.sentEmail({
+        subject: '↪️ New reply to your comment on Ghost',
+        to: fixtureManager.get('members', 1).email,
+      });
+    });
+  });
+
+  describe('when commenting disabled', function () {
+    beforeEach(async function () {
+      await membersAgent.loginAs('member@example.com');
+      const getStub = sinon.stub(settingsCache, 'get');
+      getStub.callsFake((key, options) => {
+        if (key === 'comments_enabled') {
+          return 'off';
+        }
+        return getStub.wrappedMethod.call(settingsCache, key, options);
+      });
     });
 
     afterEach(async function () {
-        await configUtils.restore();
-        mockManager.restore();
+      sinon.restore();
     });
 
-    describe('when commenting enabled for all', function () {
-        describe('when not authenticated', function () {
-            beforeEach(function () {
-                const getStub = sinon.stub(settingsCache, 'get');
-                getStub.callsFake((key, options) => {
-                    if (key === 'comments_enabled') {
-                        return 'all';
-                    }
-                    return getStub.wrappedMethod.call(settingsCache, key, options);
-                });
-            });
-
-            afterEach(async function () {
-                sinon.restore();
-            });
-
-            async function setupBrowseCommentsData() {
-                await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: [{
-                        member_id: fixtureManager.get('members', 1).id
-                    }]
-                });
-            }
-
-            it('Can browse all comments of a post (legacy)', async function () {
-                await setupBrowseCommentsData();
-                await testGetComments(`/api/comments/?filter=post_id:'${postId}'`, [
-                    commentMatcherWithReplies({replies: 1})
-                ]);
-            });
-
-            it('Can browse all comments of a post', async function () {
-                await setupBrowseCommentsData();
-                await testGetComments(`/api/comments/post/${postId}/`, [
-                    commentMatcherWithReplies({replies: 1})
-                ]);
-            });
-
-            it('excludes hidden comments', async function () {
-                const hiddenComment = await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: 'This is a hidden comment',
-                    status: 'hidden'
-                });
-
-                const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200);
-
-                // check that hiddenComment.id is not in the response
-                assert(!data2.body.comments.some(c => c.id === hiddenComment.id));
-                assert.equal(data2.body.comments.length, 0);
-            });
-
-            it('excludes deleted comments', async function () {
-                await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: 'This is a deleted comment',
-                    status: 'deleted'
-                });
-
-                const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200);
-
-                // go through all comments and check if the deleted comment is not there
-                data2.body.comments.forEach((comment) => {
-                    assert.notEqual(comment.html, 'This is a deleted comment');
-                });
-
-                assert.equal(data2.body.comments.length, 0);
-            });
-
-            it('shows hidden and deleted comment where there is a reply', async function () {
-                await setupBrowseCommentsData();
-                const hiddenComment = await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: 'This is a hidden comment',
-                    status: 'hidden'
-                });
-
-                const deletedComment = await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: 'This is a deleted comment',
-                    status: 'deleted'
-                });
-
-                await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 2).id,
-                    parent_id: hiddenComment.get('id'),
-                    html: 'This is a reply to a hidden comment'
-                });
-
-                await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 2).id,
-                    parent_id: deletedComment.get('id'),
-                    html: 'This is a reply to a deleted comment'
-                });
-
-                const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}`)
-                    .expectStatus(200);
-
-                // check if hidden and deleted comments have their html removed
-                data2.body.comments.forEach((comment) => {
-                    assert.notEqual(comment.html, 'This is a hidden comment');
-                    assert.notEqual(comment.html, 'This is a deleted comment');
-                });
-
-                // check if hiddenComment.id and deletedComment.id are in the response
-                assert(data2.body.comments.map(c => c.id).includes(hiddenComment.id));
-                assert(data2.body.comments.map(c => c.id).includes(deletedComment.id));
-
-                // check if the replies to hidden and deleted comments are in the response
-                data2.body.comments.forEach((comment) => {
-                    if (comment.id === hiddenComment.id) {
-                        assert.equal(comment.replies.length, 1);
-                        assert.equal(comment.replies[0].html, 'This is a reply to a hidden comment');
-                    } else if (comment.id === deletedComment.id) {
-                        assert.equal(comment.replies.length, 1);
-                        assert.equal(comment.replies[0].html, 'This is a reply to a deleted comment');
-                    }
-                });
-            });
-
-            it('Returns nothing if both parent and reply are hidden', async function () {
-                const hiddenComment = await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: 'This is a hidden comment',
-                    status: 'hidden'
-                });
-
-                await dbFns.addComment({
-                    post_id: postId,
-                    member_id: fixtureManager.get('members', 1).id,
-                    parent_id: hiddenComment.get('id'),
-                    html: 'This is a reply to a hidden comment',
-                    status: 'hidden'
-                });
-
-                const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}`)
-                    .expectStatus(200);
-
-                assert.equal(data2.body.comments.length, 0);
-            });
-
-            it('cannot comment on a post', async function () {
-                await testCannotCommentOnPost(401);
-            });
-
-            it('cannot reply on a post', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id
-                });
-                await testCannotReply(comment.get('id'), 401);
-            });
-
-            it('cannot report a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/report/`)
-                    .expectStatus(401)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
-            });
-
-            it('cannot like a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 401);
-            });
-
-            it('cannot unlike a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-                await dbFns.addLike({
-                    comment_id: comment.get('id'),
-                    member_id: fixtureManager.get('members', 0).id
-                });
-
-                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 401);
-            });
-
-            it('cannot dislike a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/dislike/`, 401);
-            });
-
-            it('cannot undislike a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-                await dbFns.addDislike({
-                    comment_id: comment.get('id'),
-                    member_id: fixtureManager.get('members', 0).id
-                });
-
-                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 401);
-            });
-        });
-
-        describe('when authenticated', function () {
-            let getStub;
-
-            beforeAll(async function () {
-                await membersAgent.loginAs('member@example.com');
-                loggedInMember = await models.Member.findOne({email: 'member@example.com'}, {require: true});
-                await membersAgent2.loginAs('member2@example.com');
-            });
-
-            beforeEach(function () {
-                getStub = sinon.stub(settingsCache, 'get');
-                getStub.callsFake((key, options) => {
-                    if (key === 'comments_enabled') {
-                        return 'all';
-                    }
-                    return getStub.wrappedMethod.call(settingsCache, key, options);
-                });
-            });
-
-            afterEach(async function () {
-                sinon.restore();
-            });
-
-            it('Can comment on a post', async function () {
-                await testCanCommentOnPost(loggedInMember);
-            });
-
-            async function setupBrowseCommentsData() {
-                await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: [{
-                        member_id: fixtureManager.get('members', 1).id
-                    }]
-                });
-                await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-            }
-
-            it('Can browse all comments of a post (legacy)', async function () {
-                await setupBrowseCommentsData();
-                // uses explicit order to match db ordering
-                await testGetComments(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`, [
-                    commentMatcherWithReplies({replies: 1}),
-                    commentMatcher
-                ]);
-            });
-
-            it('Can browse all comments of a post', async function () {
-                await setupBrowseCommentsData();
-                // uses explicit order to match db ordering
-                await testGetComments(`/api/comments/post/${postId}/?order=id%20ASC`, [
-                    commentMatcherWithReplies({replies: 1}),
-                    commentMatcher
-                ]);
-            });
-
-            it('Can browse all comments of a post with default order', async function () {
-                await setupBrowseCommentsData();
-                await testGetComments(`/api/comments/post/${postId}/`, [
-                    commentMatcher,
-                    commentMatcherWithReplies({replies: 1})
-                ]);
-            });
-
-            it('Browsing comments does not return the member unsubscribe_url', async function () {
-                await setupBrowseCommentsData();
-                const response = await testGetComments(`/api/comments/post/${postId}/`, [
-                    commentMatcher,
-                    commentMatcherWithReplies({replies: 1})
-                ]);
-                assert.equal(response.body.comments[0].unsubscribe_url, undefined);
-            });
-
-            describe('browse by post', function () {
-                it('excludes deleted comments', async function () {
-                    await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 2).id,
-                        status: 'deleted'
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    assert.equal(result.body.comments.length, 0);
-                    assert.equal(result.body.meta.pagination.total, 0);
-                });
-
-                it('includes deleted comments if they have published replies', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        status: 'deleted',
-                        html: 'This is a deleted comment',
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'published'
-                        }]
-                    });
-
-                    await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                });
-
-                it('excludes deleted comments if all replies are hidden or deleted', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        status: 'deleted',
-                        html: 'This is a deleted comment',
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'deleted'
-                        }, {
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'hidden'
-                        }]
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    assert.equal(result.body.comments.length, 0);
-                    assert.equal(result.body.meta.pagination.total, 0);
-                });
-
-                it('excludes hidden comments', async function () {
-                    await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 2).id,
-                        status: 'hidden'
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    assert.equal(result.body.comments.length, 0);
-                    assert.equal(result.body.meta.pagination.total, 0);
-                });
-
-                it('includes hidden comments if they have published replies', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        status: 'hidden',
-                        html: 'This is a hidden comment',
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'published'
-                        }]
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    assert.equal(result.body.comments.length, 1);
-                    assert.equal(result.body.comments[0].html, null);
-                    assert.equal(result.body.comments[0].count.replies, 1);
-                    assert.equal(result.body.comments[0].count.direct_replies, 1);
-                    assert.equal(result.body.meta.pagination.total, 1);
-                });
-
-                it('includes hidden comments when only a nested descendant is published', async function () {
-                    const root = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 0).id,
-                        status: 'hidden',
-                        html: 'This is a hidden comment'
-                    });
-
-                    const hiddenReply = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        status: 'hidden',
-                        html: '<p>This is hidden</p>'
-                    });
-
-                    const publishedReply = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        in_reply_to_id: hiddenReply.get('id'),
-                        status: 'published',
-                        html: '<p>This is published</p>'
-                    });
-
-                    const result = await membersAgent
-                        .get(`/api/comments/post/${postId}/`)
-                        .expectStatus(200);
-                    const comment = result.body.comments[0];
-
-                    assert.equal(result.body.comments.length, 1);
-                    assert.equal(comment.id, root.get('id'));
-                    assert.equal(comment.html, null);
-                    assert.equal(comment.count.replies, 1);
-                    assert.equal(comment.count.direct_replies, 0);
-                    assert.deepEqual(comment.replies.map(reply => reply.id), [hiddenReply.get('id'), publishedReply.get('id')]);
-                    assert.equal(comment.replies[0].html, null);
-                    assert.equal(comment.replies[1].html, '<p>This is published</p>');
-                    assert.equal(result.body.meta.pagination.total, 1);
-                });
-
-                it('excludes hidden comments if all replies are hidden or deleted', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        status: 'hidden',
-                        html: 'This is a hidden comment',
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'deleted'
-                        }, {
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'hidden'
-                        }]
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    assert.equal(result.body.comments.length, 0);
-                    assert.equal(result.body.meta.pagination.total, 0);
-                });
-
-                it('excludes deleted replies', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'deleted'
-                        }]
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0})]);
-                    assert.equal(result.body.comments[0].replies.length, 0);
-                });
-
-                it('excludes hidden replies', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'hidden'
-                        }]
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0})]);
-                    assert.equal(result.body.comments[0].replies.length, 0);
-                });
-
-                it('includes deleted and hidden reply tombstones when they have published descendants', async function () {
-                    const root = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 0).id
-                    });
-
-                    const hiddenReply = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        status: 'hidden',
-                        html: '<p>This is hidden</p>'
-                    });
-
-                    const deletedReply = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        in_reply_to_id: hiddenReply.get('id'),
-                        status: 'deleted',
-                        html: '<p>This is deleted</p>'
-                    });
-
-                    const publishedReply = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        in_reply_to_id: deletedReply.get('id'),
-                        status: 'published',
-                        html: '<p>This is published</p>'
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 3, commentMatcher: labsCommentMatcher})]);
-                    const replies = result.body.comments[0].replies;
-
-                    assert.deepEqual(replies.map(reply => reply.id), [hiddenReply.get('id'), deletedReply.get('id'), publishedReply.get('id')]);
-                    assert.equal(replies[0].html, null);
-                    assert.equal(replies[1].html, null);
-                    assert.equal(replies[2].html, '<p>This is published</p>');
-                    assert.equal(replies[2].in_reply_to_id, deletedReply.get('id'));
-                });
-
-                it('excludes deleted and hidden reply tombstones when they have no published descendants', async function () {
-                    const root = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 0).id
-                    });
-
-                    const hiddenReply = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        status: 'hidden'
-                    });
-
-                    await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: root.get('id'),
-                        in_reply_to_id: hiddenReply.get('id'),
-                        status: 'deleted'
-                    });
-
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0, commentMatcher: labsCommentMatcher})]);
-                    assert.equal(result.body.comments[0].replies.length, 0);
-                });
-
-                it('doesn\'t count deleted or hidden comments in replies count', async function () {
-                    await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 0).id,
-                        status: 'deleted',
-                        html: 'This is a deleted comment',
-                        replies: [{
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'published'
-                        }, {
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'hidden'
-                        }, {
-                            member_id: fixtureManager.get('members', 1).id,
-                            status: 'deleted'
-                        }]
-                    });
-
-                    // Deleted parent returned with full data, only 1 published reply visible
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    assert.equal(result.body.comments[0].replies.length, 1);
-                });
-            });
-
-            it('can show most liked comment first when order param = best followed by most recent', async function () {
-                await setupBrowseCommentsData();
-                await dbFns.addComment({
-                    html: 'This is the newest comment',
-                    member_id: fixtureManager.get('members', 2).id,
-                    created_at: new Date('2024-08-18')
-                });
-
-                const secondBest = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: 'This will be the second best comment',
-                    created_at: new Date('2022-01-01')
-                });
-
-                await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    created_at: new Date('2023-01-01')
-                });
-
-                const bestComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: 'This will be the best comment',
-                    created_at: new Date('2021-01-01')
-                });
-
-                const oldestComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    html: 'ancient comment',
-                    created_at: new Date('2019-01-01')
-                });
-
-                await dbFns.addLike({
-                    comment_id: secondBest.id,
-                    member_id: loggedInMember.id
-                });
-
-                await dbFns.addLike({
-                    comment_id: bestComment.id,
-                    member_id: loggedInMember.id
-                });
-
-                await dbFns.addLike({
-                    comment_id: bestComment.id,
-                    member_id: fixtureManager.get('members', 0).id
-                });
-
-                await dbFns.addLike({
-                    comment_id: bestComment.id,
-                    member_id: fixtureManager.get('members', 1).id
-                });
-
-                const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}/?page=1&order=count__likes%20desc%2C%20created_at%20desc`)
-                    .expectStatus(200);
-
-                // get the LAST comment from data2
-                let lastComment = data2.body.comments[data2.body.comments.length - 1];
-
-                assert.equal(lastComment.id, oldestComment.id);
-            });
-
-            it('shows pinned top-level comments first regardless of requested sort order', async function () {
-                const unpinnedOlder = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Older unpinned</p>',
-                    created_at: new Date('2023-01-01T00:00:00.000Z')
-                });
-                const pinnedOlder = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Older pinned</p>',
-                    created_at: new Date('2023-02-01T00:00:00.000Z'),
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                });
-                const pinnedNewer = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Newer pinned</p>',
-                    created_at: new Date('2023-03-01T00:00:00.000Z'),
-                    pinned_at: new Date('2025-02-01T00:00:00.000Z')
-                });
-                const unpinnedNewer = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Newer unpinned</p>',
-                    created_at: new Date('2023-04-01T00:00:00.000Z')
-                });
-
-                const result = await membersAgent
-                    .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('created_at asc')}`)
-                    .expectStatus(200);
-
-                assert.deepEqual(result.body.comments.map(comment => comment.id), [
-                    pinnedNewer.id,
-                    pinnedOlder.id,
-                    unpinnedOlder.id,
-                    unpinnedNewer.id
-                ]);
-                assert.deepEqual(result.body.comments.map(comment => comment.pinned), [
-                    true,
-                    true,
-                    false,
-                    false
-                ]);
-            });
-
-            it('preserves pinned state when fields are requested', async function () {
-                const pinnedComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Pinned with fields</p>',
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                });
-
-                const result = await membersAgent
-                    .get(`/api/comments/post/${postId}/?fields=id,pinned`)
-                    .expectStatus(200);
-                const [comment] = result.body.comments;
-
-                assert.equal(comment.id, pinnedComment.id);
-                assert.equal(comment.pinned, true);
-                assert.equal(Object.hasOwn(comment, 'parent_id'), false);
-                assert.equal(Object.hasOwn(comment, 'status'), false);
-                assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
-            });
-
-            it('preserves pinned state when fields are requested for a single comment', async function () {
-                const pinnedComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Pinned single comment</p>',
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                });
-
-                const result = await membersAgent
-                    .get(`/api/comments/${pinnedComment.id}/?fields=id,pinned`)
-                    .expectStatus(200);
-                const [comment] = result.body.comments;
-
-                assert.equal(comment.id, pinnedComment.id);
-                assert.equal(comment.pinned, true);
-                assert.equal(Object.hasOwn(comment, 'parent_id'), false);
-                assert.equal(Object.hasOwn(comment, 'status'), false);
-                assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
-            });
-
-            it('does not add redacted html when fields do not request html', async function () {
-                const hiddenComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Hidden pinned comment</p>',
-                    status: 'hidden',
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                });
-                const deletedComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Deleted pinned comment</p>',
-                    status: 'deleted',
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                });
-                await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    parent_id: hiddenComment.id,
-                    html: '<p>Visible reply</p>'
-                });
-                await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    parent_id: deletedComment.id,
-                    html: '<p>Visible reply</p>'
-                });
-
-                const result = await membersAgent
-                    .get(`/api/comments/post/${postId}/?fields=id,pinned`)
-                    .expectStatus(200);
-                const hiddenResult = result.body.comments.find(comment => comment.id === hiddenComment.id);
-                const deletedResult = result.body.comments.find(comment => comment.id === deletedComment.id);
-
-                assert.equal(hiddenResult.pinned, false);
-                assert.equal(deletedResult.pinned, false);
-                assert.equal(Object.hasOwn(hiddenResult, 'html'), false);
-                assert.equal(Object.hasOwn(deletedResult, 'html'), false);
-            });
-
-            it('does not pin hidden placeholders in public ordering', async function () {
-                const visibleComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Visible comment</p>',
-                    created_at: new Date('2023-01-01T00:00:00.000Z')
-                });
-                const hiddenPinnedComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Hidden pinned comment</p>',
-                    status: 'hidden',
-                    created_at: new Date('2023-02-01T00:00:00.000Z'),
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                });
-                await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    parent_id: hiddenPinnedComment.id,
-                    html: '<p>Visible reply</p>'
-                });
-
-                const result = await membersAgent
-                    .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('created_at asc')}`)
-                    .expectStatus(200);
-
-                assert.equal(result.body.comments[0].id, visibleComment.id);
-                assert.equal(result.body.comments[1].id, hiddenPinnedComment.id);
-                assert.equal(result.body.comments[1].pinned, false);
-            });
-
-            it('Can reply to your own comment', async function () {
-                // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
-                const timezone = settingsCache.get('timezone');
-                const date = moment.utc(new Date()).tz(timezone).startOf('day').toDate();
-                await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: loggedInMember.get('id')});
-
-                const parentComment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-
-                await testPostComment({
-                    post_id: postId,
-                    parent_id: parentComment.id,
-                    html: 'This is a reply'
-                });
-
-                // Check only the author got an email (because we are the author of this parent comment)
-                emailMockReceiver.assertSentEmailCount(1);
-                assertAuthorEmailSent(postAuthorEmail, postTitle);
-
-                // Wait for the dispatched events (because this happens async)
-                await DomainEvents.allSettled();
-
-                // Check last updated_at is not changed?
-                loggedInMember = await models.Member.findOne({id: loggedInMember.id});
-                assert.equal(loggedInMember.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
-
-                // Check last_commented_at changed?
-                assert.equal(loggedInMember.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
-            });
-
-            it('Can reply to a comment', async function () {
-                await testCanReply(loggedInMember);
-            });
-
-            it('Returns all replies when reading a single comment', async function () {
-                const {parent} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(5).fill({
-                        member_id: fixtureManager.get('members', 1).id
-                    })
-                });
-
-                // All 5 are direct replies (in_reply_to_id IS NULL)
-                // count.replies = 5 (all descendants)
-                // count.direct_replies = 5 (all are direct)
-                await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 5})])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].count.replies, 5);
-                        assert.equal(body.comments[0].count.direct_replies, 5);
-                    });
-            });
-
-            it('Returns all replies for every parent when browsing multiple comments', async function () {
-                // Create two parent comments, each with 5 replies
-                const {parent: parentA} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(5).fill({
-                        member_id: fixtureManager.get('members', 1).id
-                    })
-                });
-
-                const {parent: parentB} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(5).fill({
-                        member_id: fixtureManager.get('members', 1).id
-                    })
-                });
-
-                const res = await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200);
-
-                const commentA = res.body.comments.find(c => c.id === parentA.get('id'));
-                const commentB = res.body.comments.find(c => c.id === parentB.get('id'));
-
-                // Both parents should have all 5 replies loaded
-                assert.equal(commentA.replies.length, 5, `Parent A should have 5 replies, got ${commentA.replies.length}`);
-                assert.equal(commentB.replies.length, 5, `Parent B should have 5 replies, got ${commentB.replies.length}`);
-
-                // Counts should reflect the true totals
-                assert.equal(commentA.count.replies, 5);
-                assert.equal(commentB.count.replies, 5);
-            });
-
-            it('hidden replies are not included in the count', async function () {
-                const {parent} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(5).fill({
-                        member_id: fixtureManager.get('members', 1).id,
-                        status: 'hidden'
-                    })
-                });
-
-                const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
-
-                assert.equal(res.body.comments[0].count.replies, 0);
-                assert.equal(res.body.comments[0].count.direct_replies, 0);
-            });
-
-            it('deleted replies are not included in the count', async function () {
-                const {parent} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(5).fill({
-                        member_id: fixtureManager.get('members', 1).id,
-                        status: 'deleted'
-                    })
-                });
-
-                const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
-
-                assert.equal(res.body.comments[0].count.replies, 0);
-                assert.equal(res.body.comments[0].count.direct_replies, 0);
-            });
-
-            it('returns correct count.replies and count.direct_replies for threaded comments', async function () {
-                const member0 = fixtureManager.get('members', 0).id;
-                const member1 = fixtureManager.get('members', 1).id;
-
-                // Root A
-                const rootA = await dbFns.addComment({member_id: member0, html: '<p>Root A</p>'});
-
-                // Reply B to A (direct reply — in_reply_to_id is null)
-                const replyB = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: rootA.get('id'),
-                    html: '<p>Reply B</p>'
-                });
-
-                // Reply C to B (in_reply_to_id = B)
-                await dbFns.addComment({
-                    member_id: member0,
-                    parent_id: rootA.get('id'),
-                    in_reply_to_id: replyB.get('id'),
-                    html: '<p>Reply C to B</p>'
-                });
-
-                // Reply D to B (in_reply_to_id = B)
-                await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: rootA.get('id'),
-                    in_reply_to_id: replyB.get('id'),
-                    html: '<p>Reply D to B</p>'
-                });
-
-                // Fetch root comment
-                // count.replies = 3 (B, C, D all have parent_id=A)
-                // count.direct_replies = 1 (only B is direct: parent_id=A AND in_reply_to_id IS NULL)
-                const result = await membersAgent.get(`/api/comments/${rootA.get('id')}/`);
-                assert.equal(result.body.comments[0].count.replies, 3);
-                assert.equal(result.body.comments[0].count.direct_replies, 1);
-
-                // Fetch replies — child B should have count.direct_replies = 2 (C, D have in_reply_to_id=B)
-                const repliesResult = await membersAgent.get(`/api/comments/${rootA.get('id')}/replies/`);
-                const childB = repliesResult.body.comments.find(c => c.id === replyB.get('id'));
-                assert.equal(childB.count.direct_replies, 2);
-            });
-
-            it('count.replies and count.direct_replies exclude hidden/deleted for public', async function () {
-                const member0 = fixtureManager.get('members', 0).id;
-                const member1 = fixtureManager.get('members', 1).id;
-
-                const root = await dbFns.addComment({member_id: member0, html: '<p>Root</p>'});
-
-                // Direct reply (visible)
-                const replyA = await dbFns.addComment({
-                    member_id: member1, parent_id: root.get('id'), html: '<p>Reply A</p>'
-                });
-                // Direct reply (hidden — excluded from public counts)
-                await dbFns.addComment({
-                    member_id: member1, parent_id: root.get('id'), html: '<p>Reply B hidden</p>', status: 'hidden'
-                });
-                // Reply-to-reply (visible, to replyA)
-                await dbFns.addComment({
-                    member_id: member0, parent_id: root.get('id'), in_reply_to_id: replyA.get('id'), html: '<p>Reply C to A</p>'
-                });
-                // Reply-to-reply (deleted, to replyA — excluded)
-                await dbFns.addComment({
-                    member_id: member0, parent_id: root.get('id'), in_reply_to_id: replyA.get('id'), html: '<p>Reply D deleted</p>', status: 'deleted'
-                });
-
-                const result = await membersAgent.get(`/api/comments/${root.get('id')}/`);
-                // count.replies = all descendants excluding hidden/deleted: replyA + replyC = 2
-                assert.equal(result.body.comments[0].count.replies, 2);
-                // count.direct_replies = direct replies excluding hidden/deleted: only replyA
-                assert.equal(result.body.comments[0].count.direct_replies, 1);
-            });
-
-            it('count.replies and count.direct_replies exclude hidden/deleted tombstones returned for structure', async function () {
-                const member0 = fixtureManager.get('members', 0).id;
-                const member1 = fixtureManager.get('members', 1).id;
-
-                const root = await dbFns.addComment({
-                    member_id: member0,
-                    html: '<p>Root</p>'
-                });
-
-                const hiddenReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    status: 'hidden',
-                    html: '<p>Hidden reply</p>'
-                });
-
-                const deletedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    in_reply_to_id: hiddenReply.get('id'),
-                    status: 'deleted',
-                    html: '<p>Deleted reply</p>'
-                });
-
-                const publishedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    in_reply_to_id: deletedReply.get('id'),
-                    status: 'published',
-                    html: '<p>Published reply</p>'
-                });
-
-                const result = await membersAgent.get(`/api/comments/${root.get('id')}/`);
-                const comment = result.body.comments[0];
-
-                assert.deepEqual(comment.replies.map(reply => reply.id), [hiddenReply.get('id'), deletedReply.get('id'), publishedReply.get('id')]);
-                assert.equal(comment.count.replies, 1);
-                assert.equal(comment.count.direct_replies, 0);
-            });
-
-            it('reply endpoint includes deleted and hidden tombstones when they have published descendants', async function () {
-                const member0 = fixtureManager.get('members', 0).id;
-                const member1 = fixtureManager.get('members', 1).id;
-
-                const root = await dbFns.addComment({
-                    member_id: member0,
-                    html: '<p>Root</p>'
-                });
-
-                const hiddenReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    status: 'hidden',
-                    html: '<p>Hidden reply</p>'
-                });
-
-                const deletedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    in_reply_to_id: hiddenReply.get('id'),
-                    status: 'deleted',
-                    html: '<p>Deleted reply</p>'
-                });
-
-                const publishedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    in_reply_to_id: deletedReply.get('id'),
-                    status: 'published',
-                    html: '<p>Published reply</p>'
-                });
-
-                const result = await membersAgent.get(`/api/comments/${root.get('id')}/replies/`);
-                const replies = result.body.comments;
-
-                assert.deepEqual(replies.map(reply => reply.id), [hiddenReply.get('id'), deletedReply.get('id'), publishedReply.get('id')]);
-                assert.equal(replies[0].html, null);
-                assert.equal(replies[1].html, null);
-                assert.equal(replies[2].html, '<p>Published reply</p>');
-                assert.equal(replies[0].count.direct_replies, 0);
-                assert.equal(replies[1].count.direct_replies, 1);
-                assert.equal(result.body.meta.pagination.total, 3);
-            });
-
-            it('reply endpoint paginates tombstones before the published descendant that makes them displayable', async function () {
-                const member0 = fixtureManager.get('members', 0).id;
-                const member1 = fixtureManager.get('members', 1).id;
-
-                const root = await dbFns.addComment({
-                    member_id: member0,
-                    html: '<p>Root</p>'
-                });
-
-                const hiddenReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    status: 'hidden',
-                    html: '<p>Hidden reply</p>'
-                });
-
-                const deletedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    in_reply_to_id: hiddenReply.get('id'),
-                    status: 'deleted',
-                    html: '<p>Deleted reply</p>'
-                });
-
-                const publishedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    in_reply_to_id: deletedReply.get('id'),
-                    status: 'published',
-                    html: '<p>Published reply</p>'
-                });
-
-                const firstPage = await membersAgent.get(`/api/comments/${root.get('id')}/replies/?limit=2`);
-                assert.deepEqual(firstPage.body.comments.map(reply => reply.id), [hiddenReply.get('id'), deletedReply.get('id')]);
-                assert.equal(firstPage.body.comments[0].html, null);
-                assert.equal(firstPage.body.comments[1].html, null);
-                assert.equal(firstPage.body.meta.pagination.total, 3);
-                assert.equal(firstPage.body.meta.pagination.next, 2);
-
-                const secondPage = await membersAgent.get(`/api/comments/${root.get('id')}/replies/?limit=2&page=2`);
-                assert.deepEqual(secondPage.body.comments.map(reply => reply.id), [publishedReply.get('id')]);
-                assert.equal(secondPage.body.comments[0].html, '<p>Published reply</p>');
-                assert.equal(secondPage.body.meta.pagination.total, 3);
-                assert.equal(secondPage.body.meta.pagination.next, null);
-            });
-
-            it('reply endpoint excludes deleted and hidden leaf replies while keeping published siblings', async function () {
-                const member0 = fixtureManager.get('members', 0).id;
-                const member1 = fixtureManager.get('members', 1).id;
-
-                const root = await dbFns.addComment({
-                    member_id: member0,
-                    html: '<p>Root</p>'
-                });
-
-                await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    status: 'hidden',
-                    html: '<p>Hidden reply</p>'
-                });
-
-                await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    status: 'deleted',
-                    html: '<p>Deleted reply</p>'
-                });
-
-                const publishedReply = await dbFns.addComment({
-                    member_id: member1,
-                    parent_id: root.get('id'),
-                    status: 'published',
-                    html: '<p>Published reply</p>'
-                });
-
-                const result = await membersAgent.get(`/api/comments/${root.get('id')}/replies/`);
-                const replies = result.body.comments;
-
-                assert.deepEqual(replies.map(reply => reply.id), [publishedReply.get('id')]);
-                assert.equal(replies[0].html, '<p>Published reply</p>');
-                assert.equal(result.body.meta.pagination.total, 1);
-            });
-
-            it('Can reply to a comment with www domain', async function () {
-                // Test that the www. is stripped from the default
-                configUtils.set('url', 'http://www.domain.example/');
-                await testCanReply(loggedInMember, {from: '"Ghost" <noreply@domain.example>'});
-            });
-
-            it('Can reply to a comment with custom support email', async function () {
-                // Test that the www. is stripped from the default
-                getStub.callsFake((key, options) => {
-                    if (key === 'members_support_address') {
-                        return 'support@example.com';
-                    }
-                    if (key === 'comments_enabled') {
-                        return 'all';
-                    }
-                    return getStub.wrappedMethod.call(settingsCache, key, options);
-                });
-                await testCanReply(loggedInMember, {from: '"Ghost" <support@example.com>'});
-            });
-
-            it('Can like a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                // Like the comment
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/like/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag,
-                        'x-cache-invalidate': stringMatching(
-                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
-                        )
-                    })
-                    .expectEmptyBody();
-
-                // Check liked
-                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].liked, true);
-                        assert.equal(body.comments[0].count.likes, 1);
-                    });
-            });
-
-            it('Can dislike a comment without exposing public dislike counts', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/dislike/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag,
-                        'x-cache-invalidate': stringMatching(
-                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
-                        )
-                    })
-                    .expectEmptyBody();
-
-                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].disliked, true);
-                        assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'), false);
-                    });
-            });
-
-            it('Can remove a dislike', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-                await dbFns.addDislike({
-                    comment_id: comment.get('id'),
-                    member_id: loggedInMember.id
-                });
-
-                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204, {
-                    'x-cache-invalidate': stringMatching(
-                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
-                    )
-                });
-
-                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].disliked, false);
-                        assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'), false);
-                    });
-            });
-
-            it('can order by net score without exposing the net score', async function () {
-                const bestComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: '<p>Best comment</p>'
-                });
-                const likedComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    html: '<p>Liked comment</p>'
-                });
-                const dislikedComment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: '<p>Disliked comment</p>'
-                });
-
-                await dbFns.addLike({
-                    comment_id: bestComment.get('id'),
-                    member_id: fixtureManager.get('members', 0).id
-                });
-                await dbFns.addLike({
-                    comment_id: bestComment.get('id'),
-                    member_id: fixtureManager.get('members', 1).id
-                });
-                await dbFns.addLike({
-                    comment_id: likedComment.get('id'),
-                    member_id: fixtureManager.get('members', 0).id
-                });
-                await dbFns.addDislike({
-                    comment_id: dislikedComment.get('id'),
-                    member_id: fixtureManager.get('members', 0).id
-                });
-
-                const {body} = await membersAgent
-                    .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('count__net_score desc, created_at desc')}`)
-                    .expectStatus(200);
-
-                assert.deepEqual(body.comments.map(comment => comment.id), [
-                    bestComment.get('id'),
-                    likedComment.get('id'),
-                    dislikedComment.get('id')
-                ]);
-                assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'), false);
-                assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'net_score'), false);
-            });
-
-            it('Cannot like a comment multiple times', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-                await dbFns.addLike({
-                    comment_id: comment.get('id'),
-                    member_id: loggedInMember.id
-                });
-
-                // Comment was already liked above
-                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 400);
-            });
-
-            it('Can like a reply', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-                const reply = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 1).id,
-                    parent_id: comment.get('id')
-                });
-
-                // Like the reply
-                await membersAgent
-                    .post(`/api/comments/${reply.get('id')}/like/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag,
-                        'x-cache-invalidate': stringMatching(
-                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
-                        )
-                    })
-                    .expectEmptyBody();
-
-                // Check liked
-                await testGetComments(`/api/comments/${reply.id}/`, [commentMatcher])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].liked, true);
-                        assert.equal(body.comments[0].count.likes, 1);
-                    });
-            });
-
-            it('Can return replies', async function () {
-                const {parent, replies} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(7).fill({
-                        member_id: fixtureManager.get('members', 1).id
-                    })
-                });
-                await dbFns.addLike({
-                    comment_id: replies[2].get('id'),
-                    member_id: loggedInMember.id
-                });
-
-                await testGetComments(`/api/comments/${parent.get('id')}/replies/`, new Array(7).fill(commentMatcher))
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].count.replies, undefined);
-                        assert.equal(body.meta.pagination.total, 7);
-                        assert.equal(body.meta.pagination.next, null);
-
-                        // Check liked + likes working for replies too
-                        assert.equal(body.comments[2].id, replies[2].get('id'));
-                        assert.equal(body.comments[2].count.likes, 1);
-                        assert.equal(body.comments[2].liked, true);
-                    });
-            });
-
-            it('Can request last page of replies', async function () {
-                const {parent} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: new Array(7).fill({
-                        member_id: fixtureManager.get('members', 1).id
-                    })
-                });
-
-                await testGetComments(`/api/comments/${parent.get('id')}/replies/?page=3&limit=3`, [commentMatcher])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].count.replies, undefined);
-                        assert.equal(body.meta.pagination.total, 7);
-                        assert.equal(body.meta.pagination.next, null);
-                    });
-            });
-
-            it('Can remove a like (unlike)', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-                await dbFns.addLike({
-                    comment_id: comment.get('id'),
-                    member_id: loggedInMember.id
-                });
-
-                // Unlike
-                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204, {
-                    'x-cache-invalidate': stringMatching(
-                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
-                    )
-                });
-
-                // Check not liked
-                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
-                    .expect(({body}) => {
-                        assert.equal(body.comments[0].liked, false);
-                        assert.equal(body.comments[0].count.likes, 0);
-                    });
-            });
-
-            it('Cannot unlike a comment if it has not been liked', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-
-                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 404);
-            });
-
-            it('Can report a comment', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id,
-                    html: '<p>This is a message</p><p></p><p>New line</p>'
-                });
-
-                await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
-
-                // Check report
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
-                assert.equal(reports.models.length, 1);
-
-                const report = reports.models[0];
-                assert.equal(report.get('member_id'), loggedInMember.id);
-
-                mockManager.assert.sentEmail({
-                    subject: '🚩 A comment has been reported on your post',
-                    to: postAuthorEmail,
-                    html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>')),
-                    text: new RegExp(escapeRegExp('This is a message\n\nNew line'))
-                });
-            });
-
-            it('Cannot report a comment twice', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-                await dbFns.addReport({
-                    comment_id: comment.get('id'),
-                    member_id: loggedInMember.id
-                });
-
-                await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
-
-                // Check report should be the same (no extra created)
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
-                assert.equal(reports.models.length, 1);
-
-                const report = reports.models[0];
-                assert.equal(report.get('member_id'), loggedInMember.id);
-
-                emailMockReceiver.assertSentEmailCount(0);
-            });
-
-            it('Does not expose reports count in public API', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                // Add multiple reports to this comment
-                await dbFns.addReport({
-                    comment_id: comment.get('id'),
-                    member_id: fixtureManager.get('members', 0).id
-                });
-                await dbFns.addReport({
-                    comment_id: comment.get('id'),
-                    member_id: fixtureManager.get('members', 1).id
-                });
-
-                // Verify the reports count is NOT included in public API response
-                const res = await membersAgent.get(`/api/comments/${comment.get('id')}/`);
-                assert.equal(res.body.comments[0].count.reports, undefined);
-                // Verify other counts are still there
-                assert.equal(res.body.comments[0].count.likes, 0);
-            });
-
-            it('Can edit a comment on a post', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-
-                const {body} = await membersAgent
-                    .put(`/api/comments/${comment.get('id')}`)
-                    .body({comments: [{
-                        html: 'Updated comment'
-                    }]})
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag,
-                        'x-cache-invalidate': stringMatching(
-                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
-                        )
-                    })
-                    .matchBodySnapshot({
-                        comments: [{
-                            ...commentMatcher,
-                            edited_at: anyISODateTime
-                        }]
-                    });
-
-                assert(body.comments[0].edited_at, 'The edited_at field should be populated');
-            });
-
-            it('Can not edit a comment post_id', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-
-                const anotherPostId = fixtureManager.get('posts', 1).id;
-
-                await membersAgent
-                    .put(`/api/comments/${comment.get('id')}`)
-                    .body({comments: [{
-                        post_id: anotherPostId
-                    }]});
-
-                const {body} = await membersAgent
-                    .get(`/api/comments/?filter=post_id:'${anotherPostId}'`);
-
-                assert(!body.comments.find(c => c.id === comment.get('id')), 'The comment should not have moved post');
-            });
-
-            it('Can not edit a comment which does not belong to you', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                await membersAgent2
-                    .put(`/api/comments/${comment.get('id')}`)
-                    .body({comments: [{
-                        html: 'Illegal comment update'
-                    }]})
-                    .expectStatus(403)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            type: 'NoPermissionError',
-                            id: anyUuid
-                        }]
-                    });
-            });
-
-            it('Can not delete a comment which does not belong to you', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 2).id
-                });
-
-                // Members delete comments by setting status to 'deleted' via PUT
-                await membersAgent2
-                    .put(`/api/comments/${comment.get('id')}`)
-                    .body({comments: [{
-                        status: 'deleted'
-                    }]})
-                    .expectStatus(403)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            type: 'NoPermissionError',
-                            id: anyUuid
-                        }]
-                    });
-            });
-
-            it('Can not edit a comment as a member who is not you', async function () {
-                const comment = await dbFns.addComment({
-                    member_id: loggedInMember.id
-                });
-                const memberId = fixtureManager.get('members', 1).id;
-                await membersAgent
-                    .put(`/api/comments/${comment.get('id')}`)
-                    .body({comments: [{
-                        html: 'Illegal comment update',
-                        member_id: memberId
-                    }]});
-
-                const {
-                    body: {
-                        comments: [
-                            fetchedComment
-                        ]
-                    }
-                } = await testGetComments(`/api/comments/${comment.get('id')}`, [{
-                    ...commentMatcher,
-                    edited_at: anyISODateTime
-                }]);
-
-                assert(fetchedComment.member.id !== memberId);
-            });
-
-            it('Can not reply to a reply', async function () {
-                const {replies} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 1).id,
-                    html: 'Parent',
-                    replies: [{
-                        member_id: fixtureManager.get('members', 3).id,
-                        html: 'Reply'
-                    }]
-                });
-
-                await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        parent_id: replies[0].get('id'),
-                        html: 'Reply to a reply!'
-                    }]})
-                    .expectStatus(400)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            type: 'BadRequestError',
-                            id: anyUuid
-                        }]
-                    });
-            });
-
-            it('Can not edit a replies parent', async function () {
-                const parentId = (await dbFns.addComment({
-                    member_id: loggedInMember.id,
-                    html: 'Parent'
-                })).get('id');
-
-                const newParentId = (await dbFns.addComment({
-                    member_id: loggedInMember.id,
-                    html: 'New Parent'
-                })).get('id');
-
-                const replyId = (await dbFns.addComment({
-                    member_id: loggedInMember.id,
-                    parent_id: parentId,
-                    html: 'Reply'
-                })).get('id');
-
-                // Attempt to edit the parent
-                await membersAgent
-                    .put(`/api/comments/${replyId}/`)
-                    .body({comments: [{
-                        parent_id: newParentId,
-                        html: 'Changed parent'
-                    }]});
-
-                const {body: {comments: [comment]}} = await membersAgent.get(`api/comments/${newParentId}`);
-
-                assert(comment.replies.length === 0, 'The parent comment should not have changed');
-            });
-
-            it('Can fetch counts', async function () {
-                const ids = [
-                    fixtureManager.get('posts', 0).id,
-                    fixtureManager.get('posts', 1).id,
-                    fixtureManager.get('posts', 2).id
-                ];
-
-                for (const i of ids.keys()) {
-                    // add i+1 comments so we have a different count for each post
-                    for (let j = 0; j < i + 1; j++) {
-                        await dbFns.addComment({
-                            post_id: ids[i],
-                            member_id: loggedInMember.id
-                        });
-                    }
-                }
-
-                await membersAgent
-                    .get(`api/comments/counts/?ids=${ids.join(',')}`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot();
-            });
-
-            it('Can delete a comment, and it is redacted from', async function () {
-                const commentToDeleteId = (await dbFns.addComment({
-                    member_id: loggedInMember.id,
-                    html: 'Comment to delete'
-                })).get('id');
-
-                const {
-                    body: {
-                        comments: [deletedComment]
-                    }
-                } = await membersAgent
-                    .put(`/api/comments/${commentToDeleteId}`)
-                    .body({comments: [{
-                        status: 'deleted'
-                    }]});
-
-                assert(!deletedComment.html);
-            });
-
-            it('Clears pinned state when a member deletes their pinned comment', async function () {
-                const commentToDeleteId = (await dbFns.addComment({
-                    member_id: loggedInMember.id,
-                    html: 'Pinned comment to delete',
-                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
-                })).get('id');
-
-                await membersAgent
-                    .put(`/api/comments/${commentToDeleteId}`)
-                    .body({comments: [{
-                        status: 'deleted'
-                    }]})
-                    .expectStatus(200);
-
-                const deletedComment = await models.Comment.findOne({id: commentToDeleteId});
-                assert.equal(deletedComment.get('status'), 'deleted');
-                assert.equal(deletedComment.get('pinned_at'), null);
-            });
-
-            describe('replies to replies', function () {
-                it('can browse comments with replies to replies', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id,
-                            html: '<p>This is what was replied to</p>'
-                        }]
-                    });
-
-                    await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        parent_id: reply.get('parent_id'),
-                        in_reply_to_id: reply.get('id'),
-                        html: '<p>This is a reply to a reply</p>'
-                    });
-
-                    await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 2, commentMatcher: labsCommentMatcher})]);
-                });
-
-                it('can set in_reply_to_id when creating a reply', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id
-                        }]
-                    });
-
-                    const {body: {comments: [newComment]}} = await testPostComment({
-                        post_id: postId,
-                        parent_id: reply.get('parent_id'),
-                        in_reply_to_id: reply.get('id'),
-                        html: '<p>This is a reply to a reply</p>'
-                    }, {
-                        matchBodySnapshot: {
-                            comments: [labsCommentMatcher]
-                        }
-                    });
-
-                    // in_reply_to is set
-                    assert.equal(newComment.in_reply_to_id, reply.get('id'));
-                    assert.equal(newComment.in_reply_to_snippet, 'This is a reply');
-
-                    // replied-to comment author is notified
-                    // parent comment author is notified
-                    emailMockReceiver.assertSentEmailCount(3);
-                    assertAuthorEmailSent(postAuthorEmail, postTitle);
-                    mockManager.assert.sentEmail({
-                        subject: '↪️ New reply to your comment on Ghost',
-                        to: fixtureManager.get('members', 1).email
-                    });
-                    mockManager.assert.sentEmail({
-                        subject: '↪️ New reply to your comment on Ghost',
-                        to: fixtureManager.get('members', 2).email
-                    });
-                });
-
-                it('cannot set in_reply_to_id to a deleted comment', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id,
-                            status: 'deleted'
-                        }]
-                    });
-
-                    const {body: {comments: [newComment]}} = await testPostComment({
-                        post_id: postId,
-                        parent_id: reply.get('parent_id'),
-                        in_reply_to_id: reply.get('id'),
-                        html: '<p>This is a reply to a reply</p>'
-                    });
-
-                    // in_reply_to is not set
-                    assert.equal(newComment.in_reply_to_id, null);
-                    assert.equal(newComment.in_reply_to_snippet, null);
-
-                    // only author and parent email sent
-                    emailMockReceiver.assertSentEmailCount(2);
-                });
-
-                it('can set in_reply_to_id to a hidden comment with a redacted snippet', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id,
-                            status: 'hidden'
-                        }]
-                    });
-
-                    const {body: {comments: [newComment]}} = await membersAgent
-                        .post(`/api/comments/`)
-                        .body({comments: [{
-                            post_id: postId,
-                            parent_id: reply.get('parent_id'),
-                            in_reply_to_id: reply.get('id'),
-                            html: '<p>This is a reply to a reply</p>'
-                        }]})
-                        .expectStatus(201);
-
-                    assert.equal(newComment.in_reply_to_id, reply.get('id'));
-                    assert.equal(newComment.in_reply_to_snippet, '[removed]');
-
-                    // only author and parent email sent
-                    emailMockReceiver.assertSentEmailCount(2);
-                });
-
-                it('in_reply_to_id is ignored when no parent specified', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id
-                        }]
-                    });
-
-                    const {body: {comments: [newComment]}} = await testPostComment({
-                        post_id: postId,
-                        in_reply_to_id: reply.get('id'),
-                        html: '<p>This is a reply to a reply</p>'
-                    });
-
-                    // in_reply_to is not set
-                    assert.equal(newComment.in_reply_to_id, null);
-                    assert.equal(newComment.in_reply_to_snippet, null);
-
-                    assert.equal(newComment.parent_id, null);
-
-                    // only author email sent
-                    emailMockReceiver.assertSentEmailCount(1);
-                });
-
-                it('in_reply_to_id is ignored id in_reply_to_id has a different parent', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id
-                        }]
-                    });
-
-                    const diffParentComment = await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id
-                    });
-
-                    const {body: {comments: [newComment]}} = await testPostComment({
-                        post_id: postId,
-                        parent_id: diffParentComment.get('id'),
-                        in_reply_to_id: reply.get('id'),
-                        html: '<p>This is a reply to a reply</p>'
-                    }, {
-                        matchBodySnapshot: {
-                            comments: [labsCommentMatcher]
-                        }
-                    });
-
-                    // in_reply_to is not set
-                    assert.equal(newComment.in_reply_to_id, null);
-                    assert.equal(newComment.in_reply_to_snippet, null);
-                });
-
-                it('includes in_reply_to_snippet in response', async function () {
-                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                        member_id: fixtureManager.get('members', 1).id,
-                        replies: [{
-                            member_id: fixtureManager.get('members', 2).id,
-                            html: '<p><b>This is what was replied to</b></p>'
-                        }]
-                    });
-
-                    const {body: {comments: [newComment]}} = await testPostComment({
-                        post_id: postId,
-                        parent_id: reply.get('parent_id'),
-                        in_reply_to_id: reply.get('id'),
-                        html: '<p>This is a reply to a reply</p>'
-                    }, {
-                        matchBodySnapshot: {
-                            comments: [labsCommentMatcher]
-                        }
-                    });
-
-                    const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
-
-                    // in_reply_to_snippet is included
-                    assert.equal(comment.in_reply_to_snippet, 'This is what was replied to');
-                });
-
-                ['deleted', 'hidden'].forEach((status) => {
-                    it(`has redacted in_reply_to_snippet when referenced comment is ${status}`, async function () {
-                        const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                            member_id: fixtureManager.get('members', 1).id,
-                            replies: [{
-                                member_id: fixtureManager.get('members', 2).id,
-                                html: `<p>This is a ${status} reply</p>`,
-                                status
-                            }]
-                        });
-
-                        const newComment = await dbFns.addComment({
-                            member_id: loggedInMember.id,
-                            parent_id: reply.get('parent_id'),
-                            in_reply_to_id: reply.get('id')
-                        });
-
-                        const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
-
-                        assert.equal(comment.in_reply_to_snippet, '[removed]');
-                    });
-                });
-            });
-        });
+    it('Can not comment on a post', async function () {
+      await membersAgent
+        .post(`/api/comments/`)
+        .body({
+          comments: [
+            {
+              post_id: postId,
+              html: '<p>This is a <strong>message</strong></p><p>New line</p>',
+            },
+          ],
+        })
+        .expectStatus(405);
+    });
+  });
+
+  describe('when member commenting disabled', function () {
+    let adminAgent;
+    let disabledMember;
+    let existingComment;
+
+    beforeAll(async function () {
+      adminAgent = await agentProvider.getAdminAPIAgent();
+      await fixtureManager.init('posts', 'members');
+      await adminAgent.loginAsOwner();
+
+      disabledMember = await models.Member.add({
+        name: 'Disabled Member',
+        email: `disabled-commenting-${Date.now()}@example.com`,
+        email_disabled: false,
+      });
+
+      await membersAgent.loginAs(disabledMember.get('email'));
+
+      await adminAgent
+        .post(`members/${disabledMember.id}/commenting/disable`)
+        .body({ reason: 'Spam behaviour' })
+        .expectStatus(200);
     });
 
-    describe('When authenticated as post author', function () {
-        beforeAll(async function () {
-            await membersAgent.loginAs(postAuthorEmail);
-        });
+    beforeEach(async function () {
+      existingComment = await dbFns.addComment({
+        member_id: fixtureManager.get('members', 0).id,
+      });
 
-        beforeEach(function () {
-            const getStub = sinon.stub(settingsCache, 'get');
-            getStub.callsFake((key, options) => {
-                if (key === 'comments_enabled') {
-                    return 'all';
-                }
-                return getStub.wrappedMethod.call(settingsCache, key, options);
-            });
-        });
-
-        it('does NOT notify post author when they comment on their own post', async function () {
-            await testPostComment({
-                post_id: postId,
-                html: 'This is a comment'
-            });
-
-            // Post author should NOT receive a notification for their own comment
-            emailMockReceiver.assertSentEmailCount(0);
-        });
-
-        it('does NOT notify post author when they reply to a comment on their own post', async function () {
-            // Create a parent comment from another member
-            const parentComment = await dbFns.addComment({
-                member_id: fixtureManager.get('members', 1).id
-            });
-
-            // Post author replies
-            await testPostComment({
-                post_id: postId,
-                parent_id: parentComment.get('id'),
-                html: 'Reply from post author'
-            });
-
-            // Post author should NOT receive a notification for their own reply
-            emailMockReceiver.assertSentEmailCount(1); // Only the parent comment author is notified
-            mockManager.assert.sentEmail({
-                subject: '↪️ New reply to your comment on Ghost',
-                to: fixtureManager.get('members', 1).email
-            });
-        });
-    });
-
-    describe('when commenting disabled', function () {
-        beforeEach(async function () {
-            await membersAgent.loginAs('member@example.com');
-            const getStub = sinon.stub(settingsCache, 'get');
-            getStub.callsFake((key, options) => {
-                if (key === 'comments_enabled') {
-                    return 'off';
-                }
-                return getStub.wrappedMethod.call(settingsCache, key, options);
-            });
-        });
-
-        afterEach(async function () {
-            sinon.restore();
-        });
-
-        it('Can not comment on a post', async function () {
-            await membersAgent
-                .post(`/api/comments/`)
-                .body({comments: [{
-                    post_id: postId,
-                    html: '<p>This is a <strong>message</strong></p><p>New line</p>'
-                }]})
-                .expectStatus(405);
-        });
-    });
-
-    describe('when member commenting disabled', function () {
-        let adminAgent;
-        let disabledMember;
-        let existingComment;
-
-        beforeAll(async function () {
-            adminAgent = await agentProvider.getAdminAPIAgent();
-            await fixtureManager.init('posts', 'members');
-            await adminAgent.loginAsOwner();
-
-            disabledMember = await models.Member.add({
-                name: 'Disabled Member',
-                email: `disabled-commenting-${Date.now()}@example.com`,
-                email_disabled: false
-            });
-
-            await membersAgent.loginAs(disabledMember.get('email'));
-
-            await adminAgent
-                .post(`members/${disabledMember.id}/commenting/disable`)
-                .body({reason: 'Spam behaviour'})
-                .expectStatus(200);
-        });
-
-        beforeEach(async function () {
-            existingComment = await dbFns.addComment({
-                member_id: fixtureManager.get('members', 0).id
-            });
-
-            const getStub = sinon.stub(settingsCache, 'get');
-            getStub.callsFake((key, options) => {
-                if (key === 'comments_enabled') {
-                    return 'all';
-                }
-                return getStub.wrappedMethod.call(settingsCache, key, options);
-            });
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        afterAll(async function () {
-            if (disabledMember) {
-                await models.Member.destroy({id: disabledMember.id});
-            }
-        });
-
-        const readEndpoints = [
-            {desc: 'GET /api/comments/', method: 'get', url: () => '/api/comments/'},
-            {desc: 'GET /api/comments/post/:id/', method: 'get', url: () => `/api/comments/post/${postId}/`},
-            {desc: 'GET /api/comments/:id/', method: 'get', url: () => `/api/comments/${existingComment.id}/`},
-            {desc: 'GET /api/comments/:id/replies/', method: 'get', url: () => `/api/comments/${existingComment.id}/replies/`}
-        ];
-
-        readEndpoints.forEach(({desc, method, url}) => {
-            it(`${desc} is allowed`, async function () {
-                await membersAgent[method](url())
-                    .expectStatus(200);
-            });
-        });
-
-        const writeEndpoints = [
-            {desc: 'POST /api/comments/', method: 'post', url: () => '/api/comments/', body: () => ({comments: [{post_id: postId, html: '<p>Blocked</p>'}]})},
-            {desc: 'PUT /api/comments/:id/', method: 'put', url: () => `/api/comments/${existingComment.id}/`, body: () => ({comments: [{html: '<p>Blocked edit</p>'}]})},
-            {desc: 'DELETE /api/comments/:id/', method: 'delete', url: () => `/api/comments/${existingComment.id}/`, body: () => null},
-            {desc: 'POST /api/comments/:id/like/', method: 'post', url: () => `/api/comments/${existingComment.id}/like/`, body: () => null},
-            {desc: 'DELETE /api/comments/:id/like/', method: 'delete', url: () => `/api/comments/${existingComment.id}/like/`, body: () => null}
-        ];
-
-        writeEndpoints.forEach(({desc, method, url, body}) => {
-            it(`${desc} is blocked with reason`, async function () {
-                let req = membersAgent[method](url());
-                const payload = body();
-                if (payload) {
-                    req = req.body(payload);
-                }
-                const {body: responseBody} = await req
-                    .expectStatus(403);
-
-                assert.equal(responseBody.errors[0].type, 'NoPermissionError');
-                assert.equal(responseBody.errors[0].context, 'Spam behaviour');
-            });
-        });
-    });
-
-    describe('when paid only commenting', function () {
-        beforeEach(async function () {
-            const getStub = sinon.stub(settingsCache, 'get');
-            getStub.callsFake((key, options) => {
-                if (key === 'comments_enabled') {
-                    return 'paid';
-                }
-                return getStub.wrappedMethod.call(settingsCache, key, options);
-            });
-        });
-
-        afterEach(async function () {
-            sinon.restore();
-        });
-
-        describe('Members with access', function () {
-            beforeAll(async function () {
-                await membersAgent.loginAs('paid@example.com');
-                loggedInMember = await models.Member.findOne({email: 'paid@example.com'}, {require: true});
-
-                const product = await getPaidProduct();
-
-                // Attach comped subscription to this member
-                await models.Member.edit({
-                    status: 'comped',
-                    products: [
-                        {
-                            id: product.id
-                        }
-                    ]
-                }, {id: loggedInMember.id});
-            });
-
-            it('Can comment on a post', async function () {
-                await testCanCommentOnPost(loggedInMember);
-            });
-
-            it('Can reply to a comment', async function () {
-                await testCanReply(loggedInMember);
-            });
-        });
-
-        describe('Members without access', function () {
-            beforeAll(async function () {
-                await membersAgent.loginAs('free@example.com');
-            });
-
-            it('Can not comment on a post', async function () {
-                await testCannotCommentOnPost();
-            });
-
-            it('Can not reply to a comment', async function () {
-                await testCannotReply();
-            });
-        });
-    });
-
-    // Only allow members with access to a given post to comment on that post
-    describe('Tier-only posts', function () {
-        let post;
-        let product;
-
-        beforeAll(async function () {
-            product = await getPaidProduct();
-
-            // Limit post access
-            post = await models.Post.findOne({id: postId}, {require: true});
-
-            await models.Post.edit({
-                visibility: 'tiers',
-                tiers: [
-                    {
-                        id: product.id
-                    }
-                ]
-            }, {id: post.id});
-        });
-
-        beforeEach(function () {
-            const getStub = sinon.stub(settingsCache, 'get');
-            getStub.callsFake((key, options) => {
-                if (key === 'comments_enabled') {
-                    return 'all';
-                }
-                return getStub.wrappedMethod.call(settingsCache, key, options);
-            });
-        });
-
-        afterEach(async function () {
-            sinon.restore();
-        });
-
-        describe('Members with access', function () {
-            beforeAll(async function () {
-                await membersAgent.loginAs('member-premium@example.com');
-                loggedInMember = await models.Member.findOne({email: 'member-premium@example.com'}, {require: true});
-
-                // Attach comped subscription to this member
-                await models.Member.edit({
-                    status: 'comped',
-                    products: [
-                        {
-                            id: product.id
-                        }
-                    ]
-                }, {id: loggedInMember.id});
-            });
-
-            it('Can comment on a post', async function () {
-                await testCanCommentOnPost(loggedInMember);
-            });
-
-            it('Can reply to a comment', async function () {
-                await testCanReply(loggedInMember);
-            });
-        });
-
-        describe('Members without access', function () {
-            beforeAll(async function () {
-                await membersAgent.loginAs('member-not-premium@example.com');
-            });
-
-            it('Can not comment on a post', async function () {
-                await testCannotCommentOnPost();
-            });
-
-            it('Can not reply to a comment', async function () {
-                await testCannotReply();
-            });
-        });
-    });
-
-    // Require private-site access for comment reads in private mode
-    describe('When site is in private mode', function () {
-        const privateAccessCode = 'private-comments-test';
-        let comment;
-        let originalIsPrivateSetting;
-        let originalPasswordSetting;
-
-        function createSiteAgent() {
-            return new TestAgent(membersAgent.app, {
-                apiURL: '',
-                originURL: configUtils.config.get('url')
-            });
+      const getStub = sinon.stub(settingsCache, 'get');
+      getStub.callsFake((key, options) => {
+        if (key === 'comments_enabled') {
+          return 'all';
         }
-
-        async function loginAsMember(agent) {
-            const magicLink = await membersService.api.getMagicLink('member-any@example.com', 'signin');
-            const token = new URL(magicLink).searchParams.get('token');
-            await agent.get(`/members/?token=${token}`).expectStatus(302);
-        }
-
-        function grantPrivateSiteAccess(agent) {
-            const req = {session: {}};
-            assert.equal(privateSiteAccess.grantAccess(req, privateAccessCode), true);
-
-            const sessionCookie = Buffer.from(JSON.stringify(req.session)).toString('base64');
-            agent.jar.setCookies([`ghost-private=${sessionCookie}; path=/; httponly`]);
-        }
-
-        function commentReadPaths() {
-            return [
-                '/members/api/comments/counts',
-                '/members/api/comments',
-                `/members/api/comments/post/${postId}`,
-                `/members/api/comments/${comment.id}`,
-                `/members/api/comments/${comment.id}/replies`
-            ];
-        }
-
-        async function expectCommentReadStatus(agent, status) {
-            for (const path of commentReadPaths()) {
-                await agent.get(path).expectStatus(status);
-            }
-        }
-
-        beforeAll(async function () {
-            await models.Post.edit({visibility: 'public'}, {id: postId});
-
-            originalIsPrivateSetting = settingsCache.get('is_private', {resolve: false});
-            originalPasswordSetting = settingsCache.get('password', {resolve: false});
-        });
-
-        beforeEach(async function () {
-            settingsCache.set('is_private', {...originalIsPrivateSetting, value: true});
-            settingsCache.set('password', {...originalPasswordSetting, value: privateAccessCode});
-
-            comment = await dbFns.addComment({
-                post_id: postId,
-                member_id: fixtureManager.get('members', 0).id
-            });
-        });
-
-        afterAll(async function () {
-            settingsCache.set('is_private', originalIsPrivateSetting);
-            settingsCache.set('password', originalPasswordSetting);
-        });
-
-        it('Rejects anonymous visitors without private-site access', async function () {
-            await expectCommentReadStatus(createSiteAgent(), 403);
-        });
-
-        it('Does not treat a member session as private-site access', async function () {
-            const agent = createSiteAgent();
-            await loginAsMember(agent);
-            await expectCommentReadStatus(agent, 403);
-        });
-
-        it('Allows visitors with private-site access', async function () {
-            const agent = createSiteAgent();
-            grantPrivateSiteAccess(agent);
-            await expectCommentReadStatus(agent, 200);
-        });
-
-        it('Allows members with private-site access', async function () {
-            const agent = createSiteAgent();
-            await loginAsMember(agent);
-            grantPrivateSiteAccess(agent);
-            await expectCommentReadStatus(agent, 200);
-        });
-
-        it('Invalidates private-site access when the access code changes', async function () {
-            const agent = createSiteAgent();
-            grantPrivateSiteAccess(agent);
-
-            settingsCache.set('password', {...originalPasswordSetting, value: 'changed-private-comments-test'});
-
-            await agent.get('/members/api/comments').expectStatus(403);
-        });
-
-        it('Prevents shared caching of private comment counts', async function () {
-            const agent = createSiteAgent();
-            grantPrivateSiteAccess(agent);
-
-            const response = await agent.get('/members/api/comments/counts').expectStatus(200);
-            assert.equal(response.headers['cache-control'], cacheRules.private);
-        });
-
-        it('Keeps public comment counts publicly cacheable', async function () {
-            settingsCache.set('is_private', {...originalIsPrivateSetting, value: false});
-
-            const response = await createSiteAgent().get('/members/api/comments/counts').expectStatus(200);
-            assert.match(response.headers['cache-control'], /^public, max-age=/);
-        });
+        return getStub.wrappedMethod.call(settingsCache, key, options);
+      });
     });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    afterAll(async function () {
+      if (disabledMember) {
+        await models.Member.destroy({ id: disabledMember.id });
+      }
+    });
+
+    const readEndpoints = [
+      { desc: 'GET /api/comments/', method: 'get', url: () => '/api/comments/' },
+      {
+        desc: 'GET /api/comments/post/:id/',
+        method: 'get',
+        url: () => `/api/comments/post/${postId}/`,
+      },
+      {
+        desc: 'GET /api/comments/:id/',
+        method: 'get',
+        url: () => `/api/comments/${existingComment.id}/`,
+      },
+      {
+        desc: 'GET /api/comments/:id/replies/',
+        method: 'get',
+        url: () => `/api/comments/${existingComment.id}/replies/`,
+      },
+    ];
+
+    readEndpoints.forEach(({ desc, method, url }) => {
+      it(`${desc} is allowed`, async function () {
+        await membersAgent[method](url()).expectStatus(200);
+      });
+    });
+
+    const writeEndpoints = [
+      {
+        desc: 'POST /api/comments/',
+        method: 'post',
+        url: () => '/api/comments/',
+        body: () => ({ comments: [{ post_id: postId, html: '<p>Blocked</p>' }] }),
+      },
+      {
+        desc: 'PUT /api/comments/:id/',
+        method: 'put',
+        url: () => `/api/comments/${existingComment.id}/`,
+        body: () => ({ comments: [{ html: '<p>Blocked edit</p>' }] }),
+      },
+      {
+        desc: 'DELETE /api/comments/:id/',
+        method: 'delete',
+        url: () => `/api/comments/${existingComment.id}/`,
+        body: () => null,
+      },
+      {
+        desc: 'POST /api/comments/:id/like/',
+        method: 'post',
+        url: () => `/api/comments/${existingComment.id}/like/`,
+        body: () => null,
+      },
+      {
+        desc: 'DELETE /api/comments/:id/like/',
+        method: 'delete',
+        url: () => `/api/comments/${existingComment.id}/like/`,
+        body: () => null,
+      },
+    ];
+
+    writeEndpoints.forEach(({ desc, method, url, body }) => {
+      it(`${desc} is blocked with reason`, async function () {
+        let req = membersAgent[method](url());
+        const payload = body();
+        if (payload) {
+          req = req.body(payload);
+        }
+        const { body: responseBody } = await req.expectStatus(403);
+
+        assert.equal(responseBody.errors[0].type, 'NoPermissionError');
+        assert.equal(responseBody.errors[0].context, 'Spam behaviour');
+      });
+    });
+  });
+
+  describe('when paid only commenting', function () {
+    beforeEach(async function () {
+      const getStub = sinon.stub(settingsCache, 'get');
+      getStub.callsFake((key, options) => {
+        if (key === 'comments_enabled') {
+          return 'paid';
+        }
+        return getStub.wrappedMethod.call(settingsCache, key, options);
+      });
+    });
+
+    afterEach(async function () {
+      sinon.restore();
+    });
+
+    describe('Members with access', function () {
+      beforeAll(async function () {
+        await membersAgent.loginAs('paid@example.com');
+        loggedInMember = await models.Member.findOne(
+          { email: 'paid@example.com' },
+          { require: true },
+        );
+
+        const product = await getPaidProduct();
+
+        // Attach comped subscription to this member
+        await models.Member.edit(
+          {
+            status: 'comped',
+            products: [
+              {
+                id: product.id,
+              },
+            ],
+          },
+          { id: loggedInMember.id },
+        );
+      });
+
+      it('Can comment on a post', async function () {
+        await testCanCommentOnPost(loggedInMember);
+      });
+
+      it('Can reply to a comment', async function () {
+        await testCanReply(loggedInMember);
+      });
+    });
+
+    describe('Members without access', function () {
+      beforeAll(async function () {
+        await membersAgent.loginAs('free@example.com');
+      });
+
+      it('Can not comment on a post', async function () {
+        await testCannotCommentOnPost();
+      });
+
+      it('Can not reply to a comment', async function () {
+        await testCannotReply();
+      });
+    });
+  });
+
+  // Only allow members with access to a given post to comment on that post
+  describe('Tier-only posts', function () {
+    let post;
+    let product;
+
+    beforeAll(async function () {
+      product = await getPaidProduct();
+
+      // Limit post access
+      post = await models.Post.findOne({ id: postId }, { require: true });
+
+      await models.Post.edit(
+        {
+          visibility: 'tiers',
+          tiers: [
+            {
+              id: product.id,
+            },
+          ],
+        },
+        { id: post.id },
+      );
+    });
+
+    beforeEach(function () {
+      const getStub = sinon.stub(settingsCache, 'get');
+      getStub.callsFake((key, options) => {
+        if (key === 'comments_enabled') {
+          return 'all';
+        }
+        return getStub.wrappedMethod.call(settingsCache, key, options);
+      });
+    });
+
+    afterEach(async function () {
+      sinon.restore();
+    });
+
+    describe('Members with access', function () {
+      beforeAll(async function () {
+        await membersAgent.loginAs('member-premium@example.com');
+        loggedInMember = await models.Member.findOne(
+          { email: 'member-premium@example.com' },
+          { require: true },
+        );
+
+        // Attach comped subscription to this member
+        await models.Member.edit(
+          {
+            status: 'comped',
+            products: [
+              {
+                id: product.id,
+              },
+            ],
+          },
+          { id: loggedInMember.id },
+        );
+      });
+
+      it('Can comment on a post', async function () {
+        await testCanCommentOnPost(loggedInMember);
+      });
+
+      it('Can reply to a comment', async function () {
+        await testCanReply(loggedInMember);
+      });
+    });
+
+    describe('Members without access', function () {
+      beforeAll(async function () {
+        await membersAgent.loginAs('member-not-premium@example.com');
+      });
+
+      it('Can not comment on a post', async function () {
+        await testCannotCommentOnPost();
+      });
+
+      it('Can not reply to a comment', async function () {
+        await testCannotReply();
+      });
+    });
+  });
+
+  // Require private-site access for comment reads in private mode
+  describe('When site is in private mode', function () {
+    const privateAccessCode = 'private-comments-test';
+    let comment;
+    let originalIsPrivateSetting;
+    let originalPasswordSetting;
+
+    function createSiteAgent() {
+      return new TestAgent(membersAgent.app, {
+        apiURL: '',
+        originURL: configUtils.config.get('url'),
+      });
+    }
+
+    async function loginAsMember(agent) {
+      const magicLink = await membersService.api.getMagicLink('member-any@example.com', 'signin');
+      const token = new URL(magicLink).searchParams.get('token');
+      await agent.get(`/members/?token=${token}`).expectStatus(302);
+    }
+
+    function grantPrivateSiteAccess(agent) {
+      const req = { session: {} };
+      assert.equal(privateSiteAccess.grantAccess(req, privateAccessCode), true);
+
+      const sessionCookie = Buffer.from(JSON.stringify(req.session)).toString('base64');
+      agent.jar.setCookies([`ghost-private=${sessionCookie}; path=/; httponly`]);
+    }
+
+    function commentReadPaths() {
+      return [
+        '/members/api/comments/counts',
+        '/members/api/comments',
+        `/members/api/comments/post/${postId}`,
+        `/members/api/comments/${comment.id}`,
+        `/members/api/comments/${comment.id}/replies`,
+      ];
+    }
+
+    async function expectCommentReadStatus(agent, status) {
+      for (const path of commentReadPaths()) {
+        await agent.get(path).expectStatus(status);
+      }
+    }
+
+    beforeAll(async function () {
+      await models.Post.edit({ visibility: 'public' }, { id: postId });
+
+      originalIsPrivateSetting = settingsCache.get('is_private', { resolve: false });
+      originalPasswordSetting = settingsCache.get('password', { resolve: false });
+    });
+
+    beforeEach(async function () {
+      settingsCache.set('is_private', { ...originalIsPrivateSetting, value: true });
+      settingsCache.set('password', { ...originalPasswordSetting, value: privateAccessCode });
+
+      comment = await dbFns.addComment({
+        post_id: postId,
+        member_id: fixtureManager.get('members', 0).id,
+      });
+    });
+
+    afterAll(async function () {
+      settingsCache.set('is_private', originalIsPrivateSetting);
+      settingsCache.set('password', originalPasswordSetting);
+    });
+
+    it('Rejects anonymous visitors without private-site access', async function () {
+      await expectCommentReadStatus(createSiteAgent(), 403);
+    });
+
+    it('Does not treat a member session as private-site access', async function () {
+      const agent = createSiteAgent();
+      await loginAsMember(agent);
+      await expectCommentReadStatus(agent, 403);
+    });
+
+    it('Allows visitors with private-site access', async function () {
+      const agent = createSiteAgent();
+      grantPrivateSiteAccess(agent);
+      await expectCommentReadStatus(agent, 200);
+    });
+
+    it('Allows members with private-site access', async function () {
+      const agent = createSiteAgent();
+      await loginAsMember(agent);
+      grantPrivateSiteAccess(agent);
+      await expectCommentReadStatus(agent, 200);
+    });
+
+    it('Invalidates private-site access when the access code changes', async function () {
+      const agent = createSiteAgent();
+      grantPrivateSiteAccess(agent);
+
+      settingsCache.set('password', {
+        ...originalPasswordSetting,
+        value: 'changed-private-comments-test',
+      });
+
+      await agent.get('/members/api/comments').expectStatus(403);
+    });
+
+    it('Prevents shared caching of private comment counts', async function () {
+      const agent = createSiteAgent();
+      grantPrivateSiteAccess(agent);
+
+      const response = await agent.get('/members/api/comments/counts').expectStatus(200);
+      assert.equal(response.headers['cache-control'], cacheRules.private);
+    });
+
+    it('Keeps public comment counts publicly cacheable', async function () {
+      settingsCache.set('is_private', { ...originalIsPrivateSetting, value: false });
+
+      const response = await createSiteAgent()
+        .get('/members/api/comments/counts')
+        .expectStatus(200);
+      assert.match(response.headers['cache-control'], /^public, max-age=/);
+    });
+  });
 });

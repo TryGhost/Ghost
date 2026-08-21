@@ -1,92 +1,101 @@
-import {faker} from '@faker-js/faker';
+import { faker } from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import assert from 'node:assert/strict';
-import type {Knex} from 'knex';
-import {TableImporter} from './table-importer';
-import {parseEmailAddress} from '@tryghost/parse-email-address';
-import {fromDatabaseDate, toDatabaseDate} from '../../../lib/db-date';
-import {randomDateBetween} from '../utils/random';
+import type { Knex } from 'knex';
+import { TableImporter } from './table-importer';
+import { parseEmailAddress } from '@tryghost/parse-email-address';
+import { fromDatabaseDate, toDatabaseDate } from '../../../lib/db-date';
+import { randomDateBetween } from '../utils/random';
 
 type Automation = {
-    id: string;
-    created_at: string;
+  id: string;
+  created_at: string;
 };
 
 type Member = {
-    id: string;
-    email: string;
-    created_at: string;
+  id: string;
+  email: string;
+  created_at: string;
 };
 
 type AutomationRun = {
-    id: string;
-    created_at: string;
-    updated_at: string;
-    automation_id: string;
-    member_id: string;
-    member_email: string;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  automation_id: string;
+  member_id: string;
+  member_email: string;
 };
 
 const assertExampleEmailDomain = (email: string) => {
-    const {domain} = parseEmailAddress(email) ?? {};
-    assert(domain, 'Refusing to seed an automation run for a member with no email');
-    assert(
-        domain === 'example.com' ||
-        domain === 'example.net' ||
-        domain === 'example.org' ||
-        domain === 'example.edu' ||
-        domain.endsWith('.example'),
-        `Refusing to seed an automation run for non-example email: ${email}`
-    );
+  const { domain } = parseEmailAddress(email) ?? {};
+  assert(domain, 'Refusing to seed an automation run for a member with no email');
+  assert(
+    domain === 'example.com' ||
+      domain === 'example.net' ||
+      domain === 'example.org' ||
+      domain === 'example.edu' ||
+      domain.endsWith('.example'),
+    `Refusing to seed an automation run for non-example email: ${email}`,
+  );
 };
 
 export class AutomationRunsImporter extends TableImporter<AutomationRun, Automation> {
-    static table = 'automation_runs';
-    static dependencies = ['automations', 'members'];
+  static table = 'automation_runs';
+  static dependencies = ['automations', 'members'];
 
-    #automation?: Automation;
-    #members: Member[] = [];
+  #automation?: Automation;
+  #members: Member[] = [];
 
-    defaultQuantity = 20;
+  defaultQuantity = 20;
 
-    constructor(knex: Knex, transaction: Knex.Transaction) {
-        super(AutomationRunsImporter.table, knex, transaction);
+  constructor(knex: Knex, transaction: Knex.Transaction) {
+    super(AutomationRunsImporter.table, knex, transaction);
+  }
+
+  async import(quantity = this.defaultQuantity): Promise<void> {
+    const automations = await this.transaction
+      .select('id', 'created_at')
+      .from<Automation>('automations');
+    this.#members = await this.transaction
+      .select('id', 'email', 'created_at')
+      .from<Member>('members');
+
+    if (automations.length === 0 || this.#members.length === 0) {
+      return;
     }
 
-    async import(quantity = this.defaultQuantity): Promise<void> {
-        const automations = await this.transaction.select('id', 'created_at').from<Automation>('automations');
-        this.#members = await this.transaction.select('id', 'email', 'created_at').from<Member>('members');
+    await this.importForEach(automations, quantity / automations.length);
+  }
 
-        if (automations.length === 0 || this.#members.length === 0) {
-            return;
-        }
+  setReferencedModel(automation: Automation): void {
+    this.#automation = automation;
+  }
 
-        await this.importForEach(automations, quantity / automations.length);
+  generate(): AutomationRun {
+    if (!this.#automation) {
+      throw new errors.IncorrectUsageError({
+        message: 'Cannot generate automation run without an automation',
+      });
     }
 
-    setReferencedModel(automation: Automation): void {
-        this.#automation = automation;
-    }
+    const member = faker.helpers.arrayElement(this.#members);
+    const automationCreatedAt = fromDatabaseDate(this.#automation.created_at);
+    const memberCreatedAt = fromDatabaseDate(member.created_at);
+    const createdAt = randomDateBetween(
+      new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())),
+      new Date(),
+    );
 
-    generate(): AutomationRun {
-        if (!this.#automation) {
-            throw new errors.IncorrectUsageError({message: 'Cannot generate automation run without an automation'});
-        }
+    assertExampleEmailDomain(member.email);
 
-        const member = faker.helpers.arrayElement(this.#members);
-        const automationCreatedAt = fromDatabaseDate(this.#automation.created_at);
-        const memberCreatedAt = fromDatabaseDate(member.created_at);
-        const createdAt = randomDateBetween(new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())), new Date());
-
-        assertExampleEmailDomain(member.email);
-
-        return {
-            id: this.fastFakeObjectId(),
-            created_at: toDatabaseDate(createdAt),
-            updated_at: toDatabaseDate(createdAt),
-            automation_id: this.#automation.id,
-            member_id: member.id,
-            member_email: member.email
-        };
-    }
+    return {
+      id: this.fastFakeObjectId(),
+      created_at: toDatabaseDate(createdAt),
+      updated_at: toDatabaseDate(createdAt),
+      automation_id: this.#automation.id,
+      member_id: member.id,
+      member_email: member.email,
+    };
+  }
 }

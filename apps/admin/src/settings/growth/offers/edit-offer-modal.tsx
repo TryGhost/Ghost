@@ -1,291 +1,415 @@
 import PortalFrame from '@/settings/membership/portal/portal-frame';
 import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
-import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
-import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {PreviewModalContent} from '@/settings/components/preview-modal';
-import {createOfferRedemptionFilterUrl} from './offer-helpers';
-import {formatNumber} from '@tryghost/shade/utils';
-import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
-import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/settings/utils/get-offers-portal-preview-url';
-import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/providers/confirmation-context';
-import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/providers/global-data-context';
-import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {
+  Button,
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  Textarea,
+} from '@tryghost/shade/components';
+import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { JSONError } from '@tryghost/admin-x-framework/errors';
+import {
+  type Offer,
+  useBrowseOffersById,
+  useEditOffer,
+} from '@tryghost/admin-x-framework/api/offers';
+import { PreviewModalContent } from '@/settings/components/preview-modal';
+import { createOfferRedemptionFilterUrl } from './offer-helpers';
+import { formatNumber } from '@tryghost/shade/utils';
+import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
+import {
+  getOfferPortalPreviewUrl,
+  type offerPortalPreviewUrlTypes,
+} from '@/settings/utils/get-offers-portal-preview-url';
+import { toast } from 'sonner';
+import { useConfirmation } from '@/settings/providers/confirmation-context';
+import { useEffect, useState } from 'react';
+import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 function formatTimestamp(timestamp: string): string {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('default', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit'
-    });
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('default', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  });
 }
 
 const Sidebar: React.FC<{
-        clearError: (field: string) => void,
-        errors: ErrorMessages,
-        offer: Offer,
-        updateOffer: (fields: Partial<Offer>) => void,
-        validate: () => void}> = ({clearError, errors, offer, updateOffer}) => {
-            const {siteData} = useGlobalData();
-            const [isCopied, setIsCopied] = useState(false);
-            const handleError = useHandleError();
-            const {confirm} = useConfirmation();
-            const {mutateAsync: editOffer} = useEditOffer();
+  clearError: (field: string) => void;
+  errors: ErrorMessages;
+  offer: Offer;
+  updateOffer: (fields: Partial<Offer>) => void;
+  validate: () => void;
+}> = ({ clearError, errors, offer, updateOffer }) => {
+  const { siteData } = useGlobalData();
+  const [isCopied, setIsCopied] = useState(false);
+  const handleError = useHandleError();
+  const { confirm } = useConfirmation();
+  const { mutateAsync: editOffer } = useEditOffer();
 
-            const [nameLength, setNameLength] = useState(offer?.name.length || 0);
-            const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
+  const [nameLength, setNameLength] = useState(offer?.name.length || 0);
+  const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
 
-            const {updateRoute} = useSettingsNavigation();
+  const { updateRoute } = useSettingsNavigation();
 
-            useEffect(() => {
-                if (offer?.name) {
-                    setNameLength(offer?.name.length);
-                }
-            }, [offer?.name]);
+  useEffect(() => {
+    if (offer?.name) {
+      setNameLength(offer?.name.length);
+    }
+  }, [offer?.name]);
 
-            const homepageUrl = getHomepageUrl(siteData);
-            const offerUrl = `${homepageUrl}${offer?.code}`;
-            const handleCopyClick = async () => {
-                await navigator.clipboard.writeText(offerUrl);
-                setIsCopied(true);
-                setTimeout(() => setIsCopied(false), 2000);
-            };
+  const homepageUrl = getHomepageUrl(siteData);
+  const offerUrl = `${homepageUrl}${offer?.code}`;
+  const handleCopyClick = async () => {
+    await navigator.clipboard.writeText(offerUrl);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
-            const confirmStatusChange = () => {
-                if (offer?.status === 'active') {
-                    confirm({
-                        title: 'Archive offer',
-                        prompt: <>
-                            <p>New members will no longer be able to subscribe using this offer.</p>
-                            <p>All members that previously redeemed <strong>{offer?.name}</strong> will remain unchanged.</p>
-                        </>,
-                        okLabel: 'Archive',
-                        okVariant: 'destructive',
-                        onOk: async (modal) => {
-                            try {
-                                await editOffer({...offer, status: 'archived'});
-                                modal?.remove();
-                                toast.success('Offer archived');
-                                updateRoute('offers/edit');
-                            } catch (e) {
-                                handleError(e);
-                            }
-                        }
-                    });
-                } else {
-                    confirm({
-                        title: 'Reactivate offer',
-                        prompt: <>
-                            <p>Reactivating <strong>{offer?.name}</strong> will allow new members to subscribe using this offer. Existing members will remain unchanged.</p>
-                        </>,
-                        okLabel: 'Reactivate',
-                        onOk: async (modal) => {
-                            try {
-                                await editOffer({...offer, status: 'active'});
-                                modal?.remove();
-                                toast.success('Offer reactivated');
-                                updateRoute('offers/edit');
-                            } catch (e) {
-                                handleError(e);
-                            }
-                        }
-                    });
-                }
-            };
-
-            return (
-                <div className='flex grow flex-col pt-2'>
-                    <FieldGroup className='mb-10 grow gap-8'>
-                        <section>
-                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
-                                <div className='flex flex-col gap-1.5'>
-                                    <span className='text-sm leading-none font-semibold text-grey-700'>Created on</span>
-                                    <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
-                                </div>
-                                <div className='flex items-end justify-between'>
-                                    <div className='flex flex-col gap-5'>
-                                        <div className='flex flex-col gap-1.5'>
-                                            <span className='text-sm leading-none font-semibold text-grey-700'>Performance</span>
-                                            <span>{formatNumber(offer?.redemption_count || 0)} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
-                                        </div>
-                                        {offer?.redemption_count > 0 && offer?.last_redeemed ?
-                                            <div className='flex flex-col gap-1.5'>
-                                                <span className='text-sm leading-none font-semibold text-grey-700'>Last redemption</span>
-                                                <span>{formatTimestamp(offer?.last_redeemed)}</span>
-                                            </div> :
-                                            null
-                                        }
-                                    </div>
-                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createOfferRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
-                                </div>
-                            </div>
-                        </section>
-                        <section className='mt-2'>
-                            <h2 className='mb-4 text-lg'>General</h2>
-                            <div className='flex flex-col gap-6'>
-                                <Field data-invalid={Boolean(errors.name) || undefined}>
-                                    <FieldLabel htmlFor='offer-name'>Offer name</FieldLabel>
-                                    <Input aria-invalid={Boolean(errors.name) || undefined} id='offer-name' maxLength={40} placeholder='Black Friday' value={offer?.name ?? ''} onChange={(e) => {
-                                        setNameLength(e.target.value.length);
-                                        updateOffer({name: e.target.value});
-                                    }} onKeyDown={() => clearError('name')} />
-                                    {errors.name ? <FieldError>{errors.name}</FieldError> : <FieldDescription><div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={nameLengthColor}>{formatNumber(nameLength)}</span> / {formatNumber(40)}</strong></div></FieldDescription>}
-                                </Field>
-                                <Field className='group' data-invalid={Boolean(errors.code) || undefined}>
-                                    <FieldLabel htmlFor='offer-code'>Offer code</FieldLabel>
-                                    <InputGroup data-invalid={Boolean(errors.code) || undefined}>
-                                        <InputGroupInput aria-invalid={Boolean(errors.code) || undefined} id='offer-code' placeholder='black-friday' value={offer?.code ?? ''} onChange={e => updateOffer({code: e.target.value})} onKeyDown={() => clearError('code')} />
-                                        {offer?.code !== '' && <InputGroupAddon align='inline-end'><InputGroupButton onClick={() => void handleCopyClick()}>{isCopied ? 'Copied!' : 'Copy link'}</InputGroupButton></InputGroupAddon>}
-                                    </InputGroup>
-                                    {errors.code ? <FieldError>{errors.code}</FieldError> : offer?.code !== '' && <FieldDescription className='truncate'>{homepageUrl}<span className='font-bold text-foreground'>{offer?.code}</span></FieldDescription>}
-                                </Field>
-                                <Field data-invalid={Boolean(errors.displayTitle) || undefined}>
-                                    <FieldLabel htmlFor='offer-display-title'>Display title</FieldLabel>
-                                    <Input aria-invalid={Boolean(errors.displayTitle) || undefined} id='offer-display-title' placeholder='Black Friday Special' value={offer?.display_title ?? ''} onChange={e => updateOffer({display_title: e.target.value})} onKeyDown={() => clearError('displayTitle')} />
-                                    {errors.displayTitle && <FieldError>{errors.displayTitle}</FieldError>}
-                                </Field>
-                                <Field>
-                                    <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
-                                    <Textarea id='offer-display-description' placeholder='Take advantage of this limited-time offer.' value={offer?.display_description ?? ''} onChange={e => updateOffer({display_description: e.target.value})} />
-                                </Field>
-                            </div>
-                        </section>
-                    </FieldGroup>
-                    <div className='mb-2'>
-                        {offer?.status === 'active' ? <Button className='h-auto p-0 text-destructive hover:text-destructive' type='button' variant='link' onClick={confirmStatusChange}>Archive offer</Button> : <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={confirmStatusChange}>Reactivate offer</Button>}
-                    </div>
-                </div>
-            );
-        };
-
-const EditOfferModal: React.FC<{id: string}> = ({id}) => {
-    const {siteData} = useGlobalData();
-    const {updateRoute} = useSettingsNavigation();
-    const handleError = useHandleError();
-    const {mutateAsync: editOffer} = useEditOffer();
-
-    const [href, setHref] = useState<string>('');
-
-    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
-
-    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
-        initialState: offerById[0],
-        savingDelay: 500,
-        onSave: async () => {
-            await editOffer(formState);
+  const confirmStatusChange = () => {
+    if (offer?.status === 'active') {
+      confirm({
+        title: 'Archive offer',
+        prompt: (
+          <>
+            <p>New members will no longer be able to subscribe using this offer.</p>
+            <p>
+              All members that previously redeemed <strong>{offer?.name}</strong> will remain
+              unchanged.
+            </p>
+          </>
+        ),
+        okLabel: 'Archive',
+        okVariant: 'destructive',
+        onOk: async (modal) => {
+          try {
+            await editOffer({ ...offer, status: 'archived' });
+            modal?.remove();
+            toast.success('Offer archived');
+            updateRoute('offers/edit');
+          } catch (e) {
+            handleError(e);
+          }
         },
-        onSaveError: handleError,
-        onValidate: () => {
-            const newErrors: Record<string, string> = {};
+      });
+    } else {
+      confirm({
+        title: 'Reactivate offer',
+        prompt: (
+          <>
+            <p>
+              Reactivating <strong>{offer?.name}</strong> will allow new members to subscribe using
+              this offer. Existing members will remain unchanged.
+            </p>
+          </>
+        ),
+        okLabel: 'Reactivate',
+        onOk: async (modal) => {
+          try {
+            await editOffer({ ...offer, status: 'active' });
+            modal?.remove();
+            toast.success('Offer reactivated');
+            updateRoute('offers/edit');
+          } catch (e) {
+            handleError(e);
+          }
+        },
+      });
+    }
+  };
 
-            if (!formState?.name) {
-                newErrors.name = 'Name is required';
-            }
+  return (
+    <div className="flex grow flex-col pt-2">
+      <FieldGroup className="mb-10 grow gap-8">
+        <section>
+          <div className="flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm leading-none font-semibold text-grey-700">Created on</span>
+              <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
+            </div>
+            <div className="flex items-end justify-between">
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-sm leading-none font-semibold text-grey-700">
+                    Performance
+                  </span>
+                  <span>
+                    {formatNumber(offer?.redemption_count || 0)}{' '}
+                    {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}
+                  </span>
+                </div>
+                {offer?.redemption_count > 0 && offer?.last_redeemed ? (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-sm leading-none font-semibold text-grey-700">
+                      Last redemption
+                    </span>
+                    <span>{formatTimestamp(offer?.last_redeemed)}</span>
+                  </div>
+                ) : null}
+              </div>
+              {offer?.redemption_count > 0 ? (
+                <a
+                  className="font-semibold text-green"
+                  href={createOfferRedemptionFilterUrl(offer?.id)}
+                >
+                  See members →
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </section>
+        <section className="mt-2">
+          <h2 className="mb-4 text-lg">General</h2>
+          <div className="flex flex-col gap-6">
+            <Field data-invalid={Boolean(errors.name) || undefined}>
+              <FieldLabel htmlFor="offer-name">Offer name</FieldLabel>
+              <Input
+                aria-invalid={Boolean(errors.name) || undefined}
+                id="offer-name"
+                maxLength={40}
+                placeholder="Black Friday"
+                value={offer?.name ?? ''}
+                onChange={(e) => {
+                  setNameLength(e.target.value.length);
+                  updateOffer({ name: e.target.value });
+                }}
+                onKeyDown={() => clearError('name')}
+              />
+              {errors.name ? (
+                <FieldError>{errors.name}</FieldError>
+              ) : (
+                <FieldDescription>
+                  <div className="flex justify-between">
+                    <span>Visible to members on Stripe Checkout page</span>
+                    <strong>
+                      <span className={nameLengthColor}>{formatNumber(nameLength)}</span> /{' '}
+                      {formatNumber(40)}
+                    </strong>
+                  </div>
+                </FieldDescription>
+              )}
+            </Field>
+            <Field className="group" data-invalid={Boolean(errors.code) || undefined}>
+              <FieldLabel htmlFor="offer-code">Offer code</FieldLabel>
+              <InputGroup data-invalid={Boolean(errors.code) || undefined}>
+                <InputGroupInput
+                  aria-invalid={Boolean(errors.code) || undefined}
+                  id="offer-code"
+                  placeholder="black-friday"
+                  value={offer?.code ?? ''}
+                  onChange={(e) => updateOffer({ code: e.target.value })}
+                  onKeyDown={() => clearError('code')}
+                />
+                {offer?.code !== '' && (
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton onClick={() => void handleCopyClick()}>
+                      {isCopied ? 'Copied!' : 'Copy link'}
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                )}
+              </InputGroup>
+              {errors.code ? (
+                <FieldError>{errors.code}</FieldError>
+              ) : (
+                offer?.code !== '' && (
+                  <FieldDescription className="truncate">
+                    {homepageUrl}
+                    <span className="font-bold text-foreground">{offer?.code}</span>
+                  </FieldDescription>
+                )
+              )}
+            </Field>
+            <Field data-invalid={Boolean(errors.displayTitle) || undefined}>
+              <FieldLabel htmlFor="offer-display-title">Display title</FieldLabel>
+              <Input
+                aria-invalid={Boolean(errors.displayTitle) || undefined}
+                id="offer-display-title"
+                placeholder="Black Friday Special"
+                value={offer?.display_title ?? ''}
+                onChange={(e) => updateOffer({ display_title: e.target.value })}
+                onKeyDown={() => clearError('displayTitle')}
+              />
+              {errors.displayTitle && <FieldError>{errors.displayTitle}</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="offer-display-description">Display description</FieldLabel>
+              <Textarea
+                id="offer-display-description"
+                placeholder="Take advantage of this limited-time offer."
+                value={offer?.display_description ?? ''}
+                onChange={(e) => updateOffer({ display_description: e.target.value })}
+              />
+            </Field>
+          </div>
+        </section>
+      </FieldGroup>
+      <div className="mb-2">
+        {offer?.status === 'active' ? (
+          <Button
+            className="h-auto p-0 text-destructive hover:text-destructive"
+            type="button"
+            variant="link"
+            onClick={confirmStatusChange}
+          >
+            Archive offer
+          </Button>
+        ) : (
+          <Button
+            className="h-auto p-0 text-green hover:text-green"
+            type="button"
+            variant="link"
+            onClick={confirmStatusChange}
+          >
+            Reactivate offer
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
 
-            if (!formState?.display_title) {
-                newErrors.displayTitle = 'Display title is required';
-            }
+const EditOfferModal: React.FC<{ id: string }> = ({ id }) => {
+  const { siteData } = useGlobalData();
+  const { updateRoute } = useSettingsNavigation();
+  const handleError = useHandleError();
+  const { mutateAsync: editOffer } = useEditOffer();
 
-            if (!formState?.code) {
-                newErrors.code = 'Please enter a code';
-            }
+  const [href, setHref] = useState<string>('');
 
-            return newErrors;
-        }
-    });
+  const { data: { offers: offerById = [] } = {} } = useBrowseOffersById(id ? id : '');
 
-    useEffect(() => {
-        setFormState(() => offerById[0]);
-    }, [setFormState, offerById]);
+  const {
+    formState,
+    saveState,
+    updateForm,
+    setFormState,
+    handleSave,
+    validate,
+    errors,
+    clearError,
+    okProps,
+  } = useForm({
+    initialState: offerById[0],
+    savingDelay: 500,
+    onSave: async () => {
+      await editOffer(formState);
+    },
+    onSaveError: handleError,
+    onValidate: () => {
+      const newErrors: Record<string, string> = {};
 
-    const updateOffer = (fields: Partial<Offer>) => {
-        updateForm(state => ({...state, ...fields}));
+      if (!formState?.name) {
+        newErrors.name = 'Name is required';
+      }
+
+      if (!formState?.display_title) {
+        newErrors.displayTitle = 'Display title is required';
+      }
+
+      if (!formState?.code) {
+        newErrors.code = 'Please enter a code';
+      }
+
+      return newErrors;
+    },
+  });
+
+  useEffect(() => {
+    setFormState(() => offerById[0]);
+  }, [setFormState, offerById]);
+
+  const updateOffer = (fields: Partial<Offer>) => {
+    updateForm((state) => ({ ...state, ...fields }));
+  };
+
+  const sidebar = (
+    <Sidebar
+      clearError={clearError}
+      errors={errors}
+      offer={formState}
+      updateOffer={updateOffer}
+      validate={validate}
+    />
+  );
+
+  useEffect(() => {
+    const dataset: offerPortalPreviewUrlTypes = {
+      name: formState?.name || '',
+      code: formState?.code || '',
+      displayTitle: formState?.display_title || '',
+      displayDescription: formState?.display_description || '',
+      type: formState?.type || '',
+      cadence: formState?.cadence || '',
+      amount: formState?.amount,
+      duration: formState?.duration || '',
+      durationInMonths: formState?.duration_in_months || 0,
+      currency: formState?.currency || '',
+      status: formState?.status || '',
+      tierId: formState?.tier?.id || '',
+      redemptionType: 'signup',
     };
 
-    const sidebar = <Sidebar
-        clearError={clearError}
-        errors={errors}
-        offer={formState}
-        updateOffer={updateOffer}
-        validate={validate}
-    />;
+    const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
+    setHref(newHref);
+  }, [formState, siteData]);
 
-    useEffect(() => {
-        const dataset : offerPortalPreviewUrlTypes = {
-            name: formState?.name || '',
-            code: formState?.code || '',
-            displayTitle: formState?.display_title || '',
-            displayDescription: formState?.display_description || '',
-            type: formState?.type || '',
-            cadence: formState?.cadence || '',
-            amount: formState?.amount,
-            duration: formState?.duration || '',
-            durationInMonths: formState?.duration_in_months || 0,
-            currency: formState?.currency || '',
-            status: formState?.status || '',
-            tierId: formState?.tier?.id || '',
-            redemptionType: 'signup'
-        };
+  const iframe = <PortalFrame href={href || ''} portalParent="offers" />;
 
-        const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
-        setHref(newHref);
-    }, [formState, siteData]);
+  const goBack = () => {
+    updateRoute('offers/edit');
+  };
 
-    const iframe = <PortalFrame
-        href={href || ''}
-        portalParent='offers'
-    />;
+  return offerById ? (
+    <PreviewModalContent
+      backDropClick={false}
+      cancelLabel="Cancel"
+      dirty={saveState === 'unsaved'}
+      height="full"
+      okLabel={okProps.label || 'Save'}
+      okVariant={okProps.variant}
+      preview={iframe}
+      previewToolbarBreadcrumbs={
+        <SettingsBreadcrumbs current={formState?.name || 'Offer'} label="Offers" onBack={goBack} />
+      }
+      sidebar={sidebar}
+      size="lg"
+      testId="offer-update-modal"
+      title="Offer"
+      width={1140}
+      onCancel={goBack}
+      onClose={() => {
+        updateRoute('offers');
+      }}
+      onOk={async () => {
+        try {
+          if (await handleSave({ force: true })) {
+            return;
+          }
+        } catch (e) {
+          let message;
 
-    const goBack = () => {
-        updateRoute('offers/edit');
-    };
+          if (e instanceof JSONError && e.data && e.data.errors[0]) {
+            message = e.data.errors[0].context || e.data.errors[0].message;
+          }
 
-    return offerById ? <PreviewModalContent
-        backDropClick={false}
-        cancelLabel='Cancel'
-        dirty={saveState === 'unsaved'}
-        height='full'
-        okLabel={okProps.label || 'Save'}
-        okVariant={okProps.variant}
-        preview={iframe}
-        previewToolbarBreadcrumbs={
-            <SettingsBreadcrumbs
-                current={formState?.name || 'Offer'}
-                label='Offers'
-                onBack={goBack}
-            />
+          toast.dismiss();
+          if (message) {
+            toast.error("Can't save offer", { description: 'Please try again later' });
+          }
         }
-        sidebar={sidebar}
-        size='lg'
-        testId='offer-update-modal'
-        title='Offer'
-        width={1140}
-        onCancel={goBack}
-        onClose={() => {
-            updateRoute('offers');
-        }}
-        onOk={async () => {
-            try {
-                if (await handleSave({force: true})) {
-                    return;
-                }
-            } catch (e) {
-                let message;
-
-                if (e instanceof JSONError && e.data && e.data.errors[0]) {
-                    message = e.data.errors[0].context || e.data.errors[0].message;
-                }
-
-                toast.dismiss();
-                if (message) {
-                    toast.error('Can\'t save offer', {description: 'Please try again later'});
-                }
-            }
-        }} /> : null;
+      }}
+    />
+  ) : null;
 };
 
 export default EditOfferModal;

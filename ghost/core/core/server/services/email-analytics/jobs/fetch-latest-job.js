@@ -1,4 +1,4 @@
-const {parentPort} = require('worker_threads');
+const { parentPort } = require('worker_threads');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 
@@ -8,14 +8,14 @@ const {parentPort} = require('worker_threads');
  * @returns {void}
  */
 function cancel() {
-    if (parentPort) {
-        parentPort.postMessage('cancelled before completion');
-        parentPort.postMessage('cancelled');
-    } else {
-        setTimeout(() => {
-            process.exit(0);
-        }, 1000);
-    }
+  if (parentPort) {
+    parentPort.postMessage('cancelled before completion');
+    parentPort.postMessage('cancelled');
+  } else {
+    setTimeout(() => {
+      process.exit(0);
+    }, 1000);
+  }
 }
 
 /**
@@ -23,31 +23,29 @@ function cancel() {
  * @param {{name: string}} options.event
  * @returns {void}
  */
-exports.run = ({
-    event
-}) => {
-    if (parentPort) {
-        parentPort.postMessage('execution started');
-        parentPort.once('message', (message) => {
-            if (message === 'cancel') {
-                cancel();
-                return;
-            }
-        });
+exports.run = ({ event }) => {
+  if (parentPort) {
+    parentPort.postMessage('execution started');
+    parentPort.once('message', (message) => {
+      if (message === 'cancel') {
+        cancel();
+        return;
+      }
+    });
 
-        // We send an event message, so that it is emitted on the main thread by the job manager
-        // This will start the email analytics job on the main thread (the wrapper service is listening for this event)
-        parentPort.postMessage({
-            event: {
-                type: event.name
-            }
-        });
+    // We send an event message, so that it is emitted on the main thread by the job manager
+    // This will start the email analytics job on the main thread (the wrapper service is listening for this event)
+    parentPort.postMessage({
+      event: {
+        type: event.name,
+      },
+    });
 
-        parentPort.postMessage('done');
-    } else {
-        // give the logging pipes time finish writing before exit
-        setTimeout(() => {
-            process.exit(0);
-        }, 1000);
-    }
+    parentPort.postMessage('done');
+  } else {
+    // give the logging pipes time finish writing before exit
+    setTimeout(() => {
+      process.exit(0);
+    }, 1000);
+  }
 };

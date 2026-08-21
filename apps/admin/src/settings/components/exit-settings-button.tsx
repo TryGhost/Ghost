@@ -1,26 +1,36 @@
 import React from 'react';
-import {Button} from '@tryghost/shade/components';
-import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {LucideIcon, useGlobalDirtyState} from '@tryghost/shade/utils';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import { Button } from '@tryghost/shade/components';
+import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
+import { LucideIcon, useGlobalDirtyState } from '@tryghost/shade/utils';
+import { useNavigate } from '@tryghost/admin-x-framework';
 
 const ExitSettingsButton: React.FC = () => {
-    const {isDirty} = useGlobalDirtyState();
-    const {confirm, dialogProps} = useDirtyConfirmation();
-    const navigate = useNavigate();
+  const { isDirty } = useGlobalDirtyState();
+  const { confirm, dialogProps } = useDirtyConfirmation();
+  const navigate = useNavigate();
 
-    const navigateAway = () => {
-        navigate('/');
-    };
+  const navigateAway = () => {
+    navigate('/');
+  };
 
-    return (
-        <>
-            <Button aria-label='Close settings' className='text-muted-foreground hover:text-foreground' data-testid='exit-settings' id='done-button' size='icon' title='Close (ESC)' type='button' variant='ghost' onClick={() => confirm(isDirty, navigateAway)}>
-                <LucideIcon.X className='size-6!' />
-            </Button>
-            <DirtyConfirmDialog {...dialogProps} />
-        </>
-    );
+  return (
+    <>
+      <Button
+        aria-label="Close settings"
+        className="text-muted-foreground hover:text-foreground"
+        data-testid="exit-settings"
+        id="done-button"
+        size="icon"
+        title="Close (ESC)"
+        type="button"
+        variant="ghost"
+        onClick={() => confirm(isDirty, navigateAway)}
+      >
+        <LucideIcon.X className="size-6!" />
+      </Button>
+      <DirtyConfirmDialog {...dialogProps} />
+    </>
+  );
 };
 
 export default ExitSettingsButton;

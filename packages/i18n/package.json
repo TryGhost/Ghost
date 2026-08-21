@@ -1,14 +1,18 @@
 {
   "name": "@tryghost/i18n",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/i18n",
-  "author": "Ghost Foundation",
   "private": true,
-  "ghostPackage": {
-    "goldenPath": "exempt",
-    "reason": "Ships locale assets and dedicated CommonJS and ESM loaders for browser and server consumers."
-  },
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/i18n",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "registry.d.ts",
+    "lib",
+    "locales"
+  ],
   "main": "index.js",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
       "types": "./index.d.ts",
@@ -22,7 +26,6 @@
     "./lib/locale-data.json": "./lib/locale-data.json",
     "./package.json": "./package.json"
   },
-  "types": "./index.d.ts",
   "scripts": {
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm translate",
@@ -37,13 +40,10 @@
     "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'",
     "translate:search": "NAMESPACE=search i18next '../../apps/sodo-search/src/**/*.{js,jsx,ts,tsx}'"
   },
-  "files": [
-    "index.js",
-    "index.d.ts",
-    "registry.d.ts",
-    "lib",
-    "locales"
-  ],
+  "dependencies": {
+    "@tryghost/debug": "catalog:",
+    "i18next": "23.16.8"
+  },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
@@ -53,9 +53,9 @@
     "i18next-parser": "9.4.0",
     "vitest": "catalog:"
   },
-  "dependencies": {
-    "@tryghost/debug": "catalog:",
-    "i18next": "23.16.8"
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "Ships locale assets and dedicated CommonJS and ESM loaders for browser and server consumers."
   },
   "nx": {
     "tags": [

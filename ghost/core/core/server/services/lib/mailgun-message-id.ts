@@ -1,27 +1,26 @@
 type MailgunSendResult = {
-    id: string;
+  id: string;
 };
 
 const isMailgunSendResult = (value: unknown): value is MailgunSendResult => {
-    return typeof value === 'object' &&
-        value !== null &&
-        'id' in value &&
-        typeof value.id === 'string';
+  return (
+    typeof value === 'object' && value !== null && 'id' in value && typeof value.id === 'string'
+  );
 };
 
 const parseMailgunMessageId = (sendResult: unknown): string | undefined => {
-    if (!isMailgunSendResult(sendResult)) {
-        return undefined;
-    }
+  if (!isMailgunSendResult(sendResult)) {
+    return undefined;
+  }
 
-    return sendResult.id;
+  return sendResult.id;
 };
 
 export const normalizeMailgunMessageId = (mailgunMessageId: string): string => {
-    return mailgunMessageId.trim().replace(/^<|>$/g, '');
+  return mailgunMessageId.trim().replace(/^<|>$/g, '');
 };
 
 export const getMailgunMessageId = (sendResult: unknown): string | undefined => {
-    const mailgunMessageId = parseMailgunMessageId(sendResult);
-    return mailgunMessageId === undefined ? undefined : normalizeMailgunMessageId(mailgunMessageId);
+  const mailgunMessageId = parseMailgunMessageId(sendResult);
+  return mailgunMessageId === undefined ? undefined : normalizeMailgunMessageId(mailgunMessageId);
 };

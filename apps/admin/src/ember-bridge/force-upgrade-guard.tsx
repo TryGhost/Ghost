@@ -1,8 +1,8 @@
-import { Navigate, Outlet, useMatches } from "@tryghost/admin-x-framework";
-import { useForceUpgrade } from "./ember-bridge";
+import { Navigate, Outlet, useMatches } from '@tryghost/admin-x-framework';
+import { useForceUpgrade } from './ember-bridge';
 
 export interface RouteHandle {
-    allowInForceUpgrade?: boolean;
+  allowInForceUpgrade?: boolean;
 }
 
 /**
@@ -27,18 +27,18 @@ export interface RouteHandle {
  * ```
  */
 export function ForceUpgradeGuard() {
-    const forceUpgrade = useForceUpgrade();
-    const matches = useMatches();
+  const forceUpgrade = useForceUpgrade();
+  const matches = useMatches();
 
-    // Check if any matched route allows access in force upgrade mode
-    const isAllowed = matches.some((match) => {
-        const handle = match.handle as RouteHandle | undefined;
-        return handle?.allowInForceUpgrade === true;
-    });
+  // Check if any matched route allows access in force upgrade mode
+  const isAllowed = matches.some((match) => {
+    const handle = match.handle as RouteHandle | undefined;
+    return handle?.allowInForceUpgrade === true;
+  });
 
-    if (forceUpgrade && !isAllowed) {
-        return <Navigate to="/pro" replace />;
-    }
+  if (forceUpgrade && !isAllowed) {
+    return <Navigate to="/pro" replace />;
+  }
 
-    return <Outlet />;
+  return <Outlet />;
 }

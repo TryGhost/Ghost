@@ -1,9 +1,9 @@
 import crypto from 'crypto';
-import {z} from 'zod';
+import { z } from 'zod';
 
 export interface ResolveOptions {
-    /** this site's UUID; required to resolve ramps */
-    siteUuid?: string;
+  /** this site's UUID; required to resolve ramps */
+  siteUuid?: string;
 }
 
 // Skip keys that would shadow an Object.prototype member: a manifest
@@ -22,8 +22,8 @@ const UNSAFE_KEYS = new Set([...Object.getOwnPropertyNames(Object.prototype), 'p
  * re-buckets every in-flight ramp, so a golden value is pinned in the tests.
  */
 export function bucketFor(flag: string, siteUuid: string): number {
-    const digest = crypto.createHash('md5').update(`${flag}:${siteUuid}`).digest();
-    return digest.readUInt32BE(0) % 100;
+  const digest = crypto.createHash('md5').update(`${flag}:${siteUuid}`).digest();
+  return digest.readUInt32BE(0) % 100;
 }
 
 /**
@@ -32,11 +32,11 @@ export function bucketFor(flag: string, siteUuid: string): number {
  * malformed and skipped. Unknown keys inside a ramp object are stripped.
  */
 const entrySchema = z.union([
-    z.boolean(),
-    z.object({
-        value: z.boolean(),
-        percent: z.number().optional()
-    })
+  z.boolean(),
+  z.object({
+    value: z.boolean(),
+    percent: z.number().optional(),
+  }),
 ]);
 
 /**
@@ -53,56 +53,56 @@ const entrySchema = z.union([
  * @param manifest - parsed manifest; anything that is not a plain object yields `{}`
  */
 export function resolve(manifest: unknown, options?: ResolveOptions): Record<string, boolean> {
-    const result: Record<string, boolean> = {};
+  const result: Record<string, boolean> = {};
 
-    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
-        return result;
-    }
-
-    const {siteUuid} = options || {};
-
-    const entries = manifest as Record<string, unknown>;
-    for (const flag of Object.keys(entries)) {
-        if (UNSAFE_KEYS.has(flag)) {
-            continue;
-        }
-
-        const parsed = entrySchema.safeParse(entries[flag]);
-        if (!parsed.success) {
-            // Malformed entry: skip it individually, keeping every valid sibling.
-            continue;
-        }
-        const entry = parsed.data;
-
-        // Bare boolean: full override for every site.
-        if (typeof entry === 'boolean') {
-            result[flag] = entry;
-            continue;
-        }
-
-        // Clamp so a typo can't widen beyond the fleet or go negative.
-        let percent = entry.percent === undefined ? 100 : entry.percent;
-        percent = Math.max(0, Math.min(100, percent));
-
-        if (percent <= 0) {
-            // 0% is "no opinion" for this site.
-            continue;
-        }
-        if (percent >= 100) {
-            result[flag] = entry.value;
-            continue;
-        }
-
-        // Ramps need a usable site UUID to bucket against; without one, skip the
-        // ramp (any full overrides above still applied). Also guards bucketFor input.
-        if (typeof siteUuid !== 'string' || siteUuid === '') {
-            continue;
-        }
-
-        if (bucketFor(flag, siteUuid) < percent) {
-            result[flag] = entry.value;
-        }
-    }
-
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
     return result;
+  }
+
+  const { siteUuid } = options || {};
+
+  const entries = manifest as Record<string, unknown>;
+  for (const flag of Object.keys(entries)) {
+    if (UNSAFE_KEYS.has(flag)) {
+      continue;
+    }
+
+    const parsed = entrySchema.safeParse(entries[flag]);
+    if (!parsed.success) {
+      // Malformed entry: skip it individually, keeping every valid sibling.
+      continue;
+    }
+    const entry = parsed.data;
+
+    // Bare boolean: full override for every site.
+    if (typeof entry === 'boolean') {
+      result[flag] = entry;
+      continue;
+    }
+
+    // Clamp so a typo can't widen beyond the fleet or go negative.
+    let percent = entry.percent === undefined ? 100 : entry.percent;
+    percent = Math.max(0, Math.min(100, percent));
+
+    if (percent <= 0) {
+      // 0% is "no opinion" for this site.
+      continue;
+    }
+    if (percent >= 100) {
+      result[flag] = entry.value;
+      continue;
+    }
+
+    // Ramps need a usable site UUID to bucket against; without one, skip the
+    // ramp (any full overrides above still applied). Also guards bucketFor input.
+    if (typeof siteUuid !== 'string' || siteUuid === '') {
+      continue;
+    }
+
+    if (bucketFor(flag, siteUuid) < percent) {
+      result[flag] = entry.value;
+    }
+  }
+
+  return result;
 }

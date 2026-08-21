@@ -6,13 +6,13 @@ continuous delivery.
 
 ## At a glance
 
-| Track | Current cadence |
-| --- | --- |
-| Admin (Pro only) | Every commit to `main` after its Admin release-path checks pass |
-| Portal and other public apps | When the app changes on `main` |
-| Admin + Server (Public Release) | Weekly on Tuesdays |
-| Admin + Server (Docker Official Image) | Follows public release after Docker team review |
-| Server (Pro only) | Daily rollout on weekdays |
+| Track                                  | Current cadence                                                 |
+| -------------------------------------- | --------------------------------------------------------------- |
+| Admin (Pro only)                       | Every commit to `main` after its Admin release-path checks pass |
+| Portal and other public apps           | When the app changes on `main`                                  |
+| Admin + Server (Public Release)        | Weekly on Tuesdays                                              |
+| Admin + Server (Docker Official Image) | Follows public release after Docker team review                 |
+| Server (Pro only)                      | Daily rollout on weekdays                                       |
 
 ## Admin
 

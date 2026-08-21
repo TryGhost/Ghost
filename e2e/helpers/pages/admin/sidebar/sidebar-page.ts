@@ -1,15 +1,15 @@
 import * as sidebarSel from '@tryghost/test-data/selectors/sidebar';
-import {AdminPage} from '@/admin-pages';
-import {Locator, Page} from '@playwright/test';
-import {whatsNewMenuItem} from '@tryghost/test-data/selectors/whats-new';
+import { AdminPage } from '@/admin-pages';
+import { Locator, Page } from '@playwright/test';
+import { whatsNewMenuItem } from '@tryghost/test-data/selectors/whats-new';
 
 export type UserRole = 'Administrator' | 'Editor' | 'Super Editor' | 'Author' | 'Contributor';
 
 export interface NavItem {
-    name: string;
-    path: RegExp;
-    directUrl: string;
-    roles: UserRole[];
+  name: string;
+  path: RegExp;
+  directUrl: string;
+  roles: UserRole[];
 }
 
 /**
@@ -22,13 +22,48 @@ export interface NavItem {
  * apps/admin/src/layout/app-sidebar/{nav-main,nav-content}.tsx.
  */
 export const NAV_ITEMS: NavItem[] = [
-    {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
-    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
-    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator']},
-    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Super Editor', 'Author']},
-    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor', 'Super Editor', 'Author']},
-    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor', 'Super Editor']},
-    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Super Editor']}
+  {
+    name: 'Analytics',
+    path: /\/ghost\/#\/analytics\/?$/,
+    directUrl: '/ghost/#/analytics',
+    roles: ['Administrator'],
+  },
+  {
+    name: 'Network',
+    path: /\/ghost\/#\/(network|activitypub)\/?/,
+    directUrl: '/ghost/#/activitypub',
+    roles: ['Administrator'],
+  },
+  {
+    name: 'View site',
+    path: /\/ghost\/#\/site\/?$/,
+    directUrl: '/ghost/#/site',
+    roles: ['Administrator'],
+  },
+  {
+    name: 'Posts',
+    path: /\/ghost\/#\/posts\/?$/,
+    directUrl: '/ghost/#/posts',
+    roles: ['Administrator', 'Editor', 'Super Editor', 'Author'],
+  },
+  {
+    name: 'Pages',
+    path: /\/ghost\/#\/pages\/?$/,
+    directUrl: '/ghost/#/pages',
+    roles: ['Administrator', 'Editor', 'Super Editor', 'Author'],
+  },
+  {
+    name: 'Tags',
+    path: /\/ghost\/#\/tags\/?$/,
+    directUrl: '/ghost/#/tags',
+    roles: ['Administrator', 'Editor', 'Super Editor'],
+  },
+  {
+    name: 'Members',
+    path: /\/ghost\/#\/members\/?$/,
+    directUrl: '/ghost/#/members',
+    roles: ['Administrator', 'Super Editor'],
+  },
 ];
 
 /**
@@ -40,77 +75,79 @@ export const NAV_ITEMS: NavItem[] = [
  * ✓ Posts toggle button has aria-expanded
  */
 export class SidebarPage extends AdminPage {
-    public readonly sidebar: Locator;
-    public readonly adminSidebar: Locator;
-    public readonly postsToggle: Locator;
-    public readonly userDropdownTrigger: Locator;
-    public readonly appearanceMenuItem: Locator;
-    public readonly themeLightOption: Locator;
-    public readonly themeSystemOption: Locator;
-    public readonly themeDarkOption: Locator;
-    public readonly whatsNewButton: Locator;
-    public readonly userProfileLink: Locator;
-    public readonly signOutLink: Locator;
-    public readonly networkNotificationBadge: Locator;
-    public readonly ghostProLink: Locator;
-    public readonly upgradeNowLink: Locator;
-    public readonly themeErrorBanner: Locator;
-    public readonly themeErrorDialog: Locator;
+  public readonly sidebar: Locator;
+  public readonly adminSidebar: Locator;
+  public readonly postsToggle: Locator;
+  public readonly userDropdownTrigger: Locator;
+  public readonly appearanceMenuItem: Locator;
+  public readonly themeLightOption: Locator;
+  public readonly themeSystemOption: Locator;
+  public readonly themeDarkOption: Locator;
+  public readonly whatsNewButton: Locator;
+  public readonly userProfileLink: Locator;
+  public readonly signOutLink: Locator;
+  public readonly networkNotificationBadge: Locator;
+  public readonly ghostProLink: Locator;
+  public readonly upgradeNowLink: Locator;
+  public readonly themeErrorBanner: Locator;
+  public readonly themeErrorDialog: Locator;
 
-    constructor(page: Page) {
-        super(page);
-        // The admin renders more than one navigation landmark (React screens
-        // carry a breadcrumb <nav aria-label="breadcrumb"> too), so anchor on
-        // the site search control, which only the sidebar contains.
-        this.sidebar = page.getByRole('navigation').filter({has: page.getByRole('button', {name: /Search site/})});
-        // Container testid — for asserting the sidebar's absence (contributors
-        // get a floating avatar menu instead of the sidebar).
-        this.adminSidebar = page.getByTestId(sidebarSel.adminSidebar);
-        this.postsToggle = this.sidebar.getByRole('button', {name: sidebarSel.postsToggle});
-        this.userDropdownTrigger = page.getByRole('button', {name: sidebarSel.userMenuTrigger});
-        this.appearanceMenuItem = page.getByRole('menuitem', {name: sidebarSel.appearanceMenuItem});
-        this.themeLightOption = page.getByRole('menuitem', {name: sidebarSel.lightAppearanceOption});
-        this.themeSystemOption = page.getByRole('menuitem', {name: sidebarSel.systemAppearanceOption});
-        this.themeDarkOption = page.getByRole('menuitem', {name: sidebarSel.darkAppearanceOption});
-        this.whatsNewButton = page.getByRole('menuitem', {name: whatsNewMenuItem});
-        this.userProfileLink = page.getByRole('menuitem', {name: sidebarSel.profileMenuItem});
-        this.signOutLink = page.getByRole('menuitem', {name: sidebarSel.signOutMenuItem});
+  constructor(page: Page) {
+    super(page);
+    // The admin renders more than one navigation landmark (React screens
+    // carry a breadcrumb <nav aria-label="breadcrumb"> too), so anchor on
+    // the site search control, which only the sidebar contains.
+    this.sidebar = page
+      .getByRole('navigation')
+      .filter({ has: page.getByRole('button', { name: /Search site/ }) });
+    // Container testid — for asserting the sidebar's absence (contributors
+    // get a floating avatar menu instead of the sidebar).
+    this.adminSidebar = page.getByTestId(sidebarSel.adminSidebar);
+    this.postsToggle = this.sidebar.getByRole('button', { name: sidebarSel.postsToggle });
+    this.userDropdownTrigger = page.getByRole('button', { name: sidebarSel.userMenuTrigger });
+    this.appearanceMenuItem = page.getByRole('menuitem', { name: sidebarSel.appearanceMenuItem });
+    this.themeLightOption = page.getByRole('menuitem', { name: sidebarSel.lightAppearanceOption });
+    this.themeSystemOption = page.getByRole('menuitem', {
+      name: sidebarSel.systemAppearanceOption,
+    });
+    this.themeDarkOption = page.getByRole('menuitem', { name: sidebarSel.darkAppearanceOption });
+    this.whatsNewButton = page.getByRole('menuitem', { name: whatsNewMenuItem });
+    this.userProfileLink = page.getByRole('menuitem', { name: sidebarSel.profileMenuItem });
+    this.signOutLink = page.getByRole('menuitem', { name: sidebarSel.signOutMenuItem });
 
-        this.networkNotificationBadge = this.sidebar.getByTestId(sidebarSel.networkNotificationBadge);
-        this.ghostProLink = this.sidebar.getByRole('link', {name: sidebarSel.ghostProLink});
-        this.upgradeNowLink = this.sidebar.getByRole('link', {name: sidebarSel.upgradeNowLink});
-        this.themeErrorBanner = page.getByRole('status').filter({hasText: sidebarSel.themeErrorsBannerText});
-        this.themeErrorDialog = page.getByRole('dialog', {name: sidebarSel.themeErrorsDialog});
+    this.networkNotificationBadge = this.sidebar.getByTestId(sidebarSel.networkNotificationBadge);
+    this.ghostProLink = this.sidebar.getByRole('link', { name: sidebarSel.ghostProLink });
+    this.upgradeNowLink = this.sidebar.getByRole('link', { name: sidebarSel.upgradeNowLink });
+    this.themeErrorBanner = page
+      .getByRole('status')
+      .filter({ hasText: sidebarSel.themeErrorsBannerText });
+    this.themeErrorDialog = page.getByRole('dialog', { name: sidebarSel.themeErrorsDialog });
+  }
+
+  getNavLink(name: string): Locator {
+    return this.sidebar.getByRole('link').filter({ hasText: new RegExp(name, 'i') });
+  }
+
+  getCustomViewColorIndicator(viewName: string): Locator {
+    return this.getNavLink(viewName).locator('[data-color]');
+  }
+
+  async expandPostsSubmenu(): Promise<void> {
+    const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
+    if (isExpanded !== 'true') {
+      await this.postsToggle.click();
     }
+  }
 
-    getNavLink(name: string): Locator {
-        return this.sidebar
-            .getByRole('link')
-            .filter({hasText: new RegExp(name, 'i')});
+  async collapsePostsSubmenu(): Promise<void> {
+    const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
+    if (isExpanded === 'true') {
+      await this.postsToggle.click();
     }
+  }
 
-    getCustomViewColorIndicator(viewName: string): Locator {
-        return this.getNavLink(viewName).locator('[data-color]');
-    }
-
-    async expandPostsSubmenu(): Promise<void> {
-        const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
-        if (isExpanded !== 'true') {
-            await this.postsToggle.click();
-        }
-    }
-
-    async collapsePostsSubmenu(): Promise<void> {
-        const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
-        if (isExpanded === 'true') {
-            await this.postsToggle.click();
-        }
-    }
-
-    async waitForDarkMode(enabled: boolean): Promise<void> {
-        const locator = enabled
-            ? this.page.locator('html.dark')
-            : this.page.locator('html:not(.dark)');
-        await locator.waitFor();
-    }
+  async waitForDarkMode(enabled: boolean): Promise<void> {
+    const locator = enabled ? this.page.locator('html.dark') : this.page.locator('html:not(.dark)');
+    await locator.waitFor();
+  }
 }

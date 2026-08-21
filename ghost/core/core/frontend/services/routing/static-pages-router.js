@@ -7,93 +7,93 @@ const controllers = require('./controllers');
  * @description Resource: pages
  */
 class StaticPagesRouter extends ParentRouter {
-    constructor(RESOURCE_CONFIG, routerCreated) {
-        super('StaticPagesRouter');
+  constructor(RESOURCE_CONFIG, routerCreated) {
+    super('StaticPagesRouter');
 
-        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.page;
-        this.routerCreated = routerCreated;
+    this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.page;
+    this.routerCreated = routerCreated;
 
-        // @NOTE: Permalink is always /:slug, not configure able
-        this.permalinks = {
-            value: '/:slug/'
-        };
+    // @NOTE: Permalink is always /:slug, not configure able
+    this.permalinks = {
+      value: '/:slug/',
+    };
 
-        this.permalinks.getValue = (options = {}) => {
-            options = options || {};
+    this.permalinks.getValue = (options = {}) => {
+      options = options || {};
 
-            // @NOTE: url options are only required when registering urls in express.
-            //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
-            if (options.withUrlOptions) {
-                return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
-            }
+      // @NOTE: url options are only required when registering urls in express.
+      //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
+      if (options.withUrlOptions) {
+        return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
+      }
 
-            return this.permalinks.value;
-        };
+      return this.permalinks.value;
+    };
 
-        debug(this.permalinks);
+    debug(this.permalinks);
 
-        this._registerRoutes();
-    }
+    this._registerRoutes();
+  }
 
-    /**
-     * @description Register all routes of this router.
-     * @private
-     */
-    _registerRoutes() {
-        // REGISTER: prepare context
-        this.router().use(this._prepareContext.bind(this));
+  /**
+   * @description Register all routes of this router.
+   * @private
+   */
+  _registerRoutes() {
+    // REGISTER: prepare context
+    this.router().use(this._prepareContext.bind(this));
 
-        this.router().param('slug', this._respectDominantRouter.bind(this));
+    this.router().param('slug', this._respectDominantRouter.bind(this));
 
-        // REGISTER: permalink for static pages
-        this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
+    // REGISTER: permalink for static pages
+    this.mountRoute(this.permalinks.getValue({ withUrlOptions: true }), controllers.entry);
 
-        // REGISTER: .md variant for llms.txt markdown export
-        this.mountRoute('/:slug.md', (req, res, next) => {
-            res.routerOptions.permalinks = '/:slug.md';
-            res.routerOptions.isMarkdownRequest = true;
-            return controllers.entry(req, res, next);
-        });
+    // REGISTER: .md variant for llms.txt markdown export
+    this.mountRoute('/:slug.md', (req, res, next) => {
+      res.routerOptions.permalinks = '/:slug.md';
+      res.routerOptions.isMarkdownRequest = true;
+      return controllers.entry(req, res, next);
+    });
 
-        this.routerCreated(this);
-    }
+    this.routerCreated(this);
+  }
 
-    /**
-     * @description Prepare context for further middleware/controllers.
-     * @param {Object} req
-     * @param {Object} res
-     * @param {Function} next
-     * @private
-     */
-    _prepareContext(req, res, next) {
-        res.routerOptions = {
-            type: 'entry',
-            permalinks: this.permalinks.getValue({withUrlOptions: true}),
-            resourceType: this.getResourceType(),
-            query: this.RESOURCE_CONFIG,
-            context: ['page']
-        };
+  /**
+   * @description Prepare context for further middleware/controllers.
+   * @param {Object} req
+   * @param {Object} res
+   * @param {Function} next
+   * @private
+   */
+  _prepareContext(req, res, next) {
+    res.routerOptions = {
+      type: 'entry',
+      permalinks: this.permalinks.getValue({ withUrlOptions: true }),
+      resourceType: this.getResourceType(),
+      query: this.RESOURCE_CONFIG,
+      context: ['page'],
+    };
 
-        next();
-    }
+    next();
+  }
 
-    /**
-     * @description Resource type.
-     * @returns {string}
-     */
-    getResourceType() {
-        return 'pages';
-    }
+  /**
+   * @description Resource type.
+   * @returns {string}
+   */
+  getResourceType() {
+    return 'pages';
+  }
 
-    /**
-     * @description This router has no index/default route. "/:slug/" is dynamic.
-     * @returns {null}
-     */
-    getRoute() {
-        return null;
-    }
+  /**
+   * @description This router has no index/default route. "/:slug/" is dynamic.
+   * @returns {null}
+   */
+  getRoute() {
+    return null;
+  }
 
-    reset() {}
+  reset() {}
 }
 
 module.exports = StaticPagesRouter;

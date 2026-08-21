@@ -15,17 +15,17 @@ const SEPARATOR = '.';
 export const ROOT_PATH = '';
 
 export interface Leaf {
-    path: string;
-    value_text: string;
+  path: string;
+  value_text: string;
 }
 
 export interface StoredLeaf extends Leaf {
-    member_id: string;
-    key: string;
+  member_id: string;
+  key: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -35,88 +35,93 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * this holds here rather than trusting whatever put them there.
  */
 function isSafeSegment(segment: string): boolean {
-    return !(segment in Object.prototype);
+  return !(segment in Object.prototype);
 }
 
 /** Every leaf a value names, at any depth, including the ones it names as empty. */
 export function leavesFor(value: unknown, path: string = ROOT_PATH): Leaf[] {
-    if (typeof value === 'string') {
-        return [{path, value_text: value}];
-    }
+  if (typeof value === 'string') {
+    return [{ path, value_text: value }];
+  }
 
-    // Thrown rather than stored: the read path rejects a non-string row, so writing one
-    // loses the value with nothing to say it ever arrived.
-    if (!isRecord(value)) {
-        throw new errors.IncorrectUsageError({
-            message: `A custom field value must be a string or a record of them, not ${value === null ? 'null' : typeof value}.`
-        });
-    }
+  // Thrown rather than stored: the read path rejects a non-string row, so writing one
+  // loses the value with nothing to say it ever arrived.
+  if (!isRecord(value)) {
+    throw new errors.IncorrectUsageError({
+      message: `A custom field value must be a string or a record of them, not ${value === null ? 'null' : typeof value}.`,
+    });
+  }
 
-    // Undefined means the value does not name the part, which is not the same as naming
-    // it empty: the first leaves what is stored alone, the second clears it.
-    return Object.entries(value)
-        .filter(([, part]) => part !== undefined)
-        .flatMap(([key, part]) => leavesFor(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`));
+  // Undefined means the value does not name the part, which is not the same as naming
+  // it empty: the first leaves what is stored alone, the second clears it.
+  return Object.entries(value)
+    .filter(([, part]) => part !== undefined)
+    .flatMap(([key, part]) =>
+      leavesFor(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`),
+    );
 }
 
 /** A value split into the leaves it sets and the paths it clears. */
-export function leavesToWrite(value: unknown): {set: Leaf[], cleared: string[]} {
-    const named = leavesFor(value);
+export function leavesToWrite(value: unknown): { set: Leaf[]; cleared: string[] } {
+  const named = leavesFor(value);
 
-    return {
-        set: named.filter(leaf => leaf.value_text !== ''),
-        cleared: named.filter(leaf => leaf.value_text === '').map(leaf => leaf.path)
-    };
+  return {
+    set: named.filter((leaf) => leaf.value_text !== ''),
+    cleared: named.filter((leaf) => leaf.value_text === '').map((leaf) => leaf.path),
+  };
 }
 
 /** The value a set of leaves adds up to, rebuilt to whatever depth their paths describe. */
 export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
-    const root = leaves.find(leaf => leaf.path === ROOT_PATH);
-    if (root) {
-        return root.value_text;
+  const root = leaves.find((leaf) => leaf.path === ROOT_PATH);
+  if (root) {
+    return root.value_text;
+  }
+
+  const value: Record<string, unknown> = {};
+  for (const leaf of leaves) {
+    const segments = leaf.path.split(SEPARATOR);
+    if (!segments.every(isSafeSegment)) {
+      continue;
     }
 
-    const value: Record<string, unknown> = {};
-    for (const leaf of leaves) {
-        const segments = leaf.path.split(SEPARATOR);
-        if (!segments.every(isSafeSegment)) {
-            continue;
-        }
+    const last = segments.pop() as string;
+    // A segment already holding a string is replaced rather than descended into: this
+    // runs over every member of a list response, so a contradictory pair of paths
+    // should cost one odd value rather than the whole response.
+    const parent = segments.reduce<Record<string, unknown>>((target, segment) => {
+      if (!isRecord(target[segment])) {
+        target[segment] = {};
+      }
+      return target[segment] as Record<string, unknown>;
+    }, value);
+    parent[last] = leaf.value_text;
+  }
 
-        const last = segments.pop() as string;
-        // A segment already holding a string is replaced rather than descended into: this
-        // runs over every member of a list response, so a contradictory pair of paths
-        // should cost one odd value rather than the whole response.
-        const parent = segments.reduce<Record<string, unknown>>((target, segment) => {
-            if (!isRecord(target[segment])) {
-                target[segment] = {};
-            }
-            return target[segment] as Record<string, unknown>;
-        }, value);
-        parent[last] = leaf.value_text;
-    }
-
-    return value;
+  return value;
 }
 
 /** Every member's values, keyed by member and then field key; a member with no rows is absent. */
-export function valuesFromLeaves(leaves: readonly StoredLeaf[]): Map<string, Record<string, unknown>> {
-    const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
+export function valuesFromLeaves(
+  leaves: readonly StoredLeaf[],
+): Map<string, Record<string, unknown>> {
+  const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
 
-    for (const {member_id: memberId, key, path, value_text: valueText} of leaves) {
-        const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
-        const forField = fields.get(key) ?? [];
-        forField.push({path, value_text: valueText});
-        fields.set(key, forField);
-        byMemberAndField.set(memberId, fields);
-    }
+  for (const { member_id: memberId, key, path, value_text: valueText } of leaves) {
+    const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
+    const forField = fields.get(key) ?? [];
+    forField.push({ path, value_text: valueText });
+    fields.set(key, forField);
+    byMemberAndField.set(memberId, fields);
+  }
 
-    const byMember = new Map<string, Record<string, unknown>>();
-    for (const [memberId, fields] of byMemberAndField) {
-        byMember.set(memberId, Object.fromEntries(
-            [...fields].map(([key, forField]) => [key, valueFromLeaves(forField)])
-        ));
-    }
+  const byMember = new Map<string, Record<string, unknown>>();
+  for (const [memberId, fields] of byMemberAndField) {
+    byMember.set(
+      memberId,
+      Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromLeaves(forField)])),
+    );
+  }
 
-    return byMember;
+  return byMember;
 }

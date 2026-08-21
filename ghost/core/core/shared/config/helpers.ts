@@ -1,7 +1,7 @@
 import path from 'node:path';
-import {URL} from 'node:url';
-import type {Provider} from 'nconf';
-import type {BoundHelpers} from '@tryghost/config-url-helpers';
+import { URL } from 'node:url';
+import type { Provider } from 'nconf';
+import type { BoundHelpers } from '@tryghost/config-url-helpers';
 
 /**
  * The subset of the config instance the helpers read from.
@@ -17,95 +17,97 @@ type ConfigWithUrlHelpers = ConfigLike & BoundHelpers;
  * The set of helper methods that `bindAll` attaches to the config instance.
  */
 export interface ConfigHelpers {
-    isPrivacyDisabled(privacyFlag: string): boolean;
-    getContentPath(type: string): string;
-    getBackendMountPath(): string | RegExp;
-    getFrontendMountPath(): string | RegExp;
-    isTestEnv(): boolean;
-    isProductionOrDevelopment(): boolean;
+  isPrivacyDisabled(privacyFlag: string): boolean;
+  getContentPath(type: string): string;
+  getBackendMountPath(): string | RegExp;
+  getFrontendMountPath(): string | RegExp;
+  isTestEnv(): boolean;
+  isProductionOrDevelopment(): boolean;
 }
 
 const DEFAULT_HOST_ARG = /.*/;
 
 function escapeRegExp(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function getHostInfo(config: ConfigWithUrlHelpers) {
-    const frontendHost = new URL(config.getSiteUrl()).hostname;
+  const frontendHost = new URL(config.getSiteUrl()).hostname;
 
-    const adminUrl = config.getAdminUrl();
-    const backendHost = adminUrl ? new URL(adminUrl).hostname : '';
-    const hasSeparateBackendHost = backendHost && backendHost !== frontendHost;
+  const adminUrl = config.getAdminUrl();
+  const backendHost = adminUrl ? new URL(adminUrl).hostname : '';
+  const hasSeparateBackendHost = backendHost && backendHost !== frontendHost;
 
-    return {
-        backendHost,
-        hasSeparateBackendHost
-    };
+  return {
+    backendHost,
+    hasSeparateBackendHost,
+  };
 }
 
 function getBackendMountPath(this: ConfigWithUrlHelpers): string | RegExp {
-    const {backendHost, hasSeparateBackendHost} = getHostInfo(this);
+  const { backendHost, hasSeparateBackendHost } = getHostInfo(this);
 
-    // with a separate admin url only serve on that host, otherwise serve on all hosts
-    return (hasSeparateBackendHost) && backendHost ? backendHost : DEFAULT_HOST_ARG;
+  // with a separate admin url only serve on that host, otherwise serve on all hosts
+  return hasSeparateBackendHost && backendHost ? backendHost : DEFAULT_HOST_ARG;
 }
 
 function getFrontendMountPath(this: ConfigWithUrlHelpers): string | RegExp {
-    const {backendHost, hasSeparateBackendHost} = getHostInfo(this);
+  const { backendHost, hasSeparateBackendHost } = getHostInfo(this);
 
-    // with a separate admin url we adjust the frontend vhost to exclude requests to that host, otherwise serve on all hosts
-    return (hasSeparateBackendHost && backendHost) ? new RegExp(`^(?!${escapeRegExp(backendHost)}).*`) : DEFAULT_HOST_ARG;
+  // with a separate admin url we adjust the frontend vhost to exclude requests to that host, otherwise serve on all hosts
+  return hasSeparateBackendHost && backendHost
+    ? new RegExp(`^(?!${escapeRegExp(backendHost)}).*`)
+    : DEFAULT_HOST_ARG;
 }
 
 function isPrivacyDisabled(this: ConfigLike, privacyFlag: string): boolean {
-    if (!this.get('privacy')) {
-        return false;
+  if (!this.get('privacy')) {
+    return false;
+  }
+
+  // CASE: disable all privacy features
+  if (this.get('privacy').useTinfoil === true) {
+    // CASE: you can still enable single features
+    if (this.get('privacy')[privacyFlag] === true) {
+      return false;
     }
 
-    // CASE: disable all privacy features
-    if (this.get('privacy').useTinfoil === true) {
-        // CASE: you can still enable single features
-        if (this.get('privacy')[privacyFlag] === true) {
-            return false;
-        }
+    return true;
+  }
 
-        return true;
-    }
-
-    return this.get('privacy')[privacyFlag] === false;
+  return this.get('privacy')[privacyFlag] === false;
 }
 
 function getContentPath(this: ConfigLike, type: string): string {
-    switch (type) {
+  switch (type) {
     case 'images':
-        return path.join(this.get('paths:contentPath'), 'images/');
+      return path.join(this.get('paths:contentPath'), 'images/');
     case 'media':
-        return path.join(this.get('paths:contentPath'), 'media/');
+      return path.join(this.get('paths:contentPath'), 'media/');
     case 'files':
-        return path.join(this.get('paths:contentPath'), 'files/');
+      return path.join(this.get('paths:contentPath'), 'files/');
     case 'themes':
-        return path.join(this.get('paths:contentPath'), 'themes/');
+      return path.join(this.get('paths:contentPath'), 'themes/');
     case 'adapters':
-        return path.join(this.get('paths:contentPath'), 'adapters/');
+      return path.join(this.get('paths:contentPath'), 'adapters/');
     case 'logs':
-        return path.join(this.get('paths:contentPath'), 'logs/');
+      return path.join(this.get('paths:contentPath'), 'logs/');
     case 'data':
-        return path.join(this.get('paths:contentPath'), 'data/');
+      return path.join(this.get('paths:contentPath'), 'data/');
     case 'settings':
-        return path.join(this.get('paths:contentPath'), 'settings/');
+      return path.join(this.get('paths:contentPath'), 'settings/');
     case 'public':
-        return path.join(this.get('paths:contentPath'), 'public/');
+      return path.join(this.get('paths:contentPath'), 'public/');
     default:
-        // new Error is allowed here, as we do not want config to depend on @tryghost/error
-        // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-        // eslint-disable-next-line ghost/ghost-custom/no-native-error
-        throw new Error('getContentPath was called with: ' + type);
-    }
+      // new Error is allowed here, as we do not want config to depend on @tryghost/error
+      // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
+      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      throw new Error('getContentPath was called with: ' + type);
+  }
 }
 
 function isTestEnv(this: ConfigLike): boolean {
-    return this.get('env').startsWith('test');
+  return this.get('env').startsWith('test');
 }
 
 /**
@@ -119,15 +121,17 @@ function isTestEnv(this: ConfigLike): boolean {
  * rather than being silently skipped.
  */
 function isProductionOrDevelopment(this: ConfigLike): boolean {
-    return ['development', 'production'].includes(this.get('env'));
+  return ['development', 'production'].includes(this.get('env'));
 }
 
-export function bindAll(nconf: Provider & BoundHelpers): asserts nconf is Provider & BoundHelpers & ConfigHelpers {
-    const target = nconf as Provider & BoundHelpers & ConfigHelpers;
-    target.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
-    target.getContentPath = getContentPath.bind(nconf);
-    target.getBackendMountPath = getBackendMountPath.bind(nconf);
-    target.getFrontendMountPath = getFrontendMountPath.bind(nconf);
-    target.isTestEnv = isTestEnv.bind(nconf);
-    target.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
+export function bindAll(
+  nconf: Provider & BoundHelpers,
+): asserts nconf is Provider & BoundHelpers & ConfigHelpers {
+  const target = nconf as Provider & BoundHelpers & ConfigHelpers;
+  target.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
+  target.getContentPath = getContentPath.bind(nconf);
+  target.getBackendMountPath = getBackendMountPath.bind(nconf);
+  target.getFrontendMountPath = getFrontendMountPath.bind(nconf);
+  target.isTestEnv = isTestEnv.bind(nconf);
+  target.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
 }

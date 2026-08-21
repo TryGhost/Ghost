@@ -1,12 +1,23 @@
-import {type NewsletterStatsResponseType, useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
-import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
-import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useMemo} from 'react';
+import {
+  type NewsletterStatsResponseType,
+  useNewsletterBasicStats,
+  useNewsletterClickStats,
+  useNewsletterStats,
+  useSubscriberCount,
+} from '@tryghost/admin-x-framework/api/stats';
+import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
+import { useMemo } from 'react';
 
 /**
  * Represents the possible fields to order top newsletters by.
  */
-export type TopNewslettersOrder = 'date asc' | 'date desc' | 'open_rate desc' | 'click_rate desc' | 'sent_to desc';
+export type TopNewslettersOrder =
+  | 'date asc'
+  | 'date desc'
+  | 'open_rate desc'
+  | 'click_rate desc'
+  | 'sent_to desc';
 
 /**
  * Hook to fetch Newsletter Stats, handling the conversion from a numeric range
@@ -17,43 +28,48 @@ export type TopNewslettersOrder = 'date asc' | 'date desc' | 'open_rate desc' | 
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true) => {
-    // Default range and order
-    const currentRange = range ?? 30;
-    const currentOrder = order ?? 'date desc'; // Default to date descending
+export const useNewsletterStatsWithRange = (
+  range?: number,
+  order?: TopNewslettersOrder,
+  newsletterId?: string,
+  shouldFetch = true,
+) => {
+  // Default range and order
+  const currentRange = range ?? 30;
+  const currentOrder = order ?? 'date desc'; // Default to date descending
 
-    // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+  // Calculate date strings using the helper, memoize for stability
+  const { startDate, endDate } = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Build search params
-    const searchParams = useMemo(() => {
-        const params: Record<string, string> = {
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            order: currentOrder
-        };
+  // Build search params
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {
+      date_from: formatQueryDate(startDate),
+      date_to: formatQueryDate(endDate),
+      order: currentOrder,
+    };
 
-        if (newsletterId) {
-            params.newsletter_id = newsletterId;
-        }
-
-        return params;
-    }, [startDate, endDate, currentOrder, newsletterId]);
-
-    // Conditionally call the hook or return empty state
-    const realResult = useNewsletterStats({searchParams, enabled: shouldFetch});
-    
-    if (!shouldFetch) {
-        return {
-            data: undefined,
-            isLoading: false,
-            error: null,
-            isError: false,
-            refetch: realResult.refetch
-        };
+    if (newsletterId) {
+      params.newsletter_id = newsletterId;
     }
-    
-    return realResult;
+
+    return params;
+  }, [startDate, endDate, currentOrder, newsletterId]);
+
+  // Conditionally call the hook or return empty state
+  const realResult = useNewsletterStats({ searchParams, enabled: shouldFetch });
+
+  if (!shouldFetch) {
+    return {
+      data: undefined,
+      isLoading: false,
+      error: null,
+      isError: false,
+      refetch: realResult.refetch,
+    };
+  }
+
+  return realResult;
 };
 
 /**
@@ -64,41 +80,45 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useSubscriberCountWithRange = (range?: number, newsletterId?: string, shouldFetch = true) => {
-    // Default range
-    const currentRange = range ?? 30;
+export const useSubscriberCountWithRange = (
+  range?: number,
+  newsletterId?: string,
+  shouldFetch = true,
+) => {
+  // Default range
+  const currentRange = range ?? 30;
 
-    // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+  // Calculate date strings using the helper, memoize for stability
+  const { startDate, endDate } = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Build search params
-    const searchParams = useMemo(() => {
-        const params: Record<string, string> = {
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate)
-        };
+  // Build search params
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {
+      date_from: formatQueryDate(startDate),
+      date_to: formatQueryDate(endDate),
+    };
 
-        if (newsletterId) {
-            params.newsletter_id = newsletterId;
-        }
-
-        return params;
-    }, [startDate, endDate, newsletterId]);
-
-    // Conditionally call the hook or return empty state
-    const realResult = useSubscriberCount({searchParams, enabled: shouldFetch});
-    
-    if (!shouldFetch) {
-        return {
-            data: undefined,
-            isLoading: false,
-            error: null,
-            isError: false,
-            refetch: realResult.refetch
-        };
+    if (newsletterId) {
+      params.newsletter_id = newsletterId;
     }
-    
-    return realResult;
+
+    return params;
+  }, [startDate, endDate, newsletterId]);
+
+  // Conditionally call the hook or return empty state
+  const realResult = useSubscriberCount({ searchParams, enabled: shouldFetch });
+
+  if (!shouldFetch) {
+    return {
+      data: undefined,
+      isLoading: false,
+      error: null,
+      isError: false,
+      refetch: realResult.refetch,
+    };
+  }
+
+  return realResult;
 };
 
 /**
@@ -106,7 +126,7 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
  * This is used to populate the newsletter dropdown and get basic stats
  */
 export const useNewslettersList = () => {
-    return useBrowseNewsletters();
+  return useBrowseNewsletters();
 };
 
 /**
@@ -118,43 +138,48 @@ export const useNewslettersList = () => {
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterBasicStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true) => {
-    // Default range and order
-    const currentRange = range ?? 30;
-    const currentOrder = order ?? 'date desc'; // Default to date descending
+export const useNewsletterBasicStatsWithRange = (
+  range?: number,
+  order?: TopNewslettersOrder,
+  newsletterId?: string,
+  shouldFetch = true,
+) => {
+  // Default range and order
+  const currentRange = range ?? 30;
+  const currentOrder = order ?? 'date desc'; // Default to date descending
 
-    // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+  // Calculate date strings using the helper, memoize for stability
+  const { startDate, endDate } = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Build search params
-    const searchParams = useMemo(() => {
-        const params: Record<string, string> = {
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            order: currentOrder
-        };
+  // Build search params
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {
+      date_from: formatQueryDate(startDate),
+      date_to: formatQueryDate(endDate),
+      order: currentOrder,
+    };
 
-        if (newsletterId) {
-            params.newsletter_id = newsletterId;
-        }
-
-        return params;
-    }, [startDate, endDate, currentOrder, newsletterId]);
-
-    // Conditionally call the hook or return empty state
-    const realResult = useNewsletterBasicStats({searchParams, enabled: shouldFetch});
-    
-    if (!shouldFetch) {
-        return {
-            data: undefined,
-            isLoading: false,
-            error: null,
-            isError: false,
-            refetch: realResult.refetch
-        };
+    if (newsletterId) {
+      params.newsletter_id = newsletterId;
     }
-    
-    return realResult;
+
+    return params;
+  }, [startDate, endDate, currentOrder, newsletterId]);
+
+  // Conditionally call the hook or return empty state
+  const realResult = useNewsletterBasicStats({ searchParams, enabled: shouldFetch });
+
+  if (!shouldFetch) {
+    return {
+      data: undefined,
+      isLoading: false,
+      error: null,
+      isError: false,
+      refetch: realResult.refetch,
+    };
+  }
+
+  return realResult;
 };
 
 /**
@@ -164,36 +189,40 @@ export const useNewsletterBasicStatsWithRange = (range?: number, order?: TopNews
  * @param postIds - Array of post IDs to get click data for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterClickStatsWithRange = (newsletterId?: string, postIds: string[] = [], shouldFetch = true) => {
-    // Build search params
-    const searchParams = useMemo(() => {
-        const params: Record<string, string> = {};
+export const useNewsletterClickStatsWithRange = (
+  newsletterId?: string,
+  postIds: string[] = [],
+  shouldFetch = true,
+) => {
+  // Build search params
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {};
 
-        if (newsletterId) {
-            params.newsletter_id = newsletterId;
-        }
-
-        if (postIds.length > 0) {
-            params.post_ids = postIds.join(',');
-        }
-
-        return params;
-    }, [newsletterId, postIds]);
-
-    // Conditionally call the hook or return empty state
-    const realResult = useNewsletterClickStats({searchParams, enabled: shouldFetch});
-    
-    if (!shouldFetch) {
-        return {
-            data: undefined,
-            isLoading: false,
-            error: null,
-            isError: false,
-            refetch: realResult.refetch
-        };
+    if (newsletterId) {
+      params.newsletter_id = newsletterId;
     }
-    
-    return realResult;
+
+    if (postIds.length > 0) {
+      params.post_ids = postIds.join(',');
+    }
+
+    return params;
+  }, [newsletterId, postIds]);
+
+  // Conditionally call the hook or return empty state
+  const realResult = useNewsletterClickStats({ searchParams, enabled: shouldFetch });
+
+  if (!shouldFetch) {
+    return {
+      data: undefined,
+      isLoading: false,
+      error: null,
+      isError: false,
+      refetch: realResult.refetch,
+    };
+  }
+
+  return realResult;
 };
 
 /**
@@ -205,73 +234,83 @@ export const useNewsletterClickStatsWithRange = (newsletterId?: string, postIds:
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterStatsWithRangeSplit = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true): {
-    data: NewsletterStatsResponseType | undefined;
-    isLoading: boolean;
-    isClicksLoading: boolean;
-    error: unknown;
-    isError: boolean;
-    refetch: () => void;
+export const useNewsletterStatsWithRangeSplit = (
+  range?: number,
+  order?: TopNewslettersOrder,
+  newsletterId?: string,
+  shouldFetch = true,
+): {
+  data: NewsletterStatsResponseType | undefined;
+  isLoading: boolean;
+  isClicksLoading: boolean;
+  error: unknown;
+  isError: boolean;
+  refetch: () => void;
 } => {
-    // Get basic stats first (fast)
-    const basicStatsResult = useNewsletterBasicStatsWithRange(range, order, newsletterId, shouldFetch);
-    
-    // Extract post IDs from basic stats to fetch click data
-    const postIds = useMemo(() => {
-        if (!basicStatsResult.data?.stats) {
-            return [];
-        }
-        return basicStatsResult.data.stats.map(stat => stat.post_id);
-    }, [basicStatsResult.data]);
+  // Get basic stats first (fast)
+  const basicStatsResult = useNewsletterBasicStatsWithRange(
+    range,
+    order,
+    newsletterId,
+    shouldFetch,
+  );
 
-    // Get click stats for the posts (potentially slower)
-    const clickStatsResult = useNewsletterClickStatsWithRange(
-        newsletterId, 
-        postIds, 
-        shouldFetch && postIds.length > 0
-    );
+  // Extract post IDs from basic stats to fetch click data
+  const postIds = useMemo(() => {
+    if (!basicStatsResult.data?.stats) {
+      return [];
+    }
+    return basicStatsResult.data.stats.map((stat) => stat.post_id);
+  }, [basicStatsResult.data]);
 
-    // Merge the data
-    const mergedData = useMemo(() => {
-        if (!basicStatsResult.data?.stats) {
-            return undefined;
-        }
+  // Get click stats for the posts (potentially slower)
+  const clickStatsResult = useNewsletterClickStatsWithRange(
+    newsletterId,
+    postIds,
+    shouldFetch && postIds.length > 0,
+  );
 
-        const basicStats = basicStatsResult.data.stats;
-        const clickStats = clickStatsResult.data?.stats || [];
+  // Merge the data
+  const mergedData = useMemo(() => {
+    if (!basicStatsResult.data?.stats) {
+      return undefined;
+    }
 
-        // Create a map of click data by post_id for fast lookup
-        type ClickStat = (typeof clickStats)[number];
-        const clickStatsMap = new Map<ClickStat['post_id'], ClickStat>();
-        clickStats.forEach((clickStat) => {
-            clickStatsMap.set(clickStat.post_id, clickStat);
-        });
+    const basicStats = basicStatsResult.data.stats;
+    const clickStats = clickStatsResult.data?.stats || [];
 
-        // Merge basic stats with click stats
-        const mergedStats = basicStats.map((basicStat) => {
-            const clickData = clickStatsMap.get(basicStat.post_id);
-            return {
-                ...basicStat,
-                total_clicks: clickData?.total_clicks || 0,
-                click_rate: clickData?.click_rate || 0
-            };
-        });
+    // Create a map of click data by post_id for fast lookup
+    type ClickStat = (typeof clickStats)[number];
+    const clickStatsMap = new Map<ClickStat['post_id'], ClickStat>();
+    clickStats.forEach((clickStat) => {
+      clickStatsMap.set(clickStat.post_id, clickStat);
+    });
 
-        return {
-            ...basicStatsResult.data,
-            stats: mergedStats
-        };
-    }, [basicStatsResult.data, clickStatsResult.data]);
+    // Merge basic stats with click stats
+    const mergedStats = basicStats.map((basicStat) => {
+      const clickData = clickStatsMap.get(basicStat.post_id);
+      return {
+        ...basicStat,
+        total_clicks: clickData?.total_clicks || 0,
+        click_rate: clickData?.click_rate || 0,
+      };
+    });
 
     return {
-        data: mergedData,
-        isLoading: basicStatsResult.isLoading,
-        isClicksLoading: clickStatsResult.isLoading,
-        error: basicStatsResult.error || clickStatsResult.error,
-        isError: basicStatsResult.isError || clickStatsResult.isError,
-        refetch: () => {
-            void basicStatsResult.refetch();
-            void clickStatsResult.refetch();
-        }
+      ...basicStatsResult.data,
+      stats: mergedStats,
     };
+  }, [basicStatsResult.data, clickStatsResult.data]);
+
+  return {
+    data: mergedData,
+    isLoading: basicStatsResult.isLoading,
+    isClicksLoading: clickStatsResult.isLoading,
+    error: basicStatsResult.error || clickStatsResult.error,
+    isError: basicStatsResult.isError || clickStatsResult.isError,
+    refetch: () => {
+      void basicStatsResult.refetch();
+      void clickStatsResult.refetch();
+    },
+  };
 };

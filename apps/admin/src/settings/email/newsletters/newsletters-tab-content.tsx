@@ -1,157 +1,246 @@
 import NewslettersList from './newsletters-list';
-import React, {type ReactNode, useEffect, useState} from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 import useQueryParams from '@/settings/hooks/use-query-params';
-import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button} from '@tryghost/shade/components';
-import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
-import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
-import {arrayMove} from '@dnd-kit/sortable';
-import {formatNumber} from '@tryghost/shade/utils';
-import {type ConfirmationHandle, useConfirmation} from '@/settings/providers/confirmation-context';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/components/with-error-boundary';
+import { APIError } from '@tryghost/admin-x-framework/errors';
+import { Button } from '@tryghost/shade/components';
+import { type InfiniteData, useQueryClient } from '@tryghost/admin-x-framework';
+import {
+  type Newsletter,
+  type NewslettersResponseType,
+  newslettersDataType,
+  useBrowseNewsletters,
+  useEditNewsletter,
+  useVerifyNewsletterEmail,
+} from '@tryghost/admin-x-framework/api/newsletters';
+import { arrayMove } from '@dnd-kit/sortable';
+import { formatNumber } from '@tryghost/shade/utils';
+import {
+  type ConfirmationHandle,
+  useConfirmation,
+} from '@/settings/providers/confirmation-context';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
-const NavigateToNewsletter = ({id, onNavigate, children}: {id: string; onNavigate: () => void; children: ReactNode}) => {
-    const {updateRoute} = useSettingsNavigation();
+const NavigateToNewsletter = ({
+  id,
+  onNavigate,
+  children,
+}: {
+  id: string;
+  onNavigate: () => void;
+  children: ReactNode;
+}) => {
+  const { updateRoute } = useSettingsNavigation();
 
-    return <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={() => {
+  return (
+    <Button
+      className="h-auto p-0 text-green hover:text-green"
+      type="button"
+      variant="link"
+      onClick={() => {
         updateRoute(`newsletters/${id}`);
         onNavigate();
-    }}>{children}</Button>;
+      }}
+    >
+      {children}
+    </Button>
+  );
 };
 
 const isNewsletterVerificationRoute = () => {
-    const hash = window.location.hash.slice(1);
-    const pathname = new URL(hash || '/', window.location.origin).pathname;
+  const hash = window.location.hash.slice(1);
+  const pathname = new URL(hash || '/', window.location.origin).pathname;
 
-    return pathname.startsWith('/settings/emails') || pathname.startsWith('/settings/newsletters');
+  return pathname.startsWith('/settings/emails') || pathname.startsWith('/settings/newsletters');
 };
 
 export type NewslettersFilter = 'active' | 'archived';
 
 interface NewslettersTabContentProps extends Record<string, unknown> {
-    filter: NewslettersFilter;
+  filter: NewslettersFilter;
 }
 
-const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) => {
-    const {data: {newsletters: apiNewsletters, meta, isEnd} = {}, isLoading, fetchNextPage} = useBrowseNewsletters();
-    const {mutateAsync: editNewsletter} = useEditNewsletter();
-    const queryClient = useQueryClient();
+const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({ filter }) => {
+  const {
+    data: { newsletters: apiNewsletters, meta, isEnd } = {},
+    isLoading,
+    fetchNextPage,
+  } = useBrowseNewsletters();
+  const { mutateAsync: editNewsletter } = useEditNewsletter();
+  const queryClient = useQueryClient();
 
-    const verifyEmailToken = useQueryParams().getParam('verifyEmail');
-    const {mutateAsync: verifyEmail} = useVerifyNewsletterEmail();
-    const handleError = useHandleError();
-    const {confirm} = useConfirmation();
+  const verifyEmailToken = useQueryParams().getParam('verifyEmail');
+  const { mutateAsync: verifyEmail } = useVerifyNewsletterEmail();
+  const handleError = useHandleError();
+  const { confirm } = useConfirmation();
 
-    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+  const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
 
-    useEffect(() => {
-        setNewsletters(apiNewsletters || []);
-    }, [apiNewsletters]);
+  useEffect(() => {
+    setNewsletters(apiNewsletters || []);
+  }, [apiNewsletters]);
 
-    useEffect(() => {
-        if (!verifyEmailToken || !isNewsletterVerificationRoute()) {
-            return;
+  useEffect(() => {
+    if (!verifyEmailToken || !isNewsletterVerificationRoute()) {
+      return;
+    }
+
+    const verify = async () => {
+      try {
+        const {
+          newsletters: [updatedNewsletter],
+          meta: { email_verified: emailVerified } = {},
+        } = await verifyEmail({ token: verifyEmailToken });
+        const handleRef: { current: ConfirmationHandle | null } = { current: null };
+        const closeConfirmation = () => handleRef.current?.remove();
+        let title;
+        let prompt;
+
+        if (emailVerified && emailVerified === 'sender_email') {
+          title = 'Newsletter email verified';
+          prompt = (
+            <>
+              Newsletter{' '}
+              <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>
+                {updatedNewsletter.name}
+              </NavigateToNewsletter>{' '}
+              will now be sent from <strong>{updatedNewsletter.sender_email}</strong>.
+            </>
+          );
+        } else if (emailVerified && emailVerified === 'sender_reply_to') {
+          title = 'Reply-to address verified';
+          prompt = (
+            <>
+              Newsletter{' '}
+              <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>
+                {updatedNewsletter.name}
+              </NavigateToNewsletter>{' '}
+              will now use <strong>{updatedNewsletter.sender_reply_to}</strong> as the reply-to
+              address.
+            </>
+          );
+        } else {
+          title = 'Email address verified';
+          prompt = (
+            <>
+              Email address for newsletter{' '}
+              <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>
+                {updatedNewsletter.name}
+              </NavigateToNewsletter>{' '}
+              has been changed.
+            </>
+          );
         }
 
-        const verify = async () => {
-            try {
-                const {newsletters: [updatedNewsletter], meta: {email_verified: emailVerified} = {}} = await verifyEmail({token: verifyEmailToken});
-                const handleRef: {current: ConfirmationHandle | null} = {current: null};
-                const closeConfirmation = () => handleRef.current?.remove();
-                let title;
-                let prompt;
-
-                if (emailVerified && emailVerified === 'sender_email') {
-                    title = 'Newsletter email verified';
-                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>{updatedNewsletter.name}</NavigateToNewsletter> will now be sent from <strong>{updatedNewsletter.sender_email}</strong>.</>;
-                } else if (emailVerified && emailVerified === 'sender_reply_to') {
-                    title = 'Reply-to address verified';
-                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>{updatedNewsletter.name}</NavigateToNewsletter> will now use <strong>{updatedNewsletter.sender_reply_to}</strong> as the reply-to address.</>;
-                } else {
-                    title = 'Email address verified';
-                    prompt = <>Email address for newsletter <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>{updatedNewsletter.name}</NavigateToNewsletter> has been changed.</>;
-                }
-
-                handleRef.current = confirm({
-                    title,
-                    prompt,
-                    okLabel: 'Close',
-                    cancelLabel: '',
-                    onOk: confirmModal => confirmModal?.remove()
-                });
-            } catch (e) {
-                let prompt = 'There was an error verifying your email address. Try again later.';
-
-                if (e instanceof APIError && e.message === 'Token expired') {
-                    prompt = 'Verification link has expired.';
-                }
-                confirm({
-                    title: 'Error verifying email address',
-                    prompt: prompt,
-                    okLabel: 'Close',
-                    cancelLabel: '',
-                    onOk: confirmModal => confirmModal?.remove()
-                });
-                handleError(e, {withToast: false});
-            }
-        };
-        void verify();
-    }, [verifyEmailToken, handleError, verifyEmail, confirm]);
-
-    const sortedActiveNewsletters = newsletters.filter(n => n.status === 'active').sort((a, b) => a.sort_order - b.sort_order) || [];
-    const archivedNewsletters = newsletters.filter(newsletter => newsletter.status !== 'active');
-
-    const onSort = async (id: string, overId?: string) => {
-        const fromIndex = sortedActiveNewsletters.findIndex(newsletter => newsletter.id === id);
-        const toIndex = sortedActiveNewsletters.findIndex(newsletter => newsletter.id === overId) || 0;
-        const newSortOrder = arrayMove(sortedActiveNewsletters, fromIndex, toIndex);
-
-        const updatedActiveNewsletters = newSortOrder.map((newsletter, index) => (
-            newsletter.sort_order === index ? null : {...newsletter, sort_order: index}
-        )).filter((newsletter): newsletter is Newsletter => !!newsletter);
-
-        const updatedArchivedNewsletters = archivedNewsletters.map((newsletter, index) => (
-            newsletter.sort_order === index + sortedActiveNewsletters.length ? null : {...newsletter, sort_order: index}
-        )).filter((newsletter): newsletter is Newsletter => !!newsletter);
-
-        const orderUpdatedNewsletters = [...updatedActiveNewsletters, ...updatedArchivedNewsletters].sort((a, b) => a.sort_order - b.sort_order);
-
-        setNewsletters(newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter));
-        queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>({queryKey: [newslettersDataType]}, (currentData) => {
-            if (!currentData) {
-                return;
-            }
-
-            return {
-                ...currentData,
-                pages: currentData.pages.map(page => ({
-                    ...page,
-                    newsletters: page.newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter)
-                }))
-            };
+        handleRef.current = confirm({
+          title,
+          prompt,
+          okLabel: 'Close',
+          cancelLabel: '',
+          onOk: (confirmModal) => confirmModal?.remove(),
         });
+      } catch (e) {
+        let prompt = 'There was an error verifying your email address. Try again later.';
 
-        for (const newsletter of orderUpdatedNewsletters) {
-            await editNewsletter(newsletter);
+        if (e instanceof APIError && e.message === 'Token expired') {
+          prompt = 'Verification link has expired.';
         }
+        confirm({
+          title: 'Error verifying email address',
+          prompt: prompt,
+          okLabel: 'Close',
+          cancelLabel: '',
+          onOk: (confirmModal) => confirmModal?.remove(),
+        });
+        handleError(e, { withToast: false });
+      }
     };
+    void verify();
+  }, [verifyEmailToken, handleError, verifyEmail, confirm]);
 
-    const showingActive = filter === 'active';
+  const sortedActiveNewsletters =
+    newsletters.filter((n) => n.status === 'active').sort((a, b) => a.sort_order - b.sort_order) ||
+    [];
+  const archivedNewsletters = newsletters.filter((newsletter) => newsletter.status !== 'active');
 
-    return (
-        <>
-            {showingActive ? (
-                <NewslettersList isLoading={isLoading} isSortable={true} newsletters={sortedActiveNewsletters} onSort={(id, overId) => void onSort(id, overId)} />
-            ) : (
-                <NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />
-            )}
-            {isEnd === false && <Button type='button' variant='link' onClick={() => void fetchNextPage()}>
-                Load more (showing {formatNumber(newsletters?.length || 0)}/{formatNumber(meta?.pagination.total || 0)} newsletters)
-            </Button>}
-        </>
+  const onSort = async (id: string, overId?: string) => {
+    const fromIndex = sortedActiveNewsletters.findIndex((newsletter) => newsletter.id === id);
+    const toIndex =
+      sortedActiveNewsletters.findIndex((newsletter) => newsletter.id === overId) || 0;
+    const newSortOrder = arrayMove(sortedActiveNewsletters, fromIndex, toIndex);
+
+    const updatedActiveNewsletters = newSortOrder
+      .map((newsletter, index) =>
+        newsletter.sort_order === index ? null : { ...newsletter, sort_order: index },
+      )
+      .filter((newsletter): newsletter is Newsletter => !!newsletter);
+
+    const updatedArchivedNewsletters = archivedNewsletters
+      .map((newsletter, index) =>
+        newsletter.sort_order === index + sortedActiveNewsletters.length
+          ? null
+          : { ...newsletter, sort_order: index },
+      )
+      .filter((newsletter): newsletter is Newsletter => !!newsletter);
+
+    const orderUpdatedNewsletters = [
+      ...updatedActiveNewsletters,
+      ...updatedArchivedNewsletters,
+    ].sort((a, b) => a.sort_order - b.sort_order);
+
+    setNewsletters(
+      newsletters.map(
+        (newsletter) => orderUpdatedNewsletters.find((n) => n.id === newsletter.id) || newsletter,
+      ),
     );
+    queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>(
+      { queryKey: [newslettersDataType] },
+      (currentData) => {
+        if (!currentData) {
+          return;
+        }
+
+        return {
+          ...currentData,
+          pages: currentData.pages.map((page) => ({
+            ...page,
+            newsletters: page.newsletters.map(
+              (newsletter) =>
+                orderUpdatedNewsletters.find((n) => n.id === newsletter.id) || newsletter,
+            ),
+          })),
+        };
+      },
+    );
+
+    for (const newsletter of orderUpdatedNewsletters) {
+      await editNewsletter(newsletter);
+    }
+  };
+
+  const showingActive = filter === 'active';
+
+  return (
+    <>
+      {showingActive ? (
+        <NewslettersList
+          isLoading={isLoading}
+          isSortable={true}
+          newsletters={sortedActiveNewsletters}
+          onSort={(id, overId) => void onSort(id, overId)}
+        />
+      ) : (
+        <NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />
+      )}
+      {isEnd === false && (
+        <Button type="button" variant="link" onClick={() => void fetchNextPage()}>
+          Load more (showing {formatNumber(newsletters?.length || 0)}/
+          {formatNumber(meta?.pagination.total || 0)} newsletters)
+        </Button>
+      )}
+    </>
+  );
 };
 
 export default withErrorBoundary(NewslettersTabContent, 'Newsletters');

@@ -10,11 +10,11 @@
  * CI environments where a build has already run and the TS is already compiled
  */
 try {
-    require('tsx/cjs');
+  require('tsx/cjs');
 } catch (err) {
-    if (err.code !== 'MODULE_NOT_FOUND') {
-        throw err;
-    }
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
 }
 
 const config = require('./core/shared/config');
@@ -27,7 +27,7 @@ const ghostVersion = require('@tryghost/version');
 require('./core/server/overrides');
 
 module.exports = {
-    currentVersion: ghostVersion.safe,
-    database: config.get('database'),
-    migrationPath: config.get('paths:migrationPath')
+  currentVersion: ghostVersion.safe,
+  database: config.get('database'),
+  migrationPath: config.get('paths:migrationPath'),
 };

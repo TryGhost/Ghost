@@ -2,13 +2,16 @@
   "name": "@tryghost/kg-converters",
   "version": "1.2.5",
   "description": "Converts between serialized Mobiledoc and Lexical formats for Ghost's editor",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "koenig/kg-converters"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -20,6 +23,9 @@
       "require": "./build/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -28,12 +34,6 @@
     "test": "pnpm run '/^test:/'",
     "posttest": "pnpm lint",
     "lint": "eslint . --cache"
-  },
-  "files": [
-    "build"
-  ],
-  "publishConfig": {
-    "access": "public"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

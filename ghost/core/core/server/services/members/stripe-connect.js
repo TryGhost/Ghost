@@ -1,13 +1,13 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const {Buffer} = require('buffer');
-const {randomBytes} = require('crypto');
+const { Buffer } = require('buffer');
+const { randomBytes } = require('crypto');
 
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
 
 const messages = {
-    incorrectState: 'State did not match.'
+  incorrectState: 'State did not match.',
 };
 
 const STATE_PROP = 'stripe-connect-state';
@@ -26,25 +26,27 @@ const redirectURI = 'https://stripe.ghost.org';
  * @returns {Promise<URL>}
  */
 async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
-    checkCanConnect();
-    const randomState = randomBytes(16).toString('hex');
-    const state = Buffer.from(JSON.stringify({
-        mode,
-        randomState
-    })).toString('base64');
+  checkCanConnect();
+  const randomState = randomBytes(16).toString('hex');
+  const state = Buffer.from(
+    JSON.stringify({
+      mode,
+      randomState,
+    }),
+  ).toString('base64');
 
-    await setSessionProp(STATE_PROP, state);
+  await setSessionProp(STATE_PROP, state);
 
-    const clientID = mode === 'live' ? liveClientID : testClientID;
+  const clientID = mode === 'live' ? liveClientID : testClientID;
 
-    const authUrl = new URL('https://connect.stripe.com/oauth/authorize');
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('scope', 'read_write');
-    authUrl.searchParams.set('client_id', clientID);
-    authUrl.searchParams.set('redirect_uri', redirectURI);
-    authUrl.searchParams.set('state', state);
+  const authUrl = new URL('https://connect.stripe.com/oauth/authorize');
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', 'read_write');
+  authUrl.searchParams.set('client_id', clientID);
+  authUrl.searchParams.set('redirect_uri', redirectURI);
+  authUrl.searchParams.set('state', state);
 
-    return authUrl;
+  return authUrl;
 }
 
 /**
@@ -57,37 +59,37 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
  * @returns {Promise<{secret_key: string, public_key: string, livemode: boolean, display_name: string, account_id: string}>}
  */
 async function getStripeConnectTokenData(encodedData, getSessionProp) {
-    const data = JSON.parse(Buffer.from(encodedData, 'base64').toString());
+  const data = JSON.parse(Buffer.from(encodedData, 'base64').toString());
 
-    const state = await getSessionProp(STATE_PROP);
+  const state = await getSessionProp(STATE_PROP);
 
-    if (state !== data.s) {
-        throw new errors.NoPermissionError({message: tpl(messages.incorrectState)});
-    }
+  if (state !== data.s) {
+    throw new errors.NoPermissionError({ message: tpl(messages.incorrectState) });
+  }
 
-    return {
-        public_key: data.p,
-        secret_key: data.a,
-        livemode: data.l,
-        display_name: data.n,
-        account_id: data.i
-    };
+  return {
+    public_key: data.p,
+    secret_key: data.a,
+    livemode: data.l,
+    display_name: data.n,
+    account_id: data.i,
+  };
 }
 
 function checkCanConnect() {
-    const siteUrl = urlUtils.getSiteUrl();
-    const productionMode = config.get('env') === 'production';
-    const siteUrlUsingSSL = /^https/.test(siteUrl);
-    const cannotConnectToStripe = productionMode && !siteUrlUsingSSL;
-    if (cannotConnectToStripe) {
-        throw new errors.BadRequestError({
-            message: 'Cannot connect to stripe unless site is using https://'
-        });
-    }
+  const siteUrl = urlUtils.getSiteUrl();
+  const productionMode = config.get('env') === 'production';
+  const siteUrlUsingSSL = /^https/.test(siteUrl);
+  const cannotConnectToStripe = productionMode && !siteUrlUsingSSL;
+  if (cannotConnectToStripe) {
+    throw new errors.BadRequestError({
+      message: 'Cannot connect to stripe unless site is using https://',
+    });
+  }
 }
 
 module.exports = {
-    getStripeConnectOAuthUrl,
-    getStripeConnectTokenData,
-    STATE_PROP
+  getStripeConnectOAuthUrl,
+  getStripeConnectTokenData,
+  STATE_PROP,
 };

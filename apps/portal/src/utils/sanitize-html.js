@@ -7,14 +7,14 @@ import DOMPurify from 'dompurify';
  * @returns {string} - The sanitized HTML string
  */
 export function sanitizeHtml(html) {
-    if (!html) {
-        return '';
-    }
+  if (!html) {
+    return '';
+  }
 
-    return DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: ['a', 'b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'span'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
-    });
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['a', 'b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'span'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  });
 }
 
 /**
@@ -25,15 +25,15 @@ export function sanitizeHtml(html) {
  * @returns {string} - The validated hex color or empty string
  */
 export function validateHexColor(color) {
-    if (!color || typeof color !== 'string') {
-        return '';
-    }
+  if (!color || typeof color !== 'string') {
+    return '';
+  }
 
-    // Matches #RGB, #RRGGBB, #RGBA, #RRGGBBAA
-    const hexColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
-    if (!hexColorRegex.test(color)) {
-        return '';
-    }
+  // Matches #RGB, #RRGGBB, #RGBA, #RRGGBBAA
+  const hexColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
+  if (!hexColorRegex.test(color)) {
+    return '';
+  }
 
-    return color;
+  return color;
 }

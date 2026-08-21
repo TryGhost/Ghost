@@ -1,9 +1,9 @@
-const {totp} = require('otplib');
+const { totp } = require('otplib');
 
 totp.options = {
-    digits: 6,
-    step: 60,
-    window: [10, 10]
+  digits: 6,
+  step: 60,
+  window: [10, 10],
 };
 
 /**
@@ -14,7 +14,7 @@ totp.options = {
  * @returns {string} - The generated 6-digit token
  */
 function generate(userId, secret, context = '') {
-    return totp.generate(`${secret}${userId}${context}`);
+  return totp.generate(`${secret}${userId}${context}`);
 }
 
 /**
@@ -26,10 +26,10 @@ function generate(userId, secret, context = '') {
  * @returns {boolean} - Whether the token is valid
  */
 function verify(userId, token, secret, context = '') {
-    return totp.check(token, `${secret}${userId}${context}`);
+  return totp.check(token, `${secret}${userId}${context}`);
 }
 
 module.exports = {
-    generate,
-    verify
+  generate,
+  verify,
 };

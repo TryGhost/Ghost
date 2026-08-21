@@ -1,4 +1,3 @@
-
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const jobLogging = require('../jobs/job-logging');
@@ -8,7 +7,7 @@ const jobsService = require('../jobs');
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('./update-check-service');
-const {NotificationEmailService} = require('../notifications/notification-email');
+const { NotificationEmailService } = require('../notifications/notification-email');
 
 /**
  * Initializes and triggers update check
@@ -19,73 +18,73 @@ const {NotificationEmailService} = require('../notifications/notification-email'
  * @returns {Promise<any>}
  */
 module.exports = async ({
-    rethrowErrors = false,
-    forceUpdate = config.get('updateCheck:forceUpdate'),
-    updateCheckUrl = config.get('updateCheck:url')
+  rethrowErrors = false,
+  forceUpdate = config.get('updateCheck:forceUpdate'),
+  updateCheckUrl = config.get('updateCheck:url'),
 } = {}) => {
-    if (!forceUpdate) {
-        // CASE: The check will not happen if your env is not in the allowed defined environments
-        if (!config.isProductionOrDevelopment()) {
-            return;
-        }
+  if (!forceUpdate) {
+    // CASE: The check will not happen if your env is not in the allowed defined environments
+    if (!config.isProductionOrDevelopment()) {
+      return;
     }
+  }
 
-    const mailService = require('../mail');
-    const ghostMailer = new mailService.GhostMailer();
+  const mailService = require('../mail');
+  const ghostMailer = new mailService.GhostMailer();
 
-    const notificationEmailService = new NotificationEmailService({
-        mailer: ghostMailer,
-        generateEmailContent: mailService.utils.generateContent,
-        getSiteUrl: () => urlUtils.urlFor('home', true)
-    });
+  const notificationEmailService = new NotificationEmailService({
+    mailer: ghostMailer,
+    generateEmailContent: mailService.utils.generateContent,
+    getSiteUrl: () => urlUtils.urlFor('home', true),
+  });
 
-    const updateChecker = new UpdateCheckService({
-        api: {
-            settings: {
-                read: api.settings.read,
-                edit: api.settings.edit
-            },
-            users: {
-                browse: api.users.browse
-            },
-            notifications: {
-                add: api.notifications.add
-            }
-        },
-        config: {
-            checkEndpoint: updateCheckUrl,
-            notificationGroups: config.get('notificationGroups'),
-            siteUrl: urlUtils.urlFor('home', true),
-            forceUpdate,
-            ghostVersion: ghostVersion.original,
-            rethrowErrors
-        },
-        request,
-        notificationEmailService
-    });
+  const updateChecker = new UpdateCheckService({
+    api: {
+      settings: {
+        read: api.settings.read,
+        edit: api.settings.edit,
+      },
+      users: {
+        browse: api.users.browse,
+      },
+      notifications: {
+        add: api.notifications.add,
+      },
+    },
+    config: {
+      checkEndpoint: updateCheckUrl,
+      notificationGroups: config.get('notificationGroups'),
+      siteUrl: urlUtils.urlFor('home', true),
+      forceUpdate,
+      ghostVersion: ghostVersion.original,
+      rethrowErrors,
+    },
+    request,
+    notificationEmailService,
+  });
 
-    await updateChecker.check();
+  await updateChecker.check();
 };
 
 module.exports.scheduleRecurringJobs = () => {
-    // use a random seconds/minutes/hours value to avoid spikes to the update service API
-    const s = Math.floor(Math.random() * 60); // 0-59
-    const m = Math.floor(Math.random() * 60); // 0-59
-    const h = Math.floor(Math.random() * 24); // 0-23
+  // use a random seconds/minutes/hours value to avoid spikes to the update service API
+  const s = Math.floor(Math.random() * 60); // 0-59
+  const m = Math.floor(Math.random() * 60); // 0-59
+  const h = Math.floor(Math.random() * 24); // 0-23
 
-    const at = `${s} ${m} ${h} * * *`;
-    jobLogging.info(`[Background Job] update-check scheduled at ${at}`);
-    jobsService.addJob({
-        at, // Every day
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check'
-    });
+  const at = `${s} ${m} ${h} * * *`;
+  jobLogging.info(`[Background Job] update-check scheduled at ${at}`);
+  jobsService.addJob({
+    at, // Every day
+    job: require('path').resolve(__dirname, 'run-update-check.js'),
+    name: 'update-check',
+  });
 };
 
 module.exports.scheduleBootJob = () => {
-    jobLogging.info('[Background Job] update-check-boot queued');
-    jobsService.addJob({
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check-boot'
-    });
+  jobLogging.info('[Background Job] update-check-boot queued');
+  jobsService.addJob({
+    job: require('path').resolve(__dirname, 'run-update-check.js'),
+    name: 'update-check-boot',
+  });
 };

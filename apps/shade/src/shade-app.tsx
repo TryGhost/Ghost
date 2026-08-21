@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import ShadeProvider, {type FetchKoenigLexical} from './providers/shade-provider';
+import ShadeProvider, { type FetchKoenigLexical } from './providers/shade-provider';
 
 /**
  * The className is used to scope the styles of the app to the app's namespace.
@@ -10,23 +10,26 @@ import ShadeProvider, {type FetchKoenigLexical} from './providers/shade-provider
 export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
-    darkMode: boolean;
-    fetchKoenigLexical: FetchKoenigLexical | null;
+  darkMode: boolean;
+  fetchKoenigLexical: FetchKoenigLexical | null;
 }
 
-const ShadeApp: React.FC<ShadeAppProps> = ({darkMode, fetchKoenigLexical, className, children, ...props}) => {
-    const appClassName = clsx(
-        'shade',
-        className
-    );
+const ShadeApp: React.FC<ShadeAppProps> = ({
+  darkMode,
+  fetchKoenigLexical,
+  className,
+  children,
+  ...props
+}) => {
+  const appClassName = clsx('shade', className);
 
-    return (
-        <div className={appClassName} {...props}>
-            <ShadeProvider darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical}>
-                {children}
-            </ShadeProvider>
-        </div>
-    );
+  return (
+    <div className={appClassName} {...props}>
+      <ShadeProvider darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical}>
+        {children}
+      </ShadeProvider>
+    </div>
+  );
 };
 
 export default ShadeApp;

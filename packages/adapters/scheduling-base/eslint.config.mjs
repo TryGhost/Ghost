@@ -1,3 +1,3 @@
-import {nodeLibConfig} from '@internal/cfg-eslint';
+import { nodeLibConfig } from '@internal/cfg-eslint';
 
 export default nodeLibConfig();

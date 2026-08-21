@@ -2,52 +2,52 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const urlService = require('../../../../core/server/services/url');
-const {PostsService} = require('../../../../core/server/services/posts/posts-service-instance');
+const { PostsService } = require('../../../../core/server/services/posts/posts-service-instance');
 const searchIndexController = require('../../../../core/server/api/endpoints/search-index');
 
 describe('Search index controller', function () {
-    let browsePostsStub;
+  let browsePostsStub;
 
-    beforeEach(function () {
-        // the controller constructs its own PostsService instance
-        browsePostsStub = sinon.stub(PostsService.prototype, 'browsePosts').resolves({data: []});
-        sinon.stub(models.Tag, 'findPage').resolves({data: []});
-        sinon.stub(models.User, 'findPage').resolves({data: []});
-    });
+  beforeEach(function () {
+    // the controller constructs its own PostsService instance
+    browsePostsStub = sinon.stub(PostsService.prototype, 'browsePosts').resolves({ data: [] });
+    sinon.stub(models.Tag, 'findPage').resolves({ data: [] });
+    sinon.stub(models.User, 'findPage').resolves({ data: [] });
+  });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+  afterEach(function () {
+    sinon.restore();
+  });
 
-    it('forces the URL service required columns into the tags fetch', async function () {
-        sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
+  it('forces the URL service required columns into the tags fetch', async function () {
+    sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
-        await searchIndexController.fetchTags.query();
+    await searchIndexController.fetchTags.query();
 
-        const options = models.Tag.findPage.getCall(0).args[0];
-        assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url', 'visibility']);
-    });
+    const options = models.Tag.findPage.getCall(0).args[0];
+    assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url', 'visibility']);
+  });
 
-    it('forces router-filter columns into the posts fetch', async function () {
-        const getRequiredFields = sinon.stub(urlService, 'getRequiredFields');
-        getRequiredFields.withArgs('posts').returns(['status', 'type', 'slug', 'featured']);
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
+  it('forces router-filter columns into the posts fetch', async function () {
+    const getRequiredFields = sinon.stub(urlService, 'getRequiredFields');
+    getRequiredFields.withArgs('posts').returns(['status', 'type', 'slug', 'featured']);
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
-        await searchIndexController.fetchPosts.query();
+    await searchIndexController.fetchPosts.query();
 
-        const options = browsePostsStub.getCall(0).args[0];
-        assert.ok(options.columns.includes('featured'));
-        assert.ok(options.columns.includes('type'));
-    });
+    const options = browsePostsStub.getCall(0).args[0];
+    assert.ok(options.columns.includes('featured'));
+    assert.ok(options.columns.includes('type'));
+  });
 
-    it('leaves columns untouched when the routing config needs none', async function () {
-        sinon.stub(urlService, 'getRequiredFields').returns([]);
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
+  it('leaves columns untouched when the routing config needs none', async function () {
+    sinon.stub(urlService, 'getRequiredFields').returns([]);
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
-        await searchIndexController.fetchTags.query();
+    await searchIndexController.fetchTags.query();
 
-        const options = models.Tag.findPage.getCall(0).args[0];
-        assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url']);
-    });
+    const options = models.Tag.findPage.getCall(0).args[0];
+    assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url']);
+  });
 });

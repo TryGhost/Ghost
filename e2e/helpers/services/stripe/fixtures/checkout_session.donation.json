@@ -97,11 +97,7 @@
       "request_three_d_secure": "automatic"
     }
   },
-  "payment_method_types": [
-    "card",
-    "link",
-    "amazon_pay"
-  ],
+  "payment_method_types": ["card", "link", "amazon_pay"],
   "payment_status": "unpaid",
   "permissions": null,
   "phone_number_collection": {
@@ -109,9 +105,7 @@
   },
   "recovered_from": null,
   "saved_payment_method_options": {
-    "allow_redisplay_filters": [
-      "always"
-    ],
+    "allow_redisplay_filters": ["always"],
     "payment_method_remove": "disabled",
     "payment_method_save": null
   },

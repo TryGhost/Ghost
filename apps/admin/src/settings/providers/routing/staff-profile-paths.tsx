@@ -7,8 +7,8 @@
 const STAFF_PROFILE_TABS = ['edit', 'social-links', 'email-notifications'] as const;
 
 export const staffProfileModalPaths: string[] = [
-    ...STAFF_PROFILE_TABS.map(tab => `staff/:slug/${tab}`),
-    'staff/:slug'
+  ...STAFF_PROFILE_TABS.map((tab) => `staff/:slug/${tab}`),
+  'staff/:slug',
 ];
 
 const STAFF_PROFILE_PATH = new RegExp(`^staff/([^/]+)(?:/(?:${STAFF_PROFILE_TABS.join('|')}))?/?$`);
@@ -18,5 +18,5 @@ const STAFF_PROFILE_PATH = new RegExp(`^staff/([^/]+)(?:/(?:${STAFF_PROFILE_TABS
  * `staff/jo/social-links` → `jo`. Undefined for anything else in settings.
  */
 export function getStaffProfileSlug(settingsPath: string): string | undefined {
-    return settingsPath.match(STAFF_PROFILE_PATH)?.[1];
+  return settingsPath.match(STAFF_PROFILE_PATH)?.[1];
 }

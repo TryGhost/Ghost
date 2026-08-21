@@ -2,8 +2,8 @@
 // Usage: `{{twitter_url}}` or `{{twitter_url author.twitter}}`
 //
 // Output a url for a twitter username
-const {socialUrls} = require('../services/proxy');
-const {localUtils} = require('../services/handlebars');
+const { socialUrls } = require('../services/proxy');
+const { localUtils } = require('../services/handlebars');
 
 // We use the name twitter_url to match the helper for consistency:
 /**
@@ -11,14 +11,14 @@ const {localUtils} = require('../services/handlebars');
  */
 // eslint-disable-next-line camelcase
 module.exports = function twitter_url(username, options) {
-    if (!options) {
-        options = username;
-        username = localUtils.findKey('twitter', this, options.data.site);
-    }
+  if (!options) {
+    options = username;
+    username = localUtils.findKey('twitter', this, options.data.site);
+  }
 
-    if (username) {
-        return socialUrls.twitter(username);
-    }
+  if (username) {
+    return socialUrls.twitter(username);
+  }
 
-    return null;
+  return null;
 };

@@ -32,9 +32,7 @@
     "generated_from": null,
     "last4": "4242",
     "networks": {
-      "available": [
-        "visa"
-      ],
+      "available": ["visa"],
       "preferred": null
     },
     "regulated_status": "unregulated",

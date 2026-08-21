@@ -7,55 +7,56 @@ const logging = require('@tryghost/logging');
  * objects and Bookshelf models stay on this side of the seam.
  */
 module.exports = class GiftCheckoutAdapter {
-    constructor({StripeCustomerModel, getStripeApi}) {
-        this.StripeCustomerModel = StripeCustomerModel;
-        this.getStripeApi = getStripeApi;
+  constructor({ StripeCustomerModel, getStripeApi }) {
+    this.StripeCustomerModel = StripeCustomerModel;
+    this.getStripeApi = getStripeApi;
+  }
+
+  async getCustomerId({ memberId, email, name }) {
+    if (!memberId) {
+      return null;
     }
 
-    async getCustomerId({memberId, email, name}) {
-        if (!memberId) {
-            return null;
+    const rows = await this.StripeCustomerModel.where({
+      member_id: memberId,
+    })
+      .query()
+      .select('customer_id');
+
+    for (const row of rows) {
+      try {
+        const customer = await this.getStripeApi().getCustomer(row.customer_id);
+        if (!customer.deleted) {
+          return customer.id;
         }
-
-        const rows = await this.StripeCustomerModel.where({
-            member_id: memberId
-        }).query().select('customer_id');
-
-        for (const row of rows) {
-            try {
-                const customer = await this.getStripeApi().getCustomer(row.customer_id);
-                if (!customer.deleted) {
-                    return customer.id;
-                }
-            } catch (err) {
-                logging.warn(err);
-            }
-        }
-
-        const customer = await this.getStripeApi().createCustomer({
-            email,
-            name
-        });
-
-        await this.StripeCustomerModel.add({
-            member_id: memberId,
-            customer_id: customer.id,
-            email: customer.email,
-            name: customer.name
-        });
-
-        return customer.id;
+      } catch (err) {
+        logging.warn(err);
+      }
     }
 
-    async createSession(data) {
-        const {customerId, idempotencyKey, ...sessionData} = data;
-        const session = await this.getStripeApi().createGiftCheckoutSession({
-            ...sessionData,
-            customer: customerId ? {id: customerId} : null,
-            idempotencyKey
-        });
+    const customer = await this.getStripeApi().createCustomer({
+      email,
+      name,
+    });
 
-        return {id: session.id, url: session.url};
-    }
+    await this.StripeCustomerModel.add({
+      member_id: memberId,
+      customer_id: customer.id,
+      email: customer.email,
+      name: customer.name,
+    });
 
+    return customer.id;
+  }
+
+  async createSession(data) {
+    const { customerId, idempotencyKey, ...sessionData } = data;
+    const session = await this.getStripeApi().createGiftCheckoutSession({
+      ...sessionData,
+      customer: customerId ? { id: customerId } : null,
+      idempotencyKey,
+    });
+
+    return { id: session.id, url: session.url };
+  }
 };

@@ -3,83 +3,83 @@ const mappers = require('./mappers');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:authentication');
 
 const messages = {
-    checkEmailForInstructions: 'Check your email for further instructions.',
-    passwordChanged: 'Password updated',
-    invitationAccepted: 'Invitation accepted.'
+  checkEmailForInstructions: 'Check your email for further instructions.',
+  passwordChanged: 'Password updated',
+  invitationAccepted: 'Invitation accepted.',
 };
 
 module.exports = {
-    setup(user, apiConfig, frame) {
-        frame.response = {
-            users: [
-                mappers.users(user, {options: {context: {internal: true}}})
-            ]
-        };
-    },
+  setup(user, apiConfig, frame) {
+    frame.response = {
+      users: [mappers.users(user, { options: { context: { internal: true } } })],
+    };
+  },
 
-    updateSetup(user, apiConfig, frame) {
-        frame.response = {
-            users: [
-                mappers.users(user, {options: {context: {internal: true}}})
-            ]
-        };
-    },
+  updateSetup(user, apiConfig, frame) {
+    frame.response = {
+      users: [mappers.users(user, { options: { context: { internal: true } } })],
+    };
+  },
 
-    isSetup(data, apiConfig, frame) {
-        frame.response = {
-            setup: [data]
-        };
-    },
+  isSetup(data, apiConfig, frame) {
+    frame.response = {
+      setup: [data],
+    };
+  },
 
-    generateResetToken(data, apiConfig, frame) {
-        frame.response = {
-            password_reset: [{
-                message: tpl(messages.checkEmailForInstructions)
-            }]
-        };
-    },
+  generateResetToken(data, apiConfig, frame) {
+    frame.response = {
+      password_reset: [
+        {
+          message: tpl(messages.checkEmailForInstructions),
+        },
+      ],
+    };
+  },
 
-    resetPassword(data, apiConfig, frame) {
-        const resetResponse = {
-            message: tpl(messages.passwordChanged)
-        };
+  resetPassword(data, apiConfig, frame) {
+    const resetResponse = {
+      message: tpl(messages.passwordChanged),
+    };
 
-        if (data.emailVerificationToken) {
-            resetResponse.emailVerificationToken = data.emailVerificationToken;
-        }
-
-        frame.response = {
-            password_reset: [resetResponse]
-        };
-    },
-
-    acceptInvitation(data, apiConfig, frame) {
-        debug('acceptInvitation');
-
-        frame.response = {
-            invitation: [
-                {message: tpl(messages.invitationAccepted)}
-            ]
-        };
-    },
-
-    isInvitation(data, apiConfig, frame) {
-        debug('acceptInvitation');
-
-        frame.response = {
-            invitation: [{
-                valid: !!data
-            }]
-        };
-    },
-
-    reset(data, apiConfig, frame) {
-        frame.response = {
-            security_action: [{
-                action: 'reset_authentication',
-                api_keys_rotated: data?.apiKeysRotated ?? 0,
-                users_locked: data?.usersLocked ?? 0
-            }]
-        };
+    if (data.emailVerificationToken) {
+      resetResponse.emailVerificationToken = data.emailVerificationToken;
     }
+
+    frame.response = {
+      password_reset: [resetResponse],
+    };
+  },
+
+  acceptInvitation(data, apiConfig, frame) {
+    debug('acceptInvitation');
+
+    frame.response = {
+      invitation: [{ message: tpl(messages.invitationAccepted) }],
+    };
+  },
+
+  isInvitation(data, apiConfig, frame) {
+    debug('acceptInvitation');
+
+    frame.response = {
+      invitation: [
+        {
+          valid: !!data,
+        },
+      ],
+    };
+  },
+
+  reset(data, apiConfig, frame) {
+    frame.response = {
+      security_action: [
+        {
+          action: 'reset_authentication',
+          api_keys_rotated: data?.apiKeysRotated ?? 0,
+          users_locked: data?.usersLocked ?? 0,
+        },
+      ],
+    };
+  },
 };

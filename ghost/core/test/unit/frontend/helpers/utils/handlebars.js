@@ -2,28 +2,28 @@ const assert = require('node:assert/strict');
 const handlebars = require('../../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 module.exports.shouldCompileToExpected = (templateString, hash, expected) => {
-    const template = handlebars.compile(templateString);
-    const result = template(hash);
+  const template = handlebars.compile(templateString);
+  const result = template(hash);
 
-    assert.equal(result, expected);
+  assert.equal(result, expected);
 };
 
 module.exports.shouldCompileToExpectedWithGlobals = (templateString, hash, expected, globals) => {
-    const template = handlebars.compile(templateString);
-    const result = template(hash, globals);
+  const template = handlebars.compile(templateString);
+  const result = template(hash, globals);
 
-    assert.equal(result, expected);
+  assert.equal(result, expected);
 };
 
 module.exports.shouldCompileToError = (templateString, hash, error) => {
-    const template = handlebars.compile(templateString);
+  const template = handlebars.compile(templateString);
 
-    assert.throws(() => {
-        return template(hash);
-    }, error);
+  assert.throws(() => {
+    return template(hash);
+  }, error);
 };
 
 module.exports.registerHelper = (name) => {
-    const helper = require(`../../../../../core/frontend/helpers/${name}`);
-    handlebars.registerHelper(name, helper);
+  const helper = require(`../../../../../core/frontend/helpers/${name}`);
+  handlebars.registerHelper(name, helper);
 };

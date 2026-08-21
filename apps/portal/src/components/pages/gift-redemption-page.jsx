@@ -1,15 +1,18 @@
-import {useContext, useEffect, useState} from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AppContext from '../../app-context';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import InputForm from '../common/input-form';
-import {ValidateInputForm} from '../../utils/form';
-import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
-import {t} from '../../utils/i18n';
+import { ValidateInputForm } from '../../utils/form';
+import {
+  getGiftDurationLabel,
+  getGiftRedemptionErrorMessage,
+} from '../../utils/gift-redemption-notification';
+import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
-import {formatGiftValue} from './gift-page';
+import { formatGiftValue } from './gift-page';
 
 export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form {
@@ -22,189 +25,191 @@ export const GiftRedemptionStyles = `
 `;
 
 const GiftRedemptionPage = () => {
-    const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
-    const gift = pageData?.gift;
-    const isLoggedIn = !!member;
-    const [name, setName] = useState(member?.name || '');
-    const [email, setEmail] = useState(member?.email || '');
-    const [errors, setErrors] = useState({});
-    const [showDetails, setShowDetails] = useState(false);
-    const {cardRef, containerProps: cardTiltProps} = useCardTilt();
+  const { action, brandColor, doAction, member, pageData, site } = useContext(AppContext);
+  const gift = pageData?.gift;
+  const isLoggedIn = !!member;
+  const [name, setName] = useState(member?.name || '');
+  const [email, setEmail] = useState(member?.email || '');
+  const [errors, setErrors] = useState({});
+  const [showDetails, setShowDetails] = useState(false);
+  const { cardRef, containerProps: cardTiltProps } = useCardTilt();
 
-    useEffect(() => {
-        setName(member?.name || '');
-        setEmail(member?.email || '');
-        setErrors({});
-    }, [member?.email, member?.name]);
+  useEffect(() => {
+    setName(member?.name || '');
+    setEmail(member?.email || '');
+    setErrors({});
+  }, [member?.email, member?.name]);
 
-    useEffect(() => {
-        if (gift) {
-            return;
-        }
-
-        doAction('openNotification', {
-            action: 'giftRedemption:failed',
-            status: 'error',
-            autoHide: false,
-            closeable: true,
-            message: getGiftRedemptionErrorMessage({code: 'GIFT_NOT_FOUND'})
-        });
-        doAction('closePopup');
-    }, [doAction, gift]);
-
-    if (!gift) {
-        return null;
+  useEffect(() => {
+    if (gift) {
+      return;
     }
 
-    const formFields = [
-        {
-            type: 'text',
-            value: name,
-            placeholder: t('Jamie Larson'),
-            label: t('Your name'),
-            name: 'name',
-            required: false,
-            errorMessage: errors.name || '',
-            tabIndex: 1,
-            autoFocus: !email
-        },
-        {
-            type: 'email',
-            value: email,
-            placeholder: t('jamie@example.com'),
-            label: t('Your email'),
-            name: 'email',
-            required: true,
-            errorMessage: errors.email || '',
-            tabIndex: 2,
-            autoFocus: !!email
-        }
-    ];
+    doAction('openNotification', {
+      action: 'giftRedemption:failed',
+      status: 'error',
+      autoHide: false,
+      closeable: true,
+      message: getGiftRedemptionErrorMessage({ code: 'GIFT_NOT_FOUND' }),
+    });
+    doAction('closePopup');
+  }, [doAction, gift]);
 
-    const handleFieldChange = (event, field) => {
-        setErrors(currentErrors => ({
-            ...currentErrors,
-            [field.name]: ''
-        }));
+  if (!gift) {
+    return null;
+  }
 
-        if (field.name === 'name') {
-            setName(event.target.value);
-        }
+  const formFields = [
+    {
+      type: 'text',
+      value: name,
+      placeholder: t('Jamie Larson'),
+      label: t('Your name'),
+      name: 'name',
+      required: false,
+      errorMessage: errors.name || '',
+      tabIndex: 1,
+      autoFocus: !email,
+    },
+    {
+      type: 'email',
+      value: email,
+      placeholder: t('jamie@example.com'),
+      label: t('Your email'),
+      name: 'email',
+      required: true,
+      errorMessage: errors.email || '',
+      tabIndex: 2,
+      autoFocus: !!email,
+    },
+  ];
 
-        if (field.name === 'email') {
-            setEmail(event.target.value);
-        }
-    };
+  const handleFieldChange = (event, field) => {
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [field.name]: '',
+    }));
 
-    const handleKeyDown = (event) => {
-        if (event.keyCode === 13) {
-            if (isRedeeming) {
-                return;
-            }
+    if (field.name === 'name') {
+      setName(event.target.value);
+    }
 
-            handleRedeemClick(event);
-        }
-    };
+    if (field.name === 'email') {
+      setEmail(event.target.value);
+    }
+  };
 
-    const handleRedeemClick = (event) => {
-        event.preventDefault();
+  const handleKeyDown = (event) => {
+    if (event.keyCode === 13) {
+      if (isRedeeming) {
+        return;
+      }
 
-        if (isRedeeming) {
-            return;
-        }
+      handleRedeemClick(event);
+    }
+  };
 
-        if (isLoggedIn) {
-            doAction('redeemGift', {
-                giftToken: pageData?.token
-            });
-            return;
-        }
+  const handleRedeemClick = (event) => {
+    event.preventDefault();
 
-        const formErrors = ValidateInputForm({fields: formFields});
-        const hasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+    if (isRedeeming) {
+      return;
+    }
 
-        setErrors(formErrors);
+    if (isLoggedIn) {
+      doAction('redeemGift', {
+        giftToken: pageData?.token,
+      });
+      return;
+    }
 
-        if (hasErrors) {
-            return;
-        }
+    const formErrors = ValidateInputForm({ fields: formFields });
+    const hasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
 
-        doAction('redeemGift', {
-            email,
-            name,
-            giftToken: pageData?.token
-        });
-    };
+    setErrors(formErrors);
 
-    const isRedeeming = action === 'redeemGift:running';
-    const buttonLabel = isRedeeming
-        ? t('Redeeming...')
-        : t('Redeem your membership');
-    const siteIcon = site?.icon;
-    const siteTitle = site?.title || '';
-    const headerText = siteTitle
-        ? t('You\'ve been gifted a membership to {siteTitle}', {siteTitle})
-        : t('You\'ve been gifted a membership');
-    const benefits = gift.tier.benefits || [];
-    const tierDescription = gift.tier.description || '';
+    if (hasErrors) {
+      return;
+    }
 
-    return (
-        <>
-            <CloseButton />
-            <div className='gh-portal-content giftRedemption'>
-                <div className='gh-portal-gift-checkout'>
-                    <div className='gh-portal-gift-checkout-left'>
-                        <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
-                        <div className='gh-portal-gift-checkout-inner'>
-                            <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>{t('A gift, just for you')}</h1>
-                                <p className='gh-portal-gift-checkout-subtitle'>{headerText}</p>
-                            </header>
+    doAction('redeemGift', {
+      email,
+      name,
+      giftToken: pageData?.token,
+    });
+  };
 
-                            {!isLoggedIn && (
-                                <div className='gh-portal-gift-redemption-form'>
-                                    <InputForm fields={formFields} onChange={handleFieldChange} onKeyDown={handleKeyDown} />
-                                </div>
-                            )}
+  const isRedeeming = action === 'redeemGift:running';
+  const buttonLabel = isRedeeming ? t('Redeeming...') : t('Redeem your membership');
+  const siteIcon = site?.icon;
+  const siteTitle = site?.title || '';
+  const headerText = siteTitle
+    ? t("You've been gifted a membership to {siteTitle}", { siteTitle })
+    : t("You've been gifted a membership");
+  const benefits = gift.tier.benefits || [];
+  const tierDescription = gift.tier.description || '';
 
-                            <ActionButton
-                                brandColor={brandColor}
-                                classes='gh-portal-gift-checkout-cta'
-                                label={buttonLabel}
-                                onClick={handleRedeemClick}
-                                style={{width: '100%'}}
-                                disabled={isRedeeming}
-                                isRunning={isRedeeming}
-                            />
-                        </div>
-                    </div>
+  return (
+    <>
+      <CloseButton />
+      <div className="gh-portal-content giftRedemption">
+        <div className="gh-portal-gift-checkout">
+          <div className="gh-portal-gift-checkout-left">
+            <div className="gh-portal-gift-checkout-bg" aria-hidden="true" />
+            <div className="gh-portal-gift-checkout-inner">
+              <header className="gh-portal-gift-checkout-header">
+                <h1 className="gh-portal-main-title">{t('A gift, just for you')}</h1>
+                <p className="gh-portal-gift-checkout-subtitle">{headerText}</p>
+              </header>
 
-                    <div className='gh-portal-gift-checkout-right' {...cardTiltProps}>
-                        <div className='gh-portal-gift-checkout-right-panel'>
-                            <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
-                                <GiftCard
-                                    cardRef={cardRef}
-                                    duration={getGiftDurationLabel(gift)}
-                                    tierName={gift.tier.name}
-                                    name={name.trim() || null}
-                                    giftValue={formatGiftValue(gift)}
-                                    siteIcon={siteIcon}
-                                    siteTitle={siteTitle}
-                                />
-
-                                <GiftDetailsToggle
-                                    description={tierDescription}
-                                    benefits={benefits}
-                                    showDetails={showDetails}
-                                    onToggle={() => setShowDetails(s => !s)}
-                                />
-                            </div>
-                        </div>
-                    </div>
+              {!isLoggedIn && (
+                <div className="gh-portal-gift-redemption-form">
+                  <InputForm
+                    fields={formFields}
+                    onChange={handleFieldChange}
+                    onKeyDown={handleKeyDown}
+                  />
                 </div>
+              )}
+
+              <ActionButton
+                brandColor={brandColor}
+                classes="gh-portal-gift-checkout-cta"
+                label={buttonLabel}
+                onClick={handleRedeemClick}
+                style={{ width: '100%' }}
+                disabled={isRedeeming}
+                isRunning={isRedeeming}
+              />
             </div>
-        </>
-    );
+          </div>
+
+          <div className="gh-portal-gift-checkout-right" {...cardTiltProps}>
+            <div className="gh-portal-gift-checkout-right-panel">
+              <div className="gh-portal-gift-checkout-card-stack" data-revealing={showDetails}>
+                <GiftCard
+                  cardRef={cardRef}
+                  duration={getGiftDurationLabel(gift)}
+                  tierName={gift.tier.name}
+                  name={name.trim() || null}
+                  giftValue={formatGiftValue(gift)}
+                  siteIcon={siteIcon}
+                  siteTitle={siteTitle}
+                />
+
+                <GiftDetailsToggle
+                  description={tierDescription}
+                  benefits={benefits}
+                  showDetails={showDetails}
+                  onToggle={() => setShowDetails((s) => !s)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default GiftRedemptionPage;
