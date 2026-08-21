@@ -86,7 +86,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is present', async function () {
       const service = createService();
-      const session = { mode: 'payment', payment_status: 'paid', metadata: { ghost_donation: true } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: true },
+      };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
 
       await service.handleEvent(session);
@@ -226,7 +230,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should ignore false gift metadata flags', async function () {
       const service = createService();
-      const session = { mode: 'payment', payment_status: 'paid', metadata: { ghost_gift: 'false' } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_gift: 'false' },
+      };
       const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
 
       await service.handleEvent(session);
