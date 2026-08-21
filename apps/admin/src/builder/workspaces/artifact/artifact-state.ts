@@ -15,6 +15,27 @@ export type ArtifactDraft = ArtifactPayload & {
 
 export const ARTIFACT_HTML_MAX_BYTES = 5 * 1024 * 1024;
 
+const starterDocument = `<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Untitled artifact</title>
+</head>
+<body>
+    <main id="app"></main>
+</body>
+</html>`;
+
+export function artifactBuilderPayload(payload: ArtifactPayload): ArtifactPayload {
+    return payload.html.trim() ? payload : {
+        ...payload,
+        title: 'Untitled artifact',
+        description: '',
+        html: starterDocument
+    };
+}
+
 export class ArtifactPayloadValidationError extends Error {
     readonly code: string;
     readonly details?: unknown;

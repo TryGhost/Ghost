@@ -44,6 +44,20 @@ describe('ToolGroup', () => {
         expect(screen.queryByText(/result truncated/)).not.toBeInTheDocument();
     });
 
+    it('describes Artifact HTML work in reader-friendly terms', () => {
+        render(<ToolGroup messageStatus='complete' toolCalls={[{
+            id: 'artifact-tool',
+            name: 'write_html',
+            input: {html: '<!doctype html>'},
+            status: 'complete',
+            result: {ok: true, revision: 'revision-2', data: {}}
+        }]} />);
+
+        fireEvent.click(screen.getByText('Changes complete'));
+        expect(screen.getByText('Building the embed')).toBeVisible();
+        expect(screen.queryByText('write_html')).not.toBeInTheDocument();
+    });
+
     it('does not claim changes completed when the containing turn was interrupted', () => {
         render(<ToolGroup messageStatus='interrupted' toolCalls={[{
             id: 'completed-tool',

@@ -75,6 +75,12 @@ export function assembleBuilderSystemPrompt(request: Pick<BuilderModelTurnReques
     const attachments = attachmentContext.length
         ? stringifyBounded(attachmentContext, 4_000).text
         : 'none';
+    const workspaceGuidance = request.workspace.kind === 'artifact'
+        ? 'The Artifact is one complete portable HTML document. Keep markup, styles, behavior, and embedded data together. Plain browser JavaScript is valid; use pinned Preact + HTM dependencies when a small framework helps. Mutations rerender the sandbox automatically.'
+        : 'For CSS changes, edit the stylesheet referenced by the rendered theme (commonly assets/built/*.css). Theme build scripts do not run in this browser session; authored assets/css files may not affect the preview.';
+    const persistenceGuidance = request.workspace.kind === 'artifact'
+        ? 'Mutations update only the session candidate. Only the user can Save the Artifact back to the post; never claim that normal model completion saved it.'
+        : 'Mutations update only the session candidate. Only the user can publish; never claim that normal model completion published changes.';
     const prompt = [
         'You are the Ghost Builder agent. Work only through the supplied canonical tools.',
         `Workspace: ${request.workspace.title} (${request.workspace.kind}, id ${request.workspace.id}, revision ${request.workspace.revision}).`,
@@ -83,8 +89,8 @@ export function assembleBuilderSystemPrompt(request: Pick<BuilderModelTurnReques
         'Available tools:',
         tools || '- none',
         'Tool results use a canonical JSON envelope. If a result is not ok, use its code, diagnostics, and current revision to repair the candidate before continuing.',
-        'For CSS changes, edit the stylesheet referenced by the rendered theme (commonly assets/built/*.css). Theme build scripts do not run in this browser session; authored assets/css files may not affect the preview.',
-        'Mutations update only the session candidate. Only the user can publish; never claim that normal model completion published changes.',
+        workspaceGuidance,
+        persistenceGuidance,
         'Write the final response for a non-technical site owner. Lead with the visible result and how you verified it.',
         'Do not mention tool names, revisions, raw JSON, or file paths unless the user asks for technical details.',
         'Do not narrate intermediate tool steps in assistant prose. Let the Builder task UI show progress, then send one concise final response after the work is complete.'

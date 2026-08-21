@@ -12,8 +12,9 @@ import type {ReactNode, Ref} from 'react';
 export type BuilderShellProps = ChatPanelProps & {
     title: string;
     preview: ReactNode;
-    backTo: string;
-    backLabel: string;
+    backTo?: string;
+    backLabel?: string;
+    backAction?: ReactNode;
     publishAction?: ReactNode;
     previewUrl?: string;
     previewCanGoBack?: boolean;
@@ -21,15 +22,19 @@ export type BuilderShellProps = ChatPanelProps & {
     previewMode?: PreviewInteractionMode;
     previewEditingButtonRef?: Ref<HTMLButtonElement>;
     previewControlsDisabled?: boolean;
+    previewAddress?: boolean;
+    previewEdit?: boolean;
+    previewHistory?: boolean;
+    previewResponsive?: boolean;
     onNavigatePreview?: (url: string) => void | Promise<boolean | string>;
     onPreviewBack?: () => void;
     onPreviewForward?: () => void;
     onSetPreviewMode?: (mode: PreviewInteractionMode) => void;
 };
 
-export const BuilderShell = ({title, preview, backTo, backLabel, publishAction, previewUrl, previewCanGoBack, previewCanGoForward, previewMode, previewEditingButtonRef, previewControlsDisabled, onNavigatePreview, onPreviewBack, onPreviewForward, onSetPreviewMode, ...chatProps}: BuilderShellProps) => (
+export const BuilderShell = ({title, preview, backTo, backLabel, backAction, publishAction, previewUrl, previewCanGoBack, previewCanGoForward, previewMode, previewEditingButtonRef, previewControlsDisabled, previewAddress, previewEdit, previewHistory, previewResponsive, onNavigatePreview, onPreviewBack, onPreviewForward, onSetPreviewMode, ...chatProps}: BuilderShellProps) => (
     <Stack className='fixed inset-0 z-50 min-h-0 overflow-hidden bg-background' gap='none'>
-        <BuilderHeader backLabel={backLabel} backTo={backTo} publishAction={publishAction} state={chatProps.state} title={title} />
+        <BuilderHeader backAction={backAction} backLabel={backLabel} backTo={backTo} publishAction={publishAction} state={chatProps.state} title={title} />
         <BuilderLayout
             chat={<ChatPanel {...chatProps} />}
             preview={
@@ -39,6 +44,10 @@ export const BuilderShell = ({title, preview, backTo, backLabel, publishAction, 
                     disabled={previewControlsDisabled || !['ready', 'interrupted'].includes(chatProps.state.status)}
                     editButtonRef={previewEditingButtonRef}
                     mode={previewMode}
+                    responsive={previewResponsive}
+                    showAddress={previewAddress}
+                    showEdit={previewEdit}
+                    showHistory={previewHistory}
                     url={previewUrl}
                     onBack={onPreviewBack}
                     onForward={onPreviewForward}

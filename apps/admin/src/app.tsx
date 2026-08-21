@@ -5,6 +5,7 @@ import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
 import { useEmberAuthSync, useEmberDataSync } from './ember-bridge';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
+import {ArtifactBuilderHost} from './builder/artifact-builder-host';
 
 function App() {
   const { data: currentUser } = useCurrentUser();
@@ -22,6 +23,7 @@ function App() {
           <Outlet />
           <EmberRoot />
           <DocsBotWidgetHost />
+          <ArtifactBuilderHost />
         </AdminLayout>
       ) : (
         <>

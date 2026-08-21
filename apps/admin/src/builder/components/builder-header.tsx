@@ -6,17 +6,19 @@ import {Link} from '@tryghost/admin-x-framework';
 import type {BuilderSessionState} from '@/builder/core/builder-session';
 import type {ReactNode} from 'react';
 
-export const BuilderHeader = ({title, state, backTo, backLabel, publishAction}: {title: string; state: BuilderSessionState; backTo: string; backLabel: string; publishAction?: ReactNode}) => {
+export const BuilderHeader = ({title, state, backTo, backLabel, backAction, publishAction}: {title: string; state: BuilderSessionState; backTo?: string; backLabel?: string; backAction?: ReactNode; publishAction?: ReactNode}) => {
     const isRunning = state.status === 'running';
     return (
         <header className='z-10 h-14 shrink-0 border-b border-border-default bg-surface-elevated px-3 shadow-sm'>
             <Inline align='center' className='size-full' gap='md' justify='between'>
                 <Inline align='center' className='min-w-0 flex-1' gap='md'>
-                    <Button size='icon' variant='ghost' asChild>
-                        <Link aria-label={backLabel} to={backTo}>
-                            <LucideIcon.ArrowLeft aria-hidden='true' />
-                        </Link>
-                    </Button>
+                    {backAction ?? (backTo && backLabel ? (
+                        <Button size='icon' variant='ghost' asChild>
+                            <Link aria-label={backLabel} to={backTo}>
+                                <LucideIcon.ArrowLeft aria-hidden='true' />
+                            </Link>
+                        </Button>
+                    ) : null)}
                     <Text as='h1' className='min-w-0 truncate' size='lg' weight='semibold'>{title}</Text>
                     {state.workspace.dirty && (
                         <Inline align='center' gap='xs'>

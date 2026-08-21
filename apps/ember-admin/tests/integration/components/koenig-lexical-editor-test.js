@@ -6,11 +6,15 @@ import {expect} from 'chai';
 import {fillIn, find, render, waitFor, waitUntil} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 
+let renderedCardConfig;
+
 const MockKoenigComposer = ({cardConfig, children}) => {
+    renderedCardConfig = cardConfig;
     return React.createElement(
         React.Fragment,
         null,
         React.createElement('span', {'data-test-visibility-settings': ''}, cardConfig.visibilitySettings),
+        React.createElement('span', {'data-test-design-builder': ''}, String(cardConfig.feature.designBuilder)),
         children
     );
 };
@@ -37,6 +41,10 @@ const SESSION_USER = {
 };
 
 class FeatureService extends Service {
+    get designBuilder() {
+        return true;
+    }
+
     get nightShift() {
         return false;
     }
@@ -64,6 +72,19 @@ class SettingsService extends Service {
     }
 }
 
+class StateBridgeService extends Service {
+    artifactRequest;
+
+    requestArtifactBuilder(request) {
+        this.artifactRequest = request;
+        return Promise.resolve({
+            ...request.artifact,
+            title: 'Saved calculator',
+            html: '<!doctype html><html><head><title>Saved calculator</title></head><body>Saved</body></html>'
+        });
+    }
+}
+
 describe('Integration: Component: koenig-lexical-editor', function () {
     setupRenderingTest();
 
@@ -80,6 +101,8 @@ describe('Integration: Component: koenig-lexical-editor', function () {
         this.owner.register('service:koenig', KoenigService);
         this.owner.register('service:session', SessionService);
         this.owner.register('service:settings', SettingsService);
+        this.owner.register('service:state-bridge', StateBridgeService);
+        renderedCardConfig = undefined;
 
         this.set('cardConfig', {
             post: {
@@ -108,5 +131,20 @@ describe('Integration: Component: koenig-lexical-editor', function () {
         await waitUntil(() => find(visibilitySelector)?.textContent === 'web only');
 
         expect(find(editorSelector)).to.have.value('Unsaved editor state');
+    });
+
+    it('exposes Artifact Builder through the production card capability', async function () {
+        await render(hbs`<KoenigLexicalEditor @cardConfig={{this.cardConfig}} />`);
+        await waitFor('[data-secondary-instance="false"] [data-test-design-builder]');
+
+        expect(find('[data-secondary-instance="false"] [data-test-design-builder]').textContent).to.equal('true');
+        expect(renderedCardConfig.openArtifact).to.be.a('function');
+
+        const artifact = {id: 'artifact-1', artifactVersion: 1, title: '', description: '', html: ''};
+        const saved = await renderedCardConfig.openArtifact({nodeKey: 'node-1', artifact});
+        const stateBridge = this.owner.lookup('service:state-bridge');
+
+        expect(stateBridge.artifactRequest).to.deep.equal({cardId: 'node-1', artifact});
+        expect(saved.title).to.equal('Saved calculator');
     });
 });

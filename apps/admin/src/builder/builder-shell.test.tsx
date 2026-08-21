@@ -105,6 +105,32 @@ describe('BuilderShell', () => {
         expect(onNavigatePreview).toHaveBeenCalledWith('/archive/');
     });
 
+    it('configures the shared shell as a single-page Artifact preview', () => {
+        const onSetPreviewMode = vi.fn();
+        render(
+            <BuilderShell
+                {...defaultProps}
+                backAction={<button type='button'>Cancel artifact</button>}
+                preview={<div>Artifact preview</div>}
+                previewAddress={false}
+                previewEdit={false}
+                previewHistory={false}
+                previewMode='browse'
+                previewResponsive
+                onSetPreviewMode={onSetPreviewMode}
+            />,
+            {wrapper: MemoryRouter}
+        );
+
+        expect(screen.queryByRole('textbox', {name: 'Preview address'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Back in preview'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Edit preview'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Select preview content'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Desktop preview'})).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', {name: 'Mobile preview'})).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByRole('button', {name: 'Cancel artifact'})).toBeInTheDocument();
+    });
+
     it('explains a preview address that cannot be opened', async () => {
         const onNavigatePreview = vi.fn().mockResolvedValue('Preview links need to stay on this site.');
         render(

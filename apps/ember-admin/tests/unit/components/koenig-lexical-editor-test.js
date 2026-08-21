@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import {buildCardConfigPost, decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
+import {buildCardConfigPost, decoratePostSearchResult, getCardVisibilitySettings, offerUrls, openArtifactBuilder} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -180,5 +180,14 @@ describe('Unit: Component: koenig-lexical-editor', function () {
 
             expect(post.visibility).to.equal('paid');
         });
+    });
+
+    it('maps a Koenig Artifact request to the correlated state bridge request', async function () {
+        const stateBridge = {requestArtifactBuilder: sinon.stub().resolves(null)};
+        const artifact = {id: 'artifact-1', artifactVersion: 1, title: '', description: '', html: ''};
+
+        await openArtifactBuilder(stateBridge, {nodeKey: 'artifact-node-1', artifact});
+
+        expect(stateBridge.requestArtifactBuilder.calledOnceWith({cardId: 'artifact-node-1', artifact})).to.be.true;
     });
 });

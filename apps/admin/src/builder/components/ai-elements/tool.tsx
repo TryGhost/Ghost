@@ -15,6 +15,11 @@ const actionLabels: Record<string, string> = {
     delete_file: 'Removing an unused part of the design',
     list_design_settings: 'Reviewing design settings',
     update_design_settings: 'Updating design settings',
+    read_html: 'Reviewing the embed',
+    find_in_html: 'Finding the right part of the embed',
+    replace_in_html: 'Updating the embed',
+    write_html: 'Building the embed',
+    inspect: 'Checking the embed preview',
     inspect_page: 'Checking the preview',
     inspect_element: 'Checking the selected area',
     navigate: 'Opening another preview page',
@@ -26,7 +31,9 @@ const actionLabels: Record<string, string> = {
 const fileMutationActions = new Set([
     'replace_in_file',
     'write_file',
-    'delete_file'
+    'delete_file',
+    'replace_in_html',
+    'write_html'
 ]);
 
 function actionLabel(name: string): string {
@@ -39,6 +46,9 @@ function actionTarget(toolCall: BuilderConversationToolCall): string | null {
     }
     if (toolCall.name === 'update_design_settings' && toolCall.input.values && typeof toolCall.input.values === 'object' && !Array.isArray(toolCall.input.values)) {
         return `settings:${Object.keys(toolCall.input.values).sort().join('|')}`;
+    }
+    if (toolCall.name === 'replace_in_html' || toolCall.name === 'write_html') {
+        return 'artifact:html';
     }
     return null;
 }

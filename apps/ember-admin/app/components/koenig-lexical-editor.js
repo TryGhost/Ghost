@@ -108,6 +108,10 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
     };
 }
 
+export function openArtifactBuilder(stateBridge, {nodeKey, artifact}) {
+    return stateBridge.requestArtifactBuilder({cardId: nodeKey, artifact});
+}
+
 /**
  * Fetches the URLs of all active offers
  * @returns {Promise<{label: string, value: string}[]>}
@@ -225,6 +229,7 @@ export default class KoenigLexicalEditor extends Component {
     @service search;
     @service session;
     @service settings;
+    @service stateBridge;
     @service store;
 
     @inject config;
@@ -499,9 +504,11 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
+                designBuilder: this.feature.designBuilder,
                 transistor: this.settings.transistor,
                 paywallImprovements: this.feature.paywallImprovements
             },
+            openArtifact: request => openArtifactBuilder(this.stateBridge, request),
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
             },

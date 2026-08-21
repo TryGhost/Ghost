@@ -82,6 +82,7 @@ describe('ArtifactWorkspace', () => {
         expect(workspace.state.dirty).toBe(true);
 
         await workspace.promoteCandidate(new AbortController().signal);
+        expect(workspace.hasPromotedChanges).toBe(true);
         await workspace.publish(new AbortController().signal);
 
         expect(save).toHaveBeenCalledOnce();
@@ -89,6 +90,7 @@ describe('ArtifactWorkspace', () => {
         expect(save.mock.calls[0]?.[0].html).toContain('Revenue by region');
         expect(save.mock.calls[0]?.[1]).toBeInstanceOf(AbortSignal);
         expect(workspace.state.dirty).toBe(false);
+        expect(workspace.hasPromotedChanges).toBe(false);
     });
 
     it('restores promoted and interrupted candidate state together at a checkpoint', async () => {
@@ -103,6 +105,7 @@ describe('ArtifactWorkspace', () => {
         await workspace.restore(checkpoint);
 
         expect(workspace.draft.html).toContain('<h1>Revenue</h1>');
+        expect(workspace.hasCandidate).toBe(true);
         expect(workspace.candidateDraft?.html).toContain('First candidate');
         expect(preview.draft?.html).toContain('First candidate');
     });
@@ -115,11 +118,27 @@ describe('ArtifactWorkspace', () => {
         const write = workspace.getTools().find(tool => tool.name === 'write_html');
         await write?.execute({revision: workspace.state.revision, html: '<!doctype html><html><head><title>Interrupted</title></head><body>Interrupted candidate</body></html>'}, new AbortController().signal);
 
+        expect(workspace.hasPromotedChanges).toBe(false);
+
         await workspace.publish(new AbortController().signal);
 
         expect(save.mock.calls[0]?.[0].html).toContain('<h1>Revenue</h1>');
         expect(workspace.candidateDraft?.html).toContain('Interrupted candidate');
         expect(workspace.state.dirty).toBe(true);
+    });
+
+    it('retains promoted dirty state when an interrupted candidate matches the baseline', async () => {
+        const preview = new FakeArtifactPreview();
+        const workspace = new ArtifactWorkspace({id: 'artifact-1', title: 'Artifact Builder', load: initialDraft, preview});
+        await workspace.load(new AbortController().signal);
+        const baselineHtml = workspace.draft.html;
+        const write = workspace.getTools().find(tool => tool.name === 'write_html');
+        await write?.execute({revision: workspace.state.revision, html: '<!doctype html><html><head><title>Promoted</title></head><body>Promoted</body></html>'}, new AbortController().signal);
+        await workspace.promoteCandidate(new AbortController().signal);
+        await write?.execute({revision: workspace.state.revision, html: baselineHtml}, new AbortController().signal);
+
+        expect(workspace.state.dirty).toBe(false);
+        expect(workspace.hasPromotedChanges).toBe(true);
     });
 
     it('does not report a successful save when the editor bridge is unavailable', async () => {

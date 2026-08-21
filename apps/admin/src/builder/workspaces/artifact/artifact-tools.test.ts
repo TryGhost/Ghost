@@ -1,9 +1,18 @@
 import {describe, expect, it} from 'vitest';
 
 import {ARTIFACT_HTML_LIMITS, findInArtifactHtml, readArtifactHtml, replaceInArtifactHtml, writeArtifactHtml} from './artifact-tools';
-import {createArtifactDraft} from './artifact-state';
+import {artifactBuilderPayload, createArtifactDraft} from './artifact-state';
 
 describe('Artifact HTML tools', () => {
+    it('boots an empty Koenig card as a complete portable document', async () => {
+        const payload = artifactBuilderPayload({id: 'artifact-1', artifactVersion: 1, title: '', description: '', html: ''});
+        const draft = await createArtifactDraft(payload);
+
+        expect(draft.title).toBe('Untitled artifact');
+        expect(draft.html).toContain('<!doctype html>');
+        expect(draft.html).toContain('<meta name="viewport"');
+    });
+
     it('validates and canonicalizes bridge payloads before hashing them', async () => {
         const draft = await createArtifactDraft({
             id: 'artifact-1',

@@ -120,6 +120,14 @@ export class ArtifactWorkspace implements BuilderWorkspace {
         return this.candidate ? cloneArtifactDraft(this.candidate) : null;
     }
 
+    get hasCandidate(): boolean {
+        return this.candidate !== null;
+    }
+
+    get hasPromotedChanges(): boolean {
+        return Boolean(this.currentDraft && this.baseline && !sameSavedPayload(this.currentDraft, this.baseline));
+    }
+
     async load(signal: AbortSignal): Promise<void> {
         abortIfNeeded(signal);
         const draft = await this.loadDraft(signal);

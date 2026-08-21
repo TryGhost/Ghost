@@ -59,6 +59,23 @@ describe('BrowserPiModelAccess', () => {
         expect(prompt.length).toBeLessThan(12_000);
     });
 
+    it('describes portable HTML editing for Artifact workspaces without theme build advice', () => {
+        const prompt = assembleBuilderSystemPrompt(turnRequest({
+            workspace: {
+                ...turnRequest().workspace,
+                id: 'artifact-1',
+                kind: 'artifact',
+                title: 'Interactive calculator',
+                selection: null
+            }
+        }));
+
+        expect(prompt).toContain('one complete portable HTML document');
+        expect(prompt).toContain('Preact + HTM');
+        expect(prompt).toContain('Only the user can Save');
+        expect(prompt).not.toContain('Theme build scripts do not run');
+    });
+
     it('gives the model every bounded attachment identity without elevating file contents into the system prompt', () => {
         const attachmentIds = Array.from({length: 10}, (_, index) => `attachment-${index + 1}`);
         const prompt = assembleBuilderSystemPrompt(turnRequest({
