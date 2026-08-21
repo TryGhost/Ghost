@@ -3,6 +3,7 @@ import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '@/settings/providers/global-data-context';
+import {z} from 'zod';
 
 const limitServiceImport = import('@tryghost/limit-service');
 
@@ -51,6 +52,11 @@ type PeriodicSubscription = {
     startDate: string;
     interval: 'month';
 };
+
+// limit-service resolves the period from this date with luxon's ISO parser. A value that
+// parser can't read leaves the limit with no period to count against, so it registers but
+// never fires — accept only what it accepts, and treat anything else as no anchor at all.
+const subscriptionStartSchema = z.union([z.iso.datetime({offset: true, local: true}), z.iso.date()]);
 
 // A periodic limit is built from the subscription that anchors its period, and
 // registration stops at the first limit that throws — so one `maxPeriodic` limit with no
@@ -112,11 +118,11 @@ export const useLimiter = () => {
             return noOpLimiter;
         }
 
-        // A subscription without a start can't anchor a period, so it's treated as absent
-        // rather than built into one that resolves to no period on the way to the count query
-        const subscriptionStart = config.hostSettings.subscription?.start;
-        const subscription: PeriodicSubscription | undefined = subscriptionStart ? {
-            startDate: subscriptionStart,
+        // A subscription that can't anchor a period is treated as absent rather than built
+        // into one that resolves to no period on the way to the count query
+        const subscriptionStart = subscriptionStartSchema.safeParse(config.hostSettings.subscription?.start);
+        const subscription: PeriodicSubscription | undefined = subscriptionStart.success ? {
+            startDate: subscriptionStart.data,
             interval: 'month'
         } : undefined;
 
