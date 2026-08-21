@@ -1,10 +1,12 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
 
-const configUtils = require('../../utils/config-utils');
-const labs = require('../../../core/shared/labs');
-const flagOverrides = require('../../../core/shared/labs-flag-overrides');
-const settingsCache = require('../../../core/shared/settings-cache');
+// @ts-expect-error This module lacks type definitions.
+import configUtils from '../../utils/config-utils';
+import * as labs from '../../../core/shared/labs';
+import * as flagOverrides from '../../../core/shared/labs-flag-overrides';
+// @ts-expect-error This module lacks type definitions.
+import settingsCache from '../../../core/shared/settings-cache';
 
 // The labs allowlists (`WRITABLE_KEYS_ALLOWLIST`, `GA_KEYS`) drain to empty
 // once every flag in them graduates. Tests that pick the first allowlist
@@ -15,10 +17,10 @@ const itIfHasBothFlags = it.skipIf(
   labs.WRITABLE_KEYS_ALLOWLIST.length === 0 || labs.GA_KEYS.length === 0,
 );
 
-function expectedLabsObject(obj) {
-  let enabledFlags = {};
+function expectedLabsObject(obj: Record<string, boolean>): Record<string, boolean> {
+  let enabledFlags: Record<string, boolean> = {};
 
-  labs.GA_KEYS.forEach((key) => {
+  labs.GA_KEYS.forEach((key: string) => {
     enabledFlags[key] = true;
   });
 

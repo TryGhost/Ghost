@@ -10,14 +10,14 @@
 // For more details, see the E2E testing documentation:
 // https://www.notion.so/ghost/End-to-end-Testing-6a2ef073b1754b18aff42e24a632a007
 
-const _ = require('lodash');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const tpl = require('@tryghost/tpl');
-
-const settingsCache = require('./settings-cache');
-const config = require('./config');
-const flagOverrides = require('./labs-flag-overrides');
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import tpl from '@tryghost/tpl';
+import _ from 'lodash';
+import config from './config';
+import * as flagOverrides from './labs-flag-overrides';
+// @ts-expect-error This module lacks type definitions.
+import settingsCache from './settings-cache';
 
 const messages = {
   errorMessage: 'The \\{\\{{helperName}\\}\\} helper is not available.',
@@ -55,10 +55,10 @@ const PRIVATE_FEATURES = [
   'machinePayments',
 ];
 
-module.exports.GA_KEYS = [...GA_FEATURES];
-module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
+export const GA_KEYS = [...GA_FEATURES];
+export const WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
-module.exports.getAll = () => {
+export const getAll = () => {
   const labs = _.cloneDeep(settingsCache.get('labs')) || {};
 
   GA_FEATURES.forEach((gaKey) => {
@@ -83,52 +83,45 @@ module.exports.getAll = () => {
   return labs;
 };
 
-module.exports.getAllFlags = function () {
+export const getAllFlags = function () {
   return [...GA_FEATURES, ...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 };
 
-/**
- * @param {string} flag
- * @returns {boolean}
- */
-module.exports.isSet = function isSet(flag) {
-  const labsConfig = module.exports.getAll();
+export const isSet = function isSet(flag: string): boolean {
+  const labsConfig = getAll();
 
   return !!(labsConfig && labsConfig[flag] && labsConfig[flag] === true);
 };
 
-/**
- *
- * @param {object} options
- * @param {string} options.flagKey the internal lookup key of the flag e.g. labs.isSet(matchHelper)
- * @param {string} options.flagName the user-facing name of the flag e.g. Match helper
- * @param {string} options.helperName Name of the helper to be enabled/disabled
- * @param {string} [options.errorMessage] Optional replacement error message
- * @param {string} [options.errorContext] Optional replacement context message
- * @param {string} [options.errorHelp] Optional replacement help message
- * @param {string} [options.helpUrl] Url to show in the help message
- * @param {string} [options.async] is the helper async?
- * @param {function} callback
- * @returns {Promise<Handlebars.SafeString>|Handlebars.SafeString}
- */
-module.exports.enabledHelper = function enabledHelper(options, callback) {
-  const errDetails = {};
-  let errString;
-
-  if (module.exports.isSet(options.flagKey) === true) {
+export function enabledHelper(
+  options: {
+    /** The internal lookup key of the flag e.g. labs.isSet(matchHelper) */
+    flagKey: string;
+    /** the user-facing name of the flag e.g. Match helper */
+    flagName: string;
+    /** Name of the helper to be enabled/disabled */
+    helperName: string;
+    /** Url to show in the help message */
+    helpUrl: string;
+  },
+  callback: () => Handlebars.SafeString,
+): Handlebars.SafeString {
+  if (isSet(options.flagKey) === true) {
     // helper is active, use the callback
     return callback();
   }
 
   // Else, the helper is not active and we need to handle this as an error
-  errDetails.message = tpl(options.errorMessage || messages.errorMessage, {
-    helperName: options.helperName,
-  });
-  errDetails.context = tpl(options.errorContext || messages.errorContext, {
-    helperName: options.helperName,
-    flagName: options.flagName,
-  });
-  errDetails.help = tpl(options.errorHelp || messages.errorHelp, { url: options.helpUrl });
+  const errDetails = {
+    message: tpl(messages.errorMessage, {
+      helperName: options.helperName,
+    }),
+    context: tpl(messages.errorContext, {
+      helperName: options.helperName,
+      flagName: options.flagName,
+    }),
+    help: tpl(messages.errorHelp, { url: options.helpUrl }),
+  };
 
   logging.error(
     new errors.DisabledFeatureError({
@@ -139,20 +132,16 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
   );
 
   const { SafeString } = require('express-hbs');
-  errString = new SafeString(
+  const errString = new SafeString(
     `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
   );
 
-  if (options.async) {
-    return Promise.resolve(errString);
-  }
-
   return errString;
-};
+}
 
-module.exports.enabledMiddleware = (flag) =>
-  function labsEnabledMw(req, res, next) {
-    if (module.exports.isSet(flag) === true) {
+export const enabledMiddleware = (flag: string) =>
+  function labsEnabledMw(_req: unknown, _res: unknown, next: (err?: unknown) => void) {
+    if (isSet(flag) === true) {
       return next();
     } else {
       return next(new errors.NotFoundError());
