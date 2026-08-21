@@ -359,6 +359,13 @@ class MembersCSVImporter {
         const {defaultTier, activeCustomFields} = prepared;
         const tierIdCache = new Map();
         const archivableStripePriceIds: string[] = [];
+        // Read once per import, and only when a row carries the column: names in a
+        // newsletters cell resolve against the site's active newsletters.
+        let newsletterIdByName = new Map<string, string>();
+        if (rows.some(row => row.newsletters !== undefined)) {
+            const activeNewsletters = await this._knex('newsletters').select('id', 'name').where('status', 'active');
+            newsletterIdByName = new Map(activeNewsletters.map((newsletter: {id: string; name: string}) => [newsletter.name, newsletter.id]));
+        }
         // Copied per row: the member model stamps ids and trims names onto these in
         // place, and each row runs in its own transaction that can roll back. A
         // caller can hand in a nameless label, which the model would drop anyway.
@@ -402,6 +409,22 @@ class MembersCSVImporter {
                     created_at: createdAt,
                     labels: [...row.labels, ...cloneGlobalLabels()]
                 };
+                // An explicit newsletters column restores the member's actual
+                // subscriptions; names with no matching active newsletter are dropped,
+                // since newsletters cannot be created from an import. A cell whose names
+                // all failed to resolve carries no usable instruction though - treating
+                // it as an explicit empty list would wipe subscriptions over a renamed
+                // newsletter - so only an actually-empty cell unsubscribes.
+                if (row.newsletters !== undefined) {
+                    const resolvedNewsletters = row.newsletters
+                        .map(newsletter => newsletterIdByName.get(newsletter.name))
+                        .filter((id): id is string => !!id)
+                        .map(id => ({id}));
+
+                    if (resolvedNewsletters.length > 0 || row.newsletters.length === 0) {
+                        memberValues.newsletters = resolvedNewsletters;
+                    }
+                }
                 const existingMember = row.email
                     ? await this._members.get({email: row.email}, {...options, withRelated: ['labels', 'newsletters']})
                     : null;
@@ -409,11 +432,15 @@ class MembersCSVImporter {
                 if (existingMember) {
                     const existingLabels = existingMember.related('labels').toJSON();
                     const existingNewsletters = existingMember.related('newsletters');
-                    if (existingNewsletters.length > 0 && memberValues.subscribed) {
-                        memberValues.newsletters = existingNewsletters.toJSON();
-                    }
-                    if (!existingNewsletters.length && memberValues.subscribed) {
-                        memberValues.subscribed = false;
+                    // The subscribed-based heuristics only apply when the file does not
+                    // say which newsletters the member should be on.
+                    if (memberValues.newsletters === undefined) {
+                        if (existingNewsletters.length > 0 && memberValues.subscribed) {
+                            memberValues.newsletters = existingNewsletters.toJSON();
+                        }
+                        if (!existingNewsletters.length && memberValues.subscribed) {
+                            memberValues.subscribed = false;
+                        }
                     }
                     if (!row.name) {
                         memberValues.name = existingMember.name;

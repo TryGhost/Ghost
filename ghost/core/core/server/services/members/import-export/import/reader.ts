@@ -12,6 +12,7 @@ const FIELD_BY_HEADER: Record<string, string> = {
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
     labels: 'labels',
+    newsletters: 'newsletters',
     import_tier: 'import_tier',
     gift_id: 'gift_id'
 };
