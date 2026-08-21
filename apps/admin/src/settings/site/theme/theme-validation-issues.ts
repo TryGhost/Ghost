@@ -97,19 +97,22 @@ export type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
 export const SEVERITY_ORDER: DisplaySeverity[] = ['Error', 'Warning', 'Recommendation'];
 
 export function getDisplaySeverity(problem: ThemeProblem): DisplaySeverity {
-    if (problem.level === 'warning') {
-        return 'Warning';
-    }
+  if (problem.level === 'warning') {
+    return 'Warning';
+  }
 
-    if (problem.level === 'recommendation') {
-        return 'Recommendation';
-    }
+  if (problem.level === 'recommendation') {
+    return 'Recommendation';
+  }
 
-    return 'Error';
+  return 'Error';
 }
 
 export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
-    return [...problems].sort((a, b) => SEVERITY_ORDER.indexOf(getDisplaySeverity(a)) - SEVERITY_ORDER.indexOf(getDisplaySeverity(b)));
+  return [...problems].sort(
+    (a, b) =>
+      SEVERITY_ORDER.indexOf(getDisplaySeverity(a)) - SEVERITY_ORDER.indexOf(getDisplaySeverity(b)),
+  );
 }
 
 /**
@@ -120,11 +123,11 @@ export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
  * contradicts the issue list rendered directly beneath it.
  */
 export function describeThemeOutcome(action: string, problems: ThemeProblem[]): string {
-    if (!problems.length) {
-        return `${action} successfully`;
-    }
+  if (!problems.length) {
+    return `${action} successfully`;
+  }
 
-    const hasError = problems.some(problem => getDisplaySeverity(problem) === 'Error');
+  const hasError = problems.some((problem) => getDisplaySeverity(problem) === 'Error');
 
-    return `${action}, but it has some ${hasError ? 'issues' : 'warnings'}`;
+  return `${action}, but it has some ${hasError ? 'issues' : 'warnings'}`;
 }
