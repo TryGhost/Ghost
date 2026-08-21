@@ -15,6 +15,7 @@ import {LucideIcon, formatDisplayDate, formatNumber} from '@tryghost/shade/utils
 import {centsToDollars} from '@tryghost/shade/app';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
 import {getPeriodText} from '@/shared/analytics/chart-helpers';
+import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
@@ -48,8 +49,7 @@ const Growth: React.FC = () => {
     const {range} = useAnalytics();
     const {site, settings} = useAnalyticsData();
 
-    // Get site timezone from settings for displaying dates consistently
-    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
+    const siteTimezone = getSiteTimezone(settings);
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);

@@ -5,6 +5,7 @@ import {LucideIcon, cn, formatDisplayDate, formatNumber, formatPercentage} from 
 
 import {type Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
+import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {trackEvent, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useIsEmberOwnedRoute} from '@/routes';
@@ -52,8 +53,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
 
-    // Get site timezone from settings for displaying dates consistently
-    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
+    const siteTimezone = getSiteTimezone(settings);
 
     // Calculate metrics to show outside of JSX
     const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {

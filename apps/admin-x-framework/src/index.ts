@@ -48,7 +48,7 @@ export type AdminRouteHandle = {
 };
 export {RouterProvider, useNavigate, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/router-provider';
 export {useNavigationStack} from './providers/navigation-stack-provider';
-export {Link, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, useMatch, useMatches} from 'react-router';
+export {Link, Outlet, useBlocker, useLocation, useParams, useRouteError, useSearchParams, redirect, matchRoutes, useMatch, useMatches} from 'react-router';
 
 // Lazy component loader
 export {lazyComponent} from './utils/lazy-component';

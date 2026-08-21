@@ -24,7 +24,7 @@ import {useBrowseMemberCustomFieldsIncludingArchived} from '@tryghost/admin-x-fr
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useDebouncedCallback} from 'use-debounce';
 import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
-import {useLocation, useSearchParams} from 'react-router';
+import {useLocation, useSearchParams} from '@tryghost/admin-x-framework';
 import {useMultipleActiveSubscriptionsCount} from './hooks/use-multiple-active-subscriptions-count';
 
 const SEARCH_DEBOUNCE_MS = 250;

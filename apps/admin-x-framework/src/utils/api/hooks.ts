@@ -87,7 +87,7 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
         ...query,
         enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
-        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
+        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams), {...options}),
         initialPageParam: undefined,
         getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {})
     });

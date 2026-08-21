@@ -6,6 +6,7 @@ import {type TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
+import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
@@ -65,8 +66,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const {settings} = useAnalyticsData();
     const {appSettings} = useAppContext();
 
-    // Get site timezone from settings for displaying dates consistently
-    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
+    const siteTimezone = getSiteTimezone(settings);
 
     // Show open rate if newsletters are enabled and email tracking is enabled
     const {

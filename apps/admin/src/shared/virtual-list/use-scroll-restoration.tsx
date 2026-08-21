@@ -1,6 +1,6 @@
 import {getScrollParent} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
-import {useLocation} from 'react-router';
+import {useLocation} from '@tryghost/admin-x-framework';
 import type {RefObject} from 'react';
 
 const scrollPositions = new Map<string, number>();

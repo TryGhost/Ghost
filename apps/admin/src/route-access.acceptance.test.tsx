@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import {
     allowUnhandledRequests,
+    configResponse,
     currentRoute,
     currentUserResponse,
     fakeTags,
@@ -60,6 +61,15 @@ describe("Route access", () => {
         await renderAdminApp("/members", asRole("Editor"));
 
         await expect.poll(currentRoute).toBe("/");
+    });
+
+    it("redirects members to billing during a force upgrade", async () => {
+        const config = configResponse();
+        config.config.hostSettings = { forceUpgrade: true };
+
+        await renderAdminApp("/members", { boot: { browseConfig: { response: config } } });
+
+        await expect.poll(currentRoute).toBe("/pro");
     });
 
     it("leaves an authorized user on the route", async () => {

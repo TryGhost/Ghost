@@ -9,7 +9,7 @@ import {toast} from 'sonner';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEditUser} from '@tryghost/admin-x-framework/api/users';
-import {useNavigate} from 'react-router';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface UseMultipleActiveSubscriptionsBannerOptions {
     count: number;
