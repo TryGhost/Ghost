@@ -1,30 +1,27 @@
-/**
- * @typedef {import('../../../offers/application/offer-mapper').OfferDTO} OfferDTO
- */
+import * as errors from '@tryghost/errors';
+import type {OfferDTO} from '../../../offers/application/offer-mapper';
 
-/**
- * @typedef {object} SubscriptionMinimal
- * @prop {Date|null} discount_start
- * @prop {Date|null} discount_end
- * @prop {Date} start_date
- * @prop {Date} current_period_end
- */
+type SubscriptionMinimal = {
+    discount_start: Date | null;
+    discount_end: Date | null;
+    start_date: Date;
+    current_period_end: Date;
+};
 
-/**
- * @typedef {object} DiscountWindow
- * @prop {Date} start
- * @prop {Date|null} end
- */
+type DiscountWindow = {
+    start: Date;
+    end: Date | null;
+};
 
-function getLastDayOfMonth(year, month) {
+function getLastDayOfMonth(year: number, month: number): number {
     return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 }
 
-function isLastDayOfMonth(date) {
+function isLastDayOfMonth(date: Readonly<Date>): boolean {
     return date.getUTCDate() === getLastDayOfMonth(date.getUTCFullYear(), date.getUTCMonth());
 }
 
-function getAnchoredBillingDate(anchorDate, monthOffset) {
+function getAnchoredBillingDate(anchorDate: Readonly<Date>, monthOffset: number): Date {
     const targetMonthIndex = anchorDate.getUTCMonth() + monthOffset;
     const targetYear = anchorDate.getUTCFullYear() + Math.floor(targetMonthIndex / 12);
     const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
@@ -42,7 +39,7 @@ function getAnchoredBillingDate(anchorDate, monthOffset) {
     ));
 }
 
-function getLastDiscountedPayment(nextBillingDate, discountEnd) {
+function getLastDiscountedPayment(nextBillingDate: Readonly<Date>, discountEnd: Readonly<Date>): Date {
     const monthOffset =
         ((discountEnd.getUTCFullYear() - nextBillingDate.getUTCFullYear()) * 12) +
         (discountEnd.getUTCMonth() - nextBillingDate.getUTCMonth());
@@ -63,16 +60,17 @@ function getLastDiscountedPayment(nextBillingDate, discountEnd) {
  * Handles two data paths:
  * 1. Stripe coupon discounts (post-6.16) - uses discount_start / discount_end
  * 2. Legacy fallback - computes from offer duration and start_date
- *
- * @param {SubscriptionMinimal} subscription
- * @param {OfferDTO} offer
- * @returns {DiscountWindow|null}
  */
-
-exports.getDiscountWindow = function getDiscountWindow(subscription, offer) {
+export function getDiscountWindow(subscription: SubscriptionMinimal, offer: OfferDTO): DiscountWindow | null {
     // Stripe coupon discount (post-6.16 data)
     if (subscription.discount_start) {
         if (offer.duration === 'repeating') {
+            if (!subscription.discount_end) {
+                throw new errors.InternalServerError({
+                    message: 'Subscription has discount_start but no discount_end for a repeating offer'
+                });
+            }
+
             const discountEnd = new Date(subscription.discount_end);
             const currentPeriodEnd = new Date(subscription.current_period_end);
 
@@ -119,7 +117,7 @@ exports.getDiscountWindow = function getDiscountWindow(subscription, offer) {
         return {start: subscription.start_date, end: null};
     }
 
-    if (offer.duration === 'repeating' && offer.duration_in_months > 0) {
+    if (offer.duration === 'repeating' && offer.duration_in_months && offer.duration_in_months > 0) {
         const end = getAnchoredBillingDate(new Date(subscription.start_date), offer.duration_in_months - 1);
         const currentPeriodEnd = new Date(subscription.current_period_end);
 
