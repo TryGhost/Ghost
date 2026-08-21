@@ -1,0 +1,6 @@
+# Run `git config blame.ignoreRevsFile .git-blame-ignore-revs` to make local
+# git blame skip the commits listed here. The GitHub blame view uses this
+# file automatically.
+
+# Formatted the repository with oxfmt (#30184)
+5ad154310fa5b325c2201ff3caeaa4daee8172d3
