@@ -1,8 +1,6 @@
-const url = require('url');
+import * as url from 'node:url';
 
-const _private = {};
-
-_private.removeDoubleCharacters = (character, string) => {
+function removeDoubleCharacters(character: string, string: string) {
   const stringArray = string.split('');
 
   return stringArray.reduce((newString, currentCharacter, index) => {
@@ -12,9 +10,9 @@ _private.removeDoubleCharacters = (character, string) => {
 
     return `${newString}${currentCharacter}`;
   }, '');
-};
+}
 
-module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(urlString) {
+export function removeOpenRedirectFromUrl(urlString: string): string {
   const parsedUrl = url.parse(urlString);
 
   return (
@@ -22,7 +20,7 @@ module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(ur
     (parsedUrl.protocol ? parsedUrl.protocol + '//' : '') +
     (parsedUrl.auth || '') +
     (parsedUrl.host || '') +
-    _private.removeDoubleCharacters('/', parsedUrl.path) +
+    removeDoubleCharacters('/', parsedUrl.path ?? '') +
     (parsedUrl.hash || '')
   );
-};
+}
