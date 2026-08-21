@@ -14,7 +14,8 @@ function fakeMemberDetailWorld(m: Member) {
 }
 
 /**
- * The unsaved-changes guard must cover BOTH ways of leaving the screen:
+ * The unsaved-changes guard (`useUnsavedChangesGuard`) must cover BOTH ways of
+ * leaving the screen:
  *
  * - react-router navigations (the breadcrumb Link) — guarded by `useBlocker`.
  * - native `<a href="#/…">` anchors (the admin sidebar, links into
@@ -32,7 +33,7 @@ describe('Member detail leave guard', () => {
         await page.getByLabelText('Name').fill('Ada B');
         await page.getByTestId('member-detail').getByRole('link', {name: 'Members'}).click();
 
-        await expect.element(page.getByText('Discard unsaved changes?')).toBeVisible();
+        await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
     });
 
     it('guards leaving via the sidebar (native hash anchor) with unsaved edits', async () => {
@@ -43,7 +44,7 @@ describe('Member detail leave guard', () => {
         await page.getByLabelText('Name').fill('Ada B');
         await page.getByRole('link', {name: 'Members'}).first().click();
 
-        await expect.element(page.getByText('Discard unsaved changes?')).toBeVisible();
+        await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
     });
 
     it('keeps editing on cancel and completes the navigation on Leave', async () => {
@@ -54,7 +55,7 @@ describe('Member detail leave guard', () => {
         await page.getByLabelText('Name').fill('Ada B');
         await page.getByRole('link', {name: 'Members'}).first().click();
 
-        await page.getByRole('button', {name: 'Keep editing'}).click();
+        await page.getByRole('button', {name: 'Stay'}).click();
         await expect.element(page.getByLabelText('Name')).toHaveValue('Ada B');
 
         await page.getByRole('link', {name: 'Members'}).first().click();
@@ -78,8 +79,8 @@ describe('Member detail leave guard', () => {
 
         window.history.back();
 
-        await expect.element(page.getByText('Discard unsaved changes?')).toBeVisible();
-        await page.getByRole('button', {name: 'Keep editing'}).click();
+        await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
+        await page.getByRole('button', {name: 'Stay'}).click();
         await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
         await expect.element(page.getByLabelText('Name')).toHaveValue('Ada B');
 
@@ -103,6 +104,6 @@ describe('Member detail leave guard', () => {
         window.history.back();
 
         await expect.poll(currentRoute).toBe('/members');
-        expect(page.getByText('Discard unsaved changes?').query()).toBeNull();
+        expect(page.getByText('Are you sure you want to leave this page?').query()).toBeNull();
     });
 });

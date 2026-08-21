@@ -455,13 +455,11 @@ export function ImportMembersModal({
                 />
             )}
         </DialogContent>
-        {/* Worded and shaped as the member detail's leave guard is (member-detail.tsx:480-494),
-            which is the same question a screen away: Shade's DirtyConfirmDialog says Stay/Leave
-            and talks about saving, and neither fits a members screen or an import that has
-            nothing to save. Its controller is still what decides whether to ask.
+        {/* Shade's DirtyConfirmDialog says Stay/Leave and talks about saving, and
+            neither fits a members screen or an import that has nothing to save. Its
+            controller is still what decides whether to ask.
 
-            The cancel label names what the publisher goes back to, as the member detail's "Keep
-            editing" and the automations editor's "Keep working" do — which here is mapping.
+            The cancel label names what the publisher goes back to — which here is mapping.
 
             Raised above the import dialog it interrupts, which owns z-50. */}
         <AlertDialog open={dialogProps.open} onOpenChange={dialogProps.onOpenChange}>

@@ -360,6 +360,10 @@ const mockAutomationWithEmailStats = (statsOverrides: Partial<AutomationEmailSta
 
 describe('AutomationEditor', () => {
     beforeEach(() => {
+        // The admin's data router stamps its index onto every entry it
+        // creates; the memory router used here never touches window.history,
+        // so mirror that stamp or the guard treats every POP as untracked.
+        window.history.replaceState({idx: 0}, '');
         mockUseReadAutomation.mockReset();
         mockUseBrowseAutomationActionLinks.mockReset();
         mockUseBrowseAutomationActionLinks.mockReturnValue({
@@ -475,7 +479,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
 
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
-        expect(screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'})).toBeInTheDocument();
+        expect(screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).toBeInTheDocument();
         expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
     });
 
@@ -1876,10 +1880,10 @@ describe('AutomationEditor', () => {
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
-        expect(within(dialog).getByText('Your changes will be lost if you leave this automation.')).toBeInTheDocument();
-        expect(within(dialog).getByRole('button', {name: 'Keep working'})).toBeInTheDocument();
-        expect(within(dialog).getByRole('button', {name: 'Discard changes'})).toHaveClass('bg-destructive');
+        const dialog = screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
+        expect(within(dialog).getByText(`Hey there! It looks like you didn't save the changes you made.`)).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Stay'})).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Leave'})).toHaveClass('bg-destructive');
         expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
     });
 
@@ -1894,11 +1898,11 @@ describe('AutomationEditor', () => {
 
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
-        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Keep working'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Stay'}));
 
         await waitFor(() => {
-            expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+            expect(screen.queryByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).not.toBeInTheDocument();
         });
         expect(screen.getByTestId('automation-editor')).toBeInTheDocument();
         expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
@@ -1915,13 +1919,34 @@ describe('AutomationEditor', () => {
 
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
-        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Discard changes'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Leave'}));
 
         await waitFor(() => {
             expect(screen.getByTestId('automations-list-route')).toBeInTheDocument();
         });
         expect(screen.queryByTestId('automation-editor')).not.toBeInTheDocument();
+    });
+
+    it('confirms before a raw hash-link navigation when only the email editor is dirty', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        const {container} = renderEditor();
+        fireEvent.doubleClick(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        fireEvent.click(await screen.findByTestId('modal-dirty'));
+
+        const rawHashLink = document.createElement('a');
+        rawHashLink.href = '#/members';
+        rawHashLink.textContent = 'Members sidebar link';
+        container.appendChild(rawHashLink);
+        fireEvent.click(rawHashLink);
+
+        expect(screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).toBeInTheDocument();
+        expect(screen.getByTestId('email-content-modal')).toBeInTheDocument();
     });
 
     it('uses the email discard dialog, not the automation discard dialog, when Back closes a dirty email editor', async () => {
@@ -1943,7 +1968,7 @@ describe('AutomationEditor', () => {
 
         let emailDialog = screen.getByRole('alertdialog', {name: 'Discard changes?'});
         expect(within(emailDialog).getByText('Your changes to this email haven\'t been saved.')).toBeInTheDocument();
-        expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).not.toBeInTheDocument();
         expect(router.state.location.search).toBe('?emailStep=action-email');
 
         fireEvent.click(within(emailDialog).getByRole('button', {name: 'Keep editing'}));
@@ -1992,7 +2017,7 @@ describe('AutomationEditor', () => {
         expect(router.state.location.pathname).toBe('/automations/automation-id-1');
         expect(router.state.location.search).toBe('');
         expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
-        expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).not.toBeInTheDocument();
     });
 
     it('closes only the dirty email editor when discarding from a blocked route navigation', async () => {
@@ -2010,7 +2035,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
 
         const emailDialog = screen.getByRole('alertdialog', {name: 'Discard changes?'});
-        expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).not.toBeInTheDocument();
         fireEvent.click(within(emailDialog).getByRole('button', {name: 'Discard'}));
 
         await waitFor(() => {
@@ -2023,7 +2048,7 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
 
-        expect(screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'})).toBeInTheDocument();
+        expect(screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).toBeInTheDocument();
         expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
     });
 
@@ -2052,8 +2077,8 @@ describe('AutomationEditor', () => {
             await router.navigate(-1);
         });
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
-        expect(within(dialog).getByText('Your changes will be lost if you leave this automation.')).toBeInTheDocument();
+        const dialog = screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
+        expect(within(dialog).getByText(`Hey there! It looks like you didn't save the changes you made.`)).toBeInTheDocument();
         expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
     });
 
@@ -2071,7 +2096,7 @@ describe('AutomationEditor', () => {
         await waitFor(() => {
             expect(screen.getByTestId('automations-list-route')).toBeInTheDocument();
         });
-        expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).not.toBeInTheDocument();
     });
 
     it('inserts a wait step at the tail when the tail + is clicked and a type is picked', async () => {

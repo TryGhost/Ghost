@@ -5,17 +5,15 @@ import {Box, Container} from '@tryghost/shade/primitives';
 import {Badge, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {DirtyConfirmDialog, PageHeader} from '@tryghost/shade/patterns';
-import {Link, useConfirmUnload, useHandleError, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Link, useHandleError, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {NotFound} from '@/not-found';
 import {buildTagSavePayload, generateSlugFromName, getTagEditableSlice, getTagUrl, normalizeTagDraft, validateTagDraft} from './tag-detail-edit';
 import {dequal} from 'dequal';
 import {getTagBySlug, useAddTag, useEditTag} from '@tryghost/admin-x-framework/api/tags';
 import {toast} from 'sonner';
-import {NavigationType, useBlocker} from 'react-router';
-import {isOnRouterHistoryEntry} from '@/hooks/use-router-history-entry';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
+import {useUnsavedChangesGuard} from '@/hooks/use-unsaved-changes-guard';
 import type {TagsResponseType} from '@tryghost/admin-x-framework/api/tags';
 import type {TagEditableFields, TagFieldName} from './tag-detail-edit';
 
@@ -67,10 +65,6 @@ const TagDetail: React.FC = () => {
     // once they have, name changes stop regenerating it (Ember `tag-form.js`
     // `hasChangedSlug`). Clearing the slug re-enables regeneration.
     const hasChangedSlugRef = React.useRef(false);
-    // Lets our own post-save redirect through the unsaved-changes blocker.
-    const bypassGuardRef = React.useRef(false);
-    const blockedNavigationRef = React.useRef(false);
-    const proceedBlockedNavigationAfterSaveRef = React.useRef(false);
     const [saveStatus, setSaveStatus] = React.useState<SaveStatus>('idle');
     const [showDelete, setShowDelete] = React.useState(false);
     const [isDeleting, setIsDeleting] = React.useState(false);
@@ -111,9 +105,6 @@ const TagDetail: React.FC = () => {
     // Reset route-scoped UI and mutation state whenever the target changes.
     // Preserve the successful state only across our own post-save slug redirect.
     React.useEffect(() => {
-        bypassGuardRef.current = false;
-        blockedNavigationRef.current = false;
-        proceedBlockedNavigationAfterSaveRef.current = false;
         setShowDelete(false);
         setIsDeleting(false);
         setBusyImageFields(new Set());
@@ -129,6 +120,11 @@ const TagDetail: React.FC = () => {
     const hasBusyImageField = busyImageFields.size > 0;
     const hasPendingImageUpload = uploadingImageFields.size > 0;
     const isBusy = activeMutation.isPending || hasBusyImageField || isDeleting || showDelete;
+
+    const {dialogProps, bypassNextNavigation, resumeBlockedNavigationAfterSave} = useUnsavedChangesGuard({
+        when: activeMutation.isPending || hasPendingImageUpload || isDeleting || hasUnsavedChanges,
+        isSaving: activeMutation.isPending
+    });
 
     const onImageBusyChange = React.useCallback((field: TagImageFieldName, busy: boolean) => {
         setBusyImageFields((current) => {
@@ -228,8 +224,7 @@ const TagDetail: React.FC = () => {
             setDraft(savedSlice);
             touchedFieldsRef.current.clear();
             setSaveStatus('success');
-            if (blockedNavigationRef.current) {
-                proceedBlockedNavigationAfterSaveRef.current = true;
+            if (resumeBlockedNavigationAfterSave()) {
                 return;
             }
             // Move `/tags/new` to the saved tag and follow slug renames. A
@@ -237,7 +232,7 @@ const TagDetail: React.FC = () => {
             // case would leave the unsaved-changes guard disabled indefinitely.
             if (saved.slug !== tagSlug) {
                 savedRouteRef.current = saved.slug;
-                bypassGuardRef.current = true;
+                bypassNextNavigation();
                 navigate(`/tags/${saved.slug}`, {replace: true});
             }
         };
@@ -265,7 +260,7 @@ const TagDetail: React.FC = () => {
             },
             onError
         });
-    }, [draft, errors.accentColor, isCreating, tag, tagSlug, isBusy, addMutation, editMutation, navigate, handleError]);
+    }, [draft, errors.accentColor, isCreating, tag, tagSlug, isBusy, addMutation, editMutation, navigate, handleError, bypassNextNavigation, resumeBlockedNavigationAfterSave]);
 
     // Cmd/Ctrl+S saves, matching the `{{on-key "cmd+s"}}` binding on the
     // Ember save button.
@@ -279,51 +274,6 @@ const TagDetail: React.FC = () => {
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
     }, [onSave]);
-
-    const shouldGuardNavigation = activeMutation.isPending || hasPendingImageUpload || isDeleting || hasUnsavedChanges;
-    useConfirmUnload(shouldGuardNavigation);
-    const blocker = useBlocker(({currentLocation, nextLocation, historyAction}) => {
-        // A POP can only be undone from a router-created entry; elsewhere the router
-        // would miscount the delta and jump or reload, so let those through.
-        if (historyAction === NavigationType.Pop && !isOnRouterHistoryEntry()) {
-            return false;
-        }
-        const shouldBlock = !bypassGuardRef.current && shouldGuardNavigation && currentLocation.pathname !== nextLocation.pathname;
-        if (shouldBlock) {
-            // The mutation can resolve before React rerenders with a blocked
-            // state, so record the navigation synchronously in the blocker.
-            blockedNavigationRef.current = true;
-        }
-        return shouldBlock;
-    });
-    // Native `<a href="#/…">` navigations (the sidebar, links into Ember
-    // routes) never reach the react-router blocker above. Ember's own guard
-    // can't cover this screen either: with `tagDetailsReact` on, the Ember tag
-    // route aborts and never registers into the `unsaved-changes` service.
-    const anchorGuard = useHashLinkNavigationGuard(shouldGuardNavigation, () => {
-        blockedNavigationRef.current = true;
-    });
-    const isBlocked = blocker.state === 'blocked' || anchorGuard.isBlocked;
-    if (isBlocked) {
-        blockedNavigationRef.current = true;
-    }
-    React.useEffect(() => {
-        if (!proceedBlockedNavigationAfterSaveRef.current || activeMutation.isPending || !isBlocked) {
-            return;
-        }
-        proceedBlockedNavigationAfterSaveRef.current = false;
-        blockedNavigationRef.current = false;
-        if (anchorGuard.isBlocked) {
-            anchorGuard.proceed();
-        } else {
-            blocker.proceed?.();
-        }
-    }, [activeMutation.isPending, anchorGuard, blocker, isBlocked]);
-    // DirtyConfirmDialog's confirm action auto-closes the dialog, firing
-    // onOpenChange(false) while the blocker still reads as blocked; without
-    // this flag the close handler would reset the very navigation the user
-    // just confirmed.
-    const leaveConfirmedRef = React.useRef(false);
 
     // Save button state (Save / Saving / Saved / Retry), mirroring the Ember
     // task button. Unlike the member screen, the button stays enabled with no
@@ -450,9 +400,7 @@ const TagDetail: React.FC = () => {
                 {!isCreating && tag && (
                     <TagDeleteModal
                         key={tag.id}
-                        allowLeaveWithUnsavedChanges={() => {
-                            bypassGuardRef.current = true;
-                        }}
+                        allowLeaveWithUnsavedChanges={bypassNextNavigation}
                         displayName={draft?.name ?? tag.name}
                         open={showDelete}
                         tag={tag}
@@ -461,34 +409,7 @@ const TagDetail: React.FC = () => {
                     />
                 )}
 
-                <DirtyConfirmDialog
-                    open={isBlocked && !activeMutation.isPending}
-                    onConfirm={() => {
-                        leaveConfirmedRef.current = true;
-                        blockedNavigationRef.current = false;
-                        proceedBlockedNavigationAfterSaveRef.current = false;
-                        if (anchorGuard.isBlocked) {
-                            anchorGuard.proceed();
-                        } else {
-                            blocker.proceed?.();
-                        }
-                    }}
-                    onOpenChange={(open) => {
-                        if (open) {
-                            return;
-                        }
-                        if (leaveConfirmedRef.current) {
-                            leaveConfirmedRef.current = false;
-                            return;
-                        }
-                        if (isBlocked) {
-                            blockedNavigationRef.current = false;
-                            proceedBlockedNavigationAfterSaveRef.current = false;
-                            blocker.reset?.();
-                            anchorGuard.reset();
-                        }
-                    }}
-                />
+                <DirtyConfirmDialog {...dialogProps} />
             </DetailPage>
         </Container></Box>
     );
