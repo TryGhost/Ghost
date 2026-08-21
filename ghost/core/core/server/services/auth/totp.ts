@@ -1,10 +1,10 @@
-import { totp } from 'otplib';
+import * as otplib from 'otplib';
 
-totp.options = {
+const totp = otplib.totp.clone({
   digits: 6,
   step: 60,
   window: [10, 10],
-};
+});
 
 /**
  * Generate a TOTP token for a user
