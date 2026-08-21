@@ -1,5 +1,5 @@
-const fs = require('fs-extra');
-const path = require('path');
+import * as fs from 'fs-extra';
+import * as path from 'node:path';
 
 const adminFiles = [
   'built/admin/index.html',
@@ -9,14 +9,14 @@ const adminFiles = [
   'built/admin/assets/vendor.css',
 ];
 
-module.exports.stubAdminFiles = () => {
+export const stubAdminFiles = (): void => {
   adminFiles.forEach((file) => {
     const filePath = path.resolve(__dirname, '../../core/', file);
     fs.ensureFileSync(filePath);
   });
 };
 
-module.exports.stubAuthFrameFiles = (publicPath) => {
+export const stubAuthFrameFiles = (publicPath: string): void => {
   const filePath = path.resolve(publicPath, 'admin-auth/index.html');
   fs.ensureFileSync(filePath);
 };
