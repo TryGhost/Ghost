@@ -14,12 +14,22 @@ import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 const LEGACY_CODE_RESET = '[&_code]:rounded-none [&_code]:border-0 [&_code]:bg-transparent [&_code]:p-0 [&_code]:align-baseline [&_code]:text-inherit [&_code]:leading-[inherit]';
 
 /**
+ * The same reset applied straight to a `<code>` element we render ourselves,
+ * so inline mono looks identical whether it came from gscan's HTML or from us.
+ * Size is left to the line it sits on: nothing should read larger than its
+ * surrounding text.
+ */
+const INLINE_CODE = 'rounded-none border-0 bg-transparent p-0 align-baseline font-mono text-inherit leading-[inherit]';
+
+/**
  * gscan writes `rule` and `details` as HTML containing `<code>`, `<br>` and
  * `<a>`. We render it verbatim, so the mono treatment for inline code is
- * applied by styling those descendants rather than touching the markup.
+ * applied by styling those descendants rather than touching the markup. The
+ * explicit `[&_code]:text-*` matches the block's own size, because a bare
+ * `font-family: monospace` otherwise drops to the browser's mono default.
  */
-const RULE_HTML = `text-base font-semibold text-foreground [&_code]:font-mono [&_code]:text-md ${LEGACY_CODE_RESET}`;
-const DETAILS_HTML = `text-sm text-muted-foreground [&_a]:underline [&_code]:font-mono [&_code]:text-base ${LEGACY_CODE_RESET}`;
+const RULE_HTML = `text-base leading-[1.45] font-semibold text-foreground [&_code]:font-mono [&_code]:text-base ${LEGACY_CODE_RESET}`;
+const DETAILS_HTML = `text-sm leading-[1.45] text-foreground [&_a]:underline [&_code]:font-mono [&_code]:text-sm ${LEGACY_CODE_RESET}`;
 
 function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | 'secondary' {
     if (problem.level === 'warning') {
@@ -63,13 +73,13 @@ function ProblemDetails({problem}: {problem: ThemeProblem}) {
             <div dangerouslySetInnerHTML={{__html: problem.details}} className={DETAILS_HTML} />
             {problem.failures?.length > 0 && (
                 <div>
-                    <h6 className='mb-1 text-xs font-semibold text-muted-foreground uppercase'>Affected files</h6>
+                    <h6 className='mb-1 text-base font-semibold text-muted-foreground'>Affected files</h6>
                     <ul className='space-y-1 text-sm text-muted-foreground'>
                         {problem.failures.map(failure => (
                             <li key={`${failure.ref}-${failure.message || ''}`}>
-                                {/* This chip keeps a deliberate `bg-muted` treatment; it still has to
-                                    turn off the legacy rule's border and mid-line alignment. */}
-                                <code className='rounded border-0 bg-muted px-1 py-0.5 align-baseline font-mono text-xs leading-[inherit] text-foreground'>{failure.ref}</code>
+                                {/* A filename is inline mono like any other, so it carries no chip:
+                                    same size, colour and family as the code in the details above. */}
+                                <code className={`${INLINE_CODE} text-sm`}>{failure.ref}</code>
                                 {failure.message ? <span>: {failure.message}</span> : null}
                             </li>
                         ))}

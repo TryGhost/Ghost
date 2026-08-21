@@ -303,6 +303,8 @@ describe("Theme settings", () => {
             const style = getComputedStyle(code);
             expect(style.fontFamily).toContain("mono");
             expect(style.color).toBe(surrounding.color);
+            // Nothing reads optically larger than the text it sits in.
+            expect(style.fontSize).toBe(surrounding.fontSize);
             // The legacy `line-height: 1em` computes to exactly the font size;
             // inheriting the surrounding ratio is what its absence would give.
             expect(style.lineHeight).not.toBe(style.fontSize);
@@ -314,14 +316,22 @@ describe("Theme settings", () => {
             expect(style.verticalAlign).toBe("baseline");
         }
 
-        // The affected-files chip is deliberately chipped, so it keeps its
-        // background — but the legacy border and mid-line alignment still go.
-        const chip = codeSpan("default.hbs");
-        expect(getComputedStyle(chip).backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
-        expect(getComputedStyle(chip).borderTopWidth).toBe("0px");
-        expect(getComputedStyle(chip).verticalAlign).toBe("baseline");
-        // Same foreground as the rule line's code, i.e. not the legacy pink.
-        expect(getComputedStyle(chip).color).toBe(getComputedStyle(codeSpan("{{@blog.url}}")).color);
+        // An affected file is inline mono too: same size, family and weight as the
+        // code in the details above it, with no chip of its own left behind.
+        const filenameCode = codeSpan("default.hbs");
+        const filename = getComputedStyle(filenameCode);
+        const detailsCode = getComputedStyle(codeSpan("{{@blog.title}}"));
+        expect(filename.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+        expect(filename.borderTopWidth).toBe("0px");
+        expect(filename.borderTopLeftRadius).toBe("0px");
+        expect(filename.paddingLeft).toBe("0px");
+        expect(filename.verticalAlign).toBe("baseline");
+        expect(filename.fontSize).toBe(detailsCode.fontSize);
+        expect(filename.fontFamily).toBe(detailsCode.fontFamily);
+        expect(filename.fontWeight).toBe(detailsCode.fontWeight);
+        // Same foreground as the line it sits on — the affected-files list stays
+        // muted while the details read as body copy — i.e. not the legacy pink.
+        expect(filename.color).toBe(getComputedStyle(filenameCode.parentElement!).color);
     });
 
     it("keeps the installed-theme dialog open when activation fails", async () => {
