@@ -1,5 +1,6 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { fakeAnalyticsOverview } from './analytics';
+export { fakePreferenceEdits } from './boot';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export {

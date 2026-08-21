@@ -108,7 +108,10 @@ export const useGetUserBySlug = createQueryWithId<UsersResponseType>({
   defaultSearchParams: { include: 'roles' },
 });
 
-export const useEditUser = createMutation<UsersResponseType, User>({
+/** A user edit carries only the fields it changes, so it cannot revert the rest. */
+export type EditUserPayload = Partial<User> & Pick<User, 'id'>;
+
+export const useEditUser = createMutation<UsersResponseType, EditUserPayload>({
   method: 'PUT',
   path: (user) => `/users/${user.id}/`,
   body: (user) => ({ users: [user] }),

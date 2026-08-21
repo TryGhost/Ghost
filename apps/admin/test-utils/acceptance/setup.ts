@@ -2,7 +2,7 @@ import { afterEach, beforeAll } from 'vitest';
 import { cleanup } from 'vitest-browser-react';
 
 import './matchers';
-import { defaultBootResolver, defaultBootRoutes } from './boot';
+import { defaultBootResolver, defaultBootRoutes, resetFakedCurrentUser } from './boot';
 import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
 
 beforeAll(async () => {
@@ -20,6 +20,7 @@ afterEach(async () => {
     await settleRequests();
   } finally {
     resetFakeApi();
+    resetFakedCurrentUser();
     window.location.hash = '';
     verifyNoUnhandledRequests();
   }

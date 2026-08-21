@@ -4,11 +4,10 @@ import {
   allowUnhandledRequests,
   currentRoute,
   currentUserResponse,
-  fakeAdminEndpoint,
+  fakePreferenceEdits,
   renderAdminApp,
   staffRole,
   type CapturedEndpointRequest,
-  type EndpointCapture,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import type { StaffRoleName } from '@tryghost/test-data';
@@ -21,10 +20,6 @@ function asRole(name: StaffRoleName): RenderAdminAppOptions {
 }
 
 const homeHandoff = (): unknown => JSON.parse(document.body.dataset.externalNavigate ?? 'null');
-
-function fakePreferenceEdits(): EndpointCapture {
-  return fakeAdminEndpoint('PUT', /^\/users\/\w+\/\?include=roles/, ({ body }) => body);
-}
 
 function onboardingPreferencesOf(
   request: CapturedEndpointRequest | undefined,

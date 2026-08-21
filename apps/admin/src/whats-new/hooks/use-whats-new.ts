@@ -41,7 +41,10 @@ export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
 
   const hasWhatsNewPreferences = !!preferences?.whatsNew?.lastSeenDate;
 
-  // Initialize default whatsNewPreferences if missing or invalid
+  // Stores today as the last seen date for a user who has none, so entries
+  // published before they arrived never read as new. Every mounted reader
+  // runs this, and the duplicate writes each merge over the stored blob, so
+  // they settle on the same state instead of overwriting one another.
   useEffect(() => {
     if (!hasWhatsNewPreferences && isPreferencesLoaded) {
       void updatePreferences({
@@ -60,7 +63,7 @@ export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
       }
 
       // Safe to assert non-null because query is only enabled when hasWhatsNewPreferences is true,
-      // and useEffect ensures whatsNew is initialized with a valid lastSeenDate
+      // and the effect above stores a valid lastSeenDate
       const lastSeenDate = preferences!.whatsNew!.lastSeenDate!;
 
       const hasNew = latestEntry.publishedAt > lastSeenDate;

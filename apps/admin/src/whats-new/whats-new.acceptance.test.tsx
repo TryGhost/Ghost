@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   changelogEntry,
   currentUserResponse,
-  fakeAdminEndpoint,
   fakeEndpoint,
+  fakePreferenceEdits,
   fakeTags,
   renderAdminApp,
   type CurrentUserResponse,
@@ -60,8 +60,7 @@ describe("What's new banner", () => {
     fakeEndpoint('GET', 'https://ghost.org/changelog.json', {
       posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
     });
-    // Echo the PUT so the client's write persists (see boot.ts's editUserPreferences).
-    const prefsApi = fakeAdminEndpoint('PUT', /^\/users\/\w+\//, ({ body }) => body);
+    const prefsApi = fakePreferenceEdits();
     await renderAdminApp('/tags', {
       boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },
     });
