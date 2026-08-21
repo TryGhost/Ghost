@@ -182,6 +182,10 @@ tsconfig.tsbuildinfo
 
 # Admin X
 
+# Add-ons (spike)
+/apps/addon-kit/dist
+/apps/addon-demo/dist
+
 # Tinybird
 .tinyb
 .venv

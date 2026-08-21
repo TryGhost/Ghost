@@ -30,6 +30,7 @@
         "@tanstack/react-query": "catalog:",
         "@tanstack/react-virtual": "catalog:",
         "@tryghost/activitypub": "workspace:*",
+        "@tryghost/addon-kit": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/color-utils": "catalog:",
         "@tryghost/custom-fonts": "catalog:",
@@ -119,6 +120,7 @@
                 "dependsOn": [
                     "ghost-monorepo:docker:up",
                     "ghost-admin:dev",
+                    "@tryghost/addon-kit:dev",
                     "@tryghost/admin-x-framework:dev",
                     "@tryghost/shade:dev"
                 ]

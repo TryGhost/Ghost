@@ -83,6 +83,10 @@ const features: Feature[] = [{
     title: 'Machine payments',
     description: 'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments'
+}, {
+    title: 'Add-ons',
+    description: 'Enables the remote add-on spike: sandboxed third-party add-ons rendering into admin surfaces',
+    flag: 'addons'
 }];
 
 const AlphaFeatures: React.FC = () => {
