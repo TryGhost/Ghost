@@ -13,6 +13,7 @@ import {
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   downloadSiteExport,
+  useRequestExport,
   type SiteExportComponent,
 } from '@tryghost/admin-x-framework/api/exports';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -79,6 +80,7 @@ const ExportAllModal: React.FC<{
   mode: ExportMode;
 }> = ({ open, onOpenChange, mode }) => {
   const { data: currentUser } = useCurrentUser();
+  const { mutateAsync: requestExport, isPending: isRequestingExport } = useRequestExport();
   const handleError = useHandleError();
   const [phase, setPhase] = useState<ExportPhase>('select');
   const [selected, setSelected] = useState<Record<ExportComponentKey, boolean>>(() => {
@@ -98,6 +100,11 @@ const ExportAllModal: React.FC<{
   const noneSelected = visibleComponents.every((component) => !selected[component.key]);
 
   const handleOpenChange = (next: boolean) => {
+    // The export request is not idempotent: closing mid-flight would
+    // detach the pending promise and let it flip a later session's phase.
+    if (!next && isRequestingExport) {
+      return;
+    }
     onOpenChange(next);
     if (next) {
       clearTimeout(resetTimerRef.current);
@@ -112,8 +119,16 @@ const ExportAllModal: React.FC<{
 
   const startExport = async () => {
     if (mode === 'async') {
-      // Host mode is not wired to a backend yet — mocked confirmation only
-      setPhase('confirmed');
+      try {
+        const components = Object.fromEntries(
+          visibleComponents.map((component) => [component.key, selected[component.key]]),
+        );
+        await requestExport({ components });
+        setPhase('confirmed');
+      } catch (e) {
+        // An older backend without the endpoint 404s into the same path
+        handleError(e);
+      }
       return;
     }
 
@@ -195,10 +210,17 @@ const ExportAllModal: React.FC<{
               ))}
             </div>
             <DialogFooter className="gap-2 sm:justify-end">
-              <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              <Button
+                disabled={isRequestingExport}
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
                 Cancel
               </Button>
-              <Button disabled={noneSelected} onClick={() => void startExport()}>
+              <Button
+                disabled={noneSelected || isRequestingExport}
+                onClick={() => void startExport()}
+              >
                 <LucideIcon.Download /> Export
               </Button>
             </DialogFooter>

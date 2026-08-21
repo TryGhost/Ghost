@@ -22,12 +22,16 @@ const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
+const models = require('../../models');
+const { exportRequestsService } = require('../../services/export-requests/export-requests-service');
 
 const postsService = getPostServiceInstance();
 
 const messages = {
   noComponentsSelected: 'No export components selected',
 };
+
+const ALLOWED_REQUEST_COMPONENTS = ['content', 'members', 'analytics', 'themes', 'routes', 'media'];
 
 /**
  * Pipes export rows through their CSV transform. `pipeline` (rather than
@@ -105,6 +109,23 @@ function createSiteExporter() {
   });
 }
 
+/**
+ * Resolves the delivery email server-side from the authenticated user —
+ * never trust an email supplied in the request body.
+ */
+async function resolveRequestedBy(frame) {
+  if (frame.user && frame.user.get) {
+    return frame.user.get('email');
+  }
+
+  if (frame.options.context.user) {
+    const user = await models.User.findOne({ id: frame.options.context.user });
+    return user && user.get('email');
+  }
+
+  return null;
+}
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'exports',
@@ -121,8 +142,6 @@ const controller = {
         },
       },
     },
-    // A site export contains everything a database export contains, so
-    // the same Owner/Administrator-only gate applies
     permissions: {
       docName: 'db',
       method: 'exportContent',
@@ -141,6 +160,63 @@ const controller = {
         archive: createSiteExporter().createArchive(components),
         filename: getExportFileName('export', 'zip'),
       };
+    },
+  },
+
+  add: {
+    statusCode: 202,
+    headers: {
+      cacheInvalidate: false,
+    },
+    validation(frame) {
+      const components = frame.data && frame.data.components;
+
+      if (!components || typeof components !== 'object' || Array.isArray(components)) {
+        throw new errors.BadRequestError({
+          message: 'components must be an object',
+        });
+      }
+
+      const keys = Object.keys(components);
+      const unknownKeys = keys.filter((key) => !ALLOWED_REQUEST_COMPONENTS.includes(key));
+
+      if (unknownKeys.length > 0) {
+        throw new errors.BadRequestError({
+          message: `Unknown export components: ${unknownKeys.join(', ')}`,
+        });
+      }
+
+      if (keys.some((key) => typeof components[key] !== 'boolean')) {
+        throw new errors.BadRequestError({
+          message: 'Export component values must be booleans',
+        });
+      }
+
+      if (!keys.some((key) => components[key] === true)) {
+        throw new errors.BadRequestError({
+          message: 'At least one export component must be selected',
+        });
+      }
+    },
+    permissions: {
+      docName: 'db',
+      method: 'exportContent',
+    },
+    async query(frame) {
+      const components = {};
+      for (const key of ALLOWED_REQUEST_COMPONENTS) {
+        components[key] = frame.data.components[key] === true;
+      }
+
+      const requestedBy = await resolveRequestedBy(frame);
+
+      if (!requestedBy) {
+        throw new errors.NoPermissionError({
+          message: 'Export requests require an authenticated staff user',
+        });
+      }
+
+      await exportRequestsService.requestArchive({ components, requestedBy });
     },
   },
 };

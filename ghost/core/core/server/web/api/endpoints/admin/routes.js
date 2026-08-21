@@ -377,6 +377,12 @@ module.exports = function apiRoutes() {
     labs.enabledMiddleware('selfServeArchives'),
     http(api.exports.download),
   );
+  router.post(
+    '/exports',
+    mw.authAdminApi,
+    labs.enabledMiddleware('selfServeArchives'),
+    http(api.exports.add),
+  );
 
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));

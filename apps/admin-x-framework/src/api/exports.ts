@@ -1,4 +1,5 @@
 import { blobDownloadFromEndpoint, type BlobDownloadOptions } from '../utils/helpers';
+import { createMutation } from '../utils/api/hooks';
 
 export type SiteExportComponent = 'content' | 'members' | 'analytics' | 'themes' | 'routes';
 
@@ -17,3 +18,25 @@ export const downloadSiteExport = (
     options,
   );
 };
+
+export type ExportComponents = {
+  content?: boolean;
+  members?: boolean;
+  analytics?: boolean;
+  themes?: boolean;
+  routes?: boolean;
+  media?: boolean;
+};
+
+export type ExportRequestPayload = {
+  components: ExportComponents;
+};
+
+export const useRequestExport = createMutation<unknown, ExportRequestPayload>({
+  method: 'POST',
+  path: () => '/exports/',
+  body: ({ components }) => ({ components }),
+  // Not idempotent: each delivered request can schedule an archive and an
+  // email, so a lost response must not trigger an automatic re-send.
+  retry: false,
+});
