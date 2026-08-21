@@ -1,5 +1,8 @@
-const assert = require('node:assert/strict');
-const normalizeEmail = require('../../../../../../../core/server/services/members/members-api/utils/normalize-email');
+import assert from 'node:assert/strict';
+// @ts-expect-error normalize-email currently lacks type definitions.
+import normalizeEmail from '../../../../../../../core/server/services/members/members-api/utils/normalize-email';
+
+const normalizeUnknown = (email: unknown) => normalizeEmail(email as string);
 
 describe('normalizeEmail', function () {
     it('should normalize unicode domains to punycode', function () {
@@ -39,11 +42,11 @@ describe('normalizeEmail', function () {
     });
 
     it('should handle non-string inputs', function () {
-        assert.equal(normalizeEmail(/** @type {any} */ (null)), null);
-        assert.equal(normalizeEmail(/** @type {any} */ (undefined)), null);
-        assert.equal(normalizeEmail(/** @type {any} */ (123)), null);
-        assert.equal(normalizeEmail(/** @type {any} */ ({})), null);
-        assert.equal(normalizeEmail(/** @type {any} */ ([])), null);
-        assert.equal(normalizeEmail(/** @type {any} */ (true)), null);
+        assert.equal(normalizeUnknown(null), null);
+        assert.equal(normalizeUnknown(undefined), null);
+        assert.equal(normalizeUnknown(123), null);
+        assert.equal(normalizeUnknown({}), null);
+        assert.equal(normalizeUnknown([]), null);
+        assert.equal(normalizeUnknown(true), null);
     });
 });
