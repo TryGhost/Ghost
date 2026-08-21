@@ -144,6 +144,19 @@ describe('Integration: Service: feature', function () {
         expect(service.get('testUserFlag')).to.be.true;
     });
 
+    it('exposes the Design Builder Labs flag to the editor', async function () {
+        stubSettings(server, {designBuilder: true});
+        stubUser(server, {});
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
+
+        let service = this.owner.lookup('service:feature');
+
+        await service.fetch();
+        expect(service.get('designBuilder')).to.be.true;
+    });
+
     it('returns false for set flag with config false and labs false', async function () {
         stubSettings(server, {testFlag: false});
         stubUser(server, {});
