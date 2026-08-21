@@ -35,6 +35,7 @@ describe('CheckoutSessionEventService', function () {
 
     donationRepository = {
       save: sinon.stub(),
+      existsByCheckoutSessionId: sinon.stub().resolves(false),
     };
 
     giftService = {
@@ -85,7 +86,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is present', async function () {
       const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: true } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: true },
+      };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
 
       await service.handleEvent(session);
@@ -95,7 +100,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is string true', async function () {
       const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: 'true' } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: 'true' },
+      };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
 
       await service.handleEvent(session);
@@ -105,7 +114,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should ignore false donation metadata flags', async function () {
       const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: 'false' } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: 'false' },
+      };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
 
       await service.handleEvent(session);
@@ -172,16 +185,33 @@ describe('CheckoutSessionEventService', function () {
       sinon.assert.notCalled(handleGiftEventStub);
     });
 
-    it('does not handle donations on async payment success', async function () {
+    it('waits for async payment success when a donation checkout is still unpaid', async function () {
       const service = createService();
       const session = {
         mode: 'payment',
-        payment_status: 'paid',
+        payment_status: 'unpaid',
         metadata: { ghost_donation: 'true' },
       };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
 
-      await service.handleEvent(session, 'checkout.session.async_payment_succeeded');
+      await service.handleEvent(session);
+      sinon.assert.notCalled(handleDonationEventStub);
+
+      await service.handleEvent(
+        { ...session, payment_status: 'paid' },
+        'checkout.session.async_payment_succeeded',
+      );
+      sinon.assert.calledOnce(handleDonationEventStub);
+    });
+
+    it('ignores failed async donation payments', async function () {
+      const service = createService();
+      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
+
+      await service.handleEvent(
+        { mode: 'payment', payment_status: 'unpaid', metadata: { ghost_donation: 'true' } },
+        'checkout.session.async_payment_failed',
+      );
 
       sinon.assert.notCalled(handleDonationEventStub);
     });
@@ -200,7 +230,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should ignore false gift metadata flags', async function () {
       const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_gift: 'false' } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_gift: 'false' },
+      };
       const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
 
       await service.handleEvent(session);
@@ -210,7 +244,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should ignore payment sessions with conflicting donation and gift markers', async function () {
       const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: '', ghost_gift: 'true' } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: '', ghost_gift: 'true' },
+      };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
       const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
 
@@ -222,7 +260,11 @@ describe('CheckoutSessionEventService', function () {
 
     it('should ignore payment sessions when both donation and gift markers are true', async function () {
       const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: true, ghost_gift: 'true' } };
+      const session = {
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: true, ghost_gift: 'true' },
+      };
       const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
       const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
 
@@ -250,9 +292,23 @@ describe('CheckoutSessionEventService', function () {
   });
 
   describe('handleDonationEvent', function () {
+    it('does not save or notify staff when the checkout session already exists', async function () {
+      const service = createService();
+      const session = { id: 'cs_existing_donation' };
+      donationRepository.existsByCheckoutSessionId.resolves(true);
+
+      await service.handleDonationEvent(session);
+
+      sinon.assert.calledOnceWithExactly(donationRepository.existsByCheckoutSessionId, session.id);
+      sinon.assert.notCalled(memberRepository.get);
+      sinon.assert.notCalled(donationRepository.save);
+      sinon.assert.notCalled(staffServiceEmails.notifyDonationReceived);
+    });
+
     it('can handle donation event', async function () {
       const service = createService();
       const session = {
+        id: 'cs_test_donation',
         custom_fields: [{ key: 'donation_message', text: { value: 'Test donation message' } }],
         amount_total: 1000,
         currency: 'usd',
@@ -278,6 +334,7 @@ describe('CheckoutSessionEventService', function () {
 
       assert.equal(savedDonationEvent.amount, 1000);
       assert.equal(savedDonationEvent.currency, 'usd');
+      assert.equal(savedDonationEvent.stripeCheckoutSessionId, 'cs_test_donation');
       assert.equal(savedDonationEvent.name, 'Test Name');
       assert.equal(savedDonationEvent.email, '');
       assert.equal(savedDonationEvent.donationMessage, 'Test donation message');
@@ -292,6 +349,7 @@ describe('CheckoutSessionEventService', function () {
     it('donation message is null if its empty', async function () {
       const service = createService();
       const session = {
+        id: 'cs_empty_donation_message',
         custom_fields: [
           { key: 'donation_message', text: { value: '' } },
           { key: 'donation_message', text: { value: null } },
@@ -323,6 +381,7 @@ describe('CheckoutSessionEventService', function () {
     it('can handle donation event with member', async function () {
       const service = createService();
       const session = {
+        id: 'cs_member_donation',
         custom_fields: [{ key: 'donation_message', text: { value: 'Test donation message' } }],
         amount_total: 1000,
         currency: 'usd',
@@ -372,6 +431,7 @@ describe('CheckoutSessionEventService', function () {
     it('can handle donation event with empty customer email', async function () {
       const service = createService();
       const session = {
+        id: 'cs_empty_customer_email',
         custom_fields: [{ key: 'donation_message', text: { value: 'Test donation message' } }],
         amount_total: 1000,
         currency: 'usd',
