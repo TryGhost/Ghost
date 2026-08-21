@@ -47,6 +47,30 @@ interface LimiterLimits {
     }
 }
 
+type PeriodicSubscription = {
+    startDate: string;
+    interval: 'month';
+};
+
+// A periodic limit is built from the subscription that anchors its period, and
+// registration stops at the first limit that throws — so one `maxPeriodic` limit with no
+// subscription would take down every limit registered after it. Leave those out instead.
+const usableLimits = (limits: Record<string, unknown>, subscription?: PeriodicSubscription) => {
+    if (subscription) {
+        return limits;
+    }
+
+    return Object.fromEntries(Object.entries(limits).filter(([name, limit]) => {
+        if (limit && typeof limit === 'object' && 'maxPeriodic' in limit) {
+            // eslint-disable-next-line no-console
+            console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`);
+            return false;
+        }
+
+        return true;
+    }));
+};
+
 export const useLimiter = () => {
     const {config} = useGlobalData();
     const [LimitService, setLimitService] = useState<typeof import('@tryghost/limit-service').default | null>(null);
@@ -88,7 +112,15 @@ export const useLimiter = () => {
             return noOpLimiter;
         }
 
-        const limits = {...config.hostSettings.limits} as LimiterLimits;
+        // A subscription without a start can't anchor a period, so it's treated as absent
+        // rather than built into one that resolves to no period on the way to the count query
+        const subscriptionStart = config.hostSettings.subscription?.start;
+        const subscription: PeriodicSubscription | undefined = subscriptionStart ? {
+            startDate: subscriptionStart,
+            interval: 'month'
+        } : undefined;
+
+        const limits = usableLimits({...config.hostSettings.limits}, subscription) as LimiterLimits;
         const limiter = new LimitService();
 
         if (limits.staff) {
@@ -118,6 +150,7 @@ export const useLimiter = () => {
 
         limiter.loadLimits({
             limits,
+            subscription,
             helpLink,
             errors: {
                 HostLimitError,

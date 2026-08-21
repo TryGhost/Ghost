@@ -81,6 +81,11 @@ export type Config = {
                 upgradeUrl?: string // Destination for the banner's upgrade button
             }
         }
+        // Anchors periodic limits (eg. a monthly email allowance). A limit carrying
+        // `maxPeriodic` needs this to work out where the current period started.
+        subscription?: {
+            start?: string // ISO 8601 date the period is counted from
+        }
         billing?: {
             enabled?: boolean
             url?: string
