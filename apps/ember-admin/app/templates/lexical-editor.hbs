@@ -45,14 +45,19 @@
                         {{/if}}
                     </div>
 
-                    <section class="gh-editor-publish-buttons">
-                        {{#unless this.post.isNew}}
-                            <Editor::PublishButtons @publishManagement={{publishManagement}} />
-                            {{#unless this.showSettingsMenu}}
-                                <div class="settings-menu-toggle-spacer"></div>
+                    <div class="gh-editor-header-right">
+                        {{#if (feature 'editorPresence')}}
+                            <GhPresenceAvatars @postId={{this.post.id}} />
+                        {{/if}}
+                        <section class="gh-editor-publish-buttons">
+                            {{#unless this.post.isNew}}
+                                <Editor::PublishButtons @publishManagement={{publishManagement}} />
+                                {{#unless this.showSettingsMenu}}
+                                    <div class="settings-menu-toggle-spacer"></div>
+                                {{/unless}}
                             {{/unless}}
-                        {{/unless}}
-                    </section>
+                        </section>
+                    </div>
                 </Editor::PublishManagement>
             </header>
 

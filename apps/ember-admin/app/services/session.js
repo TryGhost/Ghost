@@ -12,6 +12,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class SessionService extends ESASessionService {
     @service configManager;
+    @service presence;
     @service('store') dataStore;
     @service feature;
     @service koenig;
@@ -75,6 +76,11 @@ export default class SessionService extends ESASessionService {
         }
 
         this.loadServerNotifications();
+
+        // Open the presence stream once features are loaded so the
+        // service can check the editorPresence flag. No-op when the
+        // flag is off or the browser lacks EventSource.
+        this.presence.start();
 
         // pre-emptively load editor code in the background to avoid loading state when opening editor
         this.koenig.fetch();
@@ -157,6 +163,9 @@ export default class SessionService extends ESASessionService {
     }
 
     handleInvalidation() {
+        // Close the presence SSE stream alongside the session.
+        this.presence.stop();
+
         let transition = this.appLoadTransition;
 
         if (transition) {

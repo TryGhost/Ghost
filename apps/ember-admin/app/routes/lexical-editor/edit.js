@@ -5,6 +5,9 @@ import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
     @service feature;
+    @service presence;
+
+    _activePostId = null;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
@@ -76,5 +79,21 @@ export default class EditRoute extends AuthenticatedRoute {
     setupController(controller, post) {
         let editor = this.controllerFor('lexical-editor');
         editor.setPost(post);
+        // editor → editor navigation reuses this route instance and does
+        // not fire deactivate. The presence service's enterPost detects
+        // the post id change and sends a leave for the previous post
+        // before entering the new one.
+        this._activePostId = post?.id || null;
+        if (this._activePostId) {
+            this.presence.enterPost(this._activePostId);
+        }
+    }
+
+    deactivate() {
+        super.deactivate(...arguments);
+        if (this._activePostId) {
+            this.presence.leavePost(this._activePostId);
+            this._activePostId = null;
+        }
     }
 }
