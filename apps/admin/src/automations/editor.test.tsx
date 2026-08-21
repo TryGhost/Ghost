@@ -1928,6 +1928,27 @@ describe('AutomationEditor', () => {
         expect(screen.queryByTestId('automation-editor')).not.toBeInTheDocument();
     });
 
+    it('confirms before a raw hash-link navigation when only the email editor is dirty', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        const {container} = renderEditor();
+        fireEvent.doubleClick(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        fireEvent.click(await screen.findByTestId('modal-dirty'));
+
+        const rawHashLink = document.createElement('a');
+        rawHashLink.href = '#/members';
+        rawHashLink.textContent = 'Members sidebar link';
+        container.appendChild(rawHashLink);
+        fireEvent.click(rawHashLink);
+
+        expect(screen.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'})).toBeInTheDocument();
+        expect(screen.getByTestId('email-content-modal')).toBeInTheDocument();
+    });
+
     it('uses the email discard dialog, not the automation discard dialog, when Back closes a dirty email editor', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},

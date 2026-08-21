@@ -89,12 +89,16 @@ export function useUnsavedChangesGuard({
         if (args.historyAction === NavigationType.Pop && !isOnRouterHistoryEntry()) {
             return false;
         }
+        if (bypassRef.current) {
+            bypassRef.current = false;
+            return false;
+        }
         if (interceptRef.current?.(args)) {
             blockedByInterceptRef.current = true;
             return true;
         }
         blockedByInterceptRef.current = false;
-        const shouldBlock = !bypassRef.current && when && args.currentLocation.pathname !== args.nextLocation.pathname;
+        const shouldBlock = when && args.currentLocation.pathname !== args.nextLocation.pathname;
         if (shouldBlock) {
             blockedNavigationRef.current = true;
         }

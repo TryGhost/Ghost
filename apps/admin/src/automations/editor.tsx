@@ -371,7 +371,7 @@ const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId
     // query param (closing the modal, back button, leaving the editor) so the
     // canvas can run its own discard flow instead of the page-level dialog.
     const {dialogProps: discardDialogProps, interceptedNavigation} = useUnsavedChangesGuard({
-        when: hasUnsavedChanges,
+        when: hasUnsavedChanges || isEmailModalDirty,
         confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
         interceptNavigation: ({currentLocation, nextLocation}) => {
             const currentEmailStep = new URLSearchParams(currentLocation.search).get(EMAIL_STEP_QUERY_PARAM);

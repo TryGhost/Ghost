@@ -112,6 +112,28 @@ describe('useUnsavedChangesGuard', () => {
         expect(latestGuard.isBlocked).toBe(false);
     });
 
+    it('consumes the bypass when the next navigation keeps the same pathname', async () => {
+        const router = renderGuarded({
+            when: true,
+            interceptNavigation: ({nextLocation}) => nextLocation.search === '?tab=preview'
+        });
+
+        await act(async () => {
+            latestGuard.bypassNextNavigation();
+            await router.navigate('/guarded?tab=preview');
+        });
+        expect(router.state.location.search).toBe('?tab=preview');
+        expect(latestGuard.interceptedNavigation.isBlocked).toBe(false);
+
+        await act(async () => {
+            await router.navigate('/elsewhere');
+        });
+
+        expect(router.state.location.pathname).toBe('/guarded');
+        expect(latestGuard.isBlocked).toBe(true);
+        expect(dialogOpen()).toBe('true');
+    });
+
     it('holds a navigation blocked during a save and resumes it once the save settles', async () => {
         const router = renderGuarded({when: true, isSaving: true});
         await act(async () => {
