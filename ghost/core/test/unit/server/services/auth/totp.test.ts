@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { generate, verify } from '../../../../../core/server/services/auth/otp';
+import { generate, verify } from '../../../../../core/server/services/auth/totp';
 
 describe('TOTP service', function () {
   let clock: sinon.SinonFakeTimers;
