@@ -2381,8 +2381,8 @@ importers:
         specifier: 5.2.6
         version: 5.2.6
       '@tryghost/validator':
-        specifier: 0.2.22
-        version: 0.2.22
+        specifier: 3.2.6
+        version: 3.2.6
       '@tryghost/version':
         specifier: 2.3.2
         version: 2.3.2
@@ -9472,6 +9472,9 @@ packages:
   '@tryghost/tpl@2.3.1':
     resolution: {integrity: sha512-qqa2SvhnBVKFYN+G4hfj2cYZuZXINBDyJ9cTzNBtev/FRNUKniyGarPKAkyb6ZBtvp3Nqlmyvrqe+SFoqHcfrQ==}
 
+  '@tryghost/tpl@2.3.6':
+    resolution: {integrity: sha512-EcSqPN0Dl6BBKANfhONDFOE3iyiyTdumB1+tyq8bnkJEAItkzmigSeAwDLocEjnPaVCHLwhPSZcgmC+dpMyuOw==}
+
   '@tryghost/tpl@2.3.7':
     resolution: {integrity: sha512-TIDQF9tj4MaQKrIxNB8CxpElShAwLfyByozggIBnuzIVkGudX07gy/o9oWGRYslRselrvdByf+NpYonQ9j3Y0Q==}
 
@@ -9484,8 +9487,8 @@ packages:
   '@tryghost/url-utils@5.2.7':
     resolution: {integrity: sha512-enJ084BtVwsr+q+1wz2hy/jjooBfDLh4FS4g2o8n1ZAgGAly4mch6w7IpDX6MjRcy6an/S1i/Jo3tMsHa2igfw==}
 
-  '@tryghost/validator@0.2.22':
-    resolution: {integrity: sha512-dmobNVEKXMi3K4OdAXLBFwa78hVgy8cYvCPJgfV4h3NtYIyRHqwARr3upT3/ASpVBpKGVBu7XexfSv+tibzsuQ==}
+  '@tryghost/validator@3.2.6':
+    resolution: {integrity: sha512-Pn+aFS/NybjxRghNzN+6Cg/BjnKuDf7Hv9awc5r1ULlgiUap1jFwVo+vC4FlLrBpW1sU2GGcWxINic62BCN76A==}
 
   '@tryghost/validator@3.2.9':
     resolution: {integrity: sha512-dhb8ix2Xd1TVCjpwAJ87MRO/39m1fTl72dfqLbjnmA8r/vgA59SLVUF+BimH3DHcN6vDldwJlDlfJ4nHl5NEaA==}
@@ -22127,10 +22130,6 @@ packages:
     resolution: {integrity: sha512-TQ5pAGhd5whStmqWvYF4OjQROlmv9SMFVt37qoCBdqRffuuklWYQlCNnEs2ZaIBD1kZRNnikiZOS1eqgkar0iw==}
     engines: {node: '>= 0.10'}
 
-  validator@7.2.0:
-    resolution: {integrity: sha512-c8NGTUYeBEcUIGeMppmNVKHE7wwfm3mYbNZxV+c5mlv9fDHI7Ad3p07qfNrn/CvpdkK2k61fOLRO2sTEhgQXmg==}
-    engines: {node: '>= 0.10'}
-
   value-or-function@4.0.0:
     resolution: {integrity: sha512-aeVK81SIuT6aMJfNo9Vte8Dw0/FZINGBV8BfCraGtqVxIeLAEhJyoWs8SmvRVmXfGss2PmmOwZCuBPbZR+IYWg==}
     engines: {node: '>= 10.13.0'}
@@ -29072,6 +29071,8 @@ snapshots:
 
   '@tryghost/tpl@2.3.1': {}
 
+  '@tryghost/tpl@2.3.6': {}
+
   '@tryghost/tpl@2.3.7': {}
 
   '@tryghost/tpl@2.3.9': {}
@@ -29096,13 +29097,13 @@ snapshots:
       remark-footnotes: 1.0.0
       unist-util-visit: 2.0.3
 
-  '@tryghost/validator@0.2.22':
+  '@tryghost/validator@3.2.6':
     dependencies:
       '@tryghost/errors': 3.3.9
-      '@tryghost/tpl': 0.1.40
+      '@tryghost/tpl': 2.3.6
       lodash: 4.18.1
       moment-timezone: 0.5.45
-      validator: 7.2.0
+      validator: 13.15.35
 
   '@tryghost/validator@3.2.9':
     dependencies:
@@ -46411,8 +46412,6 @@ snapshots:
   validator@13.12.0: {}
 
   validator@13.15.35: {}
-
-  validator@7.2.0: {}
 
   value-or-function@4.0.0: {}
 
