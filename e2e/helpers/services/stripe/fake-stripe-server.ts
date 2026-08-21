@@ -465,7 +465,10 @@ export class FakeStripeServer extends FakeServer {
                     invoice_creation: body.invoice_creation,
                     submit_type: body.submit_type,
                     subscription_data: body.subscription_data,
-                    line_items: body.line_items
+                    line_items: body.line_items,
+                    shipping_address_collection: body.shipping_address_collection,
+                    tax_id_collection: body.tax_id_collection,
+                    phone_number_collection: body.phone_number_collection
                 },
                 response: {
                     mode,
@@ -667,6 +670,16 @@ export class FakeStripeServer extends FakeServer {
             if (!body.customer) {
                 return '`customer_update` can only be used with `customer`.';
             }
+        }
+
+        // Stripe will not collect a tax id for a customer it may not rename. Measured, like
+        // everything else here: shipping and phone collection carry no such requirement, so
+        // this is specific to tax rather than a rule about collecting from a customer at all.
+        const collectsTaxId = (body.tax_id_collection as {enabled?: unknown})?.enabled;
+        const mayRename = (body.customer_update as {name?: unknown})?.name === 'auto';
+        if (collectsTaxId && body.customer && !mayRename) {
+            return 'Tax ID collection requires updating business name on the customer. To enable tax ID '
+                + 'collection for an existing customer, please set `customer_update[name]` to `auto`.';
         }
 
         return null;

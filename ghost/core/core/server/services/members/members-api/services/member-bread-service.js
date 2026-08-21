@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const {WRITTEN_BY} = require('../../../members-custom-fields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -612,7 +613,14 @@ module.exports = class MemberBREADService {
         }
 
         if (plannedCustomFields) {
-            await this.customFieldValues.applyWrite(model.id, plannedCustomFields);
+            // Every value reaching here was typed into the Admin API, so the writer is
+            // whoever made the request — the same pair the action log records, so the two
+            // agree about who did it rather than one saying only that it was "admin".
+            const context = options.context || {};
+            const writtenBy = context.integration
+                ? {type: WRITTEN_BY.integration, id: context.integration.id}
+                : {type: WRITTEN_BY.user, id: context.user || null};
+            await this.customFieldValues.applyWrite(model.id, plannedCustomFields, {writtenBy});
 
             // Custom fields aren't a member column or relation, so an edit touching
             // only them leaves `model._changed` empty and the save fires nothing.

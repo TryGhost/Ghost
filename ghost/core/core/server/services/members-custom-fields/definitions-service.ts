@@ -5,6 +5,7 @@ import {z} from 'zod';
 import {CustomField} from './models';
 import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {customFieldCodec} from './codec';
+import {requestedRelations, withDependencies, type DefinitionRelation, type DependencyRow} from './queries';
 import {FIELD_STATUS, FieldStatusSchema} from './schema';
 import {activeFields, inFieldOrder} from './queries';
 import {mintableKey} from './key';
@@ -82,7 +83,11 @@ export class CustomFieldDefinitionsService {
     private recordAction: RecordCustomFieldAction;
     private getMaxDefinitions: () => number;
 
-    constructor({knex, recordAction, getMaxDefinitions}: {knex: Knex; recordAction: RecordCustomFieldAction; getMaxDefinitions: () => number}) {
+    constructor({knex, recordAction, getMaxDefinitions}: {
+        knex: Knex;
+        recordAction: RecordCustomFieldAction;
+        getMaxDefinitions: () => number;
+    }) {
         this.knex = knex;
         this.recordAction = recordAction;
         // A getter, not a value: the ceiling can be raised or lowered at any time,
@@ -93,7 +98,7 @@ export class CustomFieldDefinitionsService {
         this.getMaxDefinitions = getMaxDefinitions;
     }
 
-    async browse(options: {filter?: string} = {}): Promise<CustomField[]> {
+    async browse(options: {filter?: string; withRelated?: unknown} = {}): Promise<CustomFieldWithDependencies[]> {
         // Archived fields are hidden by default: most surfaces (member details, the
         // filter picker, the importer) only ever want active fields. A caller-
         // supplied `filter` can widen that — Settings pulls active and archived
@@ -104,7 +109,7 @@ export class CustomFieldDefinitionsService {
         const query = options.filter
             ? applyFilter(this.knex(TABLE), options.filter)
             : activeFields(this.knex);
-        return this.list(query);
+        return this.list(query, requestedRelations(options.withRelated));
     }
 
     /**
@@ -113,17 +118,26 @@ export class CustomFieldDefinitionsService {
      * Typed off `activeFields` so the builder keeps the table's row type: every caller
      * hands over a query against the definitions table, whatever it has narrowed.
      */
-    private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
-        const rows = await inFieldOrder(query).select('*');
-        return rows.map(row => z.decode(customFieldCodec, row));
+    private async list(
+        query: ReturnType<typeof activeFields>,
+        relations: DefinitionRelation[] = []
+    ): Promise<CustomFieldWithDependencies[]> {
+        if (relations.length === 0) {
+            const rows = await inFieldOrder(query).select('*');
+            return rows.map(row => z.decode(customFieldCodec, row));
+        }
+        return fold(await inFieldOrder(withDependencies(query, relations)), relations);
     }
 
-    async read(key: string): Promise<CustomField> {
-        const row = await this.knex(TABLE).where('key', key).first();
-        if (!row) {
+    async read(key: string, options: {withRelated?: unknown} = {}): Promise<CustomFieldWithDependencies> {
+        const [field] = await this.list(
+            this.knex(TABLE).where(`${TABLE}.key`, key) as ReturnType<typeof activeFields>,
+            requestedRelations(options.withRelated)
+        );
+        if (!field) {
             throw new errors.NotFoundError({message: 'Custom field not found.'});
         }
-        return z.decode(customFieldCodec, row);
+        return field;
     }
 
     /**
@@ -503,4 +517,55 @@ function filterReferencesStatus(query: Record<string, unknown>): boolean {
         }
         return false;
     });
+}
+
+/** A definition with whatever a request asked to have joined onto it. */
+export type CustomFieldWithDependencies = CustomField & {
+    bindings?: Array<{port: string}>;
+    tiers?: Array<{id: string; name: string}>;
+};
+
+/**
+ * Fold a joined result back into one definition per field.
+ *
+ * A relation nobody asked for stays absent rather than empty, so a caller can tell "not
+ * requested" from "nothing depends on this". One that was asked for is present even when it
+ * is empty, which is the same distinction from the other side.
+ */
+function fold(rows: Array<DependencyRow & Record<string, unknown>>, relations: DefinitionRelation[]) {
+    const fields = new Map<string, CustomFieldWithDependencies>();
+    const seen = new Map<string, Set<string>>();
+    const once = (key: string, of: string) => {
+        const already = seen.get(key)!;
+        if (already.has(of)) {
+            return false;
+        }
+        already.add(of);
+        return true;
+    };
+
+    for (const row of rows) {
+        let field = fields.get(row.key);
+        if (!field) {
+            field = z.decode(customFieldCodec, row as Parameters<typeof customFieldCodec.decode>[0]);
+            if (relations.includes('bindings')) {
+                field.bindings = [];
+            }
+            if (relations.includes('tiers')) {
+                field.tiers = [];
+            }
+            fields.set(row.key, field);
+            seen.set(row.key, new Set());
+        }
+
+        // Each join multiplies the other's rows, so both sides arrive repeated.
+        if (row.bound_port && once(row.key, `binding:${row.bound_port}`)) {
+            field.bindings?.push({port: row.bound_port});
+        }
+        if (row.tier_id && row.tier_name && once(row.key, `tier:${row.tier_id}`)) {
+            field.tiers?.push({id: row.tier_id, name: row.tier_name});
+        }
+    }
+
+    return [...fields.values()];
 }

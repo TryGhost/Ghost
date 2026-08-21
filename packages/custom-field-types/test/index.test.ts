@@ -88,6 +88,13 @@ describe('custom-field-types catalog', function () {
             assert.equal(parse({line1: 'Cloonlara', state: 'Co. Clare', country: 'IE'}), true);
         });
 
+        // A recipient's name is not part of an address. A parcel needs both, which is a
+        // fact about posting parcels rather than about either type, so a site that collects
+        // a name keeps it in a field of its own.
+        it('is not where a recipient name lives', function () {
+            assert.equal(parse({name: 'Bex Jones'}), false);
+        });
+
         it('rejects an address that names nothing', function () {
             assert.equal(parse({}), false);
             // A key present but explicitly undefined names nothing either: undefined is

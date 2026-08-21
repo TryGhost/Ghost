@@ -413,6 +413,51 @@ describe('Member Custom Fields Admin API', function () {
         });
     });
 
+    // `include` is renamed to `withRelated` by the API framework and forwarded to the
+    // service like `filter` is. Nothing here is a Bookshelf relation — this is the first
+    // resource in Ghost to serve one with no model behind it — so the contract is only what
+    // these assert: a relation is loaded when asked for, absent when not, and a name this
+    // build does not serve is not an error.
+    describe('Asking for relations', function () {
+        it('leaves a relation nobody asked for absent', async function () {
+            await createField({name: 'T-shirt size'});
+
+            const {body} = await agent.get('members/custom_fields/').expectStatus(200);
+
+            // Absent rather than empty, so a caller can tell "not requested" from "none".
+            assert.equal('bindings' in body.members_custom_fields[0], false);
+        });
+
+        it('loads a relation on a browse and on a read alike', async function () {
+            const field = await createField({name: 'T-shirt size'});
+
+            const {body: browsed} = await agent.get('members/custom_fields/?include=bindings').expectStatus(200);
+            const {body: read} = await agent.get(`members/custom_fields/${field.key}/?include=bindings`).expectStatus(200);
+
+            assert.deepEqual(browsed.members_custom_fields[0].bindings, []);
+            assert.deepEqual(read.members_custom_fields[0].bindings, []);
+        });
+
+        it('loads one relation without loading the other', async function () {
+            await createField({name: 'T-shirt size'});
+
+            const {body} = await agent.get('members/custom_fields/?include=tiers').expectStatus(200);
+
+            assert.deepEqual(body.members_custom_fields[0].tiers, []);
+            assert.equal('bindings' in body.members_custom_fields[0], false);
+        });
+
+        // An admin build newer than its Ghost asks for relations this Ghost has never heard
+        // of. That is a relation it does not get, not a request it got wrong.
+        it('ignores a relation this build does not serve', async function () {
+            await createField({name: 'T-shirt size'});
+
+            const {body} = await agent.get('members/custom_fields/?include=inside_leg').expectStatus(200);
+
+            assert.equal('inside_leg' in body.members_custom_fields[0], false);
+        });
+    });
+
     describe('Creating several definitions at once', function () {
         it('creates every definition in the request, in order', async function () {
             const {body} = await agent
@@ -1346,6 +1391,41 @@ describe('Member Custom Fields Admin API', function () {
             // value is still attached to it (restoring the field brings it back).
             const rows = await models.Base.knex('members_custom_field_values').where('member_id', memberId);
             assert.equal(rows.length, 1);
+        });
+
+        // The record has to be made at the moment of the write; nothing can reconstruct it
+        // later. What reads it is a separate question — this pins only that it is written,
+        // and that it names where the value currently held came from rather than the first.
+        // Provenance is observable nowhere else yet, so this reads the columns directly. What
+        // it pins is the outcome: every part records who wrote it, and a re-write says who
+        // wrote what is there now rather than who wrote it first.
+        it('records who wrote each value, and re-records it on every write', async function () {
+            const field = await createField({name: 'Postal address', type: 'address'});
+            const memberId = await createMember();
+            await setValues(memberId, {[field.key]: {line1: '1 High Street', city: 'London'}});
+
+            const writersOf = async () => models.Base.knex('members_custom_field_values')
+                .where('member_id', memberId)
+                .orderBy('path')
+                .select('path', 'written_by_type');
+
+            assert.deepEqual(await writersOf(), [
+                {path: 'city', written_by_type: 'user'},
+                {path: 'line1', written_by_type: 'user'}
+            ]);
+
+            // The owner made both writes, so every part names them rather than only the
+            // first, and the id resolves back to the actual person.
+            const [{written_by_id: actor}] = await models.Base.knex('members_custom_field_values')
+                .where('member_id', memberId)
+                .select('written_by_id');
+            assert.ok(actor, 'the writer is identified, not merely named');
+
+            await setValues(memberId, {[field.key]: {city: 'Bristol'}});
+            assert.deepEqual(await writersOf(), [
+                {path: 'city', written_by_type: 'user'},
+                {path: 'line1', written_by_type: 'user'}
+            ], 'a re-write keeps naming who wrote what is there now');
         });
 
         it('drops a field\'s values when the field is permanently deleted', async function () {

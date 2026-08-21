@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {PRICES, provision, stripeClient} from './provision-stripe-environment.ts';
+import {PRICES, asSessionCreateParams, provision, stripeClient} from './provision-stripe-environment.ts';
 import {fileURLToPath} from 'node:url';
+// Reached across the workspace deliberately: the point of this capture is that the request
+// is the one Ghost builds, so importing the builder is the coupling rather than a leak.
+import {stripeCheckoutCollectionOptions} from '../../ghost/core/core/server/services/stripe/services/checkout/session-options.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(__dirname, '../helpers/services/stripe/fixtures');
@@ -82,13 +85,36 @@ async function main(): Promise<void> {
         mode: 'subscription',
         line_items: [{price: monthly.id, quantity: 1}]
     }));
-    save('checkout_session.shipping', await stripe.checkout.sessions.create({
+    // Built by the same function Ghost builds a real session with, rather than by hand.
+    // That is what makes this capture check the request as well as the response: if the
+    // builder ever produces something Stripe refuses, this fails here instead of a fixture
+    // quietly describing a request production never sends. It is also how we learned that
+    // an empty shipping_address_collection form-encodes to nothing, so Stripe accepts a
+    // request it was never actually asked to collect an address by.
+    const collection = stripeCheckoutCollectionOptions({
+        customFields: [{
+            key: 'delivery_notes',
+            label: null,
+            optional: true,
+            prompt: 'Delivery notes',
+            type: 'short_text'
+        }],
+        shipping: {
+            allowedCountries: ['GB', 'US'],
+            nameCustomFieldKey: 'recipient_name',
+            addressCustomFieldKey: 'delivery_address'
+        },
+        taxNumber: {customFieldKey: 'vat_number'},
+        phone: null
+    });
+
+    save('checkout_session.collection', await stripe.checkout.sessions.create(asSessionCreateParams({
         ...urls,
         mode: 'subscription',
         line_items: [{price: monthly.id, quantity: 1}],
-        shipping_address_collection: {allowed_countries: ['GB', 'US']}
-    }));
-    save('checkout_session.donation', await stripe.checkout.sessions.create({
+        ...collection
+    })));
+    save('checkout_session.donation', await stripe.checkout.sessions.create(asSessionCreateParams({
         ...urls,
         mode: 'payment',
         submit_type: 'donate',
@@ -99,7 +125,7 @@ async function main(): Promise<void> {
             type: 'text',
             optional: true
         }]
-    }));
+    })));
 
     // Without this there is no way to tell how stale the fixtures are, which makes
     // the "fixtures go stale" trade-off unmeasurable rather than merely accepted.

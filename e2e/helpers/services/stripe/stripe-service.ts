@@ -1,4 +1,5 @@
 import baseDebug from '@tryghost/debug';
+import {type CollectedCheckoutInput, buildCollectedCheckoutCompletedEvent} from './completed-checkout';
 import {FakeStripeServer} from './fake-stripe-server';
 import {WebhookClient} from './webhook-client';
 import {
@@ -68,7 +69,14 @@ export class StripeTestService {
         return this.server.getCheckoutSessions();
     }
 
-    async completeLatestSubscriptionCheckout(opts: {name?: string} = {}): Promise<CreatedPaidMember> {
+    /**
+     * Complete the checkout Ghost most recently created, as a member would.
+     *
+     * `collected` is what the member filled in on the page — answers to the publisher's
+     * questions, a delivery address, a tax number. It is checked against the session Ghost
+     * actually created, so a test cannot answer a question the checkout never asked.
+     */
+    async completeLatestSubscriptionCheckout(opts: {name?: string; collected?: CollectedCheckoutInput} = {}): Promise<CreatedPaidMember> {
         const session = this.getCheckoutSessions().at(-1);
 
         if (!session) {
@@ -77,7 +85,8 @@ export class StripeTestService {
 
         return await this.completeSubscriptionCheckout({
             sessionId: session.response.id,
-            name: opts.name
+            name: opts.name,
+            collected: opts.collected
         });
     }
 
@@ -223,7 +232,7 @@ export class StripeTestService {
         }
     }
 
-    private async completeSubscriptionCheckout(opts: {sessionId: string; name?: string}): Promise<CreatedPaidMember> {
+    private async completeSubscriptionCheckout(opts: {sessionId: string; name?: string; collected?: CollectedCheckoutInput}): Promise<CreatedPaidMember> {
         const session = this.getCheckoutSessions().find(item => item.response.id === opts.sessionId);
 
         if (!session) {
@@ -260,7 +269,7 @@ export class StripeTestService {
         this.server.upsertSubscription(subscription);
         this.server.upsertCheckoutSession(session);
 
-        await this.sendCheckoutSessionCompletedWebhook(customer.id, session.response.metadata);
+        await this.sendCollectedCheckoutCompletedWebhook(session, customer.id, opts.collected);
         await this.sendSubscriptionCreatedWebhook(subscription);
 
         return {customer, subscription, price, paymentMethod};
@@ -345,6 +354,24 @@ export class StripeTestService {
         this.server.upsertCustomer(customer);
 
         return customer;
+    }
+
+    /**
+     * The completion for a subscription checkout, built from a real captured session so a
+     * test cannot pass against a payload shape Stripe has stopped sending.
+     */
+    private async sendCollectedCheckoutCompletedWebhook(
+        session: RecordedStripeCheckoutSession,
+        customerId: string,
+        collected?: CollectedCheckoutInput
+    ): Promise<void> {
+        const event = buildCollectedCheckoutCompletedEvent({session, customerId, collected});
+        const response = await this.webhookClient.sendWebhook(event);
+        debug('checkout.session.completed webhook response: %d', response.status);
+        if (!response.ok) {
+            const body = await response.text();
+            throw new Error(`checkout.session.completed webhook failed (${response.status}): ${body}`);
+        }
     }
 
     private async sendCheckoutSessionCompletedWebhook(customerId: string, metadata?: Record<string, string>): Promise<void> {

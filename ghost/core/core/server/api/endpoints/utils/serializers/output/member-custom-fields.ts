@@ -1,15 +1,15 @@
 import {toCustomFieldsResponse} from '../../../../../services/members-custom-fields/serializers';
-import type {CustomField} from '../../../../../services/members-custom-fields';
+import type {CustomFieldWithRelations} from '../../../../../services/members-custom-fields/serializers';
 
 interface Frame {
     response?: unknown;
 }
 
-const serializeOne = (field: CustomField, _apiConfig: unknown, frame: Frame): void => {
+const serializeOne = (field: CustomFieldWithRelations, _apiConfig: unknown, frame: Frame): void => {
     frame.response = toCustomFieldsResponse.parse([field]);
 };
 
-const serializeMany = (fields: CustomField[], _apiConfig: unknown, frame: Frame): void => {
+const serializeMany = (fields: CustomFieldWithRelations[], _apiConfig: unknown, frame: Frame): void => {
     frame.response = toCustomFieldsResponse.parse(fields);
 };
 
