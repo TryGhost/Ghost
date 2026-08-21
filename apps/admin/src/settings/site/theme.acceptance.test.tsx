@@ -275,6 +275,11 @@ describe('Theme settings', () => {
       getComputedStyle(badge).color,
     );
 
+    // The gscan code sits on the same row as the badge, so the two read as
+    // one line rather than the code out-sizing the label beside it.
+    const problemCode = installedModal.getByText('GS005-TPL-ERR', { exact: true }).element();
+    expect(getComputedStyle(problemCode).fontSize).toBe(getComputedStyle(badge).fontSize);
+
     // Every issue is listed up front; each one expands on its own.
     await expect(installedModal.getByRole('button', { name: /GS001-DEPR-PURL/ })).toHaveCount(1);
     await expect(installedModal.getByText(/deprecated/)).toHaveCount(0);

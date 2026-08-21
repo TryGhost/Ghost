@@ -130,7 +130,7 @@ function ValidationProblemItem({ problem, value }: { problem: ThemeProblem; valu
               {getDisplaySeverity(problem)}
             </SeverityBadge>
             {problem.code && (
-              <span className="font-mono text-md font-normal text-muted-foreground">
+              <span className="font-mono text-sm font-normal text-muted-foreground">
                 {problem.code}
               </span>
             )}
