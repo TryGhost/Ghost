@@ -5,33 +5,33 @@ const giftsController = require('../../../../core/server/api/endpoints/gifts');
 const StartGiftReminderFlushEvent = require('../../../../core/server/services/gifts/events/start-gift-reminder-flush-event');
 
 describe('Gifts controller', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('flushReminders', function () {
+    it('dispatches a StartGiftReminderFlushEvent', function () {
+      const dispatchStub = sinon.stub(domainEvents, 'dispatch');
+
+      const result = giftsController.flushReminders.query({});
+
+      sinon.assert.calledOnceWithExactly(
+        dispatchStub,
+        sinon.match.instanceOf(StartGiftReminderFlushEvent),
+      );
+      assert.equal(result, undefined);
     });
+  });
 
-    describe('flushReminders', function () {
-        it('dispatches a StartGiftReminderFlushEvent', function () {
-            const dispatchStub = sinon.stub(domainEvents, 'dispatch');
+  describe('flushDeliveries', function () {
+    it('dispatches a delivery flush event', function () {
+      const dispatch = sinon.stub(domainEvents, 'dispatch');
 
-            const result = giftsController.flushReminders.query({});
+      const result = giftsController.flushDeliveries.query({});
 
-            sinon.assert.calledOnceWithExactly(
-                dispatchStub,
-                sinon.match.instanceOf(StartGiftReminderFlushEvent)
-            );
-            assert.equal(result, undefined);
-        });
+      assert.equal(result, undefined);
+      sinon.assert.calledOnce(dispatch);
+      assert.equal(dispatch.firstCall.firstArg.constructor.name, 'StartGiftDeliveryFlushEvent');
     });
-
-    describe('flushDeliveries', function () {
-        it('dispatches a delivery flush event', function () {
-            const dispatch = sinon.stub(domainEvents, 'dispatch');
-
-            const result = giftsController.flushDeliveries.query({});
-
-            assert.equal(result, undefined);
-            sinon.assert.calledOnce(dispatch);
-            assert.equal(dispatch.firstCall.firstArg.constructor.name, 'StartGiftDeliveryFlushEvent');
-        });
-    });
+  });
 });

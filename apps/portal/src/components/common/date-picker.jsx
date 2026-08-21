@@ -1,9 +1,17 @@
 import AppContext from '../../app-context';
 import CalendarIcon from '../../images/icons/calendar.svg?react';
-import {DayPicker} from 'react-day-picker';
-import {createPortal} from 'react-dom';
-import {useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
-import {parseDateValue, toDateValue} from '../../utils/date-time';
+import { DayPicker } from 'react-day-picker';
+import { createPortal } from 'react-dom';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { parseDateValue, toDateValue } from '../../utils/date-time';
 
 export const DatePickerStyles = `
     .gh-portal-datepicker {
@@ -227,17 +235,17 @@ export const DatePickerStyles = `
 // Map only the classes Portal styles so react-day-picker's stylesheet doesn't
 // have to be shipped.
 const classNames = {
-    months: 'gh-portal-datepicker-months',
-    month_caption: 'gh-portal-datepicker-month-caption',
-    nav: 'gh-portal-datepicker-nav',
-    month_grid: 'gh-portal-datepicker-grid',
-    weekday: 'gh-portal-datepicker-weekday',
-    day: 'gh-portal-datepicker-day',
-    day_button: 'gh-portal-datepicker-day-button',
-    today: 'gh-portal-datepicker-today',
-    selected: 'gh-portal-datepicker-selected',
-    disabled: 'gh-portal-datepicker-disabled',
-    outside: 'gh-portal-datepicker-outside'
+  months: 'gh-portal-datepicker-months',
+  month_caption: 'gh-portal-datepicker-month-caption',
+  nav: 'gh-portal-datepicker-nav',
+  month_grid: 'gh-portal-datepicker-grid',
+  weekday: 'gh-portal-datepicker-weekday',
+  day: 'gh-portal-datepicker-day',
+  day_button: 'gh-portal-datepicker-day-button',
+  today: 'gh-portal-datepicker-today',
+  selected: 'gh-portal-datepicker-selected',
+  disabled: 'gh-portal-datepicker-disabled',
+  outside: 'gh-portal-datepicker-outside',
 };
 
 const POPOVER_GAP = 6;
@@ -245,35 +253,34 @@ const POPOVER_GAP = 6;
 // Render outside the clipped gift reveal, falling back to the owning
 // document's body.
 function getPopoverHost(node) {
-    return node?.closest('.gh-portal-popup-container') || node?.ownerDocument?.body || null;
+  return node?.closest('.gh-portal-popup-container') || node?.ownerDocument?.body || null;
 }
 
 // The nearest scrolling ancestor is the real viewport: Portal's popup is a
 // scrolling box inside a full-height iframe.
 function getVisibleBox(node) {
-    const view = node?.ownerDocument?.defaultView;
-    for (let el = node?.parentElement; el && view; el = el.parentElement) {
-        const {overflowY} = view.getComputedStyle(el);
-        if (overflowY === 'auto' || overflowY === 'scroll') {
-            return el.getBoundingClientRect();
-        }
+  const view = node?.ownerDocument?.defaultView;
+  for (let el = node?.parentElement; el && view; el = el.parentElement) {
+    const { overflowY } = view.getComputedStyle(el);
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      return el.getBoundingClientRect();
     }
-    const height = view?.innerHeight || node?.ownerDocument?.documentElement?.clientHeight || 0;
-    return height ? {top: 0, bottom: height} : null;
+  }
+  const height = view?.innerHeight || node?.ownerDocument?.documentElement?.clientHeight || 0;
+  return height ? { top: 0, bottom: height } : null;
 }
-
 
 // Intl reports the week start as 1–7 (Monday–Sunday); react-day-picker counts
 // 0–6 from Sunday. Older browsers expose weekInfo as a property instead of a
 // method, or not at all — fall back to Sunday.
 function getWeekStart(locale) {
-    try {
-        const info = new Intl.Locale(locale).getWeekInfo?.() ?? new Intl.Locale(locale).weekInfo;
-        const firstDay = info?.firstDay;
-        return firstDay ? firstDay % 7 : 0;
-    } catch (e) {
-        return 0;
-    }
+  try {
+    const info = new Intl.Locale(locale).getWeekInfo?.() ?? new Intl.Locale(locale).weekInfo;
+    const firstDay = info?.firstDay;
+    return firstDay ? firstDay % 7 : 0;
+  } catch (e) {
+    return 0;
+  }
 }
 
 /**
@@ -281,201 +288,211 @@ function getWeekStart(locale) {
  * strings in and out, matching an `<input type="date">`.
  */
 const DatePicker = ({
-    id,
-    value,
-    onChange,
-    min,
-    max,
-    hasError = false,
-    // Shown in place of the date while the value sits on `min` — the gift flow
-    // reads today as "Now" rather than a date.
-    minLabel = null,
-    ariaLabel
+  id,
+  value,
+  onChange,
+  min,
+  max,
+  hasError = false,
+  // Shown in place of the date while the value sits on `min` — the gift flow
+  // reads today as "Now" rather than a date.
+  minLabel = null,
+  ariaLabel,
 }) => {
-    const {locale: siteLocale = 'en', dir = 'ltr'} = useContext(AppContext);
-    const [isOpen, setIsOpen] = useState(false);
-    const [popoverStyle, setPopoverStyle] = useState(null);
-    const containerRef = useRef(null);
-    const fieldRef = useRef(null);
-    const toggleRef = useRef(null);
-    const popoverRef = useRef(null);
+  const { locale: siteLocale = 'en', dir = 'ltr' } = useContext(AppContext);
+  const [isOpen, setIsOpen] = useState(false);
+  const [popoverStyle, setPopoverStyle] = useState(null);
+  const containerRef = useRef(null);
+  const fieldRef = useRef(null);
+  const toggleRef = useRef(null);
+  const popoverRef = useRef(null);
 
-    const selected = parseDateValue(value);
-    const minDate = parseDateValue(min);
-    const maxDate = parseDateValue(max);
+  const selected = parseDateValue(value);
+  const minDate = parseDateValue(min);
+  const maxDate = parseDateValue(max);
 
-    // The publication locale is stored unvalidated ('en_US' passes the
-    // settings check but Intl rejects it), so fall back to English rather
-    // than crash the field mid-render.
-    const locale = useMemo(() => {
-        try {
-            new Intl.DateTimeFormat(siteLocale);
-            return siteLocale;
-        } catch (e) {
-            return 'en';
-        }
-    }, [siteLocale]);
+  // The publication locale is stored unvalidated ('en_US' passes the
+  // settings check but Intl rejects it), so fall back to English rather
+  // than crash the field mid-render.
+  const locale = useMemo(() => {
+    try {
+      new Intl.DateTimeFormat(siteLocale);
+      return siteLocale;
+    } catch (e) {
+      return 'en';
+    }
+  }, [siteLocale]);
 
-    // Rebuilt only when the locale changes: constructing a DateTimeFormat is
-    // the expensive part, and these run for every cell on every render.
-    const formats = useMemo(() => ({
-        monthCaption: new Intl.DateTimeFormat(locale, {month: 'long', year: 'numeric'}),
-        weekday: new Intl.DateTimeFormat(locale, {weekday: 'short'}),
-        day: new Intl.DateTimeFormat(locale, {day: 'numeric'})
-    }), [locale]);
+  // Rebuilt only when the locale changes: constructing a DateTimeFormat is
+  // the expensive part, and these run for every cell on every render.
+  const formats = useMemo(
+    () => ({
+      monthCaption: new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }),
+      weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }),
+      day: new Intl.DateTimeFormat(locale, { day: 'numeric' }),
+    }),
+    [locale],
+  );
 
-    const weekStartsOn = useMemo(() => getWeekStart(locale), [locale]);
+  const weekStartsOn = useMemo(() => getWeekStart(locale), [locale]);
 
-    // Measures after render in the portal host's coordinate space — the
-    // calendar's height varies by month.
-    const position = useCallback(() => {
-        const field = fieldRef.current;
-        const target = getPopoverHost(field);
-        const popover = popoverRef.current;
-        if (!field || !target || !popover) {
-            return;
-        }
-        const rect = field.getBoundingClientRect();
-        const host = target.getBoundingClientRect();
-        const visible = getVisibleBox(field);
-        const height = popover.offsetHeight;
+  // Measures after render in the portal host's coordinate space — the
+  // calendar's height varies by month.
+  const position = useCallback(() => {
+    const field = fieldRef.current;
+    const target = getPopoverHost(field);
+    const popover = popoverRef.current;
+    if (!field || !target || !popover) {
+      return;
+    }
+    const rect = field.getBoundingClientRect();
+    const host = target.getBoundingClientRect();
+    const visible = getVisibleBox(field);
+    const height = popover.offsetHeight;
 
-        const spaceBelow = visible ? visible.bottom - rect.bottom : Infinity;
-        const spaceAbove = visible ? rect.top - visible.top : 0;
-        const flip = spaceBelow < height + POPOVER_GAP && spaceAbove > spaceBelow;
+    const spaceBelow = visible ? visible.bottom - rect.bottom : Infinity;
+    const spaceAbove = visible ? rect.top - visible.top : 0;
+    const flip = spaceBelow < height + POPOVER_GAP && spaceAbove > spaceBelow;
 
-        setPopoverStyle({
-            top: flip
-                ? rect.top - host.top - height - POPOVER_GAP
-                : rect.bottom - host.top + POPOVER_GAP,
-            right: host.right - rect.right
-        });
-    }, []);
+    setPopoverStyle({
+      top: flip ? rect.top - host.top - height - POPOVER_GAP : rect.bottom - host.top + POPOVER_GAP,
+      right: host.right - rect.right,
+    });
+  }, []);
 
-    // Layout effect, not a plain one: the popover is measured and placed before
-    // the browser paints, so it never shows up in the wrong spot first.
-    useLayoutEffect(() => {
-        if (isOpen) {
-            position();
-        }
-    }, [isOpen, position]);
+  // Layout effect, not a plain one: the popover is measured and placed before
+  // the browser paints, so it never shows up in the wrong spot first.
+  useLayoutEffect(() => {
+    if (isOpen) {
+      position();
+    }
+  }, [isOpen, position]);
 
-    // Portal renders inside an iframe, so the global `document` here is the
-    // parent page's — listeners have to go on the element's own document or
-    // they never fire. Scroll is captured because it's the popup
-    // wrapper that scrolls, not the document.
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-        const node = containerRef.current;
-        const doc = node?.ownerDocument;
-        if (!doc) {
-            return;
-        }
-        const onPointerDown = (event) => {
-            if (!node.contains(event.target) && !event.target.closest?.('.gh-portal-datepicker-popover')) {
-                setIsOpen(false);
-            }
-        };
-        const onKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                setIsOpen(false);
-                toggleRef.current?.focus();
-            }
-        };
-        doc.addEventListener('pointerdown', onPointerDown);
-        doc.addEventListener('keydown', onKeyDown);
-        doc.addEventListener('scroll', position, true);
-        doc.defaultView?.addEventListener('resize', position);
-        return () => {
-            doc.removeEventListener('pointerdown', onPointerDown);
-            doc.removeEventListener('keydown', onKeyDown);
-            doc.removeEventListener('scroll', position, true);
-            doc.defaultView?.removeEventListener('resize', position);
-        };
-    }, [isOpen, position]);
-
-    const toggle = () => setIsOpen(currentlyOpen => !currentlyOpen);
-
-    const handleSelect = (date) => {
-        if (!date) {
-            return;
-        }
-        onChange(toDateValue(date));
+  // Portal renders inside an iframe, so the global `document` here is the
+  // parent page's — listeners have to go on the element's own document or
+  // they never fire. Scroll is captured because it's the popup
+  // wrapper that scrolls, not the document.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const node = containerRef.current;
+    const doc = node?.ownerDocument;
+    if (!doc) {
+      return;
+    }
+    const onPointerDown = (event) => {
+      if (
+        !node.contains(event.target) &&
+        !event.target.closest?.('.gh-portal-datepicker-popover')
+      ) {
+        setIsOpen(false);
+      }
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
         setIsOpen(false);
         toggleRef.current?.focus();
+      }
     };
+    doc.addEventListener('pointerdown', onPointerDown);
+    doc.addEventListener('keydown', onKeyDown);
+    doc.addEventListener('scroll', position, true);
+    doc.defaultView?.addEventListener('resize', position);
+    return () => {
+      doc.removeEventListener('pointerdown', onPointerDown);
+      doc.removeEventListener('keydown', onKeyDown);
+      doc.removeEventListener('scroll', position, true);
+      doc.defaultView?.removeEventListener('resize', position);
+    };
+  }, [isOpen, position]);
 
-    const showMinLabel = !!minLabel && !!value && value === min;
+  const toggle = () => setIsOpen((currentlyOpen) => !currentlyOpen);
 
-    return (
-        <div ref={containerRef} className='gh-portal-datepicker'>
-            <div ref={fieldRef} className='gh-portal-datepicker-field'>
-                {/* Keeps a native date input for locale-aware keyboard
+  const handleSelect = (date) => {
+    if (!date) {
+      return;
+    }
+    onChange(toDateValue(date));
+    setIsOpen(false);
+    toggleRef.current?.focus();
+  };
+
+  const showMinLabel = !!minLabel && !!value && value === min;
+
+  return (
+    <div ref={containerRef} className="gh-portal-datepicker">
+      <div ref={fieldRef} className="gh-portal-datepicker-field">
+        {/* Keeps a native date input for locale-aware keyboard
                     editing; only the browser's calendar is replaced. */}
-                <input
-                    className={'gh-portal-input' + (hasError ? ' error' : '') + (showMinLabel ? ' has-min-label' : '')}
-                    data-test-input={id}
-                    id={id}
-                    max={max}
-                    min={min}
-                    type='date'
-                    value={value}
-                    // Restores the minimum on blur; date inputs report ''
-                    // mid-edit while their segments are incomplete.
-                    onBlur={event => !event.target.value && onChange(min)}
-                    onChange={event => onChange(event.target.value)}
-                />
-                {showMinLabel && (
-                    <span aria-hidden='true' className='gh-portal-datepicker-min-label'>{minLabel}</span>
-                )}
-                <button
-                    ref={toggleRef}
-                    aria-expanded={isOpen}
-                    aria-haspopup='dialog'
-                    aria-label={ariaLabel}
-                    className='gh-portal-datepicker-toggle'
-                    data-testid='datepicker-toggle'
-                    type='button'
-                    onClick={toggle}
-                >
-                    <CalendarIcon aria-hidden='true' focusable='false' />
-                </button>
-            </div>
-            {isOpen && createPortal((
-                <div
-                    aria-label={ariaLabel}
-                    className='gh-portal-datepicker-popover'
-                    data-testid='datepicker-popover'
-                    role='dialog'
-                    ref={popoverRef}
-                    style={popoverStyle || {visibility: 'hidden'}}
-                >
-                    <DayPicker
-                        classNames={classNames}
-                        dir={dir}
-                        disabled={[
-                            ...(minDate ? [{before: minDate}] : []),
-                            ...(maxDate ? [{after: maxDate}] : [])
-                        ]}
-                        endMonth={maxDate}
-                        formatters={{
-                            formatCaption: date => formats.monthCaption.format(date),
-                            formatWeekdayName: date => formats.weekday.format(date),
-                            formatDay: date => formats.day.format(date)
-                        }}
-                        mode='single'
-                        selected={selected}
-                        startMonth={minDate}
-                        weekStartsOn={weekStartsOn}
-                        onMonthChange={position}
-                        onSelect={handleSelect}
-                    />
-                </div>
-            ), getPopoverHost(fieldRef.current))}
-        </div>
-    );
+        <input
+          className={
+            'gh-portal-input' + (hasError ? ' error' : '') + (showMinLabel ? ' has-min-label' : '')
+          }
+          data-test-input={id}
+          id={id}
+          max={max}
+          min={min}
+          type="date"
+          value={value}
+          // Restores the minimum on blur; date inputs report ''
+          // mid-edit while their segments are incomplete.
+          onBlur={(event) => !event.target.value && onChange(min)}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        {showMinLabel && (
+          <span aria-hidden="true" className="gh-portal-datepicker-min-label">
+            {minLabel}
+          </span>
+        )}
+        <button
+          ref={toggleRef}
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          aria-label={ariaLabel}
+          className="gh-portal-datepicker-toggle"
+          data-testid="datepicker-toggle"
+          type="button"
+          onClick={toggle}
+        >
+          <CalendarIcon aria-hidden="true" focusable="false" />
+        </button>
+      </div>
+      {isOpen &&
+        createPortal(
+          <div
+            aria-label={ariaLabel}
+            className="gh-portal-datepicker-popover"
+            data-testid="datepicker-popover"
+            role="dialog"
+            ref={popoverRef}
+            style={popoverStyle || { visibility: 'hidden' }}
+          >
+            <DayPicker
+              classNames={classNames}
+              dir={dir}
+              disabled={[
+                ...(minDate ? [{ before: minDate }] : []),
+                ...(maxDate ? [{ after: maxDate }] : []),
+              ]}
+              endMonth={maxDate}
+              formatters={{
+                formatCaption: (date) => formats.monthCaption.format(date),
+                formatWeekdayName: (date) => formats.weekday.format(date),
+                formatDay: (date) => formats.day.format(date),
+              }}
+              mode="single"
+              selected={selected}
+              startMonth={minDate}
+              weekStartsOn={weekStartsOn}
+              onMonthChange={position}
+              onSelect={handleSelect}
+            />
+          </div>,
+          getPopoverHost(fieldRef.current),
+        )}
+    </div>
+  );
 };
 
 export default DatePicker;
