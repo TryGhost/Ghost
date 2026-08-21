@@ -297,7 +297,7 @@ This project should be considered experimental until a stable release is announc
 
 ## 🌐 Links
 
-* **GhostX:** `https://github.com/YOUR_USERNAME/GhostX`
+* **GhostX:** `https://github.com/evilhere7/GhostX`
 * **Original Ghost Repository:** `https://github.com/TryGhost/Ghost`
 * **Ghost Website:** `https://ghost.org`
 * **Ghost Documentation:** `https://ghost.org/docs/`
