@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
-import {useLocation} from 'react-router';
+import {useLocation} from '@tryghost/admin-x-framework';
 
 const DEFAULT_VIRTUAL_LIST_WINDOW_SIZE = 1000;
 const VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY = 'ghostVirtualListWindow';

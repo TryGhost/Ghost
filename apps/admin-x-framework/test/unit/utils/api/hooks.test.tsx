@@ -281,6 +281,52 @@ describe('API hooks', () => {
             });
         });
 
+        it('can add custom headers', async () => {
+            await withMockFetch({
+                json: {test: 1, pagination: {next: 2}}
+            }, async (mock) => {
+                const useTestQuery = createInfiniteQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    headers: {'Content-Type': 'ALOHA'},
+                    defaultNextPageParams: (lastPage, otherParams) => ({
+                        ...otherParams,
+                        page: ((lastPage as any).pagination.next || 1).toString()
+                    }),
+                    returnData: (originalData) => {
+                        const {pages} = originalData as InfiniteData<{test: number}>;
+                        return pages.map(page => page.test);
+                    }
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+                expect(mock.calls.length).toBe(1);
+                expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'ALOHA',
+                        'app-pragma': 'no-cache',
+                        'x-ghost-version': '5.x'
+                    },
+                    method: 'GET',
+                    mode: 'cors',
+                    signal: expect.any(AbortSignal)
+                }]);
+
+                await act(() => result.current.fetchNextPage());
+
+                await waitFor(() => expect(mock.calls.length).toBe(2));
+                expect(mock.calls[1][1].headers).toEqual({
+                    'Content-Type': 'ALOHA',
+                    'app-pragma': 'no-cache',
+                    'x-ghost-version': '5.x'
+                });
+            });
+        });
+
         it('does not make a request when user lacks required permissions', async () => {
             // User is a Contributor, but query requires Administrator
             mockUseCurrentUser.mockReturnValue({

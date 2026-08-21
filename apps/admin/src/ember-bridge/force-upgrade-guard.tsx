@@ -1,9 +1,5 @@
-import { Navigate, Outlet, useMatches } from "@tryghost/admin-x-framework";
+import { type AdminRouteHandle, Navigate, Outlet, useMatches } from "@tryghost/admin-x-framework";
 import { useForceUpgrade } from "./ember-bridge";
-
-export interface RouteHandle {
-    allowInForceUpgrade?: boolean;
-}
 
 /**
  * Guard component that redirects to /pro when site is in force upgrade mode.
@@ -32,7 +28,7 @@ export function ForceUpgradeGuard() {
 
     // Check if any matched route allows access in force upgrade mode
     const isAllowed = matches.some((match) => {
-        const handle = match.handle as RouteHandle | undefined;
+        const handle = match.handle as AdminRouteHandle | undefined;
         return handle?.allowInForceUpgrade === true;
     });
 

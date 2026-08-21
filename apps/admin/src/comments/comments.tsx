@@ -13,7 +13,7 @@ import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezo
 import {serializeCommentFilters} from './comment-filter-query';
 import {shouldDelayCommentDateFilterHydration, useFilterState} from './hooks/use-filter-state';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useSearchParams} from 'react-router';
+import {useSearchParams} from '@tryghost/admin-x-framework';
 
 function getSingleCommentIdParam(searchParams: URLSearchParams): string | undefined {
     const value = searchParams.get('id');

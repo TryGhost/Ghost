@@ -10,7 +10,6 @@ import MyProfileRedirect from "./my-profile-redirect";
 
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
-import type { RouteHandle } from "./ember-bridge";
 import HomeRedirect from "./home-redirect";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { TagDetailGate } from "./tag-detail-gate";
@@ -40,7 +39,7 @@ const EMBER_ROUTES: string[] = [
     "/members-activity",
 ];
 
-const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
+const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
 
 const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
     path,
@@ -50,7 +49,7 @@ const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
 
 const membersRoute: RouteObject = {
     path: "/members",
-    handle: { ...emberFallbackHandle, requiresAccess: canManageMembers } satisfies RouteHandle & AccessRouteHandle,
+    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
     children: [
         {
             index: true,
@@ -76,7 +75,7 @@ const appRoutes: RouteObject[] = [
         // `/?firstStart=true` onboarding entry.
         path: "/",
         Component: HomeRedirect,
-        handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+        handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
     },
     {
         // The dashboard screen is retired; the URL redirects for old links.
@@ -165,7 +164,7 @@ const appRoutes: RouteObject[] = [
     {
         path: "my-profile",
         Component: MyProfileRedirect,
-        handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+        handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
     },
     {
         path: "",
@@ -186,7 +185,7 @@ const appRoutes: RouteObject[] = [
             allowInForceUpgrade: true,
             hideAdminSidebar: true,
             requiresAccess: canAccessSettingsRoute
-        } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
+        } satisfies AdminRouteHandle & AccessRouteHandle,
     },
     {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
     {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
