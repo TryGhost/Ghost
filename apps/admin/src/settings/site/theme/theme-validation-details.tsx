@@ -2,7 +2,7 @@ import {useMemo} from 'react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Badge} from '@tryghost/shade/components';
 import {SEVERITY_ORDER, getDisplaySeverity, sortBySeverity} from './theme-validation-issues';
 import {type ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
-import {cn, formatNumber} from '@tryghost/shade/utils';
+import {formatNumber} from '@tryghost/shade/utils';
 
 function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | 'secondary' {
     if (problem.level === 'warning') {
@@ -59,7 +59,7 @@ function ProblemDetails({problem}: {problem: ThemeProblem}) {
 
 function ValidationProblemItem({problem, value}: {problem: ThemeProblem; value: string}) {
     return (
-        <AccordionItem className='border-b-0' value={value}>
+        <AccordionItem className='last:border-b-0' value={value}>
             <AccordionTrigger className='items-start gap-3 hover:no-underline'>
                 <div className='min-w-0 flex-1'>
                     <div className='mb-2 flex items-center gap-2'>
@@ -79,7 +79,7 @@ function ValidationProblemItem({problem, value}: {problem: ThemeProblem; value: 
 /** A bare error string from the API: same row as a problem, minus anything to expand. */
 function ValidationMessageRow({message}: {message: string}) {
     return (
-        <div className='py-4'>
+        <div className='border-b border-border py-4 last:border-b-0'>
             <div className='mb-2 flex items-center gap-2'>
                 <Badge variant='destructive'>Error</Badge>
             </div>
@@ -112,10 +112,10 @@ export function ValidationProblemList({
     }
 
     return (
-        <div className={cn('divide-y divide-border', className)}>
+        <div className={className}>
             {messages.map(message => <ValidationMessageRow key={message} message={message} />)}
             {sortedProblems.length > 0 && (
-                <Accordion className='divide-y divide-border' defaultValue={expandedByDefault ? values : []} type='multiple'>
+                <Accordion defaultValue={expandedByDefault ? values : []} type='multiple'>
                     {sortedProblems.map((problem, index) => (
                         <ValidationProblemItem key={values[index]} problem={problem} value={values[index]} />
                     ))}
@@ -136,8 +136,8 @@ export function ThemeValidationIssueList({problems}: {problems: ThemeProblem[]})
 
     return (
         <div className='border-t border-border pt-5'>
-            <h3 className='text-sm font-semibold text-foreground'>{formatIssueSummary(problems)}</h3>
-            <ValidationProblemList className='mt-1' problems={problems} />
+            <h3 className='border-b border-border pb-3 text-md font-semibold text-foreground'>{formatIssueSummary(problems)}</h3>
+            <ValidationProblemList problems={problems} />
         </div>
     );
 }

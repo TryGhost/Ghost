@@ -109,8 +109,10 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
                     // sticks, so the footer needs a flex column to stick within.
                     // Sticky offsets resolve against the scroll container's content
                     // box, so any bottom padding here becomes dead space the footer
-                    // can never reach — the footer supplies its own instead.
-                    stickyFooter && 'flex flex-col pb-0'
+                    // can never reach — the footer supplies its own instead. The
+                    // row gap goes too: StickyFooter already opens with a 24px
+                    // spacer, and stacking the two left a visible hole above it.
+                    stickyFooter && 'flex flex-col gap-0 pb-0'
                 )}
                 data-testid={testId}
                 overlayClassName={cn(
