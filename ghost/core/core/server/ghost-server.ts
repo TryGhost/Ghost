@@ -60,7 +60,7 @@ const messages = {
 /**
  * ## GhostServer
  */
-class GhostServer {
+export class GhostServer {
   private url: string;
   private env: string;
   private serverConfig: ServerConfig;
@@ -388,5 +388,3 @@ class GhostServer {
     );
   }
 }
-
-module.exports = GhostServer;

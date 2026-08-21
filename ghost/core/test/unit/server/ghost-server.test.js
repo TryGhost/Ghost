@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 
-const GhostServer = require('../../../core/server/ghost-server');
+const { GhostServer } = require('../../../core/server/ghost-server');
 
 describe('GhostServer', function () {
   let server;
