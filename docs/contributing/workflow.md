@@ -65,6 +65,14 @@ pnpm format path/to/file.ts
 `pnpm format:check` reports without writing. Do not add per-package formatter
 configuration; the root config is the only one.
 
+The one-time repository reformat is listed in `.git-blame-ignore-revs`. GitHub's
+blame view skips it automatically, and `pnpm setup` configures local Git to use
+the file. For an existing checkout, rerun `pnpm setup` or run once:
+
+```bash
+git config --local blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 ## Record package release intent
 
 Changes that affect a publishable `@tryghost/*` package under `koenig/` or
