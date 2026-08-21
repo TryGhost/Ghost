@@ -153,6 +153,19 @@ describe("Sidebar user menu", () => {
         await expect.poll(currentRoute).toMatch(/^\/settings\/staff\//);
     });
 
+    it("signs out through the session API and surfaces a failed sign-out", async () => {
+        // Success intentionally navigates to /ghost/ after the session is
+        // deleted; an error response keeps the page alive for assertions.
+        const api = fakeAdminEndpoint("DELETE", "/session/", { errors: [{ message: "stop after request" }] }, { status: 400 });
+        await renderAdminApp("/site");
+
+        await sidebarScreen.userMenuTrigger().click();
+        await sidebarScreen.signOutMenuItem().click();
+
+        await expect.poll(() => api.requests.length).toBe(1);
+        await expect.element(sidebarScreen.errorToast()).toHaveTextContent("Couldn't sign out. Please try again.");
+    });
+
     it("switches the appearance and shows the current choice", async () => {
         // Without the Ember bridge the app itself toggles the root dark class.
         const isDarkMode = () => document.documentElement.classList.contains("dark");
