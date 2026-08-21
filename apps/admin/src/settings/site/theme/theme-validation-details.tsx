@@ -1,211 +1,143 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Badge, Banner } from '@tryghost/shade/components';
-import { type ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
-import { LucideIcon } from '@tryghost/shade/utils';
-
-type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
-
-function getDisplaySeverity(problem: ThemeProblem): DisplaySeverity {
-  if (problem.level === 'warning') {
-    return 'Warning';
-  }
-
-  if (problem.level === 'recommendation') {
-    return 'Recommendation';
-  }
-
-  return 'Error';
-}
+import {useMemo} from 'react';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Badge} from '@tryghost/shade/components';
+import {SEVERITY_ORDER, getDisplaySeverity, sortBySeverity} from './theme-validation-issues';
+import {type ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
+import {cn, formatNumber} from '@tryghost/shade/utils';
 
 function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | 'secondary' {
-  if (problem.level === 'warning') {
-    return 'warning';
-  }
+    if (problem.level === 'warning') {
+        return 'warning';
+    }
 
-  if (problem.level === 'recommendation') {
-    return 'secondary';
-  }
+    if (problem.level === 'recommendation') {
+        return 'secondary';
+    }
 
-  return 'destructive';
+    return 'destructive';
 }
 
-function formatNonBlockingIssueCount(count: number) {
-  return `${count} non-blocking ${count === 1 ? 'issue' : 'issues'}`;
+/**
+ * Summarises a set of problems by the severities actually present, e.g.
+ * `2 errors, 3 warnings`. Empty severities are omitted entirely.
+ */
+function formatIssueSummary(problems: ThemeProblem[]): string {
+    return SEVERITY_ORDER
+        .map(severity => ({
+            severity,
+            count: problems.filter(problem => getDisplaySeverity(problem) === severity).length
+        }))
+        .filter(({count}) => count > 0)
+        .map(({severity, count}) => `${formatNumber(count)} ${severity.toLowerCase()}${count === 1 ? '' : 's'}`)
+        .join(', ');
 }
 
-function ProblemDetails({ problem }: { problem: ThemeProblem }) {
-  return (
-    <div className="space-y-3">
-      <div
-        dangerouslySetInnerHTML={{ __html: problem.details }}
-        className="text-sm text-muted-foreground"
-      />
-      {problem.failures?.length > 0 && (
-        <div>
-          <h6 className="mb-1 text-xs font-semibold text-muted-foreground uppercase">
-            Affected files
-          </h6>
-          <ul className="space-y-1 text-sm text-muted-foreground">
-            {problem.failures.map((failure) => (
-              <li key={`${failure.ref}-${failure.message || ''}`}>
-                <code className="rounded bg-muted px-1 py-0.5 text-xs text-foreground">
-                  {failure.ref}
-                </code>
-                {failure.message ? <span>: {failure.message}</span> : null}
-              </li>
-            ))}
-          </ul>
+/** Problem codes repeat across gscan results, so the index keeps accordion values unique. */
+function problemValue(problem: ThemeProblem, index: number): string {
+    return `${problem.code || 'issue'}-${index}`;
+}
+
+function ProblemDetails({problem}: {problem: ThemeProblem}) {
+    return (
+        <div className='space-y-3'>
+            <div dangerouslySetInnerHTML={{__html: problem.details}} className='text-sm text-muted-foreground' />
+            {problem.failures?.length > 0 && (
+                <div>
+                    <h6 className='mb-1 text-xs font-semibold text-muted-foreground uppercase'>Affected files</h6>
+                    <ul className='space-y-1 text-sm text-muted-foreground'>
+                        {problem.failures.map(failure => (
+                            <li key={`${failure.ref}-${failure.message || ''}`}>
+                                <code className='rounded bg-muted px-1 py-0.5 text-xs text-foreground'>{failure.ref}</code>
+                                {failure.message ? <span>: {failure.message}</span> : null}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
-export function ValidationProblemCard({
-  problem,
-  prominent = false,
+function ValidationProblemItem({problem, value}: {problem: ThemeProblem; value: string}) {
+    return (
+        <AccordionItem className='border-b-0' value={value}>
+            <AccordionTrigger className='items-start gap-3 hover:no-underline'>
+                <div className='min-w-0 flex-1'>
+                    <div className='mb-2 flex items-center gap-2'>
+                        <Badge variant={getDisplayVariant(problem)}>{getDisplaySeverity(problem)}</Badge>
+                        {problem.code && <span className='text-xs font-normal text-muted-foreground'>{problem.code}</span>}
+                    </div>
+                    <div dangerouslySetInnerHTML={{__html: problem.rule}} className='text-sm font-medium text-foreground' />
+                </div>
+            </AccordionTrigger>
+            <AccordionContent>
+                <ProblemDetails problem={problem} />
+            </AccordionContent>
+        </AccordionItem>
+    );
+}
+
+/** A bare error string from the API: same row as a problem, minus anything to expand. */
+function ValidationMessageRow({message}: {message: string}) {
+    return (
+        <div className='py-4'>
+            <div className='mb-2 flex items-center gap-2'>
+                <Badge variant='destructive'>Error</Badge>
+            </div>
+            <p className='text-sm font-medium text-foreground'>{message}</p>
+        </div>
+    );
+}
+
+/**
+ * The problems themselves: one row per problem, separated by a hairline, each
+ * independently expandable. Bare `messages` render as rows in the same list so
+ * a dialog never stacks two treatments for the same kind of content.
+ */
+export function ValidationProblemList({
+    className,
+    expandedByDefault = false,
+    messages = [],
+    problems
 }: {
-  problem: ThemeProblem;
-  prominent?: boolean;
+    className?: string;
+    expandedByDefault?: boolean;
+    messages?: string[];
+    problems: ThemeProblem[];
 }) {
-  const [expanded, setExpanded] = useState(prominent);
-  const displaySeverity = getDisplaySeverity(problem);
+    const sortedProblems = useMemo(() => sortBySeverity(problems), [problems]);
+    const values = useMemo(() => sortedProblems.map(problemValue), [sortedProblems]);
 
-  return (
-    <div
-      className={`rounded-lg border ${prominent ? 'border-destructive/30 bg-background' : 'border-border bg-background'} p-4`}
-    >
-      <button
-        className="flex w-full items-start justify-between gap-3 text-left"
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-center gap-2">
-            <Badge variant={getDisplayVariant(problem)}>{displaySeverity}</Badge>
-            {problem.code && <span className="text-xs text-muted-foreground">{problem.code}</span>}
-          </div>
-          <div
-            dangerouslySetInnerHTML={{ __html: problem.rule }}
-            className="text-sm font-medium text-foreground"
-          />
+    if (!sortedProblems.length && !messages.length) {
+        return null;
+    }
+
+    return (
+        <div className={cn('divide-y divide-border', className)}>
+            {messages.map(message => <ValidationMessageRow key={message} message={message} />)}
+            {sortedProblems.length > 0 && (
+                <Accordion className='divide-y divide-border' defaultValue={expandedByDefault ? values : []} type='multiple'>
+                    {sortedProblems.map((problem, index) => (
+                        <ValidationProblemItem key={values[index]} problem={problem} value={values[index]} />
+                    ))}
+                </Accordion>
+            )}
         </div>
-        <LucideIcon.ChevronDown
-          className={`mt-1 size-4 shrink-0 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {expanded && (
-        <div className="mt-4 border-t border-border pt-4">
-          <ProblemDetails problem={problem} />
-        </div>
-      )}
-    </div>
-  );
+    );
 }
 
-export function ThemeValidationDetailsDisclosure({
-  defaultOpen,
-  problems,
-}: {
-  defaultOpen: boolean;
-  problems: ThemeProblem[];
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  const count = problems.length;
+/**
+ * Non-blocking validation problems, headed by a static count of what was
+ * found. Renders nothing when the theme validated cleanly.
+ */
+export function ThemeValidationIssueList({problems}: {problems: ThemeProblem[]}) {
+    if (!problems.length) {
+        return null;
+    }
 
-  useEffect(() => {
-    setOpen(defaultOpen);
-  }, [defaultOpen]);
-
-  const sortedProblems = useMemo(() => {
-    return [...problems].sort((a, b) => {
-      const severityOrder: Record<DisplaySeverity, number> = {
-        Error: 0,
-        Warning: 1,
-        Recommendation: 2,
-      };
-      return severityOrder[getDisplaySeverity(a)] - severityOrder[getDisplaySeverity(b)];
-    });
-  }, [problems]);
-
-  if (!count) {
-    return null;
-  }
-
-  return (
-    <div className="mt-6 border-t border-border pt-5">
-      <button
-        className="flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:bg-muted/40"
-        type="button"
-        onClick={() => setOpen(!open)}
-      >
-        <div>
-          <div className="text-sm font-semibold text-foreground">
-            Review {formatNonBlockingIssueCount(count)}
-          </div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {open ? 'Hide details' : 'Show details'}
-          </div>
+    return (
+        <div className='border-t border-border pt-5'>
+            <h3 className='text-sm font-semibold text-foreground'>{formatIssueSummary(problems)}</h3>
+            <ValidationProblemList className='mt-1' problems={problems} />
         </div>
-        <LucideIcon.ChevronDown
-          className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {open && (
-        <div className="mt-4 space-y-3">
-          {sortedProblems.map((problem) => (
-            <ValidationProblemCard key={problem.code} problem={problem} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function ErrorTextCard({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-      <div className="flex items-start gap-2">
-        <LucideIcon.AlertTriangle className="mt-0.5 size-4 shrink-0" />
-        <p>{message}</p>
-      </div>
-    </div>
-  );
-}
-
-export function OutcomeBanner({
-  children,
-  title,
-  variant,
-}: {
-  children: React.ReactNode;
-  title: string;
-  variant: 'success' | 'destructive';
-}) {
-  const Icon = variant === 'success' ? LucideIcon.CheckCircle2 : LucideIcon.AlertTriangle;
-  const iconClassName = variant === 'success' ? 'text-state-success' : 'text-destructive';
-
-  return (
-    <Banner
-      role={variant === 'destructive' ? 'alert' : 'status'}
-      size="lg"
-      variant={variant === 'success' ? 'success' : 'destructive'}
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full ${variant === 'success' ? 'bg-state-success/10' : 'bg-destructive/10'}`}
-        >
-          <Icon className={`size-5 ${iconClassName}`} />
-        </div>
-        <div>
-          <h3
-            className={`text-xl font-semibold tracking-tight ${variant === 'success' ? 'text-state-success' : 'text-destructive'}`}
-          >
-            {title}
-          </h3>
-          <div className="mt-1 text-sm text-foreground">{children}</div>
-        </div>
-      </div>
-    </Banner>
-  );
+    );
 }

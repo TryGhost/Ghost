@@ -84,3 +84,47 @@ export function parseFatalErrors(data: unknown): FatalErrors | null {
 export function getIssuesFromInstalledTheme(installedTheme: InstalledTheme): ThemeProblem[] {
   return [...(installedTheme.errors || []), ...(installedTheme.warnings || [])];
 }
+
+/*
+ * Display layer. Everything above turns an API payload into buckets of
+ * `ThemeProblem`; everything below classifies those problems for the UI that
+ * renders them.
+ */
+
+export type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
+
+/** Most to least severe — drives both the list order and the summary order. */
+export const SEVERITY_ORDER: DisplaySeverity[] = ['Error', 'Warning', 'Recommendation'];
+
+export function getDisplaySeverity(problem: ThemeProblem): DisplaySeverity {
+    if (problem.level === 'warning') {
+        return 'Warning';
+    }
+
+    if (problem.level === 'recommendation') {
+        return 'Recommendation';
+    }
+
+    return 'Error';
+}
+
+export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
+    return [...problems].sort((a, b) => SEVERITY_ORDER.indexOf(getDisplaySeverity(a)) - SEVERITY_ORDER.indexOf(getDisplaySeverity(b)));
+}
+
+/**
+ * Completes "<theme> was ..." for a theme that installed successfully but may
+ * carry non-blocking problems. `errors` and `warnings` are merged by
+ * `getIssuesFromInstalledTheme`, so the phrase has to look at the levels
+ * rather than the count: calling a set that contains errors "warnings"
+ * contradicts the issue list rendered directly beneath it.
+ */
+export function describeThemeOutcome(action: string, problems: ThemeProblem[]): string {
+    if (!problems.length) {
+        return `${action} successfully`;
+    }
+
+    const hasError = problems.some(problem => getDisplaySeverity(problem) === 'Error');
+
+    return `${action}, but it has some ${hasError ? 'issues' : 'warnings'}`;
+}
