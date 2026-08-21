@@ -6,7 +6,12 @@ import {
   AccordionTrigger,
   Badge,
 } from '@tryghost/shade/components';
-import { SEVERITY_ORDER, getDisplaySeverity, sortBySeverity } from './theme-validation-issues';
+import {
+  SEVERITY_ORDER,
+  getDisplaySeverity,
+  hasErrorProblem,
+  sortBySeverity,
+} from './theme-validation-issues';
 import { type ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 
@@ -118,7 +123,17 @@ function ProblemDetails({ problem }: { problem: ThemeProblem }) {
   );
 }
 
-function ValidationProblemItem({ problem, value }: { problem: ThemeProblem; value: string }) {
+function ValidationProblemItem({
+  errorLabel,
+  problem,
+  value,
+}: {
+  errorLabel: string;
+  problem: ThemeProblem;
+  value: string;
+}) {
+  const severity = getDisplaySeverity(problem);
+
   return (
     <AccordionItem className="last:border-b-0" value={value}>
       {/* Expanding closes the trigger's own bottom padding so the details
@@ -127,7 +142,7 @@ function ValidationProblemItem({ problem, value }: { problem: ThemeProblem; valu
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex items-center gap-3">
             <SeverityBadge variant={getDisplayVariant(problem)}>
-              {getDisplaySeverity(problem)}
+              {severity === 'Error' ? errorLabel : severity}
             </SeverityBadge>
             {problem.code && (
               <span className="font-mono text-sm font-normal text-muted-foreground">
@@ -146,11 +161,11 @@ function ValidationProblemItem({ problem, value }: { problem: ThemeProblem; valu
 }
 
 /** A bare error string from the API: same row as a problem, minus anything to expand. */
-function ValidationMessageRow({ message }: { message: string }) {
+function ValidationMessageRow({ errorLabel, message }: { errorLabel: string; message: string }) {
   return (
     <div className="flex flex-col gap-2 border-b border-border p-5 last:border-b-0">
       <div className="flex items-center gap-3">
-        <SeverityBadge variant="destructive">Error</SeverityBadge>
+        <SeverityBadge variant="destructive">{errorLabel}</SeverityBadge>
       </div>
       <p className="text-base font-semibold text-foreground">{message}</p>
     </div>
@@ -162,14 +177,20 @@ function ValidationMessageRow({ message }: { message: string }) {
  * separated by a hairline, each independently expandable. Bare `messages`
  * render as rows in the same list so a dialog never stacks two treatments for
  * the same kind of content.
+ *
+ * `errorLabel` names what an error-severity row is, so a dialog that shows two
+ * lists can say which one stopped it: the problems that blocked the action are
+ * `Blocking`, the ones merely reported alongside them stay `Error`.
  */
 export function ValidationProblemList({
   className,
+  errorLabel = 'Error',
   expandedByDefault = false,
   messages = [],
   problems,
 }: {
   className?: string;
+  errorLabel?: string;
   expandedByDefault?: boolean;
   messages?: string[];
   problems: ThemeProblem[];
@@ -184,12 +205,17 @@ export function ValidationProblemList({
   return (
     <div className={cn('overflow-hidden rounded-lg border border-border', className)}>
       {messages.map((message) => (
-        <ValidationMessageRow key={message} message={message} />
+        <ValidationMessageRow key={message} errorLabel={errorLabel} message={message} />
       ))}
       {sortedProblems.length > 0 && (
         <Accordion defaultValue={expandedByDefault ? values : []} type="multiple">
           {sortedProblems.map((problem, index) => (
-            <ValidationProblemItem key={values[index]} problem={problem} value={values[index]} />
+            <ValidationProblemItem
+              key={values[index]}
+              errorLabel={errorLabel}
+              problem={problem}
+              value={values[index]}
+            />
           ))}
         </Accordion>
       )}
@@ -210,16 +236,25 @@ export function ThemeValidationIssueList({ problems }: { problems: ThemeProblem[
   // A set that contains errors is headed "1 error, 2 warnings", so the icon
   // beside it has to read as an error too — amber is only right when the set
   // is warnings and recommendations alone.
-  const hasError = counts.some(({ severity }) => severity === 'Error');
+  const hasError = hasErrorProblem(problems);
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
-        <LucideIcon.TriangleAlert
-          className={cn('size-4 shrink-0', hasError ? 'text-destructive' : 'text-state-warning')}
-        />
-        {formatIssueSummary(counts)}
-      </h3>
+      <div className="flex flex-col gap-1">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <LucideIcon.TriangleAlert
+            className={cn('size-4 shrink-0', hasError ? 'text-destructive' : 'text-state-warning')}
+          />
+          {formatIssueSummary(counts)}
+        </h3>
+        {/* Only errors get explained: warnings and recommendations restrict
+                    nothing, so the same line under them would overstate them. */}
+        {hasError && (
+          <p className="text-sm text-muted-foreground">
+            Highly recommended to fix, functionality could be restricted
+          </p>
+        )}
+      </div>
       <ValidationProblemList problems={problems} />
     </div>
   );

@@ -84,6 +84,7 @@ function themeProblem(overrides: {
   level?: string;
   rule?: string;
   details?: string;
+  fatal?: boolean;
 }) {
   return {
     level: 'warning',
@@ -266,6 +267,14 @@ describe('Theme settings', () => {
         'mytheme was uploaded, but it has some issues. Do you want to activate it?',
       );
     await expect.element(installedModal).toHaveTextContent('1 error, 2 warnings');
+    // Errors are the only severity that restricts anything, so only they are
+    // explained — and the button says what activating now would accept.
+    await expect
+      .element(installedModal)
+      .toHaveTextContent('Highly recommended to fix, functionality could be restricted');
+    await expect
+      .element(installedModal.getByRole('button', { name: 'Activate with errors' }))
+      .toBeVisible();
 
     // A summary that says "error" can't be headed by a warning-coloured
     // icon: it takes the same red as the ERROR badge in the list below.
@@ -529,6 +538,69 @@ describe('Theme settings', () => {
       .element(page.getByText('Click to select or drag & drop zip file', { exact: true }))
       .toBeVisible();
     await expect(page.getByText('Theme not uploaded')).toHaveCount(0);
+  });
+
+  it('tells a blocking problem apart from the errors reported alongside it', async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/themes/upload/',
+      {
+        errors: [
+          {
+            message: 'Theme is not compatible or contains errors.',
+            details: {
+              errors: [
+                themeProblem({
+                  code: 'GS010-PJ-REQ',
+                  level: 'error',
+                  rule: 'package.json must be present',
+                  fatal: true,
+                }),
+                themeProblem({
+                  code: 'GS005-TPL-ERR',
+                  level: 'error',
+                  rule: 'Templates must contain valid Handlebars',
+                }),
+              ],
+            },
+          },
+        ],
+      },
+      { status: 422 },
+    );
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
+    stageLegacyGhostCss(LEGACY_CODE_CSS);
+
+    const errorModal = settingsScreen.confirmationModal();
+    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+
+    // Both groups are errors; only one of them stopped the upload. Labelling
+    // them identically leaves the dialog unable to say which.
+    const lists = errorModal
+      .element()
+      .querySelectorAll<HTMLElement>('div.overflow-hidden.rounded-lg.border');
+    expect(lists).toHaveLength(2);
+    expect(lists[0].textContent).toContain('GS010-PJ-REQ');
+    expect(lists[0].textContent).toContain('Blocking');
+    expect(lists[0].textContent).not.toContain('Error');
+    expect(lists[1].textContent).toContain('GS005-TPL-ERR');
+    expect(lists[1].textContent).toContain('Error');
+    expect(lists[1].textContent).not.toContain('Blocking');
+
+    // Both read as shouted labels — the difference is the word, not the style.
+    const blocking = errorModal.getByText('Blocking', { exact: true }).element();
+    const error = errorModal.getByText('Error', { exact: true }).element();
+    expect(getComputedStyle(blocking).textTransform).toBe('uppercase');
+    expect(getComputedStyle(blocking).backgroundColor).toBe(
+      getComputedStyle(error).backgroundColor,
+    );
+    // The blocking group is stated first.
+    expect(blocking.getBoundingClientRect().top).toBeLessThan(error.getBoundingClientRect().top);
   });
 
   it('reports blocking activation errors for an installed theme', async () => {
