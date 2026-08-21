@@ -65,8 +65,8 @@ export class GhostServer {
   private env: string;
   private serverConfig: ServerConfig;
 
-  private rootApp: null | express.Application = null;
-  private httpServer: null | http.Server = null;
+  rootApp: null | express.Application = null;
+  private httpServer: null | StoppableHttpServer = null;
   private isShuttingDown = false;
 
   /** Tasks that should run before the server exits. */
@@ -250,6 +250,18 @@ export class GhostServer {
   }
 
   /**
+   * Test-only utilty.
+   */
+  _address() {
+    const { httpServer } = this;
+    const address = httpServer?.address();
+    if (address && typeof address === 'object') {
+      return address;
+    }
+    return null;
+  }
+
+  /**
    * ### Stop Server
    * Does the work of stopping the server using stoppable
    * This handles closing connections:
@@ -266,7 +278,7 @@ export class GhostServer {
     const util = require('util');
     const startTime = Date.now();
     try {
-      return await util.promisify(httpServer.close)();
+      return await util.promisify(httpServer.close.bind(httpServer))();
     } finally {
       logging.info(`Shutdown: stopped HTTP server in ${Date.now() - startTime}ms`);
     }
