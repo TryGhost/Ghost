@@ -5,7 +5,7 @@ const _ = require('lodash');
 // NOTE: values here are intentionally NOT HTML-escaped. This object is serialized
 // with JSON.stringify into an inline <script type="application/ld+json"> block by
 // the ghost_head helper, which escapes the breakout-relevant characters as JSON
-// \u escapes (see escapeJsonLd there). HTML-entity escaping here would be both the
+// \u escapes (see core/frontend/utils/escape-inline-json). HTML-entity escaping here would be both the
 // wrong layer and actively harmful — JSON-LD consumers (Google et al.) parse the
 // block as JSON and never HTML-decode, so `Tom & Jerry` would be indexed as the
 // literal `Tom &amp; Jerry`.

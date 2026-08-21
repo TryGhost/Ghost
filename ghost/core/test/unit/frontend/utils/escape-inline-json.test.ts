@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error ghost_head currently lacks type definitions.
-import { escapeJsonLd } from '../../../../core/frontend/helpers/ghost_head';
+import { escapeInlineJson } from '../../../../core/frontend/utils/escape-inline-json';
 
-describe('ghost_head escapeJsonLd', function () {
+describe('escapeInlineJson', function () {
   it('neutralises a </script> breakout without losing the data', function () {
     const payload = 'foo</script><script>alert(document.domain)</script>';
-    const escaped = escapeJsonLd(JSON.stringify({ name: payload }));
+    const escaped = escapeInlineJson(JSON.stringify({ name: payload }));
 
     // No literal </script> can survive to close the inline JSON-LD element.
     assert.ok(!escaped.includes('</script>'), 'must not contain a literal </script>');
@@ -16,10 +15,22 @@ describe('ghost_head escapeJsonLd', function () {
   });
 
   it('escapes <!-- comment breakout as well', function () {
-    const escaped = escapeJsonLd(JSON.stringify({ name: '<!--' }));
+    const escaped = escapeInlineJson(JSON.stringify({ name: '<!--' }));
 
     assert.ok(!escaped.includes('<!--'));
     assert.equal(JSON.parse(escaped).name, '<!--');
+  });
+
+  it('escapes the JS line terminators that are legal in JSON', function () {
+    // The announcement bar's payload is read by the JS parser, not JSON.parse,
+    // and U+2028/U+2029 are valid in a JSON string but end a line in JavaScript
+    // source, so unescaped they would be a syntax error.
+    const value = 'before\u2028after\u2029end';
+    const escaped = escapeInlineJson(JSON.stringify({ value }));
+
+    assert.ok(!escaped.includes('\u2028'), 'U+2028 must be escaped');
+    assert.ok(!escaped.includes('\u2029'), 'U+2029 must be escaped');
+    assert.equal(JSON.parse(escaped).value, value);
   });
 
   it('leaves SEO-significant characters intact (no HTML-entity corruption)', function () {
@@ -27,7 +38,7 @@ describe('ghost_head escapeJsonLd', function () {
     // verbatim — HTML-entity escaping them (&amp;, &#x27;, &quot;) would be
     // indexed literally by structured-data parsers, which never HTML-decode.
     const value = 'Tom & Jerry\'s "Q&A" > answers';
-    const escaped = escapeJsonLd(JSON.stringify({ keywords: value }));
+    const escaped = escapeInlineJson(JSON.stringify({ keywords: value }));
 
     assert.ok(!escaped.includes('&amp;'), 'ampersand must not be HTML-escaped');
     assert.ok(!escaped.includes('&#x27;'), 'apostrophe must not be HTML-escaped');

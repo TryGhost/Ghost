@@ -49,6 +49,13 @@ async function testGhostHead(options) {
   const adminToolbarCommentsDisabled = / data-comments-enabled="false"/g;
   rendered = rendered.replace(adminToolbarCommentsDisabled, '');
 
+  // The announcement bar's styles, payload and bootstrap are asserted directly in
+  // the 'announcement bar' describe below. Masking them keeps every other
+  // snapshot from churning whenever that block changes.
+  const announcementBarBlock =
+    /(<(?:style|script)[^>]*id="gh-announcement-bar-(?:styles|data|script)"[^>]*>)[\s\S]*?(<\/(?:style|script)>)/g;
+  rendered = rendered.replace(announcementBarBlock, '$1[[ANNOUNCEMENT_BAR]]$2');
+
   assertExists(rendered);
   // Note: we need to convert the string to an object in order to use the snapshot feature
   assertMatchSnapshot({ rendered });
@@ -1968,7 +1975,7 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /sodo-search@/);
       assert.match(rendered, /portal@/);
       assert.match(rendered, /js.stripe.com/);
-      assert.match(rendered, /announcement-bar@/);
+      assert.match(rendered, /gh-announcement-bar-styles/);
     });
     it('does not show the announcement when exclude contains announcement', async function () {
       getStub.withArgs('members_enabled').returns(true);
@@ -1990,7 +1997,7 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /portal@/);
       assert.match(rendered, /js.stripe.com/);
       assert.match(rendered, /generator/);
-      assert.doesNotMatch(rendered, /announcement-bar@/);
+      assert.doesNotMatch(rendered, /gh-announcement-bar-styles/);
     });
 
     it('does not load the comments script when exclude contains comment_counts', async function () {
@@ -2276,6 +2283,196 @@ describe('{{ghost_head}} helper', function () {
         }),
       });
       assert.doesNotMatch(rendered, /.gh-post-upgrade-cta-content/);
+    });
+  });
+  describe('announcement bar', function () {
+    const locals = {
+      relativeUrl: '/',
+      context: ['home', 'index'],
+      safeVersion: '4.3',
+    };
+
+    const renderHead = async (options = {}) => {
+      const rendered = await ghost_head(
+        testUtils.createHbsResponse({
+          locals: { ...locals, ...options.locals },
+          templateOptions: options.templateOptions,
+        }),
+      );
+
+      return rendered.toString();
+    };
+
+    // The announcement travels as JSON in an inert application/json block,
+    // `\u003c`-escaped so it cannot close the script element it sits in.
+    const payloadJson = (rendered) =>
+      rendered.match(
+        /<script type="application\/json" id="gh-announcement-bar-data">(.*?)<\/script>/,
+      )?.[1];
+
+    const payload = (rendered) => JSON.parse(payloadJson(rendered));
+
+    const bootstrap = (rendered) =>
+      rendered.match(/<script id="gh-announcement-bar-script">(.*?)<\/script>/)[1];
+
+    beforeEach(function () {
+      getStub.withArgs('announcement_content').returns('Sale <strong>today</strong>');
+      getStub.withArgs('announcement_background').returns('accent');
+    });
+
+    it('renders the bar in the page for a visitor in the audience', async function () {
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
+
+      const rendered = await renderHead();
+
+      // No members API call: everything the browser needs is in the document.
+      assert.doesNotMatch(rendered, /members\/api\/announcement/);
+      assert.match(rendered, /<style id="gh-announcement-bar-styles">/);
+      assert.equal(payload(rendered).announcement, 'Sale <strong>today</strong>');
+      assert.equal(payload(rendered).background, 'accent');
+    });
+
+    it('renders nothing for a visitor outside the audience', async function () {
+      getStub.withArgs('announcement_visibility').returns(['free_members', 'paid_members']);
+
+      assert.doesNotMatch(await renderHead(), /gh-announcement-bar/);
+    });
+
+    it('renders the bar for a free member in the audience', async function () {
+      getStub.withArgs('announcement_visibility').returns(['free_members']);
+
+      const rendered = await renderHead({ locals: { member: { status: 'free' } } });
+
+      assert.match(rendered, /gh-announcement-bar-styles/);
+    });
+
+    it('renders nothing for a free member when only paid members are in the audience', async function () {
+      getStub.withArgs('announcement_visibility').returns(['visitors', 'paid_members']);
+
+      const rendered = await renderHead({ locals: { member: { status: 'free' } } });
+
+      assert.doesNotMatch(rendered, /gh-announcement-bar/);
+    });
+
+    it('renders the bar for a paid member in the audience', async function () {
+      getStub.withArgs('announcement_visibility').returns(['paid_members']);
+
+      const rendered = await renderHead({ locals: { member: { status: 'paid' } } });
+
+      assert.match(rendered, /gh-announcement-bar-styles/);
+    });
+
+    it('renders nothing when no audience is selected', async function () {
+      getStub.withArgs('announcement_visibility').returns([]);
+
+      assert.doesNotMatch(await renderHead(), /gh-announcement-bar/);
+    });
+
+    it('changes the dismissal key when the announcement is edited', async function () {
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
+      const before = payload(await renderHead()).key;
+
+      getStub.withArgs('announcement_content').returns('Sale <strong>tomorrow</strong>');
+      const after = payload(await renderHead()).key;
+
+      assert.notEqual(before, after);
+    });
+
+    it('never puts the announcement in the markup the bootstrap inserts', async function () {
+      // The bootstrap assigns the announcement with innerHTML on the content
+      // element instead of concatenating it into the markup it inserts. That
+      // scopes the parse to the bar, so an unbalanced tag cannot close the bar
+      // early and spill the rest into the page.
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
+      getStub.withArgs('announcement_content').returns('</div></div><h1>escaped</h1>');
+
+      const rendered = await renderHead();
+
+      assert.doesNotMatch(bootstrap(rendered), /escaped/);
+      assert.match(bootstrap(rendered), /\.innerHTML=/);
+      assert.equal(payload(rendered).announcement, '</div></div><h1>escaped</h1>');
+    });
+
+    it('emits the same bootstrap for every announcement, so it can be allowlisted by hash', async function () {
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
+      const first = await renderHead();
+
+      getStub.withArgs('announcement_content').returns('An entirely different announcement');
+      getStub.withArgs('announcement_background').returns('light');
+      const second = await renderHead();
+
+      assert.equal(bootstrap(first), bootstrap(second));
+      assert.notEqual(payloadJson(first), payloadJson(second));
+    });
+
+    it('cannot be escaped out of the inline script', async function () {
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
+      getStub.withArgs('announcement_content').returns('</script><script>alert(1)</script>');
+
+      const rendered = await renderHead();
+
+      // Nothing in the payload can start an HTML tag, so the announcement cannot
+      // close the script element it travels inside...
+      assert.doesNotMatch(payloadJson(rendered), /[<>]/);
+      // ...while still arriving at the browser intact.
+      assert.equal(payload(rendered).announcement, '</script><script>alert(1)</script>');
+    });
+
+    describe('when member content is cached', function () {
+      beforeEach(function () {
+        configUtils.set('cacheMembersContent:enabled', true);
+      });
+
+      it('leaves the audience check to the members API for a signed-in member', async function () {
+        getStub.withArgs('announcement_visibility').returns(['paid_members']);
+
+        const rendered = await renderHead({ locals: { member: { status: 'paid' } } });
+
+        assert.equal(payload(rendered).apiUrl, 'http://127.0.0.1:2369/members/api/announcement/');
+      });
+
+      it('withholds the announcement until the members API confirms the audience', async function () {
+        // The response is shared by every member on a tier, so a member outside
+        // the audience must not be able to read the announcement out of the HTML.
+        getStub.withArgs('announcement_visibility').returns(['paid_members']);
+
+        const rendered = await renderHead({ locals: { member: { status: 'paid' } } });
+
+        assert.equal(payload(rendered).announcement, undefined);
+        assert.doesNotMatch(payloadJson(rendered), /Sale/);
+      });
+
+      it('still resolves the audience itself for a visitor', async function () {
+        getStub.withArgs('announcement_visibility').returns(['visitors']);
+
+        const rendered = await renderHead();
+
+        assert.equal(payload(rendered).apiUrl, undefined);
+        assert.equal(payload(rendered).announcement, 'Sale <strong>today</strong>');
+      });
+    });
+
+    describe('in the Admin preview', function () {
+      it('renders the previewed announcement', async function () {
+        const templateOptions = {
+          site: {
+            _preview: 'announcement=Preview+me&announcement_bg=light&announcement_vis=visitors',
+          },
+        };
+
+        const rendered = await renderHead({ templateOptions });
+
+        assert.equal(payload(rendered).announcement, 'Preview me');
+        assert.equal(payload(rendered).background, 'light');
+      });
+
+      it('renders nothing until an audience is selected', async function () {
+        const templateOptions = {
+          site: { _preview: 'announcement=Preview+me&announcement_bg=light' },
+        };
+
+        assert.doesNotMatch(await renderHead({ templateOptions }), /gh-announcement-bar/);
+      });
     });
   });
 });

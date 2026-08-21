@@ -31,7 +31,6 @@ These public apps are npm packages served through jsDelivr:
 - `@tryghost/sodo-search`
 - `@tryghost/comments-ui`
 - `@tryghost/signup-form`
-- `@tryghost/announcement-bar`
 - `@tryghost/admin-toolbar`
 
 The full list lives in

@@ -110,7 +110,7 @@ import {
  * });
  *
  * @example
- * // apps/announcement-bar/eslint.config.js — vanilla JS React
+ * // apps/sodo-search/eslint.config.js — vanilla JS React
  * import {reactAppConfig} from '@internal/cfg-eslint-react';
  * export default reactAppConfig({
  *   typescript: false,
