@@ -14,6 +14,7 @@ import {
   SelectValue,
   Switch,
 } from '@tryghost/shade/components';
+import { formatNumber } from '@tryghost/shade/utils';
 import {
   type Setting,
   type SettingValue,
@@ -44,6 +45,7 @@ const SignupOptions: React.FC<{
   const [
     membersSignupAccess,
     portalName,
+    portalSignupGiftPromotion,
     portalSignupTermsHtml,
     portalSignupCheckboxRequired,
     portalPlansJson,
@@ -51,6 +53,7 @@ const SignupOptions: React.FC<{
   ] = getSettingValues(localSettings, [
     'members_signup_access',
     'portal_name',
+    'portal_signup_gift_promotion',
     'portal_signup_terms_html',
     'portal_signup_checkbox_required',
     'portal_plans',
@@ -104,6 +107,9 @@ const SignupOptions: React.FC<{
   const isSignupAllowed = membersSignupAccess === 'all' || membersSignupAccess === 'paid';
   const isFreeSignupAllowed = membersSignupAccess === 'all';
   const isStripeEnabled = checkStripeEnabled(localSettings, config);
+  const showSignupGiftPromotionSetting =
+    config.labs.giftSubCustomization === true &&
+    localSettings.some((setting) => setting.key === 'portal_signup_gift_promotion');
 
   const tiersCheckboxes: SignupCheckbox[] = [];
 
@@ -169,6 +175,19 @@ const SignupOptions: React.FC<{
             onCheckedChange={(checked) => updateSetting('portal_name', checked)}
           />
         </Field>
+
+        {showSignupGiftPromotionSetting && (
+          <Field orientation="horizontal">
+            <FieldLabel htmlFor="portal-signup-gift-promotion">
+              Display option to purchase gift
+            </FieldLabel>
+            <Switch
+              checked={Boolean(portalSignupGiftPromotion)}
+              id="portal-signup-gift-promotion"
+              onCheckedChange={(checked) => updateSetting('portal_signup_gift_promotion', checked)}
+            />
+          </Field>
+        )}
 
         <FieldSet>
           <FieldLegend variant="label">Available tiers</FieldLegend>
@@ -244,8 +263,9 @@ const SignupOptions: React.FC<{
           hint={
             errors.portal_signup_terms_html || (
               <>
-                Recommended: <strong>115</strong> characters. You&apos;ve used{' '}
-                <strong className="text-green">{signupTermsLength}</strong>
+                Recommended: <strong>{formatNumber(signupTermsMaxLength)}</strong> characters.
+                You&apos;ve used{' '}
+                <strong className="text-green">{formatNumber(signupTermsLength)}</strong>
               </>
             )
           }

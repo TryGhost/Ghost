@@ -46,6 +46,8 @@ module.exports = {
   portal_button_icon: 'portal_button_icon',
   portal_signup_terms_html: 'portal_signup_terms_html',
   portal_signup_checkbox_required: 'portal_signup_checkbox_required',
+  portal_signup_gift_promotion: 'portal_signup_gift_promotion',
+  portal_account_gift_promotion: 'portal_account_gift_promotion',
   portal_plans: 'portal_plans',
   portal_default_plan: 'portal_default_plan',
   portal_name: 'portal_name',

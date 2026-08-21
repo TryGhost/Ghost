@@ -18,7 +18,7 @@ const limits = require('../../../core/server/services/limits');
 const { anyErrorId } = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 111;
+const CURRENT_SETTINGS_COUNT = 113;
 
 const settingsMatcher = {};
 
@@ -41,10 +41,10 @@ const matchSettingsArray = (length) => {
     settingsArray[38] = publicHashSettingMatcher;
   }
 
-  if (length > 72) {
+  if (length > 74) {
     // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
     // Item at index x is the lab settings, which changes as we add and remove features
-    settingsArray[72] = labsSettingMatcher;
+    settingsArray[74] = labsSettingMatcher;
   }
 
   return settingsArray;

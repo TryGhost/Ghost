@@ -24,6 +24,11 @@ async function openPortal() {
   return settingsScreen.portalModal();
 }
 
+function getPreviewParam(preview: HTMLIFrameElement, key: string) {
+  const hashQuery = new URL(preview.src).hash.split('?')[1];
+  return new URLSearchParams(hashQuery).get(key);
+}
+
 describe('Portal settings', () => {
   it('saves signup display and free-tier options', async () => {
     fakeSettingsScreens();
@@ -49,6 +54,74 @@ describe('Portal settings', () => {
       { key: 'portal_name', value: false },
       { key: 'portal_plans', value: '["monthly","yearly"]' },
     ]);
+  });
+
+  it('saves the independent signup and account gift promotion settings', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings', { labs: { giftSubCustomization: true } });
+
+    const modal = await openPortal();
+    const preview = modal.getByTestId('portal-preview');
+    const signupGiftPromotion = modal.getByLabelText('Display option to purchase gift');
+    await expect.element(signupGiftPromotion).toBeChecked();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'signupGiftPromotion'))
+      .toBe('true');
+    await signupGiftPromotion.click();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'signupGiftPromotion'))
+      .toBe('false');
+
+    await modal.getByRole('tab', { name: 'Account page' }).last().click();
+    const accountGiftPromotion = modal.getByLabelText('Display option to purchase gift');
+    await expect.element(accountGiftPromotion).toBeChecked();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'accountGiftPromotion'))
+      .toBe('true');
+    await accountGiftPromotion.click();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'accountGiftPromotion'))
+      .toBe('false');
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect(settingsApi).toHaveEditedSettings([
+      { key: 'portal_signup_gift_promotion', value: false },
+      { key: 'portal_account_gift_promotion', value: false },
+    ]);
+  });
+
+  it('hides gift promotion settings when the feature flag is disabled', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    await renderAdminApp('/settings');
+
+    const modal = await openPortal();
+    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
+
+    await modal.getByRole('tab', { name: 'Account page' }).last().click();
+    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
+  });
+
+  it('hides gift promotion settings when the backend does not provide them', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    const settings = settingsResponse({ labs: { giftSubCustomization: true } });
+    settings.settings = settings.settings.filter(
+      ({ key }) => !['portal_signup_gift_promotion', 'portal_account_gift_promotion'].includes(key),
+    );
+    await renderAdminApp('/settings', {
+      labs: { giftSubCustomization: true },
+      boot: { browseSettings: { response: settings } },
+    });
+
+    const modal = await openPortal();
+    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
+
+    await modal.getByRole('tab', { name: 'Account page' }).last().click();
+    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
   });
 
   it('shows the free tier option when Stripe is disconnected', async () => {
