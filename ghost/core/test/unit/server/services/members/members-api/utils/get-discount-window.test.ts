@@ -1,10 +1,7 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const getDiscountWindow = require('../../../../../../../core/server/services/members/members-api/utils/get-discount-window');
-
-/**
- * @typedef {import('../../../../../../../core/server/services/offers/application/offer-mapper').OfferDTO} OfferDTO
- */
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { getDiscountWindow } from '../../../../../../../core/server/services/members/members-api/utils/get-discount-window';
+import { type OfferDTO } from '../../../../../../../core/server/services/offers/application/offer-mapper';
 
 describe('getDiscountWindow', function () {
   beforeEach(function () {
@@ -28,13 +25,8 @@ describe('getDiscountWindow', function () {
     };
   }
 
-  /**
-   * @param {Partial<OfferDTO>} [overrides]
-   * @returns {OfferDTO}
-   */
-  function createOffer(overrides = {}) {
-    /** @type {OfferDTO} */
-    const defaults = {
+  function createOffer(overrides: Partial<OfferDTO> = {}): OfferDTO {
+    const defaults: OfferDTO = {
       id: 'offer_123',
       name: 'Test Offer',
       code: 'test-offer',
@@ -283,7 +275,7 @@ describe('getDiscountWindow', function () {
         createOffer({ duration: 'repeating', duration_in_months: 6 }),
       );
 
-      assert.notEqual(result, null);
+      assert(result);
       assert.deepEqual(result.start, startDate);
       assert.ok(result.end instanceof Date);
       assert.ok(result.end > new Date());
@@ -326,7 +318,9 @@ describe('getDiscountWindow', function () {
     it('returns null for unknown duration', function () {
       const subscription = createSubscription();
 
-      const result = getDiscountWindow(subscription, createOffer({ duration: 'unknown' }));
+      // @ts-expect-error "unknown" is an unexpected duration and should fail type checking.
+      const offer = createOffer({ duration: 'unknown' });
+      const result = getDiscountWindow(subscription, offer);
 
       assert.equal(result, null);
     });

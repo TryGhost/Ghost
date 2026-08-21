@@ -1,4 +1,4 @@
-const getDiscountWindow = require('../utils/get-discount-window');
+const { getDiscountWindow } = require('../utils/get-discount-window');
 
 /**
  * @typedef {import('../../../../services/offers/application/offer-mapper').OfferDTO} OfferDTO

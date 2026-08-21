@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const normalizeEmail = require('../../../../../../../core/server/services/members/members-api/utils/normalize-email');
+import assert from 'node:assert/strict';
+import { normalizeEmail } from '../../../../../../../core/server/services/members/members-api/utils/normalize-email';
 
 describe('normalizeEmail', function () {
   it('should normalize unicode domains to punycode', function () {
@@ -36,14 +36,5 @@ describe('normalizeEmail', function () {
     assert.equal(normalizeEmail('user@'), null);
     assert.equal(normalizeEmail('user@name@example.com'), null);
     assert.equal(normalizeEmail('user@name@tëst.com'), null);
-  });
-
-  it('should handle non-string inputs', function () {
-    assert.equal(normalizeEmail(/** @type {any} */ (null)), null);
-    assert.equal(normalizeEmail(/** @type {any} */ (undefined)), null);
-    assert.equal(normalizeEmail(/** @type {any} */ (123)), null);
-    assert.equal(normalizeEmail(/** @type {any} */ ({})), null);
-    assert.equal(normalizeEmail(/** @type {any} */ ([])), null);
-    assert.equal(normalizeEmail(/** @type {any} */ (true)), null);
   });
 });

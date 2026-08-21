@@ -15,7 +15,7 @@ const ObjectId = require('bson-objectid').default;
 const { NotFoundError } = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const hasActiveOffer = require('../utils/has-active-offer');
+const { hasActiveOffer } = require('../utils/has-active-offer');
 const {
   StartAutomationsPollEvent,
 } = require('../../../automations/events/start-automations-poll-event');

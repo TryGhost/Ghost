@@ -4,12 +4,13 @@ const OfferCode = require('../domain/models/offer-code');
 const OfferTitle = require('../domain/models/offer-title');
 const OfferDescription = require('../domain/models/offer-description');
 const OfferStatus = require('../domain/models/offer-status');
-const OfferMapper = require('./offer-mapper');
+const { OfferMapper } = require('./offer-mapper');
 const UniqueChecker = require('./unique-checker');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('offers:api');
+/** @import {PublicOfferDTO, OfferDTO} from './offer-mapper' */
 
 const messages = {
   offerNotFoundAfterDuplicateError:
@@ -55,7 +56,7 @@ class OffersAPI {
    * @param {string} data.id
    * @param {Object} [options]
    *
-   * @returns {Promise<OfferMapper.OfferDTO>}
+   * @returns {Promise<OfferDTO>}
    */
   async getOffer(data, options = {}) {
     if (options.transacting) {
@@ -79,7 +80,7 @@ class OffersAPI {
    * @param {any} data
    * @param {Object} [options]
    *
-   * @returns {Promise<OfferMapper.OfferDTO>}
+   * @returns {Promise<OfferDTO>}
    */
   async createOffer(data, options = {}) {
     return this.repository.createTransaction(async (transaction) => {
@@ -107,7 +108,7 @@ class OffersAPI {
    * @param {string} [data.status]
    * @param {Object} [options]
    *
-   * @returns {Promise<OfferMapper.OfferDTO>}
+   * @returns {Promise<OfferDTO>}
    */
   async updateOffer(data, options = {}) {
     return await this.repository.createTransaction(async (transaction) => {
@@ -158,7 +159,7 @@ class OffersAPI {
   /**
    * @param {object} options
    * @param {string} options.filter
-   * @returns {Promise<OfferMapper.OfferDTO[]>}
+   * @returns {Promise<OfferDTO[]>}
    */
   async listOffers(options) {
     return await this.repository.createTransaction(async (transaction) => {
@@ -176,7 +177,7 @@ class OffersAPI {
    * @param {string} options.tierId
    * @param {'month'|'year'} options.cadence
    * @param {'signup'|'retention'} [options.redemptionType]
-   * @returns {Promise<OfferMapper.PublicOfferDTO[]>}
+   * @returns {Promise<PublicOfferDTO[]>}
    */
   async listOffersAvailableToSubscription({ subscriptionId, tierId, cadence, redemptionType }) {
     debug(
@@ -294,7 +295,7 @@ class OffersAPI {
    * @param {object} [options]
    * @param {object} [options.transacting]
    *
-   * @returns {Promise<OfferMapper.OfferDTO>}
+   * @returns {Promise<OfferDTO>}
    */
   async ensureOfferForStripeCoupon(coupon, cadence, tier, options = {}) {
     const run = async (transaction) => {

@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const hasActiveOffer = require('../../../../../../../core/server/services/members/members-api/utils/has-active-offer');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { hasActiveOffer } from '../../../../../../../core/server/services/members/members-api/utils/has-active-offer';
+import { type OfferDTO } from '../../../../../../../core/server/services/offers/application/offer-mapper';
 
 describe('hasActiveOffer', function () {
   beforeEach(function () {
@@ -18,10 +19,17 @@ describe('hasActiveOffer', function () {
     offerId = null,
     startDate = null,
     currentPeriodEnd = new Date('2025-06-01T00:00:00.000Z'),
-  } = {}) {
+  }: Readonly<{
+    discountStart?: Date | null;
+    discountEnd?: Date | null;
+    trialEndAt?: Date | null;
+    offerId?: string | null;
+    startDate?: Date | null;
+    currentPeriodEnd?: Date;
+  }> = {}) {
     return {
-      get: sinon.stub().callsFake((key) => {
-        const values = {
+      get: sinon.stub().callsFake((key: string) => {
+        const values: Record<string, Date | string | null> = {
           discount_start: discountStart,
           discount_end: discountEnd,
           trial_end_at: trialEndAt,
@@ -35,13 +43,15 @@ describe('hasActiveOffer', function () {
     };
   }
 
-  function createOffersAPI(offer = null) {
+  function createOffersAPI(offer: null | Partial<OfferDTO> = null) {
     return {
       getOffer: sinon.stub().resolves(offer),
     };
   }
 
-  function createOffer(overrides = {}) {
+  function createOffer(
+    overrides: Partial<OfferDTO> = {},
+  ): Pick<OfferDTO, 'duration' | 'redemption_type' | 'duration_in_months'> {
     return {
       duration: 'once',
       duration_in_months: null,

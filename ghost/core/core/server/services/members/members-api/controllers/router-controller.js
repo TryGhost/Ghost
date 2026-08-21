@@ -12,8 +12,8 @@ const {
 } = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const { isEmail } = require('@tryghost/validator');
-const normalizeEmail = require('../utils/normalize-email');
-const hasActiveOffer = require('../utils/has-active-offer');
+const { normalizeEmail } = require('../utils/normalize-email');
+const { hasActiveOffer } = require('../utils/has-active-offer');
 const { getInboxLinks } = require('../../../../lib/get-inbox-links');
 const { SIGNUP_CONTEXTS } = require('../../../lib/member-signup-contexts');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
