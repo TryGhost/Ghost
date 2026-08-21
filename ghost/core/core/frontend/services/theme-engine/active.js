@@ -19,8 +19,6 @@ const themeConfig = require('./config');
 const config = require('../../../shared/config');
 const engine = require('./engine');
 const themeI18n = require('./i18n');
-const themeI18next = require('./i18next');
-const labs = require('../../../shared/labs');
 const assetHash = require('../asset-hash');
 // Current instance of ActiveTheme
 let currentActiveTheme;
@@ -110,13 +108,7 @@ class ActiveTheme {
     options.activeTheme = options.activeTheme || this._name;
     options.locale = options.locale || this._locale;
 
-    if (labs.isSet('themeTranslation')) {
-      // Initialize the new translation service
-      themeI18next.init(options);
-    } else {
-      // Initialize the legacy translation service
-      themeI18n.init(options);
-    }
+    themeI18n.init(options);
   }
 
   mount(siteApp) {

@@ -1,28 +1,25 @@
 // # Theme i18n E2E Tests
 // Tests theme translations using the {{t}} helper
-// Uses the Admin API to change locale and labs settings
+// Uses the Admin API to change locale
 
 const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const { agentProvider, fixtureManager } = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
 
-// i18n singletons - need to reset basePath when content folder changes between tests
+// i18n singleton - need to reset basePath when content folder changes between tests
 const themeI18n = require('../../core/frontend/services/theme-engine/i18n');
-const themeI18next = require('../../core/frontend/services/theme-engine/i18next');
 
 describe('Theme i18n', function () {
   let frontendAgent;
   let adminAgent;
   let ghostServer;
 
-  // Helper to set locale and optionally labs flag
-  async function setLocale(locale, labs = null) {
-    const settings = [{ key: 'locale', value: locale }];
-    if (labs !== null) {
-      settings.push({ key: 'labs', value: JSON.stringify(labs) });
-    }
-    await adminAgent.put('settings/').body({ settings }).expectStatus(200);
+  async function setLocale(locale) {
+    await adminAgent
+      .put('settings/')
+      .body({ settings: [{ key: 'locale', value: locale }] })
+      .expectStatus(200);
   }
 
   /**
@@ -56,12 +53,10 @@ describe('Theme i18n', function () {
     adminAgent = agents.adminAgent;
     ghostServer = agents.ghostServer;
 
-    // Reset i18n singletons basePath to use current test content folder
-    // This is needed because the singletons capture basePath at module load time
+    // Reset i18n singleton basePath to use current test content folder
+    // This is needed because the singleton captures basePath at module load time
     // and it may point to a different content folder from a previous test
-    const themesPath = config.getContentPath('themes');
-    themeI18n.basePath = themesPath;
-    themeI18next.basePath = themesPath;
+    themeI18n.basePath = config.getContentPath('themes');
 
     await fixtureManager.init();
     await adminAgent.loginAsOwner();
@@ -71,46 +66,11 @@ describe('Theme i18n', function () {
 
   afterAll(async function () {
     await adminAgent.put('themes/source/activate/');
-    await setLocale('en', {});
+    await setLocale('en');
     await ghostServer.stop();
   });
 
-  describe('Legacy translation service (themeI18n)', function () {
-    beforeAll(async function () {
-      await setLocale('en', { themeTranslation: false });
-    });
-
-    it('translates keys in English', async function () {
-      await assertTranslations({ translated: 'Left Button on Top' });
-    });
-
-    it('returns key when translation is missing', async function () {
-      await assertTranslations({ untranslated: 'Missing Key' });
-    });
-
-    it('interpolates variables', async function () {
-      await assertTranslations({ interpolated: 'Welcome, Ghost' });
-    });
-
-    it('translates keys in German', async function () {
-      await setLocale('de');
-      await assertTranslations({
-        translated: 'Oben Links.',
-        interpolated: 'Willkommen, Ghost',
-      });
-      await setLocale('en');
-    });
-  });
-
-  describe('New translation service (themeI18next)', function () {
-    beforeAll(async function () {
-      await setLocale('en', { themeTranslation: true });
-    });
-
-    afterAll(async function () {
-      await setLocale('en', {});
-    });
-
+  describe('{{t}} helper', function () {
     it('translates keys in English', async function () {
       await assertTranslations({ translated: 'Left Button on Top' });
     });

@@ -14,6 +14,11 @@ describe('{{t}} helper', function () {
     themeI18n.basePath = ogBasePath;
   });
 
+  beforeEach(function () {
+    // Reset the i18n instance before each test
+    themeI18n._i18n = null;
+  });
+
   it('theme translation is DE', function () {
     themeI18n.init({ activeTheme: 'locale-theme', locale: 'de' });
 

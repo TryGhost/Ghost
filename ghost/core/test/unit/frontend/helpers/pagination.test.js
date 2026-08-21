@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
-const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
@@ -45,103 +44,93 @@ describe('{{pagination}} helper', function () {
     );
   });
 
-  const i18nImplementations = [
-    { name: 'themeI18n (legacy)', useNewTranslation: false },
-    { name: 'themeI18next (new)', useNewTranslation: true },
-  ];
+  describe('rendering', function () {
+    let i18nSetup;
 
-  // Run rendering tests with both i18n implementations
+    beforeAll(function () {
+      i18nSetup = setupI18nTest({ locale: 'en' });
+    });
 
-  i18nImplementations.forEach(({ name, useNewTranslation }) => {
-    describe(`rendering with ${name}`, function () {
-      let i18nSetup;
+    afterEach(function () {
+      // Reset locale to English after each test to prevent leaking
+      initLocale({ locale: 'en' });
+    });
 
-      beforeAll(function () {
-        i18nSetup = setupI18nTest({ useNewTranslation, locale: 'en' });
+    afterAll(function () {
+      i18nSetup.teardown();
+    });
+
+    it('can render single page with no pagination necessary', function () {
+      const rendered = pagination.call({
+        pagination: { page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1 },
+        tag: { slug: 'slug' },
       });
+      assertExists(rendered);
+      // strip out carriage returns and compare.
+      assert.match(rendered.string, paginationRegex);
+      assert.match(rendered.string, pageRegex);
+      assert.match(rendered.string, /Page 1 of 1/);
+      assert.doesNotMatch(rendered.string, newerRegex);
+      assert.doesNotMatch(rendered.string, olderRegex);
+    });
 
-      afterEach(function () {
-        // Reset locale to English after each test to prevent leaking
-        initLocale({ useNewTranslation, locale: 'en' });
+    it('can render first page of many with older posts link', function () {
+      const rendered = pagination.call({
+        pagination: { page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3 },
       });
+      assertExists(rendered);
 
-      afterAll(function () {
-        i18nSetup.teardown();
-        sinon.restore();
+      assert.match(rendered.string, paginationRegex);
+      assert.match(rendered.string, pageRegex);
+      assert.match(rendered.string, olderRegex);
+      assert.match(rendered.string, /Page 1 of 3/);
+      assert.doesNotMatch(rendered.string, newerRegex);
+    });
+
+    it('can render middle pages of many with older and newer posts link', function () {
+      const rendered = pagination.call({
+        pagination: { page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3 },
       });
+      assertExists(rendered);
 
-      it('can render single page with no pagination necessary', function () {
-        const rendered = pagination.call({
-          pagination: { page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1 },
-          tag: { slug: 'slug' },
-        });
-        assertExists(rendered);
-        // strip out carriage returns and compare.
-        assert.match(rendered.string, paginationRegex);
-        assert.match(rendered.string, pageRegex);
-        assert.match(rendered.string, /Page 1 of 1/);
-        assert.doesNotMatch(rendered.string, newerRegex);
-        assert.doesNotMatch(rendered.string, olderRegex);
+      assert.match(rendered.string, paginationRegex);
+      assert.match(rendered.string, pageRegex);
+      assert.match(rendered.string, olderRegex);
+      assert.match(rendered.string, newerRegex);
+      assert.match(rendered.string, /Page 2 of 3/);
+    });
+
+    it('can render last page of many with newer posts link', function () {
+      const rendered = pagination.call({
+        pagination: { page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3 },
       });
+      assertExists(rendered);
 
-      it('can render first page of many with older posts link', function () {
-        const rendered = pagination.call({
-          pagination: { page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3 },
-        });
-        assertExists(rendered);
+      assert.match(rendered.string, paginationRegex);
+      assert.match(rendered.string, pageRegex);
+      assert.match(rendered.string, newerRegex);
+      assert.match(rendered.string, /Page 3 of 3/);
+      assert.doesNotMatch(rendered.string, olderRegex);
+    });
 
-        assert.match(rendered.string, paginationRegex);
-        assert.match(rendered.string, pageRegex);
-        assert.match(rendered.string, olderRegex);
-        assert.match(rendered.string, /Page 1 of 3/);
-        assert.doesNotMatch(rendered.string, newerRegex);
+    it('translates page indicator when locale is German', function () {
+      initLocale({ locale: 'de' });
+      const rendered = pagination.call({
+        pagination: { page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1 },
+        tag: { slug: 'slug' },
       });
+      assertExists(rendered);
+      assert.match(rendered.string, /Seite 1 von 1/);
+    });
 
-      it('can render middle pages of many with older and newer posts link', function () {
-        const rendered = pagination.call({
-          pagination: { page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3 },
-        });
-        assertExists(rendered);
-
-        assert.match(rendered.string, paginationRegex);
-        assert.match(rendered.string, pageRegex);
-        assert.match(rendered.string, olderRegex);
-        assert.match(rendered.string, newerRegex);
-        assert.match(rendered.string, /Page 2 of 3/);
+    it('falls back to English when locale is fr (no fr.json)', function () {
+      initLocale({ locale: 'fr' });
+      const rendered = pagination.call({
+        pagination: { page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1 },
+        tag: { slug: 'slug' },
       });
-
-      it('can render last page of many with newer posts link', function () {
-        const rendered = pagination.call({
-          pagination: { page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3 },
-        });
-        assertExists(rendered);
-
-        assert.match(rendered.string, paginationRegex);
-        assert.match(rendered.string, pageRegex);
-        assert.match(rendered.string, newerRegex);
-        assert.match(rendered.string, /Page 3 of 3/);
-        assert.doesNotMatch(rendered.string, olderRegex);
-      });
-
-      it('translates page indicator when locale is German', function () {
-        initLocale({ useNewTranslation, locale: 'de' });
-        const rendered = pagination.call({
-          pagination: { page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1 },
-          tag: { slug: 'slug' },
-        });
-        assertExists(rendered);
-        assert.match(rendered.string, /Seite 1 von 1/);
-      });
-
-      it('falls back to English when locale is fr (no fr.json)', function () {
-        initLocale({ useNewTranslation, locale: 'fr' });
-        const rendered = pagination.call({
-          pagination: { page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1 },
-          tag: { slug: 'slug' },
-        });
-        assertExists(rendered);
-        assert.match(rendered.string, /Page 1 of 1/);
-      });
+      assertExists(rendered);
+      assert.match(rendered.string, /Page 1 of 1/);
     });
   });
 

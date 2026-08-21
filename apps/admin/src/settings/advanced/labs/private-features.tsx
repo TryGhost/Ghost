@@ -55,11 +55,6 @@ const features: Feature[] = [
     flag: 'emailUniqueid',
   },
   {
-    title: 'Updated theme translation (beta)',
-    description: 'Enable theme translation using i18next instead of the old translation package.',
-    flag: 'themeTranslation',
-  },
-  {
     title: 'Picture Element',
     description:
       'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
