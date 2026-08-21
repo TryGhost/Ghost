@@ -1,13 +1,43 @@
-const crypto = require('crypto');
-const tpl = require('@tryghost/tpl');
+import crypto from 'node:crypto';
+import tpl from '@tryghost/tpl';
+
+type GravatarConfig = {
+    get(key: 'gravatar'): {url: string};
+    isPrivacyDisabled(key: 'useGravatar'): boolean;
+};
+
+type GravatarRequest = (url: string, options: {
+    timeout: {
+        request: number;
+    };
+}) => unknown;
+
+type GravatarOptions = {
+    [key: string]: number | string | undefined;
+    default?: number | string;
+    rating?: string;
+    size?: number;
+    _default?: number | string;
+};
+
+type GravatarUserData = {
+    email: string;
+};
+
+type GravatarLookupResult = {
+    image: string | undefined;
+};
 
 class Gravatar {
-    constructor({config, request}) {
+    config: GravatarConfig;
+    request: GravatarRequest;
+
+    constructor({config, request}: {config: GravatarConfig; request: GravatarRequest}) {
         this.config = config;
         this.request = request;
     }
 
-    url(email, options) {
+    url(email: string, options: GravatarOptions): string {
         if (options.default) {
             // tpl errors on token `{default}` so we use `{_default}` instead
             // but still allow the option to be passed as `default`
@@ -23,9 +53,9 @@ class Gravatar {
         return tpl(gravatarUrl, Object.assign(defaultOptions, options, {hash: emailHash}));
     }
 
-    async lookup(userData, timeout) {
+    async lookup(userData: GravatarUserData, timeout?: number): Promise<GravatarLookupResult | undefined> {
         if (this.config.isPrivacyDisabled('useGravatar')) {
-            return Promise.resolve();
+            return Promise.resolve(undefined);
         }
 
         // test existence using a default 404, but return a different default
@@ -38,8 +68,9 @@ class Gravatar {
             return {
                 image: imageUrl
             };
-        } catch (err) {
-            if (err.statusCode === 404) {
+        } catch (err: unknown) {
+            const requestError = err as {statusCode?: unknown};
+            if (requestError.statusCode === 404) {
                 return {
                     image: undefined
                 };
