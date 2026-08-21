@@ -77,7 +77,7 @@ const Newsletter: React.FC = () => {
 
     // Use shared post data from context
     const {post, isPostLoading, postId} = usePostAnalytics();
-    const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}), {crossApp: true});
+    const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}));
     const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);

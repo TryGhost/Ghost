@@ -11,6 +11,7 @@ import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useSearchParams} from '@tryghost/admin-x-framework';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -139,6 +140,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
+    const [, setSearchParams] = useSearchParams();
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
     const {mutateAsync: addAutomatedEmail, isPending: isAddingAutomatedEmail} = useAddAutomatedEmail();
@@ -176,12 +178,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         submittedTokenRef.current = verifyEmailToken;
 
         const clearVerifyEmailFromRoute = () => {
-            const hash = window.location.hash.slice(1);
-            const url = new URL(hash || '/memberemails', window.location.origin);
-            url.searchParams.delete('verifyEmail');
-
-            const nextHash = url.search ? `#${url.pathname}${url.search}` : `#${url.pathname}`;
-            window.history.replaceState(null, '', `${window.location.pathname}${nextHash}`);
+            setSearchParams((params) => {
+                params.delete('verifyEmail');
+                return params;
+            }, {replace: true});
         };
 
         const verify = async () => {
@@ -225,7 +225,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
 
         void verify();
-    }, [confirm, handleError, verifyEmailToken, verifySenderUpdate]);
+    }, [confirm, handleError, setSearchParams, verifyEmailToken, verifySenderUpdate]);
 
     const handleToggle = async (emailType: 'free' | 'paid') => {
         const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);

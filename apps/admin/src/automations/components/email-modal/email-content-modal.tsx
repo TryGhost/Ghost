@@ -278,6 +278,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     ref={setDialogContentNode}
                     aria-describedby={undefined}
                     className='top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]'
+                    data-sentry-mask='true'
                     onEscapeKeyDown={(event) => {
                         if (isKoenigPortalFocused()) {
                             // prevent Radix dismissing the dialog but let the

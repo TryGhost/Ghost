@@ -17,8 +17,8 @@ function asRole(name: StaffRoleName): RenderAdminAppOptions {
     return { boot: { browseMe: { response: me } } };
 }
 
-// Denied routes hand off to the home route with a cross-app navigation (a
-// hash update both routers observe) rather than a React-internal one.
+// Denied routes redirect to the home route through the router; only the home
+// dispatch itself may then hand off cross-app (asserted in home.acceptance).
 const homeHandoff = (): unknown => JSON.parse(document.body.dataset.externalNavigate ?? "null");
 
 const OWNER_SLUG = currentUserResponse().users[0].slug as string;
@@ -32,7 +32,7 @@ describe("Route access", () => {
     it("redirects a contributor away from settings", async () => {
         await renderAdminApp("/settings/design", asRole("Contributor"));
 
-        await expect.poll(homeHandoff).toMatchObject({ route: "/", isExternal: true });
+        await expect.poll(currentRoute).toBe("/");
     });
 
     it("keeps a contributor on their own profile settings", async () => {
@@ -47,19 +47,19 @@ describe("Route access", () => {
     it("redirects an author away from another staff member's profile settings", async () => {
         await renderAdminApp("/settings/staff/someone-else", asRole("Author"));
 
-        await expect.poll(homeHandoff).toMatchObject({ route: "/", isExternal: true });
+        await expect.poll(currentRoute).toBe("/");
     });
 
     it("redirects a contributor away from tags", async () => {
         await renderAdminApp("/tags", asRole("Contributor"));
 
-        await expect.poll(homeHandoff).toMatchObject({ route: "/", isExternal: true });
+        await expect.poll(currentRoute).toBe("/");
     });
 
     it("redirects an editor away from members", async () => {
         await renderAdminApp("/members", asRole("Editor"));
 
-        await expect.poll(homeHandoff).toMatchObject({ route: "/", isExternal: true });
+        await expect.poll(currentRoute).toBe("/");
     });
 
     it("leaves an authorized user on the route", async () => {

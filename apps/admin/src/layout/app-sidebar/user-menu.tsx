@@ -3,7 +3,9 @@ import React from "react"
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, Indicator, SidebarMenuButton} from "@tryghost/shade/components"
 import {LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { useDeleteSession } from "@tryghost/admin-x-framework/api/session";
 import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
+import { toast } from "sonner";
 import { useTheme, type ThemeMode } from "@/hooks/use-theme";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
@@ -77,22 +79,25 @@ function UserMenuAppearance() {
 }
 
 function UserMenuSignOut() {
-    const handleSignOut = () => {
-        const {apiRoot, adminRoot} = getGhostPaths();
-        fetch(`${apiRoot}/session`, {
-            method: "DELETE",
-        }).then(() => {
-            window.location.href = adminRoot;
-        }).catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error(error);
-        });
+    const {mutateAsync: deleteSession} = useDeleteSession();
+
+    const handleSignOut = async () => {
+        try {
+            await deleteSession(null);
+            // Full page load, not a router navigation: the session is gone, so
+            // the app must reboot unauthenticated
+            window.location.href = getGhostPaths().adminRoot;
+        } catch {
+            toast.error("Couldn't sign out. Please try again.");
+        }
     };
 
     return (
         <UserMenuItem
             asChild={false}
-            onSelect={handleSignOut}
+            onSelect={() => {
+                void handleSignOut();
+            }}
         >
             <LucideIcon.LogOut />
             <UserMenuItem.Label>Sign out</UserMenuItem.Label>

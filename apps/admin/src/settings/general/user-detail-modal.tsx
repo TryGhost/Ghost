@@ -13,7 +13,7 @@ import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
-import {useLocation, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/utils/social-urls/index';
@@ -76,6 +76,7 @@ export interface UserDetailProps {
 
 const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDeleting: boolean) => void}> = ({user, onDeletingUserChange}) => {
     const {updateRoute} = useSettingsNavigation();
+    const navigate = useNavigate();
     const upgradeRoute = useUpgradeRoute();
     const location = useLocation();
 
@@ -162,10 +163,10 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
         if (canAccessSettings(currentUser)) {
             updateRoute('staff');
         } else {
-            // Contributors can't access settings, exit to let the shell handle navigation
-            updateRoute({isExternal: true, route: ''});
+            // Contributors can't access settings; the home route resolves their landing view
+            navigate('/');
         }
-    }, [currentUser, updateRoute]);
+    }, [currentUser, navigate, updateRoute]);
 
     const confirmSuspend = async (_user: User) => {
         if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
@@ -465,6 +466,7 @@ const UserDetailModal: React.FC = () => {
     const {slug} = useParams();
     const {currentUser} = useGlobalData();
     const {updateRoute} = useSettingsNavigation();
+    const navigate = useNavigate();
     const handleError = useHandleError();
     const [isDeletingUser, setIsDeletingUser] = useState(false);
 
@@ -518,9 +520,9 @@ const UserDetailModal: React.FC = () => {
             // to the dead URL and redirect again
             updateRoute({route: 'staff', replace: true});
         } else {
-            updateRoute({isExternal: true, route: ''});
+            navigate('/');
         }
-    }, [notFoundSlug, isDeletingUser, currentUser, updateRoute]);
+    }, [notFoundSlug, isDeletingUser, currentUser, navigate, updateRoute]);
 
     return displayUser ? <UserDetailModalContent user={displayUser} onDeletingUserChange={setIsDeletingUser} /> : null;
 };

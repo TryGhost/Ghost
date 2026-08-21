@@ -78,6 +78,19 @@ describe("Email settings", () => {
         expect(verifyApi.lastRequest?.body).toEqual({token: "fake-token"});
     });
 
+    it("redeems a welcome-email verification token and clears it from the route", async () => {
+        fakeSettingsScreens();
+        const verifyApi = fakeAdminEndpoint("PUT", "/automated_emails/verifications/", {
+            automated_emails: [],
+            meta: {email_verified: "sender_reply_to"},
+        });
+        await renderAdminApp("/settings/memberemails?verifyEmail=fake-token");
+
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent("Reply-to address verified");
+        expect(verifyApi.lastRequest?.body).toEqual({token: "fake-token"});
+        await expect.poll(currentRoute).toBe("/settings/memberemails");
+    });
+
     it("finds transactional email settings in search", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {labs: {automations: true}});

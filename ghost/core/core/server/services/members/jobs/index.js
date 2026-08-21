@@ -1,4 +1,5 @@
 const path = require('path');
+const jobLogging = require('../../jobs/job-logging');
 const jobsService = require('../../jobs');
 const CleanTokensJob = require('./clean-tokens-job').default;
 
@@ -27,8 +28,11 @@ function scheduleJob(key, name, jobFile, maxHour = 6) {
     const m = Math.floor(Math.random() * 60);
     const h = Math.floor(Math.random() * maxHour);
 
+    const at = `${s} ${m} ${h} * * *`;
+
+    jobLogging.info(`[Background Job] ${name} scheduled at ${at}`);
     jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`,
+        at,
         job: path.resolve(__dirname, jobFile),
         name
     });
@@ -49,7 +53,9 @@ module.exports = {
         }
 
         const classBasedJobs = require('../../jobs-service').getInstance();
-        await classBasedJobs.scheduleRecurring(new CleanTokensJob(), {cron: randomDailyCron()});
+        const cron = randomDailyCron();
+        jobLogging.info(`[Background Job] clean-tokens scheduled at ${cron}`);
+        await classBasedJobs.scheduleRecurring(new CleanTokensJob(), {cron});
 
         hasScheduled.tokens = true;
     }

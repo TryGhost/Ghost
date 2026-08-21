@@ -4,6 +4,7 @@ import type {PostImportRow} from './row';
 import type {Clock, ImportRunStore, RowOutcome} from './store';
 
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 // The CSV is parsed inside the request (the uploaded temp file is deleted when the
@@ -40,6 +41,14 @@ const messages = {
     allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
     urlResolutionFailed: 'Content import could not resolve a URL for {count} created {postNoun}.'
 };
+
+function logLifecycle(message: string): void {
+    try {
+        logging.info(`[Background Job] content-import ${message}`);
+    } catch {
+        // Observability must not change whether an import is queued or resolves.
+    }
+}
 
 const MAX_POSTS = 100;
 
@@ -115,6 +124,7 @@ class ContentCSVImporter {
         const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
         this._store.create(runId, rows.length);
 
+        logLifecycle('queued');
         this._addJob({
             job: () => this.runImportJob(runId, importTagNames, rows),
             offloaded: false,
@@ -127,8 +137,11 @@ class ContentCSVImporter {
     // Must resolve in every case: the job manager reads a rejected inline job as a
     // defect in the job itself, and there is no retry behind it.
     private async runImportJob(runId: string, importTagNames: string[], rows: PostImportRow[]): Promise<void> {
+        const startedAt = Date.now();
+        logLifecycle('started');
         let urlFailureCount = 0;
         let firstUrlFailure: unknown;
+        let failed = false;
 
         try {
             const htmlToLexical = this._getHtmlToLexical();
@@ -217,9 +230,13 @@ class ContentCSVImporter {
             this.reportUrlFailures(urlFailureCount, firstUrlFailure);
             this._store.finish(runId);
         } catch (error) {
+            failed = true;
             this.reportUrlFailures(urlFailureCount, firstUrlFailure);
             this._report(error);
             this._store.fail(runId, messageOf(error));
+        } finally {
+            const outcome = failed ? 'failed after' : 'completed in';
+            logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
         }
     }
 

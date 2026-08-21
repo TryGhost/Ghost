@@ -6,7 +6,7 @@ import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButt
 import {ChevronDown} from 'lucide-react';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/currency';
+import {currencySelectGroups, validateCurrencyAmount} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {parseTipsAndDonationsSettings} from './tips-and-donations-settings';
 import {withErrorBoundary} from '@/settings/components/with-error-boundary';

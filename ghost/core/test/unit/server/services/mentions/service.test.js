@@ -2,7 +2,8 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const urlService = require('../../../../../core/server/services/url');
 const outputSerializerUrlUtil = require('../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
-const {getPostData, getPostUrl} = require('../../../../../core/server/services/mentions/service');
+const jobsService = require('../../../../../core/server/services/mentions-jobs');
+const {getPostData, getPostUrl, makeLoggingJobService} = require('../../../../../core/server/services/mentions/service');
 
 describe('Mentions service post url helpers', function () {
     afterEach(function () {
@@ -75,5 +76,60 @@ describe('Mentions service post url helpers', function () {
         await getPostData(post);
 
         sinon.assert.notCalled(post.load);
+    });
+});
+
+// Both mentions jobs are queued through this wrapper, so it has to hand the job
+// manager the same job it was given: same name, same inline flag, same result,
+// same error. The lifecycle logging it adds is deliberately not asserted here:
+// that would mean stubbing the shared logger, which is order-dependent under the
+// unit project's `isolate: false`.
+describe('Mentions service background job wrapper', function () {
+    let addJob;
+
+    // Runs the job the wrapper handed to the job service, the way the job
+    // manager runs an inline job.
+    function runQueuedJob() {
+        return addJob.firstCall.args[0].job();
+    }
+
+    beforeEach(function () {
+        addJob = sinon.stub(jobsService, 'addJob');
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    it('queues the job under its own name without running it', async function () {
+        const fn = sinon.stub().resolves();
+
+        await makeLoggingJobService().addJob('processWebmention', fn);
+
+        sinon.assert.calledOnce(addJob);
+        assert.equal(addJob.firstCall.args[0].name, 'processWebmention');
+        assert.equal(addJob.firstCall.args[0].offloaded, false);
+        assert.notEqual(addJob.firstCall.args[0].job, fn, 'the job is wrapped');
+        assert.ok(fn.notCalled, 'the job is not run at queue time');
+    });
+
+    it('runs the job once and returns its result untouched', async function () {
+        const result = {mentions: 1};
+        const fn = sinon.stub().resolves(result);
+
+        await makeLoggingJobService().addJob('sendWebmentions', fn);
+        const returned = await runQueuedJob();
+
+        sinon.assert.calledOnce(fn);
+        assert.equal(returned, result, 'the wrapped result is passed through by reference');
+    });
+
+    it('rethrows the original error', async function () {
+        const failure = new Error('Job failed');
+        const fn = sinon.stub().rejects(failure);
+
+        await makeLoggingJobService().addJob('sendWebmentions', fn);
+
+        await assert.rejects(runQueuedJob(), error => error === failure);
     });
 });

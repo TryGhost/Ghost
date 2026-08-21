@@ -9,7 +9,7 @@ const postParentPortMessage = (message) => {
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
 // where it left off on next run
 function cancel() {
-    postParentPortMessage('Update check job cancelled before completion');
+    postParentPortMessage('cancelled before completion');
 
     if (parentPort) {
         postParentPortMessage('cancelled');
@@ -29,6 +29,8 @@ if (parentPort) {
 }
 
 (async () => {
+    const startedAt = Date.now();
+    postParentPortMessage('execution started');
     const updateCheck = require('./');
 
     // INIT required services
@@ -48,7 +50,7 @@ if (parentPort) {
         updateCheckUrl: workerData.updateCheckUrl
     });
 
-    postParentPortMessage(`Ran update check`);
+    postParentPortMessage(`completed in ${Date.now() - startedAt}ms`);
 
     if (parentPort) {
         postParentPortMessage('done');

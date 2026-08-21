@@ -83,7 +83,6 @@
         "eslint": "catalog:",
         "eslint-plugin-no-relative-import-paths": "1.6.1",
         "ghost-admin": "workspace:*",
-        "jest-extended": "7.0.0",
         "jsdom": "catalog:",
         "msw": "catalog:",
         "sirv": "3.0.2",

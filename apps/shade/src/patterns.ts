@@ -16,6 +16,3 @@ export {default as ShareModal} from './components/patterns/share-modal';
 export type {ShareModalPreviewProps, ShareModalSocialLink} from './components/patterns/share-modal';
 export {SettingsModal, settingsModalVariants} from './components/patterns/settings-modal';
 export type {SettingsModalProps, SettingsModalSize} from './components/patterns/settings-modal';
-export * from './components/patterns/table-filter-tabs';
-export * from './components/patterns/utm-campaign-tabs';
-export type {CampaignType, TabType} from './components/patterns/utm-campaign-tabs';

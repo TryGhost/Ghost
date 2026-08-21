@@ -4,7 +4,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {TrialDaysLabel} from './tier-detail-preview';
-import {currencyToDecimal, getSymbol} from '@/settings/utils/currency';
+import {currencyToDecimal, getSymbol} from '@tryghost/admin-x-framework';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 

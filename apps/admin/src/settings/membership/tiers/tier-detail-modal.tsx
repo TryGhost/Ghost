@@ -12,7 +12,7 @@ import {useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
-import {currencies, currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/currency';
+import {currencies, currencySelectGroups, validateCurrencyAmount} from '@tryghost/admin-x-framework';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useConfirmation} from '@/settings/providers/confirmation-context';

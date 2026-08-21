@@ -1,0 +1,135 @@
+{
+  "id": "cs_test_a1JFU1pkfvMURRP8L50qzu83Xp0qpKB2QZid0dEoVANrxtQaorTTmNcHG3",
+  "object": "checkout.session",
+  "adaptive_pricing": {
+    "enabled": true
+  },
+  "after_expiration": null,
+  "allow_promotion_codes": null,
+  "amount_subtotal": 1000,
+  "amount_total": 1000,
+  "automatic_tax": {
+    "enabled": false,
+    "liability": null,
+    "provider": null,
+    "status": null
+  },
+  "billing_address_collection": null,
+  "branding_settings": {
+    "background_color": "#ffffff",
+    "border_style": "rounded",
+    "button_color": "#0074d4",
+    "display_name": "Counterproof Collective",
+    "font_family": "default",
+    "icon": null,
+    "logo": null
+  },
+  "cancel_url": "https://example.com/cancel",
+  "client_reference_id": null,
+  "client_secret": null,
+  "collected_information": null,
+  "consent": null,
+  "consent_collection": null,
+  "created": 1787146483,
+  "currency": "usd",
+  "currency_conversion": null,
+  "custom_fields": [
+    {
+      "key": "donation_message",
+      "label": {
+        "custom": "Add a personal note",
+        "type": "custom"
+      },
+      "optional": true,
+      "text": {
+        "default_value": null,
+        "maximum_length": null,
+        "minimum_length": null,
+        "value": null
+      },
+      "type": "text"
+    }
+  ],
+  "custom_text": {
+    "after_submit": null,
+    "shipping_address": null,
+    "submit": null,
+    "terms_of_service_acceptance": null
+  },
+  "customer": null,
+  "customer_account": null,
+  "customer_creation": "always",
+  "customer_details": null,
+  "customer_email": null,
+  "discounts": [],
+  "expires_at": 1787232882,
+  "integration_identifier": null,
+  "invoice": null,
+  "invoice_creation": {
+    "enabled": false,
+    "invoice_data": {
+      "account_tax_ids": null,
+      "custom_fields": null,
+      "description": null,
+      "footer": null,
+      "issuer": null,
+      "metadata": {},
+      "rendering_options": null
+    }
+  },
+  "livemode": false,
+  "locale": null,
+  "managed_payments": {
+    "enabled": false
+  },
+  "metadata": {},
+  "mode": "payment",
+  "origin_context": null,
+  "payment_intent": "pi_3U69dfCvhsRvBqJ01yIXNFSb",
+  "payment_link": null,
+  "payment_method_collection": "always",
+  "payment_method_configuration_details": {
+    "id": "pmc_1SAoFrCvhsRvBqJ0uYiAIPaH",
+    "parent": null
+  },
+  "payment_method_options": {
+    "card": {
+      "request_three_d_secure": "automatic"
+    }
+  },
+  "payment_method_types": [
+    "card",
+    "link",
+    "amazon_pay"
+  ],
+  "payment_status": "unpaid",
+  "permissions": null,
+  "phone_number_collection": {
+    "enabled": false
+  },
+  "recovered_from": null,
+  "saved_payment_method_options": {
+    "allow_redisplay_filters": [
+      "always"
+    ],
+    "payment_method_remove": "disabled",
+    "payment_method_save": null
+  },
+  "setup_intent": null,
+  "shipping": null,
+  "shipping_address_collection": null,
+  "shipping_options": [],
+  "shipping_rate": null,
+  "status": "open",
+  "submit_type": "donate",
+  "subscription": null,
+  "success_url": "https://example.com/success",
+  "total_details": {
+    "amount_discount": 0,
+    "amount_shipping": 0,
+    "amount_tax": 0
+  },
+  "ui_mode": "hosted",
+  "url": "https://checkout.stripe.com/c/pay/cs_test_redacted",
+  "wallet_options": null
+}

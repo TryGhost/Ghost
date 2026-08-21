@@ -12,11 +12,11 @@ import {SoonestTimer} from '../../lib/soonest-timer';
 import {getSchedulerPollTime} from './scheduler-poll-time';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
+import {StartAutomationsPollEvent} from './events/start-automations-poll-event';
 
 const urlUtils = require('../../../shared/url-utils').default;
 const logging = require('@tryghost/logging');
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
-const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 

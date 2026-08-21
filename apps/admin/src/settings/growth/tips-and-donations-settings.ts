@@ -1,4 +1,4 @@
-import {currencySelectGroups} from '@/settings/utils/currency';
+import {currencySelectGroups} from '@tryghost/admin-x-framework';
 import {z} from 'zod';
 
 const DEFAULT_DONATIONS_CURRENCY = 'USD';

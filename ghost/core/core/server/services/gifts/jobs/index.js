@@ -1,4 +1,5 @@
 const path = require('path');
+const jobLogging = require('../../jobs/job-logging');
 const jobsService = require('../../jobs');
 
 let hasScheduled = {
@@ -18,8 +19,11 @@ function scheduleJob(key, name, jobFile) {
     const m = Math.floor(Math.random() * 60);
     const h = Math.floor(Math.random() * 6);
 
+    const at = `${s} ${m} ${h} * * *`;
+
+    jobLogging.info(`[Background Job] ${name} scheduled at ${at}`);
     jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`,
+        at,
         job: path.resolve(__dirname, jobFile),
         name
     });

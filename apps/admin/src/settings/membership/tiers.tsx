@@ -10,7 +10,7 @@ import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {type Setting, checkStripeEnabled, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {currencySelectGroups, validateCurrencyAmount} from '@/settings/utils/currency';
+import {currencySelectGroups, validateCurrencyAmount} from '@tryghost/admin-x-framework';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useGlobalData} from '@/settings/providers/global-data-context';

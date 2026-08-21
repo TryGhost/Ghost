@@ -1,4 +1,12 @@
 import express from 'express';
+import {
+    CreateCheckoutSessionSchema,
+    CreateCustomerSchema,
+    CreatePriceSchema,
+    CreateProductSchema,
+    UpdateSubscriptionSchema,
+    parseBody
+} from './request-schemas';
 import {FakeServer} from '@/helpers/services/fake-server';
 import {
     type RecordedStripeCheckoutSession,
@@ -15,6 +23,10 @@ import {
     buildProduct
 } from './builders';
 import {renderFakeCheckoutPage, renderFakeDonationCheckoutPage} from './fake-checkout-page-renderer';
+
+// Measured against Stripe test mode; re-measure with `pnpm stripe:probe`.
+const MAX_CUSTOM_FIELDS = 3;
+const MAX_CUSTOM_FIELD_LABEL_LENGTH = 50;
 
 export class FakeStripeServer extends FakeServer {
     private readonly products: Map<string, StripeProduct> = new Map();
@@ -100,10 +112,8 @@ export class FakeStripeServer extends FakeServer {
         });
 
         this.app.post('/v1/products', (req, res) => {
-            const product = buildProduct({
-                active: this.parseBoolean(req.body.active, true),
-                name: this.parseString(req.body.name) ?? 'Test Product'
-            });
+            const body = parseBody(CreateProductSchema, req.body);
+            const product = buildProduct({active: body.active, name: body.name});
 
             this.upsertProduct(product);
             this.debug(`Created product: ${product.id} (${product.name})`);
@@ -125,9 +135,13 @@ export class FakeStripeServer extends FakeServer {
         });
 
         this.app.post('/v1/prices', (req, res) => {
-            const interval = this.parsePriceInterval(req.body.recurring?.interval);
-            const requestedProductId = this.parseString(req.body.product);
-            const customUnitAmount = this.parseCustomUnitAmount(req.body.custom_unit_amount);
+            const body = parseBody(CreatePriceSchema, req.body);
+            const interval = body.recurring?.interval;
+            const requestedProductId = body.product;
+            // Stripe drops the preset unless collection is enabled.
+            const customUnitAmount = body.custom_unit_amount?.enabled
+                ? {enabled: true as const, preset: body.custom_unit_amount.preset ?? null}
+                : null;
 
             if (requestedProductId && !this.products.has(requestedProductId)) {
                 this.debug(`Cannot create price for missing product: ${requestedProductId}`);
@@ -144,10 +158,10 @@ export class FakeStripeServer extends FakeServer {
 
             const price = buildPrice({
                 product: productId,
-                active: this.parseBoolean(req.body.active, true),
-                nickname: this.parseString(req.body.nickname) ?? null,
-                currency: this.parseString(req.body.currency)?.toLowerCase() ?? 'usd',
-                unit_amount: customUnitAmount?.enabled ? null : (this.parseNumber(req.body.unit_amount) ?? 0),
+                active: body.active,
+                nickname: body.nickname,
+                currency: body.currency,
+                unit_amount: customUnitAmount?.enabled ? null : (body.unit_amount ?? 0),
                 custom_unit_amount: customUnitAmount,
                 type: interval ? 'recurring' : 'one_time',
                 recurring: interval ? {interval} : null
@@ -190,10 +204,8 @@ export class FakeStripeServer extends FakeServer {
         });
 
         this.app.post('/v1/customers', (req, res) => {
-            const customer = buildCustomer({
-                email: this.parseString(req.body.email) ?? 'test@example.com',
-                name: this.parseString(req.body.name) ?? 'Test User'
-            });
+            const body = parseBody(CreateCustomerSchema, req.body);
+            const customer = buildCustomer({email: body.email, name: body.name});
 
             this.upsertCustomer(customer);
             this.debug(`Created customer: ${customer.id} (${customer.email})`);
@@ -318,10 +330,11 @@ export class FakeStripeServer extends FakeServer {
                 return;
             }
 
-            const itemUpdates = this.parseSubscriptionItemsUpdate(req.body.items);
-            const metadata = this.applyMetadataUpdate(subscription.metadata, req.body.metadata);
-            const cancelAtPeriodEnd = this.parseOptionalBoolean(req.body.cancel_at_period_end);
-            const defaultPaymentMethod = this.parseString(req.body.default_payment_method);
+            const body = parseBody(UpdateSubscriptionSchema, req.body);
+            const itemUpdates = body.items;
+            const metadata = this.applyMetadataUpdate(subscription.metadata, body.metadata);
+            const cancelAtPeriodEnd = body.cancel_at_period_end;
+            const defaultPaymentMethod = body.default_payment_method;
             const updatedSubscription: StripeSubscription = {
                 ...subscription,
                 metadata
@@ -425,8 +438,16 @@ export class FakeStripeServer extends FakeServer {
         });
 
         this.app.post('/v1/checkout/sessions', (req, res) => {
-            const mode = this.parseCheckoutMode(req.body.mode);
-            const discounts = this.parseDiscounts(req.body.discounts) ?? [];
+            const invalid = this.validateCheckoutSessionRequest(req.body);
+            if (invalid) {
+                this.debug(`Rejecting checkout session: ${invalid}`);
+                res.status(400).json({error: {type: 'invalid_request_error', message: invalid}});
+                return;
+            }
+
+            const body = parseBody(CreateCheckoutSessionSchema, req.body);
+            const mode = body.mode;
+            const discounts = body.discounts ?? [];
             const missingCouponId = discounts.find((discount) => {
                 return !this.coupons.has(discount.coupon);
             })?.coupon;
@@ -440,19 +461,19 @@ export class FakeStripeServer extends FakeServer {
             const session = buildCheckoutSession({
                 request: {
                     discounts,
-                    custom_fields: this.parseCustomFields(req.body.custom_fields),
-                    invoice_creation: this.parseInvoiceCreation(req.body.invoice_creation),
-                    submit_type: this.parseSubmitType(req.body.submit_type),
-                    subscription_data: this.parseSubscriptionData(req.body.subscription_data),
-                    line_items: this.parseLineItems(req.body.line_items)
+                    custom_fields: body.custom_fields,
+                    invoice_creation: body.invoice_creation,
+                    submit_type: body.submit_type,
+                    subscription_data: body.subscription_data,
+                    line_items: body.line_items
                 },
                 response: {
                     mode,
-                    customer: this.parseString(req.body.customer) ?? null,
-                    customer_email: this.parseString(req.body.customer_email) ?? null,
-                    success_url: this.parseString(req.body.success_url) ?? 'http://localhost:2368/?stripe=success',
-                    cancel_url: this.parseString(req.body.cancel_url) ?? 'http://localhost:2368/?stripe=cancel',
-                    metadata: this.parseMetadata(req.body.metadata)
+                    customer: body.customer ?? null,
+                    customer_email: body.customer_email ?? null,
+                    success_url: body.success_url,
+                    cancel_url: body.cancel_url,
+                    metadata: body.metadata
                 }
             });
 
@@ -570,26 +591,6 @@ export class FakeStripeServer extends FakeServer {
         return fallback;
     }
 
-    private parseOptionalBoolean(value: unknown): boolean | undefined {
-        if (value === undefined) {
-            return undefined;
-        }
-
-        return this.parseBoolean(value);
-    }
-
-    private parsePriceInterval(value: unknown): StripePrice['recurring'] extends {interval: infer T} | null ? T | undefined : never {
-        if (value !== 'day' && value !== 'week' && value !== 'month' && value !== 'year') {
-            return undefined;
-        }
-
-        return value;
-    }
-
-    private parseCheckoutMode(value: unknown): RecordedStripeCheckoutSession['response']['mode'] {
-        return value === 'payment' || value === 'setup' ? value : 'subscription';
-    }
-
     private parseMetadata(value: unknown): Record<string, string> {
         if (!value || typeof value !== 'object' || Array.isArray(value)) {
             return {};
@@ -625,195 +626,50 @@ export class FakeStripeServer extends FakeServer {
         return metadata;
     }
 
-    private parseCustomUnitAmount(value: unknown): StripePrice['custom_unit_amount'] {
-        if (!value || typeof value !== 'object' || Array.isArray(value)) {
-            return null;
+    /**
+     * Constraints Stripe enforces on session creation, measured against test mode at
+     * API version 2020-08-27 rather than taken from the docs or the OpenAPI spec, both
+     * of which disagree with the API here. The spec carries no `maxItems` on
+     * `custom_fields` and states the `customer_update` rule only in prose, so a
+     * schema-driven check would accept all three of these.
+     *
+     * Messages are Stripe's own, so a test asserting on a rejection asserts on the
+     * string production would see.
+     *
+     * Returns an error message, or null when the request is one Stripe would accept.
+     */
+    private validateCheckoutSessionRequest(body: Record<string, unknown>): string | null {
+        const rawFields = body.custom_fields;
+        const fields = Array.isArray(rawFields)
+            ? rawFields
+            : (rawFields && typeof rawFields === 'object' ? Object.values(rawFields) : []);
+
+        if (fields.length > MAX_CUSTOM_FIELDS) {
+            return `Array custom_fields exceeded maximum ${MAX_CUSTOM_FIELDS} allowed elements.`;
         }
 
-        const customUnitAmount = value as {enabled?: boolean | string; preset?: number | string};
-
-        if (!this.parseBoolean(customUnitAmount.enabled)) {
-            return null;
+        for (const field of fields) {
+            const label = (field as {label?: {custom?: unknown}})?.label?.custom;
+            if (typeof label === 'string' && label.length > MAX_CUSTOM_FIELD_LABEL_LENGTH) {
+                return `Invalid string: ${label}; must be at most ${MAX_CUSTOM_FIELD_LABEL_LENGTH} characters`;
+            }
         }
 
-        return {
-            enabled: true,
-            preset: this.parseNumber(customUnitAmount.preset) ?? null
-        };
-    }
+        // Presence, not truthiness: form decoding turns `customer_update=` into an empty
+        // string, which Stripe treats as an attempt to unset the parameter and refuses.
+        if ('customer_update' in body) {
+            if (body.customer_update === '') {
+                return 'You passed an empty string for \'customer_update\'. We assume empty values are an '
+                    + 'attempt to unset a parameter; however \'customer_update\' cannot be unset. You should '
+                    + 'remove \'customer_update\' from your request or supply a non-empty value.';
+            }
 
-    private parseSubscriptionData(value: unknown): RecordedStripeCheckoutSession['request']['subscription_data'] {
-        if (!value || typeof value !== 'object' || Array.isArray(value)) {
-            return undefined;
+            if (!body.customer) {
+                return '`customer_update` can only be used with `customer`.';
+            }
         }
 
-        const subscriptionData = value as {
-            trial_from_plan?: boolean | string;
-            trial_period_days?: number | string;
-            items?: Array<{plan?: string}> | Record<string, {plan?: string}>;
-            metadata?: Record<string, unknown>;
-        };
-
-        const items = Array.isArray(subscriptionData.items)
-            ? subscriptionData.items
-            : Object.values(subscriptionData.items ?? {});
-
-        const parsedTrialDays = this.parseNumber(subscriptionData.trial_period_days);
-
-        return {
-            ...(this.parseBoolean(subscriptionData.trial_from_plan) ? {trial_from_plan: true} : {}),
-            ...(typeof parsedTrialDays === 'number' ? {trial_period_days: parsedTrialDays} : {}),
-            items: items
-                .filter((item): item is {plan?: string} => item !== null && typeof item === 'object')
-                .map(item => ({plan: this.parseString(item?.plan) ?? ''}))
-                .filter(item => item.plan),
-            metadata: this.parseMetadata(subscriptionData.metadata)
-        };
-    }
-
-    private parseDiscounts(value: unknown): RecordedStripeCheckoutSession['request']['discounts'] {
-        if (!value || typeof value !== 'object') {
-            return undefined;
-        }
-
-        const discounts = Array.isArray(value)
-            ? value
-            : Object.values(value as Record<string, {coupon?: string}>);
-
-        return discounts
-            .filter((item): item is {coupon?: string} => item !== null && typeof item === 'object')
-            .map((item) => {
-                return {
-                    coupon: this.parseString(item.coupon) ?? ''
-                };
-            })
-            .filter(item => item.coupon);
-    }
-
-    private parseLineItems(value: unknown): RecordedStripeCheckoutSession['request']['line_items'] {
-        if (!value || typeof value !== 'object') {
-            return undefined;
-        }
-
-        const lineItems = Array.isArray(value)
-            ? value
-            : Object.values(value as Record<string, {
-                price?: string;
-                price_data?: {
-                    currency?: string;
-                    unit_amount?: number | string;
-                };
-                quantity?: number | string;
-            }>);
-
-        return lineItems
-            .filter((item): item is {
-                price?: string;
-                price_data?: {
-                    currency?: string;
-                    unit_amount?: number | string;
-                };
-                quantity?: number | string;
-            } => item !== null && typeof item === 'object')
-            .map((item) => {
-                const currency = this.parseString(item.price_data?.currency);
-                const unitAmount = this.parseNumber(item.price_data?.unit_amount);
-
-                return {
-                    price: this.parseString(item.price),
-                    ...(currency && unitAmount !== undefined ? {
-                        price_data: {
-                            currency,
-                            unit_amount: unitAmount
-                        }
-                    } : {}),
-                    quantity: this.parseNumber(item?.quantity) ?? 1
-                };
-            })
-            .filter(item => item.price || item.price_data);
-    }
-
-    private parseSubscriptionItemsUpdate(value: unknown): Array<{id: string; price: string}> {
-        if (!value || typeof value !== 'object') {
-            return [];
-        }
-
-        const items = Array.isArray(value)
-            ? value
-            : Object.values(value as Record<string, {id?: string; price?: string}>);
-
-        return items
-            .filter((item): item is {id?: string; price?: string} => item !== null && typeof item === 'object')
-            .map((item) => {
-                return {
-                    id: this.parseString(item.id) ?? '',
-                    price: this.parseString(item.price) ?? ''
-                };
-            })
-            .filter(item => item.id && item.price);
-    }
-
-    private parseCustomFields(value: unknown): RecordedStripeCheckoutSession['request']['custom_fields'] {
-        if (!value || typeof value !== 'object') {
-            return undefined;
-        }
-
-        const customFields = Array.isArray(value)
-            ? value
-            : Object.values(value as Record<string, {
-                key?: string;
-                label?: {custom?: string};
-                optional?: boolean | string;
-                text?: {value?: string};
-                type?: string;
-            }>);
-
-        return customFields
-            .filter((field): field is {
-                key?: string;
-                label?: {custom?: string};
-                optional?: boolean | string;
-                text?: {value?: string};
-                type?: string;
-            } => field !== null && typeof field === 'object')
-            .map((field) => {
-                const labelCustom = this.parseString(field.label?.custom);
-                const textValue = this.parseString(field.text?.value);
-
-                return {
-                    key: this.parseString(field.key) ?? '',
-                    type: field.type === 'text' ? 'text' as const : 'text' as const,
-                    optional: this.parseBoolean(field.optional),
-                    ...(labelCustom ? {label: {custom: labelCustom}} : {}),
-                    ...(textValue ? {text: {value: textValue}} : {})
-                };
-            })
-            .filter(field => field.key);
-    }
-
-    private parseInvoiceCreation(value: unknown): RecordedStripeCheckoutSession['request']['invoice_creation'] {
-        if (!value || typeof value !== 'object' || Array.isArray(value)) {
-            return undefined;
-        }
-
-        const invoiceCreation = value as {
-            enabled?: boolean | string;
-            invoice_data?: {metadata?: Record<string, unknown>};
-        };
-        const metadata = this.parseMetadata(invoiceCreation.invoice_data?.metadata);
-
-        return {
-            enabled: this.parseBoolean(invoiceCreation.enabled),
-            ...(Object.keys(metadata).length > 0 ? {invoice_data: {metadata}} : {})
-        };
-    }
-
-    private parseSubmitType(value: unknown): RecordedStripeCheckoutSession['request']['submit_type'] {
-        if (value !== 'auto' && value !== 'book' && value !== 'donate' && value !== 'pay' && value !== 'send') {
-            return undefined;
-        }
-
-        return value;
+        return null;
     }
 
     private parseCouponDuration(value: unknown): StripeCoupon['duration'] | undefined {

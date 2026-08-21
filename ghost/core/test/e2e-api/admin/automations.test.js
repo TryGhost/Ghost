@@ -9,7 +9,7 @@ const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {cleanupAutomationsFixture, EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
-const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
+const {StartAutomationsPollEvent} = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;

@@ -46,7 +46,6 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3,
             'import.meta.env.GHOST_BUILD_VERSION': JSON.stringify(process.env.GHOST_BUILD_VERSION || '')
         },
         preview: {
@@ -73,11 +72,7 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
             include: ['./test/unit/**/*'],
-            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
+            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000
         }
     });
 

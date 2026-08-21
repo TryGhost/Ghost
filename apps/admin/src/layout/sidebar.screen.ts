@@ -35,6 +35,7 @@ export const sidebarScreen = {
     appearanceMenuItem: () => page.getByRole("menuitem", { name: appearanceMenuItem }),
     appearanceOption: (option: "dark" | "light" | "system") =>
         page.getByRole("menuitem", { name: appearanceOptions[option] }),
+    errorToast: () => page.getByRole("region", { name: /Notifications/ }).getByRole("listitem"),
     themeErrorsBanner: () => page.getByRole("status").filter({ hasText: themeErrorsBannerText }),
     themeErrorsDialog: () => page.getByRole("dialog", { name: themeErrorsDialog }),
 

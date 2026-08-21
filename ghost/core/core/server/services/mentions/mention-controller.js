@@ -131,7 +131,7 @@ module.exports = class MentionController {
                     payload
                 });
             } catch (err) {
-                logging.error(err);
+                logging.error(err, '[Webmention] Failed processing webmention');
             }
         });
     }

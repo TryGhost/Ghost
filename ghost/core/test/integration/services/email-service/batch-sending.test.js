@@ -229,7 +229,7 @@ describe('Batch sending tests', function () {
         // config, an unrelated transient failure elsewhere in the same window
         // would log a non-string Error object and crash assert.match instead of
         // failing the assertion cleanly.
-        const guardLogs = errorLog.getCalls().filter(call => typeof call.args[0] === 'string' && /Tried sending email that is not pending or failed/.test(call.args[0]));
+        const guardLogs = errorLog.getCalls().filter(call => typeof call.args[0] === 'string' && /\[Background Job\] batch-sending-service-job skipped/.test(call.args[0]));
         assert.ok(guardLogs.length > 0, 'expected at least one "not pending or failed" guard error log');
     });
 

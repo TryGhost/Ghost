@@ -2,6 +2,7 @@ module.exports = {
     async init() {
         const debug = require('@tryghost/debug')('mediaInliner');
         const MediaInliner = require('./external-media-inliner');
+        const jobLogging = require('../jobs/job-logging');
         const models = require('../../models');
         const jobsService = require('../jobs');
         const adapterManager = require('../../services/adapter-manager').default;
@@ -45,10 +46,20 @@ module.exports = {
 
                 // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
                 //        limited to migrational, so there is no expectations for site's availability etc.
+                jobLogging.info('[Background Job] external-media-inliner queued');
                 await jobsService.addJob({
                     name: 'external-media-inliner',
-                    job: (data) => {
-                        return mediaInliner.inline(data.domains);
+                    job: async (data) => {
+                        const startedAt = Date.now();
+                        jobLogging.info('[Background Job] external-media-inliner started');
+                        try {
+                            const result = await mediaInliner.inline(data.domains);
+                            jobLogging.info(`[Background Job] external-media-inliner completed in ${Date.now() - startedAt}ms`);
+                            return result;
+                        } catch (err) {
+                            jobLogging.error(err, `[Background Job] external-media-inliner failed after ${Date.now() - startedAt}ms`);
+                            throw err;
+                        }
                     },
                     data: {domains},
                     offloaded: false

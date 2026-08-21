@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const jobLogging = require('../jobs/job-logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -41,6 +42,13 @@ class BatchSendingService {
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
     #AFTER_RETRY_CONFIG = {maxRetries: 20, maxTime: 30 * 60 * 1000, sleep: 2000};
     #MAILGUN_API_RETRY_CONFIG = {sleep: 10 * 1000, maxRetries: 6};
+
+    // The normal budgets (up to 30 minutes) outlive the container's grace period, so
+    // retrying just holds a batch in `submitting` until the process is killed, turning a
+    // recoverable `failed` into an orphan. Give up fast, except on the terminal status
+    // write, which has to land.
+    #SHUTDOWN_RETRY_CONFIG = {maxRetries: 0};
+    #SHUTDOWN_AFTER_RETRY_CONFIG = {maxRetries: 3, maxTime: 10 * 1000, sleep: 250};
 
     /**
      * @param {Object} dependencies
@@ -112,15 +120,60 @@ class BatchSendingService {
         }
     }
 
+    // Each config carries the policy to switch to on shutdown. retryDb applies it per
+    // attempt, so a shutdown starting mid-retry collapses the remaining budget too.
     #getBeforeRetryConfig(email) {
-        if (email._retryCutOffTime) {
-            return {...this.#BEFORE_RETRY_CONFIG, stopAfterDate: email._retryCutOffTime};
+        if (email?._retryCutOffTime) {
+            return {...this.#BEFORE_RETRY_CONFIG, stopAfterDate: email._retryCutOffTime, shutdownConfig: this.#SHUTDOWN_RETRY_CONFIG};
         }
-        return this.#BEFORE_RETRY_CONFIG;
+        return {...this.#BEFORE_RETRY_CONFIG, shutdownConfig: this.#SHUTDOWN_RETRY_CONFIG};
+    }
+
+    #getAfterRetryConfig() {
+        return {...this.#AFTER_RETRY_CONFIG, shutdownConfig: this.#SHUTDOWN_AFTER_RETRY_CONFIG};
+    }
+
+    #getMailgunRetryConfig() {
+        return {...this.#MAILGUN_API_RETRY_CONFIG, shutdownConfig: this.#SHUTDOWN_RETRY_CONFIG};
     }
 
     /**
-     * Stops the batch workers and waits for any in-flight sends to finish.
+     * Normalises retry options for a single attempt: swaps in the shutdown policy once a
+     * shutdown has started, then pins the deadline implied by maxTime (shortest wins).
+     */
+    #resolveRetryOptions(options) {
+        let resolved = options;
+
+        if (this.#shuttingDown && resolved.shutdownConfig && !resolved.shutdownPolicyApplied) {
+            resolved = {
+                ...resolved,
+                ...resolved.shutdownConfig,
+                shutdownConfig: resolved.shutdownConfig,
+                shutdownPolicyApplied: true
+            };
+        }
+
+        if (resolved.maxTime !== undefined) {
+            const stopAfterDate = new Date(Date.now() + resolved.maxTime);
+            if (!resolved.stopAfterDate || stopAfterDate < resolved.stopAfterDate) {
+                resolved = {...resolved, stopAfterDate};
+            }
+        }
+
+        return resolved;
+    }
+
+    /**
+     * Signals the batch workers to stop claiming new batches. Runs before the HTTP
+     * server drain, so no batch is claimed in a window we can't finish it in.
+     * Synchronous — draining is onShutdown's job. Idempotent.
+     */
+    onPreStop() {
+        this.#shuttingDown = true;
+    }
+
+    /**
+     * Waits for any in-flight sends to finish.
      * Called by the cleanup pipeline when the container is shutting down. Idempotent.
      */
     async onShutdown() {
@@ -138,6 +191,7 @@ class BatchSendingService {
      * @returns {void}
      */
     scheduleEmail(email) {
+        jobLogging.info(`[Background Job] batch-sending-service-job queued for email ${email.id}`);
         return this.#jobsService.addJob({
             name: 'batch-sending-service-job',
             job: this.emailJob.bind(this),
@@ -151,20 +205,26 @@ class BatchSendingService {
      * @param {{emailId: string}} data Data passed from the job service. We only need the emailId because we need to refetch the email anyway to make sure the status is right and 'locked'.
      */
     async emailJob({emailId}) {
-        logging.info(`Starting email job for email ${emailId}`);
+        jobLogging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
         const startTime = Date.now();
 
         // Check if email is 'pending' only + change status to submitting in one transaction.
         // This allows us to have a lock around the email job that makes sure an email can only have one active job.
-        let email = await this.retryDb(
-            async () => {
-                return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
-            },
-            {...this.#BEFORE_RETRY_CONFIG, description: `updateStatusLock email ${emailId} -> submitting`}
-        );
+        let email;
+        try {
+            email = await this.retryDb(
+                async () => {
+                    return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
+                },
+                {...this.#getBeforeRetryConfig(), description: `updateStatusLock email ${emailId} -> submitting`}
+            );
+        } catch (err) {
+            jobLogging.error(err, `[Background Job] batch-sending-service-job failed while acquiring the status lock after ${Date.now() - startTime}ms`);
+            throw err;
+        }
         if (!email) {
-            logging.error(`Tried sending email that is not pending or failed ${emailId}`);
+            jobLogging.error(`[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed`);
             return;
         }
 
@@ -185,10 +245,14 @@ class BatchSendingService {
                     submitted_at: new Date(),
                     error: null
                 }, {patch: true, autoRefresh: false});
-            }, {...this.#AFTER_RETRY_CONFIG, description: `email ${emailId} -> submitted`});
+            }, {...this.#getAfterRetryConfig(), description: `email ${emailId} -> submitted`});
+            jobLogging.info(`[Background Job] batch-sending-service-job completed for email ${emailId} in ${Date.now() - startTime}ms`);
         } catch (e) {
-            if (e && e.code === SHUTDOWN_CODE) {
-                logging.info(`Email ${email.id} send stopped because the container is shutting down — leaving status=submitting so it can resume on next boot`);
+            // Any failure while shutting down counts as interrupted, not failed:
+            // collapsed budgets surface transient errors as hard failures, and `failed`
+            // drops the email out of the boot resume scan.
+            if ((e && e.code === SHUTDOWN_CODE) || this.#shuttingDown) {
+                jobLogging.info(`[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`);
                 return;
             }
             const ghostError = new errors.EmailError({
@@ -197,7 +261,7 @@ class BatchSendingService {
                 message: `Error sending email ${email.id}`
             });
 
-            logging.error(ghostError);
+            jobLogging.error(ghostError, `[Background Job] batch-sending-service-job failed for email ${emailId} after ${Date.now() - startTime}ms`);
             if (this.#sentry) {
                 // Log the original error to Sentry
                 this.#sentry.captureException(e);
@@ -209,7 +273,7 @@ class BatchSendingService {
                     status: 'failed',
                     error: e.message || 'Something went wrong while sending the email'
                 }, {patch: true, autoRefresh: false});
-            }, {...this.#AFTER_RETRY_CONFIG, description: `email ${emailId} -> failed`});
+            }, {...this.#getAfterRetryConfig(), description: `email ${emailId} -> failed`});
         }
     }
 
@@ -509,8 +573,12 @@ class BatchSendingService {
             }
         };
 
-        // Run maximum MAX_SENDING_CONCURRENCY at the same time
-        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runWorker()));
+        // Run maximum MAX_SENDING_CONCURRENCY at the same time.
+        // allSettled so one worker throwing doesn't detach the others: the drain must not
+        // resolve while a sibling's terminal status write is still in flight.
+        const workerResults = await Promise.allSettled(
+            new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runWorker())
+        );
 
         logging.info(`Email ${email.id} send done: ${succeededCount}/${batches.length} batches succeeded, ${queue.length} unstarted`);
 
@@ -519,6 +587,11 @@ class BatchSendingService {
                 code: SHUTDOWN_CODE,
                 message: 'Email send stopped because the container is shutting down'
             });
+        }
+
+        const failedWorker = workerResults.find(result => result.status === 'rejected');
+        if (failedWorker) {
+            throw failedWorker.reason;
         }
 
         if (succeededCount < batches.length) {
@@ -604,7 +677,7 @@ class BatchSendingService {
                     deliveryTime,
                     emailBodyCache
                 });
-            }, {...this.#MAILGUN_API_RETRY_CONFIG, description: `Sending email batch ${originalBatch.id} ${deliveryTime ? `with delivery time ${deliveryTime}` : ''}`});
+            }, {...this.#getMailgunRetryConfig(), description: `Sending email batch ${originalBatch.id} ${deliveryTime ? `with delivery time ${deliveryTime}` : ''}`});
             succeeded = true;
 
             await this.retryDb(
@@ -618,7 +691,7 @@ class BatchSendingService {
                         error_data: null
                     }, {patch: true, require: false, autoRefresh: false});
                 },
-                {...this.#AFTER_RETRY_CONFIG, description: `save batch ${originalBatch.id} -> submitted`}
+                {...this.#getAfterRetryConfig(), description: `save batch ${originalBatch.id} -> submitted`}
             );
         } catch (err) {
             if (err.code && err.code === 'BULK_EMAIL_SEND_FAILED') {
@@ -653,8 +726,13 @@ class BatchSendingService {
                             error_data: err.errorDetails ?? null
                         }, {patch: true, require: false, autoRefresh: false});
                     },
-                    {...this.#AFTER_RETRY_CONFIG, description: `save batch ${originalBatch.id} -> failed`}
+                    {...this.#getAfterRetryConfig(), description: `save batch ${originalBatch.id} -> failed`}
                 );
+            } else if (this.#shuttingDown) {
+                // Sent, but the `submitted` write didn't land in the collapsed budget.
+                // Returning success would mark the email submitted with this row left in
+                // `submitting`, which the boot resume scan never looks at.
+                throw err;
             }
         }
 
@@ -665,7 +743,7 @@ class BatchSendingService {
                     .where({batch_id: batch.id})
                     .save({processed_at: new Date()}, {patch: true, require: false, autoRefresh: false});
             },
-            {...this.#AFTER_RETRY_CONFIG, description: `save EmailRecipients ${originalBatch.id} processed_at`}
+            {...this.#getAfterRetryConfig(), description: `save EmailRecipients ${originalBatch.id} processed_at`}
         );
 
         return succeeded;
@@ -744,12 +822,7 @@ class BatchSendingService {
      * @returns {Promise<T>}
      */
     async retryDb(func, options) {
-        if (options.maxTime !== undefined) {
-            const stopAfterDate = new Date(Date.now() + options.maxTime);
-            if (!options.stopAfterDate || stopAfterDate < options.stopAfterDate) {
-                options = {...options, stopAfterDate};
-            }
-        }
+        options = this.#resolveRetryOptions(options);
         const retryCount = (options.retryCount ?? 0);
 
         try {
@@ -765,6 +838,10 @@ class BatchSendingService {
 
             return response;
         } catch (e) {
+            // Shutdown may have started while this attempt was pending — re-resolve so
+            // the collapsed budget decides whether we retry at all
+            options = this.#resolveRetryOptions(options);
+
             const sleep = (options.sleep ?? 0);
             if (retryCount >= options.maxRetries || (options.stopAfterDate && (new Date(Date.now() + sleep)) > options.stopAfterDate)) {
                 if (retryCount > 0) {
@@ -794,7 +871,16 @@ class BatchSendingService {
                     setTimeout(resolve, sleep);
                 });
             }
-            return await this.retryDb(func, {...options, retryCount: retryCount + 1, sleep: sleep * 2});
+
+            // Budget is only checked after a failure, so recursing always spends another
+            // attempt first. Re-check here, or a shutdown that began during the backoff
+            // gets one more go — a fresh Mailgun send well into a shutdown.
+            const nextOptions = this.#resolveRetryOptions({...options, retryCount: retryCount + 1, sleep: sleep * 2});
+            if (nextOptions.retryCount > nextOptions.maxRetries || (nextOptions.stopAfterDate && new Date() > nextOptions.stopAfterDate)) {
+                throw e;
+            }
+
+            return await this.retryDb(func, nextOptions);
         }
     }
 

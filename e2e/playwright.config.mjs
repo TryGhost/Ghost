@@ -48,12 +48,17 @@ const config = {
         },
         {
             name: 'main',
-            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts', 'analytics/**/*.test.ts'],
+            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts', 'analytics/**/*.test.ts', 'stripe-fixtures/**/*.test.ts'],
             testDir: './tests',
             use: {
                 viewport: {width: 1920, height: 1080}
             },
             dependencies: ['global-setup']
+        },
+        {
+            name: 'fixtures',
+            testDir: './tests',
+            testMatch: ['stripe-fixtures/**/*.test.ts']
         },
         {
             name: 'analytics',

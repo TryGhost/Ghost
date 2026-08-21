@@ -19,8 +19,7 @@ export default (function viteConfig() {
             }
         },
         define: {
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
         },
         preview: {
             port: 4174
@@ -78,11 +77,7 @@ export default (function viteConfig() {
                     'src/**/*.d.ts',
                     'src/types/**/*'
                 ]
-            },
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
+            }
         }
     });
 });
