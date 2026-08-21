@@ -150,12 +150,12 @@ export function ThemeValidationIssueList({problems}: {problems: ThemeProblem[]})
     }
 
     return (
-        <div>
+        <div className='flex flex-col gap-4'>
             <h3 className='flex items-center gap-2 text-base font-semibold text-foreground'>
                 <LucideIcon.TriangleAlert className='size-4 shrink-0 text-state-warning' />
                 {formatIssueSummary(problems)}
             </h3>
-            <ValidationProblemList className='mt-4' problems={problems} />
+            <ValidationProblemList problems={problems} />
         </div>
     );
 }
