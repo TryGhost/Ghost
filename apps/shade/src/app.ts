@@ -5,16 +5,12 @@ export {useFocusContext} from '@/providers/shade-provider';
 export type {FetchKoenigLexical} from '@/providers/shade-provider';
 
 export {
-    formatUrl,
-    isValidDomain,
     formatQueryDate,
     getRangeDates,
     getRangeForStartDate,
     formatDisplayDateWithRange,
     centsToDollars,
     getYRange,
-    getYRangeWithMinPadding,
-    getYRangeWithLargePadding,
     calculateYAxisWidth,
     formatMemberName,
     getMemberInitials

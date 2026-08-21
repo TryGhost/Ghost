@@ -1,113 +1,6 @@
 import moment, {Moment} from 'moment-timezone';
-import isEmail from 'validator/es/lib/isEmail';
 
 import {formatDisplayDate} from './ds-utils';
-
-// Check if string is a domain
-export const isValidDomain = (value: string) => {
-    return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:\/[\w-./?%&=]*)?$/i.test(value);
-};
-
-// Helper to format a URL
-export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) => {
-    if (nullable && !value) {
-        return {save: null, display: ''};
-    }
-
-    let url = value.trim();
-
-    if (!url) {
-        if (baseUrl) {
-            return {save: '/', display: baseUrl};
-        }
-        return {save: '', display: ''};
-    }
-
-    // if we have an email address, add the mailto:
-    if (isEmail(url)) {
-        return {save: `mailto:${url}`, display: `mailto:${url}`};
-    }
-
-    const isAnchorLink = url.match(/^#/);
-    if (isAnchorLink) {
-        return {save: url, display: url};
-    }
-
-    const isProtocolRelative = url.match(/^(\/\/)/);
-    if (isProtocolRelative) {
-        return {save: url, display: url};
-    }
-
-    if (!baseUrl) {
-        // Absolute URL with no base URL
-        if (!url.startsWith('http')) {
-            url = `https://${url}`;
-        }
-    }
-
-    // If it doesn't look like a URL, leave it as is rather than assuming it's a pathname etc
-    if (!url.match(/^[a-zA-Z0-9-]+:/) && !url.match(/^(\/|\?)/)) {
-        return {save: url, display: url};
-    }
-
-    let parsedUrl: URL;
-
-    try {
-        parsedUrl = new URL(url, baseUrl);
-    } catch {
-        return {save: url, display: url};
-    }
-
-    if (!baseUrl) {
-        return {save: parsedUrl.toString(), display: parsedUrl.toString()};
-    }
-    const parsedBaseUrl = new URL(baseUrl);
-
-    let isRelativeToBasePath = parsedUrl.pathname && parsedUrl.pathname.indexOf(parsedBaseUrl.pathname) === 0;
-
-    // if our path is only missing a trailing / mark it as relative
-    if (`${parsedUrl.pathname}/` === parsedBaseUrl.pathname) {
-        isRelativeToBasePath = true;
-    }
-
-    const isOnSameHost = parsedUrl.host === parsedBaseUrl.host;
-
-    // if relative to baseUrl, remove the base url before sending to action
-    if (isOnSameHost && isRelativeToBasePath) {
-        url = url.replace(/^[a-zA-Z0-9-]+:/, '');
-        url = url.replace(/^\/\//, '');
-        url = url.replace(parsedBaseUrl.host, '');
-        url = url.replace(parsedBaseUrl.pathname, '');
-
-        if (!url.match(/^\//)) {
-            url = `/${url}`;
-        }
-    }
-
-    if (!url.match(/\/$/) && !url.match(/[.#?]/)) {
-        url = `${url}/`;
-    }
-
-    // we update with the relative URL but then transform it back to absolute
-    // for the input value. This avoids problems where the underlying relative
-    // value hasn't changed even though the input value has
-    return {save: url, display: displayFromBase(url, baseUrl)};
-};
-
-// Helper to display a URL from a base URL
-const displayFromBase = (url: string, baseUrl: string) => {
-    // Ensure base url has a trailing slash
-    if (!baseUrl.endsWith('/')) {
-        baseUrl += '/';
-    }
-
-    // Remove leading slash from url
-    if (url.startsWith('/')) {
-        url = url.substring(1);
-    }
-
-    return new URL(url, baseUrl).toString();
-};
 
 // Format date for stats query
 export const formatQueryDate = (date: Moment) => {
@@ -121,45 +14,6 @@ export const centsToDollars = (value: number) => {
 
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
-
-// Calculates the Y-axis range with padding
-export const getYRangeWithLargePadding = (data: { value: number }[]): {min: number; max: number} => {
-    if (!data.length) {
-        return {min: 0, max: 1};
-    }
-
-    const values = data.map(d => Number(d.value));
-    let min = Math.min(...values);
-    let max = Math.max(...values);
-
-    // Helper function to round to nearest multiple of 10^n
-    const roundToNearestMultiple = (num: number): number => {
-        if (num === 0) {
-            return 0;
-        }
-
-        // Determine the order of magnitude (10^n)
-        const magnitude = Math.floor(Math.log10(num));
-        const multiple = Math.pow(10, magnitude);
-
-        // Round to nearest multiple
-        return Math.round(num / multiple) * multiple;
-    };
-
-    // Add padding based on magnitude before rounding
-    const magnitude = Math.floor(Math.log10(Math.max(max, 1)));
-    const padding = Math.pow(10, magnitude);
-
-    // Add padding and ensure min is not negative
-    min = Math.max(0, min - padding);
-    max = max + padding;
-
-    // Round to nearest multiple of 10^n
-    min = roundToNearestMultiple(min);
-    max = roundToNearestMultiple(max);
-
-    return {min, max};
-};
 
 export const getYRange = (data: { value: number }[]): {min: number; max: number} => {
     if (!data.length) {
@@ -210,19 +64,6 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     min = Math.max(0, min);
 
     return {min, max};
-};
-
-// Unfortunately in order to force Recharts area charts to start at a certain value
-// we need to use allowDataOverflow = true on the yAxis. This however clips the min
-// value if it reaches 0. In order to prevent this happening we add a bit of padding
-// to the min value.
-export const getYRangeWithMinPadding = (range: {min: number; max: number}) => {
-    if (range.min !== 0) {
-        return [range.min, range.max];
-    }
-    const padding = 0.005;
-    const minPadding = -2;
-    return [Math.min(range.min - (range.max * padding), minPadding), range.max];
 };
 
 // Calculates the width needed for the Y-axis based on the formatted tick values
