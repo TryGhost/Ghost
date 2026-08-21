@@ -44,7 +44,40 @@ async function fakeThemeDownload(name: string): Promise<void> {
     fakeAdminEndpoint("GET", `/themes/${name}/download/`, await archiveBuffer(), { contentType: "application/zip" });
 }
 
-function themeProblem(overrides: { code: string; level?: string; rule?: string }) {
+/**
+ * This tier serves no Ember CSS, so nothing here collides with Ghost's legacy
+ * unlayered stylesheet unless the collision is staged. Without staging, both
+ * assertions AND screenshots taken from this harness flatter the UI for
+ * anything `ghost.css` touches.
+ */
+function stageLegacyGhostCss(css: string): void {
+    const style = document.createElement("style");
+    style.textContent = css;
+    document.head.appendChild(style);
+    onTestFinished(() => style.remove());
+}
+
+/**
+ * Verbatim from `ghost/core/core/built/admin/assets/ghost.css` — a bare element
+ * selector that turns every `<code>` in Admin into a bordered grey chip with
+ * pink text.
+ */
+const LEGACY_CODE_CSS = `code, tt {
+    padding: 0.2rem 0.3rem;
+    border: 1px solid hsl(203, 12.29%, 91.14%);
+    background: hsl(205, 12.29%, 95.14%);
+    border-radius: 2px;
+    color: hsl(332.04, 96.26%, 43.04%);
+    vertical-align: middle;
+    white-space: pre-wrap;
+    font-size: 0.85em;
+    line-height: 1em;
+}`;
+
+/** Tachyons' `.rotate-180`, which Tailwind v4 expresses as `rotate` rather than `transform`. */
+const LEGACY_TACHYONS_CSS = ".rotate-180 { transform: rotate(180deg); }";
+
+function themeProblem(overrides: { code: string; level?: string; rule?: string; details?: string }) {
     return {
         level: "warning",
         rule: "Replace {{@blog.url}} with {{@site.url}}",
@@ -67,6 +100,21 @@ async function uploadThemeFile(file: File): Promise<void> {
         throw new Error("Theme upload input was not rendered");
     }
     await page.elementLocator(input).upload(file);
+}
+
+/** Line height as a multiple of font size, so sizes of different scale compare. */
+function lineRatio(style: CSSStyleDeclaration): number {
+    return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+}
+
+/** The one `<code>` in the open dialog reading exactly `text`. */
+function codeSpan(text: string): HTMLElement {
+    const dialog = settingsScreen.confirmationModal().element();
+    const match = [...dialog.querySelectorAll("code")].find(node => node.textContent === text);
+    if (!match) {
+        throw new Error(`No <code> reading ${text} was rendered`);
+    }
+    return match;
 }
 
 async function editorTextbox() {
@@ -204,10 +252,7 @@ describe("Theme settings", () => {
         // full circle, landing back where it started — the bug this dialog was
         // rebuilt to fix. This tier serves no Ember CSS, so the collision is staged
         // here; the chevron must rotate via a selector that rule cannot match.
-        const legacyTachyons = document.createElement("style");
-        legacyTachyons.textContent = ".rotate-180 { transform: rotate(180deg); }";
-        document.head.appendChild(legacyTachyons);
-        onTestFinished(() => legacyTachyons.remove());
+        stageLegacyGhostCss(LEGACY_TACHYONS_CSS);
 
         const row = settingsScreen.confirmationModal().getByRole("button", { name: /GS001-DEPR-PURL/ });
         await expect.element(row).toBeVisible();
@@ -221,6 +266,62 @@ describe("Theme settings", () => {
         await expect.poll(() => getComputedStyle(chevron()).rotate).toBe("180deg");
         // ...and nothing may add a second rotation on top of that one.
         expect(getComputedStyle(chevron()).transform).toBe("none");
+    });
+
+    it("renders gscan's inline code plainly under the legacy code rule", async () => {
+        fakeThemeWorld();
+        fakeAdminEndpoint("POST", "/themes/upload/", {
+            themes: [
+                theme({
+                    name: "mytheme",
+                    warnings: [
+                        themeProblem({
+                            code: "GS001-DEPR-PURL",
+                            rule: "Replace <code>{{@blog.url}}</code> with <code>{{@site.url}}</code>",
+                            details: "The <code>{{@blog.title}}</code> helper is deprecated.",
+                        }),
+                    ],
+                }),
+            ],
+        });
+        const buffer = await archiveBuffer();
+        await renderAdminApp("/settings/design/change-theme");
+
+        await settingsScreen.themeModal().getByRole("button", { name: "Upload theme" }).click();
+        await uploadThemeFile(new File([buffer], "mytheme.zip", { type: "application/zip" }));
+        stageLegacyGhostCss(LEGACY_CODE_CSS);
+
+        const row = settingsScreen.confirmationModal().getByRole("button", { name: /GS001-DEPR-PURL/ });
+        await expect.element(row).toBeVisible();
+        await row.click();
+        await expect.element(settingsScreen.confirmationModal().getByText(/deprecated/)).toBeVisible();
+
+        // gscan's own markup: mono, inheriting the line it sits on, no chip.
+        for (const text of ["{{@blog.url}}", "{{@blog.title}}"]) {
+            const code = codeSpan(text);
+            const surrounding = getComputedStyle(code.parentElement!);
+            const style = getComputedStyle(code);
+            expect(style.fontFamily).toContain("mono");
+            expect(style.color).toBe(surrounding.color);
+            // The legacy `line-height: 1em` computes to exactly the font size;
+            // inheriting the surrounding ratio is what its absence would give.
+            expect(style.lineHeight).not.toBe(style.fontSize);
+            expect(lineRatio(style)).toBeCloseTo(lineRatio(surrounding), 2);
+            expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+            expect(style.borderTopWidth).toBe("0px");
+            expect(style.borderTopLeftRadius).toBe("0px");
+            expect(style.paddingLeft).toBe("0px");
+            expect(style.verticalAlign).toBe("baseline");
+        }
+
+        // The affected-files chip is deliberately chipped, so it keeps its
+        // background — but the legacy border and mid-line alignment still go.
+        const chip = codeSpan("default.hbs");
+        expect(getComputedStyle(chip).backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+        expect(getComputedStyle(chip).borderTopWidth).toBe("0px");
+        expect(getComputedStyle(chip).verticalAlign).toBe("baseline");
+        // Same foreground as the rule line's code, i.e. not the legacy pink.
+        expect(getComputedStyle(chip).color).toBe(getComputedStyle(codeSpan("{{@blog.url}}")).color);
     });
 
     it("keeps the installed-theme dialog open when activation fails", async () => {

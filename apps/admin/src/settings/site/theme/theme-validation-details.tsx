@@ -5,12 +5,21 @@ import {type ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 /**
+ * Ghost's legacy Ember stylesheet ships an unlayered `code, tt` rule that gives
+ * every `<code>` in Admin a bordered grey chip with pink text. A bare element
+ * selector loses to any class, so each property it sets has to be answered
+ * explicitly — including `border-radius`, `vertical-align` and `line-height`,
+ * whose absence reads as baseline drift rather than an obvious box.
+ */
+const LEGACY_CODE_RESET = '[&_code]:rounded-none [&_code]:border-0 [&_code]:bg-transparent [&_code]:p-0 [&_code]:align-baseline [&_code]:text-inherit [&_code]:leading-[inherit]';
+
+/**
  * gscan writes `rule` and `details` as HTML containing `<code>`, `<br>` and
  * `<a>`. We render it verbatim, so the mono treatment for inline code is
  * applied by styling those descendants rather than touching the markup.
  */
-const RULE_HTML = 'text-base font-semibold text-foreground [&_code]:font-mono [&_code]:text-md';
-const DETAILS_HTML = 'text-sm text-muted-foreground [&_a]:underline [&_code]:font-mono [&_code]:text-base';
+const RULE_HTML = `text-base font-semibold text-foreground [&_code]:font-mono [&_code]:text-md ${LEGACY_CODE_RESET}`;
+const DETAILS_HTML = `text-sm text-muted-foreground [&_a]:underline [&_code]:font-mono [&_code]:text-base ${LEGACY_CODE_RESET}`;
 
 function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | 'secondary' {
     if (problem.level === 'warning') {
@@ -58,7 +67,9 @@ function ProblemDetails({problem}: {problem: ThemeProblem}) {
                     <ul className='space-y-1 text-sm text-muted-foreground'>
                         {problem.failures.map(failure => (
                             <li key={`${failure.ref}-${failure.message || ''}`}>
-                                <code className='rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground'>{failure.ref}</code>
+                                {/* This chip keeps a deliberate `bg-muted` treatment; it still has to
+                                    turn off the legacy rule's border and mid-line alignment. */}
+                                <code className='rounded border-0 bg-muted px-1 py-0.5 align-baseline font-mono text-xs leading-[inherit] text-foreground'>{failure.ref}</code>
                                 {failure.message ? <span>: {failure.message}</span> : null}
                             </li>
                         ))}
