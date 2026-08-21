@@ -10,8 +10,8 @@ import { type MemberCustomFieldCsvColumn } from '@tryghost/admin-x-framework/api
 // the error wording are the shared module's, and are covered by its own tests — the custom field
 // cases below stay here because they are the reason this modal narrows what it offers.
 describe('custom fields mapping helpers', () => {
-  it('adds tier as an available field mapping when enabled', () => {
-    const fieldMappings = getFieldMappings({ importMemberTier: true });
+  it('includes tier as an available field mapping', () => {
+    const fieldMappings = getFieldMappings();
 
     expect(fieldMappings).toContainEqual({ label: 'Tier', value: 'import_tier' });
   });

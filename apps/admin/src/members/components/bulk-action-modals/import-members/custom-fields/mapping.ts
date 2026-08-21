@@ -1,7 +1,4 @@
-import {
-  FIELD_MAPPINGS,
-  IMPORT_TIER_FIELD_MAPPING,
-} from '@/members/components/bulk-action-modals/import-members/mapping';
+import { FIELD_MAPPINGS } from '@/members/components/bulk-action-modals/import-members/mapping';
 import { isCustomFieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 /**
@@ -25,10 +22,8 @@ export {
 
 // The native targets only. Custom fields are offered from their own list, chosen by kind, so
 // they are not folded in here — auto-detection still sees both, through the shared detection.
-export function getFieldMappings({
-  importMemberTier = false,
-}: { importMemberTier?: boolean } = {}) {
-  return [...FIELD_MAPPINGS, ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])];
+export function getFieldMappings() {
+  return [...FIELD_MAPPINGS];
 }
 
 /**
