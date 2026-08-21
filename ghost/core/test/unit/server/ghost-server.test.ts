@@ -49,13 +49,13 @@ describe('GhostServer', function () {
     });
 
     it('errors if the server cannot be started', async function () {
-      const forbiddenPort = 10;
       const ghostServer = new GhostServer({
         url: 'http://localhost:2368',
         env: 'testing',
         serverConfig: {
-          host: '127.0.0.1',
-          port: forbiddenPort,
+          // Bogus host.
+          host: '192.0.2.1',
+          port: 0,
           shutdownTimeout: 1,
           testmode: false,
         },
