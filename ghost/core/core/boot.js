@@ -363,6 +363,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const domainEvents = require('@tryghost/domain-events');
     const {automationsService} = require('./server/services/automations');
     const automationsApi = require('./server/services/automations/automations-api');
+    const automationAnalytics = require('./server/services/automation-analytics');
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
@@ -372,6 +373,11 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const urlUtils = require('./shared/url-utils').default;
     const settingsCache = require('./shared/settings-cache');
     const internalKeys = require('./server/services/internal-keys').default;
+
+    automationAnalytics.init();
+    ghostServer.registerCleanupTask(async () => {
+        await automationAnalytics.stop();
+    }, 'Automation Analytics');
 
     // Initialize things that other services depend on first.
     emailAddressService.init();
@@ -461,6 +467,9 @@ async function initBackgroundServices({config}) {
     if (process.env.NODE_ENV.startsWith('test')) {
         return;
     }
+
+    const automationAnalytics = require('./server/services/automation-analytics');
+    automationAnalytics.start();
 
     // Resume any newsletter sends interrupted by a prior container shutdown.
     // Runs before activitypub.init so an activitypub failure can't disable recovery.

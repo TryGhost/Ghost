@@ -9,6 +9,7 @@ import ghostConfig from '../../../../../core/shared/config';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomatedEmailEvents, AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 import {fromDatabaseDate, toDatabaseDate} from '../../../../../core/server/lib/db-date';
+import type {AutomationAnalytics, AutomationAnalyticsSyncBatch} from '../../../../../core/server/services/automation-analytics';
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
@@ -705,6 +706,33 @@ describe('automations repository', function () {
             assert.equal(otherAutomation.stats.total_run_count, 1);
         });
 
+        it('uses Tinybird stats when automation analytics is configured', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const analytics: AutomationAnalytics = {
+                isConfigured: () => true,
+                enqueue: async () => {},
+                fetchStats: async () => new Map([[automationId, {
+                    last_run_created_at: new Date('2026-08-20T10:00:00.000Z'),
+                    total_run_count: 1000000,
+                    in_progress_run_count: 42
+                }]])
+            };
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: null,
+                automationAnalytics: analytics
+            });
+
+            const result = await repo.browse();
+            const automation = result.data.find(candidate => candidate.id === automationId);
+            assert(automation);
+            assert.deepEqual(automation.stats, {
+                last_run_created_at: new Date('2026-08-20T10:00:00.000Z'),
+                total_run_count: 1000000,
+                in_progress_run_count: 42
+            });
+        });
+
         it('returns zero for "in progress run count" if the automation has no runs', async function () {
             const result = await repo.browse();
 
@@ -812,6 +840,93 @@ describe('automations repository', function () {
                 .first();
 
             assert.equal(Number(totalActions?.count), 2);
+        });
+    });
+
+    describe('automation analytics sync', function () {
+        let batches: AutomationAnalyticsSyncBatch[];
+
+        beforeEach(function () {
+            batches = [];
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: null,
+                automationAnalytics: {
+                    isConfigured: () => false,
+                    fetchStats: async () => new Map(),
+                    enqueue: async (_trx, batch) => {
+                        batches.push(batch);
+                    }
+                }
+            });
+        });
+
+        it('batches a new run with its initial pending step', async function () {
+            await repo.trigger({
+                memberEmail: 'analytics@example.com',
+                memberId: 'member_analytics',
+                memberStatus: 'free'
+            });
+
+            assert.equal(batches.length, 1);
+            assert.equal(batches[0].runs.length, 1);
+            assert.equal(batches[0].steps.length, 1);
+            assert.equal(batches[0].steps[0].status, 'pending');
+        });
+
+        it('batches a terminal step with its next pending step', async function () {
+            await repo.trigger({
+                memberEmail: 'analytics@example.com',
+                memberId: 'member_analytics',
+                memberStatus: 'free'
+            });
+            const run = await getRunByMemberEmail('analytics@example.com');
+            assert(run);
+            const initialStep = await getStepByRunId(run.id);
+            assert(initialStep);
+            await knex('automation_run_steps').where('id', initialStep.id).update({ready_at: toDatabaseDate(new Date(0))});
+            batches = [];
+
+            const lockedStep = await getLockedStep(initialStep.id);
+            await repo.finishStepAndEnqueueNext(lockedStep);
+
+            assert.equal(batches.length, 1);
+            assert.deepEqual(batches[0].steps.map(step => step.status), ['finished', 'pending']);
+        });
+
+        it('does not sync lock or retry transitions', async function () {
+            await repo.trigger({
+                memberEmail: 'analytics@example.com',
+                memberId: 'member_analytics',
+                memberStatus: 'free'
+            });
+            const run = await getRunByMemberEmail('analytics@example.com');
+            assert(run);
+            const initialStep = await getStepByRunId(run.id);
+            assert(initialStep);
+            await knex('automation_run_steps').where('id', initialStep.id).update({ready_at: toDatabaseDate(new Date(0))});
+            batches = [];
+
+            const lockedStep = await getLockedStep(initialStep.id);
+            await repo.retryStep(lockedStep, new Date(Date.now() + 60_000));
+
+            assert.equal(batches.length, 0);
+        });
+
+        it('syncs steps cancelled by automation deactivation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            await insertStep(run.id, action.revision_id);
+
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+
+            assert.equal(batches.length, 1);
+            assert.equal(batches[0].runs.length, 0);
+            assert.deepEqual(batches[0].steps.map(step => step.status), ['automation disabled']);
         });
     });
 

@@ -4,6 +4,7 @@ import ObjectId from 'bson-objectid';
 import {z} from 'zod';
 import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import {parseFakeWaitHoursMultiplier} from './fake-wait-hours-multiplier';
+import * as automationAnalytics from '../automation-analytics';
 import type {
     AutomationsRepository,
     EditAutomationData
@@ -69,7 +70,8 @@ const editAutomationDataSchema = z.object({
 
 const repository = createDatabaseAutomationsRepository({
     knex,
-    fakeWaitHoursMultiplier: parseFakeWaitHoursMultiplier(config.get('automations:fakeWaitHoursMultiplier'))
+    fakeWaitHoursMultiplier: parseFakeWaitHoursMultiplier(config.get('automations:fakeWaitHoursMultiplier')),
+    automationAnalytics
 });
 
 export async function browse() {

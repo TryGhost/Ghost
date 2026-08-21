@@ -1,0 +1,18 @@
+SCHEMA >
+    `site_uuid` LowCardinality(String) `json:$.site_uuid`,
+    `id` String `json:$.id`,
+    `automation_run_id` String `json:$.automation_run_id`,
+    `automation_action_revision_id` String `json:$.automation_action_revision_id`,
+    `created_at` DateTime `json:$.created_at`,
+    `updated_at` DateTime `json:$.updated_at`,
+    `ready_at` DateTime `json:$.ready_at`,
+    `started_at` Nullable(DateTime) `json:$.started_at`,
+    `finished_at` Nullable(DateTime) `json:$.finished_at`,
+    `status` LowCardinality(String) `json:$.status`,
+    `step_attempts` UInt32 `json:$.step_attempts`,
+    `version` UInt8 `json:$.version`
+
+ENGINE "ReplacingMergeTree"
+ENGINE_PARTITION_KEY ""
+ENGINE_SORTING_KEY "site_uuid, id"
+ENGINE_VER "version"

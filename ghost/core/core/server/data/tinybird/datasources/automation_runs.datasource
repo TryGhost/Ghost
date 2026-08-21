@@ -1,0 +1,12 @@
+SCHEMA >
+    `site_uuid` LowCardinality(String) `json:$.site_uuid`,
+    `id` String `json:$.id`,
+    `automation_id` String `json:$.automation_id`,
+    `created_at` DateTime `json:$.created_at`,
+    `updated_at` DateTime `json:$.updated_at`,
+    `version` UInt8 `json:$.version`
+
+ENGINE "ReplacingMergeTree"
+ENGINE_PARTITION_KEY ""
+ENGINE_SORTING_KEY "site_uuid, id"
+ENGINE_VER "version"

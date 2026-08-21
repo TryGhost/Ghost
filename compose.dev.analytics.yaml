@@ -37,6 +37,9 @@ services:
     stop_grace_period: 2s
     ports:
       - "7181:7181"
+    volumes:
+      - tinybird-clickhouse:/var/lib/clickhouse
+      - tinybird-metadata:/redis-data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
       interval: 30s
@@ -74,6 +77,7 @@ services:
       # /mnt/shared-config/.env.tinybird by docker/ghost-dev/entrypoint.sh
       TB_HOST: http://tinybird-local:7181
       TB_LOCAL_HOST: tinybird-local
+      tinybird__endpoint: http://tinybird-local:7181
       tinybird__stats__endpoint: http://tinybird-local:7181
       tinybird__stats__endpointBrowser: http://localhost:7181
       tinybird__tracker__endpoint: http://localhost:2368/.ghost/analytics/api/v1/page_hit
@@ -86,5 +90,6 @@ services:
 
 volumes:
   shared-config:
-
+  tinybird-clickhouse:
+  tinybird-metadata:
 

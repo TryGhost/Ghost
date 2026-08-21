@@ -44,6 +44,19 @@ pnpm data:analytics:clear
 **Note:** Use `pnpm docker:reset:data` when the Docker environment is running.
 Use `pnpm reset:data` when running Ghost locally without Docker.
 
+## Automation Stats Benchmark
+
+`benchmark-automation-stats.mjs` ingests 1 million runs and 5 million step IDs,
+with pending and terminal versions for every step, then measures five warm queries.
+
+```bash
+TINYBIRD_ADMIN_TOKEN=... node ghost/core/core/server/data/tinybird/scripts/benchmark-automation-stats.mjs
+```
+
+Use `RUN_COUNT`, `STEP_COUNT`, `AUTOMATION_COUNT`, `BATCH_SIZE`, `ITERATIONS`,
+`SITE_UUID`, and `TINYBIRD_HOST` to override defaults. Use a unique `SITE_UUID`
+for each run because benchmark data is append-only.
+
 ## Configuration
 
 ### Database Connection
