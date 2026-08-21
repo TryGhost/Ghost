@@ -223,7 +223,6 @@
               "@tryghost/comments-ui",
               "@tryghost/signup-form",
               "@tryghost/sodo-search",
-              "@tryghost/announcement-bar",
               "@tryghost/admin-toolbar"
             ]
           }
