@@ -14,6 +14,16 @@ export function previewRuntimeBootstrap(): void {
     const selectedId = runtimeScript?.dataset.builderSelection || null;
     let inlineEditing = runtimeScript?.dataset.builderInlineEditing === 'true';
     let selectionMode = runtimeScript?.dataset.builderSelectionMode === 'true';
+    const nativeForms = runtimeScript?.dataset.builderNativeForms === 'true';
+    const artifactDocument = runtimeScript?.dataset.builderArtifactDocument === 'true';
+    const artifactMarkers = new WeakMap<Element, string>();
+    const artifactElementFingerprints = new WeakMap<Element, string>();
+    const artifactElementIdentities = new WeakMap<Element, {baseFingerprint: string; occurrence: number; reusable: boolean}>();
+    const artifactElements = new Map<string, Element>();
+    const artifactFingerprints = new Map<string, Element>();
+    const artifactFingerprintCounts = new Map<string, number>();
+    const artifactFingerprintFreeSlots = new Map<string, {slots: number[]; head: number}>();
+    const artifactFingerprintActiveCounts = new Map<string, number>();
     if (!channel || !documentId) {
         return;
     }
@@ -124,7 +134,11 @@ export function previewRuntimeBootstrap(): void {
         }
         let element: Element | null = null;
         if (hasMarker) {
-            element = Array.from(document.querySelectorAll('[data-edit]')).find(candidate => candidate.getAttribute('data-edit') === value) ?? null;
+            const artifactElement = artifactElements.get(value);
+            if (artifactElement && !artifactElement.isConnected) {
+                artifactElements.delete(value);
+            }
+            element = artifactElement?.isConnected ? artifactElement : Array.from(document.querySelectorAll('[data-edit]')).find(candidate => candidate.getAttribute('data-edit') === value) ?? null;
         } else {
             try {
                 element = document.querySelector(value);
@@ -144,7 +158,7 @@ export function previewRuntimeBootstrap(): void {
         const selector = '[role],header,nav,main,aside,footer,form,h1,h2,h3,h4,h5,h6,a[href],button,input,select,textarea';
         const candidates = Array.from(document.querySelectorAll(selector)).filter(element => !inaccessible(element));
         const outline = candidates.slice(0, limits.outline).map((element) => {
-            const source = parseSource(element.getAttribute('data-edit'));
+            const source = parseSource(artifactMarkers.get(element) ?? element.getAttribute('data-edit'));
             return {tag: element.tagName.toLowerCase(), role: role(element), name: name(element), source: source.source, sourceTruncated: source.truncated};
         });
         const text = bounded(document.body ? visibleText(document.body) : '', limits.text);
@@ -170,7 +184,7 @@ export function previewRuntimeBootstrap(): void {
         }));
         const bounds = element.getBoundingClientRect();
         const text = bounded(visibleText(element), limits.elementText);
-        const source = parseSource(element.getAttribute('data-edit'));
+        const source = parseSource(artifactMarkers.get(element) ?? element.getAttribute('data-edit'));
         return {
             tag: element.tagName.toLowerCase(),
             role: role(element),
@@ -243,16 +257,144 @@ export function previewRuntimeBootstrap(): void {
             warnings: unavailableCanvases ? [`${unavailableCanvases} canvas${unavailableCanvases === 1 ? ' was' : 'es were'} replaced in the screenshot because its pixels could not be read.`] : []
         };
     };
+    const artifactMarker = (element: Element) => {
+        if (!artifactDocument) {
+            return element.getAttribute('data-edit');
+        }
+        if (!document.body.contains(element)) {
+            return null;
+        }
+        const existing = artifactMarkers.get(element);
+        if (existing) {
+            artifactElements.set(existing, element);
+            return existing;
+        }
+        const ancestry: string[] = [];
+        let ancestor = element.parentElement;
+        while (ancestor && ancestor !== document.body && ancestry.length < 5) {
+            ancestry.push(`${ancestor.tagName.toLowerCase()}#${ancestor.id.slice(0, 64)}[${(ancestor.getAttribute('name') ?? '').slice(0, 64)}]`);
+            ancestor = ancestor.parentElement;
+        }
+        let directText = '';
+        for (const node of element.childNodes) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                directText += node.textContent ?? '';
+                if (directText.length >= 256) {
+                    break;
+                }
+            }
+        }
+        const id = element.id.slice(0, 128);
+        const baseFingerprint = id ? `${element.tagName.toLowerCase()}|id|${id}` : [
+            element.tagName.toLowerCase(),
+            (element.getAttribute('name') ?? '').slice(0, 128),
+            (element.getAttribute('role') ?? '').slice(0, 64),
+            (element.getAttribute('aria-label') ?? '').slice(0, 128),
+            directText.replace(/\s+/g, ' ').trim().slice(0, 256),
+            ancestry.join('/')
+        ].join('|');
+        const freeSlots = artifactFingerprintFreeSlots.get(baseFingerprint);
+        const reusableOccurrence = !id && freeSlots && freeSlots.head < freeSlots.slots.length ? freeSlots.slots[freeSlots.head] : undefined;
+        if (reusableOccurrence !== undefined && freeSlots) {
+            freeSlots.head += 1;
+            if (freeSlots.head >= freeSlots.slots.length) {
+                artifactFingerprintFreeSlots.delete(baseFingerprint);
+            } else if (freeSlots.head >= 256 && freeSlots.head * 2 >= freeSlots.slots.length) {
+                freeSlots.slots = freeSlots.slots.slice(freeSlots.head);
+                freeSlots.head = 0;
+            }
+        }
+        const occurrence = id ? 0 : reusableOccurrence ?? artifactFingerprintCounts.get(baseFingerprint) ?? 0;
+        const fingerprint = id ? baseFingerprint : `${baseFingerprint}|occurrence:${occurrence}`;
+        if (!id && reusableOccurrence === undefined) {
+            artifactFingerprintCounts.set(baseFingerprint, occurrence + 1);
+        }
+        const duplicate = artifactFingerprints.get(fingerprint);
+        if (duplicate && duplicate !== element && duplicate.isConnected) {
+            return null;
+        }
+        let firstHash = 0x811c9dc5;
+        let secondHash = 0x9e3779b9;
+        for (let index = 0; index < fingerprint.length; index += 1) {
+            const code = fingerprint.charCodeAt(index);
+            firstHash = Math.imul(firstHash ^ code, 0x01000193);
+            secondHash = Math.imul(secondHash ^ code, 0x85ebca6b);
+        }
+        const marker = `artifact-element-${(firstHash >>> 0).toString(16)}${(secondHash >>> 0).toString(16)}`;
+        const collision = artifactElements.get(marker);
+        if (collision && collision !== element && collision.isConnected) {
+            return null;
+        }
+        artifactMarkers.set(element, marker);
+        artifactElementFingerprints.set(element, fingerprint);
+        artifactElementIdentities.set(element, {baseFingerprint, occurrence, reusable: !id});
+        artifactElements.set(marker, element);
+        artifactFingerprints.set(fingerprint, element);
+        if (!id) {
+            artifactFingerprintActiveCounts.set(baseFingerprint, (artifactFingerprintActiveCounts.get(baseFingerprint) ?? 0) + 1);
+        }
+        return marker;
+    };
+    const artifactSelectionCandidates = (root: ParentNode): Element[] => {
+        const descendants = Array.from(root.querySelectorAll('*'));
+        return root instanceof Element ? [root, ...descendants] : descendants;
+    };
+    const prepareArtifactSelectionTargets = (root: ParentNode = document.body) => {
+        if (!artifactDocument || !document.body) {
+            return [];
+        }
+        const prepared: Element[] = [];
+        artifactSelectionCandidates(root).forEach((element) => {
+            if (!element.closest('script,style,noscript,template') && !element.hasAttribute('data-builder-inline-control')) {
+                if (artifactMarker(element)) {
+                    prepared.push(element);
+                }
+            }
+        });
+        return prepared;
+    };
+    const releaseArtifactSelectionTargets = (root: ParentNode) => {
+        artifactSelectionCandidates(root).forEach((element) => {
+            if (element.isConnected) {
+                return;
+            }
+            const marker = artifactMarkers.get(element);
+            if (marker && artifactElements.get(marker) === element) {
+                artifactElements.delete(marker);
+            }
+            const fingerprint = artifactElementFingerprints.get(element);
+            if (fingerprint && artifactFingerprints.get(fingerprint) === element) {
+                artifactFingerprints.delete(fingerprint);
+            }
+            const identity = artifactElementIdentities.get(element);
+            if (identity?.reusable) {
+                const activeCount = Math.max(0, (artifactFingerprintActiveCounts.get(identity.baseFingerprint) ?? 1) - 1);
+                if (!activeCount) {
+                    artifactFingerprintActiveCounts.delete(identity.baseFingerprint);
+                    artifactFingerprintCounts.delete(identity.baseFingerprint);
+                    artifactFingerprintFreeSlots.delete(identity.baseFingerprint);
+                } else {
+                    artifactFingerprintActiveCounts.set(identity.baseFingerprint, activeCount);
+                    const freeSlots = artifactFingerprintFreeSlots.get(identity.baseFingerprint) ?? {slots: [], head: 0};
+                    freeSlots.slots.push(identity.occurrence);
+                    artifactFingerprintFreeSlots.set(identity.baseFingerprint, freeSlots);
+                }
+            }
+            artifactMarkers.delete(element);
+            artifactElementFingerprints.delete(element);
+            artifactElementIdentities.delete(element);
+        });
+    };
     const context = (element: Element) => {
-        const marker = element.getAttribute('data-edit')?.slice(0, limits.target) ?? null;
+        const marker = artifactMarker(element)?.slice(0, limits.target) ?? null;
         const source = parseSource(marker);
-        if (!marker || !source.source || source.truncated) {
+        if (!marker || source.truncated || (!artifactDocument && !source.source)) {
             return null;
         }
         return {
             id: marker,
             label: bounded(element.getAttribute('aria-label') || visibleText(element) || element.tagName.toLowerCase(), 120).text || element.tagName.toLowerCase(),
-            data: {tagName: element.tagName.toLowerCase(), marker, source: source.source}
+            data: {tagName: element.tagName.toLowerCase(), marker, ...(source.source ? {source: source.source} : {})}
         };
     };
     const navigateForm = (form: HTMLFormElement, submitter?: HTMLElement) => {
@@ -455,8 +597,20 @@ export function previewRuntimeBootstrap(): void {
         imagePickerTarget = element;
         imagePicker.click();
     };
+    const selectionTargets = (): HTMLElement[] => artifactDocument
+        ? Array.from(document.body?.querySelectorAll<HTMLElement>('*') ?? []).filter(element => !element.closest('script,style,noscript,template') && !element.hasAttribute('data-builder-inline-control') && Boolean(artifactMarker(element)))
+        : Array.from(document.querySelectorAll<HTMLElement>('[data-edit]'));
+    const selectionTarget = (element: Element | null): Element | null => {
+        if (!element) {
+            return null;
+        }
+        if (artifactDocument) {
+            return document.body.contains(element) && !element.closest('script,style,noscript,template') && artifactMarker(element) ? element : null;
+        }
+        return element.closest('[data-edit]');
+    };
     const addSourceTabStops = () => {
-        document.querySelectorAll<HTMLElement>('[data-edit]').forEach((element) => {
+        selectionTargets().forEach((element) => {
             const naturallyFocusable = element.matches('a[href],button,input,select,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]');
             if (!naturallyFocusable && !inlineTabStops.has(element)) {
                 inlineTabStops.set(element, element.getAttribute('tabindex'));
@@ -501,6 +655,9 @@ export function previewRuntimeBootstrap(): void {
     const setSelectionMode = (enabled: boolean) => {
         selectionMode = enabled;
         document.documentElement.dataset.selectionMode = enabled ? 'on' : 'off';
+        if (enabled) {
+            prepareArtifactSelectionTargets();
+        }
         if (enabled && inlineEditing) {
             setInlineEditMode(false);
             addSourceTabStops();
@@ -554,7 +711,7 @@ export function previewRuntimeBootstrap(): void {
         if ((!inlineEditing && !selectionMode) || activeInlineEdit || !(event.target instanceof Element)) {
             return;
         }
-        const editable = event.target.closest<HTMLElement>('[data-edit]');
+        const editable = selectionTarget(event.target) as HTMLElement | null;
         if (!editable || (inlineEditing && !(editable instanceof HTMLImageElement) && !directEditableText(editable)) || editable === hoveredInlineElement) {
             return;
         }
@@ -596,7 +753,7 @@ export function previewRuntimeBootstrap(): void {
         if (!event.isTrusted || (!inlineEditing && !selectionMode) || activeInlineEdit || !['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) {
             return;
         }
-        const editable = event.target.closest('[data-edit]');
+        const editable = selectionTarget(event.target);
         if (!editable) {
             return;
         }
@@ -619,7 +776,7 @@ export function previewRuntimeBootstrap(): void {
 
     window.addEventListener('click', (event) => {
         const target = event.target instanceof Element ? event.target : null;
-        const editable = target?.closest('[data-edit]');
+        const editable = selectionTarget(target);
         if (event.isTrusted && inlineEditing && editable) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -641,14 +798,14 @@ export function previewRuntimeBootstrap(): void {
             return;
         }
         const submitter = target?.closest('button[type="submit"],button:not([type]),input[type="submit"],input[type="image"]') as HTMLButtonElement | HTMLInputElement | null;
-        if (submitter?.form) {
+        if (submitter?.form && !nativeForms) {
             event.preventDefault();
             event.stopImmediatePropagation();
             navigateForm(submitter.form, submitter);
             return;
         }
         const anchor = target?.closest('a[href]');
-        if (anchor) {
+        if (anchor && (!artifactDocument || event.isTrusted)) {
             event.preventDefault();
             event.stopImmediatePropagation();
             send({type: 'navigate', url: (anchor as HTMLAnchorElement).href});
@@ -659,6 +816,12 @@ export function previewRuntimeBootstrap(): void {
         if (!form) {
             return;
         }
+        if (nativeForms) {
+            if (event.isTrusted) {
+                send({type: 'native-form-submit'});
+            }
+            return;
+        }
         event.preventDefault();
         event.stopImmediatePropagation();
         const submitter = event instanceof SubmitEvent && event.submitter instanceof HTMLElement ? event.submitter : undefined;
@@ -666,7 +829,7 @@ export function previewRuntimeBootstrap(): void {
     }, true);
     window.addEventListener('keydown', (event) => {
         const control = event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement ? event.target : null;
-        if (event.key !== 'Enter' || !control?.form) {
+        if (event.key !== 'Enter' || !control?.form || nativeForms) {
             return;
         }
         event.preventDefault();
@@ -723,10 +886,30 @@ export function previewRuntimeBootstrap(): void {
     parentPostMessage({channel, documentId, type: 'command-port'}, '*', [commandChannel.port2]);
 
     const ready = () => {
+        prepareArtifactSelectionTargets();
+        if (artifactDocument && document.body) {
+            new MutationObserver((records) => {
+                records.forEach((record) => {
+                    record.removedNodes.forEach((node) => {
+                        if (node instanceof Element) {
+                            releaseArtifactSelectionTargets(node);
+                        }
+                    });
+                    record.addedNodes.forEach((node) => {
+                        if (node instanceof Element) {
+                            prepareArtifactSelectionTargets(node);
+                        }
+                    });
+                });
+                if (selectionMode) {
+                    addSourceTabStops();
+                }
+            }).observe(document.body, {childList: true, subtree: true});
+        }
         if (inlineEditing) {
             setInlineEditMode(true);
         }
-        const selected = selectedId ? Array.from(document.querySelectorAll('[data-edit]')).find(element => element.getAttribute('data-edit') === selectedId) : null;
+        const selected = selectedId ? artifactElements.get(selectedId) ?? Array.from(document.querySelectorAll('[data-edit]')).find(element => element.getAttribute('data-edit') === selectedId) : null;
         send({type: 'ready', selection: selected ? context(selected) : null});
     };
     runtimeScript?.remove();

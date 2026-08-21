@@ -62,6 +62,7 @@ export interface PreviewDocumentSurface {
 type PreviewMessage =
     | {channel: string; documentId: string; type: 'ready'; selection: BuilderSelectionContext | null}
     | {channel: string; documentId: string; type: 'loaded'}
+    | {channel: string; documentId: string; type: 'native-form-submit'}
     | {channel: string; documentId: string; type: 'navigate'; url: string}
     | {channel: string; documentId: string; type: 'select'; selection: BuilderSelectionContext}
     | {channel: string; documentId: string; type: 'inline-edit'; edit: PreviewInlineEditRequest}
@@ -187,6 +188,7 @@ type PendingCommand = {
 function isSelection(value: unknown): value is BuilderSelectionContext {
     const selection = value as BuilderSelectionContext;
     const data = selection?.data as {tagName?: unknown; marker?: unknown; source?: {path?: unknown; line?: unknown; column?: unknown}} | undefined;
+    const source = data?.source;
     const validData = data === undefined || (
         data !== null
         && typeof data === 'object'
@@ -194,15 +196,17 @@ function isSelection(value: unknown): value is BuilderSelectionContext {
         && data.tagName.length <= 64
         && typeof data.marker === 'string'
         && data.marker === selection.id
-        && data.source !== null
-        && typeof data.source === 'object'
-        && typeof data.source.path === 'string'
-        && data.source.path.length > 0
-        && data.source.path.length <= 512
-        && Number.isSafeInteger(data.source.line)
-        && Number(data.source.line) > 0
-        && Number.isSafeInteger(data.source.column)
-        && Number(data.source.column) > 0
+        && (source === undefined || (
+            source !== null
+            && typeof source === 'object'
+            && typeof source.path === 'string'
+            && source.path.length > 0
+            && source.path.length <= 512
+            && Number.isSafeInteger(source.line)
+            && Number(source.line) > 0
+            && Number.isSafeInteger(source.column)
+            && Number(source.column) > 0
+        ))
     );
     return Boolean(value)
         && typeof value === 'object'
@@ -258,6 +262,9 @@ function isPreviewMessage(value: unknown): value is PreviewMessage {
         return message.selection === null || isSelection(message.selection);
     }
     if (message.type === 'loaded') {
+        return true;
+    }
+    if (message.type === 'native-form-submit') {
         return true;
     }
     if (message.type === 'navigate') {
@@ -565,20 +572,24 @@ function removeUnsupportedGhostScripts(parsed: Document, documentUrl: string): v
     });
 }
 
-export function createPreviewDocument(document: PreviewDocument, channel: string, selection: BuilderSelectionContext | null, documentId = document.revision, resolveAsset: PreviewAssetResolver = () => null, inlineEditing = false, moduleImports: Record<string, string> = {}, selectionMode = false): string {
+export function createPreviewDocument(document: PreviewDocument, channel: string, selection: BuilderSelectionContext | null, documentId = document.revision, resolveAsset: PreviewAssetResolver = () => null, inlineEditing = false, moduleImports: Record<string, string> = {}, selectionMode = false, nativeForms = false, artifactDocument = false): string {
     const parsed = new DOMParser().parseFromString(document.html, 'text/html');
     parsed.querySelectorAll('meta[http-equiv]').forEach((meta) => {
         const directive = meta.getAttribute('http-equiv')?.toLowerCase();
-        if (directive === 'content-security-policy' || directive === 'refresh') {
+        if (directive === 'refresh' || (!artifactDocument && directive === 'content-security-policy')) {
             meta.remove();
         }
     });
-    parsed.querySelectorAll('base').forEach(element => element.remove());
-    removeUnsupportedGhostScripts(parsed, document.url);
-    const base = parsed.createElement('base');
-    base.dataset.builderPreview = 'true';
-    base.href = document.url;
-    parsed.head.prepend(base);
+    if (!artifactDocument) {
+        parsed.querySelectorAll('base').forEach(element => element.remove());
+        removeUnsupportedGhostScripts(parsed, document.url);
+    }
+    if (!parsed.querySelector('base')) {
+        const base = parsed.createElement('base');
+        base.dataset.builderPreview = 'true';
+        base.href = document.url;
+        parsed.head.prepend(base);
+    }
     rewriteCandidateAssets(parsed, document, resolveAsset);
     if (Object.keys(moduleImports).length) {
         const importMap = parsed.createElement('script');
@@ -594,6 +605,8 @@ export function createPreviewDocument(document: PreviewDocument, channel: string
     script.dataset.builderSelection = selection?.id ?? '';
     script.dataset.builderInlineEditing = inlineEditing ? 'true' : 'false';
     script.dataset.builderSelectionMode = selectionMode ? 'true' : 'false';
+    script.dataset.builderNativeForms = nativeForms ? 'true' : 'false';
+    script.dataset.builderArtifactDocument = artifactDocument ? 'true' : 'false';
     script.textContent = `;(${previewRuntimeBootstrap.toString()})();`.replace(/<\/script/gi, '<\\/script');
     parsed.head.prepend(script);
     return `<!doctype html>${parsed.documentElement.outerHTML}`;
@@ -605,6 +618,8 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     private readonly openWindow: (url: string) => void;
     private readonly timeoutMs: number;
     private readonly commandTimeoutMs: number;
+    private readonly nativeForms: boolean;
+    private readonly artifactDocument: boolean;
     private readonly navigateListeners = new Set<(url: string) => void>();
     private readonly selectionListeners = new Set<(selection: BuilderSelectionContext | null) => void>();
     private readonly diagnosticListeners = new Set<(diagnostic: WorkspaceDiagnostic) => void>();
@@ -624,13 +639,17 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
     private inlineEditing = false;
     private selectionMode = false;
     private inlineEditController: AbortController | null = null;
+    private expectedNativeFormNavigationDocumentId: string | null = null;
+    private expectedNativeFormNavigationTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    constructor(iframe: HTMLIFrameElement, {openWindow = url => window.open(url, '_blank', 'noopener'), timeoutMs = 5_000, commandTimeoutMs = 15_000}: {openWindow?: (url: string) => void; timeoutMs?: number; commandTimeoutMs?: number} = {}) {
+    constructor(iframe: HTMLIFrameElement, {openWindow = url => window.open(url, '_blank', 'noopener'), timeoutMs = 5_000, commandTimeoutMs = 15_000, sandbox = 'allow-scripts', nativeForms = false, artifactDocument = false}: {openWindow?: (url: string) => void; timeoutMs?: number; commandTimeoutMs?: number; sandbox?: string; nativeForms?: boolean; artifactDocument?: boolean} = {}) {
         this.iframe = iframe;
         this.openWindow = openWindow;
         this.timeoutMs = timeoutMs;
         this.commandTimeoutMs = commandTimeoutMs;
-        iframe.setAttribute('sandbox', 'allow-scripts');
+        this.nativeForms = nativeForms;
+        this.artifactDocument = artifactDocument;
+        iframe.setAttribute('sandbox', sandbox);
         iframe.addEventListener('load', this.handleLoad);
         window.addEventListener('message', this.handleMessage);
     }
@@ -642,6 +661,11 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         this.rejectPending(new Error('Preview document was replaced before it became ready.'), false);
         this.rejectCommands(new Error('Preview document was replaced before the command completed.'));
         this.closeCommandPort();
+        this.expectedNativeFormNavigationDocumentId = null;
+        if (this.expectedNativeFormNavigationTimeout) {
+            clearTimeout(this.expectedNativeFormNavigationTimeout);
+            this.expectedNativeFormNavigationTimeout = null;
+        }
         return new Promise((resolve, reject) => {
             this.documentSequence += 1;
             const documentId = `${document.revision}:${this.documentSequence}`;
@@ -661,7 +685,7 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
             this.pendingReady = {documentId, ready: false, loaded: false, selection: null, resolve, reject, timeout, removeAbortListener: () => signal.removeEventListener('abort', handleAbort)};
             try {
                 const assetBundle = createPreviewAssetResolver(document);
-                this.pendingSrcdoc = createPreviewDocument(document, this.channel, selection, documentId, assetBundle.resolve, this.inlineEditing, assetBundle.moduleImports, this.selectionMode);
+                this.pendingSrcdoc = createPreviewDocument(document, this.channel, selection, documentId, assetBundle.resolve, this.inlineEditing, assetBundle.moduleImports, this.selectionMode, this.nativeForms, this.artifactDocument);
             } catch (error) {
                 this.rejectPending(error instanceof Error ? error : new Error(String(error)), false);
                 return;
@@ -791,6 +815,11 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
         this.committedDocumentId = null;
         this.committedSrcdoc = null;
         this.pendingSrcdoc = null;
+        this.expectedNativeFormNavigationDocumentId = null;
+        if (this.expectedNativeFormNavigationTimeout) {
+            clearTimeout(this.expectedNativeFormNavigationTimeout);
+            this.expectedNativeFormNavigationTimeout = null;
+        }
         if (this.loadCheck) {
             clearTimeout(this.loadCheck);
             this.loadCheck = null;
@@ -821,6 +850,17 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
                 this.pendingReady.loaded = true;
                 this.resolvePendingDocument();
             }
+        } else if (message.type === 'native-form-submit' && this.nativeForms && message.documentId === this.committedDocumentId) {
+            if (this.expectedNativeFormNavigationTimeout) {
+                clearTimeout(this.expectedNativeFormNavigationTimeout);
+            }
+            this.expectedNativeFormNavigationDocumentId = message.documentId;
+            this.expectedNativeFormNavigationTimeout = setTimeout(() => {
+                if (this.expectedNativeFormNavigationDocumentId === message.documentId) {
+                    this.expectedNativeFormNavigationDocumentId = null;
+                }
+                this.expectedNativeFormNavigationTimeout = null;
+            }, Math.max(this.commandTimeoutMs, 15_000));
         } else if (message.type === 'navigate' && message.documentId === this.committedDocumentId) {
             this.navigateListeners.forEach(listener => listener(message.url));
         } else if (message.type === 'select' && message.documentId === this.committedDocumentId) {
@@ -894,6 +934,15 @@ export class IframePreviewDocumentSurface implements PreviewDocumentSurface {
             }
             if (this.loadedDocumentId === documentId) {
                 this.loadedDocumentId = null;
+                return;
+            }
+            if (this.nativeForms && !this.pendingReady && this.committedDocumentId === documentId && this.expectedNativeFormNavigationDocumentId === documentId) {
+                this.expectedNativeFormNavigationDocumentId = null;
+                if (this.expectedNativeFormNavigationTimeout) {
+                    clearTimeout(this.expectedNativeFormNavigationTimeout);
+                    this.expectedNativeFormNavigationTimeout = null;
+                }
+                this.restoreCommittedDocument();
                 return;
             }
             const error = new Error('The preview attempted to navigate outside the virtual navigation bridge.');
