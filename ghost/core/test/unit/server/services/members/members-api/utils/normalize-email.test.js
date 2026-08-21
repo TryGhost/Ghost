@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const normalizeEmail = require('../../../../../../../core/server/services/members/members-api/utils/normalize-email');
+const {normalizeEmail} = require('../../../../../../../core/server/services/members/members-api/utils/normalize-email');
 
 describe('normalizeEmail', function () {
     it('should normalize unicode domains to punycode', function () {

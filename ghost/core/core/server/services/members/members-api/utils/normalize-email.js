@@ -22,4 +22,4 @@ function normalizeEmail(email) {
   return `${local}@${domain}`;
 }
 
-module.exports = normalizeEmail;
+exports.normalizeEmail = normalizeEmail;
