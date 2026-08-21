@@ -110,8 +110,8 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
                     // Sticky offsets resolve against the scroll container's content
                     // box, so any bottom padding here becomes dead space the footer
                     // can never reach — the footer supplies its own instead. The
-                    // row gap goes too: StickyFooter already opens with a 24px
-                    // spacer, and stacking the two left a visible hole above it.
+                    // row gap goes too: it lands between the issue list and the
+                    // footer and reads as an empty band above the buttons.
                     stickyFooter && 'flex flex-col gap-0 pb-0'
                 )}
                 data-testid={testId}
@@ -130,9 +130,8 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
                 {footer && (stickyFooter ? (
                     // StickyFooter sizes its own box in raw pixels but spaces its
                     // parts with `h-6`/`-mb-6`, which Shade's `--spacing: 0.4rem`
-                    // scale renders as 38.4px — so the shadow rule and the content
-                    // div's negative margin are pinned back to the 24px the
-                    // component's own maths assumes, and the whole thing bleeds
+                    // scale renders as 38.4px rather than the 24px its own maths
+                    // assumes — so the box is sized here explicitly, and it bleeds
                     // across the dialog's horizontal padding.
                     //
                     // The leading spacer goes entirely. Both it and the content div
@@ -141,14 +140,23 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
                     // the full visible strip on its own and the spacer is never
                     // seen mid-scroll. At the bottom of the scroll everything
                     // returns to flow and the spacer becomes a visible empty band
-                    // between the last row and the buttons. Dropping it means the
-                    // box no longer needs the extra 24px it reserved for it: the
-                    // height and bottom offset collapse to the footer's own 84px,
-                    // which keeps the buttons on the container's bottom edge rather
-                    // than moving the gap below them.
+                    // between the last row and the buttons.
+                    //
+                    // The trailing shadow rule goes with it. It's a decorative
+                    // scroll affordance that reads as a hairline drawn straight
+                    // across the buttons here, and with the spacer gone there is
+                    // nothing left for it to shade.
+                    //
+                    // That leaves the content div as the only part still in flow,
+                    // so its negative margin has to go too or the 84px box would
+                    // reserve 24px of slack the `sticky bottom-0` content can never
+                    // drop into — the same empty band, just below the buttons
+                    // instead of above them. Content height, flow height and box
+                    // height all sit at 84px, which keeps the buttons on the
+                    // container's bottom edge.
                     <StickyFooter
-                        className='-mx-6 w-auto [&>div:first-child]:hidden [&>div:last-child]:h-[24px]'
-                        contentClassName='px-6 mb-[-24px] *:w-full'
+                        className='-mx-6 w-auto [&>div:first-child]:hidden [&>div:last-child]:hidden'
+                        contentClassName='px-6 mb-0 *:w-full'
                         height={84}
                         style={{bottom: 0, height: '84px'}}
                     >

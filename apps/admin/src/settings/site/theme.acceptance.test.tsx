@@ -102,6 +102,11 @@ async function uploadThemeFile(file: File): Promise<void> {
     await page.elementLocator(input).upload(file);
 }
 
+/** Whole-pixel distance between two box edges; 0 means flush, either way round. */
+function edgeGap(a: number, b: number): number {
+    return Math.abs(Math.round(a - b));
+}
+
 /** Line height as a multiple of font size, so sizes of different scale compare. */
 function lineRatio(style: CSSStyleDeclaration): number {
     return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
@@ -362,7 +367,7 @@ describe("Theme settings", () => {
         expect(activateApi.requests).toHaveLength(1);
     });
 
-    it("seats the sticky footer against the issue list without an empty band", async () => {
+    it("seats the sticky footer flush against the issue list, with no empty band and no shadow rule", async () => {
         fakeThemeWorld();
         fakeAdminEndpoint("POST", "/themes/upload/", {
             themes: [
@@ -387,11 +392,28 @@ describe("Theme settings", () => {
 
         const scroller = dialog.element() as HTMLElement;
         const list = scroller.querySelector<HTMLElement>("div.overflow-hidden.rounded-lg.border")!;
+        const footer = scroller.querySelector<HTMLElement>(".z-\\[297\\]")!;
         // The footer's own background: `sticky bottom-0`, 84px tall, and the
         // only thing standing between scrolling rows and the buttons.
         const mask = scroller.querySelector<HTMLElement>(".z-\\[299\\]")!;
         expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
         expect(getComputedStyle(mask).backgroundColor).not.toMatch(/rgba\(.*, 0\)$/);
+
+        // The component closes with a decorative scroll rule. Over a dialog
+        // whose footer already reads as a distinct block it lands as a hairline
+        // drawn across the buttons, so it must not render at all...
+        const rule = footer.lastElementChild as HTMLElement;
+        expect(rule).not.toBe(mask);
+        // ...and this is the element that would draw it.
+        expect(getComputedStyle(rule).boxShadow).not.toBe("none");
+        expect(getComputedStyle(rule).display).toBe("none");
+        expect(rule.getBoundingClientRect().height).toBe(0);
+        // Nothing else in the footer paints one in its place.
+        for (const part of [footer, ...footer.children]) {
+            if (part !== rule) {
+                expect(getComputedStyle(part).boxShadow).toBe("none");
+            }
+        }
 
         // Mid-scroll the mask is pinned to the bottom of the scroll port and
         // rows run underneath it rather than showing through.
@@ -400,12 +422,17 @@ describe("Theme settings", () => {
         await expect.poll(() => Math.round(mask.getBoundingClientRect().height)).toBe(84);
         expect(list.getBoundingClientRect().bottom).toBeGreaterThan(mask.getBoundingClientRect().top);
 
-        // Scrolled to the end the footer returns to flow, and the list has to
-        // end exactly where the footer's background begins — the 24px spacer
-        // the component opens with would read as an empty band here.
+        // Scrolled to the end the footer returns to flow, and every part of it
+        // has to close up: the list ends exactly where the footer's background
+        // begins, and that background reaches the dialog's own bottom edge.
+        // Slack left anywhere in the footer's 84px box reads as an empty band —
+        // above the buttons if it sits before the background, below them if it
+        // sits after.
         scroller.scrollTop = scroller.scrollHeight;
-        await expect.poll(() => Math.round(mask.getBoundingClientRect().bottom)).toBe(Math.round(scroller.getBoundingClientRect().bottom));
-        await expect.poll(() => Math.round(mask.getBoundingClientRect().top - list.getBoundingClientRect().bottom)).toBe(0);
+        await expect.poll(() => edgeGap(mask.getBoundingClientRect().top, list.getBoundingClientRect().bottom)).toBe(0);
+        expect(edgeGap(footer.getBoundingClientRect().bottom, scroller.getBoundingClientRect().bottom)).toBe(0);
+        expect(edgeGap(mask.getBoundingClientRect().bottom, footer.getBoundingClientRect().bottom)).toBe(0);
+        expect(Math.round(mask.getBoundingClientRect().height)).toBe(84);
     });
 
     it("reports blocking upload errors and re-opens the upload dialog from the error dialog", async () => {
