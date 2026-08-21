@@ -3,6 +3,7 @@ import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {createAddonEditorBlocksConfig, parseInstallRecords} from '@tryghost/addon-kit/editor-host';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
@@ -106,6 +107,14 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
         showTitleAndFeatureImage: post.showTitleAndFeatureImage,
         visibility: post.visibility || defaultContentVisibility
     };
+}
+
+export function buildAddonBlocksConfig(rawInstallRecords, enabled, createConfig = createAddonEditorBlocksConfig) {
+    if (!enabled) {
+        return undefined;
+    }
+
+    return createConfig(parseInstallRecords(rawInstallRecords));
 }
 
 /**
@@ -492,6 +501,7 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const defaultCardConfig = {
+            addons: buildAddonBlocksConfig(this.settings.addons, this.feature.addons),
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
             fetchAutocompleteLinks,

@@ -1,6 +1,7 @@
 import bootstrapSource from '@tryghost/addon-kit/bootstrap';
 import {ThreadMessagePort, ThreadFunctionsManualMemoryManagement} from '@quilted/threads';
-import {SANDBOX_SRCDOC} from './shim.ts';
+import {createSandboxSrcdoc} from './shim.ts';
+import {verifyBundleIntegrity} from '../integrity.ts';
 import type {SandboxExports} from '../types.ts';
 
 /**
@@ -8,16 +9,18 @@ import type {SandboxExports} from '../types.ts';
  * (opaque origin — browser-enforced isolation from the admin origin, no
  * cookies, no storage, no ambient credentials) plus the RPC thread into it.
  *
- * One controller = one surface instance. The add-on's tree renders into the
- * iframe's hidden document and is mirrored to the host over the thread.
+ * One controller = one surface instance. Interactive Admin targets render
+ * into the iframe's hidden document and mirror it to the host. Static editor
+ * targets run in a Worker created by the opaque frame, with no navigable DOM.
  */
 export class AddonSandboxController {
     private iframe: HTMLIFrameElement | null = null;
     private port: MessagePort | null = null;
     private sandbox: import('@quilted/threads').ThreadImports<SandboxExports> | null = null;
     private destroyed = false;
+    private staticExecution = false;
 
-    async start(): Promise<void> {
+    async start({staticExecution = false}: {staticExecution?: boolean} = {}): Promise<void> {
         if (this.iframe) {
             throw new Error('Sandbox already started');
         }
@@ -27,7 +30,8 @@ export class AddonSandboxController {
         iframe.setAttribute('aria-hidden', 'true');
         iframe.title = 'Ghost add-on sandbox';
         iframe.style.display = 'none';
-        iframe.srcdoc = SANDBOX_SRCDOC;
+        this.staticExecution = staticExecution;
+        iframe.srcdoc = createSandboxSrcdoc({staticExecution});
         this.iframe = iframe;
 
         const loaded = new Promise<void>((resolvePromise, rejectPromise) => {
@@ -43,12 +47,38 @@ export class AddonSandboxController {
         }
 
         const channel = new MessageChannel();
+        let removeStaticStartupListener = () => {};
+        const staticStartup = staticExecution ? new Promise<void>((resolvePromise, rejectPromise) => {
+            const timeout = window.setTimeout(() => {
+                removeStaticStartupListener();
+                rejectPromise(new Error('Static add-on Worker did not start'));
+            }, 10_000);
+            const listener = (event: MessageEvent) => {
+                if (event.source !== iframe.contentWindow) {
+                    return;
+                }
+                if (event.data?.type === 'ghost-addon-worker-ready') {
+                    removeStaticStartupListener();
+                    resolvePromise();
+                }
+                if (event.data?.type === 'ghost-addon-worker-error') {
+                    removeStaticStartupListener();
+                    rejectPromise(new Error(event.data.message || 'Static add-on Worker failed to start'));
+                }
+            };
+            removeStaticStartupListener = () => {
+                window.clearTimeout(timeout);
+                window.removeEventListener('message', listener);
+            };
+            window.addEventListener('message', listener);
+        }) : Promise.resolve();
         // '*' is required: an opaque origin cannot be named as a target origin.
         iframe.contentWindow.postMessage(
             {type: 'ghost-addon-init', bootstrap: bootstrapSource},
             '*',
             [channel.port2]
         );
+        await staticStartup;
 
         const thread = new ThreadMessagePort<SandboxExports>(channel.port1, {
             functions: new ThreadFunctionsManualMemoryManagement()
@@ -65,8 +95,23 @@ export class AddonSandboxController {
         return this.sandbox;
     }
 
-    loadBundle(options: Parameters<SandboxExports['loadBundle']>[0]): Promise<void> {
-        return this.exports.loadBundle(options);
+    async loadBundle(options: Omit<Parameters<SandboxExports['loadBundle']>[0], 'source'>): Promise<void> {
+        if (!this.staticExecution) {
+            return this.exports.loadBundle(options);
+        }
+
+        const response = await fetch(options.url, {
+            credentials: 'omit',
+            referrerPolicy: 'no-referrer'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch add-on bundle (${response.status}): ${options.url}`);
+        }
+        const source = await response.text();
+        if (options.integrity) {
+            await verifyBundleIntegrity(source, options.integrity);
+        }
+        return this.exports.loadBundle({url: options.url, source});
     }
 
     render(options: Parameters<SandboxExports['render']>[0]): Promise<void> {
@@ -75,6 +120,10 @@ export class AddonSandboxController {
 
     shouldRender(options: Parameters<SandboxExports['shouldRender']>[0]): Promise<boolean> {
         return this.exports.shouldRender(options);
+    }
+
+    renderBlock(options: Parameters<SandboxExports['renderBlock']>[0]): Promise<Awaited<ReturnType<SandboxExports['renderBlock']>>> {
+        return this.exports.renderBlock(options);
     }
 
     updateData(data: Parameters<SandboxExports['updateData']>[0]): Promise<void> {

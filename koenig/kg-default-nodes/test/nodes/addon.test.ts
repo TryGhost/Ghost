@@ -1,7 +1,7 @@
 import {createHeadlessEditor} from '@lexical/headless';
 import type {LexicalEditor} from 'lexical';
 
-import {AddonNode, DEFAULT_NODES, $createAddonNode} from '../../src/index.js';
+import {AddonNode, DEFAULT_NODES, $createAddonNode, renderAddonEditorPreview} from '../../src/index.js';
 import {dom} from '../test-utils/index.js';
 
 describe('AddonNode', function () {
@@ -136,5 +136,26 @@ describe('AddonNode', function () {
                 }
             });
         });
+    });
+
+    it('builds a non-interactive editor preview from the saved snapshot', function () {
+        const srcdoc = renderAddonEditorPreview({
+            id: 'episode-player-1',
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            label: 'Transistor podcast player',
+            props: {},
+            html: '<article onclick="steal()"><a href="https://example.com">Episode 12</a><script>steal()</script></article>',
+            css: 'article { color: rebeccapurple; }',
+            portableHtml: '',
+            resourceOrigins: [],
+            initialHeight: 240
+        }, {dom});
+
+        expect(srcdoc).toContain('<article><a href="https://example.com">Episode 12</a></article>');
+        expect(srcdoc).toContain('article { color: rebeccapurple; }');
+        expect(srcdoc).toContain('script-src \'none\'');
+        expect(srcdoc).not.toContain('ghost-addon-bootstrap');
+        expect(srcdoc).not.toContain('steal()');
     });
 });

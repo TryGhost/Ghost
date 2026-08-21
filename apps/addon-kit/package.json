@@ -11,7 +11,12 @@
     "private": true,
     "exports": {
         "./host": "./src/host/index.ts",
+        "./editor-host": {
+            "types": "./src/host/editor-entry.ts",
+            "default": "./dist/editor-host.mjs"
+        },
         "./addon": "./src/addon/index.ts",
+        "./editor": "./src/editor/index.ts",
         "./bootstrap": {
             "types": "./dist/bootstrap.d.mts",
             "default": "./dist/bootstrap.mjs"
@@ -19,7 +24,7 @@
     },
     "scripts": {
         "dev": "vite build --watch",
-        "build": "vite build && tsc",
+        "build": "vite build && vite build --config vite.editor-host.config.mts && tsc",
         "test": "pnpm test:unit",
         "test:unit": "vitest run",
         "test:watch": "vitest",
@@ -35,6 +40,7 @@
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/shade": "workspace:*",
         "preact": "catalog:",
+        "preact-render-to-string": "catalog:",
         "react": "catalog:",
         "sonner": "catalog:"
     },

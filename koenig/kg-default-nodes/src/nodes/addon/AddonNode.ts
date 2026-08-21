@@ -1,6 +1,13 @@
 import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderAddonNode} from './addon-renderer.js';
 
+export {
+    isSafeAddonSnapshot,
+    normalizeAddonHeight,
+    renderAddonEditorPreview
+} from './addon-renderer.js';
+export type {AddonNodeData} from './addon-renderer.js';
+
 const addonProperties = {
     id: {default: ''},
     addonHandle: {default: ''},

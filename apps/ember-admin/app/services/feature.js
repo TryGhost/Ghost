@@ -99,6 +99,7 @@ export default class FeatureService extends Service {
     @feature('tagDetailsReact') tagDetailsReact;
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;
+    @feature('addons') addons;
     @feature('csvContentImporter') csvContentImporter;
     @feature('postsListReact') postsListReact;
     @feature('membersActivityReact') membersActivityReact;

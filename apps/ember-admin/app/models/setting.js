@@ -17,6 +17,7 @@ export default Model.extend(ValidationEngine, {
     facebook: attr('facebook-url-user'),
     twitter: attr('twitter-url-user'),
     labs: attr('string'),
+    addons: attr('string'),
     navigation: attr('navigation-settings'),
     secondaryNavigation: attr('navigation-settings', {isSecondary: true}),
     isPrivate: attr('boolean'),

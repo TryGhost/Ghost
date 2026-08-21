@@ -19,10 +19,12 @@ const ENTRIES = [
     {name: 'report-page', entry: 'src/report-page.tsx', target: 'admin.page.render'}
 ];
 
+const EDITOR_ENTRY = {name: 'editor-content', entry: 'src/editor-content.tsx'};
+
 await rm(outDir, {recursive: true, force: true});
 await mkdir(outDir, {recursive: true});
 
-for (const {name, entry} of ENTRIES) {
+for (const {name, entry} of [...ENTRIES, EDITOR_ENTRY]) {
     await build({
         root,
         configFile: false,
@@ -47,6 +49,9 @@ const targeting = await Promise.all(ENTRIES.map(async ({name, target}) => {
     return {target, bundle: `./${name}.js`, integrity};
 }));
 
+const editorSource = await readFile(resolve(outDir, `${EDITOR_ENTRY.name}.js`));
+const editorIntegrity = `sha256-${createHash('sha256').update(editorSource).digest('base64')}`;
+
 const manifest = {
     name: 'SEO Assistant (demo)',
     handle: 'seo-assistant-demo',
@@ -60,8 +65,24 @@ const manifest = {
         icon: 'sparkles',
         route: '/'
     },
+    editor: {
+        blocks: [{
+            name: 'seo-summary',
+            label: 'SEO summary card',
+            description: 'Add a durable SEO summary to the post',
+            keywords: ['search', 'preview', 'metadata'],
+            initialProperties: {
+                title: 'Search preview ready',
+                description: 'This post has a title and description that are ready for search results.'
+            }
+        }],
+        content: {
+            bundle: `./${EDITOR_ENTRY.name}.js`,
+            integrity: editorIntegrity
+        }
+    },
     targeting
 };
 
 await writeFile(resolve(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`);
-console.log(`Built ${ENTRIES.length} bundles + manifest.json into dist/`); // eslint-disable-line no-console
+console.log(`Built ${ENTRIES.length + 1} bundles + manifest.json into dist/`); // eslint-disable-line no-console

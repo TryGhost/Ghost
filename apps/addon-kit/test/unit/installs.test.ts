@@ -1,5 +1,5 @@
-import {describe, expect, it} from 'vitest';
-import {isApiVersionCompatible, parseInstallRecords, pinManifest, removeInstallRecord, upsertInstallRecord} from '../../src/host/installs.ts';
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import {getEditorBlockDefinitions, isApiVersionCompatible, parseInstallRecords, pinManifest, removeInstallRecord, upsertInstallRecord} from '../../src/host/installs.ts';
 import {derivePermissions} from '../../src/host/permissions.ts';
 import {ADDON_API_VERSION, type AddonManifest} from '../../src/types.ts';
 
@@ -12,6 +12,17 @@ const manifest: AddonManifest = {
     description: 'Crawls your posts for SEO problems.',
     backend: 'http://localhost:4650',
     sidebar: {label: 'SEO Assistant', icon: 'sparkles', route: '/'},
+    editor: {
+        blocks: [{
+            name: 'seo-score',
+            label: 'SEO score',
+            description: 'Show a durable SEO score card',
+            keywords: ['search', 'score'],
+            initialProperties: {postId: ''},
+            resourceOrigins: ['https://scores.example.com']
+        }],
+        content: {bundle: './editor-content.js', integrity: 'sha256-editor'}
+    },
     targeting: [
         {target: 'admin.dashboard.card.render', bundle: './dashboard-card.js', integrity: 'sha256-abc'},
         {target: 'admin.page.render', bundle: './report-page.js'}
@@ -44,6 +55,11 @@ describe('pinManifest', function () {
             integrity: 'sha256-abc'
         });
         expect(record.targeting[1].integrity).toBeUndefined();
+        expect(record.editor).toEqual({
+            blocks: manifest.editor?.blocks,
+            contentBundleUrl: 'http://localhost:4650/editor-content.js',
+            integrity: 'sha256-editor'
+        });
     });
 
     it('preserves the enabled flag when re-pinning an update', function () {
@@ -104,5 +120,57 @@ describe('parseInstallRecords', function () {
         expect(parseInstallRecords(null)).toEqual([]);
         expect(parseInstallRecords('not json')).toEqual([]);
         expect(parseInstallRecords('{"a":1}')).toEqual([]);
+    });
+});
+
+describe('getEditorBlockDefinitions', function () {
+    it('flattens enabled installed manifests into provider-specific editor entries', function () {
+        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+
+        expect(getEditorBlockDefinitions([record])).toEqual([{
+            addonHandle: 'seo-assistant-demo',
+            blockName: 'seo-score',
+            label: 'SEO score',
+            description: 'Show a durable SEO score card',
+            keywords: ['search', 'score'],
+            initialProperties: {postId: ''},
+            resourceOrigins: ['https://scores.example.com']
+        }]);
+        expect(getEditorBlockDefinitions([{...record, enabled: false}])).toEqual([]);
+    });
+
+    it('ignores malformed persisted editor metadata instead of crashing the editor', function () {
+        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+        const corrupted = {
+            ...record,
+            editor: {
+                ...record.editor!,
+                blocks: [{name: 'broken', label: 'Broken', keywords: [42]}]
+            }
+        } as unknown as typeof record;
+
+        expect(getEditorBlockDefinitions([corrupted])).toEqual([]);
+    });
+});
+
+describe('fetchManifest editor validation', function () {
+    afterEach(function () {
+        vi.unstubAllGlobals();
+    });
+
+    it('rejects malformed optional block metadata at the manifest boundary', async function () {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                ...manifest,
+                editor: {
+                    ...manifest.editor,
+                    blocks: [{name: 'broken', label: 'Broken', keywords: [42]}]
+                }
+            })
+        }));
+
+        const {fetchManifest} = await import('../../src/host/installs.ts');
+        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('keywords');
     });
 });

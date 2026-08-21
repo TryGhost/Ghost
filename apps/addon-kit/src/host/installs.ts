@@ -28,6 +28,33 @@ export const ADDONS_SETTING_KEY = 'addons';
 export const DEV_ADDONS_STORAGE_KEY = 'ghost-addons-dev';
 
 const KNOWN_TARGETS = new Set<string>([...RENDER_TARGETS, ...SHOULD_RENDER_TARGETS]);
+const MAX_EDITOR_BLOCK_NAME_LENGTH = 256;
+const MAX_EDITOR_BLOCK_LABEL_LENGTH = 200;
+
+function isStringArray(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every(entry => typeof entry === 'string');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isValidEditorBlock(value: unknown): value is NonNullable<AddonManifest['editor']>['blocks'][number] {
+    if (!isRecord(value)) {
+        return false;
+    }
+
+    return typeof value.name === 'string'
+        && value.name.length > 0
+        && value.name.length <= MAX_EDITOR_BLOCK_NAME_LENGTH
+        && typeof value.label === 'string'
+        && value.label.length > 0
+        && value.label.length <= MAX_EDITOR_BLOCK_LABEL_LENGTH
+        && (value.description === undefined || typeof value.description === 'string')
+        && (value.keywords === undefined || isStringArray(value.keywords))
+        && (value.initialProperties === undefined || isRecord(value.initialProperties))
+        && (value.resourceOrigins === undefined || isStringArray(value.resourceOrigins));
+}
 
 /**
  * Calendar api_versions ('2026-01') compare lexicographically. A manifest is
@@ -47,8 +74,8 @@ function parseManifest(value: unknown): AddonManifest {
             throw new Error(`Manifest is missing required field "${field}"`);
         }
     }
-    if (!Array.isArray(manifest.targeting) || manifest.targeting.length === 0) {
-        throw new Error('Manifest declares no targeting entries');
+    if (!Array.isArray(manifest.targeting)) {
+        throw new Error('Manifest targeting must be an array');
     }
     for (const entry of manifest.targeting) {
         if (!KNOWN_TARGETS.has(entry?.target)) {
@@ -57,6 +84,37 @@ function parseManifest(value: unknown): AddonManifest {
         if (typeof entry.bundle !== 'string') {
             throw new Error(`Manifest target "${entry.target}" is missing a bundle URL`);
         }
+    }
+    if (manifest.editor !== undefined) {
+        if (!manifest.editor || !Array.isArray(manifest.editor.blocks) || manifest.editor.blocks.length === 0) {
+            throw new Error('Manifest editor declares no blocks');
+        }
+        if (typeof manifest.editor.content?.bundle !== 'string' || manifest.editor.content.bundle.length === 0) {
+            throw new Error('Manifest editor is missing its content bundle');
+        }
+        for (const block of manifest.editor.blocks) {
+            if (typeof block?.name !== 'string' || block.name.length === 0 || typeof block.label !== 'string' || block.label.length === 0) {
+                throw new Error('Manifest editor block is missing a name or label');
+            }
+            if (block.name.length > MAX_EDITOR_BLOCK_NAME_LENGTH || block.label.length > MAX_EDITOR_BLOCK_LABEL_LENGTH) {
+                throw new Error('Manifest editor block name or label is too long');
+            }
+            if (block.description !== undefined && typeof block.description !== 'string') {
+                throw new Error(`Manifest editor block "${block.name}" description must be a string`);
+            }
+            if (block.keywords !== undefined && !isStringArray(block.keywords)) {
+                throw new Error(`Manifest editor block "${block.name}" keywords must be an array of strings`);
+            }
+            if (block.initialProperties !== undefined && !isRecord(block.initialProperties)) {
+                throw new Error(`Manifest editor block "${block.name}" initialProperties must be an object`);
+            }
+            if (block.resourceOrigins !== undefined && !isStringArray(block.resourceOrigins)) {
+                throw new Error(`Manifest editor block "${block.name}" resourceOrigins must be an array of strings`);
+            }
+        }
+    }
+    if (manifest.targeting.length === 0 && !manifest.editor) {
+        throw new Error('Manifest declares no targets or editor blocks');
     }
     return manifest as AddonManifest;
 }
@@ -79,6 +137,11 @@ export function pinManifest(manifest: AddonManifest, manifestUrl: string, enable
         description: manifest.description,
         backend: manifest.backend,
         sidebar: manifest.sidebar,
+        editor: manifest.editor ? {
+            blocks: structuredClone(manifest.editor.blocks),
+            contentBundleUrl: new URL(manifest.editor.content.bundle, manifestUrl).toString(),
+            integrity: manifest.editor.content.integrity
+        } : undefined,
         targeting: manifest.targeting.map(entry => ({
             target: entry.target as AddonTarget,
             bundleUrl: new URL(entry.bundle, manifestUrl).toString(),
@@ -147,6 +210,34 @@ export function parseInstallRecords(raw: string | null): AddonInstallRecord[] {
     } catch {
         return [];
     }
+}
+
+export interface InstalledEditorBlockDefinition {
+    addonHandle: string;
+    blockName: string;
+    label: string;
+    description?: string;
+    keywords?: string[];
+    initialProperties?: Record<string, unknown>;
+    resourceOrigins?: string[];
+}
+
+export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): InstalledEditorBlockDefinition[] {
+    return installs.flatMap((install) => {
+        if (!install?.enabled || typeof install.handle !== 'string' || !install.editor || !Array.isArray(install.editor.blocks)) {
+            return [];
+        }
+
+        return install.editor.blocks.filter(isValidEditorBlock).map(block => ({
+            addonHandle: install.handle,
+            blockName: block.name,
+            label: block.label,
+            description: block.description,
+            keywords: block.keywords ? [...block.keywords] : undefined,
+            initialProperties: block.initialProperties ? structuredClone(block.initialProperties) : undefined,
+            resourceOrigins: block.resourceOrigins ? [...block.resourceOrigins] : undefined
+        }));
+    });
 }
 
 export interface UseAddonInstallsResult {

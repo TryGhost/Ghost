@@ -15,9 +15,9 @@ export type AddonNodeData = {
     initialHeight: number;
 };
 
-const MAX_SNAPSHOT_BYTES = 1024 * 1024;
-const MIN_HEIGHT = 80;
-const MAX_HEIGHT = 20_000;
+export const MAX_ADDON_SNAPSHOT_BYTES = 1024 * 1024;
+export const MIN_ADDON_HEIGHT = 80;
+export const MAX_ADDON_HEIGHT = 20_000;
 const BLOCKED_ELEMENTS = 'script,iframe,object,embed,base,link,meta,template';
 const BOOTSTRAP_NONCE = 'ghost-addon-bootstrap';
 
@@ -93,7 +93,7 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId) {
     announce();
 })`;
 
-function isSafeSnapshot(node: AddonNodeData): boolean {
+export function isSafeAddonSnapshot(node: AddonNodeData): boolean {
     return typeof node.id === 'string'
         && node.id.trim().length > 0
         && node.id.length <= 256
@@ -110,9 +110,14 @@ function isSafeSnapshot(node: AddonNodeData): boolean {
         && typeof node.portableHtml === 'string'
         && Array.isArray(node.resourceOrigins)
         && node.resourceOrigins.every(origin => typeof origin === 'string')
-        && new TextEncoder().encode(node.html).byteLength <= MAX_SNAPSHOT_BYTES
-        && new TextEncoder().encode(node.css).byteLength <= MAX_SNAPSHOT_BYTES
-        && new TextEncoder().encode(node.portableHtml).byteLength <= MAX_SNAPSHOT_BYTES;
+        && new TextEncoder().encode(node.html).byteLength <= MAX_ADDON_SNAPSHOT_BYTES
+        && new TextEncoder().encode(node.css).byteLength <= MAX_ADDON_SNAPSHOT_BYTES
+        && new TextEncoder().encode(node.portableHtml).byteLength <= MAX_ADDON_SNAPSHOT_BYTES;
+}
+
+export function normalizeAddonHeight(value: unknown): number {
+    const height = Number(value);
+    return Math.max(MIN_ADDON_HEIGHT, Math.min(MAX_ADDON_HEIGHT, Number.isFinite(height) ? height : 320));
 }
 
 function isExecutableUrl(value: string): boolean {
@@ -187,32 +192,44 @@ function buildResourceSources(resourceOrigins: string[]): string {
     return ['data:', ...new Set(origins)].join(' ');
 }
 
-function buildStaticDocument(document: Document, node: AddonNodeData): string {
+function buildStaticDocument(document: Document, node: AddonNodeData, {includeBootstrap = true} = {}): string {
     const markup = sanitizeMarkup(document, node.html);
     // A style element is a raw-text element. CSS-escaping `<` prevents a
     // provider string from terminating it and injecting executable markup.
     const css = node.css.replaceAll('<', '\\3c ');
     const title = escapeHtml(node.label || node.blockName);
     const resourceSources = buildResourceSources(node.resourceOrigins);
+    const scriptSource = includeBootstrap ? `'nonce-${BOOTSTRAP_NONCE}'` : '\'none\'';
 
     return '<!doctype html>'
         + '<html><head>'
         + '<meta charset="utf-8">'
         + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-        + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${BOOTSTRAP_NONCE}'; style-src 'unsafe-inline'; img-src ${resourceSources}; media-src ${resourceSources}; font-src ${resourceSources}; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">`
+        + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${scriptSource}; style-src 'unsafe-inline'; img-src ${resourceSources}; media-src ${resourceSources}; font-src ${resourceSources}; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">`
         + `<title>${title}</title>`
         + `<style>html,body{margin:0;padding:0}#ghost-addon-root{display:flow-root}${css}</style>`
         + '</head><body>'
         + `<main id="ghost-addon-root">${markup}</main>`
-        + `<script nonce="${BOOTSTRAP_NONCE}" data-ghost-addon-bootstrap>${STATIC_FRAME_BOOTSTRAP}(${serializeScriptValue(node.id)});</script>`
+        + (includeBootstrap ? `<script nonce="${BOOTSTRAP_NONCE}" data-ghost-addon-bootstrap>${STATIC_FRAME_BOOTSTRAP}(${serializeScriptValue(node.id)});</script>` : '')
         + '</body></html>';
+}
+
+export function renderAddonEditorPreview(node: AddonNodeData, options: ExportDOMOptions = {}): string {
+    addCreateDocumentOption(options);
+    const document = options.createDocument!();
+
+    if (!node.html || !isSafeAddonSnapshot(node)) {
+        return '';
+    }
+
+    return buildStaticDocument(document, node, {includeBootstrap: false});
 }
 
 export function renderAddonNode(node: AddonNodeData, options: ExportDOMOptions = {}): ExportDOMOutput {
     addCreateDocumentOption(options);
     const document = options.createDocument!();
 
-    if (!node.html || !isSafeSnapshot(node)) {
+    if (!node.html || !isSafeAddonSnapshot(node)) {
         return renderEmptyContainer(document);
     }
 
@@ -235,7 +252,7 @@ export function renderAddonNode(node: AddonNodeData, options: ExportDOMOptions =
     element.dataset.addonBlock = node.blockName;
 
     const iframe = document.createElement('iframe');
-    const initialHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, Number(node.initialHeight) || MIN_HEIGHT));
+    const initialHeight = normalizeAddonHeight(node.initialHeight);
     iframe.className = 'kg-addon-card-frame';
     iframe.setAttribute('sandbox', 'allow-scripts');
     iframe.setAttribute('loading', 'lazy');

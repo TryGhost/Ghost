@@ -2,17 +2,21 @@ import {ThreadMessagePort, ThreadFunctionsManualMemoryManagement, retain} from '
 import type {RemoteConnection} from '@remote-dom/core/elements';
 import type {
     AddonDataEnvelope,
+    AddonEditorContentModuleExports,
     AddonModuleExports,
     GhostBridge,
     HostCapabilities,
     SandboxExports
 } from '../types.ts';
+import {renderEditorBlockModule} from './render-block.ts';
+import {verifyBundleIntegrity} from '../integrity.ts';
 
 /**
  * The sandbox bootstrap. Ghost authors and serves this code — it is
  * version-locked to the host, never to add-on providers. It runs inside a
- * hidden `<iframe sandbox="allow-scripts">` (opaque origin) and is delivered
- * by the host over postMessage, so it never touches provider infrastructure.
+ * hidden opaque-origin iframe for Admin surfaces, or in a CSP-constrained
+ * Worker for static editor rendering. The host delivers it over postMessage,
+ * so the bootstrap itself never touches provider infrastructure.
  *
  * Responsibilities: fetch + integrity-check + evaluate add-on bundles, build
  * the `ghost` bridge over host capabilities, and mirror the add-on's `gh-*`
@@ -25,20 +29,8 @@ interface BootstrapInit {
 
 const MODULE_GLOBAL = '__ghostAddonModule';
 
-async function verifyIntegrity(source: string, integrity: string): Promise<void> {
-    const match = /^sha256-(.+)$/.exec(integrity);
-    if (!match) {
-        throw new Error(`Unsupported integrity format: ${integrity}`);
-    }
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
-    const actual = btoa(String.fromCharCode(...new Uint8Array(digest)));
-    if (actual !== match[1]) {
-        throw new Error('Add-on bundle failed integrity verification');
-    }
-}
-
 function bootstrap({port}: BootstrapInit): void {
-    const modules = new Map<string, AddonModuleExports>();
+    const modules = new Map<string, AddonModuleExports | AddonEditorContentModuleExports>();
     const dataListeners = new Set<(data: AddonDataEnvelope) => void>();
     let currentData: AddonDataEnvelope | undefined;
     let rendered = false;
@@ -75,7 +67,7 @@ function bootstrap({port}: BootstrapInit): void {
         };
     }
 
-    function getModule(bundleUrl: string): AddonModuleExports {
+    function getModule(bundleUrl: string): AddonModuleExports | AddonEditorContentModuleExports {
         const moduleExports = modules.get(bundleUrl);
         if (!moduleExports) {
             throw new Error(`Add-on bundle has not been loaded: ${bundleUrl}`);
@@ -84,17 +76,20 @@ function bootstrap({port}: BootstrapInit): void {
     }
 
     const sandboxExports: SandboxExports = {
-        async loadBundle({url, integrity}) {
+        async loadBundle({url, integrity, source: providedSource}) {
             if (modules.has(url)) {
                 return;
             }
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch add-on bundle (${response.status}): ${url}`);
+            let source = providedSource;
+            if (source === undefined) {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch add-on bundle (${response.status}): ${url}`);
+                }
+                source = await response.text();
             }
-            const source = await response.text();
             if (integrity) {
-                await verifyIntegrity(source, integrity);
+                await verifyBundleIntegrity(source, integrity);
             }
             (0, eval)(source); // eslint-disable-line no-eval
             const globalScope = globalThis as Record<string, unknown>;
@@ -102,7 +97,7 @@ function bootstrap({port}: BootstrapInit): void {
             delete globalScope[MODULE_GLOBAL];
             // Bundlers emitting an IIFE unwrap a lone default export to the
             // bare function; accept both that and a {default} namespace.
-            const moduleExports = (typeof raw === 'function' ? {default: raw} : raw) as AddonModuleExports | undefined;
+            const moduleExports = (typeof raw === 'function' ? {default: raw} : raw) as AddonModuleExports | AddonEditorContentModuleExports | undefined;
             if (typeof moduleExports?.default !== 'function') {
                 throw new Error('Add-on bundle must default-export a function');
             }
@@ -117,7 +112,7 @@ function bootstrap({port}: BootstrapInit): void {
             // The host keeps these callable for the lifetime of the sandbox.
             retain(connection);
             retain(capabilities);
-            const moduleExports = getModule(bundleUrl);
+            const moduleExports = getModule(bundleUrl) as AddonModuleExports;
             // The connection hook is registered by @tryghost/addon-kit/addon
             // inside the bundle, so the observer and the gh-* elements share
             // one @remote-dom/core copy (see components.ts).
@@ -132,9 +127,14 @@ function bootstrap({port}: BootstrapInit): void {
 
         async shouldRender({bundleUrl, data, capabilities}) {
             retain(capabilities);
-            const moduleExports = getModule(bundleUrl);
+            const moduleExports = getModule(bundleUrl) as AddonModuleExports;
             const result = await moduleExports.default(buildGhost(data, capabilities));
             return Boolean(result);
+        },
+
+        async renderBlock({bundleUrl, request}) {
+            const moduleExports = getModule(bundleUrl) as AddonEditorContentModuleExports;
+            return renderEditorBlockModule(moduleExports, request);
         },
 
         async updateData(data) {

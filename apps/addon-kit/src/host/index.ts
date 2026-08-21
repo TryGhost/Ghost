@@ -12,6 +12,7 @@ export {AddonMarketplacePage} from './marketplace-page.tsx';
 export {AddonDetailPage} from './addon-detail-page.tsx';
 export {AddonInstallPage} from './install-page.tsx';
 export {AddonSandboxController} from './sandbox-controller.ts';
+export {createAddonEditorBlocksConfig, type AddonEditorBlocksConfig, type AddonEditorRenderRequest} from './editor-blocks.ts';
 export {AddonErrorBoundary} from './error-boundary.tsx';
 export {GH_COMPONENT_MAP} from './component-map.tsx';
 export {MARKETPLACE_CATALOG, useMarketplaceCatalog, type MarketplaceCatalogItem} from './catalog.ts';
@@ -23,6 +24,7 @@ export {
     ADDONS_SETTING_KEY,
     DEV_ADDONS_STORAGE_KEY,
     fetchManifest,
+    getEditorBlockDefinitions,
     isApiVersionCompatible,
     parseInstallRecords,
     pinManifest,
@@ -32,7 +34,8 @@ export {
     useAddonActions,
     useAddonInstalls,
     type UseAddonActionsResult,
-    type UseAddonInstallsResult
+    type UseAddonInstallsResult,
+    type InstalledEditorBlockDefinition
 } from './installs.ts';
 export {
     ADDON_API_VERSION,
@@ -40,8 +43,14 @@ export {
     SHOULD_RENDER_TARGETS,
     SHOULD_RENDER_PAIRS,
     type AddonDataEnvelope,
+    type AddonEditorBlockRenderOutput,
+    type AddonEditorBlockRequest,
+    type AddonEditorComponentOutput,
+    type AddonEditorContentModuleExports,
     type AddonInstallRecord,
     type AddonManifest,
+    type AddonManifestEditor,
+    type AddonManifestEditorBlock,
     type AddonRenderTarget,
     type AddonTarget,
     type GhostBridge,

@@ -1,4 +1,5 @@
 import type {RemoteConnection} from '@remote-dom/core/elements';
+import type {ComponentChild} from 'preact';
 
 /**
  * The add-on API version implemented by this host. Calendar-versioned.
@@ -77,7 +78,7 @@ export interface SandboxExports {
      * Fetches an add-on bundle from the provider origin, verifies its
      * integrity hash when one is pinned, and evaluates it. Idempotent per URL.
      */
-    loadBundle(options: {url: string; integrity?: string}): Promise<void>;
+    loadBundle(options: {url: string; integrity?: string; source?: string}): Promise<void>;
 
     /**
      * Runs a loaded render module against the remote-dom connection. May only
@@ -98,6 +99,15 @@ export interface SandboxExports {
         data: AddonDataEnvelope;
         capabilities: HostCapabilities;
     }): Promise<boolean>;
+
+    /**
+     * Runs an editor content module and returns the provider-serialized web
+     * and portable snapshots stored by the editor node.
+     */
+    renderBlock(options: {
+        bundleUrl: string;
+        request: AddonEditorBlockRequest;
+    }): Promise<AddonEditorBlockRenderOutput>;
 
     /**
      * Pushes a new data envelope into the sandbox (e.g. the dashboard range
@@ -138,6 +148,35 @@ export interface AddonModuleExports {
     default: AddonModuleFunction;
 }
 
+export interface AddonEditorBlockRequest {
+    blockName: string;
+    props: Record<string, unknown>;
+}
+
+export interface AddonEditorComponentOutput {
+    /** Required static web representation. */
+    content: ComponentChild;
+    /** Optional portable representation for email, RSS and other non-web targets. */
+    portableContent?: ComponentChild;
+    css?: string;
+    initialHeight?: number;
+}
+
+export type AddonEditorComponentRenderer = (
+    request: AddonEditorBlockRequest
+) => AddonEditorComponentOutput | Promise<AddonEditorComponentOutput>;
+
+export interface AddonEditorContentModuleExports {
+    default(request: AddonEditorBlockRequest): AddonEditorBlockRenderOutput | Promise<AddonEditorBlockRenderOutput>;
+}
+
+export interface AddonEditorBlockRenderOutput {
+    html: string;
+    portableHtml: string;
+    css: string;
+    initialHeight: number;
+}
+
 /**
  * A single targeting entry in an add-on manifest. `bundle` is the URL of the
  * built entry module for the target, resolved relative to the manifest URL.
@@ -147,6 +186,24 @@ export interface AddonManifestTargeting {
     bundle: string;
     /** Optional sha256 integrity hash for the built bundle (`sha256-<base64>`). */
     integrity?: string;
+}
+
+export interface AddonManifestEditorBlock {
+    name: string;
+    label: string;
+    description?: string;
+    keywords?: string[];
+    initialProperties?: Record<string, unknown>;
+    /** Public resource policy declared at install time, never by render output. */
+    resourceOrigins?: string[];
+}
+
+export interface AddonManifestEditor {
+    blocks: AddonManifestEditorBlock[];
+    content: {
+        bundle: string;
+        integrity?: string;
+    };
 }
 
 /**
@@ -171,6 +228,8 @@ export interface AddonManifest {
         /** Path under `#/apps/:handle/`, defaults to the root. */
         route?: string;
     };
+    /** Static discovery metadata plus the sandboxed content renderer bundle. */
+    editor?: AddonManifestEditor;
     targeting: AddonManifestTargeting[];
 }
 
@@ -190,6 +249,11 @@ export interface AddonInstallRecord {
     description?: string;
     backend?: string;
     sidebar?: AddonManifest['sidebar'];
+    editor?: {
+        blocks: AddonManifestEditorBlock[];
+        contentBundleUrl: string;
+        integrity?: string;
+    };
     /** True for dev-manifest loads (localStorage). Transient — never persisted. */
     dev?: boolean;
     targeting: Array<{

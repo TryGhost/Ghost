@@ -1,6 +1,6 @@
 # @tryghost/addon-demo
 
-A demo third-party add-on ("SEO Assistant") for the remote add-on spike — a dashboard card with a paired should-render module, and a full-page view with host-owned sub-routing. Written exactly as an external provider would write it: Preact against `@tryghost/addon-kit/addon`, built to per-target IIFE bundles, served with CORS from its own origin.
+A demo third-party add-on ("SEO Assistant") for the remote add-on spike — a dashboard card with a paired should-render module, a full-page view with host-owned sub-routing, and a manifest-driven Koenig block. Written exactly as an external provider would write it: Preact against `@tryghost/addon-kit`, built to per-target IIFE bundles, served with CORS from its own origin.
 
 ## Run it
 
@@ -26,6 +26,7 @@ localStorage.setItem('ghost-addons-dev', JSON.stringify(['http://localhost:4650/
 - `src/dashboard-card.tsx` — `admin.dashboard.card.render`
 - `src/dashboard-card-visibility.ts` — `admin.dashboard.card.should-render`
 - `src/report-page.tsx` — `admin.page.render` (sub-routing via `ghost.navigate` + `ghost.data.context.path`)
+- `src/editor-content.tsx` — pure Preact renderer for the `SEO summary card` Koenig block
 - `src/lib/seo-client.ts` — crawl logic: Admin API read → findings → backend report
 - `build.mjs` — builds each entry as an IIFE assigning `__ghostAddonModule`, then writes `manifest.json` with sha256 integrity per bundle
 - `server.mjs` — static provider origin with `Access-Control-Allow-Origin: *` (required: the opaque-origin sandbox fetches bundles with `Origin: null`) plus the in-memory report backend (`/api/report`, `/api/crawl`, `/api/clear`)

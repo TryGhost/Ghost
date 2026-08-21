@@ -1,9 +1,27 @@
 import sinon from 'sinon';
-import {buildCardConfigPost, decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
+import {buildAddonBlocksConfig, buildCardConfigPost, decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
 describe('Unit: Component: koenig-lexical-editor', function () {
+    describe('buildAddonBlocksConfig()', function () {
+        it('keeps add-on blocks out of Koenig when the labs flag is disabled', function () {
+            const createConfig = sinon.stub();
+
+            expect(buildAddonBlocksConfig('[]', false, createConfig)).to.be.undefined;
+            expect(createConfig).not.to.have.been.called;
+        });
+
+        it('turns persisted install records into the Koenig add-on registry', function () {
+            const records = [{handle: 'transistor', enabled: true}];
+            const expected = {blocks: [{label: 'Transistor episode'}]};
+            const createConfig = sinon.stub().returns(expected);
+
+            expect(buildAddonBlocksConfig(JSON.stringify(records), true, createConfig)).to.equal(expected);
+            expect(createConfig).to.have.been.calledOnceWithExactly(records);
+        });
+    });
+
     describe('decoratePostSearchResult()', function () {
         let result;
 

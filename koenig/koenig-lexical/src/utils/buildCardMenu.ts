@@ -1,4 +1,6 @@
+import AddonCardIcon from '../assets/icons/kg-card-type-other.svg?react';
 import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
+import {INSERT_ADDON_COMMAND} from '../nodes/AddonNode';
 import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
 import type React from 'react';
 
@@ -69,6 +71,39 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             addMenuItem({nodeType, ...node.kgMenu});
         }
     }
+
+    config?.addons?.blocks?.forEach((definition) => {
+        if (!definition || typeof definition.addonHandle !== 'string' || typeof definition.blockName !== 'string' || typeof definition.label !== 'string') {
+            return;
+        }
+
+        const matches = [
+            definition.label.toLowerCase(),
+            definition.addonHandle.toLowerCase(),
+            definition.blockName.toLowerCase(),
+            ...(Array.isArray(definition.keywords) ? definition.keywords.filter(keyword => typeof keyword === 'string').map(keyword => keyword.toLowerCase()) : [])
+        ];
+
+        addMenuItem({
+            nodeType: 'addon',
+            label: definition.label,
+            desc: definition.description,
+            Icon: AddonCardIcon,
+            section: 'Add-ons',
+            matches,
+            shortcut: `/${definition.blockName}`,
+            insertCommand: INSERT_ADDON_COMMAND,
+            insertParams: {
+                addonHandle: definition.addonHandle,
+                blockName: definition.blockName,
+                label: definition.label,
+                initialProperties: structuredClone(definition.initialProperties ?? {}),
+                resourceOrigins: Array.isArray(definition.resourceOrigins)
+                    ? definition.resourceOrigins.filter(origin => typeof origin === 'string')
+                    : []
+            }
+        });
+    });
 
     config?.snippets?.forEach((item) => {
         const snippetMenuItem = buildSnippetMenuItem(item, config);

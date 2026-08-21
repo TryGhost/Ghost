@@ -8,6 +8,7 @@ import KoenigEditor from './components/KoenigEditor';
 import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
+import AddonPlugin from './plugins/AddonPlugin';
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
 import AudioPlugin from './plugins/AudioPlugin';
 import BookmarkPlugin from './plugins/BookmarkPlugin';
@@ -54,6 +55,7 @@ import DEFAULT_NODES from './nodes/DefaultNodes';
 import EMAIL_EDITOR_NODES from './nodes/EmailEditorNodes';
 import EMAIL_NODES from './nodes/EmailNodes';
 import MINIMAL_NODES from './nodes/MinimalNodes';
+import {AddonNode, INSERT_ADDON_COMMAND} from './nodes/AddonNode';
 
 /* Transformers */
 import {
@@ -80,6 +82,7 @@ export {
     KoenigCardWrapper,
 
     AllDefaultPlugins,
+    AddonPlugin,
 
     AudioPlugin,
     BookmarkPlugin,
@@ -121,6 +124,8 @@ export {
     WordCountPlugin,
 
     DEFAULT_NODES,
+    AddonNode,
+    INSERT_ADDON_COMMAND,
     BASIC_NODES,
     EMAIL_EDITOR_NODES,
     EMAIL_NODES,

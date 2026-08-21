@@ -1,4 +1,5 @@
 import React from 'react';
+import type {AddonBlocksConfig} from '../utils/addon-blocks';
 import type {Doc} from 'yjs';
 
 export interface FileTypeConfig {
@@ -75,6 +76,7 @@ export interface CardConfigFeature {
 }
 
 export interface CardConfig {
+    addons?: AddonBlocksConfig;
     createSnippet?: (snippet: Snippet) => void;
     deleteSnippet?: (snippet: {name: string}) => void;
     fetchEmbed?: (url: string, options: FetchEmbedOptions) => Promise<EmbedResponse>;

@@ -541,5 +541,44 @@ describe('buildCardMenu', function () {
                 ]]
             ]));
         });
+
+        it('surfaces installed add-on blocks as distinct menu items backed by one node type', function () {
+            const config = {
+                addons: {
+                    blocks: [{
+                        addonHandle: 'transistor',
+                        blockName: 'episode-player',
+                        label: 'Transistor podcast player',
+                        description: 'Embed an episode from Transistor FM',
+                        keywords: ['podcast', 'audio'],
+                        initialProperties: {episodeId: ''},
+                        resourceOrigins: ['https://media.transistor.fm']
+                    }, {
+                        addonHandle: 'forms',
+                        blockName: 'signup-form',
+                        label: 'Custom signup form'
+                    }]
+                }
+            };
+
+            const cardMenu = buildCardMenu([], {query: 'podcast', config});
+            const items = cardMenu.menu.get('Add-ons');
+
+            expect(items).toHaveLength(1);
+            expect(items[0]).toMatchObject({
+                nodeType: 'addon',
+                label: 'Transistor podcast player',
+                desc: 'Embed an episode from Transistor FM',
+                matches: ['transistor podcast player', 'transistor', 'episode-player', 'podcast', 'audio'],
+                insertParams: {
+                    addonHandle: 'transistor',
+                    blockName: 'episode-player',
+                    label: 'Transistor podcast player',
+                    initialProperties: {episodeId: ''},
+                    resourceOrigins: ['https://media.transistor.fm']
+                }
+            });
+            expect(items[0].insertCommand).toBeDefined();
+        });
     });
 });
