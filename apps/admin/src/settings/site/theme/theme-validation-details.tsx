@@ -44,16 +44,25 @@ function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | '
 }
 
 /**
- * Summarises a set of problems by the severities actually present, e.g.
- * `2 errors, 3 warnings`. Empty severities are omitted entirely.
+ * Counts a set of problems by display severity, most severe first, dropping
+ * severities that aren't present. The single place the heading looks at what a
+ * set contains, so its wording and its icon can never disagree.
  */
-function formatIssueSummary(problems: ThemeProblem[]): string {
+function countBySeverity(problems: ThemeProblem[]) {
     return SEVERITY_ORDER
         .map(severity => ({
             severity,
             count: problems.filter(problem => getDisplaySeverity(problem) === severity).length
         }))
-        .filter(({count}) => count > 0)
+        .filter(({count}) => count > 0);
+}
+
+/**
+ * Summarises a set of problems by the severities actually present, e.g.
+ * `2 errors, 3 warnings`. Empty severities are omitted entirely.
+ */
+function formatIssueSummary(counts: ReturnType<typeof countBySeverity>): string {
+    return counts
         .map(({severity, count}) => `${formatNumber(count)} ${severity.toLowerCase()}${count === 1 ? '' : 's'}`)
         .join(', ');
 }
@@ -170,11 +179,17 @@ export function ThemeValidationIssueList({problems}: {problems: ThemeProblem[]})
         return null;
     }
 
+    const counts = countBySeverity(problems);
+    // A set that contains errors is headed "1 error, 2 warnings", so the icon
+    // beside it has to read as an error too — amber is only right when the set
+    // is warnings and recommendations alone.
+    const hasError = counts.some(({severity}) => severity === 'Error');
+
     return (
         <div className='flex flex-col gap-4'>
             <h3 className='flex items-center gap-2 text-base font-semibold text-foreground'>
-                <LucideIcon.TriangleAlert className='size-4 shrink-0 text-state-warning' />
-                {formatIssueSummary(problems)}
+                <LucideIcon.TriangleAlert className={cn('size-4 shrink-0', hasError ? 'text-destructive' : 'text-state-warning')} />
+                {formatIssueSummary(counts)}
             </h3>
             <ValidationProblemList problems={problems} />
         </div>

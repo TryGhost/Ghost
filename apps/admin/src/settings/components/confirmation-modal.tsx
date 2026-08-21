@@ -128,12 +128,30 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {footer && (stickyFooter ? (
-                    // StickyFooter sizes its own box in raw pixels (`height + 24`)
-                    // but spaces its parts with `h-6`/`-mb-6`, which Shade's
-                    // `--spacing: 0.4rem` scale renders as 38.4px. Pin those three
-                    // offsets back to the 24px the component's own maths assumes,
-                    // and bleed it across the dialog's horizontal padding.
-                    <StickyFooter className='-mx-6 w-auto [&>div:first-child]:h-[24px] [&>div:last-child]:h-[24px]' contentClassName='px-6 mb-[-24px] *:w-full' height={84}>
+                    // StickyFooter sizes its own box in raw pixels but spaces its
+                    // parts with `h-6`/`-mb-6`, which Shade's `--spacing: 0.4rem`
+                    // scale renders as 38.4px — so the shadow rule and the content
+                    // div's negative margin are pinned back to the 24px the
+                    // component's own maths assumes, and the whole thing bleeds
+                    // across the dialog's horizontal padding.
+                    //
+                    // The leading spacer goes entirely. Both it and the content div
+                    // are `sticky bottom-0` with `bg-background`, but the content
+                    // div is 84px tall and sits a layer above, so it already masks
+                    // the full visible strip on its own and the spacer is never
+                    // seen mid-scroll. At the bottom of the scroll everything
+                    // returns to flow and the spacer becomes a visible empty band
+                    // between the last row and the buttons. Dropping it means the
+                    // box no longer needs the extra 24px it reserved for it: the
+                    // height and bottom offset collapse to the footer's own 84px,
+                    // which keeps the buttons on the container's bottom edge rather
+                    // than moving the gap below them.
+                    <StickyFooter
+                        className='-mx-6 w-auto [&>div:first-child]:hidden [&>div:last-child]:h-[24px]'
+                        contentClassName='px-6 mb-[-24px] *:w-full'
+                        height={84}
+                        style={{bottom: 0, height: '84px'}}
+                    >
                         {footer}
                     </StickyFooter>
                 ) : footer)}
