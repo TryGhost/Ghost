@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
+import {isDunningSubscriptionStatus} from '@tryghost/admin-x-framework/utils/dunning-intervention';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -147,7 +148,10 @@ export default class GhBillingIframe extends Component {
         // Reload the limit service to ensure all admin pages can enforce limits
         this.limit.reload();
 
-        this.stateBridge.triggerSubscriptionChange(data);
+        this.stateBridge.triggerSubscriptionChange({
+            ...data,
+            forceUpgrade: this.config.hostSettings?.forceUpgrade === true
+        });
 
         // Invalidate React Query cache for config data in the React admin (settings)
         if (window?.adminXQueryClient?.refetchQueries && typeof window.adminXQueryClient.refetchQueries === 'function') {
@@ -165,8 +169,9 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        // Detect if the current subscription is in a grace state and render a notification
-        if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
+        // The existing banner depends only on subscription state. React owns
+        // the separate reminder modal and its per-session dismissal state.
+        if (isDunningSubscriptionStatus(data.subscription.status)) {
             // This notification needs to be shown to every user regardless their permissions to see billing
             this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {

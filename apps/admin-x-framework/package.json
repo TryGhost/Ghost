@@ -46,6 +46,11 @@
       "import": "./dist/utils/get-site-timezone.js",
       "require": "./dist/utils/get-site-timezone.cjs"
     },
+    "./utils/dunning-intervention": {
+      "types": "./types/utils/dunning-intervention.d.ts",
+      "import": "./dist/utils/dunning-intervention.js",
+      "require": "./dist/utils/dunning-intervention.cjs"
+    },
     "./vite": {
       "types": "./types/vite.d.ts",
       "import": "./dist/vite.js",
