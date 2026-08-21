@@ -1,4 +1,4 @@
-import type {PostResource} from './post-resource';
+import type { PostResource } from './post-resource';
 
 /**
  * The values each filter and the sort can take, ported verbatim from
@@ -9,8 +9,8 @@ import type {PostResource} from './post-resource';
  */
 
 export interface PostFilterOption {
-    value: string;
-    label: string;
+  value: string;
+  label: string;
 }
 
 /**
@@ -20,19 +20,19 @@ export interface PostFilterOption {
  * toggle would produce URLs the Ember screen renders as "Unknown".
  */
 const POST_TYPE_OPTIONS: PostFilterOption[] = [
-    {value: 'draft', label: 'Draft posts'},
-    {value: 'published', label: 'Published posts'},
-    {value: 'sent', label: 'Email only posts'},
-    {value: 'scheduled', label: 'Scheduled posts'},
-    {value: 'featured', label: 'Featured posts'}
+  { value: 'draft', label: 'Draft posts' },
+  { value: 'published', label: 'Published posts' },
+  { value: 'sent', label: 'Email only posts' },
+  { value: 'scheduled', label: 'Scheduled posts' },
+  { value: 'featured', label: 'Featured posts' },
 ];
 
 /** Pages are never emailed, so they have no "Email only". */
 const PAGE_TYPE_OPTIONS: PostFilterOption[] = [
-    {value: 'draft', label: 'Draft pages'},
-    {value: 'published', label: 'Published pages'},
-    {value: 'scheduled', label: 'Scheduled pages'},
-    {value: 'featured', label: 'Featured pages'}
+  { value: 'draft', label: 'Draft pages' },
+  { value: 'published', label: 'Published pages' },
+  { value: 'scheduled', label: 'Scheduled pages' },
+  { value: 'featured', label: 'Featured pages' },
 ];
 
 /**
@@ -40,27 +40,27 @@ const PAGE_TYPE_OPTIONS: PostFilterOption[] = [
  * it straight into the filter string.
  */
 export const VISIBILITY_OPTIONS: PostFilterOption[] = [
-    {value: 'public', label: 'Public'},
-    {value: 'members', label: 'Members-only'},
-    {value: '[paid,tiers]', label: 'Paid members-only'}
+  { value: 'public', label: 'Public' },
+  { value: 'members', label: 'Members-only' },
+  { value: '[paid,tiers]', label: 'Paid members-only' },
 ];
 
 /** "Newest first" is the absence of an `order` param, so it has no entry. */
 export const ORDER_OPTIONS: PostFilterOption[] = [
-    {value: 'published_at asc', label: 'Oldest first'},
-    {value: 'updated_at desc', label: 'Recently updated'}
+  { value: 'published_at asc', label: 'Oldest first' },
+  { value: 'updated_at desc', label: 'Recently updated' },
 ];
 
 export const DEFAULT_ORDER_LABEL = 'Newest first';
 
 export function getTypeOptions(resource: PostResource): PostFilterOption[] {
-    return resource === 'pages' ? PAGE_TYPE_OPTIONS : POST_TYPE_OPTIONS;
+  return resource === 'pages' ? PAGE_TYPE_OPTIONS : POST_TYPE_OPTIONS;
 }
 
 export function getOrderLabel(order?: string | null): string {
-    if (!order) {
-        return DEFAULT_ORDER_LABEL;
-    }
+  if (!order) {
+    return DEFAULT_ORDER_LABEL;
+  }
 
-    return ORDER_OPTIONS.find(option => option.value === order)?.label ?? order;
+  return ORDER_OPTIONS.find((option) => option.value === order)?.label ?? order;
 }

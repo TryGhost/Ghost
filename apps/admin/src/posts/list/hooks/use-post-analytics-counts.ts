@@ -1,6 +1,6 @@
-import {usePostMemberCounts, usePostVisitorCounts} from '@tryghost/admin-x-framework/api/stats';
-import {useMemo} from 'react';
-import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
+import { usePostMemberCounts, usePostVisitorCounts } from '@tryghost/admin-x-framework/api/stats';
+import { useMemo } from 'react';
+import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 
 /**
  * Visitor and member counts for the rows currently on screen.
@@ -14,28 +14,27 @@ import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
  * analytics service can't hold up the screen.
  */
 export interface UsePostAnalyticsCountsOptions {
-    items: PostListItem[];
-    webAnalyticsEnabled: boolean;
-    membersTrackSources: boolean;
+  items: PostListItem[];
+  webAnalyticsEnabled: boolean;
+  membersTrackSources: boolean;
 }
 
 export function usePostAnalyticsCounts({
-    items, webAnalyticsEnabled, membersTrackSources
+  items,
+  webAnalyticsEnabled,
+  membersTrackSources,
 }: UsePostAnalyticsCountsOptions) {
-    const published = useMemo(
-        () => items.filter(item => item.status === 'published'),
-        [items]
-    );
+  const published = useMemo(() => items.filter((item) => item.status === 'published'), [items]);
 
-    const postUuids = useMemo(
-        () => published.map(item => item.uuid).filter((uuid): uuid is string => Boolean(uuid)),
-        [published]
-    );
+  const postUuids = useMemo(
+    () => published.map((item) => item.uuid).filter((uuid): uuid is string => Boolean(uuid)),
+    [published],
+  );
 
-    const postIds = useMemo(() => published.map(item => item.id), [published]);
+  const postIds = useMemo(() => published.map((item) => item.id), [published]);
 
-    const {data: visitorCounts} = usePostVisitorCounts(postUuids, {enabled: webAnalyticsEnabled});
-    const {data: memberCounts} = usePostMemberCounts(postIds, {enabled: membersTrackSources});
+  const { data: visitorCounts } = usePostVisitorCounts(postUuids, { enabled: webAnalyticsEnabled });
+  const { data: memberCounts } = usePostMemberCounts(postIds, { enabled: membersTrackSources });
 
-    return {visitorCounts, memberCounts};
+  return { visitorCounts, memberCounts };
 }

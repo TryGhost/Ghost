@@ -1,5 +1,5 @@
-import type {Filter} from '@tryghost/shade/patterns';
-import type {PostListParams} from './post-query-params';
+import type { Filter } from '@tryghost/shade/patterns';
+import type { PostListParams } from './post-query-params';
 
 /**
  * Bridges the posts/pages URL params and the Shade `Filters` chip model.
@@ -22,17 +22,17 @@ export type PostFilterParam = (typeof POST_FILTER_PARAMS)[number];
 export type PostFilterParamValues = Record<PostFilterParam, string | null>;
 
 const EMPTY_PARAMS: PostFilterParamValues = {
-    type: null,
-    visibility: null,
-    author: null,
-    tag: null
+  type: null,
+  visibility: null,
+  author: null,
+  tag: null,
 };
 
 /** These fields are single-select equality; Ember offers nothing else. */
 const OPERATOR = 'is';
 
 function isFilterParam(field: string): field is PostFilterParam {
-    return (POST_FILTER_PARAMS as readonly string[]).includes(field);
+  return (POST_FILTER_PARAMS as readonly string[]).includes(field);
 }
 
 /**
@@ -41,17 +41,17 @@ function isFilterParam(field: string): field is PostFilterParam {
  * build understands. Dropping it would silently rewrite the user's URL.
  */
 export function parsePostFilters(params: PostListParams): Filter<string>[] {
-    return POST_FILTER_PARAMS.flatMap((param, index) => {
-        const value = params[param];
+  return POST_FILTER_PARAMS.flatMap((param, index) => {
+    const value = params[param];
 
-        if (value === null || value === undefined || value === '') {
-            return [];
-        }
+    if (value === null || value === undefined || value === '') {
+      return [];
+    }
 
-        // Ids only have to be unique and stable for a given params record;
-        // the param name already is.
-        return [{id: `${param}:${index + 1}`, field: param, operator: OPERATOR, values: [value]}];
-    });
+    // Ids only have to be unique and stable for a given params record;
+    // the param name already is.
+    return [{ id: `${param}:${index + 1}`, field: param, operator: OPERATOR, values: [value] }];
+  });
 }
 
 /**
@@ -60,15 +60,15 @@ export function parsePostFilters(params: PostListParams): Filter<string>[] {
  * "[object Object]".
  */
 function toParamValue(value: unknown): string | null {
-    if (typeof value === 'string') {
-        return value === '' ? null : value;
-    }
+  if (typeof value === 'string') {
+    return value === '' ? null : value;
+  }
 
-    if (typeof value === 'number' || typeof value === 'boolean') {
-        return String(value);
-    }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
 
-    return null;
+  return null;
 }
 
 /**
@@ -76,15 +76,15 @@ function toParamValue(value: unknown): string | null {
  * field is picked - clears its param rather than writing an empty one.
  */
 export function serializePostFilters(filters: Filter<string>[]): PostFilterParamValues {
-    const params: PostFilterParamValues = {...EMPTY_PARAMS};
+  const params: PostFilterParamValues = { ...EMPTY_PARAMS };
 
-    filters.forEach((filter) => {
-        if (!isFilterParam(filter.field)) {
-            return;
-        }
+  filters.forEach((filter) => {
+    if (!isFilterParam(filter.field)) {
+      return;
+    }
 
-        params[filter.field] = toParamValue(filter.values[0]);
-    });
+    params[filter.field] = toParamValue(filter.values[0]);
+  });
 
-    return params;
+  return params;
 }

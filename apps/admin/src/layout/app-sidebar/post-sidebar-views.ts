@@ -1,5 +1,5 @@
-import {POST_VIEW_PARAMS} from '@/posts/list/post-view-params';
-import type {PostResource} from '@/posts/list/post-resource';
+import { POST_VIEW_PARAMS } from '@/posts/list/post-view-params';
+import type { PostResource } from '@/posts/list/post-resource';
 
 /**
  * Sidebar saved views for posts and pages.
@@ -14,8 +14,8 @@ import type {PostResource} from '@/posts/list/post-resource';
 export type PostViewFilter = Record<string, string | null>;
 
 export interface PostDefaultView {
-    name: string;
-    filter: PostViewFilter;
+  name: string;
+  filter: PostViewFilter;
 }
 
 /**
@@ -23,36 +23,36 @@ export interface PostDefaultView {
  * 'posts'` — there are no default views for pages.
  */
 export const POST_DEFAULT_VIEWS: PostDefaultView[] = [
-    {name: 'Drafts', filter: {type: 'draft'}},
-    {name: 'Scheduled', filter: {type: 'scheduled'}},
-    {name: 'Published', filter: {type: 'published'}}
+  { name: 'Drafts', filter: { type: 'draft' } },
+  { name: 'Scheduled', filter: { type: 'scheduled' } },
+  { name: 'Published', filter: { type: 'published' } },
 ];
 
 export function getDefaultPostViews(isContributor: boolean): PostDefaultView[] {
-    // Contributors only ever see their own drafts, so status views say nothing.
-    return isContributor ? [] : POST_DEFAULT_VIEWS;
+  // Contributors only ever see their own drafts, so status views say nothing.
+  return isContributor ? [] : POST_DEFAULT_VIEWS;
 }
 
 /** Params are emitted in a fixed order so one view always yields one URL. */
 export function buildPostViewUrl(route: PostResource, filter: PostViewFilter): string {
-    const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-    POST_VIEW_PARAMS.forEach((param) => {
-        const value = filter[param];
+  POST_VIEW_PARAMS.forEach((param) => {
+    const value = filter[param];
 
-        if (value !== null && value !== undefined && value !== '') {
-            params.set(param, value);
-        }
-    });
+    if (value !== null && value !== undefined && value !== '') {
+      params.set(param, value);
+    }
+  });
 
-    const query = params.toString();
+  const query = params.toString();
 
-    return query ? `${route}?${query}` : route;
+  return query ? `${route}?${query}` : route;
 }
 
 export interface ViewLocation {
-    pathname: string;
-    search: string;
+  pathname: string;
+  search: string;
 }
 
 /**
@@ -64,20 +64,20 @@ export interface ViewLocation {
  * Params outside the five are ignored; they aren't part of a view's identity.
  */
 export function isPostViewActive(
-    location: ViewLocation,
-    route: PostResource,
-    filter: PostViewFilter
+  location: ViewLocation,
+  route: PostResource,
+  filter: PostViewFilter,
 ): boolean {
-    if (location.pathname !== `/${route}`) {
-        return false;
-    }
+  if (location.pathname !== `/${route}`) {
+    return false;
+  }
 
-    const current = new URLSearchParams(location.search);
+  const current = new URLSearchParams(location.search);
 
-    return POST_VIEW_PARAMS.every((param) => {
-        const expected = filter[param] ?? null;
-        const actual = current.get(param);
+  return POST_VIEW_PARAMS.every((param) => {
+    const expected = filter[param] ?? null;
+    const actual = current.get(param);
 
-        return expected === (actual === '' ? null : actual);
-    });
+    return expected === (actual === '' ? null : actual);
+  });
 }

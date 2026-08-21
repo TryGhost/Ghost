@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
-import { renderAdminApp } from "@test-utils/acceptance";
+import { renderAdminApp } from '@test-utils/acceptance';
 
 /**
  * The editor is a focused writing surface — Ghost hides the nav sidebar for it,
@@ -24,26 +24,26 @@ import { renderAdminApp } from "@test-utils/acceptance";
  * The sequence that produced the bug (list -> editor -> list -> editor) was
  * verified by hand against a real Ghost.
  */
-describe("Editor chrome", () => {
-    const sidebar = () => page.getByTestId("admin-sidebar");
+describe('Editor chrome', () => {
+  const sidebar = () => page.getByTestId('admin-sidebar');
 
-    it("hides the nav sidebar", async () => {
-        await renderAdminApp("/editor/post/abc123");
+  it('hides the nav sidebar', async () => {
+    await renderAdminApp('/editor/post/abc123');
 
-        await expect(sidebar()).toHaveCount(0);
-    });
+    await expect(sidebar()).toHaveCount(0);
+  });
 
-    it("hides it for a page too", async () => {
-        await renderAdminApp("/editor/page/abc123");
+  it('hides it for a page too', async () => {
+    await renderAdminApp('/editor/page/abc123');
 
-        await expect(sidebar()).toHaveCount(0);
-    });
+    await expect(sidebar()).toHaveCount(0);
+  });
 
-    // ...and still shows it everywhere else, or this would be a worse bug than
-    // the one it fixes.
-    it("leaves the sidebar alone on the posts list", async () => {
-        await renderAdminApp("/posts");
+  // ...and still shows it everywhere else, or this would be a worse bug than
+  // the one it fixes.
+  it('leaves the sidebar alone on the posts list', async () => {
+    await renderAdminApp('/posts');
 
-        await expect.element(sidebar()).toBeVisible();
-    });
+    await expect.element(sidebar()).toBeVisible();
+  });
 });

@@ -1,5 +1,5 @@
-import {computeShiftRange} from './compute-shift-range';
-import {describe, expect, it} from 'vitest';
+import { computeShiftRange } from './compute-shift-range';
+import { describe, expect, it } from 'vitest';
 
 /**
  * Shift-click selects everything between the last-clicked row and this one.
@@ -24,67 +24,69 @@ import {describe, expect, it} from 'vitest';
 const ids = ['a', 'b', 'c', 'd', 'e'];
 
 describe('computeShiftRange', () => {
-    it('covers the rows after the anchor, excluding it', () => {
-        expect(computeShiftRange(ids, 'b', 'd')).toEqual(['c', 'd']);
-    });
+  it('covers the rows after the anchor, excluding it', () => {
+    expect(computeShiftRange(ids, 'b', 'd')).toEqual(['c', 'd']);
+  });
 
-    it('covers the rows before the anchor, including it', () => {
-        expect(computeShiftRange(ids, 'd', 'b')).toEqual(['b', 'c', 'd']);
-    });
+  it('covers the rows before the anchor, including it', () => {
+    expect(computeShiftRange(ids, 'd', 'b')).toEqual(['b', 'c', 'd']);
+  });
 
-    it('covers a single row when the two are adjacent going forward', () => {
-        expect(computeShiftRange(ids, 'b', 'c')).toEqual(['c']);
-    });
+  it('covers a single row when the two are adjacent going forward', () => {
+    expect(computeShiftRange(ids, 'b', 'c')).toEqual(['c']);
+  });
 
-    it('covers both rows when the two are adjacent going backward', () => {
-        expect(computeShiftRange(ids, 'c', 'b')).toEqual(['b', 'c']);
-    });
+  it('covers both rows when the two are adjacent going backward', () => {
+    expect(computeShiftRange(ids, 'c', 'b')).toEqual(['b', 'c']);
+  });
 
-    /**
-     * A deliberate divergence, and the only one in this file.
-     *
-     * Ember's loop enters the endpoint branch, flips `running` on and
-     * `continue`s — and then never meets a second endpoint to turn it off
-     * again. Everything below the clicked row is selected, to the end of every
-     * bucket. Shift-clicking the row you are already anchored to therefore
-     * means "select to the end of the list" in Ember, which is plainly not
-     * what anyone intends and is about to be wired to a bulk delete.
-     *
-     * Selecting nothing is the conservative reading of an ambiguous gesture.
-     */
-    it('selects nothing when shift-clicking the anchor itself', () => {
-        expect(computeShiftRange(ids, 'c', 'c')).toEqual([]);
-    });
+  /**
+   * A deliberate divergence, and the only one in this file.
+   *
+   * Ember's loop enters the endpoint branch, flips `running` on and
+   * `continue`s — and then never meets a second endpoint to turn it off
+   * again. Everything below the clicked row is selected, to the end of every
+   * bucket. Shift-clicking the row you are already anchored to therefore
+   * means "select to the end of the list" in Ember, which is plainly not
+   * what anyone intends and is about to be wired to a bulk delete.
+   *
+   * Selecting nothing is the conservative reading of an ambiguous gesture.
+   */
+  it('selects nothing when shift-clicking the anchor itself', () => {
+    expect(computeShiftRange(ids, 'c', 'c')).toEqual([]);
+  });
 
-    it('spans the whole list from one end to the other', () => {
-        expect(computeShiftRange(ids, 'a', 'e')).toEqual(['b', 'c', 'd', 'e']);
-    });
+  it('spans the whole list from one end to the other', () => {
+    expect(computeShiftRange(ids, 'a', 'e')).toEqual(['b', 'c', 'd', 'e']);
+  });
 
-    // The composed array is bucket-ordered — scheduled, then drafts, then
-    // published — so a range spanning a bucket boundary is just a slice. This
-    // is the case the Ember implementation has to walk three models for.
-    it('spans a bucket boundary without noticing there was one', () => {
-        const buckets = ['sched-1', 'sched-2', 'draft-1', 'draft-2', 'pub-1'];
+  // The composed array is bucket-ordered — scheduled, then drafts, then
+  // published — so a range spanning a bucket boundary is just a slice. This
+  // is the case the Ember implementation has to walk three models for.
+  it('spans a bucket boundary without noticing there was one', () => {
+    const buckets = ['sched-1', 'sched-2', 'draft-1', 'draft-2', 'pub-1'];
 
-        expect(computeShiftRange(buckets, 'sched-2', 'pub-1'))
-            .toEqual(['draft-1', 'draft-2', 'pub-1']);
-    });
+    expect(computeShiftRange(buckets, 'sched-2', 'pub-1')).toEqual(['draft-1', 'draft-2', 'pub-1']);
+  });
 
-    it('spans a bucket boundary backwards, taking the anchor with it', () => {
-        const buckets = ['sched-1', 'sched-2', 'draft-1', 'draft-2', 'pub-1'];
+  it('spans a bucket boundary backwards, taking the anchor with it', () => {
+    const buckets = ['sched-1', 'sched-2', 'draft-1', 'draft-2', 'pub-1'];
 
-        expect(computeShiftRange(buckets, 'draft-2', 'sched-2'))
-            .toEqual(['sched-2', 'draft-1', 'draft-2']);
-    });
+    expect(computeShiftRange(buckets, 'draft-2', 'sched-2')).toEqual([
+      'sched-2',
+      'draft-1',
+      'draft-2',
+    ]);
+  });
 
-    // A row can leave the list between clicks — a bulk edit prunes it, or a
-    // filter changes. Returning nothing beats throwing or selecting a
-    // half-range against a stale index.
-    it('is empty when the anchor is no longer in the list', () => {
-        expect(computeShiftRange(ids, 'gone', 'c')).toEqual([]);
-    });
+  // A row can leave the list between clicks — a bulk edit prunes it, or a
+  // filter changes. Returning nothing beats throwing or selecting a
+  // half-range against a stale index.
+  it('is empty when the anchor is no longer in the list', () => {
+    expect(computeShiftRange(ids, 'gone', 'c')).toEqual([]);
+  });
 
-    it('is empty when the target is no longer in the list', () => {
-        expect(computeShiftRange(ids, 'c', 'gone')).toEqual([]);
-    });
+  it('is empty when the target is no longer in the list', () => {
+    expect(computeShiftRange(ids, 'c', 'gone')).toEqual([]);
+  });
 });

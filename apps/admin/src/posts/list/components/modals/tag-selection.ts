@@ -1,8 +1,8 @@
 /** A tag being added. No `id` when it is one the user just typed. */
 export interface TagToAdd {
-    id?: string;
-    name: string;
-    slug?: string;
+  id?: string;
+  name: string;
+  slug?: string;
 }
 
 /**
@@ -14,5 +14,5 @@ export interface TagToAdd {
  * back to its name.
  */
 export function tagKey(tag: TagToAdd): string {
-    return tag.id ?? `new:${tag.name.toLowerCase()}`;
+  return tag.id ?? `new:${tag.name.toLowerCase()}`;
 }

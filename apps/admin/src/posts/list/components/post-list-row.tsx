@@ -1,56 +1,56 @@
-import {Button} from '@tryghost/shade/components';
-import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {cn, LucideIcon} from '@tryghost/shade/utils';
+import { Button } from '@tryghost/shade/components';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
-import {PostsContextMenu} from '@/posts/list/components/posts-context-menu';
-import type {PostContextMenuItem, PostContextMenuKey} from '@/posts/list/post-context-menu-items';
+import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
+import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
-    didPostEmailFail,
-    getPostDateTooltip,
-    getPostMetaParts,
-    getPostStatusDetail,
-    getPostStatusLabel
+  didPostEmailFail,
+  getPostDateTooltip,
+  getPostMetaParts,
+  getPostStatusDetail,
+  getPostStatusLabel,
 } from '@/posts/list/post-row-copy';
-import {hasPostAnalyticsPage, type PostMetricsSettings} from '@/posts/list/post-metrics';
-import {PostMetricsCells} from '@/posts/list/components/post-metrics-cells';
-import {forwardRef, memo, useState} from 'react';
-import type {ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent} from 'react';
-import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
-import type {PostResource} from '@/posts/list/post-resource';
+import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
+import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
+import { forwardRef, memo, useState } from 'react';
+import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
+import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
+import type { PostResource } from '@/posts/list/post-resource';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
-    post: PostListItem;
-    resource: PostResource;
-    timezone?: string;
-    /**
-     * Contributors get a link out to the live post instead of the editor, for
-     * published posts they can no longer edit.
-     */
-    isContributor?: boolean;
-    /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
-    hasAdminAccess?: boolean;
-    paidMembersEnabled?: boolean;
-    isSelected?: boolean;
-    /** Capture-phase, so it beats the row's own link. */
-    onSelectMouseDown?: (event: ReactMouseEvent, id: string) => void;
-    onSelectClick?: (event: ReactMouseEvent) => void;
-    /**
-     * The right-click menu is rendered *inside* this component rather than
-     * wrapped around it. A wrapper's `children` is a fresh React element on
-     * every parent render, so `memo` on the wrapper can never hold and the
-     * whole list re-renders on every selection change. Rendering it here puts
-     * the menu's children inside this memo boundary instead.
-     *
-     * These props are all primitives or ref-stable getters for the same reason.
-     */
-    getMenuItems: () => PostContextMenuItem[];
-    showGiftLink?: boolean;
-    menuEnabled?: boolean;
-    menuOnOpenChange?: (open: boolean) => void;
-    menuOnAction?: (key: PostContextMenuKey) => void | Promise<void>;
-    metricsSettings: PostMetricsSettings;
-    visitorCounts?: Record<string, number>;
-    memberCounts?: Record<string, {free: number; paid: number}>;
+  post: PostListItem;
+  resource: PostResource;
+  timezone?: string;
+  /**
+   * Contributors get a link out to the live post instead of the editor, for
+   * published posts they can no longer edit.
+   */
+  isContributor?: boolean;
+  /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
+  hasAdminAccess?: boolean;
+  paidMembersEnabled?: boolean;
+  isSelected?: boolean;
+  /** Capture-phase, so it beats the row's own link. */
+  onSelectMouseDown?: (event: ReactMouseEvent, id: string) => void;
+  onSelectClick?: (event: ReactMouseEvent) => void;
+  /**
+   * The right-click menu is rendered *inside* this component rather than
+   * wrapped around it. A wrapper's `children` is a fresh React element on
+   * every parent render, so `memo` on the wrapper can never hold and the
+   * whole list re-renders on every selection change. Rendering it here puts
+   * the menu's children inside this memo boundary instead.
+   *
+   * These props are all primitives or ref-stable getters for the same reason.
+   */
+  getMenuItems: () => PostContextMenuItem[];
+  showGiftLink?: boolean;
+  menuEnabled?: boolean;
+  menuOnOpenChange?: (open: boolean) => void;
+  menuOnAction?: (key: PostContextMenuKey) => void | Promise<void>;
+  metricsSettings: PostMetricsSettings;
+  visitorCounts?: Record<string, number>;
+  memberCounts?: Record<string, { free: number; paid: number }>;
 }
 
 /**
@@ -67,18 +67,18 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
  * `var(--green)` do.
  */
 function statusTone(post: PostListItem, isFailed: boolean): string {
-    if (isFailed) {
-        return 'text-state-danger';
-    }
+  if (isFailed) {
+    return 'text-state-danger';
+  }
 
-    switch (post.status) {
+  switch (post.status) {
     case 'draft':
-        return 'text-pink';
+      return 'text-pink';
     case 'scheduled':
-        return 'text-green';
+      return 'text-green';
     default:
-        return 'text-muted-foreground';
-    }
+      return 'text-muted-foreground';
+  }
 }
 
 /**
@@ -92,37 +92,54 @@ function statusTone(post: PostListItem, isFailed: boolean): string {
  */
 const FEATURE_IMAGE_GEOMETRY = 'aspect-[16/10] w-[80px] shrink-0 rounded-sm lg:w-[100px]';
 
-function FeatureImage({post}: {post: PostListItem}) {
-    if (post.feature_image) {
-        return (
-            <div
-                className={cn(FEATURE_IMAGE_GEOMETRY, 'bg-muted bg-cover bg-center')}
-                role='presentation'
-                style={{backgroundImage: `url(${post.feature_image})`}}
-            />
-        );
-    }
+function FeatureImage({ post }: { post: PostListItem }) {
+  if (post.feature_image) {
+    return (
+      <div
+        className={cn(FEATURE_IMAGE_GEOMETRY, 'bg-muted bg-cover bg-center')}
+        role="presentation"
+        style={{ backgroundImage: `url(${post.feature_image})` }}
+      />
+    );
+  }
 
-    // `p-0` because the placeholder's own padding is sized for a larger box;
-    // here the icon just centres in the thumbnail.
-    return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
+  // `p-0` because the placeholder's own padding is sized for a larger box;
+  // here the icon just centres in the thumbnail.
+  return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
 }
 
-const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(function PostListRowComponent({
-    post, resource, timezone, isContributor, hasAdminAccess, paidMembersEnabled,
-    isSelected, onSelectMouseDown, onSelectClick,
-    getMenuItems, showGiftLink, menuEnabled, menuOnOpenChange, menuOnAction,
-    metricsSettings, visitorCounts, memberCounts,
-    // Everything else lands on the <li>: the context menu wraps each row with
-    // `asChild`, so Radix hands its trigger props and ref straight through.
-    ...rest
-}, ref) {
+const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
+  function PostListRowComponent(
+    {
+      post,
+      resource,
+      timezone,
+      isContributor,
+      hasAdminAccess,
+      paidMembersEnabled,
+      isSelected,
+      onSelectMouseDown,
+      onSelectClick,
+      getMenuItems,
+      showGiftLink,
+      menuEnabled,
+      menuOnOpenChange,
+      menuOnAction,
+      metricsSettings,
+      visitorCounts,
+      memberCounts,
+      // Everything else lands on the <li>: the context menu wraps each row with
+      // `asChild`, so Radix hands its trigger props and ref straight through.
+      ...rest
+    },
+    ref,
+  ) {
     const [isHovered, setIsHovered] = useState(false);
 
-    const metaParts = getPostMetaParts(post, {timezone});
-    const dateTooltip = getPostDateTooltip(post, {timezone});
+    const metaParts = getPostMetaParts(post, { timezone });
+    const dateTooltip = getPostDateTooltip(post, { timezone });
     const statusLabel = getPostStatusLabel(post, resource);
-    const statusDetail = getPostStatusDetail(post, {timezone, resource});
+    const statusDetail = getPostStatusDetail(post, { timezone, resource });
     const isFailed = didPostEmailFail(post, resource);
 
     // Strictly `published`, matching Ember's `isPublished`. An email-only
@@ -132,157 +149,168 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
     const linksOffsite = Boolean(isContributor && isPublished);
     const href = linksOffsite ? post.url : `#/editor/${editorType}/${post.id}`;
 
-    const goesToAnalytics = hasPostAnalyticsPage(post, metricsSettings, resource, Boolean(hasAdminAccess));
+    const goesToAnalytics = hasPostAnalyticsPage(
+      post,
+      metricsSettings,
+      resource,
+      Boolean(hasAdminAccess),
+    );
     const action = goesToAnalytics
-        ? {href: `#/posts/analytics/${post.id}`, label: 'Go to Analytics', external: false, Icon: LucideIcon.ChartNoAxesColumn}
-        : linksOffsite
-            // "View post" on both resources, as Ember hardcodes it. Only ever
-            // reached by a contributor, who has no page access anyway.
-            ? {href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight}
-            : {href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen};
+      ? {
+          href: `#/posts/analytics/${post.id}`,
+          label: 'Go to Analytics',
+          external: false,
+          Icon: LucideIcon.ChartNoAxesColumn,
+        }
+      : linksOffsite
+        ? // "View post" on both resources, as Ember hardcodes it. Only ever
+          // reached by a contributor, who has no page access anyway.
+          { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
+        : { href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen };
 
     const row = (
-        <li
-            ref={ref}
-            {...rest}
-            className={cn(
-                'group border-b border-border-default',
-                // A light blue rather than a grey: selection is a different
-                // kind of state from hover, and two greys a step apart read as
-                // degrees of the same thing. Ember paints a 10% indigo overlay
-                // for the same reason.
-                //
-                // `select-none` matches Ember: a modifier-drag across rows
-                // shouldn't leave text highlighted behind the selection.
-                //
-                // Hover applies only when the row is *not* selected — a hover
-                // rule would otherwise outrank the selected background and make
-                // the row under the cursor look deselected.
-                isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover'
-            )}
-            data-selected={isSelected ? 'true' : undefined}
-            data-testid='posts-list-item'
-            onClickCapture={onSelectClick}
-            onMouseDownCapture={(event) => {
-                onSelectMouseDown?.(event, post.id);
-            }}
-            onMouseEnter={() => {
-                setIsHovered(true);
-            }}
-            onMouseLeave={() => {
-                setIsHovered(false);
-            }}
-        >
-            {/* `center`, not `start`: Ember centres everything on the right
+      <li
+        ref={ref}
+        {...rest}
+        className={cn(
+          'group border-b border-border-default',
+          // A light blue rather than a grey: selection is a different
+          // kind of state from hover, and two greys a step apart read as
+          // degrees of the same thing. Ember paints a 10% indigo overlay
+          // for the same reason.
+          //
+          // `select-none` matches Ember: a modifier-drag across rows
+          // shouldn't leave text highlighted behind the selection.
+          //
+          // Hover applies only when the row is *not* selected — a hover
+          // rule would otherwise outrank the selected background and make
+          // the row under the cursor look deselected.
+          isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
+        )}
+        data-selected={isSelected ? 'true' : undefined}
+        data-testid="posts-list-item"
+        onClickCapture={onSelectClick}
+        onMouseDownCapture={(event) => {
+          onSelectMouseDown?.(event, post.id);
+        }}
+        onMouseEnter={() => {
+          setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+        }}
+      >
+        {/* `center`, not `start`: Ember centres everything on the right
                 against the feature image.
 
                 Padding is even on all four sides. It lives on the children
                 rather than the row because the link and the trailing button
                 each need to fill the row's full height to stay clickable —
                 so the row's own box has to stay flush. */}
-            <Inline align='center' className='pr-4' gap='md'>
-                <a
-                    className='flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline'
-                    data-testid='post-list-item-link'
-                    href={href}
-                    rel={linksOffsite ? 'noopener noreferrer' : undefined}
-                    target={linksOffsite ? '_blank' : undefined}
-                >
-                    <FeatureImage post={post} />
-                    <Stack className='min-w-0 flex-1' gap='xs'>
-                        <Inline align='center' gap='xs'>
-                            {post.featured && (
-                                <LucideIcon.Star
-                                    aria-label='Featured'
-                                    className='size-4 shrink-0 fill-state-warning text-state-warning'
-                                    data-testid='post-featured'
-                                />
-                            )}
-                            <Text as='h3' className='truncate' weight='semibold'>
-                                {post.title}
-                            </Text>
-                        </Inline>
+        <Inline align="center" className="pr-4" gap="md">
+          <a
+            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline"
+            data-testid="post-list-item-link"
+            href={href}
+            rel={linksOffsite ? 'noopener noreferrer' : undefined}
+            target={linksOffsite ? '_blank' : undefined}
+          >
+            <FeatureImage post={post} />
+            <Stack className="min-w-0 flex-1" gap="xs">
+              <Inline align="center" gap="xs">
+                {post.featured && (
+                  <LucideIcon.Star
+                    aria-label="Featured"
+                    className="size-4 shrink-0 fill-state-warning text-state-warning"
+                    data-testid="post-featured"
+                  />
+                )}
+                <Text as="h3" className="truncate" weight="semibold">
+                  {post.title}
+                </Text>
+              </Inline>
 
-                        {metaParts.length > 0 && (
-                            // Joined from parts so a missing piece takes its
-                            // separator with it — no dangling " – date".
-                            //
-                            // Truncated like the title above it. Left to wrap,
-                            // a long author-and-tag line runs to three lines on
-                            // a narrow window and drives the row's height,
-                            // which reads as the metrics squashing it.
-                            <Text className='truncate' size='sm' title={dateTooltip} tone='secondary'>
-                                {metaParts.join(' - ')}
-                            </Text>
-                        )}
+              {metaParts.length > 0 && (
+                // Joined from parts so a missing piece takes its
+                // separator with it — no dangling " – date".
+                //
+                // Truncated like the title above it. Left to wrap,
+                // a long author-and-tag line runs to three lines on
+                // a narrow window and drives the row's height,
+                // which reads as the metrics squashing it.
+                <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
+                  {metaParts.join(' - ')}
+                </Text>
+              )}
 
-                        <Text className={statusTone(post, isFailed)} size='sm'>
-                            {statusLabel}
-                            {/* Mounted only while hovered, as Ember does. A CSS
+              <Text className={statusTone(post, isFailed)} size="sm">
+                {statusLabel}
+                {/* Mounted only while hovered, as Ember does. A CSS
                                 opacity fade would keep it in the DOM, so a screen
                                 reader would read every scheduled row's full
                                 dispatch details aloud, always. */}
-                            {isHovered && statusDetail && <span> {statusDetail}</span>}
-                        </Text>
-                    </Stack>
-                </a>
-                <PostMetricsCells
-                    className='py-4'
-                    memberCounts={memberCounts}
-                    paidMembersEnabled={paidMembersEnabled}
-                    post={post}
-                    resource={resource}
-                    settings={metricsSettings}
-                    visitorCounts={visitorCounts}
-                />
-                {/* Always visible, as in Ember: `.gh-post-list-cta` is a
+                {isHovered && statusDetail && <span> {statusDetail}</span>}
+              </Text>
+            </Stack>
+          </a>
+          <PostMetricsCells
+            className="py-4"
+            memberCounts={memberCounts}
+            paidMembersEnabled={paidMembersEnabled}
+            post={post}
+            resource={resource}
+            settings={metricsSettings}
+            visitorCounts={visitorCounts}
+          />
+          {/* Always visible, as in Ember: `.gh-post-list-cta` is a
                     bordered white button and `.is-hovered` only changes its
                     border colour. Revealing it on hover would make it
                     undiscoverable, and an invisible target on touch. */}
-                <Button
-                    // `bg-control-surface` rather than a bare white: it is
-                    // white in light mode and transparent in dark, so the
-                    // button sits on the row instead of punching a pale hole
-                    // through it. Without it the outline variant is see-through
-                    // and picks up the blue of a selected row.
-                    // `ms-2` on top of the row's 12px gap, so the button sits
-                    // 20px off the metrics. It is a different kind of thing
-                    // from them — an action rather than a figure — and reads as
-                    // part of the run of metrics when spaced the same.
-                    // Margin rather than a wider row gap, which would push the
-                    // title away from the metrics too.
-                    className='my-4 ms-2 shrink-0 bg-control-surface px-4'
-                    variant='outline'
-                    asChild
-                >
-                    <a
-                        aria-label={action.label}
-                        data-testid='post-list-item-action'
-                        href={action.href}
-                        rel={action.external ? 'noopener noreferrer' : undefined}
-                        target={action.external ? '_blank' : undefined}
-                        title={action.label}
-                        data-ignore-select
-                    >
-                        <action.Icon />
-                    </a>
-                </Button>
-            </Inline>
-        </li>
+          <Button
+            // `bg-control-surface` rather than a bare white: it is
+            // white in light mode and transparent in dark, so the
+            // button sits on the row instead of punching a pale hole
+            // through it. Without it the outline variant is see-through
+            // and picks up the blue of a selected row.
+            // `ms-2` on top of the row's 12px gap, so the button sits
+            // 20px off the metrics. It is a different kind of thing
+            // from them — an action rather than a figure — and reads as
+            // part of the run of metrics when spaced the same.
+            // Margin rather than a wider row gap, which would push the
+            // title away from the metrics too.
+            className="my-4 ms-2 shrink-0 bg-control-surface px-4"
+            variant="outline"
+            asChild
+          >
+            <a
+              aria-label={action.label}
+              data-testid="post-list-item-action"
+              href={action.href}
+              rel={action.external ? 'noopener noreferrer' : undefined}
+              target={action.external ? '_blank' : undefined}
+              title={action.label}
+              data-ignore-select
+            >
+              <action.Icon />
+            </a>
+          </Button>
+        </Inline>
+      </li>
     );
 
     return (
-        <PostsContextMenu
-            enabled={menuEnabled ?? false}
-            getItems={getMenuItems}
-            showGiftLink={showGiftLink ?? false}
-            onAction={menuOnAction ?? (() => {})}
-            onOpenChange={menuOnOpenChange ?? (() => {})}
-        >
-            {row}
-        </PostsContextMenu>
+      <PostsContextMenu
+        enabled={menuEnabled ?? false}
+        getItems={getMenuItems}
+        showGiftLink={showGiftLink ?? false}
+        onAction={menuOnAction ?? (() => {})}
+        onOpenChange={menuOnOpenChange ?? (() => {})}
+      >
+        {row}
+      </PostsContextMenu>
     );
-});
+  },
+);
 
 /**
  * Memoised. Selection state and modifier "select mode" both live above the

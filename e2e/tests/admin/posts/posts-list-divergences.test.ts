@@ -1,7 +1,7 @@
-import {PostFactory, createPostFactory} from '@/data-factory';
-import {PostsPage} from '@/admin-pages';
-import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+import { PostFactory, createPostFactory } from '@/data-factory';
+import { PostsPage } from '@/admin-pages';
+import { expect, test } from '@/helpers/playwright';
+import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
 /**
  * Behaviours that are **deliberately** different between the Ember and React
@@ -23,87 +23,90 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Posts List divergences (React only)', () => {
-    // Flag state belongs on the describe — `test.use` inside a test body has
-    // no effect on the fixtures that test already resolved.
-    test.use({labs: {postsListReact: true}});
+  // Flag state belongs on the describe — `test.use` inside a test body has
+  // no effect on the fixtures that test already resolved.
+  test.use({ labs: { postsListReact: true } });
 
-    let postFactory: PostFactory;
-    let postsPage: PostsPage;
+  let postFactory: PostFactory;
+  let postsPage: PostsPage;
 
-    test.beforeEach(async ({page}) => {
-        postFactory = createPostFactory(page.request);
-        postsPage = new PostsPage(page, {implementation: 'react'});
-    });
+  test.beforeEach(async ({ page }) => {
+    postFactory = createPostFactory(page.request);
+    postsPage = new PostsPage(page, { implementation: 'react' });
+  });
 
-    /**
-     * Ember's "Copy preview link" copies `post.url` — the public permalink,
-     * which for a draft points at a page that does not exist yet, and which is
-     * the identical string its "Copy link to post" action produces. The two
-     * menu items are indistinguishable.
-     *
-     * React copies the real `/p/<uuid>/` preview link. This is a fix, not a
-     * port: the Ember behaviour is a bug worth reporting separately rather than
-     * reproducing. Asserted only against React, because Ember would fail it.
-     */
-    test('React copies a real preview link for a draft', async ({page}) => {
-        // Recorded rather than read back: clipboard *read* permission is
-        // denied in this harness, and what matters is the value the app hands
-        // to the clipboard, not the clipboard itself.
-        //
-        // Installed after the screen has loaded rather than via
-        // `addInitScript`: admin navigation is a hash change, so no new
-        // document is created and an init script would never run.
-        const installClipboardRecorder = () => page.evaluate(() => {
-            (window as unknown as {__copied: string[]}).__copied = [];
-            Object.defineProperty(navigator, 'clipboard', {
-                configurable: true,
-                value: {
-                    writeText: (text: string) => {
-                        (window as unknown as {__copied: string[]}).__copied.push(text);
+  /**
+   * Ember's "Copy preview link" copies `post.url` — the public permalink,
+   * which for a draft points at a page that does not exist yet, and which is
+   * the identical string its "Copy link to post" action produces. The two
+   * menu items are indistinguishable.
+   *
+   * React copies the real `/p/<uuid>/` preview link. This is a fix, not a
+   * port: the Ember behaviour is a bug worth reporting separately rather than
+   * reproducing. Asserted only against React, because Ember would fail it.
+   */
+  test('React copies a real preview link for a draft', async ({ page }) => {
+    // Recorded rather than read back: clipboard *read* permission is
+    // denied in this harness, and what matters is the value the app hands
+    // to the clipboard, not the clipboard itself.
+    //
+    // Installed after the screen has loaded rather than via
+    // `addInitScript`: admin navigation is a hash change, so no new
+    // document is created and an init script would never run.
+    const installClipboardRecorder = () =>
+      page.evaluate(() => {
+        (window as unknown as { __copied: string[] }).__copied = [];
+        Object.defineProperty(navigator, 'clipboard', {
+          configurable: true,
+          value: {
+            writeText: (text: string) => {
+              (window as unknown as { __copied: string[] }).__copied.push(text);
 
-                        return Promise.resolve();
-                    }
-                }
-            });
+              return Promise.resolve();
+            },
+          },
         });
+      });
 
-        await postFactory.create({title: 'Draft to preview', status: 'draft', featured: false});
+    await postFactory.create({ title: 'Draft to preview', status: 'draft', featured: false });
 
-        await postsPage.goto();
-        await postsPage.waitForList();
-        await installClipboardRecorder();
-        await postsPage.openContextMenuFor('Draft to preview');
-        await postsPage.contextMenuItem('Copy preview link').click();
+    await postsPage.goto();
+    await postsPage.waitForList();
+    await installClipboardRecorder();
+    await postsPage.openContextMenuFor('Draft to preview');
+    await postsPage.contextMenuItem('Copy preview link').click();
 
-        await expect(async () => {
-            const copied = await page.evaluate(() => (window as unknown as {__copied: string[]}).__copied);
+    await expect(async () => {
+      const copied = await page.evaluate(
+        () => (window as unknown as { __copied: string[] }).__copied,
+      );
 
-            expect(copied[0]).toContain('/p/');
-            // ...and not the public permalink, which is what Ember copies here.
-            expect(copied[0]).not.toContain('/draft-to-preview');
-        }).toPass();
-    });
+      expect(copied[0]).toContain('/p/');
+      // ...and not the public permalink, which is what Ember copies here.
+      expect(copied[0]).not.toContain('/draft-to-preview');
+    }).toPass();
+  });
 
-    /**
-     * Bulk-unpublishing on the unfiltered list. React prunes the row against
-     * its *bucket's* filter, so it leaves the published section immediately —
-     * out of sight until the draft bucket next refetches. Ember prunes against
-     * the list-wide filter, which an unpublished row still matches, so the row
-     * stays in the published section labelled Draft. Asserted only against
-     * React; the Ember behaviour is a bug worth reporting separately rather
-     * than reproducing.
-     */
-    test('React removes an unpublished post from the published section of the unfiltered list', async () => {
-        await postFactory.create({title: 'Was published', status: 'published', featured: false});
-        await postFactory.create({title: 'Existing draft', status: 'draft', featured: false});
+  /**
+   * Bulk-unpublishing on the unfiltered list. React prunes the row against
+   * its *bucket's* filter, so it leaves the published section immediately —
+   * out of sight until the draft bucket next refetches. Ember prunes against
+   * the list-wide filter, which an unpublished row still matches, so the row
+   * stays in the published section labelled Draft. Asserted only against
+   * React; the Ember behaviour is a bug worth reporting separately rather
+   * than reproducing.
+   */
+  test('React removes an unpublished post from the published section of the unfiltered list', async () => {
+    await postFactory.create({ title: 'Was published', status: 'published', featured: false });
+    await postFactory.create({ title: 'Existing draft', status: 'draft', featured: false });
 
-        await postsPage.goto();
-        await postsPage.waitForList();
-        await postsPage.openContextMenuFor('Was published');
-        await postsPage.contextMenuItem('Unpublish').click();
-        await postsPage.confirmAction('Unpublish');
+    await postsPage.goto();
+    await postsPage.waitForList();
+    await postsPage.openContextMenuFor('Was published');
+    await postsPage.contextMenuItem('Unpublish').click();
+    await postsPage.confirmAction('Unpublish');
 
-        await expect(postsPage.getPostByTitle('Was published')).toBeHidden();
-        await expect(postsPage.getPostByTitle('Existing draft')).toBeVisible();
-    });
+    await expect(postsPage.getPostByTitle('Was published')).toBeHidden();
+    await expect(postsPage.getPostByTitle('Existing draft')).toBeVisible();
+  });
 });

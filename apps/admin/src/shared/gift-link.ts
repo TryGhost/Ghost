@@ -1,4 +1,4 @@
-import {hasAdminAccess, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import { hasAdminAccess, isEditorUser } from '@tryghost/admin-x-framework/api/users';
 
 /**
  * Whether the current user may share a gift link for this post.
@@ -18,27 +18,29 @@ import {hasAdminAccess, isEditorUser} from '@tryghost/admin-x-framework/api/user
 type GiftLinkUser = Parameters<typeof hasAdminAccess>[0];
 
 interface GiftLinkPost {
-    status?: string;
-    visibility?: string;
+  status?: string;
+  visibility?: string;
 }
 
-export function canCopyGiftLink({user, post}: {
-    user?: GiftLinkUser | null;
-    post?: GiftLinkPost | null;
+export function canCopyGiftLink({
+  user,
+  post,
+}: {
+  user?: GiftLinkUser | null;
+  post?: GiftLinkPost | null;
 }): boolean {
-    if (!user || !post) {
-        return false;
-    }
+  if (!user || !post) {
+    return false;
+  }
 
-    // Ember's `isAdmin || isEitherEditor`. Two traps: `isAdmin` there means
-    // Owner *or* Administrator, which is `hasAdminAccess` here and not
-    // `isAdminUser`; and `isEditorUser` already covers Super Editor, so
-    // Ember's `or('isEditor', 'isSuperEditor')` is a single call.
-    const canManage = hasAdminAccess(user) || isEditorUser(user);
+  // Ember's `isAdmin || isEitherEditor`. Two traps: `isAdmin` there means
+  // Owner *or* Administrator, which is `hasAdminAccess` here and not
+  // `isAdminUser`; and `isEditorUser` already covers Super Editor, so
+  // Ember's `or('isEditor', 'isSuperEditor')` is a single call.
+  const canManage = hasAdminAccess(user) || isEditorUser(user);
 
-    const isGated = post.status === 'published'
-        && Boolean(post.visibility)
-        && post.visibility !== 'public';
+  const isGated =
+    post.status === 'published' && Boolean(post.visibility) && post.visibility !== 'public';
 
-    return canManage && isGated;
+  return canManage && isGated;
 }

@@ -1,14 +1,14 @@
-import {buildPostViewUrl, getDefaultPostViews, isPostViewActive} from './post-sidebar-views';
-import {getStickyPostFilterUrl} from '@/posts/list/posts-sticky-filters';
-import {isContributorUser} from '@tryghost/admin-x-framework/api/users';
-import {type NavSavedView} from './nav-saved-views';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
-import {useEmberRouting} from '@/ember-bridge';
-import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
-import {useLocation} from '@tryghost/admin-x-framework';
-import {useMemo} from 'react';
-import {useSharedViews} from './shared-views';
-import type {PostResource} from '@/posts/list/post-resource';
+import { buildPostViewUrl, getDefaultPostViews, isPostViewActive } from './post-sidebar-views';
+import { getStickyPostFilterUrl } from '@/posts/list/posts-sticky-filters';
+import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import { type NavSavedView } from './nav-saved-views';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { useEmberRouting } from '@/ember-bridge';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useLocation } from '@tryghost/admin-x-framework';
+import { useMemo } from 'react';
+import { useSharedViews } from './shared-views';
+import type { PostResource } from '@/posts/list/post-resource';
 
 /**
  * Everything the sidebar needs for a posts/pages nav item, from whichever
@@ -19,113 +19,116 @@ import type {PostResource} from '@/posts/list/post-resource';
  */
 
 export interface PostNavigation {
-    /** Where the top-level item links to. */
-    mainUrl: string;
-    /** Highlighted only when no view is active, matching Ember. */
-    isMainActive: boolean;
-    defaultViews: NavSavedView[];
-    customViews: NavSavedView[];
+  /** Where the top-level item links to. */
+  mainUrl: string;
+  /** Highlighted only when no view is active, matching Ember. */
+  isMainActive: boolean;
+  defaultViews: NavSavedView[];
+  customViews: NavSavedView[];
 }
 
 function useReactPostNavigation(route: PostResource): PostNavigation {
-    const location = useLocation();
-    const sharedViews = useSharedViews(route);
-    const {data: currentUser} = useCurrentUser();
-    const isContributor = Boolean(currentUser && isContributorUser(currentUser));
+  const location = useLocation();
+  const sharedViews = useSharedViews(route);
+  const { data: currentUser } = useCurrentUser();
+  const isContributor = Boolean(currentUser && isContributorUser(currentUser));
 
-    return useMemo(() => {
-        const toNavView = (name: string, filter: Record<string, string | null>, color?: string): NavSavedView => ({
-            // Name included: a saved view whose filter equals a default
-            // view's would otherwise collide with it.
-            key: `${name}:${buildPostViewUrl(route, filter)}`,
-            name,
-            to: buildPostViewUrl(route, filter),
-            isActive: isPostViewActive(location, route, filter),
-            color
-        });
+  return useMemo(() => {
+    const toNavView = (
+      name: string,
+      filter: Record<string, string | null>,
+      color?: string,
+    ): NavSavedView => ({
+      // Name included: a saved view whose filter equals a default
+      // view's would otherwise collide with it.
+      key: `${name}:${buildPostViewUrl(route, filter)}`,
+      name,
+      to: buildPostViewUrl(route, filter),
+      isActive: isPostViewActive(location, route, filter),
+      color,
+    });
 
-        // Posts only, for both. Ember's sidebar shows no views under Pages —
-        // its save button is hardcoded to the posts route, so `forPages` is
-        // permanently empty. Surfacing them here would diverge, and worse,
-        // would let a view nobody can see suppress the Pages highlight.
-        const viewFilters = route === 'posts'
-            ? [
-                ...getDefaultPostViews(isContributor).map(view => view.filter),
-                ...sharedViews.map(view => view.filter)
-            ]
-            : [];
+    // Posts only, for both. Ember's sidebar shows no views under Pages —
+    // its save button is hardcoded to the posts route, so `forPages` is
+    // permanently empty. Surfacing them here would diverge, and worse,
+    // would let a view nobody can see suppress the Pages highlight.
+    const viewFilters =
+      route === 'posts'
+        ? [
+            ...getDefaultPostViews(isContributor).map((view) => view.filter),
+            ...sharedViews.map((view) => view.filter),
+          ]
+        : [];
 
-        const defaultViews = route === 'posts'
-            ? getDefaultPostViews(isContributor).map(view => toNavView(view.name, view.filter))
-            : [];
+    const defaultViews =
+      route === 'posts'
+        ? getDefaultPostViews(isContributor).map((view) => toNavView(view.name, view.filter))
+        : [];
 
-        const customViews = route === 'posts'
-            ? sharedViews.map(view => toNavView(view.name, view.filter, view.color))
-            : [];
+    const customViews =
+      route === 'posts'
+        ? sharedViews.map((view) => toNavView(view.name, view.filter, view.color))
+        : [];
 
-        const allViews = [...defaultViews, ...customViews];
+    const allViews = [...defaultViews, ...customViews];
 
-        return {
-            // Sticky filters: returns you to the filters you last had, unless
-            // you are already here or those filters are just a view.
-            mainUrl: getStickyPostFilterUrl(
-                route,
-                location.pathname,
-                viewFilters
-            ),
-            // Ember highlights the parent only when no view underneath is.
-            isMainActive: location.pathname === `/${route}`
-                && !allViews.some(view => view.isActive),
-            defaultViews,
-            customViews
-        };
-    }, [location, route, sharedViews, isContributor]);
+    return {
+      // Sticky filters: returns you to the filters you last had, unless
+      // you are already here or those filters are just a view.
+      mainUrl: getStickyPostFilterUrl(route, location.pathname, viewFilters),
+      // Ember highlights the parent only when no view underneath is.
+      isMainActive: location.pathname === `/${route}` && !allViews.some((view) => view.isActive),
+      defaultViews,
+      customViews,
+    };
+  }, [location, route, sharedViews, isContributor]);
 }
 
 function useEmberPostNavigation(route: PostResource): PostNavigation {
-    const routing = useEmberRouting();
-    const sharedViews = useSharedViews(route);
+  const routing = useEmberRouting();
+  const sharedViews = useSharedViews(route);
 
-    return useMemo(() => {
-        const defaultViews = route === 'posts'
-            ? POST_DEFAULT_VIEW_LINKS.map(view => ({
-                key: view.to,
-                name: view.name,
-                to: view.to,
-                isActive: routing.isRouteActive(route, view.filter)
-            }))
-            : [];
+  return useMemo(() => {
+    const defaultViews =
+      route === 'posts'
+        ? POST_DEFAULT_VIEW_LINKS.map((view) => ({
+            key: view.to,
+            name: view.name,
+            to: view.to,
+            isActive: routing.isRouteActive(route, view.filter),
+          }))
+        : [];
+
+    return {
+      mainUrl: routing.getRouteUrl(route),
+      isMainActive: routing.isRouteActive(route),
+      defaultViews,
+      customViews: sharedViews.map((view) => {
+        const to = routing.getRouteUrl(route, view.filter);
 
         return {
-            mainUrl: routing.getRouteUrl(route),
-            isMainActive: routing.isRouteActive(route),
-            defaultViews,
-            customViews: sharedViews.map((view) => {
-                const to = routing.getRouteUrl(route, view.filter);
-
-                return {
-                    key: to,
-                    name: view.name,
-                    to,
-                    isActive: routing.isRouteActive(route, view.filter),
-                    color: view.color
-                };
-            })
+          key: to,
+          name: view.name,
+          to,
+          isActive: routing.isRouteActive(route, view.filter),
+          color: view.color,
         };
-    }, [route, routing, sharedViews]);
+      }),
+    };
+  }, [route, routing, sharedViews]);
 }
 
 /** The Ember branch keeps its hardcoded links, as `nav-content` had them. */
 const POST_DEFAULT_VIEW_LINKS = [
-    {name: 'Drafts', to: 'posts?type=draft', filter: {type: 'draft'}},
-    {name: 'Scheduled', to: 'posts?type=scheduled', filter: {type: 'scheduled'}},
-    {name: 'Published', to: 'posts?type=published', filter: {type: 'published'}}
+  { name: 'Drafts', to: 'posts?type=draft', filter: { type: 'draft' } },
+  { name: 'Scheduled', to: 'posts?type=scheduled', filter: { type: 'scheduled' } },
+  { name: 'Published', to: 'posts?type=published', filter: { type: 'published' } },
 ];
 
 export function usePostNavigation(route: PostResource = 'posts'): PostNavigation {
-    const reactOwnsList = useFeatureFlag('postsListReact');
-    const reactNavigation = useReactPostNavigation(route);
-    const emberNavigation = useEmberPostNavigation(route);
+  const reactOwnsList = useFeatureFlag('postsListReact');
+  const reactNavigation = useReactPostNavigation(route);
+  const emberNavigation = useEmberPostNavigation(route);
 
-    return reactOwnsList ? reactNavigation : emberNavigation;
+  return reactOwnsList ? reactNavigation : emberNavigation;
 }

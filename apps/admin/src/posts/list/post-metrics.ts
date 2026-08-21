@@ -1,5 +1,5 @@
-import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
-import type {PostResource} from '@/posts/list/post-resource';
+import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
+import type { PostResource } from '@/posts/list/post-resource';
 
 /**
  * Which metric columns a row shows, and where each links.
@@ -18,29 +18,29 @@ import type {PostResource} from '@/posts/list/post-resource';
 export type PostMetricKey = 'visitors' | 'opens' | 'clicks' | 'sent' | 'members';
 
 export interface PostMetricsSettings {
-    webAnalyticsEnabled: boolean;
-    membersTrackSources: boolean;
-    emailTrackOpens: boolean;
-    emailTrackClicks: boolean;
-    /** `'none'` means memberships are off, which hides email engagement. */
-    membersSignupAccess: string;
-    isMembersInviteOnly: boolean;
-    isContributor: boolean;
+  webAnalyticsEnabled: boolean;
+  membersTrackSources: boolean;
+  emailTrackOpens: boolean;
+  emailTrackClicks: boolean;
+  /** `'none'` means memberships are off, which hides email engagement. */
+  membersSignupAccess: string;
+  isMembersInviteOnly: boolean;
+  isContributor: boolean;
 }
 
 export interface PostMetricColumn {
-    key: PostMetricKey;
-    label: string;
-    /** Which analytics tab the column links to. */
-    tab: 'web' | 'newsletter' | 'growth';
+  key: PostMetricKey;
+  label: string;
+  /** Which analytics tab the column links to. */
+  tab: 'web' | 'newsletter' | 'growth';
 }
 
 const COLUMNS: Record<PostMetricKey, Omit<PostMetricColumn, 'key'>> = {
-    visitors: {label: 'Visitors', tab: 'web'},
-    opens: {label: 'Opens', tab: 'newsletter'},
-    clicks: {label: 'Clicks', tab: 'newsletter'},
-    sent: {label: 'Sent', tab: 'newsletter'},
-    members: {label: 'Members', tab: 'growth'}
+  visitors: { label: 'Visitors', tab: 'web' },
+  opens: { label: 'Opens', tab: 'newsletter' },
+  clicks: { label: 'Clicks', tab: 'newsletter' },
+  sent: { label: 'Sent', tab: 'newsletter' },
+  members: { label: 'Members', tab: 'growth' },
 };
 
 /**
@@ -48,10 +48,12 @@ const COLUMNS: Record<PostMetricKey, Omit<PostMetricColumn, 'key'>> = {
  * fail. Gates the *rate* columns; the Sent column has a weaker gate, below.
  */
 function hasBeenEmailed(post: PostListItem, resource: PostResource): boolean {
-    return resource === 'posts'
-        && (post.status === 'published' || post.status === 'sent')
-        && Boolean(post.email)
-        && post.email?.status !== 'failed';
+  return (
+    resource === 'posts' &&
+    (post.status === 'published' || post.status === 'sent') &&
+    Boolean(post.email) &&
+    post.email?.status !== 'failed'
+  );
 }
 
 /**
@@ -59,29 +61,47 @@ function hasBeenEmailed(post: PostListItem, resource: PostResource): boolean {
  * both site-wide and on the individual email, because an email sent before the
  * setting changed keeps the flags it went out with.
  */
-function showsOpens(post: PostListItem, settings: PostMetricsSettings, resource: PostResource): boolean {
-    return hasBeenEmailed(post, resource)
-        && !settings.isContributor
-        && settings.membersSignupAccess !== 'none'
-        && settings.emailTrackOpens
-        && post.email?.track_opens === true;
+function showsOpens(
+  post: PostListItem,
+  settings: PostMetricsSettings,
+  resource: PostResource,
+): boolean {
+  return (
+    hasBeenEmailed(post, resource) &&
+    !settings.isContributor &&
+    settings.membersSignupAccess !== 'none' &&
+    settings.emailTrackOpens &&
+    post.email?.track_opens === true
+  );
 }
 
-function showsClicks(post: PostListItem, settings: PostMetricsSettings, resource: PostResource): boolean {
-    return hasBeenEmailed(post, resource)
-        && !settings.isContributor
-        && settings.membersSignupAccess !== 'none'
-        && settings.emailTrackClicks
-        && post.email?.track_clicks === true;
+function showsClicks(
+  post: PostListItem,
+  settings: PostMetricsSettings,
+  resource: PostResource,
+): boolean {
+  return (
+    hasBeenEmailed(post, resource) &&
+    !settings.isContributor &&
+    settings.membersSignupAccess !== 'none' &&
+    settings.emailTrackClicks &&
+    post.email?.track_clicks === true
+  );
 }
 
 /** `showAttributionAnalytics`. Note this is *not* the Members column's gate. */
-function showsAttribution(post: PostListItem, settings: PostMetricsSettings, resource: PostResource): boolean {
-    return (resource === 'pages' || !post.email_only)
-        && post.status === 'published'
-        && settings.membersTrackSources
-        && !settings.isMembersInviteOnly
-        && !settings.isContributor;
+function showsAttribution(
+  post: PostListItem,
+  settings: PostMetricsSettings,
+  resource: PostResource,
+): boolean {
+  return (
+    (resource === 'pages' || !post.email_only) &&
+    post.status === 'published' &&
+    settings.membersTrackSources &&
+    !settings.isMembersInviteOnly &&
+    !settings.isContributor
+  );
 }
 
 /**
@@ -98,64 +118,64 @@ function showsAttribution(post: PostListItem, settings: PostMetricsSettings, res
  *   *failed* send still shows its Sent count.
  */
 export function getPostMetricColumns(
-    post: PostListItem,
-    settings: PostMetricsSettings,
-    resource: PostResource
+  post: PostListItem,
+  settings: PostMetricsSettings,
+  resource: PostResource,
 ): PostMetricColumn[] {
-    const keys: PostMetricKey[] = [];
-    const isPublished = post.status === 'published';
+  const keys: PostMetricKey[] = [];
+  const isPublished = post.status === 'published';
 
-    if (settings.webAnalyticsEnabled && isPublished) {
-        keys.push('visitors');
+  if (settings.webAnalyticsEnabled && isPublished) {
+    keys.push('visitors');
+  }
+
+  if (post.email) {
+    const opens = showsOpens(post, settings, resource);
+    const clicks = showsClicks(post, settings, resource);
+
+    if (opens) {
+      keys.push('opens');
     }
 
-    if (post.email) {
-        const opens = showsOpens(post, settings, resource);
-        const clicks = showsClicks(post, settings, resource);
-
-        if (opens) {
-            keys.push('opens');
-        }
-
-        if (clicks) {
-            keys.push('clicks');
-        }
-
-        // Fallback only — the raw count stands in when neither rate is shown.
-        if (!opens && !clicks) {
-            keys.push('sent');
-        }
+    if (clicks) {
+      keys.push('clicks');
     }
 
-    if (settings.membersTrackSources && isPublished) {
-        keys.push('members');
+    // Fallback only — the raw count stands in when neither rate is shown.
+    if (!opens && !clicks) {
+      keys.push('sent');
     }
+  }
 
-    return keys.map(key => ({key, ...COLUMNS[key]}));
+  if (settings.membersTrackSources && isPublished) {
+    keys.push('members');
+  }
+
+  return keys.map((key) => ({ key, ...COLUMNS[key] }));
 }
 
 /** `round(clicks / emailCount * 100)`, matching Ember's `clickRate`. */
 export function getPostClickRate(post: PostListItem): number {
-    const sent = post.email?.email_count;
-    const clicks = post.count?.clicks;
+  const sent = post.email?.email_count;
+  const clicks = post.count?.clicks;
 
-    if (!sent || !clicks) {
-        return 0;
-    }
+  if (!sent || !clicks) {
+    return 0;
+  }
 
-    return Math.round((clicks / sent) * 100);
+  return Math.round((clicks / sent) * 100);
 }
 
 /** Ember stores this as an already-computed percentage on the email. */
 export function getPostOpenRate(post: PostListItem): number {
-    const sent = post.email?.email_count;
-    const opened = post.email?.opened_count;
+  const sent = post.email?.email_count;
+  const opened = post.email?.opened_count;
 
-    if (!sent || !opened) {
-        return 0;
-    }
+  if (!sent || !opened) {
+    return 0;
+  }
 
-    return Math.round((opened / sent) * 100);
+  return Math.round((opened / sent) * 100);
 }
 
 /**
@@ -167,16 +187,18 @@ export function getPostOpenRate(post: PostListItem): number {
  * back to the editor. Pages never have one.
  */
 export function hasPostAnalyticsPage(
-    post: PostListItem,
-    settings: PostMetricsSettings,
-    resource: PostResource,
-    isAdmin: boolean
+  post: PostListItem,
+  settings: PostMetricsSettings,
+  resource: PostResource,
+  isAdmin: boolean,
 ): boolean {
-    if (resource !== 'posts' || !isAdmin) {
-        return false;
-    }
+  if (resource !== 'posts' || !isAdmin) {
+    return false;
+  }
 
-    return showsOpens(post, settings, resource)
-        || showsClicks(post, settings, resource)
-        || showsAttribution(post, settings, resource);
+  return (
+    showsOpens(post, settings, resource) ||
+    showsClicks(post, settings, resource) ||
+    showsAttribution(post, settings, resource)
+  );
 }

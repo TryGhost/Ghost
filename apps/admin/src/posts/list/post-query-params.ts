@@ -22,10 +22,10 @@ export const BUCKET_ORDER: readonly PostBucket[] = ['scheduled', 'draft', 'publi
 const ALL_STATUSES: readonly PostStatus[] = ['draft', 'scheduled', 'published', 'sent'];
 
 const TYPE_TO_STATUSES: Record<string, readonly PostStatus[]> = {
-    draft: ['draft'],
-    published: ['published'],
-    scheduled: ['scheduled'],
-    sent: ['sent']
+  draft: ['draft'],
+  published: ['published'],
+  scheduled: ['scheduled'],
+  sent: ['sent'],
 };
 
 /** Rows per request. Matches Ember; also decides when a bucket "opens". */
@@ -37,19 +37,19 @@ export const POSTS_PER_PAGE = 30;
  * it must round-trip byte-identically between the Ember and React screens.
  */
 export interface PostListParams {
-    type?: string | null;
-    visibility?: string | null;
-    author?: string | null;
-    tag?: string | null;
-    order?: string | null;
+  type?: string | null;
+  visibility?: string | null;
+  author?: string | null;
+  tag?: string | null;
+  order?: string | null;
 }
 
 export interface PostFilterContext {
-    /**
-     * Set for authors and contributors, who may only ever see their own posts.
-     * When set it wins over the `author` param entirely.
-     */
-    ownAuthorSlug?: string | null;
+  /**
+   * Set for authors and contributors, who may only ever see their own posts.
+   * When set it wins over the `author` param entirely.
+   */
+  ownAuthorSlug?: string | null;
 }
 
 /**
@@ -57,11 +57,11 @@ export interface PostFilterContext {
  * An unrecognised type falls back to everything, matching Ember's `switch`.
  */
 export function getStatusesForType(type?: string | null): PostStatus[] {
-    return [...(TYPE_TO_STATUSES[type ?? ''] ?? ALL_STATUSES)];
+  return [...(TYPE_TO_STATUSES[type ?? ''] ?? ALL_STATUSES)];
 }
 
 function statusClause(statuses: PostStatus[]): string {
-    return statuses.length === 1 ? statuses[0] : `[${statuses.join(',')}]`;
+  return statuses.length === 1 ? statuses[0] : `[${statuses.join(',')}]`;
 }
 
 /**
@@ -75,13 +75,13 @@ function statusClause(statuses: PostStatus[]): string {
  * to agree exactly.
  */
 function toFilterString(clauses: Array<[string, string | null | undefined]>): string {
-    return clauses
-        .filter((entry): entry is [string, string] => {
-            const value = entry[1];
-            return value !== null && value !== undefined && value.trim() !== '';
-        })
-        .map(([key, value]) => `${key}:${value}`)
-        .join('+');
+  return clauses
+    .filter((entry): entry is [string, string] => {
+      const value = entry[1];
+      return value !== null && value !== undefined && value.trim() !== '';
+    })
+    .map(([key, value]) => `${key}:${value}`)
+    .join('+');
 }
 
 /**
@@ -89,17 +89,17 @@ function toFilterString(clauses: Array<[string, string | null | undefined]>): st
  * built here compare equal to the ones Ember builds.
  */
 function filterClauses(
-    params: PostListParams,
-    statuses: PostStatus[],
-    {ownAuthorSlug}: PostFilterContext
+  params: PostListParams,
+  statuses: PostStatus[],
+  { ownAuthorSlug }: PostFilterContext,
 ): Array<[string, string | null | undefined]> {
-    return [
-        ['tag', params.tag],
-        ['visibility', params.visibility],
-        ['status', statusClause(statuses)],
-        ['featured', params.type === 'featured' ? 'true' : null],
-        ['authors', ownAuthorSlug || params.author]
-    ];
+  return [
+    ['tag', params.tag],
+    ['visibility', params.visibility],
+    ['status', statusClause(statuses)],
+    ['featured', params.type === 'featured' ? 'true' : null],
+    ['authors', ownAuthorSlug || params.author],
+  ];
 }
 
 /**
@@ -107,38 +107,38 @@ function filterClauses(
  * Used as the parent filter for bulk actions on an inverted selection.
  */
 export function buildAllFilter(params: PostListParams, context: PostFilterContext = {}): string {
-    return toFilterString(filterClauses(params, getStatusesForType(params.type), context));
+  return toFilterString(filterClauses(params, getStatusesForType(params.type), context));
 }
 
 /** Which of the three queries the current params need, in render order. */
 export function getActiveBuckets(params: PostListParams): PostBucket[] {
-    const statuses = getStatusesForType(params.type);
+  const statuses = getStatusesForType(params.type);
 
-    return BUCKET_ORDER.filter((bucket) => {
-        if (bucket === 'publishedAndSent') {
-            return statuses.includes('published') || statuses.includes('sent');
-        }
-        return statuses.includes(bucket);
-    });
+  return BUCKET_ORDER.filter((bucket) => {
+    if (bucket === 'publishedAndSent') {
+      return statuses.includes('published') || statuses.includes('sent');
+    }
+    return statuses.includes(bucket);
+  });
 }
 
 function bucketStatuses(bucket: PostBucket, params: PostListParams): PostStatus[] {
-    if (bucket !== 'publishedAndSent') {
-        return [bucket];
-    }
+  if (bucket !== 'publishedAndSent') {
+    return [bucket];
+  }
 
-    // The bucket is shared, but filtering by Published must not return emails.
-    return getStatusesForType(params.type).filter(
-        (status): status is PostStatus => status === 'published' || status === 'sent'
-    );
+  // The bucket is shared, but filtering by Published must not return emails.
+  return getStatusesForType(params.type).filter(
+    (status): status is PostStatus => status === 'published' || status === 'sent',
+  );
 }
 
 export function buildBucketFilter(
-    bucket: PostBucket,
-    params: PostListParams,
-    context: PostFilterContext = {}
+  bucket: PostBucket,
+  params: PostListParams,
+  context: PostFilterContext = {},
 ): string {
-    return toFilterString(filterClauses(params, bucketStatuses(bucket, params), context));
+  return toFilterString(filterClauses(params, bucketStatuses(bucket, params), context));
 }
 
 /**
@@ -146,11 +146,11 @@ export function buildBucketFilter(
  * `updated_at` (they have no publish date) and the rest by `published_at`.
  */
 export function getBucketOrder(bucket: PostBucket, order?: string | null): string {
-    if (order) {
-        return order;
-    }
+  if (order) {
+    return order;
+  }
 
-    return bucket === 'draft' ? 'updated_at desc' : 'published_at desc';
+  return bucket === 'draft' ? 'updated_at desc' : 'published_at desc';
 }
 
 /**
@@ -168,13 +168,13 @@ export function getBucketOrder(bucket: PostBucket, order?: string | null): strin
  * would need an explicit narrower `formats`, which is a separate change.
  */
 export function getBucketSearchParams(
-    bucket: PostBucket,
-    params: PostListParams,
-    context: PostFilterContext = {}
+  bucket: PostBucket,
+  params: PostListParams,
+  context: PostFilterContext = {},
 ): Record<string, string> {
-    return {
-        filter: buildBucketFilter(bucket, params, context),
-        order: getBucketOrder(bucket, params.order),
-        limit: String(POSTS_PER_PAGE)
-    };
+  return {
+    filter: buildBucketFilter(bucket, params, context),
+    order: getBucketOrder(bucket, params.order),
+    limit: String(POSTS_PER_PAGE),
+  };
 }

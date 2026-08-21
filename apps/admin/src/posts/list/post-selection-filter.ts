@@ -13,16 +13,16 @@
  */
 
 export interface PostSelection {
-    /**
-     * While `inverted`, these are the ids the user has taken *out* of the
-     * selection rather than put into it.
-     */
-    selectedIds: Set<string>;
-    inverted: boolean;
+  /**
+   * While `inverted`, these are the ids the user has taken *out* of the
+   * selection rather than put into it.
+   */
+  selectedIds: Set<string>;
+  inverted: boolean;
 }
 
 function idList(ids: Set<string>): string {
-    return `'${[...ids].join('\',\'')}'`;
+  return `'${[...ids].join("','")}'`;
 }
 
 /**
@@ -30,22 +30,20 @@ function idList(ids: Set<string>): string {
  * bounds an inverted selection. Empty means an unfiltered list.
  */
 export function getPostSelectionFilter(selection: PostSelection, allFilter: string): string {
-    const {selectedIds, inverted} = selection;
+  const { selectedIds, inverted } = selection;
 
-    if (inverted) {
-        if (allFilter) {
-            // Parenthesised: `+` binds tighter than the filter's own operators,
-            // so without them the subtraction would apply to its last term.
-            return selectedIds.size === 0
-                ? allFilter
-                : `(${allFilter})+id:-[${idList(selectedIds)}]`;
-        }
-
-        // No bound and nothing removed: everything. An empty filter is the only
-        // way to say that, which is why the branch below can't share it.
-        return selectedIds.size === 0 ? '' : `id:-[${idList(selectedIds)}]`;
+  if (inverted) {
+    if (allFilter) {
+      // Parenthesised: `+` binds tighter than the filter's own operators,
+      // so without them the subtraction would apply to its last term.
+      return selectedIds.size === 0 ? allFilter : `(${allFilter})+id:-[${idList(selectedIds)}]`;
     }
 
-    // Deliberately not `''` — that would mean "everything" to the server.
-    return selectedIds.size === 0 ? 'id:nothing' : `id:[${idList(selectedIds)}]`;
+    // No bound and nothing removed: everything. An empty filter is the only
+    // way to say that, which is why the branch below can't share it.
+    return selectedIds.size === 0 ? '' : `id:-[${idList(selectedIds)}]`;
+  }
+
+  // Deliberately not `''` — that would mean "everything" to the server.
+  return selectedIds.size === 0 ? 'id:nothing' : `id:[${idList(selectedIds)}]`;
 }

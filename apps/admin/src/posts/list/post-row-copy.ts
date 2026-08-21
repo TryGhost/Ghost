@@ -1,8 +1,8 @@
-import {formatNumber} from '@tryghost/shade/utils';
-import {formatPostTime} from '@/posts/list/post-time';
-import {humanizeRecipientFilter} from '@/posts/list/humanize-recipient-filter';
-import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
-import type {PostResource} from '@/posts/list/post-resource';
+import { formatNumber } from '@tryghost/shade/utils';
+import { formatPostTime } from '@/posts/list/post-time';
+import { humanizeRecipientFilter } from '@/posts/list/humanize-recipient-filter';
+import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
+import type { PostResource } from '@/posts/list/post-resource';
 
 /**
  * Every string a post row renders, as pure functions.
@@ -16,7 +16,7 @@ import type {PostResource} from '@/posts/list/post-resource';
 type PostStatus = 'draft' | 'scheduled' | 'published' | 'sent';
 
 function statusOf(post: PostListItem): PostStatus {
-    return (post.status ?? 'draft') as PostStatus;
+  return (post.status ?? 'draft') as PostStatus;
 }
 
 /**
@@ -25,15 +25,17 @@ function statusOf(post: PostListItem): PostStatus {
  * record attached, and without it that draft would render as an error.
  */
 export function didPostEmailFail(post: PostListItem, resource: PostResource = 'posts'): boolean {
-    const status = statusOf(post);
+  const status = statusOf(post);
 
-    return resource === 'posts'
-        && (status === 'published' || status === 'sent')
-        && post.email?.status === 'failed';
+  return (
+    resource === 'posts' &&
+    (status === 'published' || status === 'sent') &&
+    post.email?.status === 'failed'
+  );
 }
 
 function didEmailFail(post: PostListItem): boolean {
-    return post.email?.status === 'failed';
+  return post.email?.status === 'failed';
 }
 
 /**
@@ -42,20 +44,22 @@ function didEmailFail(post: PostListItem): boolean {
  * otherwise be described as sent.
  */
 function wasEmailed(post: PostListItem, resource: PostResource = 'posts'): boolean {
-    const status = statusOf(post);
+  const status = statusOf(post);
 
-    return resource === 'posts'
-        && (status === 'published' || status === 'sent')
-        && Boolean(post.email)
-        && !didEmailFail(post);
+  return (
+    resource === 'posts' &&
+    (status === 'published' || status === 'sent') &&
+    Boolean(post.email) &&
+    !didEmailFail(post)
+  );
 }
 
 /** Comma-joined author names, falling back to the email for un-named staff. */
 export function getPostAuthorNames(post: PostListItem): string {
-    return (post.authors ?? [])
-        .map(author => author.name || author.email)
-        .filter(Boolean)
-        .join(', ');
+  return (post.authors ?? [])
+    .map((author) => author.name || author.email)
+    .filter(Boolean)
+    .join(', ');
 }
 
 /**
@@ -63,28 +67,28 @@ export function getPostAuthorNames(post: PostListItem): string {
  * shows when they were last touched instead.
  */
 export function getPostDateField(post: PostListItem): 'updated_at' | 'published_at' {
-    const status = statusOf(post);
+  const status = statusOf(post);
 
-    return status === 'draft' || status === 'scheduled' ? 'updated_at' : 'published_at';
+  return status === 'draft' || status === 'scheduled' ? 'updated_at' : 'published_at';
 }
 
 export function getPostDate(post: PostListItem): string | undefined {
-    return getPostDateField(post) === 'updated_at' ? post.updated_at : post.published_at;
+  return getPostDateField(post) === 'updated_at' ? post.updated_at : post.published_at;
 }
 
 export interface PostMetaLine {
-    /** "By Ada, Grace" — null when the post has no authors at all. */
-    byline: string | null;
-    primaryTagName: string | null;
+  /** "By Ada, Grace" — null when the post has no authors at all. */
+  byline: string | null;
+  primaryTagName: string | null;
 }
 
 export function getPostMetaLine(post: PostListItem): PostMetaLine {
-    const authors = getPostAuthorNames(post);
+  const authors = getPostAuthorNames(post);
 
-    return {
-        byline: authors ? `By ${authors}` : null,
-        primaryTagName: post.primary_tag?.name ?? null
-    };
+  return {
+    byline: authors ? `By ${authors}` : null,
+    primaryTagName: post.primary_tag?.name ?? null,
+  };
 }
 
 /**
@@ -93,56 +97,56 @@ export function getPostMetaLine(post: PostListItem): PostMetaLine {
  * " – 13 Jul 2026".
  */
 export function getPostMetaParts(
-    post: PostListItem,
-    {timezone, now}: PostStatusDetailOptions = {}
+  post: PostListItem,
+  { timezone, now }: PostStatusDetailOptions = {},
 ): string[] {
-    const {byline, primaryTagName} = getPostMetaLine(post);
-    const date = getPostDate(post);
+  const { byline, primaryTagName } = getPostMetaLine(post);
+  const date = getPostDate(post);
 
-    return [
-        byline,
-        primaryTagName ? `in ${primaryTagName}` : null,
-        date ? formatPostTime(date, {timezone, absolute: true, short: true, now}) : null
-    ].filter((part): part is string => Boolean(part));
+  return [
+    byline,
+    primaryTagName ? `in ${primaryTagName}` : null,
+    date ? formatPostTime(date, { timezone, absolute: true, short: true, now }) : null,
+  ].filter((part): part is string => Boolean(part));
 }
 
 /** Ember prefixes the date's title attribute so it has context. */
 export function getPostDateTooltip(
-    post: PostListItem,
-    {timezone, now}: PostStatusDetailOptions = {}
+  post: PostListItem,
+  { timezone, now }: PostStatusDetailOptions = {},
 ): string | undefined {
-    const date = getPostDate(post);
+  const date = getPostDate(post);
 
-    if (!date) {
-        return undefined;
-    }
+  if (!date) {
+    return undefined;
+  }
 
-    const prefix = getPostDateField(post) === 'updated_at' ? 'Updated' : 'Published';
+  const prefix = getPostDateField(post) === 'updated_at' ? 'Updated' : 'Published';
 
-    return `${prefix} ${formatPostTime(date, {timezone, absolute: true, now})}`;
+  return `${prefix} ${formatPostTime(date, { timezone, absolute: true, now })}`;
 }
 
 /** The always-visible status text. */
 export function getPostStatusLabel(post: PostListItem, resource: PostResource = 'posts'): string {
-    switch (statusOf(post)) {
+  switch (statusOf(post)) {
     case 'scheduled':
-        return 'Scheduled';
+      return 'Scheduled';
     case 'published':
-        if (didEmailFail(post)) {
-            return 'Published but failed to send newsletter';
-        }
-        return wasEmailed(post, resource) ? 'Published and sent' : 'Published';
+      if (didEmailFail(post)) {
+        return 'Published but failed to send newsletter';
+      }
+      return wasEmailed(post, resource) ? 'Published and sent' : 'Published';
     case 'sent':
-        return didEmailFail(post) ? 'Failed to send newsletter' : 'Sent';
+      return didEmailFail(post) ? 'Failed to send newsletter' : 'Sent';
     default:
-        return 'Draft';
-    }
+      return 'Draft';
+  }
 }
 
 export interface PostStatusDetailOptions {
-    timezone?: string;
-    now?: Date;
-    resource?: PostResource;
+  timezone?: string;
+  now?: Date;
+  resource?: PostResource;
 }
 
 /**
@@ -150,35 +154,31 @@ export interface PostStatusDetailOptions {
  * how many members already received it. `null` when there is nothing to add.
  */
 export function getPostStatusDetail(
-    post: PostListItem,
-    {timezone, now, resource = 'posts'}: PostStatusDetailOptions = {}
+  post: PostListItem,
+  { timezone, now, resource = 'posts' }: PostStatusDetailOptions = {},
 ): string | null {
-    const status = statusOf(post);
+  const status = statusOf(post);
 
-    if (status === 'scheduled') {
-        // Joined rather than interpolated: a post with no publish date yields
-        // an empty `when`, which interpolation would leave as a double space.
-        const when = formatPostTime(post.published_at, {timezone, scheduled: true, now});
-        const segment = post.email_segment
-            ? `to ${humanizeRecipientFilter(post.email_segment)}`
-            : null;
+  if (status === 'scheduled') {
+    // Joined rather than interpolated: a post with no publish date yields
+    // an empty `when`, which interpolation would leave as a double space.
+    const when = formatPostTime(post.published_at, { timezone, scheduled: true, now });
+    const segment = post.email_segment ? `to ${humanizeRecipientFilter(post.email_segment)}` : null;
 
-        // Email-only posts are never "published".
-        const lead = post.email_only
-            ? 'to be sent'
-            : `to be published${post.newsletter ? ' and sent' : ''}`;
+    // Email-only posts are never "published".
+    const lead = post.email_only
+      ? 'to be sent'
+      : `to be published${post.newsletter ? ' and sent' : ''}`;
 
-        const showSegment = post.email_only || post.newsletter;
+    const showSegment = post.email_only || post.newsletter;
 
-        return [lead, when, showSegment ? segment : null]
-            .filter(Boolean)
-            .join(' ');
-    }
+    return [lead, when, showSegment ? segment : null].filter(Boolean).join(' ');
+  }
 
-    if (wasEmailed(post, resource)) {
-        const count = post.email?.email_count ?? 0;
-        return `to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
-    }
+  if (wasEmailed(post, resource)) {
+    const count = post.email?.email_count ?? 0;
+    return `to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
+  }
 
-    return null;
+  return null;
 }

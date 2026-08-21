@@ -323,7 +323,7 @@ export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseT
 export type PostVisitorCounts = Record<string, number>;
 
 export interface PostMemberCounts {
-    [postId: string]: {free: number; paid: number};
+  [postId: string]: { free: number; paid: number };
 }
 
 /**
@@ -333,56 +333,60 @@ export interface PostMemberCounts {
  * query rather than writing a stale response over the new one — which is what
  * the Ember service's manual generation counter exists to prevent.
  */
-export const usePostVisitorCounts = (postUuids: string[], {enabled = true} = {}) => {
-    const fetchApi = useFetchApi();
+export const usePostVisitorCounts = (postUuids: string[], { enabled = true } = {}) => {
+  const fetchApi = useFetchApi();
 
-    return useQuery<PostVisitorCounts>({
-        queryKey: ['PostVisitorCounts', [...postUuids].sort().join(',')],
-        enabled: enabled && postUuids.length > 0,
-        // The id list is the key, so loading the next page is a brand-new
-        // query — without this every visible count blanks to zero meanwhile.
-        placeholderData: keepPreviousData,
-        queryFn: async () => {
-            const response = await fetchApi<{stats?: Array<{data?: {visitor_counts?: PostVisitorCounts}}>}>(
-                apiUrl('/stats/posts-visitor-counts/'),
-                {method: 'POST', body: JSON.stringify({postUuids})}
-            );
+  return useQuery<PostVisitorCounts>({
+    queryKey: ['PostVisitorCounts', [...postUuids].sort().join(',')],
+    enabled: enabled && postUuids.length > 0,
+    // The id list is the key, so loading the next page is a brand-new
+    // query — without this every visible count blanks to zero meanwhile.
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const response = await fetchApi<{
+        stats?: Array<{ data?: { visitor_counts?: PostVisitorCounts } }>;
+      }>(apiUrl('/stats/posts-visitor-counts/'), {
+        method: 'POST',
+        body: JSON.stringify({ postUuids }),
+      });
 
-            return response.stats?.[0]?.data?.visitor_counts ?? {};
-        }
-    });
+      return response.stats?.[0]?.data?.visitor_counts ?? {};
+    },
+  });
 };
 
 /** Free and paid member counts for a batch of posts, keyed by post id. */
-export const usePostMemberCounts = (postIds: string[], {enabled = true} = {}) => {
-    const fetchApi = useFetchApi();
+export const usePostMemberCounts = (postIds: string[], { enabled = true } = {}) => {
+  const fetchApi = useFetchApi();
 
-    return useQuery<PostMemberCounts>({
-        queryKey: ['PostMemberCounts', [...postIds].sort().join(',')],
-        enabled: enabled && postIds.length > 0,
-        placeholderData: keepPreviousData,
-        queryFn: async () => {
-            // The endpoint returns `{stats: [{<postId>: {free_members,
-            // paid_members}}]}` — the map sits directly in the first element,
-            // not under a `data` key like the visitor endpoint's.
-            // No explicit content-type: `fetchApi` sets it for string bodies,
-            // and passing `Content-Type` here as well produces two
-            // differently-cased keys in the same header object, which the
-            // request drops — the endpoint then sees no body and returns an
-            // empty map rather than an error.
-            const response = await fetchApi<{
-                stats?: Array<Record<string, {free_members?: number; paid_members?: number}>>
-            }>(
-                apiUrl('/stats/posts-member-counts/'),
-                {method: 'POST', body: JSON.stringify({postIds})}
-            );
+  return useQuery<PostMemberCounts>({
+    queryKey: ['PostMemberCounts', [...postIds].sort().join(',')],
+    enabled: enabled && postIds.length > 0,
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      // The endpoint returns `{stats: [{<postId>: {free_members,
+      // paid_members}}]}` — the map sits directly in the first element,
+      // not under a `data` key like the visitor endpoint's.
+      // No explicit content-type: `fetchApi` sets it for string bodies,
+      // and passing `Content-Type` here as well produces two
+      // differently-cased keys in the same header object, which the
+      // request drops — the endpoint then sees no body and returns an
+      // empty map rather than an error.
+      const response = await fetchApi<{
+        stats?: Array<Record<string, { free_members?: number; paid_members?: number }>>;
+      }>(apiUrl('/stats/posts-member-counts/'), {
+        method: 'POST',
+        body: JSON.stringify({ postIds }),
+      });
 
-            const raw = response.stats?.[0] ?? {};
+      const raw = response.stats?.[0] ?? {};
 
-            return Object.fromEntries(Object.entries(raw).map(([postId, counts]) => [
-                postId,
-                {free: counts.free_members ?? 0, paid: counts.paid_members ?? 0}
-            ]));
-        }
-    });
+      return Object.fromEntries(
+        Object.entries(raw).map(([postId, counts]) => [
+          postId,
+          { free: counts.free_members ?? 0, paid: counts.paid_members ?? 0 },
+        ]),
+      );
+    },
+  });
 };

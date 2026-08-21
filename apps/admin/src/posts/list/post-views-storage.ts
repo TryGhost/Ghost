@@ -1,7 +1,7 @@
-import {buildPostView, type PostViewColor} from '@/posts/list/post-views';
-import {normalizeSharedViewName} from '@/members/shared-views';
-import type {PostListParams} from '@/posts/list/post-query-params';
-import type {SharedView} from '@/members/shared-views';
+import { buildPostView, type PostViewColor } from '@/posts/list/post-views';
+import { normalizeSharedViewName } from '@/members/shared-views';
+import type { PostListParams } from '@/posts/list/post-query-params';
+import type { SharedView } from '@/members/shared-views';
 
 /**
  * Reading and writing the posts entries of the shared `shared_views` setting,
@@ -24,73 +24,81 @@ const VIEW_NOT_FOUND_ERROR = 'Saved view could not be found';
 type RawEntry = Record<string, unknown>;
 
 function readRawViews(json: string): RawEntry[] {
-    let parsed: unknown;
+  let parsed: unknown;
 
-    try {
-        parsed = JSON.parse(json);
-    } catch {
-        throw new Error(UNREADABLE_ERROR);
-    }
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    throw new Error(UNREADABLE_ERROR);
+  }
 
-    if (!Array.isArray(parsed)) {
-        throw new Error(UNREADABLE_ERROR);
-    }
+  if (!Array.isArray(parsed)) {
+    throw new Error(UNREADABLE_ERROR);
+  }
 
-    return parsed as RawEntry[];
+  return parsed as RawEntry[];
 }
 
 /** Loose match on the raw shape — the entry may not validate. */
 function isSamePostsView(entry: RawEntry, view: SharedView): boolean {
-    return entry.route === 'posts'
-        && typeof entry.name === 'string'
-        && normalizeSharedViewName(entry.name) === normalizeSharedViewName(view.name);
+  return (
+    entry.route === 'posts' &&
+    typeof entry.name === 'string' &&
+    normalizeSharedViewName(entry.name) === normalizeSharedViewName(view.name)
+  );
 }
 
 function hasNameConflict(entries: RawEntry[], name: string, excludedIndex: number): boolean {
-    const normalized = normalizeSharedViewName(name);
+  const normalized = normalizeSharedViewName(name);
 
-    return entries.some((entry, index) => index !== excludedIndex
-        && entry.route === 'posts'
-        && typeof entry.name === 'string'
-        && normalizeSharedViewName(entry.name) === normalized);
+  return entries.some(
+    (entry, index) =>
+      index !== excludedIndex &&
+      entry.route === 'posts' &&
+      typeof entry.name === 'string' &&
+      normalizeSharedViewName(entry.name) === normalized,
+  );
 }
 
 export function applyPostViewSave(
-    json: string,
-    name: string,
-    params: PostListParams,
-    color: PostViewColor,
-    originalView?: SharedView
+  json: string,
+  name: string,
+  params: PostListParams,
+  color: PostViewColor,
+  originalView?: SharedView,
 ): string {
-    const entries = readRawViews(json);
-    const nextView = buildPostView(name, params, color);
+  const entries = readRawViews(json);
+  const nextView = buildPostView(name, params, color);
 
-    const targetIndex = originalView
-        ? entries.findIndex(entry => isSamePostsView(entry, originalView))
-        : -1;
+  const targetIndex = originalView
+    ? entries.findIndex((entry) => isSamePostsView(entry, originalView))
+    : -1;
 
-    if (originalView && targetIndex === -1) {
-        throw new Error(VIEW_NOT_FOUND_ERROR);
-    }
+  if (originalView && targetIndex === -1) {
+    throw new Error(VIEW_NOT_FOUND_ERROR);
+  }
 
-    if (hasNameConflict(entries, nextView.name, targetIndex)) {
-        throw new Error(VIEW_EXISTS_ERROR);
-    }
+  if (hasNameConflict(entries, nextView.name, targetIndex)) {
+    throw new Error(VIEW_EXISTS_ERROR);
+  }
 
-    const updated = targetIndex === -1
-        ? [...entries, nextView as unknown as RawEntry]
-        : entries.map((entry, index) => (index === targetIndex ? nextView as unknown as RawEntry : entry));
+  const updated =
+    targetIndex === -1
+      ? [...entries, nextView as unknown as RawEntry]
+      : entries.map((entry, index) =>
+          index === targetIndex ? (nextView as unknown as RawEntry) : entry,
+        );
 
-    return JSON.stringify(updated);
+  return JSON.stringify(updated);
 }
 
 export function applyPostViewDelete(json: string, view: SharedView): string {
-    const entries = readRawViews(json);
-    const targetIndex = entries.findIndex(entry => isSamePostsView(entry, view));
+  const entries = readRawViews(json);
+  const targetIndex = entries.findIndex((entry) => isSamePostsView(entry, view));
 
-    if (targetIndex === -1) {
-        throw new Error(VIEW_NOT_FOUND_ERROR);
-    }
+  if (targetIndex === -1) {
+    throw new Error(VIEW_NOT_FOUND_ERROR);
+  }
 
-    return JSON.stringify(entries.filter((_, index) => index !== targetIndex));
+  return JSON.stringify(entries.filter((_, index) => index !== targetIndex));
 }

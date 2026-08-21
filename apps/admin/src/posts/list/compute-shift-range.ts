@@ -18,26 +18,30 @@
  * cosmetic: the range is remembered so the next shift-click can undo it, and
  * an anchor left out of the group survives an undo that should have cleared it.
  */
-export function computeShiftRange(orderedIds: string[], anchorId: string, targetId: string): string[] {
-    const anchor = orderedIds.indexOf(anchorId);
-    const target = orderedIds.indexOf(targetId);
+export function computeShiftRange(
+  orderedIds: string[],
+  anchorId: string,
+  targetId: string,
+): string[] {
+  const anchor = orderedIds.indexOf(anchorId);
+  const target = orderedIds.indexOf(targetId);
 
-    // Either row can have left the list since it was clicked — pruned by a bulk
-    // edit, or filtered away. A stale index would select an arbitrary range.
-    if (anchor === -1 || target === -1) {
-        return [];
-    }
+  // Either row can have left the list since it was clicked — pruned by a bulk
+  // edit, or filtered away. A stale index would select an arbitrary range.
+  if (anchor === -1 || target === -1) {
+    return [];
+  }
 
-    if (target === anchor) {
-        // Ember flips `running` on here and never meets a second endpoint to
-        // turn it off, selecting every row to the end of every bucket. That is
-        // a runaway about to be wired to a bulk delete, so this is the one
-        // place the port deliberately differs: an ambiguous gesture selects
-        // nothing.
-        return [];
-    }
+  if (target === anchor) {
+    // Ember flips `running` on here and never meets a second endpoint to
+    // turn it off, selecting every row to the end of every bucket. That is
+    // a runaway about to be wired to a bulk delete, so this is the one
+    // place the port deliberately differs: an ambiguous gesture selects
+    // nothing.
+    return [];
+  }
 
-    return target > anchor
-        ? orderedIds.slice(anchor + 1, target + 1)
-        : orderedIds.slice(target, anchor + 1);
+  return target > anchor
+    ? orderedIds.slice(anchor + 1, target + 1)
+    : orderedIds.slice(target, anchor + 1);
 }
