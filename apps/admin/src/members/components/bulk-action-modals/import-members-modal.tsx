@@ -71,7 +71,10 @@ export function ImportMembersModal({
   // has begun editing.
   const detectOptionsRef = useRef({ customFieldColumns });
   detectOptionsRef.current = { customFieldColumns };
-  const fieldMappings = useMemo(() => getFieldMappings({ customFieldColumns }), [customFieldColumns]);
+  const fieldMappings = useMemo(
+    () => getFieldMappings({ customFieldColumns }),
+    [customFieldColumns],
+  );
 
   const labelPicker = useLabelPicker({
     selectedSlugs: state.selectedLabelSlugs,
