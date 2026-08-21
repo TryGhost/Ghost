@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const hasActiveOffer = require('../../../../../../../core/server/services/members/members-api/utils/has-active-offer');
+const {hasActiveOffer} = require('../../../../../../../core/server/services/members/members-api/utils/has-active-offer');
 
 describe('hasActiveOffer', function () {
   beforeEach(function () {
