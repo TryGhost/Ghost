@@ -29,6 +29,7 @@ import * as quotenode from './nodes/ExtendedQuoteNode.js';
 import * as tk from './nodes/TKNode.js';
 import * as atLink from './nodes/at-link/index.js';
 import * as zwnj from './nodes/zwnj/ZWNJNode.js';
+import * as addon from './nodes/addon/AddonNode.js';
 
 import linebreakSerializers from './serializers/linebreak.js';
 import paragraphSerializers from './serializers/paragraph.js';
@@ -64,6 +65,7 @@ export * from './nodes/ExtendedQuoteNode.js';
 export * from './nodes/TKNode.js';
 export * from './nodes/at-link/index.js';
 export * from './nodes/zwnj/ZWNJNode.js';
+export * from './nodes/addon/AddonNode.js';
 export * from './utils/card-widths.js';
 
 // export utility functions that are useful in other packages or tests
@@ -128,5 +130,6 @@ export const DEFAULT_NODES = [
     tk.TKNode,
     atLink.AtLinkNode,
     atLink.AtLinkSearchNode,
-    zwnj.ZWNJNode
+    zwnj.ZWNJNode,
+    addon.AddonNode
 ];

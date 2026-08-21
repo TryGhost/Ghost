@@ -191,6 +191,16 @@ function getSearchHelper(frontendKey) {
   return helper;
 }
 
+function getAddonBlocksHelper(dataRoot) {
+    const resources = [dataRoot.post, dataRoot.page, ...(Array.isArray(dataRoot.posts) ? dataRoot.posts : [])];
+    const hasAddonBlock = resources.some(resource => typeof resource?.html === 'string' && resource.html.includes('kg-addon-card'));
+    if (!hasAddonBlock) {
+        return '';
+    }
+
+    return `<script defer src="${getAssetUrl('public/addon-blocks.min.js')}"></script>`;
+}
+
 function getAnnouncementBarHelper(data) {
   const preview = data?.site?._preview;
   const isFilled =
@@ -468,6 +478,10 @@ module.exports = async function ghost_head(options) {
     if (!excludeList.has('announcement')) {
       head.push(getAnnouncementBarHelper(options.data));
     }
+        const addonBlocksHelper = getAddonBlocksHelper(dataRoot);
+        if (addonBlocksHelper) {
+            head.push(addonBlocksHelper);
+        }
     const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
     if (adminToolbarHelper) {
       head.push(adminToolbarHelper);

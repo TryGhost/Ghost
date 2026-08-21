@@ -4,7 +4,8 @@ const request = require('supertest');
 const express = require('express');
 const fs = require('fs-extra');
 const config = require('../../../../../core/shared/config');
-const { servePublicFile } = require('../../../../../core/frontend/web/routers/serve-public-file');
+const servePublicFiles = require('../../../../../core/frontend/web/routers/serve-public-file');
+const {servePublicFile} = servePublicFiles;
 
 describe('servePublicFile', function () {
   afterEach(function () {
@@ -190,4 +191,22 @@ describe('servePublicFile', function () {
     assert.equal(text, body);
     assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/private.min.js'));
   });
+
+    it('serves the add-on block lifecycle runtime from the static public directory', async function () {
+        const app = express();
+        servePublicFiles(app);
+        const body = 'window.ghostAddonBlocks = true;';
+
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        const {text} = await request(app)
+            .get('/public/addon-blocks.min.js')
+            .expect(200)
+            .expect('Content-Type', /^application\/javascript/);
+
+        assert.equal(text, body);
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/addon-blocks.min.js'));
+    });
 });

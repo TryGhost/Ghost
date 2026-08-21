@@ -220,6 +220,9 @@ function servePublicFiles(siteApp) {
     ),
   );
 
+    // Add-on blocks lifecycle
+    siteApp.get('/public/addon-blocks.min.js', createPublicFileMiddleware('static', 'public/addon-blocks.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
   // Member attribution
   siteApp.get(
     '/public/member-attribution.min.js',
