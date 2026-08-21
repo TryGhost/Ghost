@@ -86,7 +86,7 @@ function buildOxfmtCommand(files) {
   const relativeFiles = files.map((file) => normalize(path.relative(ROOT, file)));
   // --no-error-on-unmatched-pattern: a staged set may consist entirely of
   // files the formatter config ignores, which is otherwise an error.
-  return `pnpm exec oxfmt --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
+  return `node scripts/format.js --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {

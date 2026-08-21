@@ -16,6 +16,7 @@
     "koenig/kg-default-nodes/**",
     "koenig/kg-lexical-html-renderer/**",
     "koenig/kg-simplemde/debug/**",
-    "koenig/koenig-lexical/**"
+    "koenig/koenig-lexical/**",
+    "packages/i18n/locales/**"
   ]
 }
