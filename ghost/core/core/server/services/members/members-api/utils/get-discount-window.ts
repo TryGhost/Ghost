@@ -61,7 +61,7 @@ function getLastDiscountedPayment(nextBillingDate: Readonly<Date>, discountEnd: 
  * 1. Stripe coupon discounts (post-6.16) - uses discount_start / discount_end
  * 2. Legacy fallback - computes from offer duration and start_date
  */
-export function getDiscountWindow(subscription: SubscriptionMinimal, offer: OfferDTO): DiscountWindow | null {
+export function getDiscountWindow(subscription: SubscriptionMinimal, offer: Pick<OfferDTO, 'duration' | 'redemption_type' | 'duration_in_months'>): DiscountWindow | null {
     // Stripe coupon discount (post-6.16 data)
     if (subscription.discount_start) {
         if (offer.duration === 'repeating') {

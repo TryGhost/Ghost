@@ -1,17 +1,26 @@
-const {getDiscountWindow} = require('./get-discount-window');
+import {getDiscountWindow} from './get-discount-window';
+import {type  OfferDTO } from '../../../offers/application/offer-mapper';
+
+type SubscriptionModel = {
+    get(key: 'discount_start' | 'discount_end' | 'trial_end_at'): null | Date;
+    get(key: 'start_date' | 'current_period_end'): Date;
+    get(key: 'offer_id'): null | string;
+};
 
 /**
- * Determines if a subscription has an offer that still affects the next payment,
- * or an active trial.
- * Uses discount_start/discount_end (synced from Stripe) when available,
- * falls back to offer duration lookup for legacy data (pre-6.16).
+ * Determines if a subscription has an offer that still affects the next payment, or an active trial. Uses
+ * discount_start/discount_end (synced from Stripe) when available, falls back to offer duration lookup for legacy data
+ * (pre-6.16).
  *
- * @param {object} subscriptionModel - Bookshelf model for members_stripe_customers_subscriptions
- * @param {object} offersAPI - OffersAPI instance with getOffer()
- * @param {object} [options] - Optional query options such as transacting
- * @returns {Promise<boolean>}
+ * @param subscriptionModel Bookshelf model for members_stripe_customers_subscriptions
+ * @param offersAPI OffersAPI instance with getOffer()
+ * @param [options] Optional query options such as transacting
  */
-exports.hasActiveOffer = async function hasActiveOffer(subscriptionModel, offersAPI, options = {}) {
+export async function hasActiveOffer(
+    subscriptionModel: SubscriptionModel,
+    offersAPI: {getOffer: (data: {id: string}, options?: unknown) => Promise<OfferDTO>},
+    options = {}
+): Promise<boolean> {
     const subscriptionData = {
         discount_start: subscriptionModel.get('discount_start'),
         discount_end: subscriptionModel.get('discount_end'),
@@ -48,4 +57,4 @@ exports.hasActiveOffer = async function hasActiveOffer(subscriptionModel, offers
         // If we can't look up the offer, err on the side of blocking
         return true;
     }
-};
+}
