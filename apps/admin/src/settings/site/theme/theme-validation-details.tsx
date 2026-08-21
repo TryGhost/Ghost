@@ -45,7 +45,7 @@ function problemValue(problem: ThemeProblem, index: number): string {
 }
 
 function SeverityBadge({children, variant}: {children: string; variant: 'destructive' | 'warning' | 'secondary'}) {
-    return <Badge className='py-1 font-mono text-md leading-none uppercase' variant={variant}>{children}</Badge>;
+    return <Badge className='py-1 font-mono text-sm leading-none uppercase' variant={variant}>{children}</Badge>;
 }
 
 function ProblemDetails({problem}: {problem: ThemeProblem}) {

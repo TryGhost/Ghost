@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 
 import {
@@ -185,6 +185,42 @@ describe("Theme settings", () => {
         await installedModal.getByRole("button", { name: /GS001-DEPR-PURL/ }).click();
         await expect.element(installedModal.getByText(/deprecated/)).toBeVisible();
         await expect.element(installedModal).toHaveTextContent("Affected files");
+    });
+
+    it("flips an expanding issue row's chevron a single half turn", async () => {
+        fakeThemeWorld();
+        fakeAdminEndpoint("POST", "/themes/upload/", {
+            themes: [theme({ name: "mytheme", warnings: [themeProblem({ code: "GS001-DEPR-PURL" })] })],
+        });
+        const buffer = await archiveBuffer();
+        await renderAdminApp("/settings/design/change-theme");
+
+        await settingsScreen.themeModal().getByRole("button", { name: "Upload theme" }).click();
+        await uploadThemeFile(new File([buffer], "mytheme.zip", { type: "application/zip" }));
+
+        // Ghost's legacy Ember stylesheet ships Tachyons' `.rotate-180 {transform:
+        // rotate(180deg)}` unlayered alongside Tailwind v4's `.rotate-180 {rotate:
+        // 180deg}`. An icon carrying that literal class picks up both and turns a
+        // full circle, landing back where it started — the bug this dialog was
+        // rebuilt to fix. This tier serves no Ember CSS, so the collision is staged
+        // here; the chevron must rotate via a selector that rule cannot match.
+        const legacyTachyons = document.createElement("style");
+        legacyTachyons.textContent = ".rotate-180 { transform: rotate(180deg); }";
+        document.head.appendChild(legacyTachyons);
+        onTestFinished(() => legacyTachyons.remove());
+
+        const row = settingsScreen.confirmationModal().getByRole("button", { name: /GS001-DEPR-PURL/ });
+        await expect.element(row).toBeVisible();
+        const chevron = () => (row.element() as HTMLElement).querySelector("svg")!;
+        expect(getComputedStyle(chevron()).rotate).toBe("none");
+
+        await row.click();
+
+        // Polling rides out the expand transition without a fixed wait: an
+        // interpolated frame reads as an intermediate angle, never as 180deg.
+        await expect.poll(() => getComputedStyle(chevron()).rotate).toBe("180deg");
+        // ...and nothing may add a second rotation on top of that one.
+        expect(getComputedStyle(chevron()).transform).toBe("none");
     });
 
     it("keeps the installed-theme dialog open when activation fails", async () => {
