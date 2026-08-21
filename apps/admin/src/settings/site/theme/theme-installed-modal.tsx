@@ -5,7 +5,6 @@ import { type InstalledTheme, useActivateTheme } from '@tryghost/admin-x-framewo
 import { ThemeValidationIssueList } from './theme-validation-details';
 import {
   type ThemeAction,
-  describeProblemSet,
   describeThemeOutcome,
   getIssuesFromInstalledTheme,
   hasErrorProblem,
@@ -61,24 +60,10 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
   let status: ReactNode;
 
   if (installedTheme.active) {
-    // Saving the active theme, or re-uploading over it, lands here with
-    // problems in hand. "Successfully" directly above a list of them is a
-    // clean-success sentence the dialog immediately contradicts, so a set
-    // that has anything in it is named instead — by the same rule the list
-    // and the badges use.
     status = (
       <>
-        {problems.length > 0 ? (
-          <>
-            Your theme <strong>{installedTheme.name}</strong> is now visible to your readers, but it
-            has some {describeProblemSet(problems)}.
-          </>
-        ) : (
-          <>
-            Your theme <strong>{installedTheme.name}</strong> was {action} successfully and is now
-            visible to your readers.
-          </>
-        )}
+        Your theme <strong>{installedTheme.name}</strong> was saved successfully and is now visible
+        to your readers.
         {homepageUrl ? (
           <>
             {' '}
