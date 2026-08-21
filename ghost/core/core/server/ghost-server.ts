@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import createDebug from '@tryghost/debug';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import * as logging from '@tryghost/logging';
+import logging from '@tryghost/logging';
 import * as metrics from '@tryghost/metrics';
 // @ts-expect-error This module lacks type definitions.
 import notify from './notify';
