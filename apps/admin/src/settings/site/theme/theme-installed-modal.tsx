@@ -4,6 +4,8 @@ import { ConfirmationModalContent } from '@/settings/components/confirmation-mod
 import { type InstalledTheme, useActivateTheme } from '@tryghost/admin-x-framework/api/themes';
 import { ThemeValidationIssueList } from './theme-validation-details';
 import {
+  type ThemeAction,
+  describeProblemSet,
   describeThemeOutcome,
   getIssuesFromInstalledTheme,
   hasErrorProblem,
@@ -12,16 +14,16 @@ import { getHomepageUrl, useBrowseSite } from '@tryghost/admin-x-framework/api/s
 import { toast } from 'sonner';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
-/** Past tense of how the theme arrived, named in the status sentence. */
-export type ThemeInstalledAction = 'uploaded' | 'installed' | 'saved';
-
 export type ThemeInstalledModalProps = {
   title: string;
-  action?: ThemeInstalledAction;
+  /** Past tense of how the theme arrived, named in the status sentence. */
+  action?: ThemeAction;
   /**
-   * Replaces the derived "was uploaded" sentence for flows that didn't upload
-   * an archive (marketplace installs, code editor saves). Ignored when the
-   * theme is already active, which has its own copy.
+   * Replaces the derived "was uploaded" sentence for a flow whose outcome
+   * `action` cannot describe — activating a default or legacy theme, which was
+   * never installed at all. A flow that only restates the derived sentence
+   * should leave this unset rather than give one line two sources to drift
+   * between. Ignored when the theme is already active, which has its own copy.
    */
   statusMessage?: ReactNode;
   installedTheme: InstalledTheme;
@@ -59,10 +61,24 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
   let status: ReactNode;
 
   if (installedTheme.active) {
+    // Saving the active theme, or re-uploading over it, lands here with
+    // problems in hand. "Successfully" directly above a list of them is a
+    // clean-success sentence the dialog immediately contradicts, so a set
+    // that has anything in it is named instead — by the same rule the list
+    // and the badges use.
     status = (
       <>
-        Your theme <strong>{installedTheme.name}</strong> was {action} successfully and is now
-        visible to your readers.
+        {problems.length > 0 ? (
+          <>
+            Your theme <strong>{installedTheme.name}</strong> is now visible to your readers, but it
+            has some {describeProblemSet(problems)}.
+          </>
+        ) : (
+          <>
+            Your theme <strong>{installedTheme.name}</strong> was {action} successfully and is now
+            visible to your readers.
+          </>
+        )}
         {homepageUrl ? (
           <>
             {' '}

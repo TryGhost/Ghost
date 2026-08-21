@@ -6,11 +6,7 @@ import ThemeEditorInputModal from './theme-editor-input-modal';
 import ThemeEditorToolbar from './theme-editor-toolbar';
 import ThemeFileTree from './theme-file-tree';
 import ThemeInstalledModal, { type ThemeInstalledModalProps } from './theme-installed-modal';
-import {
-  describeThemeOutcome,
-  getIssuesFromInstalledTheme,
-  parseFatalErrors,
-} from './theme-validation-issues';
+import { getIssuesFromInstalledTheme, parseFatalErrors } from './theme-validation-issues';
 import { TextWrap, Undo2 } from 'lucide-react';
 import {
   cloneThemeFiles,
@@ -908,12 +904,6 @@ const ThemeCodeEditorModal: React.FC<{ themeName: string }> = ({ themeName }) =>
         setInstalledModal({
           title: isSaveAs ? 'Theme saved' : 'Theme updated',
           action: 'saved',
-          statusMessage: (
-            <>
-              <strong>{uploadedTheme.name}</strong> was {describeThemeOutcome('saved', problems)}.
-              Do you want to activate it?
-            </>
-          ),
           installedTheme: uploadedTheme,
         });
       } else {
