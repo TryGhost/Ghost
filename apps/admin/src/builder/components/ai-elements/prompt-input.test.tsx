@@ -41,4 +41,37 @@ describe('PromptInput', () => {
         expect(onSubmit).not.toHaveBeenCalled();
         expect(input).toHaveValue('編集中');
     });
+
+    it('adds and removes attachments next to the prompt', async () => {
+        const onAddAttachments = vi.fn().mockResolvedValue(undefined);
+        const onRemoveAttachment = vi.fn();
+        const {rerender} = render(
+            <PromptInput
+                attachments={[]}
+                isRunning={false}
+                onAddAttachments={onAddAttachments}
+                onRemoveAttachment={onRemoveAttachment}
+                onStop={vi.fn()}
+                onSubmit={vi.fn()}
+            />
+        );
+        const file = new File(['name,value\nAlpha,10'], 'report.csv', {type: 'text/csv'});
+
+        fireEvent.change(screen.getByLabelText('Add attachments'), {target: {files: [file]}});
+        await waitFor(() => expect(onAddAttachments).toHaveBeenCalledWith([file]));
+
+        rerender(
+            <PromptInput
+                attachments={[{id: 'attachment-1', name: 'report.csv', kind: 'text', mediaType: 'text/csv', size: file.size}]}
+                isRunning={false}
+                onAddAttachments={onAddAttachments}
+                onRemoveAttachment={onRemoveAttachment}
+                onStop={vi.fn()}
+                onSubmit={vi.fn()}
+            />
+        );
+        fireEvent.click(screen.getByRole('button', {name: 'Remove report.csv'}));
+
+        expect(onRemoveAttachment).toHaveBeenCalledWith('attachment-1');
+    });
 });

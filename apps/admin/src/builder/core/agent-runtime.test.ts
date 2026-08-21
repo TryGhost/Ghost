@@ -144,6 +144,45 @@ describe('agent runtime', () => {
         });
     });
 
+    it('passes model-visible image tool content into the next provider request', async () => {
+        const providerCalls: Context[] = [];
+        const responses = [
+            message([{type: 'toolCall', id: 'read-image', name: 'read_attachment', arguments: {id: 'attachment-1'}}], 'toolUse'),
+            message([{type: 'text', text: 'I can see the image'}], 'stop')
+        ];
+        const runtime = createAgentRuntime({
+            model,
+            getApiKey: () => 'session-key',
+            streamFn: (_model, context) => {
+                providerCalls.push(context);
+                const response = responses.shift();
+                if (!response) {
+                    throw new Error('Unexpected provider call');
+                }
+                return completedStream(response);
+            },
+            tools: [{
+                name: 'read_attachment',
+                description: 'Read an attachment',
+                inputSchema: {type: 'object', properties: {id: {type: 'string'}}, required: ['id'], additionalProperties: false},
+                execute: () => Promise.resolve({
+                    text: 'Image attached',
+                    attachments: [{type: 'image', mediaType: 'image/png', data: 'aW1hZ2UtYnl0ZXM='}]
+                })
+            }]
+        });
+
+        await runtime.prompt('Inspect the image');
+
+        expect(providerCalls[1]?.messages.at(-1)).toMatchObject({
+            role: 'toolResult',
+            content: [
+                {type: 'text', text: 'Image attached'},
+                {type: 'image', mimeType: 'image/png', data: 'aW1hZ2UtYnl0ZXM='}
+            ]
+        });
+    });
+
     it('compacts an active tool cycle when image payloads exceed the request budget', async () => {
         const providerCalls: Context[] = [];
         const responses = [

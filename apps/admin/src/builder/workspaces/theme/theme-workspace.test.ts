@@ -5,6 +5,7 @@ import {loadThemeDraft} from './theme-loader';
 import {withThemeRevision} from './theme-state';
 import {ThemeWorkspace} from './theme-workspace';
 import {PreviewInspectionError} from './preview/preview-inspection';
+import {BuilderAttachments} from '@/builder/core/attachments';
 
 import type {ThemeLoadInput} from './theme-loader';
 import type {ThemeDraft} from './theme-state';
@@ -27,8 +28,11 @@ async function loadInput(): Promise<ThemeLoadInput> {
 describe('ThemeWorkspace', () => {
     it('loads an immutable draft and publishes only through its injected adapter', async () => {
         const source = await loadInput();
+        const attachments = new BuilderAttachments({uploadImage: vi.fn()});
+        await attachments.add([new File(['name,value\nAlpha,10'], 'report.csv', {type: 'text/csv'})]);
         const publisher = vi.fn((draft: ThemeDraft) => Promise.resolve({ok: true as const, revision: draft.revision}));
         const workspace = new ThemeWorkspace({
+            attachments,
             id: 'theme:demo',
             title: 'Demo',
             load: signal => loadThemeDraft(source, signal),
@@ -55,8 +59,11 @@ describe('ThemeWorkspace', () => {
             'inspect_page',
             'inspect_element',
             'navigate',
-            'screenshot'
+            'screenshot',
+            'read_attachment',
+            'search_attachment'
         ]);
+        expect(workspace.getAttachments()).toEqual([expect.objectContaining({name: 'report.csv', kind: 'text'})]);
         expect(workspace.getTools().map(tool => tool.name)).not.toEqual(expect.arrayContaining(['preview', 'apply', 'commit']));
         expect(workspace.getPreview()).toEqual({kind: 'theme'});
         expect(workspace.getSelectionContext()).toBeNull();

@@ -1,4 +1,5 @@
 import type {BuilderToolDefinition, BuilderToolResult, WorkspaceDiagnostic} from '@/builder/core/tool-types';
+import type {BuilderAttachmentSnapshot, BuilderAttachmentSummary, BuilderAttachments} from '@/builder/core/attachments';
 import type {
     BuilderPreviewAdapter,
     BuilderSelectionContext,
@@ -37,6 +38,7 @@ type ThemeWorkspaceOptions = {
     load: (signal: AbortSignal) => Promise<ThemeDraft>;
     preview: ThemeMutationPreview;
     publish?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ThemePublishAdapterResult>;
+    attachments?: BuilderAttachments;
 };
 
 type ThemeMutationPreview = BuilderPreviewAdapter & {
@@ -169,6 +171,7 @@ export class ThemeWorkspace implements BuilderWorkspace {
     private readonly loadDraft: ThemeWorkspaceOptions['load'];
     private readonly preview: ThemeMutationPreview;
     private readonly publishDraft?: ThemeWorkspaceOptions['publish'];
+    private readonly attachments?: BuilderAttachments;
     private readonly listeners = new Set<(state: BuilderWorkspaceState) => void>();
     private currentDraft: ThemeDraft | null = null;
     private lastValidCandidate: ThemeDraft | null = null;
@@ -177,12 +180,13 @@ export class ThemeWorkspace implements BuilderWorkspace {
     private currentState = unloadedState;
     private mutationTail: Promise<void> = Promise.resolve();
 
-    constructor({id, title, load, preview, publish}: ThemeWorkspaceOptions) {
+    constructor({id, title, load, preview, publish, attachments}: ThemeWorkspaceOptions) {
         this.id = id;
         this.title = title;
         this.loadDraft = load;
         this.preview = preview;
         this.publishDraft = publish;
+        this.attachments = attachments;
     }
 
     get draft(): ThemeDraft {
@@ -419,7 +423,8 @@ export class ThemeWorkspace implements BuilderWorkspace {
                     ]
                 },
                 execute: (input, signal) => this.executeScreenshot(input, signal)
-            }
+            },
+            ...(this.attachments?.getTools(() => this.activeDraftForRead().revision) ?? [])
         ];
     }
 
@@ -431,6 +436,18 @@ export class ThemeWorkspace implements BuilderWorkspace {
         this.syncPreviewOnlyDraft();
         const draft = this.lastValidCandidate ?? this.currentDraft;
         return draft?.selection ? structuredClone(draft.selection) : null;
+    }
+
+    getAttachments(): readonly BuilderAttachmentSummary[] {
+        return this.attachments?.list() ?? [];
+    }
+
+    snapshotAttachments(): BuilderAttachmentSnapshot {
+        return this.attachments?.snapshot() ?? {version: 1, attachments: []};
+    }
+
+    restoreAttachments(snapshot: BuilderAttachmentSnapshot): void {
+        this.attachments?.restore(snapshot);
     }
 
     applyInlineTextEdit(input: {marker: string; tagName: string; newText: string}, signal: AbortSignal): Promise<BuilderToolResult<{path: string; marker: string} & MutationRenderData>> {

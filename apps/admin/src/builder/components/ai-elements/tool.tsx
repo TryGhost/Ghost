@@ -18,7 +18,9 @@ const actionLabels: Record<string, string> = {
     inspect_page: 'Checking the preview',
     inspect_element: 'Checking the selected area',
     navigate: 'Opening another preview page',
-    screenshot: 'Reviewing how the page looks'
+    screenshot: 'Reviewing how the page looks',
+    read_attachment: 'Reviewing an attachment',
+    search_attachment: 'Finding information in an attachment'
 };
 
 const fileMutationActions = new Set([

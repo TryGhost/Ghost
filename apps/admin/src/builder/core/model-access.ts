@@ -1,4 +1,5 @@
 import type {BuilderToolDefinition, BuilderToolResult} from './tool-types';
+import type {BuilderAttachmentSummary} from './attachments';
 import type {BuilderSelectionContext} from './workspace';
 
 export type BuilderConversationToolCall = {
@@ -23,6 +24,7 @@ export type BuilderModelWorkspaceContext = {
     title: string;
     revision: string;
     selection: BuilderSelectionContext | null;
+    attachments: readonly BuilderAttachmentSummary[];
 };
 
 export type BuilderStreamEvent =

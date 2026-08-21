@@ -72,6 +72,23 @@ describe('Design Builder route', () => {
         window.dispatchEvent(new Event('resize'));
     });
 
+    it('adds a Ghost-hosted image attachment from the real Builder composer', async () => {
+        await fakeBuilderWorld();
+        const upload = fakeAdminEndpoint('POST', '/images/upload/', {images: [{url: 'http://localhost:2368/content/images/chart.png'}]});
+        window.sessionStorage.setItem('ghost-builder.credential.openai', 'test-key');
+        await renderAdminApp('/builder/theme', {labs: {designBuilder: true}});
+
+        await page.getByLabelText('Add attachments').upload(new File([new Uint8Array([137, 80, 78, 71])], 'chart.png', {type: 'image/png'}));
+
+        const remove = page.getByRole('button', {name: 'Remove chart.png'});
+        await expect.element(remove).toBeVisible();
+        expect(upload.requests).toHaveLength(1);
+        expect(upload.lastRequest?.body).toMatchObject({file: {filename: 'chart.png', type: 'image/png'}});
+        await remove.click();
+        await expect.element(remove).not.toBeInTheDocument();
+        window.sessionStorage.removeItem('ghost-builder.credential.openai');
+    });
+
     it('returns to Design settings with an explanation when unavailable', async () => {
         fakeSettingsScreens();
         await renderAdminApp('/builder/theme', {labs: {}});

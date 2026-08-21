@@ -1,4 +1,5 @@
 import type {BuilderConversationMessage, BuilderStreamEvent, ModelAccessAdapter} from './model-access';
+import type {BuilderAttachmentSnapshot} from './attachments';
 import type {BuilderToolResult} from './tool-types';
 import type {BuilderPreviewAdapter, BuilderWorkspace, BuilderWorkspaceState, PublishResult, WorkspaceSnapshot} from './workspace';
 
@@ -27,6 +28,7 @@ type TurnCheckpoint = {
     userMessageId: string;
     conversationCursor: number;
     snapshot: WorkspaceSnapshot;
+    attachments?: BuilderAttachmentSnapshot;
 };
 
 type ActiveTurn = {
@@ -219,7 +221,8 @@ export class BuilderSession {
                 turnId,
                 userMessageId,
                 conversationCursor,
-                snapshot: this.workspace.checkpointSnapshot?.() ?? this.workspace.snapshot()
+                snapshot: this.workspace.checkpointSnapshot?.() ?? this.workspace.snapshot(),
+                attachments: this.workspace.snapshotAttachments?.()
             });
             checkpointCreated = true;
             await this.modelAccess.runTurn({
@@ -230,7 +233,8 @@ export class BuilderSession {
                     kind: this.workspace.kind,
                     title: this.workspace.title,
                     revision: this.currentState.workspace.revision,
-                    selection: this.workspace.getSelectionContext()
+                    selection: this.workspace.getSelectionContext(),
+                    attachments: this.workspace.getAttachments?.() ?? []
                 },
                 signal: controller.signal,
                 onEvent: event => this.handleEvent(activeTurn, event)
@@ -315,6 +319,9 @@ export class BuilderSession {
             const validation = await this.workspace.restore(checkpoint.snapshot);
             if (!validation.valid) {
                 throw new Error('The Builder workspace could not restore this checkpoint.');
+            }
+            if (checkpoint.attachments) {
+                this.workspace.restoreAttachments?.(checkpoint.attachments);
             }
 
             this.checkpoints = this.checkpoints.slice(0, checkpointIndex);

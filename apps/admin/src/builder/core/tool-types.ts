@@ -14,7 +14,7 @@ export type BuilderToolError = {
 
 export type BuilderToolAttachment = {
     type: 'image';
-    mediaType: 'image/png';
+    mediaType: string;
     data: string;
 };
 

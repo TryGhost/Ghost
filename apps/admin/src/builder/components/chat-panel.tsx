@@ -13,6 +13,7 @@ import {ToolGroup} from './ai-elements/tool';
 import {ProviderSetup} from './provider-setup';
 
 import type {BuilderSessionState} from '@/builder/core/builder-session';
+import type {BuilderAttachmentSummary} from '@/builder/core/attachments';
 import type {BuilderSelectionContext} from '@/builder/core/workspace';
 import type {BuilderProvider, CuratedModel} from '@/builder/models/curated-models';
 
@@ -23,7 +24,10 @@ export type ChatPanelProps = {
     models: readonly CuratedModel[];
     hasCredential: boolean;
     selection?: BuilderSelectionContext | null;
+    attachments?: readonly BuilderAttachmentSummary[];
     onSubmit: (value: string) => void | Promise<unknown>;
+    onAddAttachments?: (files: readonly File[]) => void | Promise<unknown>;
+    onRemoveAttachment?: (id: string) => void;
     onStop: () => void;
     onRetry: () => void;
     onRewind: (messageId: string) => void | Promise<void>;
@@ -34,7 +38,7 @@ export type ChatPanelProps = {
     interactionDisabled?: boolean;
 };
 
-export const ChatPanel = ({state, provider, modelId, models, hasCredential, selection, onSubmit, onStop, onRetry, onRewind, onRemoveSelection, onSaveApiKey, onForgetApiKey, onSelectModel, interactionDisabled = false}: ChatPanelProps) => {
+export const ChatPanel = ({state, provider, modelId, models, hasCredential, selection, attachments, onSubmit, onAddAttachments, onRemoveAttachment, onStop, onRetry, onRewind, onRemoveSelection, onSaveApiKey, onForgetApiKey, onSelectModel, interactionDisabled = false}: ChatPanelProps) => {
     const isRunning = state.status === 'running';
     const controlsDisabled = interactionDisabled || isRunning || state.status === 'publishing';
     const canPrompt = !interactionDisabled && (state.status === 'ready' || state.status === 'interrupted');
@@ -112,11 +116,14 @@ export const ChatPanel = ({state, provider, modelId, models, hasCredential, sele
             <Stack className='border-t border-border-default bg-surface-elevated p-3' gap='sm'>
                 <ProviderSetup connected={hasCredential} disabled={controlsDisabled} inputRef={providerKeyRef} provider={provider} onForget={onForgetApiKey} onSave={onSaveApiKey} />
                 <PromptInput
+                    attachments={attachments}
                     context={selection}
                     disabled={!hasCredential || !canPrompt}
                     inputRef={promptRef}
                     isRunning={isRunning}
                     modelPicker={<ModelPicker disabled={controlsDisabled} modelId={modelId} models={models} provider={provider} onSelect={onSelectModel} />}
+                    onAddAttachments={onAddAttachments}
+                    onRemoveAttachment={onRemoveAttachment}
                     onRemoveContext={onRemoveSelection}
                     onStop={onStop}
                     onSubmit={onSubmit}

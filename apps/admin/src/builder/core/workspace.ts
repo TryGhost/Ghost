@@ -1,4 +1,5 @@
 import type {BuilderToolDefinition, WorkspaceDiagnostic} from './tool-types';
+import type {BuilderAttachmentSnapshot, BuilderAttachmentSummary} from './attachments';
 
 export type WorkspaceSnapshot = {
     revision: string;
@@ -45,6 +46,9 @@ export interface BuilderWorkspace {
     getTools(): BuilderToolDefinition[];
     getPreview(): BuilderPreviewAdapter;
     getSelectionContext(): BuilderSelectionContext | null;
+    getAttachments?(): readonly BuilderAttachmentSummary[];
+    snapshotAttachments?(): BuilderAttachmentSnapshot;
+    restoreAttachments?(snapshot: BuilderAttachmentSnapshot): void;
     publish(signal: AbortSignal): Promise<PublishResult>;
     subscribe(listener: (state: BuilderWorkspaceState) => void): () => void;
 }

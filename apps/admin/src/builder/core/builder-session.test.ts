@@ -3,6 +3,7 @@ import {describe, expect, it, vi} from 'vitest';
 import {BuilderSession} from './builder-session';
 
 import type {BuilderModelTurnRequest, ModelAccessAdapter} from './model-access';
+import type {BuilderAttachmentSnapshot, BuilderAttachmentSummary} from './attachments';
 import type {BuilderToolDefinition} from './tool-types';
 import type {BuilderPreviewAdapter, BuilderWorkspace, BuilderWorkspaceState, PublishResult, ValidationResult, WorkspaceSnapshot} from './workspace';
 
@@ -23,6 +24,7 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
     flushImplementation: ((signal: AbortSignal) => Promise<void>) | null = null;
     invalidCandidate: ArtifactPayload | null = null;
     selection: {id: string; label: string; data?: unknown} | null = null;
+    attachments: BuilderAttachmentSummary[] = [];
     private payload: ArtifactPayload = {value: 'initial'};
     private draftRevision = 'revision-0';
     private lastValidCandidate: WorkspaceSnapshot | null = null;
@@ -145,6 +147,44 @@ class FakeArtifactWorkspace implements BuilderWorkspace {
         return this.selection;
     }
 
+    getAttachments(): readonly BuilderAttachmentSummary[] {
+        return this.attachments;
+    }
+
+    snapshotAttachments(): BuilderAttachmentSnapshot {
+        return {
+            version: 1,
+            attachments: this.attachments.map(attachment => attachment.kind === 'text' ? {
+                ...attachment,
+                kind: 'text',
+                content: attachment.preview ?? ''
+            } : {
+                ...attachment,
+                kind: 'image',
+                url: attachment.url ?? 'https://example.com/image.png',
+                data: ''
+            })
+        };
+    }
+
+    restoreAttachments(snapshot: BuilderAttachmentSnapshot): void {
+        this.attachments = snapshot.attachments.map(attachment => attachment.kind === 'text' ? {
+            id: attachment.id,
+            name: attachment.name,
+            kind: attachment.kind,
+            mediaType: attachment.mediaType,
+            size: attachment.size,
+            preview: attachment.preview
+        } : {
+            id: attachment.id,
+            name: attachment.name,
+            kind: attachment.kind,
+            mediaType: attachment.mediaType,
+            size: attachment.size,
+            url: attachment.url
+        });
+    }
+
     publish(signal: AbortSignal): Promise<PublishResult> {
         if (signal.aborted) {
             throw new DOMException('Aborted', 'AbortError');
@@ -260,6 +300,7 @@ describe('BuilderSession', () => {
     it('passes transport-neutral workspace context and records canonical tool lifecycle on the assistant message', async () => {
         const workspace = new FakeArtifactWorkspace();
         workspace.selection = {id: 'marker-42', label: 'Revenue heading', data: {source: 'index.hbs:12:3'}};
+        workspace.attachments = [{id: 'attachment-1', name: 'report.csv', kind: 'text', mediaType: 'text/csv', size: 42, preview: 'name,value'}];
         const modelAccess = new ScriptedModelAccess();
         modelAccess.enqueue((request) => {
             request.onEvent({type: 'tool-start', callId: 'call-1', name: 'set_value', input: {value: 'revised'}});
@@ -282,7 +323,8 @@ describe('BuilderSession', () => {
             kind: 'artifact',
             title: 'Revenue chart',
             revision: 'revision-0',
-            selection: workspace.selection
+            selection: workspace.selection,
+            attachments: workspace.attachments
         });
         expect(session.state.messages.at(-1)).toMatchObject({
             role: 'assistant',
@@ -540,6 +582,24 @@ describe('BuilderSession', () => {
         await session.rewind(first.userMessageId);
         expect(workspace.snapshot()).toEqual({revision: 'revision-0', payload: {value: 'initial'}});
         expect(session.state.messages).toEqual([]);
+    });
+
+    it('restores the attachment context owned by an earlier turn checkpoint', async () => {
+        const workspace = new FakeArtifactWorkspace();
+        const modelAccess = new ScriptedModelAccess();
+        modelAccess.enqueue(completeWith('First'));
+        modelAccess.enqueue(completeWith('Second'));
+        const session = new BuilderSession({workspace, modelAccess});
+        await session.load();
+        workspace.attachments = [{id: 'attachment-a', name: 'a.csv', kind: 'text', mediaType: 'text/csv', size: 10, preview: 'a'}];
+
+        const first = await session.startTurn('Use attachment A');
+        workspace.attachments = [{id: 'attachment-b', name: 'b.csv', kind: 'text', mediaType: 'text/csv', size: 10, preview: 'b'}];
+        await session.startTurn('Use attachment B');
+
+        await session.rewind(first.userMessageId);
+
+        expect(workspace.attachments).toEqual([expect.objectContaining({id: 'attachment-a', name: 'a.csv'})]);
     });
 
     it('publishes restored workspace and conversation state atomically', async () => {

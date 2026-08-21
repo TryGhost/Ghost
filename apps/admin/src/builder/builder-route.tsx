@@ -7,6 +7,7 @@ import {useBrowseCustomThemeSettings} from '@tryghost/admin-x-framework/api/cust
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {isDefaultOrLegacyTheme, useActiveTheme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {DirtyConfirmDialog} from '@tryghost/shade/patterns';
 import {Box, Stack, Text} from '@tryghost/shade/primitives';
@@ -16,6 +17,7 @@ import {useBlocker} from 'react-router';
 
 import {BuilderShell} from '@/builder/builder-shell';
 import {BuilderSession} from '@/builder/core/builder-session';
+import {BuilderAttachments} from '@/builder/core/attachments';
 import {BrowserPiModelAccess} from '@/builder/models/browser-pi-model-access';
 import {CURATED_MODELS} from '@/builder/models/curated-models';
 import {loadThemeDraft} from '@/builder/workspaces/theme/theme-loader';
@@ -27,6 +29,7 @@ import {createAdminThemePublishTransport, ThemePublisher} from '@/builder/worksp
 import {ThemeWorkspace} from '@/builder/workspaces/theme/theme-workspace';
 
 import type {BuilderSessionState} from '@/builder/core/builder-session';
+import type {BuilderAttachmentSummary} from '@/builder/core/attachments';
 import type {PreviewInteractionMode} from '@/builder/components/preview-panel';
 import type {BuilderSelectionContext} from '@/builder/core/workspace';
 import type {BuilderProvider} from '@/builder/models/curated-models';
@@ -153,6 +156,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const [session, setSession] = useState<BuilderSession | null>(null);
     const [state, setState] = useState<BuilderSessionState>(loadingState);
     const [selection, setSelection] = useState<BuilderSelectionContext | null>(null);
+    const [attachmentList, setAttachmentList] = useState<readonly BuilderAttachmentSummary[]>([]);
     const [provider, setProvider] = useState<BuilderProvider>('openai');
     const [modelId, setModelId] = useState(() => providerDefaultModel('openai'));
     const [publishState, setPublishState] = useState<ThemePublishState>({status: 'idle', stage: 'idle'});
@@ -165,6 +169,12 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     const [publishTheme, setPublishTheme] = useState({name: theme.name, builtIn: isDefaultOrLegacyTheme(theme)});
     const [, setCredentialVersion] = useState(0);
     const modelAccess = useMemo(() => new BrowserPiModelAccess(), []);
+    const {mutateAsync: uploadImage} = useUploadImage();
+    const uploadImageRef = useRef(uploadImage);
+    uploadImageRef.current = uploadImage;
+    const attachments = useMemo(() => new BuilderAttachments({
+        uploadImage: async file => getImageUrl(await uploadImageRef.current({file}))
+    }), []);
     const queryClient = useQueryClient();
     const previewRef = useRef<ThemePreviewAdapter | null>(null);
     const previewToggleSequenceRef = useRef(0);
@@ -183,6 +193,8 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
             void queryClient.invalidateQueries({queryKey: ['CustomThemeSettingsResponseType']});
         }
     }, [queryClient]);
+
+    useEffect(() => attachments.subscribe(setAttachmentList), [attachments]);
 
     useEffect(() => {
         if (!iframe) {
@@ -226,6 +238,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
         });
         let unsubscribePublisher = () => {};
         const workspace = new ThemeWorkspace({
+            attachments,
             id: `theme:${theme.name}`,
             load: async (signal) => {
                 const draft = await loadActiveTheme({theme, settings, customSettings, siteUrl, preview, signal});
@@ -281,7 +294,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
             previewRef.current = null;
             publisherRef.current = null;
         };
-    }, [customSettings, iframe, installedThemeNames, modelAccess, settings, siteUrl, theme]);
+    }, [attachments, customSettings, iframe, installedThemeNames, modelAccess, settings, siteUrl, theme]);
 
     useEffect(() => {
         if (previewMode !== 'browse' && !['ready', 'interrupted'].includes(state.status)) {
@@ -370,6 +383,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
     return (
         <>
             <BuilderShell
+                attachments={attachmentList}
                 backLabel='Back to Design settings'
                 backTo='/settings/design'
                 hasCredential={modelAccess.hasApiKey(provider)}
@@ -413,6 +427,12 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                 selection={selection}
                 state={state}
                 title='Design Builder'
+                onAddAttachments={async (files) => {
+                    const result = await attachments.add(files);
+                    if (result.errors.length) {
+                        throw new Error(result.errors.map(error => error.message).join(' '));
+                    }
+                }}
                 onForgetApiKey={(targetProvider) => {
                     modelAccess.forgetApiKey(targetProvider);
                     setCredentialVersion(value => value + 1);
@@ -420,6 +440,7 @@ const ThemeBuilderExperience = ({theme, settings, customSettings, installedTheme
                 onNavigatePreview={navigatePreview}
                 onPreviewBack={() => traversePreviewHistory(-1)}
                 onPreviewForward={() => traversePreviewHistory(1)}
+                onRemoveAttachment={id => attachments.remove(id)}
                 onRemoveSelection={() => void previewRef.current?.clearSelection()}
                 onRetry={() => void session?.retryLastTurn()}
                 onRewind={messageId => session?.rewind(messageId) ?? Promise.reject(new Error('The Builder session is not ready.'))}
