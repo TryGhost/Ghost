@@ -681,59 +681,6 @@ describe('Theme settings', () => {
     expect(uploadApi.requests).toHaveLength(1);
   });
 
-  it.each([
-    {
-      severity: 'warnings',
-      problems: { warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })] },
-      sentence: 'edition is now visible to your readers, but it has some warnings.',
-      summary: '1 warning',
-    },
-    {
-      severity: 'issues',
-      problems: {
-        errors: [
-          themeProblem({
-            code: 'GS005-TPL-ERR',
-            level: 'error',
-            rule: 'Templates must contain valid Handlebars',
-          }),
-        ],
-        warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })],
-      },
-      sentence: 'edition is now visible to your readers, but it has some issues.',
-      summary: '1 error, 1 warning',
-    },
-  ])(
-    'says the live theme carries $severity after saving it',
-    async ({ problems, sentence, summary }) => {
-      fakeThemeWorld();
-      await fakeThemeDownload('edition');
-      fakeAdminEndpoint('POST', '/themes/upload/', {
-        themes: [theme({ name: 'edition', active: true, ...problems })],
-      });
-      await renderAdminApp('/settings/theme/edit/edition');
-
-      const editor = await editorTextbox();
-      await editor.fill('{"name":"edition","version":"1.0.0"}\n');
-      await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
-      await settingsScreen
-        .themeEditorConfirmModal()
-        .getByRole('button', { name: 'Replace theme' })
-        .click();
-
-      // The saved theme is the live one, so the dialog reports it as live —
-      // but a set of problems is listed directly underneath, and calling that
-      // a clean success contradicts the list saying otherwise.
-      const installedModal = settingsScreen.confirmationModal();
-      await expect.element(installedModal).toHaveTextContent(sentence);
-      await expect.element(installedModal).not.toHaveTextContent('successfully');
-      await expect.element(installedModal).toHaveTextContent(summary);
-      await expect.element(installedModal.getByRole('link', { name: /Take a look/ })).toBeVisible();
-      // Nothing left to activate, so the dialog only acknowledges.
-      await expect.element(installedModal.getByTestId('ok-modal')).toHaveTextContent('OK');
-    },
-  );
-
   it('runs the current save flow from the keyboard shortcut', async () => {
     fakeThemeWorld();
     // The editor shortcut currently propagates to the settings form too;

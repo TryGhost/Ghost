@@ -146,24 +146,16 @@ export function hasErrorProblem(problems: ThemeProblem[]): boolean {
 export type ThemeAction = 'uploaded' | 'installed' | 'activated' | 'saved';
 
 /**
- * What to call a non-empty set of problems. `errors` and `warnings` are merged
- * by `getIssuesFromInstalledTheme`, so the noun has to look at the levels
- * rather than the count: calling a set that contains errors "warnings"
- * contradicts the issue list rendered beside it. Every sentence that names a
- * set reads it from here, so no two of them can disagree.
- */
-export function describeProblemSet(problems: ThemeProblem[]): string {
-  return hasErrorProblem(problems) ? 'issues' : 'warnings';
-}
-
-/**
  * Completes "<theme> was ..." for a theme that installed successfully but may
- * carry non-blocking problems.
+ * carry non-blocking problems. `errors` and `warnings` are merged by
+ * `getIssuesFromInstalledTheme`, so the noun naming the set has to look at the
+ * levels rather than the count: calling a set that contains errors "warnings"
+ * contradicts the issue list rendered beside it.
  */
 export function describeThemeOutcome(action: ThemeAction, problems: ThemeProblem[]): string {
   if (!problems.length) {
     return `${action} successfully`;
   }
 
-  return `${action}, but it has some ${describeProblemSet(problems)}`;
+  return `${action}, but it has some ${hasErrorProblem(problems) ? 'issues' : 'warnings'}`;
 }
