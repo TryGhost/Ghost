@@ -24,7 +24,7 @@ export let service: GiftService | undefined;
 
 export let deliveryService: GiftDeliveryService | undefined;
 
-export async function init(options: GiftServiceInitOptions): Promise<void> {
+export function init(options: GiftServiceInitOptions): void {
   if (service) {
     return;
   }
