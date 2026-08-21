@@ -27,6 +27,8 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
+**No animations.** The harness zeroes every animation and transition duration (`setup.ts`), so an element is at its final position the moment it renders. Enter animations are the classic acceptance flake: Playwright's `stable` actionability check only needs one pair of consecutive animation frames with an identical bounding box on Chromium, so a dropped frame on a loaded CI runner lets a click be aimed at a position the element has already left. A sheet is outside the viewport for much of its slide-in, so those clicks land on nothing — no handler runs, no anchor navigates, and the call still reports success. Gesture straight at a dialog or sheet as soon as its content is visible; never wait for one to settle.
+
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
 **What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Examples: nav active states from the routing bridge (`useEmberRouting`), the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
