@@ -285,6 +285,28 @@ describe("Theme settings", () => {
         await expect.element(settingsScreen.errorToast()).toHaveTextContent(/1\.0 MB/);
     });
 
+    it("falls back to the generic API error for malformed archive limit details", async () => {
+        fakeThemeWorld();
+        await fakeThemeDownload("edition");
+        fakeAdminEndpoint("POST", "/themes/upload/", {
+            errors: [{
+                message: "Zip entry exceeds maximum uncompressed size.",
+                errorType: "UnsupportedMediaTypeError",
+                code: "ENTRY_TOO_LARGE",
+                errorDetails: { entryName: "partials/huge.hbs", limitBytes: "not-a-number" },
+            }],
+        }, { status: 415 });
+        await renderAdminApp("/settings/theme/edit/edition");
+
+        const editor = await editorTextbox();
+        await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+        await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Save" }).click();
+        await settingsScreen.themeEditorConfirmModal().getByRole("button", { name: "Replace theme" }).click();
+
+        await expect.element(settingsScreen.errorToast()).toHaveTextContent("Request contains an unknown or unsupported file type.");
+        await expect.element(settingsScreen.errorToast()).not.toHaveTextContent("NaN");
+    });
+
     it("keeps the code editor open and reports blocking validation errors on save", async () => {
         fakeThemeWorld();
         await fakeThemeDownload("edition");
@@ -303,6 +325,22 @@ describe("Theme settings", () => {
         await expect.element(errorModal).toHaveTextContent("Missing default.hbs");
         await expect(errorModal.getByRole("button", { name: "Retry" })).toHaveCount(0);
         await userEvent.keyboard("{Escape}");
+        await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+        await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
+    });
+
+    it("falls back to the generic API error for an empty validation payload", async () => {
+        fakeThemeWorld();
+        await fakeThemeDownload("edition");
+        fakeAdminEndpoint("POST", "/themes/upload/", { errors: [] }, { status: 422 });
+        await renderAdminApp("/settings/theme/edit/edition");
+
+        const editor = await editorTextbox();
+        await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+        await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Save" }).click();
+        await settingsScreen.themeEditorConfirmModal().getByRole("button", { name: "Replace theme" }).click();
+
+        await expect.element(settingsScreen.errorToast()).toHaveTextContent(/Something went wrong/i);
         await expect(settingsScreen.confirmationModal()).toHaveCount(0);
         await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
     });

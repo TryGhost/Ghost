@@ -1,15 +1,32 @@
 import {type InstalledTheme, type ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
+import {z} from 'zod';
 
-type ThemeValidationErrorDetails = {
-    errors?: ThemeProblem[];
-    warnings?: ThemeProblem[];
-};
+const themeProblemSchema = z.object({
+    code: z.string(),
+    details: z.string(),
+    failures: z.array(z.object({
+        ref: z.string(),
+        message: z.string().optional(),
+        rule: z.string().optional()
+    })),
+    fatal: z.boolean(),
+    level: z.enum(['error', 'warning', 'recommendation']),
+    rule: z.string()
+});
 
-type ThemeValidationError = {
-    details: ThemeValidationErrorDetails | string;
-};
+const themeValidationErrorDetailsSchema = z.object({
+    errors: z.array(themeProblemSchema).optional(),
+    warnings: z.array(themeProblemSchema).optional()
+});
 
-export type FatalErrors = ThemeValidationError[];
+export const fatalErrorsSchema = z.array(z.object({
+    details: z.union([themeValidationErrorDetailsSchema, z.string().trim().min(1)])
+}));
+
+type ThemeValidationErrorDetails = z.infer<typeof themeValidationErrorDetailsSchema>;
+type ThemeValidationError = z.infer<typeof fatalErrorsSchema>[number];
+
+export type FatalErrors = z.infer<typeof fatalErrorsSchema>;
 
 type IssueSummary = {
     blockingProblems: ThemeProblem[];
@@ -45,6 +62,17 @@ export function getIssuesFromFatalErrors(fatalErrors: FatalErrors = []): IssueSu
     });
 
     return {blockingProblems, secondaryProblems, stringErrors};
+}
+
+export function parseFatalErrors(data: unknown): FatalErrors | null {
+    const parsed = fatalErrorsSchema.safeParse(data);
+
+    if (!parsed.success) {
+        return null;
+    }
+
+    const {blockingProblems, stringErrors} = getIssuesFromFatalErrors(parsed.data);
+    return blockingProblems.length > 0 || stringErrors.length > 0 ? parsed.data : null;
 }
 
 export function getIssuesFromInstalledTheme(installedTheme: InstalledTheme): ThemeProblem[] {

@@ -6,6 +6,7 @@ import ThemeEditorInputModal from './theme-editor-input-modal';
 import ThemeEditorToolbar from './theme-editor-toolbar';
 import ThemeFileTree from './theme-file-tree';
 import ThemeInstalledModal, {type ThemeInstalledModalProps} from './theme-installed-modal';
+import {parseFatalErrors} from './theme-validation-issues';
 import {TextWrap, Undo2} from 'lucide-react';
 import {
     cloneThemeFiles,
@@ -18,7 +19,7 @@ import {
     normaliseRelativePath,
     packThemeArchive
 } from './theme-editor-utils';
-import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
+import {APIError, JSONError, UnsupportedMediaTypeError} from '@tryghost/admin-x-framework/errors';
 import {apiUrl} from '@tryghost/admin-x-framework/helpers';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {search} from '@codemirror/search';
@@ -28,6 +29,7 @@ import {useBrowseThemes, useUploadTheme} from '@tryghost/admin-x-framework/api/t
 import {useFetchApi, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {z} from 'zod';
 import type {SelectedNode} from './theme-file-tree';
 import type {ThemeEditorConfirmModalProps} from './theme-editor-confirm-modal';
 import type {ThemeEditorFile} from './theme-editor-utils';
@@ -174,16 +176,6 @@ const wouldRenameBinaryFileToEditable = (file: ThemeEditorFile, nextPath: string
 // stripping on Windows when the archive is later unzipped.
 const THEME_NAME_PATTERN = /^[a-z0-9][\w-]{0,63}$/;
 
-type UploadSizeLimitError = {
-    message?: string;
-    code?: string;
-    errorDetails?: {
-        entryName?: string;
-        observedBytes?: number;
-        limitBytes?: number;
-    };
-};
-
 type ThemeEditorDialogRequest = {
     type: 'confirmation';
     props: ThemeEditorConfirmModalProps;
@@ -194,11 +186,28 @@ type ThemeEditorDialogRequest = {
     resolve: (result: string | null) => void;
 };
 
-const UPLOAD_SIZE_LIMIT_TITLES: Record<string, string> = {
+const UPLOAD_SIZE_LIMIT_CODES = ['COMPRESSED_TOO_LARGE', 'ENTRY_TOO_LARGE', 'TOTAL_TOO_LARGE'] as const;
+
+const UPLOAD_SIZE_LIMIT_TITLES: Record<typeof UPLOAD_SIZE_LIMIT_CODES[number], string> = {
     COMPRESSED_TOO_LARGE: 'Theme too large to upload',
     ENTRY_TOO_LARGE: 'File too large',
     TOTAL_TOO_LARGE: 'Theme contents too large'
 };
+
+const uploadSizeLimitErrorSchema = z.object({
+    message: z.string().optional(),
+    code: z.enum(UPLOAD_SIZE_LIMIT_CODES),
+    errorDetails: z.object({
+        entryName: z.string().optional(),
+        limitBytes: z.number().positive().finite().optional()
+    }).optional()
+});
+
+const uploadSizeLimitResponseSchema = z.object({
+    errors: z.array(uploadSizeLimitErrorSchema).min(1)
+});
+
+type UploadSizeLimitError = z.infer<typeof uploadSizeLimitErrorSchema>;
 
 const formatLimitBytes = (bytes: number | undefined) => {
     if (!bytes || bytes <= 0) {
@@ -213,8 +222,8 @@ const formatLimitBytes = (bytes: number | undefined) => {
 
 // Size-limit failures are 415s, which the fetch layer surfaces as an
 // UnsupportedMediaTypeError carrying the raw response text
-const getUploadSizeLimitError = (error: unknown): (UploadSizeLimitError & {code: string}) | null => {
-    if (!(error instanceof APIError)) {
+const getUploadSizeLimitError = (error: unknown): UploadSizeLimitError | null => {
+    if (!(error instanceof UnsupportedMediaTypeError)) {
         return null;
     }
 
@@ -228,10 +237,10 @@ const getUploadSizeLimitError = (error: unknown): (UploadSizeLimitError & {code:
         }
     }
 
-    const serverError = (data as {errors?: UploadSizeLimitError[]} | undefined)?.errors?.[0];
+    const parsed = uploadSizeLimitResponseSchema.safeParse(data);
 
-    if (serverError?.code && UPLOAD_SIZE_LIMIT_TITLES[serverError.code]) {
-        return serverError as UploadSizeLimitError & {code: string};
+    if (parsed.success) {
+        return parsed.data.errors[0] ?? null;
     }
 
     return null;
@@ -838,9 +847,13 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 toast.success('Theme saved', {description: <div><span className='capitalize'>{uploadedTheme.name}</span> has been updated.</div>});
             }
         } catch (error) {
-            if (error instanceof JSONError && error.response?.status === 422 && error.data?.errors) {
-                setSaveErrors(error.data.errors as unknown as FatalErrors);
-                return;
+            if (error instanceof JSONError && error.response?.status === 422) {
+                const fatalErrors = parseFatalErrors(error.data?.errors);
+
+                if (fatalErrors) {
+                    setSaveErrors(fatalErrors);
+                    return;
+                }
             }
 
             const sizeLimitError = getUploadSizeLimitError(error);
