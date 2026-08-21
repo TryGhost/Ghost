@@ -1,13 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { page } from "vitest/browser";
 
 import { currentRoute, fakeAnalyticsOverview, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
 import { fakeStaffWorld } from "./general/staff.test-helpers";
 
-const flushEffects = () => new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
-});
+const markDirtyAndWaitForGuard = async (markDirty: () => Promise<unknown>) => {
+    const addEventListener = vi.spyOn(window, "addEventListener");
+    try {
+        await markDirty();
+        await expect.poll(() => addEventListener.mock.calls.some(([type]) => type === "beforeunload")).toBe(true);
+    } finally {
+        addEventListener.mockRestore();
+    }
+};
 
 // Settings navigations are real router pushes; these specs pin the history
 // semantics the router swap introduced.
@@ -34,10 +40,10 @@ describe("Settings navigation history", () => {
         const modal = settingsScreen.userDetailModal();
         await expect.element(modal).toBeVisible();
         await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
-        await modal.getByLabelText("Location").fill("Somewhere new");
         // The dirty flag reaches the history blocker through passive effects
-        // (dialog → global dirty state → guard re-render); let them flush.
-        await flushEffects();
+        // (dialog → global dirty state → guard re-render). The unload guard is
+        // enabled by the same state, so it is an observable readiness signal.
+        await markDirtyAndWaitForGuard(() => modal.getByLabelText("Location").fill("Somewhere new"));
 
         window.history.back();
 
@@ -64,8 +70,7 @@ describe("Settings navigation history", () => {
 
         window.history.back();
         await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
-        await modal.getByLabelText("Location").fill("Somewhere new");
-        await flushEffects();
+        await markDirtyAndWaitForGuard(() => modal.getByLabelText("Location").fill("Somewhere new"));
 
         window.history.forward();
 
@@ -89,8 +94,7 @@ describe("Settings navigation history", () => {
         await settingsScreen.users().getByTestId("owner-user").click();
         const modal = settingsScreen.userDetailModal();
         await expect.element(modal).toBeVisible();
-        await modal.getByLabelText("Location").fill("Somewhere new");
-        await flushEffects();
+        await markDirtyAndWaitForGuard(() => modal.getByLabelText("Location").fill("Somewhere new"));
 
         window.history.back();
 
@@ -105,10 +109,9 @@ describe("Settings navigation history", () => {
         await renderAdminApp(`/settings/staff/${currentUser.slug}`, {boot});
 
         const modal = settingsScreen.userDetailModal();
-        await modal.getByLabelText("Location").fill("Somewhere new");
+        await markDirtyAndWaitForGuard(() => modal.getByLabelText("Location").fill("Somewhere new"));
         await modal.getByRole("tab", { name: "Social Links" }).click();
         await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}/social-links`);
-        await flushEffects();
 
         window.history.back();
 
