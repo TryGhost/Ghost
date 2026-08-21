@@ -317,6 +317,12 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         snippets,
         createSnippet,
         deleteSnippet,
+        openArtifact: searchParams.get('artifactBuilderResult') === 'saved' ? async ({artifact}) => ({
+            ...artifact,
+            title: 'Saved calculator',
+            description: 'A calculator saved by Builder',
+            html: '<!doctype html><html><head><title>Saved calculator</title></head><body><output>42</output></body></html>'
+        }) : defaultCardConfig.openArtifact,
         feature: {
             ...defaultCardConfig.feature,
             transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor

@@ -15,6 +15,67 @@ test.describe('Artifact card', function () {
         await expect(card.getByRole('button', {name: 'Create artifact'})).toBeVisible();
     });
 
+    test('applies the Builder result to the originating card', async function ({page}) {
+        await initialize({page, uri: '/#/?content=false&artifactBuilderResult=saved'});
+        await page.evaluate(() => {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        artifactVersion: 1,
+                        description: 'The first card must stay unchanged.',
+                        html: '<!doctype html><html><head><title>First artifact</title></head><body>First</body></html>',
+                        id: 'first-artifact',
+                        title: 'First artifact',
+                        type: 'artifact',
+                        version: 1
+                    }, {
+                        artifactVersion: 1,
+                        description: '',
+                        html: '',
+                        id: 'second-artifact',
+                        title: '',
+                        type: 'artifact',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editor = window.lexicalEditor;
+            editor.setEditorState(editor.parseEditorState(serializedState));
+        });
+
+        await page.getByRole('button', {name: 'Create artifact'}).click();
+
+        const cards = page.locator('[data-kg-card="artifact"]');
+        const card = cards.nth(1);
+        await expect(card.locator('iframe[title="Saved calculator"]')).toBeVisible();
+        await expect(card.getByText('A calculator saved by Builder')).toBeVisible();
+        await expect.poll(() => page.evaluate(() => {
+            return window.lexicalEditor.getEditorState().toJSON().root.children;
+        })).toEqual([{
+            artifactVersion: 1,
+            description: 'The first card must stay unchanged.',
+            html: '<!doctype html><html><head><title>First artifact</title></head><body>First</body></html>',
+            id: 'first-artifact',
+            title: 'First artifact',
+            type: 'artifact',
+            version: 1
+        }, {
+            artifactVersion: 1,
+            description: 'A calculator saved by Builder',
+            html: '<!doctype html><html><head><title>Saved calculator</title></head><body><output>42</output></body></html>',
+            id: 'second-artifact',
+            title: 'Saved calculator',
+            type: 'artifact',
+            version: 1
+        }]);
+    });
+
     test('shows a sandboxed preview and edit action for saved content', async function ({page}) {
         await initialize({page});
         await page.evaluate(() => {
