@@ -227,6 +227,12 @@ describe("Theme settings", () => {
         await expect.element(installedModal).toHaveTextContent("mytheme was uploaded, but it has some issues. Do you want to activate it?");
         await expect.element(installedModal).toHaveTextContent("1 error, 2 warnings");
 
+        // A summary that says "error" can't be headed by a warning-coloured
+        // icon: it takes the same red as the ERROR badge in the list below.
+        const heading = installedModal.element().querySelector("h3")!;
+        const badge = installedModal.getByText("Error", { exact: true }).element();
+        expect(getComputedStyle(heading.querySelector("svg")!).color).toBe(getComputedStyle(badge).color);
+
         // Every issue is listed up front; each one expands on its own.
         await expect(installedModal.getByRole("button", { name: /GS001-DEPR-PURL/ })).toHaveCount(1);
         await expect(installedModal.getByText(/deprecated/)).toHaveCount(0);
@@ -354,6 +360,52 @@ describe("Theme settings", () => {
         await expect.element(settingsScreen.errorToast()).toHaveTextContent("Theme activation failed");
         await expect.poll(currentRoute).toBe("/settings/design/change-theme");
         expect(activateApi.requests).toHaveLength(1);
+    });
+
+    it("seats the sticky footer against the issue list without an empty band", async () => {
+        fakeThemeWorld();
+        fakeAdminEndpoint("POST", "/themes/upload/", {
+            themes: [
+                theme({
+                    name: "mytheme",
+                    errors: [themeProblem({ code: "GS005-TPL-ERR", level: "error", rule: "Templates must contain valid Handlebars" })],
+                    // Enough rows that the dialog scrolls, so the footer both
+                    // floats mid-scroll and lands in flow at the bottom.
+                    warnings: Array.from({ length: 8 }, (_, index) => themeProblem({ code: `GS10${index}-DEPR-PURL` })),
+                }),
+            ],
+        });
+        const buffer = await archiveBuffer();
+        await renderAdminApp("/settings/design/change-theme");
+
+        await settingsScreen.themeModal().getByRole("button", { name: "Upload theme" }).click();
+        await uploadThemeFile(new File([buffer], "mytheme.zip", { type: "application/zip" }));
+        stageLegacyGhostCss(LEGACY_CODE_CSS);
+
+        const dialog = settingsScreen.confirmationModal();
+        await expect.element(dialog).toHaveTextContent("1 error, 8 warnings");
+
+        const scroller = dialog.element() as HTMLElement;
+        const list = scroller.querySelector<HTMLElement>("div.overflow-hidden.rounded-lg.border")!;
+        // The footer's own background: `sticky bottom-0`, 84px tall, and the
+        // only thing standing between scrolling rows and the buttons.
+        const mask = scroller.querySelector<HTMLElement>(".z-\\[299\\]")!;
+        expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
+        expect(getComputedStyle(mask).backgroundColor).not.toMatch(/rgba\(.*, 0\)$/);
+
+        // Mid-scroll the mask is pinned to the bottom of the scroll port and
+        // rows run underneath it rather than showing through.
+        scroller.scrollTop = Math.floor((scroller.scrollHeight - scroller.clientHeight) / 2);
+        await expect.poll(() => Math.round(mask.getBoundingClientRect().bottom)).toBe(Math.round(scroller.getBoundingClientRect().bottom));
+        await expect.poll(() => Math.round(mask.getBoundingClientRect().height)).toBe(84);
+        expect(list.getBoundingClientRect().bottom).toBeGreaterThan(mask.getBoundingClientRect().top);
+
+        // Scrolled to the end the footer returns to flow, and the list has to
+        // end exactly where the footer's background begins — the 24px spacer
+        // the component opens with would read as an empty band here.
+        scroller.scrollTop = scroller.scrollHeight;
+        await expect.poll(() => Math.round(mask.getBoundingClientRect().bottom)).toBe(Math.round(scroller.getBoundingClientRect().bottom));
+        await expect.poll(() => Math.round(mask.getBoundingClientRect().top - list.getBoundingClientRect().bottom)).toBe(0);
     });
 
     it("reports blocking upload errors and re-opens the upload dialog from the error dialog", async () => {
