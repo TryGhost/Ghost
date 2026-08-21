@@ -1,4 +1,4 @@
-const sinon = require('sinon');
+import * as sinon from 'sinon';
 
 /**
  * Pin the system clock to `now` for deterministic time-based assertions while
@@ -10,12 +10,7 @@ const sinon = require('sinon');
  *
  * Returns the sinon clock — `clock.tick()`/`clock.tickAsync()` advance time;
  * `clock.restore()` (or `sinon.restore()`) undoes it.
- *
- * @param {Date|number} [now] initial time (defaults to the real current time)
- * @returns {import('sinon').SinonFakeTimers}
  */
-function mockSystemTime(now = Date.now()) {
+export function mockSystemTime(now = Date.now()) {
   return sinon.useFakeTimers({ now, toFake: ['Date'] });
 }
-
-module.exports = { mockSystemTime };
