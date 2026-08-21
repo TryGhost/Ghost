@@ -192,6 +192,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
 
     setInstalledModal({
       title: 'Upload successful',
+      action: 'uploaded',
       installedTheme: data.themes[0],
       onActivate,
     });
@@ -531,6 +532,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
 
       setInstalledModal({
         title,
+        action: 'installed',
         statusMessage,
         installedTheme: installedTheme!,
         onActivate: () => {

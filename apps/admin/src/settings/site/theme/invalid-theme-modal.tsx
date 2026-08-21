@@ -45,7 +45,10 @@ const InvalidThemeModal: React.FC<InvalidThemeModalProps & { onClose: () => void
             the errors below and try again.
           </p>
 
+          {/* What actually stopped the action, told apart from the errors
+                        merely reported underneath it. */}
           <ValidationProblemList
+            errorLabel="Blocking"
             messages={stringErrors}
             problems={blockingProblems}
             expandedByDefault

@@ -907,6 +907,7 @@ const ThemeCodeEditorModal: React.FC<{ themeName: string }> = ({ themeName }) =>
       if (isSaveAs || problems.length) {
         setInstalledModal({
           title: isSaveAs ? 'Theme saved' : 'Theme updated',
+          action: 'saved',
           statusMessage: (
             <>
               <strong>{uploadedTheme.name}</strong> was {describeThemeOutcome('saved', problems)}.

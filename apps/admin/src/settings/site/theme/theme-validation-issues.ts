@@ -116,6 +116,15 @@ export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
 }
 
 /**
+ * Whether a set of problems contains anything Ghost displays as an error. The
+ * single answer to that question: copy, badges and button labels all read it,
+ * so none of them can classify a set differently from the list beside them.
+ */
+export function hasErrorProblem(problems: ThemeProblem[]): boolean {
+  return problems.some((problem) => getDisplaySeverity(problem) === 'Error');
+}
+
+/**
  * Completes "<theme> was ..." for a theme that installed successfully but may
  * carry non-blocking problems. `errors` and `warnings` are merged by
  * `getIssuesFromInstalledTheme`, so the phrase has to look at the levels
@@ -127,7 +136,5 @@ export function describeThemeOutcome(action: string, problems: ThemeProblem[]): 
     return `${action} successfully`;
   }
 
-  const hasError = problems.some((problem) => getDisplaySeverity(problem) === 'Error');
-
-  return `${action}, but it has some ${hasError ? 'issues' : 'warnings'}`;
+  return `${action}, but it has some ${hasErrorProblem(problems) ? 'issues' : 'warnings'}`;
 }
