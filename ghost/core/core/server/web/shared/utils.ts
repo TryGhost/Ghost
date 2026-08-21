@@ -1,6 +1,6 @@
-const url = require('url');
+import * as url from 'node:url';
 
-function removeDoubleCharacters(character, string) {
+function removeDoubleCharacters(character: string, string: string) {
   const stringArray = string.split('');
 
   return stringArray.reduce((newString, currentCharacter, index) => {
@@ -12,7 +12,7 @@ function removeDoubleCharacters(character, string) {
   }, '');
 }
 
-module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(urlString) {
+export function removeOpenRedirectFromUrl(urlString: string): string {
   const parsedUrl = url.parse(urlString);
 
   return (
@@ -20,7 +20,7 @@ module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(ur
     (parsedUrl.protocol ? parsedUrl.protocol + '//' : '') +
     (parsedUrl.auth || '') +
     (parsedUrl.host || '') +
-    removeDoubleCharacters('/', parsedUrl.path) +
+    removeDoubleCharacters('/', parsedUrl.path ?? '') +
     (parsedUrl.hash || '')
   );
-};
+}
