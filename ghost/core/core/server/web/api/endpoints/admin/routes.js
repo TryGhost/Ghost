@@ -30,9 +30,27 @@ module.exports = function apiRoutes() {
   // Two-stage rate limit: per-IP before auth (loose, defense in
   // depth against unauthenticated DoS), per-user after auth (tight,
   // catches a runaway authenticated client).
-  router.get('/presence/stream', shared.middleware.brute.presenceIpLimiter, mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceStream);
-  router.post('/presence/posts/:id/enter', shared.middleware.brute.presenceIpLimiter, mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceEnter);
-  router.post('/presence/posts/:id/leave', shared.middleware.brute.presenceIpLimiter, mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceLeave);
+  router.get(
+    '/presence/stream',
+    shared.middleware.brute.presenceIpLimiter,
+    mw.authAdminApi,
+    shared.middleware.brute.presenceLimiter,
+    presenceStream,
+  );
+  router.post(
+    '/presence/posts/:id/enter',
+    shared.middleware.brute.presenceIpLimiter,
+    mw.authAdminApi,
+    shared.middleware.brute.presenceLimiter,
+    presenceEnter,
+  );
+  router.post(
+    '/presence/posts/:id/leave',
+    shared.middleware.brute.presenceIpLimiter,
+    mw.authAdminApi,
+    shared.middleware.brute.presenceLimiter,
+    presenceLeave,
+  );
 
   // ## Posts
   router.get('/posts', mw.authAdminApi, http(api.posts.browse));

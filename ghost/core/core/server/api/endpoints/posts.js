@@ -42,31 +42,31 @@ const postsService = getPostServiceInstance();
  *     DTO returned by postsService.editPost (model.toJSON output)
  */
 function markPostPresence(frame, postDto) {
-    try {
-        if (!labs.isSet('editorPresence')) {
-            return;
-        }
-        if (!frame || !frame.user || !postDto || !postDto.id) {
-            return;
-        }
-        if (frame.options && frame.options.context && frame.options.context.api_key) {
-            return;
-        }
-        const authorIds = Array.isArray(postDto.authors)
-            ? postDto.authors.map(author => author && author.id).filter(Boolean)
-            : [];
-        postPresence.mark(
-            postDto.id,
-            {
-                id: frame.user.id,
-                name: frame.user.get('name'),
-                profileImage: frame.user.get('profile_image')
-            },
-            {authorIds}
-        );
-    } catch (err) {
-        logging.warn({err}, 'Failed to record post presence');
+  try {
+    if (!labs.isSet('editorPresence')) {
+      return;
     }
+    if (!frame || !frame.user || !postDto || !postDto.id) {
+      return;
+    }
+    if (frame.options && frame.options.context && frame.options.context.api_key) {
+      return;
+    }
+    const authorIds = Array.isArray(postDto.authors)
+      ? postDto.authors.map((author) => author && author.id).filter(Boolean)
+      : [];
+    postPresence.mark(
+      postDto.id,
+      {
+        id: frame.user.id,
+        name: frame.user.get('name'),
+        profileImage: frame.user.get('profile_image'),
+      },
+      { authorIds },
+    );
+  } catch (err) {
+    logging.warn({ err }, 'Failed to record post presence');
+  }
 }
 
 /**

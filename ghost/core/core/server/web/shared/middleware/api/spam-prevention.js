@@ -220,31 +220,41 @@ const webmentionsBlock = () => {
 // so a shared office IP with many staff never hits it under normal
 // use; tight enough to stop a runaway anon attacker.
 const presenceIpBlock = () => {
-    const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
-    const db = require('../../../../data/db');
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('brute-knex');
+  const db = require('../../../../data/db');
 
-    store = store || new BruteKnex({
-        tablename: 'brute',
-        createTable: false,
-        knex: db.knex
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
     });
 
-    presenceIpBlockInstance = presenceIpBlockInstance || new ExpressBrute(store,
-        extend({
-            attachResetToRequest: false,
-            failCallback(req, res, next) {
-                return next(new errors.TooManyRequestsError({
-                    message: messages.presenceIpBlock
-                }));
-            },
-            handleStoreError: handleStoreError,
-            freeRetries: 6000,
-            lifetime: 60 * 60
-        }, pick(spamPresenceIpBlock, spamConfigKeys))
+  presenceIpBlockInstance =
+    presenceIpBlockInstance ||
+    new ExpressBrute(
+      store,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.presenceIpBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+          freeRetries: 6000,
+          lifetime: 60 * 60,
+        },
+        pick(spamPresenceIpBlock, spamConfigKeys),
+      ),
     );
 
-    return presenceIpBlockInstance;
+  return presenceIpBlockInstance;
 };
 
 // Per-staff-user limiter for editor presence routes, applied AFTER
@@ -254,31 +264,41 @@ const presenceIpBlock = () => {
 // editorial usage but tight enough to cap a runaway authenticated
 // client.
 const presenceBlock = () => {
-    const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
-    const db = require('../../../../data/db');
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('brute-knex');
+  const db = require('../../../../data/db');
 
-    store = store || new BruteKnex({
-        tablename: 'brute',
-        createTable: false,
-        knex: db.knex
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
     });
 
-    presenceBlockInstance = presenceBlockInstance || new ExpressBrute(store,
-        extend({
-            attachResetToRequest: false,
-            failCallback(req, res, next) {
-                return next(new errors.TooManyRequestsError({
-                    message: messages.presenceBlock
-                }));
-            },
-            handleStoreError: handleStoreError,
-            freeRetries: 600,
-            lifetime: 60 * 60
-        }, pick(spamPresenceBlock, spamConfigKeys))
+  presenceBlockInstance =
+    presenceBlockInstance ||
+    new ExpressBrute(
+      store,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.presenceBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+          freeRetries: 600,
+          lifetime: 60 * 60,
+        },
+        pick(spamPresenceBlock, spamConfigKeys),
+      ),
     );
 
-    return presenceBlockInstance;
+  return presenceBlockInstance;
 };
 
 const emailPreviewBlock = () => {

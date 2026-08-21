@@ -6,10 +6,10 @@
 const ELEVATED_ROLES = ['Owner', 'Administrator', 'Super Editor', 'Editor'];
 
 function hasElevatedPresenceAccess(user) {
-    if (!user || typeof user.hasRole !== 'function') {
-        return false;
-    }
-    return ELEVATED_ROLES.some(role => user.hasRole(role));
+  if (!user || typeof user.hasRole !== 'function') {
+    return false;
+  }
+  return ELEVATED_ROLES.some((role) => user.hasRole(role));
 }
 
 /**
@@ -21,20 +21,20 @@ function hasElevatedPresenceAccess(user) {
  * @param {{authorIds?: string[]}} event
  */
 function canReceiveEvent(subscriber, event) {
-    if (!subscriber) {
-        return false;
-    }
-    if (subscriber.elevated) {
-        return true;
-    }
-    if (!event || !Array.isArray(event.authorIds)) {
-        return false;
-    }
-    return event.authorIds.includes(subscriber.userId);
+  if (!subscriber) {
+    return false;
+  }
+  if (subscriber.elevated) {
+    return true;
+  }
+  if (!event || !Array.isArray(event.authorIds)) {
+    return false;
+  }
+  return event.authorIds.includes(subscriber.userId);
 }
 
 module.exports = {
-    hasElevatedPresenceAccess,
-    canReceiveEvent,
-    ELEVATED_ROLES
+  hasElevatedPresenceAccess,
+  canReceiveEvent,
+  ELEVATED_ROLES,
 };

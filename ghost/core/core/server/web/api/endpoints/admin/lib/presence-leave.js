@@ -7,18 +7,18 @@ const postPresence = require('../../../../../services/post-presence');
  * error to the client.
  */
 module.exports = function presenceLeave(req, res) {
-    try {
-        if (!labs.isSet('editorPresence')) {
-            res.status(404).end();
-            return;
-        }
-        const postId = req.params && req.params.id;
-        const user = req.user;
-        if (postId && user && user.id) {
-            postPresence.leave(postId, user.id);
-        }
-    } catch (err) {
-        logging.warn({err}, 'Failed to record presence leave');
+  try {
+    if (!labs.isSet('editorPresence')) {
+      res.status(404).end();
+      return;
     }
-    res.status(204).end();
+    const postId = req.params && req.params.id;
+    const user = req.user;
+    if (postId && user && user.id) {
+      postPresence.leave(postId, user.id);
+    }
+  } catch (err) {
+    logging.warn({ err }, 'Failed to record presence leave');
+  }
+  res.status(204).end();
 };
