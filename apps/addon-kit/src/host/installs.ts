@@ -92,6 +92,9 @@ function parseManifest(value: unknown): AddonManifest {
         if (typeof manifest.editor.content?.bundle !== 'string' || manifest.editor.content.bundle.length === 0) {
             throw new Error('Manifest editor is missing its content bundle');
         }
+        if (manifest.editor.settings !== undefined && (typeof manifest.editor.settings?.bundle !== 'string' || manifest.editor.settings.bundle.length === 0)) {
+            throw new Error('Manifest editor settings is missing its bundle');
+        }
         for (const block of manifest.editor.blocks) {
             if (typeof block?.name !== 'string' || block.name.length === 0 || typeof block.label !== 'string' || block.label.length === 0) {
                 throw new Error('Manifest editor block is missing a name or label');
@@ -140,7 +143,9 @@ export function pinManifest(manifest: AddonManifest, manifestUrl: string, enable
         editor: manifest.editor ? {
             blocks: structuredClone(manifest.editor.blocks),
             contentBundleUrl: new URL(manifest.editor.content.bundle, manifestUrl).toString(),
-            integrity: manifest.editor.content.integrity
+            integrity: manifest.editor.content.integrity,
+            settingsBundleUrl: manifest.editor.settings ? new URL(manifest.editor.settings.bundle, manifestUrl).toString() : undefined,
+            settingsIntegrity: manifest.editor.settings?.integrity
         } : undefined,
         targeting: manifest.targeting.map(entry => ({
             target: entry.target as AddonTarget,
@@ -220,6 +225,7 @@ export interface InstalledEditorBlockDefinition {
     keywords?: string[];
     initialProperties?: Record<string, unknown>;
     resourceOrigins?: string[];
+    hasSettings?: boolean;
 }
 
 export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): InstalledEditorBlockDefinition[] {
@@ -235,7 +241,8 @@ export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): Insta
             description: block.description,
             keywords: block.keywords ? [...block.keywords] : undefined,
             initialProperties: block.initialProperties ? structuredClone(block.initialProperties) : undefined,
-            resourceOrigins: block.resourceOrigins ? [...block.resourceOrigins] : undefined
+            resourceOrigins: block.resourceOrigins ? [...block.resourceOrigins] : undefined,
+            hasSettings: typeof install.editor?.settingsBundleUrl === 'string' && install.editor.settingsBundleUrl.length > 0
         }));
     });
 }

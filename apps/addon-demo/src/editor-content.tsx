@@ -13,7 +13,7 @@ function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
         throw new Error(`Unknown editor block: ${blockName}`);
     }
 
-    const title = typeof props.title === 'string' ? props.title : 'Search preview ready';
+    const title = props.mode === 'custom' && typeof props.title === 'string' ? props.title : 'Search preview ready';
     const description = typeof props.description === 'string'
         ? props.description
         : 'This post has a title and description that are ready for search results.';
@@ -24,7 +24,7 @@ function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
                 <span className="seo-summary__eyebrow">SEO Assistant</span>
                 <h2>{title}</h2>
                 <SummaryDescription description={description} />
-                <span className="seo-summary__status">Looks good</span>
+                {props.showStatus !== false && <span className="seo-summary__status">Looks good</span>}
             </article>
         ),
         portableContent: (

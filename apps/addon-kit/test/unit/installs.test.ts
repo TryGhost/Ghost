@@ -21,7 +21,8 @@ const manifest: AddonManifest = {
             initialProperties: {postId: ''},
             resourceOrigins: ['https://scores.example.com']
         }],
-        content: {bundle: './editor-content.js', integrity: 'sha256-editor'}
+        content: {bundle: './editor-content.js', integrity: 'sha256-editor'},
+        settings: {bundle: './editor-settings.js', integrity: 'sha256-settings'}
     },
     targeting: [
         {target: 'admin.dashboard.card.render', bundle: './dashboard-card.js', integrity: 'sha256-abc'},
@@ -58,7 +59,9 @@ describe('pinManifest', function () {
         expect(record.editor).toEqual({
             blocks: manifest.editor?.blocks,
             contentBundleUrl: 'http://localhost:4650/editor-content.js',
-            integrity: 'sha256-editor'
+            integrity: 'sha256-editor',
+            settingsBundleUrl: 'http://localhost:4650/editor-settings.js',
+            settingsIntegrity: 'sha256-settings'
         });
     });
 
@@ -134,7 +137,8 @@ describe('getEditorBlockDefinitions', function () {
             description: 'Show a durable SEO score card',
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
-            resourceOrigins: ['https://scores.example.com']
+            resourceOrigins: ['https://scores.example.com'],
+            hasSettings: true
         }]);
         expect(getEditorBlockDefinitions([{...record, enabled: false}])).toEqual([]);
     });

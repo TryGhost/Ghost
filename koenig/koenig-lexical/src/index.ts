@@ -55,7 +55,7 @@ import DEFAULT_NODES from './nodes/DefaultNodes';
 import EMAIL_EDITOR_NODES from './nodes/EmailEditorNodes';
 import EMAIL_NODES from './nodes/EmailNodes';
 import MINIMAL_NODES from './nodes/MinimalNodes';
-import {AddonNode, INSERT_ADDON_COMMAND} from './nodes/AddonNode';
+import {AddonNode, INSERT_ADDON_COMMAND, UPDATE_ADDON_COMMAND} from './nodes/AddonNode';
 
 /* Transformers */
 import {
@@ -126,6 +126,7 @@ export {
     DEFAULT_NODES,
     AddonNode,
     INSERT_ADDON_COMMAND,
+    UPDATE_ADDON_COMMAND,
     BASIC_NODES,
     EMAIL_EDITOR_NODES,
     EMAIL_NODES,

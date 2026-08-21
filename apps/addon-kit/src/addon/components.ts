@@ -1,6 +1,5 @@
 import {createRemoteComponent, type RemoteComponentTypeFromElementConstructor} from '@remote-dom/preact';
-import type {RemoteConnection} from '@remote-dom/core/elements';
-import {GhostMutationMirror} from './mutation-mirror.ts';
+import {registerGhostConnectionHook} from './connect.ts';
 import {
     GhBadgeElement,
     GhButtonElement,
@@ -18,16 +17,8 @@ import {
 
 registerGhostElements();
 
-// The mirror MUST come from the same @remote-dom/core copy as the element
-// definitions — remote-dom wires connections through module-internal state, so
-// a second copy (e.g. one bundled into the bootstrap) would deliver structure
-// but silently drop event listeners and property updates. The authoring
-// package owns both; the bootstrap only passes the connection through.
-(globalThis as Record<string, unknown>).__ghostAddonConnect = (connection: RemoteConnection, root: Node) => {
-    const mirror = new GhostMutationMirror(connection);
-    mirror.observe(root);
-    return mirror;
-};
+// The authoring bundle owns both RemoteElements and their mutation mirror.
+registerGhostConnectionHook();
 
 /**
  * Preact components over the `gh-*` vocabulary. Add-on authors render these;

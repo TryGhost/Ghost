@@ -1,5 +1,8 @@
 import {AddonSandboxController} from './sandbox-controller.ts';
 import {getEditorBlockDefinitions} from './installs.ts';
+import {RemoteReceiver} from '@remote-dom/core/receivers';
+import {release, retain} from '@quilted/threads';
+import type {RemoteConnection} from '@remote-dom/core/elements';
 import type {
     AddonEditorBlockRenderOutput,
     AddonEditorBlockRequest,
@@ -13,24 +16,49 @@ export interface AddonEditorRenderRequest extends AddonEditorBlockRequest {
 export interface AddonEditorBlocksConfig {
     blocks: ReturnType<typeof getEditorBlockDefinitions>;
     renderBlock(request: AddonEditorRenderRequest): Promise<AddonEditorBlockRenderOutput>;
+    createSettingsSurface?(request: AddonEditorSettingsSurfaceRequest): AddonEditorSettingsSurface;
+}
+
+export interface AddonEditorSettingsSurfaceRequest extends AddonEditorRenderRequest {
+    onPatch(patch: Record<string, unknown>): Promise<void>;
+}
+
+export interface AddonEditorSettingsSurface {
+    receiver: unknown;
+    ready: Promise<void>;
+    updateProps(props: Record<string, unknown>): Promise<void>;
+    destroy(): void;
 }
 
 interface EditorBlockController {
-    start(options: {staticExecution: true}): Promise<void>;
+    start(options?: {staticExecution?: boolean}): Promise<void>;
     loadBundle(options: {url: string; integrity?: string}): Promise<void>;
     renderBlock(options: {
         bundleUrl: string;
         request: AddonEditorBlockRequest;
     }): Promise<AddonEditorBlockRenderOutput>;
+    renderSettings(options: {
+        bundleUrl: string;
+        connection: RemoteConnection;
+        request: AddonEditorBlockRequest;
+        proposePatch: (patch: Record<string, unknown>) => Promise<void>;
+    }): Promise<void>;
+    updateSettingsProps(props: Record<string, unknown>): Promise<void>;
     destroy(): void;
+}
+
+interface EditorSettingsReceiver {
+    connection: RemoteConnection;
 }
 
 interface AddonEditorBlocksDependencies {
     createController(): EditorBlockController;
+    createReceiver(): EditorSettingsReceiver;
 }
 
 const defaultDependencies: AddonEditorBlocksDependencies = {
-    createController: () => new AddonSandboxController()
+    createController: () => new AddonSandboxController(),
+    createReceiver: () => new RemoteReceiver({retain, release})
 };
 
 /**
@@ -40,8 +68,9 @@ const defaultDependencies: AddonEditorBlocksDependencies = {
  */
 export function createAddonEditorBlocksConfig(
     installs: AddonInstallRecord[],
-    dependencies: AddonEditorBlocksDependencies = defaultDependencies
+    dependencies: Partial<AddonEditorBlocksDependencies> = defaultDependencies
 ): AddonEditorBlocksConfig {
+    const resolvedDependencies = {...defaultDependencies, ...dependencies};
     const blocks = getEditorBlockDefinitions(installs);
 
     return {
@@ -54,7 +83,7 @@ export function createAddonEditorBlocksConfig(
                 throw new Error(`Add-on editor block "${addonHandle}/${blockName}" is not declared`);
             }
 
-            const controller = dependencies.createController();
+            const controller = resolvedDependencies.createController();
             try {
                 await controller.start({staticExecution: true});
                 await controller.loadBundle({
@@ -68,6 +97,40 @@ export function createAddonEditorBlocksConfig(
             } finally {
                 controller.destroy();
             }
+        },
+        createSettingsSurface({addonHandle, blockName, props, onPatch}) {
+            const block = blocks.find(candidate => candidate.addonHandle === addonHandle && candidate.blockName === blockName);
+            const install = installs.find(candidate => candidate.enabled && candidate.handle === addonHandle);
+            const editor = install?.editor;
+            const bundleUrl = editor?.settingsBundleUrl;
+            if (!block?.hasSettings || typeof bundleUrl !== 'string' || bundleUrl.length === 0) {
+                throw new Error(`Add-on editor block "${addonHandle}/${blockName}" has no settings bundle`);
+            }
+
+            const controller = resolvedDependencies.createController();
+            const receiver = resolvedDependencies.createReceiver();
+            const ready = (async () => {
+                await controller.start();
+                await controller.loadBundle({url: bundleUrl, integrity: editor?.settingsIntegrity});
+                await controller.renderSettings({
+                    bundleUrl,
+                    connection: receiver.connection,
+                    request: {blockName, props: structuredClone(props)},
+                    proposePatch: patch => onPatch(structuredClone(patch))
+                });
+            })();
+
+            return {
+                receiver,
+                ready,
+                async updateProps(nextProps) {
+                    await ready;
+                    await controller.updateSettingsProps(structuredClone(nextProps));
+                },
+                destroy() {
+                    controller.destroy();
+                }
+            };
         }
     };
 }

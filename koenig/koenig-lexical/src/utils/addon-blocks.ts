@@ -9,6 +9,7 @@ export interface AddonBlockDefinition {
     keywords?: string[];
     initialProperties?: Record<string, unknown>;
     resourceOrigins?: string[];
+    hasSettings?: boolean;
 }
 
 export interface AddonBlockRenderRequest {
@@ -28,6 +29,18 @@ export interface AddonBlocksConfig {
     blocks: AddonBlockDefinition[];
     renderBlock?: (request: AddonBlockRenderRequest) => Promise<AddonBlockRenderOutput>;
     createId?: () => string;
+    createSettingsSurface?: (request: AddonSettingsSurfaceRequest) => AddonSettingsSurface;
+}
+
+export interface AddonSettingsSurfaceRequest extends AddonBlockRenderRequest {
+    onPatch: (patch: Record<string, unknown>) => Promise<void>;
+}
+
+export interface AddonSettingsSurface {
+    receiver: unknown;
+    ready: Promise<void>;
+    updateProps: (props: Record<string, unknown>) => Promise<void>;
+    destroy: () => void;
 }
 
 export function buildAddonNodeData(

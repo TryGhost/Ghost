@@ -1,6 +1,6 @@
 import KoenigComposerContext, {defaultKoenigComposerContext} from '../../src/context/KoenigComposerContext';
 import {$createParagraphNode, $createTextNode, $getRoot, COMMAND_PRIORITY_LOW} from 'lexical';
-import {$isAddonNode, AddonNode, INSERT_ADDON_COMMAND} from '../../src/nodes/AddonNode';
+import {$isAddonNode, AddonNode, INSERT_ADDON_COMMAND, UPDATE_ADDON_COMMAND} from '../../src/nodes/AddonNode';
 import {AddonPlugin} from '../../src/plugins/AddonPlugin';
 import {INSERT_CARD_COMMAND} from '../../src/plugins/KoenigBehaviourPlugin';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
@@ -218,6 +218,125 @@ describe('AddonPlugin', function () {
 
         await waitFor(() => {
             editor.getEditorState().read(() => expect($getRoot().getChildren().some($isAddonNode)).toBe(false));
+        });
+    });
+
+    it('commits properties and regenerated snapshots atomically and ignores stale responses', async function () {
+        const pending = [];
+        const renderBlock = vi.fn()
+            .mockResolvedValueOnce({html: '<article>Initial</article>', initialHeight: 120})
+            .mockImplementation(() => new Promise((resolve, reject) => pending.push({resolve, reject})));
+        let editor;
+
+        render(
+            <KoenigComposerContext.Provider value={{
+                ...defaultKoenigComposerContext,
+                cardConfig: {
+                    addons: {
+                        blocks: [{addonHandle: 'transistor', blockName: 'episode-player', label: 'Episode'}],
+                        createId: () => 'block-settings',
+                        renderBlock
+                    }
+                }
+            }}>
+                <LexicalComposer initialConfig={{
+                    namespace: 'addon-plugin-settings-test',
+                    nodes: [AddonNode],
+                    onError(error) {
+                        throw error;
+                    }
+                }}>
+                    <AddonPlugin />
+                    <EditorHarness onEditor={(value) => {
+                        editor = value;
+                    }} />
+                </LexicalComposer>
+            </KoenigComposerContext.Provider>
+        );
+
+        await waitFor(() => expect(editor).toBeDefined());
+        act(() => {
+            editor.dispatchCommand(INSERT_ADDON_COMMAND, {
+                addonHandle: 'transistor',
+                blockName: 'episode-player',
+                label: 'Episode',
+                initialProperties: {title: 'Initial'}
+            });
+        });
+        let nodeKey;
+        await waitFor(() => {
+            editor.getEditorState().read(() => {
+                const node = $getRoot().getChildren().find($isAddonNode);
+                nodeKey = node?.getKey();
+                expect(node?.html).toBe('<article>Initial</article>');
+            });
+        });
+
+        act(() => {
+            editor.dispatchCommand(UPDATE_ADDON_COMMAND, {nodeKey, patch: {title: 'First'}});
+            editor.dispatchCommand(UPDATE_ADDON_COMMAND, {nodeKey, patch: {title: 'Latest'}});
+        });
+        await waitFor(() => expect(pending).toHaveLength(2));
+        expect(renderBlock).toHaveBeenNthCalledWith(2, {
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            props: {title: 'First'}
+        });
+        expect(renderBlock).toHaveBeenNthCalledWith(3, {
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            props: {title: 'Latest'}
+        });
+
+        await act(async () => {
+            pending[1].resolve({html: '<article>Latest</article>', portableHtml: '<p>Latest</p>'});
+            pending[0].resolve({html: '<article>Stale</article>', portableHtml: '<p>Stale</p>'});
+        });
+        await waitFor(() => {
+            editor.getEditorState().read(() => {
+                const node = $getRoot().getChildren().find($isAddonNode);
+                expect(node?.props).toEqual({title: 'Latest'});
+                expect(node?.html).toBe('<article>Latest</article>');
+                expect(node?.portableHtml).toBe('<p>Latest</p>');
+            });
+        });
+
+        act(() => {
+            editor.dispatchCommand(UPDATE_ADDON_COMMAND, {nodeKey, patch: {title: 'Broken'}});
+        });
+        await waitFor(() => expect(pending).toHaveLength(3));
+        await act(async () => pending[2].reject(new Error('render failed')));
+        await waitFor(() => {
+            editor.getEditorState().read(() => {
+                const node = $getRoot().getChildren().find($isAddonNode);
+                expect(node?.props).toEqual({title: 'Latest'});
+                expect(node?.html).toBe('<article>Latest</article>');
+            });
+        });
+
+        act(() => {
+            editor.dispatchCommand(UPDATE_ADDON_COMMAND, {nodeKey, patch: {mode: 'custom'}});
+        });
+        await waitFor(() => expect(pending).toHaveLength(4));
+        act(() => {
+            editor.update(() => {
+                const node = $getRoot().getChildren().find($isAddonNode);
+                if (node) {
+                    node.props = {title: 'Restored by undo'};
+                    node.html = '<article>Restored by undo</article>';
+                }
+            });
+        });
+        await act(async () => pending[3].resolve({html: '<article>Invalidated</article>'}));
+
+        act(() => {
+            editor.dispatchCommand(UPDATE_ADDON_COMMAND, {nodeKey, patch: {showStatus: false}});
+        });
+        await waitFor(() => expect(pending).toHaveLength(5));
+        expect(renderBlock).toHaveBeenNthCalledWith(6, {
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            props: {title: 'Restored by undo', showStatus: false}
         });
     });
 });

@@ -17,6 +17,7 @@
         },
         "./addon": "./src/addon/index.ts",
         "./editor": "./src/editor/index.ts",
+        "./editor-settings": "./src/editor-settings/index.ts",
         "./bootstrap": {
             "types": "./dist/bootstrap.d.mts",
             "default": "./dist/bootstrap.mjs"

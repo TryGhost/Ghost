@@ -12,7 +12,9 @@ const install: AddonInstallRecord = {
     editor: {
         blocks: [{name: 'episode-player', label: 'Transistor episode'}],
         contentBundleUrl: 'https://podcasts.example/editor.js',
-        integrity: 'sha256-pinned'
+        integrity: 'sha256-pinned',
+        settingsBundleUrl: 'https://podcasts.example/settings.js',
+        settingsIntegrity: 'sha256-settings'
     },
     targeting: []
 };
@@ -28,6 +30,8 @@ describe('createAddonEditorBlocksConfig', function () {
                 css: '',
                 initialHeight: 240
             }),
+            renderSettings: vi.fn().mockResolvedValue(undefined),
+            updateSettingsProps: vi.fn().mockResolvedValue(undefined),
             destroy: vi.fn()
         };
         const config = createAddonEditorBlocksConfig([install], {
@@ -41,7 +45,8 @@ describe('createAddonEditorBlocksConfig', function () {
             description: undefined,
             keywords: undefined,
             initialProperties: undefined,
-            resourceOrigins: undefined
+            resourceOrigins: undefined,
+            hasSettings: true
         }]);
 
         await expect(config.renderBlock({
@@ -63,6 +68,53 @@ describe('createAddonEditorBlocksConfig', function () {
             bundleUrl: 'https://podcasts.example/editor.js',
             request: {blockName: 'episode-player', props: {episodeId: '123'}}
         });
+        expect(controller.destroy).toHaveBeenCalledOnce();
+    });
+
+    it('creates a long-lived remote settings surface for one block', async function () {
+        const receiver = {connection: {mutate: vi.fn(), call: vi.fn()}};
+        const controller = {
+            start: vi.fn().mockResolvedValue(undefined),
+            loadBundle: vi.fn().mockResolvedValue(undefined),
+            renderBlock: vi.fn(),
+            renderSettings: vi.fn().mockResolvedValue(undefined),
+            updateSettingsProps: vi.fn().mockResolvedValue(undefined),
+            destroy: vi.fn()
+        };
+        const onPatch = vi.fn().mockResolvedValue(undefined);
+        const config = createAddonEditorBlocksConfig([install], {
+            createController: () => controller,
+            createReceiver: () => receiver
+        });
+
+        const surface = config.createSettingsSurface!({
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            props: {episodeId: '123'},
+            onPatch
+        });
+
+        expect(surface.receiver).toBe(receiver);
+        await expect(surface.ready).resolves.toBeUndefined();
+        expect(controller.start).toHaveBeenCalledWith();
+        expect(controller.loadBundle).toHaveBeenCalledWith({
+            url: 'https://podcasts.example/settings.js',
+            integrity: 'sha256-settings'
+        });
+        expect(controller.renderSettings).toHaveBeenCalledWith({
+            bundleUrl: 'https://podcasts.example/settings.js',
+            connection: receiver.connection,
+            request: {blockName: 'episode-player', props: {episodeId: '123'}},
+            proposePatch: expect.any(Function)
+        });
+
+        const proposePatch = controller.renderSettings.mock.calls[0][0].proposePatch;
+        await proposePatch({episodeId: '456'});
+        expect(onPatch).toHaveBeenCalledWith({episodeId: '456'});
+
+        await surface.updateProps({episodeId: '456'});
+        expect(controller.updateSettingsProps).toHaveBeenCalledWith({episodeId: '456'});
+        surface.destroy();
         expect(controller.destroy).toHaveBeenCalledOnce();
     });
 

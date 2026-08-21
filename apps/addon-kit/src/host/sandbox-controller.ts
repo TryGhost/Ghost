@@ -126,6 +126,14 @@ export class AddonSandboxController {
         return this.exports.renderBlock(options);
     }
 
+    renderSettings(options: Parameters<SandboxExports['renderSettings']>[0]): Promise<void> {
+        return this.exports.renderSettings(options);
+    }
+
+    updateSettingsProps(props: Record<string, unknown>): Promise<void> {
+        return this.exports.updateSettingsProps(props);
+    }
+
     updateData(data: Parameters<SandboxExports['updateData']>[0]): Promise<void> {
         return this.exports.updateData(data);
     }

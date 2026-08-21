@@ -3915,6 +3915,9 @@ importers:
       '@prettier/sync':
         specifier: 0.6.1
         version: 0.6.1(prettier@3.9.6)
+      '@remote-dom/react':
+        specifier: 'catalog:'
+        version: 1.2.2(@preact/signals-core@1.14.4)(preact@10.29.8)(react@18.3.1)
       '@sentry/vite-plugin':
         specifier: 5.3.0
         version: 5.3.0(encoding@0.1.13)(rollup@4.62.2)(supports-color@10.2.2)

@@ -3,6 +3,7 @@ import type {RemoteConnection} from '@remote-dom/core/elements';
 import type {
     AddonDataEnvelope,
     AddonEditorContentModuleExports,
+    AddonEditorSettingsModuleExports,
     AddonModuleExports,
     GhostBridge,
     HostCapabilities,
@@ -30,10 +31,12 @@ interface BootstrapInit {
 const MODULE_GLOBAL = '__ghostAddonModule';
 
 function bootstrap({port}: BootstrapInit): void {
-    const modules = new Map<string, AddonModuleExports | AddonEditorContentModuleExports>();
+    const modules = new Map<string, AddonModuleExports | AddonEditorContentModuleExports | AddonEditorSettingsModuleExports>();
     const dataListeners = new Set<(data: AddonDataEnvelope) => void>();
     let currentData: AddonDataEnvelope | undefined;
     let rendered = false;
+    let settingsProps: Record<string, unknown> | undefined;
+    const settingsPropsListeners = new Set<(props: Record<string, unknown>) => void>();
 
     function buildGhost(data: AddonDataEnvelope, capabilities: HostCapabilities): GhostBridge {
         currentData = data;
@@ -67,7 +70,7 @@ function bootstrap({port}: BootstrapInit): void {
         };
     }
 
-    function getModule(bundleUrl: string): AddonModuleExports | AddonEditorContentModuleExports {
+    function getModule(bundleUrl: string): AddonModuleExports | AddonEditorContentModuleExports | AddonEditorSettingsModuleExports {
         const moduleExports = modules.get(bundleUrl);
         if (!moduleExports) {
             throw new Error(`Add-on bundle has not been loaded: ${bundleUrl}`);
@@ -97,7 +100,7 @@ function bootstrap({port}: BootstrapInit): void {
             delete globalScope[MODULE_GLOBAL];
             // Bundlers emitting an IIFE unwrap a lone default export to the
             // bare function; accept both that and a {default} namespace.
-            const moduleExports = (typeof raw === 'function' ? {default: raw} : raw) as AddonModuleExports | AddonEditorContentModuleExports | undefined;
+            const moduleExports = (typeof raw === 'function' ? {default: raw} : raw) as AddonModuleExports | AddonEditorContentModuleExports | AddonEditorSettingsModuleExports | undefined;
             if (typeof moduleExports?.default !== 'function') {
                 throw new Error('Add-on bundle must default-export a function');
             }
@@ -135,6 +138,46 @@ function bootstrap({port}: BootstrapInit): void {
         async renderBlock({bundleUrl, request}) {
             const moduleExports = getModule(bundleUrl) as AddonEditorContentModuleExports;
             return renderEditorBlockModule(moduleExports, request);
+        },
+
+        async renderSettings({bundleUrl, connection, request, proposePatch}) {
+            if (rendered) {
+                throw new Error('This sandbox has already rendered — one render per sandbox instance');
+            }
+            rendered = true;
+            retain(connection);
+            retain(proposePatch);
+            settingsProps = structuredClone(request.props);
+            const connect = (globalThis as Record<string, unknown>).__ghostAddonConnect as
+                ((remoteConnection: RemoteConnection, root: Node) => unknown) | undefined;
+            if (typeof connect !== 'function') {
+                throw new Error('Add-on settings bundle did not register the remote connection hook');
+            }
+            connect(connection, document.body);
+            const moduleExports = getModule(bundleUrl) as AddonEditorSettingsModuleExports;
+            await moduleExports.default({
+                blockName: request.blockName,
+                get props() {
+                    return settingsProps!;
+                },
+                async proposePatch(patch) {
+                    if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+                        throw new Error('Add-on settings patches must be objects');
+                    }
+                    await proposePatch(structuredClone(patch));
+                },
+                onPropsChange(listener) {
+                    settingsPropsListeners.add(listener);
+                    return () => settingsPropsListeners.delete(listener);
+                }
+            });
+        },
+
+        async updateSettingsProps(props) {
+            settingsProps = structuredClone(props);
+            for (const listener of settingsPropsListeners) {
+                listener(settingsProps);
+            }
         },
 
         async updateData(data) {

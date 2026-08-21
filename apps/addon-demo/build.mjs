@@ -20,11 +20,12 @@ const ENTRIES = [
 ];
 
 const EDITOR_ENTRY = {name: 'editor-content', entry: 'src/editor-content.tsx'};
+const EDITOR_SETTINGS_ENTRY = {name: 'editor-settings', entry: 'src/editor-settings.tsx'};
 
 await rm(outDir, {recursive: true, force: true});
 await mkdir(outDir, {recursive: true});
 
-for (const {name, entry} of [...ENTRIES, EDITOR_ENTRY]) {
+for (const {name, entry} of [...ENTRIES, EDITOR_ENTRY, EDITOR_SETTINGS_ENTRY]) {
     await build({
         root,
         configFile: false,
@@ -51,6 +52,8 @@ const targeting = await Promise.all(ENTRIES.map(async ({name, target}) => {
 
 const editorSource = await readFile(resolve(outDir, `${EDITOR_ENTRY.name}.js`));
 const editorIntegrity = `sha256-${createHash('sha256').update(editorSource).digest('base64')}`;
+const editorSettingsSource = await readFile(resolve(outDir, `${EDITOR_SETTINGS_ENTRY.name}.js`));
+const editorSettingsIntegrity = `sha256-${createHash('sha256').update(editorSettingsSource).digest('base64')}`;
 
 const manifest = {
     name: 'SEO Assistant (demo)',
@@ -73,16 +76,22 @@ const manifest = {
             keywords: ['search', 'preview', 'metadata'],
             initialProperties: {
                 title: 'Search preview ready',
-                description: 'This post has a title and description that are ready for search results.'
+                description: 'This post has a title and description that are ready for search results.',
+                mode: 'summary',
+                showStatus: true
             }
         }],
         content: {
             bundle: `./${EDITOR_ENTRY.name}.js`,
             integrity: editorIntegrity
+        },
+        settings: {
+            bundle: `./${EDITOR_SETTINGS_ENTRY.name}.js`,
+            integrity: editorSettingsIntegrity
         }
     },
     targeting
 };
 
 await writeFile(resolve(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`);
-console.log(`Built ${ENTRIES.length + 1} bundles + manifest.json into dist/`); // eslint-disable-line no-console
+console.log(`Built ${ENTRIES.length + 2} bundles + manifest.json into dist/`); // eslint-disable-line no-console

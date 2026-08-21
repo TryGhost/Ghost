@@ -109,6 +109,17 @@ export interface SandboxExports {
         request: AddonEditorBlockRequest;
     }): Promise<AddonEditorBlockRenderOutput>;
 
+    /** Renders a block-scoped editor settings tree through remote DOM. */
+    renderSettings(options: {
+        bundleUrl: string;
+        connection: RemoteConnection;
+        request: AddonEditorBlockRequest;
+        proposePatch: (patch: Record<string, unknown>) => Promise<void>;
+    }): Promise<void>;
+
+    /** Pushes canonical properties into a mounted settings surface. */
+    updateSettingsProps(props: Record<string, unknown>): Promise<void>;
+
     /**
      * Pushes a new data envelope into the sandbox (e.g. the dashboard range
      * changed, or the page path changed).
@@ -170,6 +181,17 @@ export interface AddonEditorContentModuleExports {
     default(request: AddonEditorBlockRequest): AddonEditorBlockRenderOutput | Promise<AddonEditorBlockRenderOutput>;
 }
 
+export interface AddonEditorSettingsBridge {
+    readonly blockName: string;
+    readonly props: Record<string, unknown>;
+    proposePatch(patch: Record<string, unknown>): Promise<void>;
+    onPropsChange(listener: (props: Record<string, unknown>) => void): () => void;
+}
+
+export interface AddonEditorSettingsModuleExports {
+    default(ghost: AddonEditorSettingsBridge): unknown;
+}
+
 export interface AddonEditorBlockRenderOutput {
     html: string;
     portableHtml: string;
@@ -201,6 +223,10 @@ export interface AddonManifestEditorBlock {
 export interface AddonManifestEditor {
     blocks: AddonManifestEditorBlock[];
     content: {
+        bundle: string;
+        integrity?: string;
+    };
+    settings?: {
         bundle: string;
         integrity?: string;
     };
@@ -253,6 +279,8 @@ export interface AddonInstallRecord {
         blocks: AddonManifestEditorBlock[];
         contentBundleUrl: string;
         integrity?: string;
+        settingsBundleUrl?: string;
+        settingsIntegrity?: string;
     };
     /** True for dev-manifest loads (localStorage). Transient — never persisted. */
     dev?: boolean;
