@@ -198,13 +198,13 @@ const DesignModal: React.FC = () => {
   ];
 
   const previewSettings = {
-        description,
-        accentColor,
-        icon,
-        logo,
-        coverImage,
-        themeSettings: formState.themeSettings,
-        headingFont,
+    description,
+    accentColor,
+    icon,
+    logo,
+    coverImage,
+    themeSettings: formState.themeSettings,
+    headingFont,
     bodyFont,
   };
 
