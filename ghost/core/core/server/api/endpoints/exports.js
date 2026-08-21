@@ -9,22 +9,26 @@ const membersService = require('../../services/members');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const routeSettings = require('../../services/route-settings');
 const customRedirects = require('../../services/custom-redirects');
-const {serializeToYaml} = require('../../services/custom-redirects/redirect-config-parser');
+const { serializeToYaml } = require('../../services/custom-redirects/redirect-config-parser');
 const themeService = require('../../services/themes');
 const themeList = require('../../services/themes/list');
-const {SiteExporter, EXPORT_COMPONENTS} = require('../../services/exports/site-exporter');
-const {getExportFileName} = require('./utils/csv-export-filename');
-const {rejectAdminApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
-const {createCSVTransform: createMembersCSVTransform} = require('./utils/serializers/output/members-csv-transform');
-const {createCSVTransform: createPostsCSVTransform} = require('./utils/serializers/output/posts-csv-transform');
-const {pipeline} = require('stream');
+const { SiteExporter, EXPORT_COMPONENTS } = require('../../services/exports/site-exporter');
+const { getExportFileName } = require('./utils/csv-export-filename');
+const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+const {
+  createCSVTransform: createMembersCSVTransform,
+} = require('./utils/serializers/output/members-csv-transform');
+const {
+  createCSVTransform: createPostsCSVTransform,
+} = require('./utils/serializers/output/posts-csv-transform');
+const { pipeline } = require('stream');
 const models = require('../../models');
-const {exportRequestsService} = require('../../services/export-requests/export-requests-service');
+const { exportRequestsService } = require('../../services/export-requests/export-requests-service');
 
 const postsService = getPostServiceInstance();
 
 const messages = {
-    noComponentsSelected: 'No export components selected'
+  noComponentsSelected: 'No export components selected',
 };
 
 const ALLOWED_REQUEST_COMPONENTS = ['content', 'members', 'analytics', 'themes', 'routes', 'media'];
@@ -40,15 +44,17 @@ const ALLOWED_REQUEST_COMPONENTS = ['content', 'members', 'analytics', 'themes',
  * @returns {NodeJS.ReadableStream}
  */
 function toCSVStream(label, rows, transform) {
-    pipeline(rows, transform, (err) => {
-        if (err) {
-            logging.error(new errors.InternalServerError({
-                message: `Site export: the ${label} stream failed mid-export`,
-                err
-            }));
-        }
-    });
-    return transform;
+  pipeline(rows, transform, (err) => {
+    if (err) {
+      logging.error(
+        new errors.InternalServerError({
+          message: `Site export: the ${label} stream failed mid-export`,
+          err,
+        }),
+      );
+    }
+  });
+  return transform;
 }
 
 /**
@@ -60,42 +66,47 @@ function toCSVStream(label, rows, transform) {
  * @returns {Promise<{zipPath: string, cleanup(): Promise<void>}>}
  */
 async function zipThemeToTempFile(name) {
-    const tmpDir = path.join(os.tmpdir(), `ghost-export-${security.identifier.uid(10)}`);
-    await fs.ensureDir(tmpDir);
+  const tmpDir = path.join(os.tmpdir(), `ghost-export-${security.identifier.uid(10)}`);
+  await fs.ensureDir(tmpDir);
 
-    try {
-        const zipPath = path.join(tmpDir, `${name}.zip`);
-        await themeService.api.zipToFile(name, zipPath);
-        return {zipPath, cleanup: () => fs.remove(tmpDir)};
-    } catch (err) {
-        await fs.remove(tmpDir);
-        throw err;
-    }
+  try {
+    const zipPath = path.join(tmpDir, `${name}.zip`);
+    await themeService.api.zipToFile(name, zipPath);
+    return { zipPath, cleanup: () => fs.remove(tmpDir) };
+  } catch (err) {
+    await fs.remove(tmpDir);
+    throw err;
+  }
 }
 
 function createSiteExporter() {
-    return new SiteExporter({
-        // Same shape the `/db/` download produces, so the file stays importable
-        exportContent: async () => ({db: [await exporter.doExport()]}),
-        // `limit: 'all'` keeps both CSV exporters on their unfiltered
-        // streaming path — without it the members exporter materialises every
-        // id into a WHERE IN and the posts exporter caps at its default page
-        exportMembersCSV: async () => toCSVStream(
-            'members',
-            await membersService.export({limit: 'all'}),
-            createMembersCSVTransform()
-        ),
-        // Same restricted-fields guard the `/posts/export/` endpoint applies
-        exportPostAnalyticsCSV: async () => toCSVStream(
-            'post analytics',
-            await postsService.export({limit: 'all', mongoTransformer: rejectAdminApiRestrictedFieldsTransformer}),
-            createPostsCSVTransform()
-        ),
-        listThemes: () => Object.keys(themeList.getAll()),
-        zipTheme: zipThemeToTempFile,
-        exportRoutesYaml: () => routeSettings.api.download(),
-        exportRedirectsYaml: async () => serializeToYaml(await customRedirects.api.getAll())
-    });
+  return new SiteExporter({
+    // Same shape the `/db/` download produces, so the file stays importable
+    exportContent: async () => ({ db: [await exporter.doExport()] }),
+    // `limit: 'all'` keeps both CSV exporters on their unfiltered
+    // streaming path — without it the members exporter materialises every
+    // id into a WHERE IN and the posts exporter caps at its default page
+    exportMembersCSV: async () =>
+      toCSVStream(
+        'members',
+        await membersService.export({ limit: 'all' }),
+        createMembersCSVTransform(),
+      ),
+    // Same restricted-fields guard the `/posts/export/` endpoint applies
+    exportPostAnalyticsCSV: async () =>
+      toCSVStream(
+        'post analytics',
+        await postsService.export({
+          limit: 'all',
+          mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
+        }),
+        createPostsCSVTransform(),
+      ),
+    listThemes: () => Object.keys(themeList.getAll()),
+    zipTheme: zipThemeToTempFile,
+    exportRoutesYaml: () => routeSettings.api.download(),
+    exportRedirectsYaml: async () => serializeToYaml(await customRedirects.api.getAll()),
+  });
 }
 
 /**
@@ -103,113 +114,111 @@ function createSiteExporter() {
  * never trust an email supplied in the request body.
  */
 async function resolveRequestedBy(frame) {
-    if (frame.user && frame.user.get) {
-        return frame.user.get('email');
-    }
+  if (frame.user && frame.user.get) {
+    return frame.user.get('email');
+  }
 
-    if (frame.options.context.user) {
-        const user = await models.User.findOne({id: frame.options.context.user});
-        return user && user.get('email');
-    }
+  if (frame.options.context.user) {
+    const user = await models.User.findOne({ id: frame.options.context.user });
+    return user && user.get('email');
+  }
 
-    return null;
+  return null;
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'exports',
+  docName: 'exports',
 
-    download: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'components'
-        ],
-        validation: {
-            options: {
-                components: {
-                    values: [...EXPORT_COMPONENTS]
-                }
-            }
-        },
-        permissions: {
-            docName: 'db',
-            method: 'exportContent'
-        },
-        query(frame) {
-            // Absent means everything; explicitly empty means nothing selected
-            const components = frame.options.components ?? [...EXPORT_COMPONENTS];
-
-            if (components.length === 0) {
-                throw new errors.ValidationError({
-                    message: messages.noComponentsSelected
-                });
-            }
-
-            return {
-                archive: createSiteExporter().createArchive(components),
-                filename: getExportFileName('export', 'zip')
-            };
-        }
+  download: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    add: {
-        statusCode: 202,
-        headers: {
-            cacheInvalidate: false
+    options: ['components'],
+    validation: {
+      options: {
+        components: {
+          values: [...EXPORT_COMPONENTS],
         },
-        validation(frame) {
-            const components = frame.data && frame.data.components;
+      },
+    },
+    permissions: {
+      docName: 'db',
+      method: 'exportContent',
+    },
+    query(frame) {
+      // Absent means everything; explicitly empty means nothing selected
+      const components = frame.options.components ?? [...EXPORT_COMPONENTS];
 
-            if (!components || typeof components !== 'object' || Array.isArray(components)) {
-                throw new errors.BadRequestError({
-                    message: 'components must be an object'
-                });
-            }
+      if (components.length === 0) {
+        throw new errors.ValidationError({
+          message: messages.noComponentsSelected,
+        });
+      }
 
-            const keys = Object.keys(components);
-            const unknownKeys = keys.filter(key => !ALLOWED_REQUEST_COMPONENTS.includes(key));
+      return {
+        archive: createSiteExporter().createArchive(components),
+        filename: getExportFileName('export', 'zip'),
+      };
+    },
+  },
 
-            if (unknownKeys.length > 0) {
-                throw new errors.BadRequestError({
-                    message: `Unknown export components: ${unknownKeys.join(', ')}`
-                });
-            }
+  add: {
+    statusCode: 202,
+    headers: {
+      cacheInvalidate: false,
+    },
+    validation(frame) {
+      const components = frame.data && frame.data.components;
 
-            if (keys.some(key => typeof components[key] !== 'boolean')) {
-                throw new errors.BadRequestError({
-                    message: 'Export component values must be booleans'
-                });
-            }
+      if (!components || typeof components !== 'object' || Array.isArray(components)) {
+        throw new errors.BadRequestError({
+          message: 'components must be an object',
+        });
+      }
 
-            if (!keys.some(key => components[key] === true)) {
-                throw new errors.BadRequestError({
-                    message: 'At least one export component must be selected'
-                });
-            }
-        },
-        permissions: {
-            docName: 'db',
-            method: 'exportContent'
-        },
-        async query(frame) {
-            const components = {};
-            for (const key of ALLOWED_REQUEST_COMPONENTS) {
-                components[key] = frame.data.components[key] === true;
-            }
+      const keys = Object.keys(components);
+      const unknownKeys = keys.filter((key) => !ALLOWED_REQUEST_COMPONENTS.includes(key));
 
-            const requestedBy = await resolveRequestedBy(frame);
+      if (unknownKeys.length > 0) {
+        throw new errors.BadRequestError({
+          message: `Unknown export components: ${unknownKeys.join(', ')}`,
+        });
+      }
 
-            if (!requestedBy) {
-                throw new errors.NoPermissionError({
-                    message: 'Export requests require an authenticated staff user'
-                });
-            }
+      if (keys.some((key) => typeof components[key] !== 'boolean')) {
+        throw new errors.BadRequestError({
+          message: 'Export component values must be booleans',
+        });
+      }
 
-            await exportRequestsService.requestArchive({components, requestedBy});
-        }
-    }
+      if (!keys.some((key) => components[key] === true)) {
+        throw new errors.BadRequestError({
+          message: 'At least one export component must be selected',
+        });
+      }
+    },
+    permissions: {
+      docName: 'db',
+      method: 'exportContent',
+    },
+    async query(frame) {
+      const components = {};
+      for (const key of ALLOWED_REQUEST_COMPONENTS) {
+        components[key] = frame.data.components[key] === true;
+      }
+
+      const requestedBy = await resolveRequestedBy(frame);
+
+      if (!requestedBy) {
+        throw new errors.NoPermissionError({
+          message: 'Export requests require an authenticated staff user',
+        });
+      }
+
+      await exportRequestsService.requestArchive({ components, requestedBy });
+    },
+  },
 };
 
 module.exports = controller;
