@@ -8,6 +8,7 @@ import type {BuilderProvider, CuratedModel} from '@/builder/models/curated-model
 
 const providerNames: Record<BuilderProvider, string> = {
     openai: 'OpenAI',
+    'openai-codex': 'Codex',
     anthropic: 'Anthropic'
 };
 
@@ -21,6 +22,7 @@ export const ModelPicker = ({provider, modelId, models, disabled, onSelect}: {
     const [open, setOpen] = useState(false);
     const selected = models.find(model => model.provider === provider && model.id === modelId);
     const selectedName = selected?.name ?? modelId;
+    const selectedLabel = provider === 'openai-codex' ? `Codex · ${selectedName}` : selectedName;
 
     useEffect(() => {
         if (disabled) {
@@ -33,7 +35,7 @@ export const ModelPicker = ({provider, modelId, models, disabled, onSelect}: {
             <PopoverTrigger asChild>
                 <Button
                     aria-expanded={open}
-                    aria-label={`Choose model: ${selectedName}`}
+                    aria-label={`Choose model: ${selectedLabel}`}
                     className='h-8 max-w-52 justify-start px-2 font-normal'
                     disabled={disabled}
                     role='combobox'
@@ -42,7 +44,7 @@ export const ModelPicker = ({provider, modelId, models, disabled, onSelect}: {
                     variant='ghost'
                 >
                     <LucideIcon.Bot aria-hidden='true' className='size-4 shrink-0 text-muted-foreground' />
-                    <Text className='truncate' size='sm'>{selectedName}</Text>
+                    <Text className='truncate' size='sm'>{selectedLabel}</Text>
                     <LucideIcon.ChevronDown aria-hidden='true' className='size-4 shrink-0 text-muted-foreground' />
                 </Button>
             </PopoverTrigger>

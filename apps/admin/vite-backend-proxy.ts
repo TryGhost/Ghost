@@ -1,6 +1,6 @@
-import type { Plugin, ProxyOptions } from 'vite';
-import type { IncomingMessage } from 'http';
-import { getSubdir, GHOST_URL } from './vite.config';
+import type { Plugin, ProxyOptions, ViteDevServer } from "vite";
+import type { IncomingMessage, ServerResponse } from "http";
+import { getSubdir, GHOST_URL } from "./vite.config";
 
 /**
  * Resolves the configured Ghost site URL by calling the admin api site endpoint
@@ -81,6 +81,150 @@ function createEmberLiveReloadProxy(): Record<string, ProxyOptions> {
   };
 }
 
+const CODEX_PROXY_MAX_BYTES = 16 * 1024 * 1024;
+
+function requestHeader(request: IncomingMessage, name: string): string | undefined {
+    const value = request.headers[name];
+    return Array.isArray(value) ? value[0] : value;
+}
+
+async function requestBody(request: IncomingMessage): Promise<string> {
+    const chunks: Uint8Array[] = [];
+    let bytes = 0;
+    for await (const chunk of request as AsyncIterable<Uint8Array>) {
+        const buffer = Buffer.from(chunk);
+        bytes += buffer.byteLength;
+        if (bytes > CODEX_PROXY_MAX_BYTES) {
+            throw new Error('Codex request is too large');
+        }
+        chunks.push(buffer);
+    }
+    return Buffer.concat(chunks, bytes).toString('utf8');
+}
+
+/**
+ * The ChatGPT Codex endpoint does not allow browser CORS requests. This
+ * development-only middleware forwards only the fixed Codex Responses route,
+ * with bounded input and a small header allowlist. It does not persist or log
+ * the user's session credential.
+ */
+async function writeResponseChunk(response: ServerResponse, chunk: Uint8Array, signal: AbortSignal): Promise<void> {
+    if (response.destroyed || signal.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
+    }
+    if (response.write(Buffer.from(chunk))) {
+        return;
+    }
+    await new Promise<void>((resolve, reject) => {
+        const cleanup = () => {
+            response.removeListener('drain', onDrain);
+            signal.removeEventListener('abort', onAbort);
+        };
+        const onDrain = () => {
+            cleanup();
+            resolve();
+        };
+        const onAbort = () => {
+            cleanup();
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+        response.once('drain', onDrain);
+        signal.addEventListener('abort', onAbort, {once: true});
+    });
+}
+
+export function createCodexRequestHandler(fetchRequest: typeof fetch = fetch) {
+    return async (request: IncomingMessage, response: ServerResponse) => {
+        if (request.method !== 'POST' || request.url !== '/codex/responses') {
+            response.statusCode = 404;
+            response.end('Not Found');
+            return;
+        }
+
+        const controller = new AbortController();
+        let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+        let finished = false;
+        const abortUpstream = () => {
+            if (finished) {
+                return;
+            }
+            controller.abort();
+            void reader?.cancel().catch(() => {});
+        };
+        const cleanup = () => {
+            request.removeListener('aborted', abortUpstream);
+            response.removeListener('close', abortUpstream);
+        };
+        request.once('aborted', abortUpstream);
+        response.once('close', abortUpstream);
+
+        try {
+            const headers = new Headers();
+            ['authorization', 'chatgpt-account-id', 'originator', 'openai-beta', 'content-type', 'accept', 'session-id', 'x-client-request-id'].forEach((name) => {
+                const value = requestHeader(request, name);
+                if (value) {
+                    headers.set(name, value);
+                }
+            });
+            headers.set('user-agent', 'pi (browser)');
+
+            const upstream = await fetchRequest('https://chatgpt.com/backend-api/codex/responses', {
+                method: 'POST',
+                headers,
+                body: await requestBody(request),
+                signal: controller.signal
+            });
+            response.statusCode = upstream.status;
+            ['content-type', 'cache-control'].forEach((name) => {
+                const value = upstream.headers.get(name);
+                if (value) {
+                    response.setHeader(name, value);
+                }
+            });
+            if (!upstream.body) {
+                finished = true;
+                cleanup();
+                response.end();
+                return;
+            }
+            reader = upstream.body.getReader();
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) {
+                    break;
+                }
+                await writeResponseChunk(response, value, controller.signal);
+            }
+            finished = true;
+            cleanup();
+            response.end();
+        } catch (error) {
+            if (controller.signal.aborted || response.destroyed || response.writableEnded) {
+                return;
+            }
+            response.statusCode = error instanceof Error && error.message === 'Codex request is too large' ? 413 : 502;
+            finished = true;
+            cleanup();
+            response.end(response.statusCode === 413 ? 'Codex request is too large' : 'Codex request failed');
+        } finally {
+            cleanup();
+            if (controller.signal.aborted) {
+                await reader?.cancel().catch(() => {});
+            } else {
+                reader?.releaseLock();
+            }
+        }
+    };
+}
+
+function installCodexMiddleware(server: ViteDevServer): void {
+    const prefix = `${getSubdir()}/__admin-dev__/builder/codex-proxy`;
+    const handleRequest = createCodexRequestHandler();
+    server.middlewares.use(prefix, (request, response) => {
+        void handleRequest(request, response);
+    });
+}
+
 /**
  * Vite plugin that injects proxy configurations for:
  * 1. Ghost Admin API - proxies /ghost/api requests to the Ghost backend
@@ -125,6 +269,8 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
       if (!siteUrl) {
         return;
       }
+
+            installCodexMiddleware(server);
 
       server.config.server.proxy = {
         ...server.config.server.proxy,

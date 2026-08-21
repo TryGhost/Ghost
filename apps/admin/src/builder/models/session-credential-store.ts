@@ -7,7 +7,7 @@ export interface BuilderCredentialStore {
     clear(): void;
 }
 
-const providers: readonly BuilderProvider[] = ['openai', 'anthropic'];
+const providers: readonly BuilderProvider[] = ['openai', 'openai-codex', 'anthropic'];
 const keyPrefix = 'ghost-builder.credential.';
 
 export class SessionCredentialStore implements BuilderCredentialStore {

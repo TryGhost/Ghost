@@ -36,12 +36,14 @@ describe('SessionCredentialStore', () => {
         const credentials = new SessionCredentialStore(storage);
 
         credentials.set('openai', 'openai-secret');
+        credentials.set('openai-codex', 'codex-access-token');
         credentials.set('anthropic', 'anthropic-secret');
 
         expect(credentials.get('openai')).toBe('openai-secret');
         expect(credentials.get('anthropic')).toBe('anthropic-secret');
         expect([...Array.from({length: storage.length}, (_, index) => storage.key(index))]).toEqual([
             'ghost-builder.credential.openai',
+            'ghost-builder.credential.openai-codex',
             'ghost-builder.credential.anthropic'
         ]);
 
@@ -56,11 +58,13 @@ describe('SessionCredentialStore', () => {
         storage.setItem('unrelated', 'keep-me');
         const credentials = new SessionCredentialStore(storage);
         credentials.set('openai', 'openai-secret');
+        credentials.set('openai-codex', 'codex-access-token');
         credentials.set('anthropic', 'anthropic-secret');
 
         credentials.clear();
 
         expect(credentials.get('openai')).toBeUndefined();
+        expect(credentials.get('openai-codex')).toBeUndefined();
         expect(credentials.get('anthropic')).toBeUndefined();
         expect(storage.getItem('unrelated')).toBe('keep-me');
     });

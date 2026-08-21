@@ -1,4 +1,5 @@
 import {anthropicMessagesApi} from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
+import {openAICodexResponsesApi} from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
 import {openAIResponsesApi} from '@earendil-works/pi-ai/api/openai-responses.lazy';
 
 import type {FetchFunction, ProviderStreams} from '@earendil-works/pi-ai';
@@ -41,11 +42,25 @@ const historyMessageLimit = 12_000;
 const attachmentImageCharacterLimit = Math.ceil(5 * 1024 * 1024 * 4 / 3) + 4;
 
 function apiForProvider(provider: BuilderProvider): ProviderStreams {
-    return provider === 'openai' ? openAIResponsesApi() : anthropicMessagesApi();
+    if (provider === 'openai') {
+        return openAIResponsesApi();
+    }
+    return provider === 'openai-codex' ? openAICodexResponsesApi() : anthropicMessagesApi();
 }
 
 function providerName(provider: BuilderProvider): string {
-    return provider === 'openai' ? 'OpenAI' : 'Anthropic';
+    if (provider === 'openai') {
+        return 'OpenAI';
+    }
+    return provider === 'openai-codex' ? 'Codex session' : 'Anthropic';
+}
+
+function localCodexBaseUrl(): string | undefined {
+    if (!import.meta.env.DEV || typeof globalThis.location === 'undefined') {
+        return undefined;
+    }
+    const basePath = import.meta.env.BASE_URL.replace(/\/+$/, '');
+    return new URL(`${basePath}/builder/codex-proxy`, globalThis.location.origin).toString();
 }
 
 function stringifyBounded(value: unknown, limit = 4_000): {text: string; truncated: boolean} {
@@ -335,14 +350,18 @@ export class BrowserPiModelAccess implements ModelAccessAdapter {
     }
 
     createRuntime({provider, modelId, onEvent = () => {}, ...options}: CreateRuntimeOptions): AgentRuntime {
-        if (provider !== 'openai' && provider !== 'anthropic') {
+        if (provider !== 'openai' && provider !== 'openai-codex' && provider !== 'anthropic') {
             throw new Error(`Unsupported provider: ${String(provider)}`);
         }
 
-        const model = findCuratedModel(provider, modelId);
+        const selectedModel = findCuratedModel(provider, modelId);
+        const codexBaseUrl = provider === 'openai-codex' ? localCodexBaseUrl() : undefined;
+        const model = codexBaseUrl ? {...selectedModel, baseUrl: codexBaseUrl} : selectedModel;
         const apiKey = this.getApiKey(provider);
         if (!apiKey) {
-            throw new Error(`Add an ${providerName(provider)} API key before starting a turn.`);
+            throw new Error(provider === 'openai-codex'
+                ? 'Paste Codex auth.json before starting a turn.'
+                : `Add an ${providerName(provider)} API key before starting a turn.`);
         }
 
         const providerApi = apiForProvider(provider);
@@ -352,7 +371,8 @@ export class BrowserPiModelAccess implements ModelAccessAdapter {
             getApiKey: () => this.getApiKey(provider),
             streamFn: (activeModel, context, streamOptions) => providerApi.streamSimple(activeModel, context, {
                 ...streamOptions,
-                fetch: this.fetch
+                fetch: this.fetch,
+                ...(provider === 'openai-codex' ? {transport: 'sse'} : {})
             }),
             onEvent: (event) => {
                 if (event.type === 'run-error') {

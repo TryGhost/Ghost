@@ -1,11 +1,56 @@
 import type {Model} from '@earendil-works/pi-ai';
 
-export type BuilderProvider = 'openai' | 'anthropic';
-export type CuratedModel = Model<'openai-responses' | 'anthropic-messages'> & {
+export type BuilderProvider = 'openai' | 'openai-codex' | 'anthropic';
+export type CuratedModel = Model<'openai-responses' | 'openai-codex-responses' | 'anthropic-messages'> & {
     provider: BuilderProvider;
 };
 
 // Verified against the generated model catalogs shipped by pi-ai 0.84.2.
+const codexModels: readonly CuratedModel[] = [
+    {
+        id: 'gpt-5.6-sol',
+        name: 'GPT-5.6 Sol',
+        api: 'openai-codex-responses',
+        provider: 'openai-codex',
+        baseUrl: 'https://chatgpt.com/backend-api',
+        reasoning: true,
+        input: ['text', 'image'],
+        cost: {input: 5, output: 30, cacheRead: 0.5, cacheWrite: 6.25, tiers: [{inputTokensAbove: 272000, input: 10, output: 45, cacheRead: 1, cacheWrite: 12.5}]},
+        contextWindow: 272000,
+        maxTokens: 128000,
+        thinkingLevelMap: {xhigh: 'xhigh', max: 'max', minimal: 'low'},
+        compat: {supportsOpenAIGrammarTools: true, supportsAdditionalTools: true, supportsToolSearch: true}
+    },
+    {
+        id: 'gpt-5.6-terra',
+        name: 'GPT-5.6 Terra',
+        api: 'openai-codex-responses',
+        provider: 'openai-codex',
+        baseUrl: 'https://chatgpt.com/backend-api',
+        reasoning: true,
+        input: ['text', 'image'],
+        cost: {input: 2, output: 12, cacheRead: 0.2, cacheWrite: 2.5, tiers: [{inputTokensAbove: 272000, input: 4, output: 18, cacheRead: 0.4, cacheWrite: 5}]},
+        contextWindow: 272000,
+        maxTokens: 128000,
+        thinkingLevelMap: {xhigh: 'xhigh', max: 'max', minimal: 'low'},
+        compat: {supportsOpenAIGrammarTools: true, supportsAdditionalTools: true, supportsToolSearch: true}
+    },
+    {
+        id: 'gpt-5.6-luna',
+        name: 'GPT-5.6 Luna',
+        api: 'openai-codex-responses',
+        provider: 'openai-codex',
+        baseUrl: 'https://chatgpt.com/backend-api',
+        reasoning: true,
+        input: ['text', 'image'],
+        cost: {input: 0.2, output: 1.2, cacheRead: 0.02, cacheWrite: 0.25, tiers: [{inputTokensAbove: 272000, input: 0.4, output: 1.8, cacheRead: 0.04, cacheWrite: 0.5}]},
+        contextWindow: 272000,
+        maxTokens: 128000,
+        thinkingLevelMap: {xhigh: 'xhigh', max: 'max', minimal: 'low'},
+        compat: {supportsOpenAIGrammarTools: true, supportsAdditionalTools: true, supportsToolSearch: true}
+    }
+];
+
 export const CURATED_MODELS: readonly CuratedModel[] = [
     {
         id: 'gpt-5.6-sol',
@@ -49,6 +94,7 @@ export const CURATED_MODELS: readonly CuratedModel[] = [
         thinkingLevelMap: {off: 'none', minimal: null, low: 'low', medium: 'medium', high: 'high', xhigh: 'xhigh', max: 'max'},
         compat: {supportsStrictMode: true, supportsOpenAIGrammarTools: true, supportsAdditionalTools: true, supportsToolSearch: true, supportsExplicitPromptCacheMode: true}
     },
+    ...(import.meta.env.DEV ? codexModels : []),
     {
         id: 'claude-sonnet-5',
         name: 'Claude Sonnet 5',
@@ -94,7 +140,10 @@ export const CURATED_MODELS: readonly CuratedModel[] = [
 ] as const;
 
 function providerName(provider: BuilderProvider): string {
-    return provider === 'openai' ? 'OpenAI' : 'Anthropic';
+    if (provider === 'openai') {
+        return 'OpenAI';
+    }
+    return provider === 'openai-codex' ? 'Codex' : 'Anthropic';
 }
 
 export function findCuratedModel(provider: BuilderProvider, modelId: string): CuratedModel {

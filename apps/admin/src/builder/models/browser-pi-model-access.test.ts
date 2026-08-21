@@ -201,6 +201,24 @@ describe('BrowserPiModelAccess', () => {
             ].join('\n')
         },
         {
+            provider: 'openai-codex' as const,
+            modelId: 'gpt-5.6-sol',
+            response: [
+                'data: {"type":"response.created","response":{"id":"response-1"}}',
+                '',
+                'data: {"type":"response.output_item.added","output_index":0,"item":{"id":"message-1","type":"message","role":"assistant","status":"in_progress","content":[],"phase":"final_answer"}}',
+                '',
+                'data: {"type":"response.output_text.delta","output_index":0,"content_index":0,"delta":"Hello"}',
+                '',
+                'data: {"type":"response.output_item.done","output_index":0,"item":{"id":"message-1","type":"message","role":"assistant","status":"completed","phase":"final_answer","content":[{"type":"output_text","text":"Hello","annotations":[],"logprobs":[]}]}}',
+                '',
+                'data: {"type":"response.completed","response":{"id":"response-1","status":"completed","output":[],"usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2}}}',
+                '',
+                'data: [DONE]',
+                ''
+            ].join('\n')
+        },
+        {
             provider: 'anthropic' as const,
             modelId: 'claude-sonnet-5',
             response: [
@@ -226,13 +244,19 @@ describe('BrowserPiModelAccess', () => {
             ].join('\n')
         }
     ])('streams through the real $provider Pi browser adapter with a mocked response', async ({provider, modelId, response}) => {
-        const fetch = vi.fn(() => Promise.resolve(new Response(response, {
-            status: 200,
-            headers: {'content-type': 'text/event-stream'}
-        }))) as FetchFunction;
+        const requestUrls: string[] = [];
+        const fetch = vi.fn((input: RequestInfo | URL) => {
+            requestUrls.push(typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url);
+            return Promise.resolve(new Response(response, {
+                status: 200,
+                headers: {'content-type': 'text/event-stream'}
+            }));
+        }) as FetchFunction;
         const deltas: string[] = [];
         const errors: string[] = [];
-        const access = new BrowserPiModelAccess({getApiKey: () => 'session-key', fetch});
+        const tokenPayload = btoa(JSON.stringify({'https://api.openai.com/auth': {chatgpt_account_id: 'account-1'}}));
+        const credential = provider === 'openai-codex' ? `header.${tokenPayload}.signature` : 'session-key';
+        const access = new BrowserPiModelAccess({getApiKey: () => credential, fetch});
         const runtime = access.createRuntime({
             provider,
             modelId,
@@ -248,6 +272,9 @@ describe('BrowserPiModelAccess', () => {
         await runtime.prompt('Say hello');
 
         expect(fetch).toHaveBeenCalledOnce();
+        if (provider === 'openai-codex') {
+            expect(requestUrls[0]).toContain('/builder/codex-proxy/codex/responses');
+        }
         expect({deltas: deltas.join(''), errors, message: runtime.messages.at(-1)}).toMatchObject({
             deltas: 'Hello',
             errors: [],

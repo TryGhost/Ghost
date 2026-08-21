@@ -8,6 +8,9 @@ describe('curated models', () => {
             ['openai', 'gpt-5.6-sol'],
             ['openai', 'gpt-5.6-terra'],
             ['openai', 'gpt-5.6-luna'],
+            ['openai-codex', 'gpt-5.6-sol'],
+            ['openai-codex', 'gpt-5.6-terra'],
+            ['openai-codex', 'gpt-5.6-luna'],
             ['anthropic', 'claude-sonnet-5'],
             ['anthropic', 'claude-opus-5'],
             ['anthropic', 'claude-fable-5']
@@ -16,5 +19,6 @@ describe('curated models', () => {
 
     it('rejects a model that is not in the curated catalog', () => {
         expect(() => findCuratedModel('openai', 'not-a-model')).toThrow('Unsupported OpenAI model: not-a-model');
+        expect(() => findCuratedModel('openai-codex', 'not-a-model')).toThrow('Unsupported Codex model: not-a-model');
     });
 });
