@@ -8,7 +8,7 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 # Default proxy targets (can be overridden via environment variables).
 # Public apps (portal, comments-ui, signup-form, sodo-search,
-# announcement-bar, admin-toolbar) are served directly from their umd/
+# admin-toolbar) are served directly from their umd/
 # build output via the Caddyfile's file_server block, not proxied to a
 # dev server — they have no *_DEV_SERVER entry here.
 ENV GHOST_BACKEND=ghost-dev:2368 \
