@@ -131,7 +131,7 @@ const NewsletterTableRows: React.FC<{
                     </TableCell>
                 </TableRow>
         );
-    }, [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled, range]);
+    }, [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled, range, siteTimezone]);
 
     // Show loading rows while data is loading
     if (isStatsLoading || !newsletterStatsData) {
