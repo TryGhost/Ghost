@@ -271,6 +271,7 @@
     "@types/sanitize-html": "catalog:",
     "@types/semver": "catalog:",
     "@types/sinon": "catalog:",
+    "@types/stoppable": "catalog:",
     "@types/supertest": "6.0.3",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
