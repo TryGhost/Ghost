@@ -7,7 +7,6 @@ const defaultSettings = require('../../../schema').defaultSettings;
 const keyGroupMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-group-mapper');
 const keyTypeMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-type-mapper');
 const { WRITABLE_KEYS_ALLOWLIST } = require('../../../../../shared/labs');
-const { sequence } = require('@tryghost/promise');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const ignoredSettings = [
@@ -281,7 +280,9 @@ class SettingsImporter extends BaseImporter {
       });
     });
 
-    await sequence(ops);
+    for (const op of ops) {
+      await op();
+    }
   }
 }
 

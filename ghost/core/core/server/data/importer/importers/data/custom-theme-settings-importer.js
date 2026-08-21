@@ -3,7 +3,6 @@ const debug = require('@tryghost/debug')('importer:roles');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const { activate } = require('../../../../services/themes/activate');
-const { sequence } = require('@tryghost/promise');
 
 class CustomThemeSettingsImporter extends BaseImporter {
   constructor(allDataFromFile) {
@@ -55,7 +54,9 @@ class CustomThemeSettingsImporter extends BaseImporter {
       });
     });
 
-    await sequence(ops);
+    for (const op of ops) {
+      await op();
+    }
 
     const theme = await models.Settings.findOne({ key: 'active_theme' }, options);
     const currentTheme = theme && theme.get('value');

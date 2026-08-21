@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
 const { setIsRoles } = require('../role-utils');
 
 const messages = {
@@ -130,7 +129,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
           return proto.onSaving.call(this, model, attrs, options);
         });
 
-        return sequence(ops);
+        return (async () => {
+          const results = [];
+          for (const op of ops) {
+            results.push(await op());
+          }
+          return results;
+        })();
       },
 
       serialize: function serialize(options) {
@@ -224,7 +229,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
           });
         });
 
-        return sequence(ops);
+        return (async () => {
+          const results = [];
+          for (const op of ops) {
+            results.push(await op());
+          }
+          return results;
+        })();
       },
     },
     {
