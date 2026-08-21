@@ -1,7 +1,7 @@
 import {createHeadlessEditor} from '@lexical/headless';
 import type {LexicalEditor} from 'lexical';
 
-import {ArtifactNode, $createArtifactNode} from '../../src/index.js';
+import {ArtifactNode, DEFAULT_NODES, $createArtifactNode} from '../../src/index.js';
 import {dom} from '../test-utils/index.js';
 
 describe('ArtifactNode', function () {
@@ -16,7 +16,11 @@ describe('ArtifactNode', function () {
         });
     });
 
-    it('renders a populated artifact as an inert embed envelope', async function () {
+    it('registers artifacts in the production default node set', function () {
+        expect(DEFAULT_NODES).toContain(ArtifactNode);
+    });
+
+    it('renders a populated artifact as an inert embed envelope with a host-owned fallback', async function () {
         await new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
@@ -24,7 +28,7 @@ describe('ArtifactNode', function () {
                         id: 'sales-chart',
                         title: 'Quarterly sales',
                         description: 'An interactive chart of quarterly sales.',
-                        html: '<!doctype html><html><body><script>window.chart = true;</script></body></html>'
+                        html: '<!doctype html><html><head><title>Quarterly sales</title></head><body><script>window.chart = true;</script></body></html>'
                     });
 
                     const result = node.exportDOM(editor, {dom});
@@ -38,6 +42,11 @@ describe('ArtifactNode', function () {
                     expect(element.dataset.artifactTitle).toBe('Quarterly sales');
                     expect(element.querySelector('script[type="application/json"]')?.textContent).toContain('window.chart = true');
                     expect(element.querySelector('script:not([type="application/json"])')).toBeNull();
+                    expect(element.querySelector('.kg-artifact-card-title')?.textContent).toBe('Quarterly sales');
+                    expect(element.querySelector('.kg-artifact-card-fallback')?.textContent).toBe('Quarterly salesAn interactive chart of quarterly sales.');
+                    expect(element.querySelector('.kg-artifact-card-error')).toBeNull();
+                    expect(element.querySelector('.kg-artifact-card-retry')).toBeNull();
+                    expect(element.querySelector('iframe')).toBeNull();
                     resolve();
                 } catch (error) {
                     reject(error);
@@ -54,7 +63,7 @@ describe('ArtifactNode', function () {
                         id: 'sales-chart',
                         title: 'Quarterly sales',
                         description: 'An interactive chart of quarterly sales.',
-                        html: '<!doctype html><html><body><script>window.chart = true;</script></body></html>'
+                        html: '<!doctype html><html><head><title>Quarterly sales</title></head><body><script>window.chart = true;</script></body></html>'
                     });
 
                     const result = node.exportDOM(editor, {
@@ -70,6 +79,31 @@ describe('ArtifactNode', function () {
                         href: 'https://example.com/quarterly-results/#artifact-sales-chart',
                         textContent: 'Open in browser'
                     });
+                    expect(element.querySelector('script')).toBeNull();
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    });
+
+    it('does not serialize unsupported or oversized artifact payloads', async function () {
+        await new Promise<void>((resolve, reject) => {
+            editor.update(() => {
+                try {
+                    const node = $createArtifactNode({
+                        id: 'invalid',
+                        artifactVersion: 2,
+                        title: 'Unsupported embed',
+                        description: '',
+                        html: '<!doctype html><html><head><title>Unsupported</title></head><body></body></html>'
+                    });
+
+                    const result = node.exportDOM(editor, {dom});
+                    const element = result.element as HTMLElement;
+
+                    expect(element.textContent).toBe('This embed couldn’t load');
                     expect(element.querySelector('script')).toBeNull();
                     resolve();
                 } catch (error) {

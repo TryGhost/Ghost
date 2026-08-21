@@ -116,6 +116,15 @@
                 "html": "<p>A paragraph inside an HTML card.</p>\n<p>And another one, with some <b>bold</b> text.</p>"
             },
             {
+                "type": "artifact",
+                "version": 1,
+                "id": "golden-artifact",
+                "artifactVersion": 1,
+                "title": "Interactive sales chart",
+                "description": "Open the post to explore the chart.",
+                "html": "<!doctype html><html><head><title>Interactive sales chart</title></head><body><p>Interactive chart</p></body></html>"
+            },
+            {
                 "type": "horizontalrule",
                 "version": 1
             },

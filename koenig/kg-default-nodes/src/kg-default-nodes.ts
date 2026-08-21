@@ -10,6 +10,7 @@ import * as callToAction from './nodes/call-to-action/CallToActionNode.js';
 import * as aside from './nodes/aside/AsideNode.js';
 import * as horizontalrule from './nodes/horizontalrule/HorizontalRuleNode.js';
 import * as html from './nodes/html/HtmlNode.js';
+import * as artifact from './nodes/artifact/ArtifactNode.js';
 import * as toggle from './nodes/toggle/ToggleNode.js';
 import * as button from './nodes/button/ButtonNode.js';
 import * as bookmark from './nodes/bookmark/BookmarkNode.js';
@@ -113,6 +114,7 @@ export const DEFAULT_NODES = [
     aside.AsideNode,
     horizontalrule.HorizontalRuleNode,
     html.HtmlNode,
+    artifact.ArtifactNode,
     file.FileNode,
     toggle.ToggleNode,
     button.ButtonNode,
