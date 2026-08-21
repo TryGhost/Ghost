@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const utils = require('../../../../../core/server/api/endpoints/utils');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import utils from '../../../../../core/server/api/endpoints/utils';
 
 describe('Unit: endpoints/utils/index', function () {
   afterEach(function () {
