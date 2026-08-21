@@ -1,8 +1,8 @@
 module.exports = {
-    ...require('./migrations'),
-    ...require('./permissions'),
-    ...require('./roles'),
-    ...require('./schema'),
-    ...require('./settings'),
-    ...require('./tables')
+  ...require('./migrations'),
+  ...require('./permissions'),
+  ...require('./roles'),
+  ...require('./schema'),
+  ...require('./settings'),
+  ...require('./tables'),
 };
