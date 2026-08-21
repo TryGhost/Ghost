@@ -2,43 +2,48 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const {spawn} = require('node:child_process');
+const { spawn } = require('node:child_process');
 
 const jobService = require('../../../core/server/services/jobs/job-service');
 
 const runNode = (scriptPath, options) => {
-    return new Promise((resolve, reject) => {
-        const child = spawn(process.execPath, [scriptPath], options);
-        let stdout = '';
-        let stderr = '';
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [scriptPath], options);
+    let stdout = '';
+    let stderr = '';
 
-        child.stdout.on('data', (data) => {
-            stdout += data.toString();
-        });
-
-        child.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
-
-        child.on('error', reject);
-        child.on('close', (code) => {
-            resolve({code, stdout, stderr});
-        });
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
     });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    child.on('error', reject);
+    child.on('close', (code) => {
+      resolve({ code, stdout, stderr });
+    });
+  });
 };
 
 describe('Job worker runtime', function () {
-    it('starts offloaded jobs with the configured worker runtime arguments', async function () {
-        const runtimeCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-job-runtime-'));
-        const workerPath = path.join(runtimeCwd, 'worker.js');
-        const runnerPath = path.join(runtimeCwd, 'runner.js');
+  it('starts offloaded jobs with the configured worker runtime arguments', async function () {
+    const runtimeCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-job-runtime-'));
+    const workerPath = path.join(runtimeCwd, 'worker.js');
+    const runnerPath = path.join(runtimeCwd, 'runner.js');
 
-        fs.writeFileSync(workerPath, `
+    fs.writeFileSync(
+      workerPath,
+      `
             const {parentPort} = require('node:worker_threads');
             parentPort.postMessage('done');
-        `);
+        `,
+    );
 
-        fs.writeFileSync(runnerPath, `
+    fs.writeFileSync(
+      runnerPath,
+      `
             const JobManager = require(process.env.JOB_MANAGER_PATH);
 
             (async () => {
@@ -71,25 +76,26 @@ describe('Job worker runtime', function () {
                 console.error(error.stack || error.message);
                 process.exit(1);
             });
-        `);
+        `,
+    );
 
-        let result;
+    let result;
 
-        try {
-            result = await runNode(runnerPath, {
-                cwd: runtimeCwd,
-                env: {
-                    ...process.env,
-                    JOB_MANAGER_PATH: require.resolve('@tryghost/job-manager'),
-                    NODE_OPTIONS: '',
-                    WORKER_EXEC_ARGV: JSON.stringify(jobService.bree?.config?.worker?.execArgv || []),
-                    WORKER_PATH: workerPath
-                }
-            });
-        } finally {
-            fs.rmSync(runtimeCwd, {recursive: true, force: true});
-        }
+    try {
+      result = await runNode(runnerPath, {
+        cwd: runtimeCwd,
+        env: {
+          ...process.env,
+          JOB_MANAGER_PATH: require.resolve('@tryghost/job-manager'),
+          NODE_OPTIONS: '',
+          WORKER_EXEC_ARGV: JSON.stringify(jobService.bree?.config?.worker?.execArgv || []),
+          WORKER_PATH: workerPath,
+        },
+      });
+    } finally {
+      fs.rmSync(runtimeCwd, { recursive: true, force: true });
+    }
 
-        assert.equal(result.code, 0, result.stderr);
-    });
+    assert.equal(result.code, 0, result.stderr);
+  });
 });
