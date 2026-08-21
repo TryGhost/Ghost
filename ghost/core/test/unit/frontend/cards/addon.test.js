@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {JSDOM} = require('jsdom');
+const sinon = require('sinon');
 
 const runtime = fs.readFileSync(path.join(__dirname, '../../../../core/frontend/src/addon-blocks/addon-blocks.js'), 'utf8');
 
@@ -71,5 +72,58 @@ describe('Add-on public card runtime', function () {
         assert.equal(connectionMessage.type, 'ghost-addon-host');
         assert.equal(connectionMessage.instanceId, 'episode-player-1');
         assert.equal(connectionMessage.action, 'connected');
+    });
+
+    it('loads the current hydration bundle only when an opted-in card approaches the viewport', async function () {
+        const hydrationRuntime = runtime.replaceAll('{{blog-url}}', 'https://publisher.example');
+        let intersectionCallback;
+        dom = new JSDOM(`
+            <!doctype html><html><body>
+                <figure class="kg-card kg-addon-card" data-addon-id="episode-player-1" data-addon-handle="transistor" data-addon-block="episode-player" data-addon-hydrate="true">
+                    <iframe class="kg-addon-card-frame" height="240"></iframe>
+                </figure>
+            </body></html>
+        `, {
+            runScripts: 'dangerously',
+            url: 'https://publisher.example/post/'
+        });
+        dom.window.IntersectionObserver = class IntersectionObserver {
+            constructor(callback) {
+                intersectionCallback = callback;
+            }
+
+            observe() {}
+            unobserve() {}
+        };
+        const responses = [
+            {ok: true, json: async () => ({bundleUrl: 'https://podcasts.example/editor-content.js'})},
+            {ok: true, text: async () => 'window.__ghostAddonModule = hydratedBundle;'}
+        ];
+        dom.window.fetch = sinon.stub().callsFake(async () => responses.shift());
+        const card = dom.window.document.querySelector('.kg-addon-card');
+        const frame = card.querySelector('.kg-addon-card-frame');
+        const hostMessages = [];
+        frame.contentWindow.postMessage = message => hostMessages.push(message);
+
+        dom.window.eval(hydrationRuntime);
+        assert.equal(dom.window.fetch.callCount, 0);
+
+        intersectionCallback([{target: card, isIntersecting: true}]);
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
+            data: {type: 'ghost-addon', instanceId: 'episode-player-1', action: 'ready', navigationToken: 'a'.repeat(32)},
+            source: frame.contentWindow
+        }));
+        await new Promise((resolve) => {
+            dom.window.setTimeout(resolve, 0);
+        });
+
+        assert.equal(dom.window.fetch.callCount, 2);
+        assert.match(dom.window.fetch.firstCall.args[0], /addon-block-runtime\?handle=transistor&block=episode-player/);
+        assert.equal(dom.window.fetch.firstCall.args[1].credentials, 'omit');
+        assert.equal(dom.window.fetch.firstCall.args[1].cache, 'no-store');
+        assert.equal(dom.window.fetch.firstCall.args[1].referrerPolicy, 'no-referrer');
+        assert.equal(hostMessages.at(-1).action, 'hydrate');
+        assert.equal(hostMessages.at(-1).source, 'window.__ghostAddonModule = hydratedBundle;');
+        assert.equal(card.dataset.addonHydration, 'loading');
     });
 });

@@ -10,6 +10,7 @@ export interface AddonBlockDefinition {
     initialProperties?: Record<string, unknown>;
     resourceOrigins?: string[];
     hasSettings?: boolean;
+    hasHydration?: boolean;
 }
 
 export interface AddonBlockRenderRequest {
@@ -67,6 +68,7 @@ export function buildAddonNodeData(
         css: typeof output.css === 'string' ? output.css : '',
         portableHtml: typeof output.portableHtml === 'string' ? output.portableHtml : '',
         resourceOrigins: [...resourceOrigins],
+        hydrate: definition.hasHydration === true,
         initialHeight: normalizeAddonHeight(output.initialHeight)
     };
 

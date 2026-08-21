@@ -28,6 +28,7 @@ describe('add-on editor blocks', function () {
             css: 'article { color: rebeccapurple; }',
             portableHtml: '<p>Episode 12</p>',
             resourceOrigins: ['https://media.transistor.fm'],
+            hydrate: false,
             initialHeight: 240
         });
     });
@@ -52,6 +53,20 @@ describe('add-on editor blocks', function () {
             blockName: 'episode-player',
             label: 'Episode'
         }, {html: 'x'.repeat(1024 * 1024 + 1)}, 'block-1')).toThrow('invalid');
+
+        expect(() => buildAddonNodeData({
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            label: 'Episode',
+            initialProperties: {payload: 'x'.repeat(1024 * 1024 + 1)}
+        }, {html: '<article>Episode</article>'}, 'block-1')).toThrow('invalid');
+
+        expect(() => buildAddonNodeData({
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            label: 'Episode',
+            initialProperties: {lossy: undefined}
+        }, {html: '<article>Episode</article>'}, 'block-1')).toThrow('invalid');
     });
 
     it('clamps provider height hints to the platform bounds', function () {

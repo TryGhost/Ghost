@@ -18,6 +18,7 @@ const addonProperties = {
     css: {default: ''},
     portableHtml: {default: '', urlType: 'html'},
     resourceOrigins: {default: [] as string[]},
+    hydrate: {default: false},
     initialHeight: {default: 320}
 } satisfies DecoratorNodePropertyMap;
 

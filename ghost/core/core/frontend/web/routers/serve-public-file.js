@@ -138,6 +138,50 @@ function createCardAssetMiddleware(type, mime, maxAge) {
   };
 }
 
+function createAddonBlockRuntimeMiddleware() {
+    return function serveAddonBlockRuntime(req, res) {
+        const notFound = () => res.status(404).end();
+        const handle = req.query.handle;
+        const blockName = req.query.block;
+        if (typeof handle !== 'string' || typeof blockName !== 'string' || handle.length > 256 || blockName.length > 256) {
+            return notFound();
+        }
+
+        let installs;
+        try {
+            const value = settingsCache.get('addons');
+            installs = typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+            return notFound();
+        }
+        if (!Array.isArray(installs)) {
+            return notFound();
+        }
+
+        const install = installs.find(candidate => candidate?.enabled === true && candidate.handle === handle);
+        const block = Array.isArray(install?.editor?.blocks)
+            ? install.editor.blocks.find(candidate => candidate?.name === blockName && candidate.hydrate === true)
+            : undefined;
+        const bundleUrl = install?.editor?.contentBundleUrl;
+        let parsedBundleUrl;
+        try {
+            parsedBundleUrl = new URL(bundleUrl);
+        } catch {
+            parsedBundleUrl = null;
+        }
+        if (!block || !parsedBundleUrl || !['http:', 'https:'].includes(parsedBundleUrl.protocol)) {
+            return notFound();
+        }
+
+        const payload = {bundleUrl: parsedBundleUrl.href};
+        if (typeof install.editor.integrity === 'string') {
+            payload.integrity = install.editor.integrity;
+        }
+        res.set('Cache-Control', 'no-store');
+        return res.status(200).json(payload);
+    };
+}
+
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function servePublicFile(location, file, type, maxAge, options = {}) {
   const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
@@ -222,6 +266,7 @@ function servePublicFiles(siteApp) {
 
     // Add-on blocks lifecycle
     siteApp.get('/public/addon-blocks.min.js', createPublicFileMiddleware('static', 'public/addon-blocks.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/addon-block-runtime', createAddonBlockRuntimeMiddleware());
 
   // Member attribution
   siteApp.get(
@@ -290,3 +335,4 @@ function servePublicFiles(siteApp) {
 module.exports = servePublicFiles;
 module.exports.servePublicFile = servePublicFile;
 module.exports.createPublicFileMiddleware = createPublicFileMiddleware;
+module.exports.createAddonBlockRuntimeMiddleware = createAddonBlockRuntimeMiddleware;

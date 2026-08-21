@@ -53,7 +53,8 @@ function isValidEditorBlock(value: unknown): value is NonNullable<AddonManifest[
         && (value.description === undefined || typeof value.description === 'string')
         && (value.keywords === undefined || isStringArray(value.keywords))
         && (value.initialProperties === undefined || isRecord(value.initialProperties))
-        && (value.resourceOrigins === undefined || isStringArray(value.resourceOrigins));
+        && (value.resourceOrigins === undefined || isStringArray(value.resourceOrigins))
+        && (value.hydrate === undefined || typeof value.hydrate === 'boolean');
 }
 
 /**
@@ -113,6 +114,9 @@ function parseManifest(value: unknown): AddonManifest {
             }
             if (block.resourceOrigins !== undefined && !isStringArray(block.resourceOrigins)) {
                 throw new Error(`Manifest editor block "${block.name}" resourceOrigins must be an array of strings`);
+            }
+            if (block.hydrate !== undefined && typeof block.hydrate !== 'boolean') {
+                throw new Error(`Manifest editor block "${block.name}" hydrate must be a boolean`);
             }
         }
     }
@@ -226,6 +230,7 @@ export interface InstalledEditorBlockDefinition {
     initialProperties?: Record<string, unknown>;
     resourceOrigins?: string[];
     hasSettings?: boolean;
+    hasHydration?: boolean;
 }
 
 export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): InstalledEditorBlockDefinition[] {
@@ -242,7 +247,8 @@ export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): Insta
             keywords: block.keywords ? [...block.keywords] : undefined,
             initialProperties: block.initialProperties ? structuredClone(block.initialProperties) : undefined,
             resourceOrigins: block.resourceOrigins ? [...block.resourceOrigins] : undefined,
-            hasSettings: typeof install.editor?.settingsBundleUrl === 'string' && install.editor.settingsBundleUrl.length > 0
+            hasSettings: typeof install.editor?.settingsBundleUrl === 'string' && install.editor.settingsBundleUrl.length > 0,
+            hasHydration: block.hydrate === true
         }));
     });
 }

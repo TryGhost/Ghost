@@ -178,7 +178,12 @@ export type AddonEditorComponentRenderer = (
 ) => AddonEditorComponentOutput | Promise<AddonEditorComponentOutput>;
 
 export interface AddonEditorContentModuleExports {
-    default(request: AddonEditorBlockRequest): AddonEditorBlockRenderOutput | Promise<AddonEditorBlockRenderOutput>;
+    default: AddonEditorContentRenderer;
+}
+
+export interface AddonEditorContentRenderer {
+    (request: AddonEditorBlockRequest): AddonEditorBlockRenderOutput | Promise<AddonEditorBlockRenderOutput>;
+    hydrate?(request: AddonEditorBlockRequest, root: Element): void | Promise<void>;
 }
 
 export interface AddonEditorSettingsBridge {
@@ -218,6 +223,8 @@ export interface AddonManifestEditorBlock {
     initialProperties?: Record<string, unknown>;
     /** Public resource policy declared at install time, never by render output. */
     resourceOrigins?: string[];
+    /** Opts this block into lazy public hydration by the shared content bundle. */
+    hydrate?: boolean;
 }
 
 export interface AddonManifestEditor {

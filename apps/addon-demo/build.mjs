@@ -74,6 +74,7 @@ const manifest = {
             label: 'SEO summary card',
             description: 'Add a durable SEO summary to the post',
             keywords: ['search', 'preview', 'metadata'],
+            hydrate: true,
             initialProperties: {
                 title: 'Search preview ready',
                 description: 'This post has a title and description that are ready for search results.',

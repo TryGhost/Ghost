@@ -1,11 +1,28 @@
 import {defineEditorBlockRenderer} from '@tryghost/addon-kit/editor';
-import {useMemo} from 'preact/hooks';
+import {useMemo, useState} from 'preact/hooks';
 import type {AddonEditorBlockRequest} from '@tryghost/addon-kit/editor';
 
 function SummaryDescription({description}: {description: string}) {
     const normalizedDescription = useMemo(() => description.trim(), [description]);
 
     return <p>{normalizedDescription}</p>;
+}
+
+function SeoSummaryCard({title, description, showStatus}: {title: string; description: string; showStatus: boolean}) {
+    const [showTip, setShowTip] = useState(false);
+
+    return (
+        <article className="seo-summary">
+            <span className="seo-summary__eyebrow">SEO Assistant</span>
+            <h2>{title}</h2>
+            <SummaryDescription description={description} />
+            {showStatus && <span className="seo-summary__status">Looks good</span>}
+            <button className="seo-summary__tip-toggle" type="button" onClick={() => setShowTip(value => !value)}>
+                {showTip ? 'Hide SEO tip' : 'Show SEO tip'}
+            </button>
+            {showTip && <p className="seo-summary__tip">Hydration keeps this interaction current without changing the saved fallback.</p>}
+        </article>
+    );
 }
 
 function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
@@ -20,12 +37,7 @@ function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
 
     return {
         content: (
-            <article className="seo-summary">
-                <span className="seo-summary__eyebrow">SEO Assistant</span>
-                <h2>{title}</h2>
-                <SummaryDescription description={description} />
-                {props.showStatus !== false && <span className="seo-summary__status">Looks good</span>}
-            </article>
+            <SeoSummaryCard description={description} showStatus={props.showStatus !== false} title={title} />
         ),
         portableContent: (
             <div>
@@ -63,9 +75,22 @@ function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
                 font-size: 13px;
                 font-weight: 600;
             }
+            .seo-summary__tip-toggle {
+                display: block;
+                margin-top: 16px;
+                border: 0;
+                padding: 0;
+                background: transparent;
+                color: #28643c;
+                cursor: pointer;
+                font: inherit;
+                font-weight: 600;
+                text-decoration: underline;
+            }
+            .seo-summary .seo-summary__tip { margin-top: 10px; color: #28643c; }
         `,
         initialHeight: 240
     };
 }
 
-export default defineEditorBlockRenderer(renderEditorBlock);
+export default defineEditorBlockRenderer(renderEditorBlock, {hydrate: true});

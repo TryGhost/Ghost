@@ -10,7 +10,7 @@ const install: AddonInstallRecord = {
     version: '1.0.0',
     apiVersion: '2026-01',
     editor: {
-        blocks: [{name: 'episode-player', label: 'Transistor episode'}],
+        blocks: [{name: 'episode-player', label: 'Transistor episode', hydrate: true}],
         contentBundleUrl: 'https://podcasts.example/editor.js',
         integrity: 'sha256-pinned',
         settingsBundleUrl: 'https://podcasts.example/settings.js',
@@ -46,7 +46,8 @@ describe('createAddonEditorBlocksConfig', function () {
             keywords: undefined,
             initialProperties: undefined,
             resourceOrigins: undefined,
-            hasSettings: true
+            hasSettings: true,
+            hasHydration: true
         }]);
 
         await expect(config.renderBlock({

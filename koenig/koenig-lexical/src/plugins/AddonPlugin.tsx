@@ -21,6 +21,7 @@ function updateAddonNode(node, dataset) {
     node.css = dataset.css;
     node.portableHtml = dataset.portableHtml;
     node.resourceOrigins = [...dataset.resourceOrigins];
+    node.hydrate = dataset.hydrate;
     node.initialHeight = dataset.initialHeight;
 }
 
@@ -62,6 +63,7 @@ export const AddonPlugin = () => {
                         css: '[data-ghost-addon-loading]{box-sizing:border-box;padding:24px;color:#738a94;font:14px sans-serif}',
                         portableHtml: '<p>Loading add-on block…</p>',
                         resourceOrigins: [],
+                        hydrate: definition.hasHydration === true,
                         initialHeight: 80
                     });
                     const placeholderKey = placeholder.getKey();

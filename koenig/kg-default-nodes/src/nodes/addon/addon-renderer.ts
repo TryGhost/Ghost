@@ -12,6 +12,7 @@ export type AddonNodeData = {
     css: string;
     portableHtml: string;
     resourceOrigins: string[];
+    hydrate?: boolean;
     initialHeight: number;
 };
 
@@ -21,10 +22,58 @@ export const MAX_ADDON_HEIGHT = 20_000;
 const BLOCKED_ELEMENTS = 'script,iframe,object,embed,base,link,meta,template';
 const BOOTSTRAP_NONCE = 'ghost-addon-bootstrap';
 
-const STATIC_FRAME_BOOTSTRAP = `(function (instanceId) {
+function isJsonCompatible(value: unknown, ancestors = new WeakSet<object>()): boolean {
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') {
+        return true;
+    }
+    if (typeof value === 'number') {
+        return Number.isFinite(value);
+    }
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
+    if (ancestors.has(value)) {
+        return false;
+    }
+
+    ancestors.add(value);
+    let compatible: boolean;
+    if (Array.isArray(value)) {
+        compatible = value.every(item => isJsonCompatible(item, ancestors));
+    } else if (Object.prototype.toString.call(value) === '[object Object]'
+        && Object.getOwnPropertySymbols(value).length === 0
+        && Object.getOwnPropertyNames(value).length === Object.keys(value).length) {
+        compatible = Object.values(value).every(item => isJsonCompatible(item, ancestors));
+    } else {
+        compatible = false;
+    }
+    ancestors.delete(value);
+    return compatible;
+}
+
+function hasSafeProperties(value: unknown): value is Record<string, unknown> {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || !isJsonCompatible(value)) {
+        return false;
+    }
+    try {
+        const serialized = JSON.stringify(value);
+        return typeof serialized === 'string' && new TextEncoder().encode(serialized).byteLength <= MAX_ADDON_SNAPSHOT_BYTES;
+    } catch {
+        return false;
+    }
+}
+
+const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProps, shouldHydrate) {
     var connected = false;
     var attempts = 0;
     var retryTimer;
+    var hydrationStarted = false;
+    var props = {};
+    try {
+        props = JSON.parse(serializedProps);
+    } catch (error) {
+        props = {};
+    }
     var navigationToken = Array.prototype.map.call(window.crypto.getRandomValues(new Uint32Array(4)), function (value) {
         return value.toString(16).padStart(8, '0');
     }).join('');
@@ -37,6 +86,9 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId) {
     };
     var sendNavigate = function (href) {
         postToParent({type: 'ghost-addon', instanceId: instanceId, action: 'navigate', href: href, navigationToken: navigationToken}, '*');
+    };
+    var sendHydrationState = function (action) {
+        postToParent({type: 'ghost-addon', instanceId: instanceId, action: action}, '*');
     };
     var measure = function () {
         var height = Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
@@ -87,6 +139,40 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId) {
             connected = true;
             window.clearInterval(retryTimer);
         }
+        if (message.action === 'hydrate' && shouldHydrate && !hydrationStarted && typeof message.source === 'string' && message.source.length <= 5242880) {
+            hydrationStarted = true;
+            var root = document.getElementById('ghost-addon-root');
+            var contentStyle = document.querySelector('style[data-ghost-addon-content-style]');
+            var fallbackMarkup = root ? root.innerHTML : '';
+            var fallbackCss = contentStyle ? contentStyle.textContent : '';
+            var failHydration = function () {
+                if (root) {
+                    root.innerHTML = fallbackMarkup;
+                }
+                if (contentStyle) {
+                    contentStyle.textContent = fallbackCss;
+                }
+                sendHydrationState('hydrate-error');
+                measure();
+            };
+            try {
+                (0, eval)(message.source);
+                var moduleExports = window.__ghostAddonModule;
+                delete window.__ghostAddonModule;
+                var hydrate = typeof moduleExports === 'function'
+                    ? moduleExports.hydrate
+                    : moduleExports && (moduleExports.hydrate || (moduleExports.default && moduleExports.default.hydrate));
+                if (typeof hydrate !== 'function' || !root) {
+                    throw new Error('Add-on bundle does not export hydration');
+                }
+                Promise.resolve(hydrate({blockName: blockName, props: props}, root)).then(function () {
+                    sendHydrationState('hydrated');
+                    measure();
+                }, failHydration);
+            } catch (error) {
+                failHydration();
+            }
+        }
     });
     window.addEventListener('load', measure);
     retryTimer = window.setInterval(announce, 250);
@@ -105,11 +191,13 @@ export function isSafeAddonSnapshot(node: AddonNodeData): boolean {
         && node.blockName.length <= 256
         && typeof node.label === 'string'
         && node.label.length <= 200
+        && hasSafeProperties(node.props)
         && typeof node.html === 'string'
         && typeof node.css === 'string'
         && typeof node.portableHtml === 'string'
         && Array.isArray(node.resourceOrigins)
         && node.resourceOrigins.every(origin => typeof origin === 'string')
+        && (node.hydrate === undefined || typeof node.hydrate === 'boolean')
         && new TextEncoder().encode(node.html).byteLength <= MAX_ADDON_SNAPSHOT_BYTES
         && new TextEncoder().encode(node.css).byteLength <= MAX_ADDON_SNAPSHOT_BYTES
         && new TextEncoder().encode(node.portableHtml).byteLength <= MAX_ADDON_SNAPSHOT_BYTES;
@@ -179,6 +267,14 @@ function serializeScriptValue(value: string): string {
         .replaceAll('\u2029', '\\u2029');
 }
 
+function serializeScriptJson(value: unknown): string {
+    try {
+        return serializeScriptValue(JSON.stringify(value) ?? '{}');
+    } catch {
+        return serializeScriptValue('{}');
+    }
+}
+
 function buildResourceSources(resourceOrigins: string[]): string {
     const origins = resourceOrigins.flatMap((value) => {
         try {
@@ -199,18 +295,22 @@ function buildStaticDocument(document: Document, node: AddonNodeData, {includeBo
     const css = node.css.replaceAll('<', '\\3c ');
     const title = escapeHtml(node.label || node.blockName);
     const resourceSources = buildResourceSources(node.resourceOrigins);
-    const scriptSource = includeBootstrap ? `'nonce-${BOOTSTRAP_NONCE}'` : '\'none\'';
+    const shouldHydrate = node.hydrate === true;
+    const scriptSource = includeBootstrap ? `'nonce-${BOOTSTRAP_NONCE}'${shouldHydrate ? ' \'unsafe-eval\'' : ''}` : '\'none\'';
+    const connectSource = shouldHydrate ? resourceSources : '\'none\'';
 
     return '<!doctype html>'
         + '<html><head>'
         + '<meta charset="utf-8">'
         + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-        + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${scriptSource}; style-src 'unsafe-inline'; img-src ${resourceSources}; media-src ${resourceSources}; font-src ${resourceSources}; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">`
+        + '<meta name="referrer" content="no-referrer">'
+        + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${scriptSource}; style-src 'unsafe-inline'; img-src ${resourceSources}; media-src ${resourceSources}; font-src ${resourceSources}; connect-src ${connectSource}; frame-src 'none'; form-action 'none'; base-uri 'none'">`
         + `<title>${title}</title>`
-        + `<style>html,body{margin:0;padding:0}#ghost-addon-root{display:flow-root}${css}</style>`
+        + '<style>html,body{margin:0;padding:0}#ghost-addon-root{display:flow-root}</style>'
+        + `<style data-ghost-addon-content-style>${css}</style>`
         + '</head><body>'
         + `<main id="ghost-addon-root">${markup}</main>`
-        + (includeBootstrap ? `<script nonce="${BOOTSTRAP_NONCE}" data-ghost-addon-bootstrap>${STATIC_FRAME_BOOTSTRAP}(${serializeScriptValue(node.id)});</script>` : '')
+        + (includeBootstrap ? `<script nonce="${BOOTSTRAP_NONCE}" data-ghost-addon-bootstrap>${STATIC_FRAME_BOOTSTRAP}(${serializeScriptValue(node.id)},${serializeScriptValue(node.blockName)},${serializeScriptJson(node.props)},${shouldHydrate});</script>` : '')
         + '</body></html>';
 }
 
@@ -250,6 +350,9 @@ export function renderAddonNode(node: AddonNodeData, options: ExportDOMOptions =
     element.dataset.addonId = node.id;
     element.dataset.addonHandle = node.addonHandle;
     element.dataset.addonBlock = node.blockName;
+    if (node.hydrate === true) {
+        element.dataset.addonHydrate = 'true';
+    }
 
     const iframe = document.createElement('iframe');
     const initialHeight = normalizeAddonHeight(node.initialHeight);

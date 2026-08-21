@@ -19,7 +19,8 @@ const manifest: AddonManifest = {
             description: 'Show a durable SEO score card',
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
-            resourceOrigins: ['https://scores.example.com']
+            resourceOrigins: ['https://scores.example.com'],
+            hydrate: true
         }],
         content: {bundle: './editor-content.js', integrity: 'sha256-editor'},
         settings: {bundle: './editor-settings.js', integrity: 'sha256-settings'}
@@ -138,7 +139,8 @@ describe('getEditorBlockDefinitions', function () {
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
             resourceOrigins: ['https://scores.example.com'],
-            hasSettings: true
+            hasSettings: true,
+            hasHydration: true
         }]);
         expect(getEditorBlockDefinitions([{...record, enabled: false}])).toEqual([]);
     });
@@ -176,5 +178,21 @@ describe('fetchManifest editor validation', function () {
 
         const {fetchManifest} = await import('../../src/host/installs.ts');
         await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('keywords');
+    });
+
+    it('requires the hydration declaration to be boolean', async function () {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                ...manifest,
+                editor: {
+                    ...manifest.editor,
+                    blocks: [{name: 'broken', label: 'Broken', hydrate: 'yes'}]
+                }
+            })
+        }));
+
+        const {fetchManifest} = await import('../../src/host/installs.ts');
+        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('hydrate');
     });
 });

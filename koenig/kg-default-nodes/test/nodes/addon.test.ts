@@ -47,6 +47,7 @@ describe('AddonNode', function () {
                         html: '<article onclick="steal()"><strong>Episode 12</strong><a href="https://example.com/episodes/12">Listen</a><a href="data:application/xhtml+xml,attack">Unsafe</a><img src="https://media.transistor.fm/cover.jpg"><img src="https://undeclared.example/tracker.gif"><script>steal()</script><template shadowrootmode="open"><script nonce="ghost-addon-bootstrap">shadowAttack()</script></template></article>',
                         css: 'article { color: rebeccapurple; }',
                         resourceOrigins: ['https://media.transistor.fm'],
+                        hydrate: true,
                         initialHeight: 240
                     });
 
@@ -57,7 +58,8 @@ describe('AddonNode', function () {
                         addonHandle: 'transistor',
                         blockName: 'episode-player',
                         props: {episodeId: '1234'},
-                        resourceOrigins: ['https://media.transistor.fm']
+                        resourceOrigins: ['https://media.transistor.fm'],
+                        hydrate: true
                     });
 
                     const result = node.exportDOM(editor, {dom});
@@ -71,7 +73,8 @@ describe('AddonNode', function () {
                     });
                     expect(element.dataset).toMatchObject({
                         addonHandle: 'transistor',
-                        addonBlock: 'episode-player'
+                        addonBlock: 'episode-player',
+                        addonHydrate: 'true'
                     });
                     expect(iframe).not.toBeNull();
                     expect(iframe?.getAttribute('sandbox')).toBe('allow-scripts');
@@ -79,11 +82,17 @@ describe('AddonNode', function () {
                     expect(iframe?.getAttribute('height')).toBe('240');
                     expect(iframe?.srcdoc).toContain('<strong>Episode 12</strong>');
                     expect(iframe?.srcdoc).toContain('article { color: rebeccapurple; }');
+                    expect(iframe?.srcdoc).toContain('data-ghost-addon-content-style');
                     expect(iframe?.srcdoc).toContain('img-src data: https://media.transistor.fm');
                     expect(iframe?.srcdoc).not.toContain('img-src data: http: https:');
                     expect(iframe?.srcdoc).not.toContain('img-src data: https://undeclared.example');
                     expect(iframe?.srcdoc).toContain('data-ghost-addon-bootstrap');
                     expect(iframe?.srcdoc).toContain('script-src \'nonce-ghost-addon-bootstrap\'');
+                    expect(iframe?.srcdoc).toContain('\'unsafe-eval\'');
+                    expect(iframe?.srcdoc).toContain('connect-src data: https://media.transistor.fm');
+                    expect(iframe?.srcdoc).toContain('message.action === \'hydrate\'');
+                    expect(iframe?.srcdoc).toContain('moduleExports.hydrate');
+                    expect(iframe?.srcdoc).toContain('episodeId');
                     expect(iframe?.srcdoc).toContain('event.target.closest(\'a,area\')');
                     expect(iframe?.srcdoc).toContain('event.isTrusted');
                     expect(iframe?.srcdoc).toContain('navigationToken');
@@ -149,6 +158,7 @@ describe('AddonNode', function () {
             css: 'article { color: rebeccapurple; }',
             portableHtml: '',
             resourceOrigins: [],
+            hydrate: false,
             initialHeight: 240
         }, {dom});
 

@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {h} from 'preact';
-import {useMemo} from 'preact/hooks';
+import {useMemo, useState} from 'preact/hooks';
 import {defineEditorBlockRenderer} from '../../src/editor/index.ts';
 import {renderEditorBlockModule} from '../../src/sandbox/render-block.ts';
 
@@ -38,5 +38,39 @@ describe('renderEditorBlockModule', function () {
         await expect(renderEditorBlockModule({
             default: providerRenderer
         }, {blockName: 'empty', props: {}})).rejects.toThrow('web content');
+    });
+
+    it('hydrates the saved markup with the same provider component when opted in', async function () {
+        function Counter({label}: {label: string}) {
+            const [count, setCount] = useState(0);
+            return h('button', {onClick: () => setCount(value => value + 1)}, `${label}: ${count}`);
+        }
+
+        const providerRenderer = defineEditorBlockRenderer(({props}) => ({
+            content: h(Counter, {label: String(props.label)}),
+            css: 'button { color: green; }'
+        }), {hydrate: true});
+        const output = await providerRenderer({blockName: 'counter', props: {label: 'Clicks'}});
+        const root = document.createElement('main');
+        root.innerHTML = output.html;
+        const style = document.createElement('style');
+        style.dataset.ghostAddonContentStyle = '';
+        style.textContent = 'button { color: red; }';
+        document.head.append(style);
+        document.body.append(root);
+        const savedButton = root.firstElementChild;
+
+        await providerRenderer.hydrate?.({blockName: 'counter', props: {label: 'Clicks'}}, root);
+        const button = root.querySelector('button')!;
+        button.click();
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
+
+        expect(button).toBe(savedButton);
+        expect(button.textContent).toBe('Clicks: 1');
+        expect(style.textContent).toBe('button { color: green; }');
+        root.remove();
+        style.remove();
     });
 });
