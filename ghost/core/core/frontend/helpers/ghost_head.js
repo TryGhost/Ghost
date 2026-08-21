@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers, announcementBarService} = require('../services/proxy');
 const metaData = require('../meta');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
@@ -14,9 +14,12 @@ const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
+const announcementBar = require('./tpl/announcement-bar');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 const labs = require('../../shared/labs');
 const {getMarkdownUrl} = require('../services/llms/markdown');
+// Shared with ./tpl/announcement-bar, which embeds a JSON payload the same way.
+const escapeInlineJson = require('../utils/escape-inline-json');
 const {isPurchasableEntry, isMachinePaymentsEnabled} = require('../../shared/machine-payments');
 
 /**
@@ -62,34 +65,6 @@ function getMarkdownAlternateLink({context, post, canonicalUrl}) {
         logging.warn(err);
         return '';
     }
-}
-
-/**
- * Escape a serialized JSON string for safe inclusion inside an inline
- * `<script type="application/ld+json">` block.
- *
- * A `<script>` element is HTML *raw text*: the parser stops only at the literal
- * substring `</script`, and it never decodes HTML character references. So
- * HTML-entity escaping (e.g. `&lt;`) is the wrong tool here — worse than
- * unnecessary, it corrupts the data, because JSON-LD consumers (Google's
- * structured-data parser and friends) read the block as JSON and never
- * HTML-decode it, so `Tom & Jerry` would be indexed as the literal
- * `Tom &amp; Jerry`.
- *
- * Instead we escape only the breakout-relevant characters as JSON `\u` escapes.
- * `JSON.parse` — and every conformant structured-data parser — decodes them
- * back to the original character, so the data round-trips exactly while
- * `</script>` / `<!--` sequences can no longer form (both begin with `<`).
- *
- * @param {string} json - the output of `JSON.stringify`
- * @returns {string}
- */
-function escapeJsonLd(json) {
-    return json
-        .replace(/</g, '\\u003c')
-        .replace(/>/g, '\\u003e')
-        .replace(/\u2028/g, '\\u2028')
-        .replace(/\u2029/g, '\\u2029');
 }
 
 function writeMetaTag(property, content, type) {
@@ -172,40 +147,68 @@ function getSearchHelper(frontendKey) {
     return helper;
 }
 
+/**
+ * The announcement bar is rendered here rather than shipped as a client app: the
+ * announcement is a setting and `loadMemberSession` has already run, so the
+ * server knows both the content and the reader's audience. See
+ * `./tpl/announcement-bar` for what that saves.
+ */
 function getAnnouncementBarHelper(data) {
     const preview = data?.site?._preview;
-    const isFilled = settingsCache.get('announcement_content') && settingsCache.get('announcement_visibility').length;
-
-    if (!isFilled && !preview) {
-        return '';
-    }
-
-    const {scriptUrl} = getFrontendAppConfig('announcementBar');
-    const siteUrl = urlUtils.getSiteUrl();
-    const announcementUrl = new URL('members/api/announcement/', siteUrl);
-    const attrs = {
-        'announcement-bar': siteUrl,
-        'api-url': announcementUrl
-    };
 
     if (preview) {
         const searchParam = new URLSearchParams(preview);
         const announcement = searchParam.get('announcement');
-        const announcementBackground = searchParam.has('announcement_bg') ? searchParam.get('announcement_bg') : '';
-        const announcementVisibility = searchParam.has('announcement_vis');
 
-        if (!announcement || !announcementVisibility) {
+        // Admin only sends `announcement_vis` once an audience is ticked, and the
+        // preview deliberately ignores which one — it shows the editor their bar.
+        if (!announcement || !searchParam.has('announcement_vis')) {
             return '';
         }
-        attrs.announcement = escapeExpression(announcement);
-        attrs['announcement-background'] = escapeExpression(announcementBackground);
-        attrs.preview = true;
+
+        return announcementBar.render({
+            announcement,
+            background: searchParam.get('announcement_bg')
+        });
     }
 
-    const dataAttrs = getDataAttributes(attrs);
-    let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+    const announcement = settingsCache.get('announcement_content');
 
-    return helper;
+    if (!announcement || !settingsCache.get('announcement_visibility').length) {
+        return '';
+    }
+
+    const background = settingsCache.get('announcement_background');
+    const member = data?.root?._locals?.member;
+
+    // CASE: with `cacheMembersContent` on, a signed-in member's page HTML is
+    // cached and reused for every member on the same tier — and the bar's
+    // audiences are finer grained than a tier (a comped member with no active
+    // subscription lands on the free tier's cache entry, but reads as
+    // `paid_members` here). Baking one member's answer into a shared response
+    // would show the bar to the wrong readers, so hand that decision back to the
+    // members API, which is scoped to the individual member.
+    if (member && config.get('cacheMembersContent:enabled')) {
+        return announcementBar.render({
+            announcement,
+            background,
+            apiUrl: new URL('members/api/announcement/', urlUtils.getSiteUrl()).toString()
+        });
+    }
+
+    // Anonymous requests are cached publicly and signed-in ones are `private`
+    // (see `frontendCaching`), so in both cases this response is only ever seen
+    // by readers in the same audience as the member it was rendered for.
+    const settings = announcementBarService.getAnnouncementSettings(member);
+
+    if (!settings) {
+        return '';
+    }
+
+    return announcementBar.render({
+        announcement: settings.announcement,
+        background: settings.announcement_background
+    });
 }
 
 function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
@@ -408,7 +411,7 @@ module.exports = async function ghost_head(options) {
 
                 if (!excludeList.has('schema') && meta.schema) {
                     head.push('<script type="application/ld+json">\n' +
-                        escapeJsonLd(JSON.stringify(meta.schema, null, '    ')) +
+                        escapeInlineJson(JSON.stringify(meta.schema, null, '    ')) +
                         '\n    </script>\n');
                 }
             }
@@ -523,4 +526,4 @@ module.exports = async function ghost_head(options) {
 module.exports.async = true;
 
 // Exported for unit testing.
-module.exports.escapeJsonLd = escapeJsonLd;
+module.exports.escapeJsonLd = escapeInlineJson;

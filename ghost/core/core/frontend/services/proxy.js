@@ -91,6 +91,11 @@ module.exports = {
         return require('../../server/services/members');
     },
 
+    // Resolves an announcement against a member's audience. `ghost_head` renders
+    // the announcement bar itself, and shares this with the members API endpoint
+    // so both answer "does this reader see it?" the same way.
+    announcementBarService: require('../../server/services/announcement-bar-service'),
+
     // TODO: Expose less of the API to make this safe
     api: require('../../server/api').endpoints,
 

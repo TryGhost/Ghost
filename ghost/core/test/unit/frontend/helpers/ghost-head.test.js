@@ -1738,7 +1738,7 @@ describe('{{ghost_head}} helper', function () {
             assert.match(rendered, /sodo-search@/);
             assert.match(rendered, /portal@/);
             assert.match(rendered, /js.stripe.com/);
-            assert.match(rendered, /announcement-bar@/);
+            assert.match(rendered, /gh-announcement-bar-styles/);
         });
         it('does not show the announcement when exclude contains announcement', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1757,7 +1757,7 @@ describe('{{ghost_head}} helper', function () {
             assert.match(rendered, /portal@/);
             assert.match(rendered, /js.stripe.com/);
             assert.match(rendered, /generator/);
-            assert.doesNotMatch(rendered, /announcement-bar@/);
+            assert.doesNotMatch(rendered, /gh-announcement-bar-styles/);
         });
 
         it('does not load the comments script when exclude contains comment_counts', async function () {
@@ -1987,6 +1987,158 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             assert.doesNotMatch(rendered, /.gh-post-upgrade-cta-content/);
+        });
+    });
+    describe('announcement bar', function () {
+        const locals = {
+            relativeUrl: '/',
+            context: ['home', 'index'],
+            safeVersion: '4.3'
+        };
+
+        const renderHead = async (options = {}) => {
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                locals: {...locals, ...options.locals},
+                templateOptions: options.templateOptions
+            }));
+
+            return rendered.toString();
+        };
+
+        // The bar's markup rides inside the bootstrap's JSON payload, so the
+        // content is `\u003c`-escaped in the rendered head.
+        const barContent = (rendered) => {
+            const payload = rendered.match(/\{"h":.*?,"k":"[0-9a-f]+"(,"u":"[^"]*")?\}/);
+
+            return payload && JSON.parse(payload[0].replace(/\\u003c/g, '<').replace(/\\u003e/g, '>'));
+        };
+
+        beforeEach(function () {
+            getStub.withArgs('announcement_content').returns('Sale <strong>today</strong>');
+            getStub.withArgs('announcement_background').returns('accent');
+        });
+
+        it('renders the bar in the page for a visitor in the audience', async function () {
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
+
+            const rendered = await renderHead();
+
+            // No CDN script and no members API call: everything the browser
+            // needs to draw the bar is already in the document.
+            assert.doesNotMatch(rendered, /announcement-bar@/);
+            assert.doesNotMatch(rendered, /members\/api\/announcement/);
+            assert.match(rendered, /<style id="gh-announcement-bar-styles">/);
+            assert.match(barContent(rendered).h, /Sale <strong>today<\/strong>/);
+            assert.match(barContent(rendered).h, /class="gh-announcement-bar accent"/);
+        });
+
+        it('renders nothing for a visitor outside the audience', async function () {
+            getStub.withArgs('announcement_visibility').returns(['free_members', 'paid_members']);
+
+            const rendered = await renderHead();
+
+            assert.doesNotMatch(rendered, /gh-announcement-bar/);
+        });
+
+        it('renders the bar for a free member in the audience', async function () {
+            getStub.withArgs('announcement_visibility').returns(['free_members']);
+
+            const rendered = await renderHead({locals: {member: {status: 'free'}}});
+
+            assert.match(rendered, /gh-announcement-bar-styles/);
+        });
+
+        it('renders nothing for a free member when only paid members are in the audience', async function () {
+            getStub.withArgs('announcement_visibility').returns(['visitors', 'paid_members']);
+
+            const rendered = await renderHead({locals: {member: {status: 'free'}}});
+
+            assert.doesNotMatch(rendered, /gh-announcement-bar/);
+        });
+
+        it('renders the bar for a paid member in the audience', async function () {
+            getStub.withArgs('announcement_visibility').returns(['paid_members']);
+
+            const rendered = await renderHead({locals: {member: {status: 'paid'}}});
+
+            assert.match(rendered, /gh-announcement-bar-styles/);
+        });
+
+        it('renders nothing when no audience is selected', async function () {
+            getStub.withArgs('announcement_visibility').returns([]);
+
+            const rendered = await renderHead();
+
+            assert.doesNotMatch(rendered, /gh-announcement-bar/);
+        });
+
+        it('changes the dismissal key when the announcement is edited', async function () {
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
+            const before = barContent(await renderHead()).k;
+
+            getStub.withArgs('announcement_content').returns('Sale <strong>tomorrow</strong>');
+            const after = barContent(await renderHead()).k;
+
+            assert.notEqual(before, after);
+        });
+
+        it('cannot be escaped out of the inline script', async function () {
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
+            getStub.withArgs('announcement_content').returns('</script><script>alert(1)</script>');
+
+            const rendered = await renderHead();
+            const payload = rendered.match(/\{"h":.*?,"k":"[0-9a-f]+"\}/)[0];
+
+            // Nothing in the payload can start an HTML tag, so the announcement
+            // cannot close the script element it travels inside...
+            assert.doesNotMatch(payload, /[<>]/);
+            // ...while still arriving at the browser intact.
+            assert.match(barContent(rendered).h, /<script>alert\(1\)<\/script>/);
+        });
+
+        describe('when member content is cached', function () {
+            beforeEach(function () {
+                configUtils.set('cacheMembersContent:enabled', true);
+            });
+
+            it('leaves the audience check to the members API for a signed-in member', async function () {
+                getStub.withArgs('announcement_visibility').returns(['paid_members']);
+
+                const rendered = await renderHead({locals: {member: {status: 'paid'}}});
+
+                assert.equal(barContent(rendered).u, 'http://127.0.0.1:2369/members/api/announcement/');
+            });
+
+            it('still resolves the audience itself for a visitor', async function () {
+                getStub.withArgs('announcement_visibility').returns(['visitors']);
+
+                const rendered = await renderHead();
+
+                assert.equal(barContent(rendered).u, undefined);
+            });
+        });
+
+        describe('in the Admin preview', function () {
+            it('renders the previewed announcement', async function () {
+                const templateOptions = {
+                    site: {_preview: 'announcement=Preview+me&announcement_bg=light&announcement_vis=visitors'}
+                };
+
+                const rendered = await renderHead({templateOptions});
+
+                assert.match(barContent(rendered).h, /Preview me/);
+                assert.match(barContent(rendered).h, /class="gh-announcement-bar light"/);
+            });
+
+            it('renders nothing until an audience is selected', async function () {
+                const templateOptions = {
+                    site: {_preview: 'announcement=Preview+me&announcement_bg=light'}
+                };
+
+                const rendered = await renderHead({templateOptions});
+
+                assert.doesNotMatch(rendered, /gh-announcement-bar/);
+            });
         });
     });
 });
