@@ -52,7 +52,7 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & {onClose: () => v
         okRunningLabel='Activating...'
         okVariant='default'
         prompt={
-            <div className='space-y-5'>
+            <div className='flex flex-col gap-4'>
                 <p className='text-base text-foreground'>{status}</p>
                 <ThemeValidationIssueList problems={problems} />
             </div>

@@ -39,7 +39,7 @@ const InvalidThemeModal: React.FC<InvalidThemeModalProps & {onClose: () => void}
         okLabel={okLabel ?? (onRetry ? 'Try again' : '')}
         okVariant='default'
         prompt={
-            <div className='space-y-5'>
+            <div className='flex flex-col gap-4'>
                 <p className='text-base text-foreground'>
                     {themeName ? <strong>{themeName}</strong> : 'This theme'} couldn&apos;t be {action}. Fix the errors below and try again.
                 </p>
