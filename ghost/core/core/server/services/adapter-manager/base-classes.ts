@@ -8,6 +8,8 @@ import {JobsBackendBase} from '@tryghost/adapter-base-jobs';
 
 import type {BaseClassMap} from './adapter-manager';
 
+const EmailProviderBase = require('../../adapters/email/email-provider-base');
+
 /**
  * The base class every adapter of a given type must extend. Also read by
  * bin/validate-adapters.js, which checks adapter implementations at build time -
@@ -18,6 +20,7 @@ export const baseClasses = {
     scheduling: SchedulingBase,
     sso: SSOBase,
     cache: CacheBase,
+    email: EmailProviderBase,
     redirects: RedirectsStoreBase,
     'route-settings': RouteSettingsStoreBase,
     jobs: JobsBackendBase
