@@ -221,11 +221,7 @@ describe('hasActiveOffer', function () {
       currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z'),
     });
     const offersAPI = createOffersAPI(
-      createOffer({
-        duration: 'repeating',
-        duration_in_months: 3,
-        redemption_type: 'retention',
-      } as const),
+      createOffer({ duration: 'repeating', duration_in_months: 3, redemption_type: 'retention' }),
     );
 
     const result = await hasActiveOffer(model, offersAPI);
