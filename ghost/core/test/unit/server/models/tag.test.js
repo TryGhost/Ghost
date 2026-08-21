@@ -1,52 +1,53 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const {Tag} = require('../../../../core/server/models/tag');
-const {knex} = require('../../../../core/server/data/db');
+const { Tag } = require('../../../../core/server/models/tag');
+const { knex } = require('../../../../core/server/data/db');
 
 describe('Unit: models/tag', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('SQL', function () {
+    const mockDb = require('../../../utils/mock-knex');
+    let tracker;
+
+    beforeAll(function () {
+      mockDb.mock(knex);
+      tracker = mockDb.getTracker();
     });
 
-    describe('SQL', function () {
-        const mockDb = require('../../../utils/mock-knex');
-        let tracker;
-
-        beforeAll(function () {
-            mockDb.mock(knex);
-            tracker = mockDb.getTracker();
-        });
-
-        afterAll(function () {
-            sinon.restore();
-        });
-
-        afterAll(function () {
-            mockDb.unmock(knex);
-        });
-
-        it('generates correct query for - filter: count.posts:>=1, order: count.posts DESC, limit of: all, withRelated: count.posts', function () {
-            const queries = [];
-            tracker.install();
-
-            tracker.on('query', (query) => {
-                queries.push(query);
-                query.response([]);
-            });
-
-            return Tag.findPage({
-                filter: 'count.posts:>=1',
-                order: 'count.posts DESC',
-                limit: 'all',
-                withRelated: ['count.posts']
-            }).then(() => {
-                assert.equal(queries.length, 1);
-
-                assert.equal(queries[0].sql, 'select `tags`.*, (select count(distinct `posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
-                assert.deepEqual(queries[0].bindings, [
-                    1
-                ]);
-            });
-        });
+    afterAll(function () {
+      sinon.restore();
     });
+
+    afterAll(function () {
+      mockDb.unmock(knex);
+    });
+
+    it('generates correct query for - filter: count.posts:>=1, order: count.posts DESC, limit of: all, withRelated: count.posts', function () {
+      const queries = [];
+      tracker.install();
+
+      tracker.on('query', (query) => {
+        queries.push(query);
+        query.response([]);
+      });
+
+      return Tag.findPage({
+        filter: 'count.posts:>=1',
+        order: 'count.posts DESC',
+        limit: 'all',
+        withRelated: ['count.posts'],
+      }).then(() => {
+        assert.equal(queries.length, 1);
+
+        assert.equal(
+          queries[0].sql,
+          'select `tags`.*, (select count(distinct `posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC',
+        );
+        assert.deepEqual(queries[0].bindings, [1]);
+      });
+    });
+  });
 });

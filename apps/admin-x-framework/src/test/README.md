@@ -19,9 +19,11 @@ setupShadeMocks();
 ### Available Setup Functions
 
 #### `setupShadeMocks()`
+
 Automatically provides mocks for:
+
 - **`window.matchMedia`** - Required for responsive behavior in shade components
-- **`ResizeObserver`** - Required for charts and responsive components  
+- **`ResizeObserver`** - Required for charts and responsive components
 - **`Element.prototype.getBoundingClientRect`** - Required for positioning calculations
 
 ## MSW API Mocking
@@ -39,7 +41,7 @@ const server = setupMswServer();
 describe('My Component', () => {
     // Server lifecycle is automatically managed
     // beforeAll, afterEach, afterAll are handled for you
-    
+
     it('loads data from API', async () => {
         // Common endpoints like /config/, /settings/, /users/me/ are already mocked
         // Your test just works!
@@ -63,10 +65,10 @@ describe('Error Handling', () => {
         server.use(
             http.put('/ghost/api/admin/links/bulk/', () => new HttpResponse(null, {status: 500}))
         );
-        
+
         // Test error handling...
     });
-    
+
     it('handles custom responses', () => {
         // Override with custom response data
         server.use(
@@ -75,7 +77,7 @@ describe('Error Handling', () => {
                 meta: {pagination: {total: 1}}
             }))
         );
-        
+
         // Test with custom data...
     });
 });
@@ -94,10 +96,10 @@ describe('API Request Validation', () => {
             http.put('/ghost/api/admin/links/bulk/', async ({request}) => {
                 const url = new URL(request.url);
                 const body = await request.json();
-                
+
                 // Validate URL parameters
                 expect(url.searchParams.get('filter')).toBe('post_id:\'123\'+to:\'https://example.com\'');
-                
+
                 // Validate request body
                 expect(body).toEqual({
                     bulk: {
@@ -107,11 +109,11 @@ describe('API Request Validation', () => {
                         }
                     }
                 });
-                
+
                 return HttpResponse.json({success: true});
             })
         );
-        
+
         // Test your component/hook...
     });
 });
@@ -129,7 +131,7 @@ const server = setupMswServer([
     http.get('/custom/endpoint/', () => {
         return HttpResponse.json({custom: 'data'});
     }),
-    
+
     // Override default handlers
     http.get('/ghost/api/admin/config/', () => {
         return HttpResponse.json({version: '6.x'});
@@ -175,6 +177,7 @@ render(<MyComponent />, {wrapper: TestWrapper});
 ## Best Practices
 
 ### 1. Use Path Aliases Instead of Relative Imports
+
 ```typescript
 // ✅ Good - Use @src alias
 import {useMyHook} from '@src/hooks/useMyHook';
@@ -200,6 +203,7 @@ import MyComponent from '../../../src/components/MyComponent';
 ```
 
 ### 2. Leverage MSW for API Testing
+
 ```typescript
 // ✅ Good - Use centralized MSW setup
 const server = setupMswServer();
@@ -209,6 +213,7 @@ const server = setupServer(/* manual handlers */);
 ```
 
 ### 3. Override Only When Needed
+
 ```typescript
 // ✅ Good - Override specific endpoints
 server.use(http.put('/api/endpoint/', () => new HttpResponse(null, {status: 500})));
@@ -217,6 +222,7 @@ server.use(http.put('/api/endpoint/', () => new HttpResponse(null, {status: 500}
 ```
 
 ### 4. Proper Cleanup
+
 ```typescript
 // ✅ Good - Use provided setup
 const server = setupMswServer(); // Handles lifecycle automatically
@@ -225,4 +231,4 @@ const server = setupMswServer(); // Handles lifecycle automatically
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
-``` 
+```

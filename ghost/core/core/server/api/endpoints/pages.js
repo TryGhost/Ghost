@@ -2,302 +2,293 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
-const {rejectAdminApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
-const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
+const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+const ALLOWED_INCLUDES = [
+  'tags',
+  'authors',
+  'authors.roles',
+  'tiers',
+  'count.signups',
+  'count.paid_conversions',
+  'post_revisions',
+  'post_revisions.author',
+];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
 const messages = {
-    pageNotFound: 'Page not found.'
+  pageNotFound: 'Page not found.',
 };
 
 const postsService = getPostServiceInstance();
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'pages',
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'filter',
-            'fields',
-            'formats',
-            'limit',
-            'order',
-            'page',
-            'debug',
-            'absolute_urls'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                formats: {
-                    values: models.Post.allowedFormats
-                }
-            }
-        },
-        permissions: {
-            docName: 'posts',
-            unsafeAttrs: UNSAFE_ATTRS
-        },
-        query(frame) {
-            const options = {
-                ...frame.options,
-                mongoTransformer: rejectAdminApiRestrictedFieldsTransformer
-            };
-            return models.Post.findPage(options);
-        }
+  docName: 'pages',
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
+    options: [
+      'include',
+      'filter',
+      'fields',
+      'formats',
+      'limit',
+      'order',
+      'page',
+      'debug',
+      'absolute_urls',
+    ],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'include',
-            'fields',
-            'formats',
-            'debug',
-            'absolute_urls',
-            // NOTE: only for internal context
-            'forUpdate',
-            'transacting'
-        ],
-        data: [
-            'id',
-            'slug',
-            'uuid'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                formats: {
-                    values: models.Post.allowedFormats
-                }
-            }
+        formats: {
+          values: models.Post.allowedFormats,
         },
-        permissions: {
-            docName: 'posts',
-            unsafeAttrs: UNSAFE_ATTRS
-        },
-        async query(frame) {
-            const model = await models.Post.findOne(frame.data, frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.pageNotFound)
-                });
-            }
-
-            return model;
-        }
+      },
     },
-
-    add: {
-        statusCode: 201,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'formats',
-            'source'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                source: {
-                    values: ['html']
-                }
-            }
-        },
-        permissions: {
-            docName: 'posts',
-            unsafeAttrs: UNSAFE_ATTRS
-        },
-        async query(frame) {
-            const model = await models.Post.add(frame.data.pages[0], frame.options);
-            if (model.get('status') === 'published') {
-                frame.setHeader('X-Cache-Invalidate', '/*');
-            }
-
-            return model;
-        }
+    permissions: {
+      docName: 'posts',
+      unsafeAttrs: UNSAFE_ATTRS,
     },
-
-    edit: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'id',
-            'formats',
-            'source',
-            'force_rerender',
-            'save_revision',
-            'convert_to_lexical',
-            // NOTE: only for internal context
-            'forUpdate',
-            'transacting'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                id: {
-                    required: true
-                },
-                source: {
-                    values: ['html']
-                }
-            }
-        },
-        permissions: {
-            docName: 'posts',
-            unsafeAttrs: UNSAFE_ATTRS
-        },
-        async query(frame) {
-            const model = await models.Post.edit(frame.data.pages[0], frame.options);
-
-            const cacheInvalidation = postsService.handleCacheInvalidation(model);
-
-            if (cacheInvalidation === true) {
-                frame.setHeader('X-Cache-Invalidate', '/*');
-            } else if (cacheInvalidation.value) {
-                frame.setHeader('X-Cache-Invalidate', cacheInvalidation.value);
-            }
-
-            return model;
-        }
+    query(frame) {
+      const options = {
+        ...frame.options,
+        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
+      };
+      return models.Post.findPage(options);
     },
+  },
 
-    bulkEdit: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: true
-        },
-        options: [
-            'filter'
-        ],
-        data: [
-            'action',
-            'meta'
-        ],
-        validation: {
-            data: {
-                action: {
-                    required: true
-                }
-            },
-            options: {
-                filter: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            docName: 'posts',
-            method: 'edit'
-        },
-        async query(frame) {
-            return await postsService.bulkEdit(frame.data.bulk, frame.options);
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    bulkDestroy: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: true
+    options: [
+      'include',
+      'fields',
+      'formats',
+      'debug',
+      'absolute_urls',
+      // NOTE: only for internal context
+      'forUpdate',
+      'transacting',
+    ],
+    data: ['id', 'slug', 'uuid'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'filter'
-        ],
-        permissions: {
-            docName: 'posts',
-            method: 'destroy'
+        formats: {
+          values: models.Post.allowedFormats,
         },
-        async query(frame) {
-            const result = await postsService.bulkDestroy(frame.options);
-            if (result.allDraft) {
-                frame.setHeader('X-Cache-Invalidate', '');
-            }
-
-            return result;
-        }
+      },
     },
-
-    destroy: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: true
-        },
-        options: [
-            'include',
-            'id'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            docName: 'posts',
-            unsafeAttrs: UNSAFE_ATTRS
-        },
-        async query(frame) {
-            const page = await models.Post.findOne({
-                id: frame.options.id,
-                type: 'page',
-                status: 'all'
-            }, {require: false, columns: ['status']});
-
-            if (page && page.get('status') === 'draft') {
-                frame.setHeader('X-Cache-Invalidate', '');
-            }
-
-            return models.Post.destroy({...frame.options, require: true});
-        }
+    permissions: {
+      docName: 'posts',
+      unsafeAttrs: UNSAFE_ATTRS,
     },
+    async query(frame) {
+      const model = await models.Post.findOne(frame.data, frame.options);
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.pageNotFound),
+        });
+      }
 
-    copy: {
-        statusCode: 201,
-        headers: {
-            location: {
-                resolve: postsService.generateCopiedPostLocationFromUrl
-            },
-            cacheInvalidate: false
+      return model;
+    },
+  },
+
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include', 'formats', 'source'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'id',
-            'formats'
-        ],
-        validation: {
-            id: {
-                required: true
-            }
+        source: {
+          values: ['html'],
         },
-        permissions: {
-            docName: 'posts',
-            method: 'add'
+      },
+    },
+    permissions: {
+      docName: 'posts',
+      unsafeAttrs: UNSAFE_ATTRS,
+    },
+    async query(frame) {
+      const model = await models.Post.add(frame.data.pages[0], frame.options);
+      if (model.get('status') === 'published') {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+
+      return model;
+    },
+  },
+
+  edit: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: [
+      'include',
+      'id',
+      'formats',
+      'source',
+      'force_rerender',
+      'save_revision',
+      'convert_to_lexical',
+      // NOTE: only for internal context
+      'forUpdate',
+      'transacting',
+    ],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        async query(frame) {
-            return postsService.copyPost(frame);
-        }
-    }
+        id: {
+          required: true,
+        },
+        source: {
+          values: ['html'],
+        },
+      },
+    },
+    permissions: {
+      docName: 'posts',
+      unsafeAttrs: UNSAFE_ATTRS,
+    },
+    async query(frame) {
+      const model = await models.Post.edit(frame.data.pages[0], frame.options);
+
+      const cacheInvalidation = postsService.handleCacheInvalidation(model);
+
+      if (cacheInvalidation === true) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      } else if (cacheInvalidation.value) {
+        frame.setHeader('X-Cache-Invalidate', cacheInvalidation.value);
+      }
+
+      return model;
+    },
+  },
+
+  bulkEdit: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['filter'],
+    data: ['action', 'meta'],
+    validation: {
+      data: {
+        action: {
+          required: true,
+        },
+      },
+      options: {
+        filter: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      docName: 'posts',
+      method: 'edit',
+    },
+    async query(frame) {
+      return await postsService.bulkEdit(frame.data.bulk, frame.options);
+    },
+  },
+
+  bulkDestroy: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['filter'],
+    permissions: {
+      docName: 'posts',
+      method: 'destroy',
+    },
+    async query(frame) {
+      const result = await postsService.bulkDestroy(frame.options);
+      if (result.allDraft) {
+        frame.setHeader('X-Cache-Invalidate', '');
+      }
+
+      return result;
+    },
+  },
+
+  destroy: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['include', 'id'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
+        },
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      docName: 'posts',
+      unsafeAttrs: UNSAFE_ATTRS,
+    },
+    async query(frame) {
+      const page = await models.Post.findOne(
+        {
+          id: frame.options.id,
+          type: 'page',
+          status: 'all',
+        },
+        { require: false, columns: ['status'] },
+      );
+
+      if (page && page.get('status') === 'draft') {
+        frame.setHeader('X-Cache-Invalidate', '');
+      }
+
+      return models.Post.destroy({ ...frame.options, require: true });
+    },
+  },
+
+  copy: {
+    statusCode: 201,
+    headers: {
+      location: {
+        resolve: postsService.generateCopiedPostLocationFromUrl,
+      },
+      cacheInvalidate: false,
+    },
+    options: ['id', 'formats'],
+    validation: {
+      id: {
+        required: true,
+      },
+    },
+    permissions: {
+      docName: 'posts',
+      method: 'add',
+    },
+    async query(frame) {
+      return postsService.copyPost(frame);
+    },
+  },
 };
 
 module.exports = controller;

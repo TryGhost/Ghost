@@ -22,58 +22,65 @@ import Zapier from '@/settings/assets/images/brand-icons/zapier.svg';
 import clsx from 'clsx';
 
 const icons = {
-    beehiiv: {src: Beehiiv},
-    facebook: {src: Facebook, monochrome: true},
-    firstpromoter: {src: FirstPromoter},
-    linkedin: {src: Linkedin, monochrome: true},
-    mailchimp: {src: Mailchimp},
-    medium: {src: Medium},
-    pintura: {src: Pintura},
-    'portal-icon-1': {src: PortalIcon1, monochrome: true},
-    'portal-icon-2': {src: PortalIcon2, monochrome: true},
-    'portal-icon-3': {src: PortalIcon3, monochrome: true},
-    'portal-icon-4': {src: PortalIcon4, monochrome: true},
-    'portal-icon-5': {src: PortalIcon5, monochrome: true},
-    slack: {src: Slack},
-    squarespace: {src: Squarespace},
-    substack: {src: Substack},
-    transistor: {src: Transistor, monochrome: true},
-    'twitter-x': {src: TwitterX, monochrome: true},
-    unsplash: {src: Unsplash, monochrome: true},
-    wordpress: {src: Wordpress},
-    zapier: {src: Zapier}
+  beehiiv: { src: Beehiiv },
+  facebook: { src: Facebook, monochrome: true },
+  firstpromoter: { src: FirstPromoter },
+  linkedin: { src: Linkedin, monochrome: true },
+  mailchimp: { src: Mailchimp },
+  medium: { src: Medium },
+  pintura: { src: Pintura },
+  'portal-icon-1': { src: PortalIcon1, monochrome: true },
+  'portal-icon-2': { src: PortalIcon2, monochrome: true },
+  'portal-icon-3': { src: PortalIcon3, monochrome: true },
+  'portal-icon-4': { src: PortalIcon4, monochrome: true },
+  'portal-icon-5': { src: PortalIcon5, monochrome: true },
+  slack: { src: Slack },
+  squarespace: { src: Squarespace },
+  substack: { src: Substack },
+  transistor: { src: Transistor, monochrome: true },
+  'twitter-x': { src: TwitterX, monochrome: true },
+  unsplash: { src: Unsplash, monochrome: true },
+  wordpress: { src: Wordpress },
+  zapier: { src: Zapier },
 } as const;
 
 export type BrandIconName = keyof typeof icons;
 
 export interface BrandIconProps {
-    className?: string;
-    name: BrandIconName;
-    size?: number;
-    style?: React.CSSProperties;
+  className?: string;
+  name: BrandIconName;
+  size?: number;
+  style?: React.CSSProperties;
 }
 
-const BrandIcon: React.FC<BrandIconProps> = ({name, size, className, style}) => {
-    const icon = icons[name];
-    const sizeStyle = size ? {width: size, height: size, ...style} : style;
+const BrandIcon: React.FC<BrandIconProps> = ({ name, size, className, style }) => {
+  const icon = icons[name];
+  const sizeStyle = size ? { width: size, height: size, ...style } : style;
 
-    if ('monochrome' in icon) {
-        const mask = `url("${icon.src}") center / contain no-repeat`;
+  if ('monochrome' in icon) {
+    const mask = `url("${icon.src}") center / contain no-repeat`;
 
-        return (
-            <span
-                aria-hidden='true'
-                className={clsx('pointer-events-none inline-block shrink-0 bg-current', className)}
-                style={{
-                    WebkitMask: mask,
-                    mask,
-                    ...sizeStyle
-                }}
-            />
-        );
-    }
+    return (
+      <span
+        aria-hidden="true"
+        className={clsx('pointer-events-none inline-block shrink-0 bg-current', className)}
+        style={{
+          WebkitMask: mask,
+          mask,
+          ...sizeStyle,
+        }}
+      />
+    );
+  }
 
-    return <img alt='' className={clsx('pointer-events-none', className)} src={icon.src} style={sizeStyle} />;
+  return (
+    <img
+      alt=""
+      className={clsx('pointer-events-none', className)}
+      src={icon.src}
+      style={sizeStyle}
+    />
+  );
 };
 
 export default BrandIcon;

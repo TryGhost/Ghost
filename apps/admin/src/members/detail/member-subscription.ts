@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
-import {getSymbol} from '@tryghost/admin-x-framework';
-import type {MemberSubscription, MemberTier} from '@tryghost/admin-x-framework/api/members';
+import { getSymbol } from '@tryghost/admin-x-framework';
+import type { MemberSubscription, MemberTier } from '@tryghost/admin-x-framework/api/members';
 
 export type SubscriptionKind = 'paid' | 'complimentary' | 'gift';
 
@@ -14,17 +14,17 @@ const GIFT_NICKNAME = 'gift subscription';
  * subscription id (empty string), while paid subs always carry one.
  */
 export function classifyMemberSubscription(sub: MemberSubscription): SubscriptionKind {
-    if (sub.id) {
-        return 'paid';
-    }
-    const nickname = sub.plan?.nickname?.toLowerCase() ?? '';
-    if (nickname === COMPLIMENTARY_NICKNAME) {
-        return 'complimentary';
-    }
-    if (nickname === GIFT_NICKNAME) {
-        return 'gift';
-    }
+  if (sub.id) {
     return 'paid';
+  }
+  const nickname = sub.plan?.nickname?.toLowerCase() ?? '';
+  if (nickname === COMPLIMENTARY_NICKNAME) {
+    return 'complimentary';
+  }
+  if (nickname === GIFT_NICKNAME) {
+    return 'gift';
+  }
+  return 'paid';
 }
 
 /**
@@ -38,15 +38,20 @@ export function classifyMemberSubscription(sub: MemberSubscription): Subscriptio
  * separator) rather than pinning en-US.
  */
 export function formatSubscriptionAmount(amount: number, currency: string): string {
-    const symbol = getSymbol(currency);
-    const value = amount / 100;
-    const isWhole = value % 1 === 0;
-    const formatted = value.toLocaleString(undefined, isWhole ? undefined : {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    return `${symbol}${formatted}`;
+  const symbol = getSymbol(currency);
+  const value = amount / 100;
+  const isWhole = value % 1 === 0;
+  const formatted = value.toLocaleString(
+    undefined,
+    isWhole ? undefined : { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+  );
+  return `${symbol}${formatted}`;
 }
 
-export function formatSubscriptionInterval(interval: MemberSubscription['price']['interval']): string {
-    return interval === 'year' ? 'yearly' : 'monthly';
+export function formatSubscriptionInterval(
+  interval: MemberSubscription['price']['interval'],
+): string {
+  return interval === 'year' ? 'yearly' : 'monthly';
 }
 
 /**
@@ -58,15 +63,15 @@ export function formatSubscriptionInterval(interval: MemberSubscription['price']
  * `subscription-data.js:priceLabel`.
  */
 export function getSubscriptionPriceLabel(sub: MemberSubscription): string | null {
-    const isTrial = !!sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day');
-    if (isTrial) {
-        return 'Free trial';
-    }
-    const nickname = sub.price?.nickname;
-    if (nickname && nickname !== 'Monthly' && nickname !== 'Yearly') {
-        return nickname;
-    }
-    return null;
+  const isTrial = !!sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day');
+  if (isTrial) {
+    return 'Free trial';
+  }
+  const nickname = sub.price?.nickname;
+  if (nickname && nickname !== 'Monthly' && nickname !== 'Yearly') {
+    return nickname;
+  }
+  return null;
 }
 
 /**
@@ -74,14 +79,16 @@ export function getSubscriptionPriceLabel(sub: MemberSubscription): string | nul
  * at period end; otherwise "Active" — matching the Ember status badge.
  */
 export function getSubscriptionStatusLabel(sub: MemberSubscription): string {
-    if (sub.status === 'canceled' || sub.cancel_at_period_end) {
-        return 'Canceled';
-    }
-    return 'Active';
+  if (sub.status === 'canceled' || sub.cancel_at_period_end) {
+    return 'Canceled';
+  }
+  return 'Active';
 }
 
-const formatDateLocal = (value: string | null | undefined) => (value ? moment(new Date(value)).format('D MMM YYYY') : '');
-const formatDateUtc = (value: string | null | undefined) => (value ? moment(value).utc().format('D MMM YYYY') : '');
+const formatDateLocal = (value: string | null | undefined) =>
+  value ? moment(new Date(value)).format('D MMM YYYY') : '';
+const formatDateUtc = (value: string | null | undefined) =>
+  value ? moment(value).utc().format('D MMM YYYY') : '';
 
 /**
  * The line of copy that appears under a subscription describing its lifecycle:
@@ -95,34 +102,35 @@ const formatDateUtc = (value: string | null | undefined) => (value ? moment(valu
  * UTC (Ember `compExpiry`/`giftExpiry` explicitly call `.utc()`).
  */
 export function getSubscriptionValidityLabel(sub: MemberSubscription): string {
-    const kind = classifyMemberSubscription(sub);
-    if (kind === 'complimentary' || kind === 'gift') {
-        const tierExpiry = formatDateUtc(sub.tier?.expiry_at);
-        return tierExpiry ? `Expires ${tierExpiry}` : '';
-    }
+  const kind = classifyMemberSubscription(sub);
+  if (kind === 'complimentary' || kind === 'gift') {
+    const tierExpiry = formatDateUtc(sub.tier?.expiry_at);
+    return tierExpiry ? `Expires ${tierExpiry}` : '';
+  }
 
-    // Ember blanks validUntil for a hard cancel to avoid showing a stale period end.
-    const validUntil = (sub.status === 'canceled' && !sub.cancel_at_period_end)
-        ? ''
-        : formatDateLocal(sub.current_period_end);
+  // Ember blanks validUntil for a hard cancel to avoid showing a stale period end.
+  const validUntil =
+    sub.status === 'canceled' && !sub.cancel_at_period_end
+      ? ''
+      : formatDateLocal(sub.current_period_end);
 
-    if (sub.status === 'canceled') {
-        return validUntil ? `Ended ${validUntil}` : '';
-    }
-    if (sub.cancel_at_period_end) {
-        return validUntil ? `Has access until ${validUntil}` : '';
-    }
-    // Trial only overrides the default "Renews" line — a canceled or period-ending
-    // subscription that still has a Stripe trial_end wins with its cancel copy.
-    if (sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day')) {
-        return `Ends ${formatDateLocal(sub.trial_end_at)}`;
-    }
-    return validUntil ? `Renews ${validUntil}` : '';
+  if (sub.status === 'canceled') {
+    return validUntil ? `Ended ${validUntil}` : '';
+  }
+  if (sub.cancel_at_period_end) {
+    return validUntil ? `Has access until ${validUntil}` : '';
+  }
+  // Trial only overrides the default "Renews" line — a canceled or period-ending
+  // subscription that still has a Stripe trial_end wins with its cancel copy.
+  if (sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day')) {
+    return `Ends ${formatDateLocal(sub.trial_end_at)}`;
+  }
+  return validUntil ? `Renews ${validUntil}` : '';
 }
 
 export interface SubscriptionGroup {
-    tier: MemberTier;
-    subscriptions: MemberSubscription[];
+  tier: MemberTier;
+  subscriptions: MemberSubscription[];
 }
 
 /**
@@ -133,24 +141,24 @@ export interface SubscriptionGroup {
  * row on `sub.price.amount`.
  */
 export function groupSubscriptionsByTier(subs: MemberSubscription[]): SubscriptionGroup[] {
-    const groups: SubscriptionGroup[] = [];
-    const byTier = new Map<string, SubscriptionGroup>();
-    for (const sub of subs) {
-        if (!sub.price) {
-            continue;
-        }
-        // Ember falls back to `sub.price.tier` when `sub.tier` is missing.
-        const tier = sub.tier ?? (sub.price as {tier?: MemberTier}).tier;
-        if (!tier?.id) {
-            continue;
-        }
-        let group = byTier.get(tier.id);
-        if (!group) {
-            group = {tier, subscriptions: []};
-            byTier.set(tier.id, group);
-            groups.push(group);
-        }
-        group.subscriptions.push(sub);
+  const groups: SubscriptionGroup[] = [];
+  const byTier = new Map<string, SubscriptionGroup>();
+  for (const sub of subs) {
+    if (!sub.price) {
+      continue;
     }
-    return groups;
+    // Ember falls back to `sub.price.tier` when `sub.tier` is missing.
+    const tier = sub.tier ?? (sub.price as { tier?: MemberTier }).tier;
+    if (!tier?.id) {
+      continue;
+    }
+    let group = byTier.get(tier.id);
+    if (!group) {
+      group = { tier, subscriptions: [] };
+      byTier.set(tier.id, group);
+      groups.push(group);
+    }
+    group.subscriptions.push(sub);
+  }
+  return groups;
 }

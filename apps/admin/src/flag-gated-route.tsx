@@ -1,6 +1,6 @@
-import { EmberFallback } from "./ember-bridge";
-import { useFlagGatedRouteOwner } from "./use-flag-gated-route-owner";
-import { Suspense, type ComponentType, type LazyExoticComponent } from "react";
+import { EmberFallback } from './ember-bridge';
+import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
+import { Suspense, type ComponentType, type LazyExoticComponent } from 'react';
 
 /**
  * Chooses which implementation serves a route while a screen migrates from
@@ -24,21 +24,24 @@ import { Suspense, type ComponentType, type LazyExoticComponent } from "react";
  * them through the framework's default error handler, and the shell calls the
  * same query, so anything logged here would be a duplicate.
  */
-export function FlagGatedRoute({ flag, component: Component }: {
-    flag: string;
-    component: LazyExoticComponent<ComponentType>;
+export function FlagGatedRoute({
+  flag,
+  component: Component,
+}: {
+  flag: string;
+  component: LazyExoticComponent<ComponentType>;
 }) {
-    const owner = useFlagGatedRouteOwner(flag);
+  const owner = useFlagGatedRouteOwner(flag);
 
-    if (owner === 'pending') {
-        return null;
-    }
-    if (owner === 'ember') {
-        return <EmberFallback />;
-    }
-    return (
-        <Suspense fallback={null}>
-            <Component />
-        </Suspense>
-    );
+  if (owner === 'pending') {
+    return null;
+  }
+  if (owner === 'ember') {
+    return <EmberFallback />;
+  }
+  return (
+    <Suspense fallback={null}>
+      <Component />
+    </Suspense>
+  );
 }

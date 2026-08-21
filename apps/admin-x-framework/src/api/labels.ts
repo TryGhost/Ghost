@@ -1,90 +1,97 @@
-import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
-import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
-import {escapeNqlString} from '@tryghost/nql-string';
-import {useCallback} from 'react';
-import {useQueryClient} from '@tanstack/react-query';
+import { InfiniteData } from '@tanstack/react-query';
+import { Meta, createInfiniteQuery, createMutation } from '../utils/api/hooks';
+import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
+import { escapeNqlString } from '@tryghost/nql-string';
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export type Label = {
-    id: string;
-    name: string;
-    slug: string;
-    created_at: string;
-    updated_at: string;
-}
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+};
 
 export interface LabelsResponseType {
-    meta?: Meta
-    labels: Label[]
+  meta?: Meta;
+  labels: Label[];
 }
 
 const dataType = 'LabelsResponseType';
 
-export const useBrowseLabelsInfinite = createInfiniteQuery<LabelsResponseType & {isEnd: boolean}>({
+export const useBrowseLabelsInfinite = createInfiniteQuery<LabelsResponseType & { isEnd: boolean }>(
+  {
     dataType,
     path: '/labels/',
     defaultNextPageParams: (lastPage, otherParams) => {
-        if (!lastPage.meta?.pagination.next) {
-            return undefined;
-        }
+      if (!lastPage.meta?.pagination.next) {
+        return undefined;
+      }
 
-        return {
-            ...otherParams,
-            page: lastPage.meta.pagination.next.toString()
-        };
+      return {
+        ...otherParams,
+        page: lastPage.meta.pagination.next.toString(),
+      };
     },
     returnData: (originalData) => {
-        const {pages} = originalData as InfiniteData<LabelsResponseType>;
-        const labels = pages.flatMap(page => page.labels);
-        const meta = pages[pages.length - 1].meta;
+      const { pages } = originalData as InfiniteData<LabelsResponseType>;
+      const labels = pages.flatMap((page) => page.labels);
+      const meta = pages[pages.length - 1].meta;
 
-        return {
-            labels,
-            meta,
-            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
-        };
-    }
-});
+      return {
+        labels,
+        meta,
+        isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
+      };
+    },
+  },
+);
 
 export const useCreateLabel = createMutation<LabelsResponseType, Pick<Label, 'name'>>({
-    method: 'POST',
-    path: () => '/labels/',
-    body: label => ({labels: [label]}),
-    invalidateQueries: {
-        dataType
-    }
+  method: 'POST',
+  path: () => '/labels/',
+  body: (label) => ({ labels: [label] }),
+  invalidateQueries: {
+    dataType,
+  },
 });
 
 export const useFindLabelByName = () => {
-    const fetchApi = useFetchApi();
+  const fetchApi = useFetchApi();
 
-    return useCallback(async (name: string): Promise<Label | undefined> => {
-        const data = await fetchApi<LabelsResponseType>(apiUrl('/labels/', {filter: `name:${escapeNqlString(name)}`, limit: '1'}));
-        return data.labels?.[0];
-    }, [fetchApi]);
+  return useCallback(
+    async (name: string): Promise<Label | undefined> => {
+      const data = await fetchApi<LabelsResponseType>(
+        apiUrl('/labels/', { filter: `name:${escapeNqlString(name)}`, limit: '1' }),
+      );
+      return data.labels?.[0];
+    },
+    [fetchApi],
+  );
 };
 
 export const useInvalidateLabels = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useCallback(() => {
-        queryClient.invalidateQueries({queryKey: [dataType]});
-    }, [queryClient]);
+  return useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [dataType] });
+  }, [queryClient]);
 };
 
 export const useEditLabel = createMutation<LabelsResponseType, Pick<Label, 'id' | 'name'>>({
-    method: 'PUT',
-    path: label => `/labels/${label.id}/`,
-    body: label => ({labels: [label]}),
-    invalidateQueries: {
-        dataType
-    }
+  method: 'PUT',
+  path: (label) => `/labels/${label.id}/`,
+  body: (label) => ({ labels: [label] }),
+  invalidateQueries: {
+    dataType,
+  },
 });
 
 export const useDeleteLabel = createMutation<void, string>({
-    method: 'DELETE',
-    path: id => `/labels/${id}/`,
-    invalidateQueries: {
-        dataType
-    }
+  method: 'DELETE',
+  path: (id) => `/labels/${id}/`,
+  invalidateQueries: {
+    dataType,
+  },
 });

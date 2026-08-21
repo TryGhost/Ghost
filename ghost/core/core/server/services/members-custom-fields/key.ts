@@ -1,5 +1,7 @@
 // Neither package ships types.
-const {stripInvisibleChars} = require('@tryghost/string') as {stripInvisibleChars(input: string): string};
+const { stripInvisibleChars } = require('@tryghost/string') as {
+  stripInvisibleChars(input: string): string;
+};
 const unidecode = require('unidecode') as (input: string) => string;
 
 /** Every character a key may contain. Nothing else survives minting. */
@@ -26,10 +28,12 @@ export const KEY_CHARACTERS = /^[a-z0-9_]+$/;
  * what to do about that.
  */
 export function mintableKey(name: string): string {
-    return unidecode(stripInvisibleChars(name))
-        .toLowerCase()
-        // Dropped rather than separated, so a possessive reads as one word.
-        .replace(/'/g, '')
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '');
+  return (
+    unidecode(stripInvisibleChars(name))
+      .toLowerCase()
+      // Dropped rather than separated, so a possessive reads as one word.
+      .replace(/'/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+  );
 }

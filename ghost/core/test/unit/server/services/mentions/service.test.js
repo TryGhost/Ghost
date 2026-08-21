@@ -3,80 +3,84 @@ const sinon = require('sinon');
 const urlService = require('../../../../../core/server/services/url');
 const outputSerializerUrlUtil = require('../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
 const jobsService = require('../../../../../core/server/services/mentions-jobs');
-const {getPostData, getPostUrl, makeLoggingJobService} = require('../../../../../core/server/services/mentions/service');
+const {
+  getPostData,
+  getPostUrl,
+  makeLoggingJobService,
+} = require('../../../../../core/server/services/mentions/service');
 
 describe('Mentions service post url helpers', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  function fakePost(relations = {}) {
+    return {
+      id: 'post-id',
+      relations,
+      load: sinon.stub().resolves(),
+      toJSON: sinon.stub().returns({ id: 'post-id', title: 'Post' }),
+    };
+  }
+
+  it('loads the URL service required relations before returning the post data', async function () {
+    sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+    const post = fakePost();
+
+    await getPostData(post);
+
+    sinon.assert.calledOnceWithExactly(post.load, ['tags', 'authors']);
+  });
+
+  it('getPostUrl resolves a url from a plain resource', function () {
+    const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost').callsFake((id, attrs) => {
+      attrs.url = `https://site.com/${attrs.slug}/`;
+      return attrs;
     });
 
-    function fakePost(relations = {}) {
-        return {
-            id: 'post-id',
-            relations,
-            load: sinon.stub().resolves(),
-            toJSON: sinon.stub().returns({id: 'post-id', title: 'Post'})
-        };
-    }
+    const url = getPostUrl('post-id', { slug: 'gone', status: 'published', type: 'post' });
 
-    it('loads the URL service required relations before returning the post data', async function () {
-        sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
-        const post = fakePost();
+    assert.equal(url, 'https://site.com/gone/');
+    assert.equal(forPost.getCall(0).args[0], 'post-id');
+    assert.equal(forPost.getCall(0).args[1].status, 'published');
+  });
 
-        await getPostData(post);
+  it('routes a page as a page, not a post', function () {
+    // The URL service routes by resource type. A page mis-typed as a post
+    // matches no post collection and 404s, so the
+    // page's own type must reach forPost.
+    const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
 
-        sinon.assert.calledOnceWithExactly(post.load, ['tags', 'authors']);
-    });
+    getPostUrl('page-id', { slug: 'about', status: 'published', type: 'page' });
 
-    it('getPostUrl resolves a url from a plain resource', function () {
-        const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost').callsFake((id, attrs) => {
-            attrs.url = `https://site.com/${attrs.slug}/`;
-            return attrs;
-        });
+    assert.equal(forPost.getCall(0).args[3], 'pages');
+  });
 
-        const url = getPostUrl('post-id', {slug: 'gone', status: 'published', type: 'post'});
+  it('routes a post as a post', function () {
+    const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
 
-        assert.equal(url, 'https://site.com/gone/');
-        assert.equal(forPost.getCall(0).args[0], 'post-id');
-        assert.equal(forPost.getCall(0).args[1].status, 'published');
-    });
+    getPostUrl('post-id', { slug: 'hello', status: 'published', type: 'post' });
 
-    it('routes a page as a page, not a post', function () {
-        // The URL service routes by resource type. A page mis-typed as a post
-        // matches no post collection and 404s, so the
-        // page's own type must reach forPost.
-        const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
+    assert.equal(forPost.getCall(0).args[3], 'posts');
+  });
 
-        getPostUrl('page-id', {slug: 'about', status: 'published', type: 'page'});
+  it('does not reload relations that are already loaded', async function () {
+    sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+    const post = fakePost({ tags: {}, authors: {} });
 
-        assert.equal(forPost.getCall(0).args[3], 'pages');
-    });
+    await getPostData(post);
 
-    it('routes a post as a post', function () {
-        const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
+    sinon.assert.notCalled(post.load);
+  });
 
-        getPostUrl('post-id', {slug: 'hello', status: 'published', type: 'post'});
+  it('loads nothing when the routing config reads no relations', async function () {
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
+    const post = fakePost();
 
-        assert.equal(forPost.getCall(0).args[3], 'posts');
-    });
+    await getPostData(post);
 
-    it('does not reload relations that are already loaded', async function () {
-        sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
-        const post = fakePost({tags: {}, authors: {}});
-
-        await getPostData(post);
-
-        sinon.assert.notCalled(post.load);
-    });
-
-    it('loads nothing when the routing config reads no relations', async function () {
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
-        const post = fakePost();
-
-        await getPostData(post);
-
-        sinon.assert.notCalled(post.load);
-    });
+    sinon.assert.notCalled(post.load);
+  });
 });
 
 // Both mentions jobs are queued through this wrapper, so it has to hand the job
@@ -85,51 +89,51 @@ describe('Mentions service post url helpers', function () {
 // that would mean stubbing the shared logger, which is order-dependent under the
 // unit project's `isolate: false`.
 describe('Mentions service background job wrapper', function () {
-    let addJob;
+  let addJob;
 
-    // Runs the job the wrapper handed to the job service, the way the job
-    // manager runs an inline job.
-    function runQueuedJob() {
-        return addJob.firstCall.args[0].job();
-    }
+  // Runs the job the wrapper handed to the job service, the way the job
+  // manager runs an inline job.
+  function runQueuedJob() {
+    return addJob.firstCall.args[0].job();
+  }
 
-    beforeEach(function () {
-        addJob = sinon.stub(jobsService, 'addJob');
-    });
+  beforeEach(function () {
+    addJob = sinon.stub(jobsService, 'addJob');
+  });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+  afterEach(function () {
+    sinon.restore();
+  });
 
-    it('queues the job under its own name without running it', async function () {
-        const fn = sinon.stub().resolves();
+  it('queues the job under its own name without running it', async function () {
+    const fn = sinon.stub().resolves();
 
-        await makeLoggingJobService().addJob('processWebmention', fn);
+    await makeLoggingJobService().addJob('processWebmention', fn);
 
-        sinon.assert.calledOnce(addJob);
-        assert.equal(addJob.firstCall.args[0].name, 'processWebmention');
-        assert.equal(addJob.firstCall.args[0].offloaded, false);
-        assert.notEqual(addJob.firstCall.args[0].job, fn, 'the job is wrapped');
-        assert.ok(fn.notCalled, 'the job is not run at queue time');
-    });
+    sinon.assert.calledOnce(addJob);
+    assert.equal(addJob.firstCall.args[0].name, 'processWebmention');
+    assert.equal(addJob.firstCall.args[0].offloaded, false);
+    assert.notEqual(addJob.firstCall.args[0].job, fn, 'the job is wrapped');
+    assert.ok(fn.notCalled, 'the job is not run at queue time');
+  });
 
-    it('runs the job once and returns its result untouched', async function () {
-        const result = {mentions: 1};
-        const fn = sinon.stub().resolves(result);
+  it('runs the job once and returns its result untouched', async function () {
+    const result = { mentions: 1 };
+    const fn = sinon.stub().resolves(result);
 
-        await makeLoggingJobService().addJob('sendWebmentions', fn);
-        const returned = await runQueuedJob();
+    await makeLoggingJobService().addJob('sendWebmentions', fn);
+    const returned = await runQueuedJob();
 
-        sinon.assert.calledOnce(fn);
-        assert.equal(returned, result, 'the wrapped result is passed through by reference');
-    });
+    sinon.assert.calledOnce(fn);
+    assert.equal(returned, result, 'the wrapped result is passed through by reference');
+  });
 
-    it('rethrows the original error', async function () {
-        const failure = new Error('Job failed');
-        const fn = sinon.stub().rejects(failure);
+  it('rethrows the original error', async function () {
+    const failure = new Error('Job failed');
+    const fn = sinon.stub().rejects(failure);
 
-        await makeLoggingJobService().addJob('sendWebmentions', fn);
+    await makeLoggingJobService().addJob('sendWebmentions', fn);
 
-        await assert.rejects(runQueuedJob(), error => error === failure);
-    });
+    await assert.rejects(runQueuedJob(), (error) => error === failure);
+  });
 });

@@ -1,62 +1,68 @@
-import {type Deferred, deferred} from '../utils/deferred';
-import {getFeaturebaseToken} from '../api/featurebase';
-import {useBrowseConfig} from '../api/config';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import { type Deferred, deferred } from '../utils/deferred';
+import { getFeaturebaseToken } from '../api/featurebase';
+import { useBrowseConfig } from '../api/config';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type FeaturebaseCallback = (err: unknown, data?: unknown) => void;
-type FeaturebaseFunction = (action: string, options: Record<string, unknown>, callback?: FeaturebaseCallback) => void;
+type FeaturebaseFunction = (
+  action: string,
+  options: Record<string, unknown>,
+  callback?: FeaturebaseCallback,
+) => void;
 
 declare global {
-    interface Window {
-        Featurebase?: FeaturebaseFunction;
-    }
+  interface Window {
+    Featurebase?: FeaturebaseFunction;
+  }
 }
 
 const SDK_URL = 'https://do.featurebase.app/js/sdk.js';
 
 let featurebaseSDKPromise: Promise<void> | null = null;
 function loadFeaturebaseSDK(): Promise<void> {
-    if (!featurebaseSDKPromise) {
-        featurebaseSDKPromise = new Promise((resolve, reject) => {
-            const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
-            if (existingScript) {
-                if (window.Featurebase) {
-                    resolve();
-                    return;
-                }
-                existingScript.addEventListener('load', () => resolve(), {once: true});
-                existingScript.addEventListener('error', reject, {once: true});
-                return;
-            }
+  if (!featurebaseSDKPromise) {
+    featurebaseSDKPromise = new Promise((resolve, reject) => {
+      const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
+      if (existingScript) {
+        if (window.Featurebase) {
+          resolve();
+          return;
+        }
+        existingScript.addEventListener('load', () => resolve(), { once: true });
+        existingScript.addEventListener('error', reject, { once: true });
+        return;
+      }
 
-            const script = document.createElement('script');
-            script.src = SDK_URL;
-            script.onload = () => resolve();
-            script.onerror = (event) => {
-                script.remove();
-                featurebaseSDKPromise = null;
-                const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {cause: event});
-                // eslint-disable-next-line no-console
-                console.error(error);
-                reject(error);
-            };
-            document.head.appendChild(script);
+      const script = document.createElement('script');
+      script.src = SDK_URL;
+      script.onload = () => resolve();
+      script.onerror = (event) => {
+        script.remove();
+        featurebaseSDKPromise = null;
+        const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {
+          cause: event,
         });
-    }
-    return featurebaseSDKPromise;
+        // eslint-disable-next-line no-console
+        console.error(error);
+        reject(error);
+      };
+      document.head.appendChild(script);
+    });
+  }
+  return featurebaseSDKPromise;
 }
 
 interface Featurebase {
-    isAvailable: boolean;
-    openFeedbackWidget: (options?: {board?: string}) => void;
-    preloadFeedbackWidget: () => void;
+  isAvailable: boolean;
+  openFeedbackWidget: (options?: { board?: string }) => void;
+  preloadFeedbackWidget: () => void;
 }
 
 const getTheme = (): 'light' | 'dark' => {
-    if (typeof document === 'undefined') {
-        return 'light';
-    }
-    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  if (typeof document === 'undefined') {
+    return 'light';
+  }
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 };
 
 // Featurebase's SDK silently drops a second `initialize_feedback_widget` call —
@@ -65,28 +71,39 @@ const getTheme = (): 'light' | 'dark' => {
 // single init promise.
 let sharedInitPromise: Promise<void> | null = null;
 
-function initFeaturebaseWidget(organization: string, theme: 'light' | 'dark', token: string): Promise<void> {
-    if (sharedInitPromise) {
-        return sharedInitPromise;
-    }
-    sharedInitPromise = loadFeaturebaseSDK().then(() => new Promise<void>((resolve, reject) => {
-        window.Featurebase?.('initialize_feedback_widget', {
+function initFeaturebaseWidget(
+  organization: string,
+  theme: 'light' | 'dark',
+  token: string,
+): Promise<void> {
+  if (sharedInitPromise) {
+    return sharedInitPromise;
+  }
+  sharedInitPromise = loadFeaturebaseSDK().then(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        window.Featurebase?.(
+          'initialize_feedback_widget',
+          {
             organization,
             theme,
-            featurebaseJwt: token
-        }, (err) => {
+            featurebaseJwt: token,
+          },
+          (err) => {
             if (err) {
-                sharedInitPromise = null;
-                reject(err);
+              sharedInitPromise = null;
+              reject(err);
             } else {
-                resolve();
+              resolve();
             }
-        });
-    }));
-    sharedInitPromise.catch(() => {
-        sharedInitPromise = null;
-    });
-    return sharedInitPromise;
+          },
+        );
+      }),
+  );
+  sharedInitPromise.catch(() => {
+    sharedInitPromise = null;
+  });
+  return sharedInitPromise;
 }
 
 /**
@@ -103,65 +120,71 @@ function initFeaturebaseWidget(organization: string, theme: 'light' | 'dark', to
  * page load isn't slowed down.
  */
 export function useFeaturebase(): Featurebase {
-    const {data: config} = useBrowseConfig();
-    const [shouldLoad, setShouldLoad] = useState(false);
+  const { data: config } = useBrowseConfig();
+  const [shouldLoad, setShouldLoad] = useState(false);
 
-    const {organization, enabled} = config?.config.featurebase ?? {};
-    const isAvailable = !!enabled;
+  const { organization, enabled } = config?.config.featurebase ?? {};
+  const isAvailable = !!enabled;
 
-    const {data: tokenData} = getFeaturebaseToken({
-        enabled: isAvailable && shouldLoad
-    });
-    const token = tokenData?.featurebase?.token;
+  const { data: tokenData } = getFeaturebaseToken({
+    enabled: isAvailable && shouldLoad,
+  });
+  const token = tokenData?.featurebase?.token;
 
-    useEffect(() => {
-        if (shouldLoad) {
-            loadFeaturebaseSDK().catch((err) => {
-                // eslint-disable-next-line no-console
-                console.error('[Featurebase] Failed to load SDK:', err);
-            });
-        }
-    }, [shouldLoad]);
+  useEffect(() => {
+    if (shouldLoad) {
+      loadFeaturebaseSDK().catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('[Featurebase] Failed to load SDK:', err);
+      });
+    }
+  }, [shouldLoad]);
 
-    const deferredInitRef = useRef<Deferred<void>>(deferred());
-    useEffect(() => {
-        if (!shouldLoad || !organization || !token) {
-            return;
-        }
-        initFeaturebaseWidget(organization, getTheme(), token).then(
-            () => deferredInitRef.current.resolve(),
-            (err) => {
-                // eslint-disable-next-line no-console
-                console.error('[Featurebase] Failed to initialize widget:', err);
-                deferredInitRef.current.reject(err);
-                deferredInitRef.current = deferred();
-                setShouldLoad(false);
-            }
+  const deferredInitRef = useRef<Deferred<void>>(deferred());
+  useEffect(() => {
+    if (!shouldLoad || !organization || !token) {
+      return;
+    }
+    initFeaturebaseWidget(organization, getTheme(), token).then(
+      () => deferredInitRef.current.resolve(),
+      (err) => {
+        // eslint-disable-next-line no-console
+        console.error('[Featurebase] Failed to initialize widget:', err);
+        deferredInitRef.current.reject(err);
+        deferredInitRef.current = deferred();
+        setShouldLoad(false);
+      },
+    );
+  }, [organization, token, shouldLoad]);
+
+  const preloadFeedbackWidget = useCallback(() => {
+    if (!isAvailable) {
+      return;
+    }
+    setShouldLoad(true);
+  }, [isAvailable]);
+
+  const openFeedbackWidget = useCallback(
+    (options?: { board?: string }) => {
+      if (!isAvailable) {
+        return;
+      }
+      setShouldLoad(true);
+      void deferredInitRef.current.promise.then(() => {
+        window.postMessage(
+          {
+            target: 'FeaturebaseWidget',
+            data: {
+              action: 'openFeedbackWidget',
+              ...(options?.board && { setBoard: options.board }),
+            },
+          },
+          '*',
         );
-    }, [organization, token, shouldLoad]);
+      });
+    },
+    [isAvailable],
+  );
 
-    const preloadFeedbackWidget = useCallback(() => {
-        if (!isAvailable) {
-            return;
-        }
-        setShouldLoad(true);
-    }, [isAvailable]);
-
-    const openFeedbackWidget = useCallback((options?: {board?: string}) => {
-        if (!isAvailable) {
-            return;
-        }
-        setShouldLoad(true);
-        void deferredInitRef.current.promise.then(() => {
-            window.postMessage({
-                target: 'FeaturebaseWidget',
-                data: {
-                    action: 'openFeedbackWidget',
-                    ...(options?.board && {setBoard: options.board})
-                }
-            }, '*');
-        });
-    }, [isAvailable]);
-
-    return {isAvailable, openFeedbackWidget, preloadFeedbackWidget};
+  return { isAvailable, openFeedbackWidget, preloadFeedbackWidget };
 }

@@ -11,13 +11,13 @@ Before adding anything to Shade, walk the decision flow and the promotion checkl
 
 ## The five layers
 
-| Layer | Lives in | Examples |
-|---|---|---|
-| **Token** | `theme-variables.css`, `tailwind.theme.css` | `--background`, `--text-base`, `--radius-md` |
-| **Primitive** | `src/components/primitives/` | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text` |
-| **Component** | `src/components/ui/` | `Button`, `Input`, `Dialog`, `Tabs`, `Card` |
-| **Recipe** | `src/components/ui/<name>.ts` (no JSX) | `inputSurface` |
-| **Pattern** | `src/components/patterns/` | `PageHeader`, `KpiCard`, `Filters`, `GhAreaChart` |
+| Layer         | Lives in                                    | Examples                                              |
+| ------------- | ------------------------------------------- | ----------------------------------------------------- |
+| **Token**     | `theme-variables.css`, `tailwind.theme.css` | `--background`, `--text-base`, `--radius-md`          |
+| **Primitive** | `src/components/primitives/`                | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text` |
+| **Component** | `src/components/ui/`                        | `Button`, `Input`, `Dialog`, `Tabs`, `Card`           |
+| **Recipe**    | `src/components/ui/<name>.ts` (no JSX)      | `inputSurface`                                        |
+| **Pattern**   | `src/components/patterns/`                  | `PageHeader`, `KpiCard`, `Filters`, `GhAreaChart`     |
 
 Plus one additional barrel:
 
@@ -54,13 +54,13 @@ Each layer can use anything **below** it. The reverse is forbidden.
 
 ## Common misclassifications
 
-| Tempting | Actually | Why |
-|---|---|---|
-| Add a `variant="kpi"` to `Card` | New Pattern `KpiCard` | Product-specific shape, generic Component shouldn't know about it |
-| Add `<MembersFilterBar>` to patterns | Keep local in `apps/admin/src/settings` | Single-surface name |
-| Add a one-off class string as a recipe | Inline it in the one component | Recipes are for shared rules across ≥ 2 components |
-| Add a `useQuery`-driven `<MembersList>` to patterns | Keep local — patterns are state-free | Bring-your-own state |
-| Wrap a `<div className="flex gap-3">` as a new primitive | Use `Inline gap="md"` | Already covered |
+| Tempting                                                 | Actually                                | Why                                                               |
+| -------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------- |
+| Add a `variant="kpi"` to `Card`                          | New Pattern `KpiCard`                   | Product-specific shape, generic Component shouldn't know about it |
+| Add `<MembersFilterBar>` to patterns                     | Keep local in `apps/admin/src/settings` | Single-surface name                                               |
+| Add a one-off class string as a recipe                   | Inline it in the one component          | Recipes are for shared rules across ≥ 2 components                |
+| Add a `useQuery`-driven `<MembersList>` to patterns      | Keep local — patterns are state-free    | Bring-your-own state                                              |
+| Wrap a `<div className="flex gap-3">` as a new primitive | Use `Inline gap="md"`                   | Already covered                                                   |
 
 ## When you've decided
 

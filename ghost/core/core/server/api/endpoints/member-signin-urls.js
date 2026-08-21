@@ -3,38 +3,36 @@ const errors = require('@tryghost/errors');
 const membersService = require('../../services/members');
 
 const messages = {
-    memberNotFound: 'Member not found.'
+  memberNotFound: 'Member not found.',
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'member_signin_urls',
+  docName: 'member_signin_urls',
 
-    read: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'id'
-        ],
-        permissions: true,
-        async query(frame) {
-            let model = await membersService.api.members.get(frame.data, frame.options);
+  read: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    data: ['id'],
+    permissions: true,
+    async query(frame) {
+      let model = await membersService.api.members.get(frame.data, frame.options);
 
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                });
-            }
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.memberNotFound),
+        });
+      }
 
-            const magicLink = await membersService.api.getMagicLink(model.get('email'), 'signin');
+      const magicLink = await membersService.api.getMagicLink(model.get('email'), 'signin');
 
-            return {
-                member_id: model.get('id'),
-                url: magicLink
-            };
-        }
-    }
+      return {
+        member_id: model.get('id'),
+        url: magicLink,
+      };
+    },
+  },
 };
 
 module.exports = controller;

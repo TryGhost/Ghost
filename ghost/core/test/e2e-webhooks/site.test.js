@@ -1,337 +1,338 @@
-const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyContentVersion, anyContentLength} = matchers;
+const {
+  agentProvider,
+  mockManager,
+  fixtureManager,
+  dbUtils,
+  matchers,
+} = require('../utils/e2e-framework');
+const { anyGhostAgent, anyContentVersion, anyContentLength } = matchers;
 
 describe('site.* events', function () {
-    let adminAPIAgent;
-    let webhookMockReceiver;
+  let adminAPIAgent;
+  let webhookMockReceiver;
 
-    beforeAll(async function () {
-        adminAPIAgent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('integrations');
-        await adminAPIAgent.loginAsOwner();
+  beforeAll(async function () {
+    adminAPIAgent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('integrations');
+    await adminAPIAgent.loginAsOwner();
+  });
+
+  beforeEach(async function () {
+    await dbUtils.truncate('webhooks');
+    webhookMockReceiver = mockManager.mockWebhookRequests();
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('site.changed event is triggered', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
     });
 
-    beforeEach(async function () {
-        await dbUtils.truncate('webhooks');
-        webhookMockReceiver = mockManager.mockWebhookRequests();
+    await adminAPIAgent
+      .post('posts/')
+      .body({
+        posts: [
+          {
+            title: 'webhookz',
+            status: 'published',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    await webhookMockReceiver.receivedRequest();
+
+    webhookMockReceiver
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-length': anyContentLength,
+        'user-agent': anyGhostAgent,
+      })
+      .matchBodySnapshot();
+  });
+
+  it('site.changed event is triggered but the custom integrations are limited', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
     });
 
-    afterEach(function () {
-        mockManager.restore();
+    mockManager.mockLimitService('customIntegrations', {
+      isLimited: true,
+      wouldGoOverLimit: true,
     });
 
-    it('site.changed event is triggered', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL
-        });
+    await adminAPIAgent
+      .post('posts/')
+      .body({
+        posts: [
+          {
+            title: 'webhookz',
+            status: 'published',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
 
-        await adminAPIAgent
-            .post('posts/')
-            .body({
-                posts: [{
-                    title: 'webhookz',
-                    status: 'published',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
-
-        await webhookMockReceiver.receivedRequest();
-
-        webhookMockReceiver
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-length': anyContentLength,
-                'user-agent': anyGhostAgent
-            })
-            .matchBodySnapshot();
+    const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
+    const wait = new Promise((resolve) => {
+      setTimeout(resolve, 2000, false);
     });
 
-    it('site.changed event is triggered but the custom integrations are limited', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL
-        });
+    const requestWasReceived = await Promise.race([receivedRequest, wait]);
 
-        mockManager.mockLimitService('customIntegrations', {
-            isLimited: true,
-            wouldGoOverLimit: true
-        });
+    if (requestWasReceived) {
+      throw new Error('The webhook should not have been sent.');
+    }
+  });
 
-        await adminAPIAgent
-            .post('posts/')
-            .body({
-                posts: [{
-                    title: 'webhookz',
-                    status: 'published',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
-
-        const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
-        const wait = new Promise((resolve) => {
-            setTimeout(resolve, 2000, false);
-        });
-
-        const requestWasReceived = await Promise.race([
-            receivedRequest,
-            wait
-        ]);
-
-        if (requestWasReceived) {
-            throw new Error('The webhook should not have been sent.');
-        }
+  it('site.changed event is triggered, custom integrations are limited but we have an internal webhook', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
+      integrationType: 'internal',
     });
 
-    it('site.changed event is triggered, custom integrations are limited but we have an internal webhook', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL,
-            integrationType: 'internal'
-        });
-
-        mockManager.mockLimitService('customIntegrations', {
-            isLimited: true,
-            wouldGoOverLimit: true
-        });
-
-        await adminAPIAgent
-            .post('posts/')
-            .body({
-                posts: [{
-                    title: 'webhookz',
-                    status: 'published',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
-
-        await webhookMockReceiver.receivedRequest();
-
-        webhookMockReceiver
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-length': anyContentLength,
-                'user-agent': anyGhostAgent
-            })
-            .matchBodySnapshot();
+    mockManager.mockLimitService('customIntegrations', {
+      isLimited: true,
+      wouldGoOverLimit: true,
     });
 
-    it('site.changed event is NOT triggered when draft posts are deleted', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL
-        });
+    await adminAPIAgent
+      .post('posts/')
+      .body({
+        posts: [
+          {
+            title: 'webhookz',
+            status: 'published',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
 
-        const res = await adminAPIAgent
-            .post('posts/')
-            .body({
-                posts: [{
-                    title: 'webhookz',
-                    status: 'draft',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
+    await webhookMockReceiver.receivedRequest();
 
-        const id = res.body.posts[0].id;
+    webhookMockReceiver
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-length': anyContentLength,
+        'user-agent': anyGhostAgent,
+      })
+      .matchBodySnapshot();
+  });
 
-        await adminAPIAgent
-            .delete('posts/' + id)
-            .expectStatus(204);
-
-        const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
-        const wait = new Promise((resolve) => {
-            setTimeout(resolve, 2000, false);
-        });
-
-        const requestWasReceived = await Promise.race([
-            receivedRequest,
-            wait
-        ]);
-
-        if (requestWasReceived) {
-            throw new Error('The webhook should not have been sent.');
-        }
+  it('site.changed event is NOT triggered when draft posts are deleted', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
     });
 
-    it('site.changed event is NOT triggered when only draft posts are bulk deleted', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL
-        });
+    const res = await adminAPIAgent
+      .post('posts/')
+      .body({
+        posts: [
+          {
+            title: 'webhookz',
+            status: 'draft',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
 
-        mockManager.mockLimitService('customIntegrations', {
-            isLimited: true,
-            wouldGoOverLimit: true
-        });
+    const id = res.body.posts[0].id;
 
-        await adminAPIAgent
-            .post('posts/')
-            .body({
-                posts: [{
-                    title: 'bulk draft webhookz',
-                    status: 'draft',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
+    await adminAPIAgent.delete('posts/' + id).expectStatus(204);
 
-        const filter = 'title:\'bulk draft webhookz\'';
-
-        await adminAPIAgent
-            .delete('posts/?filter=' + encodeURIComponent(filter))
-            .expectStatus(200);
-
-        const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
-        const wait = new Promise((resolve) => {
-            setTimeout(resolve, 2000, false);
-        });
-
-        const requestWasReceived = await Promise.race([
-            receivedRequest,
-            wait
-        ]);
-
-        if (requestWasReceived) {
-            throw new Error('The webhook should not have been sent.');
-        }
+    const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
+    const wait = new Promise((resolve) => {
+      setTimeout(resolve, 2000, false);
     });
 
-    it('invalidates the cache when a published post is deleted', async function () {
-        const res = await adminAPIAgent
-            .post('posts/')
-            .body({
-                posts: [{
-                    title: 'published webhookz',
-                    status: 'published',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
+    const requestWasReceived = await Promise.race([receivedRequest, wait]);
 
-        const id = res.body.posts[0].id;
+    if (requestWasReceived) {
+      throw new Error('The webhook should not have been sent.');
+    }
+  });
 
-        await adminAPIAgent
-            .delete('posts/' + id)
-            .expectStatus(204)
-            .expectHeader('X-Cache-Invalidate', '/*');
+  it('site.changed event is NOT triggered when only draft posts are bulk deleted', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
     });
 
-    it('site.changed event is NOT triggered when a draft page is deleted', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL
-        });
-
-        const res = await adminAPIAgent
-            .post('pages/')
-            .body({
-                pages: [{
-                    title: 'draft page webhookz',
-                    status: 'draft',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
-
-        const id = res.body.pages[0].id;
-
-        await adminAPIAgent
-            .delete('pages/' + id)
-            .expectStatus(204);
-
-        const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
-        const wait = new Promise((resolve) => {
-            setTimeout(resolve, 2000, false);
-        });
-
-        const requestWasReceived = await Promise.race([
-            receivedRequest,
-            wait
-        ]);
-
-        if (requestWasReceived) {
-            throw new Error('The webhook should not have been sent.');
-        }
+    mockManager.mockLimitService('customIntegrations', {
+      isLimited: true,
+      wouldGoOverLimit: true,
     });
 
-    it('site.changed event is NOT triggered when only draft pages are bulk deleted', async function () {
-        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
-        await webhookMockReceiver.mock(webhookURL);
-        await fixtureManager.insertWebhook({
-            event: 'site.changed',
-            url: webhookURL
-        });
+    await adminAPIAgent
+      .post('posts/')
+      .body({
+        posts: [
+          {
+            title: 'bulk draft webhookz',
+            status: 'draft',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
 
-        mockManager.mockLimitService('customIntegrations', {
-            isLimited: true,
-            wouldGoOverLimit: true
-        });
+    const filter = "title:'bulk draft webhookz'";
 
-        await adminAPIAgent
-            .post('pages/')
-            .body({
-                pages: [{
-                    title: 'bulk draft page webhookz',
-                    status: 'draft',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
+    await adminAPIAgent.delete('posts/?filter=' + encodeURIComponent(filter)).expectStatus(200);
 
-        const filter = 'title:\'bulk draft page webhookz\'';
-
-        await adminAPIAgent
-            .delete('pages/?filter=' + encodeURIComponent(filter))
-            .expectStatus(200);
-
-        const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
-        const wait = new Promise((resolve) => {
-            setTimeout(resolve, 2000, false);
-        });
-
-        const requestWasReceived = await Promise.race([
-            receivedRequest,
-            wait
-        ]);
-
-        if (requestWasReceived) {
-            throw new Error('The webhook should not have been sent.');
-        }
+    const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
+    const wait = new Promise((resolve) => {
+      setTimeout(resolve, 2000, false);
     });
 
-    it('invalidates the cache when a published page is deleted', async function () {
-        const res = await adminAPIAgent
-            .post('pages/')
-            .body({
-                pages: [{
-                    title: 'published page webhookz',
-                    status: 'published',
-                    lexical: fixtureManager.get('posts', 1).lexical
-                }]
-            })
-            .expectStatus(201);
+    const requestWasReceived = await Promise.race([receivedRequest, wait]);
 
-        const id = res.body.pages[0].id;
+    if (requestWasReceived) {
+      throw new Error('The webhook should not have been sent.');
+    }
+  });
 
-        await adminAPIAgent
-            .delete('pages/' + id)
-            .expectStatus(204)
-            .expectHeader('X-Cache-Invalidate', '/*');
+  it('invalidates the cache when a published post is deleted', async function () {
+    const res = await adminAPIAgent
+      .post('posts/')
+      .body({
+        posts: [
+          {
+            title: 'published webhookz',
+            status: 'published',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const id = res.body.posts[0].id;
+
+    await adminAPIAgent
+      .delete('posts/' + id)
+      .expectStatus(204)
+      .expectHeader('X-Cache-Invalidate', '/*');
+  });
+
+  it('site.changed event is NOT triggered when a draft page is deleted', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
     });
+
+    const res = await adminAPIAgent
+      .post('pages/')
+      .body({
+        pages: [
+          {
+            title: 'draft page webhookz',
+            status: 'draft',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const id = res.body.pages[0].id;
+
+    await adminAPIAgent.delete('pages/' + id).expectStatus(204);
+
+    const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
+    const wait = new Promise((resolve) => {
+      setTimeout(resolve, 2000, false);
+    });
+
+    const requestWasReceived = await Promise.race([receivedRequest, wait]);
+
+    if (requestWasReceived) {
+      throw new Error('The webhook should not have been sent.');
+    }
+  });
+
+  it('site.changed event is NOT triggered when only draft pages are bulk deleted', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
+    });
+
+    mockManager.mockLimitService('customIntegrations', {
+      isLimited: true,
+      wouldGoOverLimit: true,
+    });
+
+    await adminAPIAgent
+      .post('pages/')
+      .body({
+        pages: [
+          {
+            title: 'bulk draft page webhookz',
+            status: 'draft',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const filter = "title:'bulk draft page webhookz'";
+
+    await adminAPIAgent.delete('pages/?filter=' + encodeURIComponent(filter)).expectStatus(200);
+
+    const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
+    const wait = new Promise((resolve) => {
+      setTimeout(resolve, 2000, false);
+    });
+
+    const requestWasReceived = await Promise.race([receivedRequest, wait]);
+
+    if (requestWasReceived) {
+      throw new Error('The webhook should not have been sent.');
+    }
+  });
+
+  it('invalidates the cache when a published page is deleted', async function () {
+    const res = await adminAPIAgent
+      .post('pages/')
+      .body({
+        pages: [
+          {
+            title: 'published page webhookz',
+            status: 'published',
+            lexical: fixtureManager.get('posts', 1).lexical,
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const id = res.body.pages[0].id;
+
+    await adminAPIAgent
+      .delete('pages/' + id)
+      .expectStatus(204)
+      .expectHeader('X-Cache-Invalidate', '/*');
+  });
 });

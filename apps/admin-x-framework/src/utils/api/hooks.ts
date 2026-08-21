@@ -1,184 +1,277 @@
-import {InfiniteData, InvalidateOptions, InvalidateQueryFilters, QueryKey, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {useCallback, useEffect, useMemo} from 'react';
+import {
+  InfiniteData,
+  InvalidateOptions,
+  InvalidateQueryFilters,
+  QueryKey,
+  UseInfiniteQueryOptions,
+  UseQueryOptions,
+  UseQueryResult,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
 import useHandleError from '../../hooks/use-handle-error';
-import {usePermission} from '../../hooks/use-permissions';
-import {UserRoleType} from '../../api/roles';
-import {useFramework} from '../../providers/framework-provider';
-import {RequestOptions, apiUrl, useFetchApi} from './fetch-api';
+import { usePermission } from '../../hooks/use-permissions';
+import { UserRoleType } from '../../api/roles';
+import { useFramework } from '../../providers/framework-provider';
+import { RequestOptions, apiUrl, useFetchApi } from './fetch-api';
 
 export interface Meta {
-    capabilities?: {
-        dislikes?: boolean;
-    };
-    pagination: {
-        page: number;
-        limit: number | 'all';
-        pages: number;
-        total: number;
-        next: number | null;
-        prev: number | null;
-    }
+  capabilities?: {
+    dislikes?: boolean;
+  };
+  pagination: {
+    page: number;
+    limit: number | 'all';
+    pages: number;
+    total: number;
+    next: number | null;
+    prev: number | null;
+  };
 }
 
 interface QueryOptions<ResponseData> {
-    dataType: string
-    path: string
-    headers?: Record<string, string>;
-    defaultSearchParams?: Record<string, string>;
-    permissions?: UserRoleType[];
-    returnData?: (originalData: unknown) => ResponseData;
+  dataType: string;
+  path: string;
+  headers?: Record<string, string>;
+  defaultSearchParams?: Record<string, string>;
+  permissions?: UserRoleType[];
+  returnData?: (originalData: unknown) => ResponseData;
 }
 
-type QueryHookOptions<ResponseData> = Omit<UseQueryOptions<ResponseData>, 'queryKey' | 'queryFn'> & {
-    searchParams?: Record<string, string>;
-    defaultErrorHandler?: boolean;
+type QueryHookOptions<ResponseData> = Omit<
+  UseQueryOptions<ResponseData>,
+  'queryKey' | 'queryFn'
+> & {
+  searchParams?: Record<string, string>;
+  defaultErrorHandler?: boolean;
 };
 
-export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {data: ResponseData | undefined} => {
+export const createQuery =
+  <ResponseData>(options: QueryOptions<ResponseData>) =>
+  ({ searchParams, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
+    UseQueryResult<ResponseData>,
+    'data'
+  > & { data: ResponseData | undefined } => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
     const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
-        ...query,
-        enabled: hasPermission && (query.enabled ?? true),
-        queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url, {...options})
+      ...query,
+      enabled: hasPermission && (query.enabled ?? true),
+      queryKey: [options.dataType, url],
+      queryFn: () => fetchApi(url, { ...options }),
     });
 
-    const data = useMemo(() => (
-        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
-    , [result.data]);
+    const data = useMemo(
+      () => (result.data && options.returnData ? options.returnData(result.data) : result.data),
+      [result.data],
+    );
 
     useEffect(() => {
-        if (result.error && query.defaultErrorHandler !== false) {
-            handleError(result.error);
-        }
+      if (result.error && query.defaultErrorHandler !== false) {
+        handleError(result.error);
+      }
     }, [handleError, result.error, query.defaultErrorHandler]);
 
     return {
-        ...result,
-        data
+      ...result,
+      data,
     };
-};
+  };
 
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
-    returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
-    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
-}
+  returnData: NonNullable<QueryOptions<ResponseData>['returnData']>;
+  defaultNextPageParams?: (
+    data: ResponseData,
+    params: Record<string, string>,
+  ) => Record<string, string> | undefined;
+};
 
 type InfiniteQueryPageParam = Record<string, string> | undefined;
 
-type InfiniteQueryHookOptions<ResponseData> = Omit<UseInfiniteQueryOptions<ResponseData, Error, InfiniteData<ResponseData, InfiniteQueryPageParam>, QueryKey, InfiniteQueryPageParam>, 'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'> & {
-    searchParams?: Record<string, string>;
-    defaultErrorHandler?: boolean;
-    getNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
+type InfiniteQueryHookOptions<ResponseData> = Omit<
+  UseInfiniteQueryOptions<
+    ResponseData,
+    Error,
+    InfiniteData<ResponseData, InfiniteQueryPageParam>,
+    QueryKey,
+    InfiniteQueryPageParam
+  >,
+  'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
+> & {
+  searchParams?: Record<string, string>;
+  defaultErrorHandler?: boolean;
+  getNextPageParams?: (
+    data: ResponseData,
+    params: Record<string, string>,
+  ) => Record<string, string> | undefined;
 };
 
-export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData> = {}) => {
+export const createInfiniteQuery =
+  <ResponseData>(options: InfiniteQueryOptions<ResponseData>) =>
+  ({ searchParams, getNextPageParams, ...query }: InfiniteQueryHookOptions<ResponseData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
     const hasPermission = usePermission(options.permissions);
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
-    const result = useInfiniteQuery<ResponseData, Error, InfiniteData<ResponseData, InfiniteQueryPageParam>, QueryKey, InfiniteQueryPageParam>({
-        ...query,
-        enabled: hasPermission && (query.enabled ?? true),
-        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
-        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams), {...options}),
-        initialPageParam: undefined,
-        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {})
+    const result = useInfiniteQuery<
+      ResponseData,
+      Error,
+      InfiniteData<ResponseData, InfiniteQueryPageParam>,
+      QueryKey,
+      InfiniteQueryPageParam
+    >({
+      ...query,
+      enabled: hasPermission && (query.enabled ?? true),
+      queryKey: [
+        options.dataType,
+        apiUrl(options.path, searchParams || options.defaultSearchParams),
+      ],
+      queryFn: ({ pageParam }) =>
+        fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams), {
+          ...options,
+        }),
+      initialPageParam: undefined,
+      getNextPageParam: (data) =>
+        nextPageParams(data, searchParams || options.defaultSearchParams || {}),
     });
 
     const data = useMemo(() => result.data && options.returnData(result.data), [result.data]);
 
     useEffect(() => {
-        if (result.error && query.defaultErrorHandler !== false) {
-            handleError(result.error);
-        }
+      if (result.error && query.defaultErrorHandler !== false) {
+        handleError(result.error);
+      }
     }, [handleError, result.error, query.defaultErrorHandler]);
 
     return {
-        ...result,
-        data
+      ...result,
+      data,
     };
-};
+  };
 
-export const createQueryWithId = <ResponseData>(options: Omit<QueryOptions<ResponseData>, 'path'> & {path: (id: string) => string}) => (id: string, {searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
-    const queryHook = createQuery<ResponseData>({...options, path: options.path(id)});
-    return queryHook({searchParams: searchParams || options.defaultSearchParams, ...query});
-};
+export const createQueryWithId =
+  <ResponseData>(
+    options: Omit<QueryOptions<ResponseData>, 'path'> & { path: (id: string) => string },
+  ) =>
+  (id: string, { searchParams, ...query }: QueryHookOptions<ResponseData> = {}) => {
+    const queryHook = createQuery<ResponseData>({ ...options, path: options.path(id) });
+    return queryHook({ searchParams: searchParams || options.defaultSearchParams, ...query });
+  };
 
-interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<ResponseData>, 'dataType' | 'path'>, Omit<RequestOptions, 'body'> {
-    path: (payload: Payload) => string;
-    headers?: Record<string, string>;
-    body?: (payload: Payload) => FormData | object;
-    searchParams?: (payload: Payload) => { [key: string]: string; };
-    invalidateQueries?: { dataType: string | string[]; } | {
-        filters?: InvalidateQueryFilters,
-        options?: InvalidateOptions,
-    };
-    updateQueries?: { dataType: string; emberUpdateType: 'createOrUpdate' | 'delete' | 'skip'; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
+interface MutationOptions<ResponseData, Payload>
+  extends Omit<QueryOptions<ResponseData>, 'dataType' | 'path'>, Omit<RequestOptions, 'body'> {
+  path: (payload: Payload) => string;
+  headers?: Record<string, string>;
+  body?: (payload: Payload) => FormData | object;
+  searchParams?: (payload: Payload) => { [key: string]: string };
+  invalidateQueries?:
+    | { dataType: string | string[] }
+    | {
+        filters?: InvalidateQueryFilters;
+        options?: InvalidateOptions;
+      };
+  updateQueries?: {
+    dataType: string;
+    emberUpdateType: 'createOrUpdate' | 'delete' | 'skip';
+    update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown;
+  };
 }
 
-const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, options}: {
-    fetchApi: ReturnType<typeof useFetchApi>;
-    path: string;
-    payload?: Payload;
-    searchParams?: Record<string, string>;
-    options: Omit<MutationOptions<ResponseData, Payload>, 'path'>
+const mutate = <ResponseData, Payload>({
+  fetchApi,
+  path,
+  payload,
+  searchParams,
+  options,
+}: {
+  fetchApi: ReturnType<typeof useFetchApi>;
+  path: string;
+  payload?: Payload;
+  searchParams?: Record<string, string>;
+  options: Omit<MutationOptions<ResponseData, Payload>, 'path'>;
 }) => {
-    const {defaultSearchParams, body, ...requestOptions} = options;
-    const url = apiUrl(path, searchParams || defaultSearchParams);
-    const generatedBody = payload && body?.(payload);
+  const { defaultSearchParams, body, ...requestOptions } = options;
+  const url = apiUrl(path, searchParams || defaultSearchParams);
+  const generatedBody = payload && body?.(payload);
 
-    let requestBody: string | FormData | undefined = undefined;
-    if (generatedBody instanceof FormData) {
-        requestBody = generatedBody;
-    } else if (generatedBody) {
-        requestBody = JSON.stringify(generatedBody);
-    }
+  let requestBody: string | FormData | undefined = undefined;
+  if (generatedBody instanceof FormData) {
+    requestBody = generatedBody;
+  } else if (generatedBody) {
+    requestBody = JSON.stringify(generatedBody);
+  }
 
-    return fetchApi<ResponseData>(url, {
-        body: requestBody,
-        ...requestOptions
-    });
+  return fetchApi<ResponseData>(url, {
+    body: requestBody,
+    ...requestOptions,
+  });
 };
 
-export const createMutation = <ResponseData, Payload>({path, searchParams, defaultSearchParams, updateQueries, invalidateQueries, ...mutateOptions}: MutationOptions<ResponseData, Payload>) => () => {
+export const createMutation =
+  <ResponseData, Payload>({
+    path,
+    searchParams,
+    defaultSearchParams,
+    updateQueries,
+    invalidateQueries,
+    ...mutateOptions
+  }: MutationOptions<ResponseData, Payload>) =>
+  () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
-    const {onUpdate, onInvalidate, onDelete} = useFramework();
+    const { onUpdate, onInvalidate, onDelete } = useFramework();
 
-    const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
+    const afterMutate = useCallback(
+      (newData: ResponseData, payload: Payload) => {
         if (invalidateQueries && 'dataType' in invalidateQueries) {
-            const dataTypes = Array.isArray(invalidateQueries.dataType) ? invalidateQueries.dataType : [invalidateQueries.dataType];
-            for (const dataType of dataTypes) {
-                queryClient.invalidateQueries({queryKey: [dataType]});
-                onInvalidate(dataType);
-            }
+          const dataTypes = Array.isArray(invalidateQueries.dataType)
+            ? invalidateQueries.dataType
+            : [invalidateQueries.dataType];
+          for (const dataType of dataTypes) {
+            queryClient.invalidateQueries({ queryKey: [dataType] });
+            onInvalidate(dataType);
+          }
         } else if (invalidateQueries) {
-            queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
+          queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
         }
 
         if (updateQueries) {
-            queryClient.setQueriesData({queryKey: [updateQueries.dataType]}, (data: unknown) => updateQueries!.update(newData, data, payload));
-            if (updateQueries.emberUpdateType === 'createOrUpdate') {
-                onUpdate(updateQueries.dataType, newData);
-            } else if (updateQueries.emberUpdateType === 'delete') {
-                if (typeof payload !== 'string') {
-                    throw new Error('Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook');
-                }
-
-                onDelete(updateQueries.dataType, payload);
+          queryClient.setQueriesData({ queryKey: [updateQueries.dataType] }, (data: unknown) =>
+            updateQueries!.update(newData, data, payload),
+          );
+          if (updateQueries.emberUpdateType === 'createOrUpdate') {
+            onUpdate(updateQueries.dataType, newData);
+          } else if (updateQueries.emberUpdateType === 'delete') {
+            if (typeof payload !== 'string') {
+              throw new Error(
+                'Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook',
+              );
             }
+
+            onDelete(updateQueries.dataType, payload);
+          }
         }
-    }, [onInvalidate, onUpdate, onDelete, queryClient]);
+      },
+      [onInvalidate, onUpdate, onDelete, queryClient],
+    );
 
     return useMutation<ResponseData, unknown, Payload>({
-        mutationFn: payload => mutate({fetchApi, path: path(payload), payload, searchParams: searchParams?.(payload) || defaultSearchParams, options: mutateOptions}),
-        onSuccess: afterMutate
+      mutationFn: (payload) =>
+        mutate({
+          fetchApi,
+          path: path(payload),
+          payload,
+          searchParams: searchParams?.(payload) || defaultSearchParams,
+          options: mutateOptions,
+        }),
+      onSuccess: afterMutate,
     });
-};
+  };

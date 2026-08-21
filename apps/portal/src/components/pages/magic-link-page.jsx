@@ -6,10 +6,10 @@ import GiftDetailsToggle from '../common/gift-details-toggle';
 import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import EnvelopeIcon from '../../images/icons/envelope.svg?react';
-import {isIos} from '../../utils/is-ios';
-import {t} from '../../utils/i18n';
-import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
-import {formatGiftValue} from './gift-page';
+import { isIos } from '../../utils/is-ios';
+import { t } from '../../utils/i18n';
+import { getGiftDurationLabel } from '../../utils/gift-redemption-notification';
+import { formatGiftValue } from './gift-page';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -82,306 +82,321 @@ export const MagicLinkStyles = `
 const OTC_FIELD_NAME = 'otc';
 
 export default class MagicLinkPage extends React.Component {
-    static contextType = AppContext;
+  static contextType = AppContext;
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            [OTC_FIELD_NAME]: '',
-            errors: {},
-            isFocused: false,
-            showDetails: false
-        };
+  constructor(props) {
+    super(props);
+    this.state = {
+      [OTC_FIELD_NAME]: '',
+      errors: {},
+      isFocused: false,
+      showDetails: false,
+    };
+  }
+
+  /**
+   * Generates configuration object containing translated description messages for magic link scenarios
+   * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
+   * @returns {Object} Configuration object with message templates for signin/signup scenarios
+   */
+  getDescriptionConfig(submittedEmailOrInbox) {
+    return {
+      signin: {
+        withOTC: t(
+          'If you have an account, an email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.',
+          { submittedEmailOrInbox },
+        ),
+        withoutOTC: t(
+          "If you have an account, a login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.",
+        ),
+      },
+      signup: t(
+        "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!",
+      ),
+      gift: t(
+        "Click the confirmation link in your inbox to finish redeeming your membership. If it doesn't arrive within 3 minutes, check your spam folder.",
+      ),
+    };
+  }
+
+  /**
+   * Gets the appropriate translated description based on page context
+   * @param {Object} params - Configuration object
+   * @param {string} params.lastPage - The previous page ('signin', 'signup', or 'gift')
+   * @param {boolean} params.otcRef - Whether one-time code is being used
+   * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
+   * @returns {string} The translated description
+   */
+  getTranslatedDescription({ lastPage, otcRef, submittedEmailOrInbox }) {
+    const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
+    const allowedPages = ['signup', 'signin', 'gift'];
+    const normalizedPage = allowedPages.includes(lastPage) ? lastPage : 'signin';
+
+    if (normalizedPage === 'signup') {
+      return descriptionConfig.signup;
     }
 
-    /**
-     * Generates configuration object containing translated description messages for magic link scenarios
-     * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
-     * @returns {Object} Configuration object with message templates for signin/signup scenarios
-     */
-    getDescriptionConfig(submittedEmailOrInbox) {
+    if (normalizedPage === 'gift') {
+      return descriptionConfig.gift;
+    }
+
+    return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
+  }
+
+  renderFormHeader() {
+    const { otcRef, pageData, lastPage } = this.context;
+    const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
+
+    const popupTitle = t(`Now check your email!`);
+    const popupDescription = this.getTranslatedDescription({
+      lastPage,
+      otcRef,
+      submittedEmailOrInbox,
+    });
+
+    return (
+      <section className="gh-portal-inbox-notification">
+        <header className="gh-portal-header">
+          <EnvelopeIcon className="gh-portal-icon gh-portal-icon-envelope" />
+          <h2 className="gh-portal-main-title">{popupTitle}</h2>
+        </header>
+        <p>{popupDescription}</p>
+      </section>
+    );
+  }
+
+  renderLoginMessage() {
+    return (
+      <>
+        <div
+          style={{ color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer' }}
+          onClick={() => this.context.doAction('switchPage', { page: 'signin' })}
+        >
+          {t('Back to Log in')}
+        </div>
+      </>
+    );
+  }
+
+  handleClose() {
+    this.context.doAction('closePopup');
+  }
+
+  renderCloseButton() {
+    const { inboxLinks } = this.context;
+    if (inboxLinks && !isIos(navigator)) {
+      return <InboxLinkButton inboxLinks={inboxLinks} />;
+    } else {
+      return (
+        <ActionButton
+          style={{ width: '100%' }}
+          onClick={(e) => this.handleClose(e)}
+          brandColor={this.context.brandColor}
+          label={t('Close')}
+        />
+      );
+    }
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    const { action } = this.context;
+    const isRunning = action === 'verifyOTC:running';
+
+    if (!isRunning) {
+      this.doVerifyOTC();
+    }
+  }
+
+  doVerifyOTC() {
+    const missingCodeError = t('Enter code above');
+
+    this.setState(
+      (state) => {
+        const code = (state.otc || '').trim();
         return {
-            signin: {
-                withOTC: t('If you have an account, an email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
-                withoutOTC: t('If you have an account, a login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
-            },
-            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!'),
-            gift: t('Click the confirmation link in your inbox to finish redeeming your membership. If it doesn\'t arrive within 3 minutes, check your spam folder.')
+          errors: {
+            [OTC_FIELD_NAME]: code ? '' : missingCodeError,
+          },
         };
-    }
-
-    /**
-     * Gets the appropriate translated description based on page context
-     * @param {Object} params - Configuration object
-     * @param {string} params.lastPage - The previous page ('signin', 'signup', or 'gift')
-     * @param {boolean} params.otcRef - Whether one-time code is being used
-     * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
-     * @returns {string} The translated description
-     */
-    getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
-        const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
-        const allowedPages = ['signup', 'signin', 'gift'];
-        const normalizedPage = allowedPages.includes(lastPage) ? lastPage : 'signin';
-
-        if (normalizedPage === 'signup') {
-            return descriptionConfig.signup;
+      },
+      () => {
+        const { otc, errors } = this.state;
+        const { otcRef } = this.context;
+        const { redirect } = this.context.pageData ?? {};
+        const hasFormErrors = errors && Object.values(errors).filter((d) => !!d).length > 0;
+        if (!hasFormErrors && otcRef) {
+          this.context.doAction('verifyOTC', { otc, otcRef, redirect });
         }
+      },
+    );
+  }
 
-        if (normalizedPage === 'gift') {
-            return descriptionConfig.gift;
-        }
+  handleInputChange(e, field) {
+    const fieldName = field.name;
+    const value = e.target.value;
 
-        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
-    }
-
-    renderFormHeader() {
-        const {otcRef, pageData, lastPage} = this.context;
-        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
-
-        const popupTitle = t(`Now check your email!`);
-        const popupDescription = this.getTranslatedDescription({
-            lastPage,
-            otcRef,
-            submittedEmailOrInbox
-        });
-
-        return (
-            <section className='gh-portal-inbox-notification'>
-                <header className='gh-portal-header'>
-                    <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' />
-                    <h2 className='gh-portal-main-title'>{popupTitle}</h2>
-                </header>
-                <p>{popupDescription}</p>
-            </section>
-        );
-    }
-
-    renderLoginMessage() {
-        return (
-            <>
-                <div
-                    style={{color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer'}}
-                    onClick={() => this.context.doAction('switchPage', {page: 'signin'})}
-                >
-                    {t('Back to Log in')}
-                </div>
-            </>
-        );
-    }
-
-    handleClose() {
-        this.context.doAction('closePopup');
-    }
-
-    renderCloseButton() {
-        const {inboxLinks} = this.context;
-        if (inboxLinks && !isIos(navigator)) {
-            return <InboxLinkButton inboxLinks={inboxLinks} />;
-        } else {
-            return (
-                <ActionButton
-                    style={{width: '100%'}}
-                    onClick={e => this.handleClose(e)}
-                    brandColor={this.context.brandColor}
-                    label={t('Close')}
-                />
-            );
-        }
-    }
-
-    handleSubmit(e) {
-        e.preventDefault();
-        const {action} = this.context;
-        const isRunning = (action === 'verifyOTC:running');
-
-        if (!isRunning) {
+    // For OTC field, only allow numeric input
+    if (fieldName === OTC_FIELD_NAME) {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      this.setState(
+        {
+          [fieldName]: numericValue,
+        },
+        () => {
+          // Auto-submit when 6 characters are entered
+          if (numericValue.length === 6) {
             this.doVerifyOTC();
-        }
+          }
+        },
+      );
+    } else {
+      this.setState({
+        [fieldName]: value,
+      });
+    }
+  }
+
+  renderOTCForm() {
+    const { action, actionErrorMessage, otcRef, inboxLinks } = this.context;
+    const errors = this.state.errors || {};
+
+    if (!otcRef) {
+      return null;
     }
 
-    doVerifyOTC() {
-        const missingCodeError = t('Enter code above');
+    const isRunning = action === 'verifyOTC:running';
+    const isError = action === 'verifyOTC:failed';
 
-        this.setState((state) => {
-            const code = (state.otc || '').trim();
-            return {
-                errors: {
-                    [OTC_FIELD_NAME]: code ? '' : missingCodeError
-                }
-            };
-        }, () => {
-            const {otc, errors} = this.state;
-            const {otcRef} = this.context;
-            const {redirect} = this.context.pageData ?? {};
-            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            if (!hasFormErrors && otcRef) {
-                this.context.doAction('verifyOTC', {otc, otcRef, redirect});
-            }
-        }
-        );
-    }
+    const error = isError && actionErrorMessage ? actionErrorMessage : errors.otc;
 
-    handleInputChange(e, field) {
-        const fieldName = field.name;
-        const value = e.target.value;
+    return (
+      <form onSubmit={(e) => this.handleSubmit(e)}>
+        <section className="gh-portal-section gh-portal-otp">
+          <div
+            className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'}`}
+          >
+            <input
+              id={`input-${OTC_FIELD_NAME}`}
+              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'}`}
+              placeholder="––––––"
+              name={OTC_FIELD_NAME}
+              type="text"
+              value={this.state.otc}
+              inputMode="numeric"
+              maxLength={6}
+              pattern="[0-9]*"
+              autoComplete="one-time-code"
+              autoCorrect="off"
+              autoCapitalize="off"
+              autoFocus={true}
+              aria-label={t('Code')}
+              onChange={(e) => this.handleInputChange(e, { name: OTC_FIELD_NAME })}
+              onFocus={() => this.setState({ isFocused: true })}
+              onBlur={() => this.setState({ isFocused: false })}
+            />
+          </div>
+          {error && <div className="gh-portal-otp-error">{error}</div>}
+        </section>
 
-        // For OTC field, only allow numeric input
-        if (fieldName === OTC_FIELD_NAME) {
-            const numericValue = value.replace(/[^0-9]/g, '');
-            this.setState({
-                [fieldName]: numericValue
-            }, () => {
-                // Auto-submit when 6 characters are entered
-                if (numericValue.length === 6) {
-                    this.doVerifyOTC();
-                }
-            });
-        } else {
-            this.setState({
-                [fieldName]: value
-            });
-        }
-    }
+        <footer className="gh-portal-signin-footer gh-button-row">
+          {inboxLinks && !isIos(navigator) && !this.state.otc ? (
+            <InboxLinkButton inboxLinks={inboxLinks} />
+          ) : (
+            <ActionButton
+              style={{ width: '100%' }}
+              onClick={(e) => this.handleSubmit(e)}
+              brandColor={this.context.brandColor}
+              label={isRunning ? t('Verifying...') : t('Continue')}
+              isRunning={isRunning}
+              retry={isError}
+              disabled={isRunning}
+            />
+          )}
+        </footer>
+      </form>
+    );
+  }
 
-    renderOTCForm() {
-        const {action, actionErrorMessage, otcRef, inboxLinks} = this.context;
-        const errors = this.state.errors || {};
+  renderGiftLayout(showOTCForm) {
+    const { site, pageData, otcRef } = this.context;
+    const gift = pageData?.gift;
+    const siteIcon = site?.icon;
+    const siteTitle = site?.title || '';
+    const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
+    const popupTitle = t('Now check your email!');
+    const popupDescription = this.getTranslatedDescription({
+      lastPage: 'gift',
+      otcRef,
+      submittedEmailOrInbox,
+    });
+    const benefits = gift.tier?.benefits || [];
+    const tierDescription = gift.tier?.description || '';
+    const submittedName = (pageData?.name || '').trim();
 
-        if (!otcRef) {
-            return null;
-        }
-
-        const isRunning = (action === 'verifyOTC:running');
-        const isError = (action === 'verifyOTC:failed');
-
-        const error = (isError && actionErrorMessage) ? actionErrorMessage : errors.otc;
-
-        return (
-            <form onSubmit={e => this.handleSubmit(e)}>
-                <section className='gh-portal-section gh-portal-otp'>
-                    <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'}`}>
-                        <input
-                            id={`input-${OTC_FIELD_NAME}`}
-                            className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'}`}
-                            placeholder='––––––'
-                            name={OTC_FIELD_NAME}
-                            type="text"
-                            value={this.state.otc}
-                            inputMode="numeric"
-                            maxLength={6}
-                            pattern="[0-9]*"
-                            autoComplete="one-time-code"
-                            autoCorrect="off"
-                            autoCapitalize="off"
-                            autoFocus={true}
-                            aria-label={t('Code')}
-                            onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                            onFocus={() => this.setState({isFocused: true})}
-                            onBlur={() => this.setState({isFocused: false})}
-                        />
-                    </div>
-                    {error &&
-                        <div className="gh-portal-otp-error">
-                            {error}
-                        </div>
-                    }
-                </section>
-
-                <footer className='gh-portal-signin-footer gh-button-row'>
-                    {inboxLinks && !isIos(navigator) && !this.state.otc ? (
-                        <InboxLinkButton inboxLinks={inboxLinks} />
-                    ) : (
-                        <ActionButton
-                            style={{width: '100%'}}
-                            onClick={e => this.handleSubmit(e)}
-                            brandColor={this.context.brandColor}
-                            label={isRunning ? t('Verifying...') : t('Continue')}
-                            isRunning={isRunning}
-                            retry={isError}
-                            disabled={isRunning}
-                        />
-                    )}
-                </footer>
-            </form>
-        );
-    }
-
-    renderGiftLayout(showOTCForm) {
-        const {site, pageData, otcRef} = this.context;
-        const gift = pageData?.gift;
-        const siteIcon = site?.icon;
-        const siteTitle = site?.title || '';
-        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
-        const popupTitle = t('Now check your email!');
-        const popupDescription = this.getTranslatedDescription({
-            lastPage: 'gift',
-            otcRef,
-            submittedEmailOrInbox
-        });
-        const benefits = gift.tier?.benefits || [];
-        const tierDescription = gift.tier?.description || '';
-        const submittedName = (pageData?.name || '').trim();
-
-        return (
-            <>
-                <CloseButton />
-                <div className='gh-portal-content giftRedemption'>
-                    <div className='gh-portal-gift-checkout'>
-                        <div className='gh-portal-gift-checkout-left'>
-                            <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
-                            <div className='gh-portal-gift-checkout-inner'>
-                                <header className='gh-portal-gift-checkout-header'>
-                                    <h1 className='gh-portal-main-title'>{popupTitle}</h1>
-                                    <p className='gh-portal-gift-checkout-subtitle'>{popupDescription}</p>
-                                </header>
-                                <div className='gh-portal-gift-redemption-form'>
-                                    {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
-                                </div>
-                            </div>
-                        </div>
-                        <div className='gh-portal-gift-checkout-right'>
-                            <div className='gh-portal-gift-checkout-right-panel'>
-                                <div className='gh-portal-gift-checkout-card-stack' data-revealing={this.state.showDetails}>
-                                    <GiftCard
-                                        duration={getGiftDurationLabel(gift)}
-                                        tierName={gift.tier?.name}
-                                        {...(site?.labs?.giftSubCustomization
-                                            ? {toName: submittedName || null, fromName: gift.buyer_name || null}
-                                            : {name: submittedName || null, giftValue: formatGiftValue(gift)})}
-                                        siteIcon={siteIcon}
-                                        siteTitle={siteTitle}
-                                    />
-
-                                    <GiftDetailsToggle
-                                        description={tierDescription}
-                                        benefits={benefits}
-                                        showDetails={this.state.showDetails}
-                                        onToggle={() => this.setState(s => ({showDetails: !s.showDetails}))}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    return (
+      <>
+        <CloseButton />
+        <div className="gh-portal-content giftRedemption">
+          <div className="gh-portal-gift-checkout">
+            <div className="gh-portal-gift-checkout-left">
+              <div className="gh-portal-gift-checkout-bg" aria-hidden="true" />
+              <div className="gh-portal-gift-checkout-inner">
+                <header className="gh-portal-gift-checkout-header">
+                  <h1 className="gh-portal-main-title">{popupTitle}</h1>
+                  <p className="gh-portal-gift-checkout-subtitle">{popupDescription}</p>
+                </header>
+                <div className="gh-portal-gift-redemption-form">
+                  {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
                 </div>
-            </>
-        );
-    }
-
-    render() {
-        const {otcRef, lastPage, pageData} = this.context;
-        const showOTCForm = !!otcRef;
-        const isGiftMode = lastPage === 'gift' && !!pageData?.gift;
-
-        if (isGiftMode) {
-            return this.renderGiftLayout(showOTCForm);
-        }
-
-        return (
-            <div className='gh-portal-content'>
-                <CloseButton />
-                {this.renderFormHeader()}
-                {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
+              </div>
             </div>
-        );
+            <div className="gh-portal-gift-checkout-right">
+              <div className="gh-portal-gift-checkout-right-panel">
+                <div
+                  className="gh-portal-gift-checkout-card-stack"
+                  data-revealing={this.state.showDetails}
+                >
+                  <GiftCard
+                    duration={getGiftDurationLabel(gift)}
+                    tierName={gift.tier?.name}
+                    {...(site?.labs?.giftSubCustomization
+                      ? { toName: submittedName || null, fromName: gift.buyer_name || null }
+                      : { name: submittedName || null, giftValue: formatGiftValue(gift) })}
+                    siteIcon={siteIcon}
+                    siteTitle={siteTitle}
+                  />
+
+                  <GiftDetailsToggle
+                    description={tierDescription}
+                    benefits={benefits}
+                    showDetails={this.state.showDetails}
+                    onToggle={() => this.setState((s) => ({ showDetails: !s.showDetails }))}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  render() {
+    const { otcRef, lastPage, pageData } = this.context;
+    const showOTCForm = !!otcRef;
+    const isGiftMode = lastPage === 'gift' && !!pageData?.gift;
+
+    if (isGiftMode) {
+      return this.renderGiftLayout(showOTCForm);
     }
+
+    return (
+      <div className="gh-portal-content">
+        <CloseButton />
+        {this.renderFormHeader()}
+        {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
+      </div>
+    );
+  }
 }

@@ -1,13 +1,13 @@
 function generateExcerpt(excerpt, truncateOptions) {
-    truncateOptions = truncateOptions || {};
+  truncateOptions = truncateOptions || {};
 
-    if (!truncateOptions.words && !truncateOptions.characters) {
-        truncateOptions.words = 50;
-    }
+  if (!truncateOptions.words && !truncateOptions.characters) {
+    truncateOptions.words = 50;
+  }
 
-    // Just uses downsize to truncate, not format
-    const downsize = require('downsize-cjs');
-    return downsize(excerpt, truncateOptions);
+  // Just uses downsize to truncate, not format
+  const downsize = require('downsize-cjs');
+  return downsize(excerpt, truncateOptions);
 }
 
 module.exports = generateExcerpt;

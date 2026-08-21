@@ -1,8 +1,17 @@
-import React, {useCallback, useMemo, useRef, useEffect} from 'react';
-import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams, Navigate as ReactRouterNavigate} from 'react-router';
-import {useFramework} from './framework-provider';
-import {NavigationStackProvider} from './navigation-stack-provider';
-import {ErrorPage} from '@tryghost/shade/primitives';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import {
+  createHashRouter,
+  RouteObject,
+  RouterProvider as ReactRouterProvider,
+  NavigateOptions as ReactRouterNavigateOptions,
+  useNavigate as useReactRouterNavigate,
+  useLocation,
+  useParams,
+  Navigate as ReactRouterNavigate,
+} from 'react-router';
+import { useFramework } from './framework-provider';
+import { NavigationStackProvider } from './navigation-stack-provider';
+import { ErrorPage } from '@tryghost/shade/primitives';
 
 /**
  * This provider uses React Router to provide a router context to React apps
@@ -16,106 +25,95 @@ import {ErrorPage} from '@tryghost/shade/primitives';
  * adds a default error element.
  */
 export interface RouterProviderProps {
-    routes: RouteObject[];
-    prefix?: string;
+  routes: RouteObject[];
+  prefix?: string;
 
-    // Custom routing props
-    errorElement?: React.ReactNode;
-    children?: React.ReactNode;
+  // Custom routing props
+  errorElement?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 // Store scroll positions globally
 const scrollPositions = new Map<string, number>();
 
 export function resetScrollPosition(location: string) {
-    scrollPositions.delete(location);
+  scrollPositions.delete(location);
 }
 
 interface ScrollRestorationProps {
-    containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement>;
 }
 
-export function ScrollRestoration({containerRef}: ScrollRestorationProps) {
-    const location = useLocation();
-    const previousPathRef = useRef<string | null>(null);
-    const lastScrollPositionRef = useRef<number | null>(null);
+export function ScrollRestoration({ containerRef }: ScrollRestorationProps) {
+  const location = useLocation();
+  const previousPathRef = useRef<string | null>(null);
+  const lastScrollPositionRef = useRef<number | null>(null);
 
-    // Save scroll position when user scrolls
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) {
-            return;
-        }
+  // Save scroll position when user scrolls
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
 
-        const handleScroll = () => {
-            const currentPosition = container.scrollTop;
-            scrollPositions.set(location.pathname, currentPosition);
-            lastScrollPositionRef.current = currentPosition;
-        };
+    const handleScroll = () => {
+      const currentPosition = container.scrollTop;
+      scrollPositions.set(location.pathname, currentPosition);
+      lastScrollPositionRef.current = currentPosition;
+    };
 
-        container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
-    }, [location.pathname, containerRef]);
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [location.pathname, containerRef]);
 
-    // Restore scroll position when pathname changes
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) {
-            return;
-        }
+  // Restore scroll position when pathname changes
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
 
-        const savedPosition = scrollPositions.get(location.pathname);
-        if (savedPosition !== undefined && previousPathRef.current !== location.pathname) {
-            // Only restore if the saved position is significantly different
-            // This helps prevent small scroll adjustments
-            if (Math.abs(savedPosition - container.scrollTop) > 5) {
-                container.scrollTop = savedPosition;
-            }
-        }
-    }, [location.pathname, containerRef]);
+    const savedPosition = scrollPositions.get(location.pathname);
+    if (savedPosition !== undefined && previousPathRef.current !== location.pathname) {
+      // Only restore if the saved position is significantly different
+      // This helps prevent small scroll adjustments
+      if (Math.abs(savedPosition - container.scrollTop) > 5) {
+        container.scrollTop = savedPosition;
+      }
+    }
+  }, [location.pathname, containerRef]);
 
-    // Update previous path
-    useEffect(() => {
-        previousPathRef.current = location.pathname;
-    }, [location.pathname]);
+  // Update previous path
+  useEffect(() => {
+    previousPathRef.current = location.pathname;
+  }, [location.pathname]);
 
-    return null;
+  return null;
 }
 
-export function RouterProvider({
-    routes,
-    prefix,
-    errorElement,
-    children
-}: RouterProviderProps) {
-    // Memoize the router to avoid re-creating it on every render
-    const router = useMemo(() => {
-        // Ensure prefix has a leading slash and no double+ or trailing slashes
-        const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
+export function RouterProvider({ routes, prefix, errorElement, children }: RouterProviderProps) {
+  // Memoize the router to avoid re-creating it on every render
+  const router = useMemo(() => {
+    // Ensure prefix has a leading slash and no double+ or trailing slashes
+    const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
-        // Create a root route that wraps all routes with NavigationStackProvider
-        // and any additional children (providers) so they have access to routing
-        const rootRoute: RouteObject = {
-            element: (
-                <NavigationStackProvider>
-                    {children}
-                </NavigationStackProvider>
-            ),
-            hydrateFallbackElement: <></>,
-            children: routes.map(route => ({
-                ...route,
-                errorElement: route.errorElement || errorElement || <ErrorPage />
-            }))
-        };
+    // Create a root route that wraps all routes with NavigationStackProvider
+    // and any additional children (providers) so they have access to routing
+    const rootRoute: RouteObject = {
+      element: <NavigationStackProvider>{children}</NavigationStackProvider>,
+      hydrateFallbackElement: <></>,
+      children: routes.map((route) => ({
+        ...route,
+        errorElement: route.errorElement || errorElement || <ErrorPage />,
+      })),
+    };
 
-        return createHashRouter([rootRoute], {
-            basename: normalizedPrefix
-        });
-    }, [routes, prefix, errorElement, children]);
+    return createHashRouter([rootRoute], {
+      basename: normalizedPrefix,
+    });
+  }, [routes, prefix, errorElement, children]);
 
-    return (
-        <ReactRouterProvider router={router} />
-    );
+  return <ReactRouterProvider router={router} />;
 }
 
 /**
@@ -124,65 +122,65 @@ export function RouterProvider({
  * if we need to navigate outside of the current app in Ghost.
  */
 export interface NavigateOptions extends ReactRouterNavigateOptions {
-    crossApp?: boolean;
+  crossApp?: boolean;
 }
 
 export function useNavigate() {
-    const navigate = useReactRouterNavigate();
-    const {externalNavigate} = useFramework();
+  const navigate = useReactRouterNavigate();
+  const { externalNavigate } = useFramework();
 
-    return useCallback((
-        to: string | number,
-        options?: NavigateOptions
-    ) => {
-        if (typeof to === 'number') {
-            navigate(to);
-            return;
-        }
+  return useCallback(
+    (to: string | number, options?: NavigateOptions) => {
+      if (typeof to === 'number') {
+        navigate(to);
+        return;
+      }
 
-        if (options?.crossApp) {
-            externalNavigate({route: to, isExternal: true, replace: options.replace});
-            return;
-        }
+      if (options?.crossApp) {
+        externalNavigate({ route: to, isExternal: true, replace: options.replace });
+        return;
+      }
 
-        navigate(to, options);
-    }, [navigate, externalNavigate]);
+      navigate(to, options);
+    },
+    [navigate, externalNavigate],
+  );
 }
 
 export function useRouteHasParams() {
-    const params = useParams();
-    return params && Object.keys(params).length > 0;
+  const params = useParams();
+  return params && Object.keys(params).length > 0;
 }
 
 interface CustomNavigateProps {
-    to: string;
-    replace?: boolean;
-    state?: unknown;
-    crossApp?: boolean;
+  to: string;
+  replace?: boolean;
+  state?: unknown;
+  crossApp?: boolean;
 }
 
-export function Navigate({to, replace, state, crossApp}: CustomNavigateProps) {
-    const {externalNavigate} = useFramework();
-    const lastExternalNavigation = useRef<{replace?: boolean; to: string} | null>(null);
+export function Navigate({ to, replace, state, crossApp }: CustomNavigateProps) {
+  const { externalNavigate } = useFramework();
+  const lastExternalNavigation = useRef<{ replace?: boolean; to: string } | null>(null);
 
-    useEffect(() => {
-        if (!crossApp) {
-            lastExternalNavigation.current = null;
-            return;
-        }
-
-        const previousNavigation = lastExternalNavigation.current;
-        if (previousNavigation?.to === to && previousNavigation.replace === replace) {
-            return;
-        }
-
-        lastExternalNavigation.current = {replace, to};
-        externalNavigate({route: to, isExternal: true, replace});
-    }, [crossApp, externalNavigate, replace, to]);
-
-    if (crossApp) {
-        return null;
+  useEffect(() => {
+    if (!crossApp) {
+      lastExternalNavigation.current = null;
+      return;
     }
 
-    return <ReactRouterNavigate replace={replace} state={state} to={to} />;
+    const previousNavigation = lastExternalNavigation.current;
+    if (previousNavigation?.to === to && previousNavigation.replace === replace) {
+      return;
+    }
+
+    lastExternalNavigation.current = { replace, to };
+    externalNavigate({ route: to, isExternal: true, replace });
+  }, [crossApp, externalNavigate, replace, to]);
+
+  if (crossApp) {
+    return null;
+  }
+
+  return <ReactRouterNavigate replace={replace} state={state} to={to} />;
 }

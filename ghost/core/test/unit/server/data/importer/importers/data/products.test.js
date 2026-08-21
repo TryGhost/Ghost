@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const ProductsImporter = require('../../../../../../../core/server/data/importer/importers/data/products-importer');
 
-const fakeProducts = [{
+const fakeProducts = [
+  {
     id: 'product_1',
     name: 'New One',
     slug: 'new-one',
@@ -14,8 +15,9 @@ const fakeProducts = [{
     created_at: '2022-10-20T11:11:32.000Z',
     updated_at: '2022-10-21T04:47:42.000Z',
     monthly_price_id: 'price_1',
-    yearly_price_id: 'price_2'
-},{
+    yearly_price_id: 'price_2',
+  },
+  {
     id: 'product_2',
     name: 'New One',
     slug: 'new-one',
@@ -28,10 +30,12 @@ const fakeProducts = [{
     created_at: '2022-10-20T11:11:32.000Z',
     updated_at: '2022-10-21T04:47:42.000Z',
     monthly_price_id: 'invalid_price_1',
-    yearly_price_id: 'invalid_price_2'
-}];
+    yearly_price_id: 'invalid_price_2',
+  },
+];
 
-const fakePrices = [{
+const fakePrices = [
+  {
     id: 'price_1',
     stripe_price_id: 'price_YYYYYYYYYYYYYYYYYYYYYYYY',
     stripe_product_id: 'prod_YYYYYYYYYYYYYY',
@@ -43,9 +47,9 @@ const fakePrices = [{
     interval: 'month',
     description: null,
     created_at: '2022-10-21T04:57:17.000Z',
-    updated_at: '2022-10-21T04:57:17.000Z'
-},
-{
+    updated_at: '2022-10-21T04:57:17.000Z',
+  },
+  {
     id: 'price_2',
     stripe_price_id: 'price_XXXXXXXXXXXXXXXXXXXXXXXX',
     stripe_product_id: 'prod_XXXXXXXXXXXXXX',
@@ -57,9 +61,9 @@ const fakePrices = [{
     interval: 'year',
     description: null,
     created_at: '2022-10-27T02:51:28.000Z',
-    updated_at: '2022-10-27T02:51:28.000Z'
-},
-{
+    updated_at: '2022-10-27T02:51:28.000Z',
+  },
+  {
     id: 'invalid_price_2',
     stripe_price_id: 'price_XXXXXXXXXXXXXXXXXXXXXXXX',
     stripe_product_id: 'prod_XXXXXXXXXXXXXX',
@@ -71,9 +75,9 @@ const fakePrices = [{
     interval: 'year',
     description: null,
     created_at: '2022-10-27T02:51:28.000Z',
-    updated_at: '2022-10-27T02:51:28.000Z'
-},
-{
+    updated_at: '2022-10-27T02:51:28.000Z',
+  },
+  {
     id: 'invalid_price_2',
     stripe_price_id: 'price_XXXXXXXXXXXXXXXXXXXXXXXX',
     stripe_product_id: 'prod_XXXXXXXXXXXXXX',
@@ -85,56 +89,60 @@ const fakePrices = [{
     interval: 'year',
     description: null,
     created_at: '2022-10-27T02:51:28.000Z',
-    updated_at: '2022-10-27T02:51:28.000Z'
-}];
+    updated_at: '2022-10-27T02:51:28.000Z',
+  },
+];
 
 describe('ProductsImporter', function () {
-    describe('#beforeImport', function () {
-        it('Uses the stripe_prices to populate pricing data', function () {
-            const importer = new ProductsImporter({products: fakeProducts, stripe_prices: fakePrices});
+  describe('#beforeImport', function () {
+    it('Uses the stripe_prices to populate pricing data', function () {
+      const importer = new ProductsImporter({ products: fakeProducts, stripe_prices: fakePrices });
 
-            importer.beforeImport();
-            assert(importer.dataToImport.length === 1);
+      importer.beforeImport();
+      assert(importer.dataToImport.length === 1);
 
-            const product = importer.dataToImport[0];
+      const product = importer.dataToImport[0];
 
-            assert(product.currency === 'usd');
-            assert(product.monthly_price === 500);
-            assert(product.yearly_price === 5000);
-        });
-
-        it('Does not import products with invalid price data', function () {
-            const importer = new ProductsImporter({products: fakeProducts, stripe_prices: fakePrices});
-
-            importer.beforeImport();
-            assert(importer.dataToImport.length === 1);
-        });
-
-        it('Does not import a free product that has pricing', function () {
-            const invalidFreeProduct = {
-                id: 'free123',
-                name: 'Free 123',
-                slug: 'free-123',
-                active: 1,
-                welcome_page_url: null,
-                visibility: 'public',
-                trial_days: 0,
-                description: null,
-                type: 'free',
-                currency: 'usd',
-                monthly_price: 100,
-                yearly_price: 1000,
-                created_at: '2024-07-10T00:00:00.000Z',
-                updated_at: '2024-07-10T00:00:00.000Z',
-                monthly_price_id: 'price_1',
-                yearly_price_id: 'price_2'
-            };
-
-            const importer = new ProductsImporter({products: [invalidFreeProduct], stripe_prices: fakePrices});
-
-            importer.beforeImport();
-
-            assert(importer.dataToImport.length === 0);
-        });
+      assert(product.currency === 'usd');
+      assert(product.monthly_price === 500);
+      assert(product.yearly_price === 5000);
     });
+
+    it('Does not import products with invalid price data', function () {
+      const importer = new ProductsImporter({ products: fakeProducts, stripe_prices: fakePrices });
+
+      importer.beforeImport();
+      assert(importer.dataToImport.length === 1);
+    });
+
+    it('Does not import a free product that has pricing', function () {
+      const invalidFreeProduct = {
+        id: 'free123',
+        name: 'Free 123',
+        slug: 'free-123',
+        active: 1,
+        welcome_page_url: null,
+        visibility: 'public',
+        trial_days: 0,
+        description: null,
+        type: 'free',
+        currency: 'usd',
+        monthly_price: 100,
+        yearly_price: 1000,
+        created_at: '2024-07-10T00:00:00.000Z',
+        updated_at: '2024-07-10T00:00:00.000Z',
+        monthly_price_id: 'price_1',
+        yearly_price_id: 'price_2',
+      };
+
+      const importer = new ProductsImporter({
+        products: [invalidFreeProduct],
+        stripe_prices: fakePrices,
+      });
+
+      importer.beforeImport();
+
+      assert(importer.dataToImport.length === 0);
+    });
+  });
 });

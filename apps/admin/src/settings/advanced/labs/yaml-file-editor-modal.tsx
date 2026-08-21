@@ -1,175 +1,187 @@
 import CodeEditor from '@/settings/components/code-editor';
-import React, {useEffect, useMemo, useState} from 'react';
-import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
-import {Button} from '@tryghost/shade/components';
-import {Inline, Text} from '@tryghost/shade/primitives';
-import {SettingsModal} from '@tryghost/shade/patterns';
-import {apiUrl} from '@tryghost/admin-x-framework/helpers';
-import {toast} from 'sonner';
-import {useFetchApi, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import React, { useEffect, useMemo, useState } from 'react';
+import { APIError, JSONError } from '@tryghost/admin-x-framework/errors';
+import { Button } from '@tryghost/shade/components';
+import { Inline, Text } from '@tryghost/shade/primitives';
+import { SettingsModal } from '@tryghost/shade/patterns';
+import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { toast } from 'sonner';
+import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 export interface YamlFileEditorModalProps {
-    title: string;
-    hint?: React.ReactNode;
-    testId: string;
-    downloadPath: string;
-    uploadFilename: string;
-    successMessage: string;
-    onUpload: (file: File) => Promise<unknown>;
-    onClose: () => void;
+  title: string;
+  hint?: React.ReactNode;
+  testId: string;
+  downloadPath: string;
+  uploadFilename: string;
+  successMessage: string;
+  onUpload: (file: File) => Promise<unknown>;
+  onClose: () => void;
 }
 
 const extractErrorMessage = (error: unknown): string => {
-    if (error instanceof JSONError && error.data?.errors?.[0]) {
-        return error.data.errors[0].context || error.data.errors[0].message;
-    }
+  if (error instanceof JSONError && error.data?.errors?.[0]) {
+    return error.data.errors[0].context || error.data.errors[0].message;
+  }
 
-    if (error instanceof APIError) {
-        return error.message;
-    }
+  if (error instanceof APIError) {
+    return error.message;
+  }
 
-    return 'Something went wrong, please try again.';
+  return 'Something went wrong, please try again.';
 };
 
 const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
-    title,
-    hint,
-    testId,
-    downloadPath,
-    uploadFilename,
-    successMessage,
-    onUpload,
-    onClose
+  title,
+  hint,
+  testId,
+  downloadPath,
+  uploadFilename,
+  successMessage,
+  onUpload,
+  onClose,
 }) => {
-    const fetchApi = useFetchApi();
-    const handleError = useHandleError();
+  const fetchApi = useFetchApi();
+  const handleError = useHandleError();
 
-    const [content, setContent] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [loadError, setLoadError] = useState<string | null>(null);
-    const [saveError, setSaveError] = useState<string | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
+  const [content, setContent] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-    const yamlExtension = useMemo(() => import('@codemirror/lang-yaml').then(module => module.yaml()), []);
+  const yamlExtension = useMemo(
+    () => import('@codemirror/lang-yaml').then((module) => module.yaml()),
+    [],
+  );
 
-    useEffect(() => {
-        let isMounted = true;
+  useEffect(() => {
+    let isMounted = true;
 
-        const loadContent = async () => {
-            setIsLoading(true);
-            setLoadError(null);
+    const loadContent = async () => {
+      setIsLoading(true);
+      setLoadError(null);
 
-            try {
-                const text = await fetchApi<string>(apiUrl(downloadPath));
+      try {
+        const text = await fetchApi<string>(apiUrl(downloadPath));
 
-                if (isMounted) {
-                    setContent(text);
-                }
-            } catch (error) {
-                if (!isMounted) {
-                    return;
-                }
-
-                if (error instanceof APIError && error.response) {
-                    setLoadError(`Failed to load ${uploadFilename} (${error.response.status})`);
-                } else {
-                    setLoadError(error instanceof Error ? error.message : `Failed to load ${uploadFilename}`);
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        void loadContent();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [downloadPath, uploadFilename, fetchApi]);
-
-    const handleSave = async () => {
-        if (isSaving || isLoading || loadError) {
-            return;
+        if (isMounted) {
+          setContent(text);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
         }
 
-        setIsSaving(true);
-        setSaveError(null);
-
-        try {
-            const file = new File([content], uploadFilename, {type: 'text/yaml'});
-            await onUpload(file);
-
-            toast.success(successMessage);
-
-            onClose();
-        } catch (error) {
-            setSaveError(extractErrorMessage(error));
-            handleError(error, {withToast: false});
-        } finally {
-            setIsSaving(false);
+        if (error instanceof APIError && error.response) {
+          setLoadError(`Failed to load ${uploadFilename} (${error.response.status})`);
+        } else {
+          setLoadError(error instanceof Error ? error.message : `Failed to load ${uploadFilename}`);
         }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
     };
 
-    useEffect(() => {
-        const handleKeydown = (event: KeyboardEvent) => {
-            if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-                event.preventDefault();
-                void handleSave();
-            }
-        };
+    void loadContent();
 
-        window.addEventListener('keydown', handleKeydown);
+    return () => {
+      isMounted = false;
+    };
+  }, [downloadPath, uploadFilename, fetchApi]);
 
-        return () => {
-            window.removeEventListener('keydown', handleKeydown);
-        };
-    });
+  const handleSave = async () => {
+    if (isSaving || isLoading || loadError) {
+      return;
+    }
 
-    const canSave = !isLoading && !loadError && !isSaving;
+    setIsSaving(true);
+    setSaveError(null);
 
-    return (
-        <SettingsModal
-            backDropClick={false}
-            cancelLabel='Close'
-            footer={<></>}
-            height='full'
-            size='full'
-            testId={testId}
-            onClose={onClose}
-        >
-            <div className='flex h-full min-h-0 flex-col'>
-                <div className='mb-4 flex items-center justify-between'>
-                    <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>{title}</Text>
-                    <Inline gap='md'>
-                        <Button type='button' variant='outline' onClick={onClose}>Close</Button>
-                        <Button disabled={!canSave} type='button' onClick={() => void handleSave()}>{isSaving ? 'Saving...' : 'Save'}</Button>
-                    </Inline>
-                </div>
+    try {
+      const file = new File([content], uploadFilename, { type: 'text/yaml' });
+      await onUpload(file);
 
-                {(loadError || saveError) && (
-                    <div className='mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red' data-testid='yaml-editor-error'>
-                        {saveError || loadError}
-                    </div>
-                )}
+      toast.success(successMessage);
 
-                <div className='mb-16 min-h-0 flex-auto'>
-                    {!isLoading && (
-                        <CodeEditor
-                            data-testid='yaml-editor'
-                            extensions={[yamlExtension]}
-                            height='full'
-                            hint={hint}
-                            value={content}
-                            autoFocus
-                            onChange={setContent}
-                        />
-                    )}
-                </div>
-            </div>
-        </SettingsModal>
-    );
+      onClose();
+    } catch (error) {
+      setSaveError(extractErrorMessage(error));
+      handleError(error, { withToast: false });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+        event.preventDefault();
+        void handleSave();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
+  const canSave = !isLoading && !loadError && !isSaving;
+
+  return (
+    <SettingsModal
+      backDropClick={false}
+      cancelLabel="Close"
+      footer={<></>}
+      height="full"
+      size="full"
+      testId={testId}
+      onClose={onClose}
+    >
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="mb-4 flex items-center justify-between">
+          <Text as="h2" className="md:text-3xl" leading="heading" size="2xl" weight="bold">
+            {title}
+          </Text>
+          <Inline gap="md">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Close
+            </Button>
+            <Button disabled={!canSave} type="button" onClick={() => void handleSave()}>
+              {isSaving ? 'Saving...' : 'Save'}
+            </Button>
+          </Inline>
+        </div>
+
+        {(loadError || saveError) && (
+          <div
+            className="mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red"
+            data-testid="yaml-editor-error"
+          >
+            {saveError || loadError}
+          </div>
+        )}
+
+        <div className="mb-16 min-h-0 flex-auto">
+          {!isLoading && (
+            <CodeEditor
+              data-testid="yaml-editor"
+              extensions={[yamlExtension]}
+              height="full"
+              hint={hint}
+              value={content}
+              autoFocus
+              onChange={setContent}
+            />
+          )}
+        </div>
+      </div>
+    </SettingsModal>
+  );
 };
 
 export default YamlFileEditorModal;

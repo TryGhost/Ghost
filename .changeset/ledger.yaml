@@ -1,116 +1,116 @@
-"@tryghost/adapter-base-cache@0.2.0":
+'@tryghost/adapter-base-cache@0.2.0':
   dir: packages/adapters/cache-base
   intents:
     - major-areas-fail
     - upset-dogs-sort
-"@tryghost/adapter-base-scheduling@0.1.1":
+'@tryghost/adapter-base-scheduling@0.1.1':
   dir: packages/adapters/scheduling-base
   intents:
     - major-areas-fail
     - plain-singers-cheat
-"@tryghost/adapter-base-scheduling@0.2.0":
+'@tryghost/adapter-base-scheduling@0.2.0':
   dir: packages/adapters/scheduling-base
   intents:
     - fifty-maps-sing
-"@tryghost/adapter-base-scheduling@0.2.1":
+'@tryghost/adapter-base-scheduling@0.2.1':
   dir: packages/adapters/scheduling-base
   intents:
     - typed-logging-args
-"@tryghost/adapter-base-scheduling@0.2.2":
+'@tryghost/adapter-base-scheduling@0.2.2':
   dir: packages/adapters/scheduling-base
   intents:
     - open-shirts-arrive
     - young-spiders-request
-"@tryghost/adapter-base-sso@0.1.1":
+'@tryghost/adapter-base-sso@0.1.1':
   dir: packages/adapters/sso-base
   intents:
     - major-areas-fail
     - plain-singers-cheat
-"@tryghost/adapter-base-sso@0.1.2":
+'@tryghost/adapter-base-sso@0.1.2':
   dir: packages/adapters/sso-base
   intents:
     - open-shirts-arrive
-"@tryghost/kg-card-factory@5.2.4":
+'@tryghost/kg-card-factory@5.2.4':
   dir: koenig/kg-card-factory
   intents:
     - common-squids-argue
-"@tryghost/kg-clean-basic-html@4.3.4":
+'@tryghost/kg-clean-basic-html@4.3.4':
   dir: koenig/kg-clean-basic-html
   intents:
     - common-squids-argue
     - six-parents-shout
-"@tryghost/kg-converters@1.2.4":
+'@tryghost/kg-converters@1.2.4':
   dir: koenig/kg-converters
   intents:
     - tidy-types-check
-"@tryghost/kg-converters@1.2.5":
+'@tryghost/kg-converters@1.2.5':
   dir: koenig/kg-converters
   intents:
     - common-squids-argue
-"@tryghost/kg-default-cards@10.3.4":
+'@tryghost/kg-default-cards@10.3.4':
   dir: koenig/kg-default-cards
   intents:
     - spacy-poodles-hunt
-"@tryghost/kg-default-cards@10.3.5":
+'@tryghost/kg-default-cards@10.3.5':
   dir: koenig/kg-default-cards
   intents:
     - common-squids-argue
     - six-parents-shout
-"@tryghost/kg-default-nodes@2.1.4":
+'@tryghost/kg-default-nodes@2.1.4':
   dir: koenig/kg-default-nodes
   intents:
     - floppy-bobcats-spend
-"@tryghost/kg-default-nodes@2.1.5":
+'@tryghost/kg-default-nodes@2.1.5':
   dir: koenig/kg-default-nodes
   intents:
     - spacy-poodles-hunt
     - warm-hotels-make
-"@tryghost/kg-default-nodes@2.2.0":
+'@tryghost/kg-default-nodes@2.2.0':
   dir: koenig/kg-default-nodes
   intents:
     - clean-flags-retire
     - common-squids-argue
     - six-parents-shout
-"@tryghost/kg-default-transforms@1.3.4":
+'@tryghost/kg-default-transforms@1.3.4':
   dir: koenig/kg-default-transforms
   intents:
     - common-squids-argue
-"@tryghost/kg-html-to-lexical@1.4.0":
+'@tryghost/kg-html-to-lexical@1.4.0':
   dir: koenig/kg-html-to-lexical
   intents:
     - common-squids-argue
     - six-parents-shout
-"@tryghost/kg-lexical-html-renderer@1.5.0":
+'@tryghost/kg-lexical-html-renderer@1.5.0':
   dir: koenig/kg-lexical-html-renderer
   intents:
     - common-squids-argue
     - six-parents-shout
-"@tryghost/kg-markdown-html-renderer@7.2.4":
+'@tryghost/kg-markdown-html-renderer@7.2.4':
   dir: koenig/kg-markdown-html-renderer
   intents:
     - common-squids-argue
     - four-rings-relate
-"@tryghost/kg-unsplash-selector@0.4.4":
+'@tryghost/kg-unsplash-selector@0.4.4':
   dir: koenig/kg-unsplash-selector
   intents:
     - common-squids-argue
     - petite-schools-accept
     - six-parents-shout
     - swift-guests-grin
-"@tryghost/kg-utils@1.1.4":
+'@tryghost/kg-utils@1.1.4':
   dir: koenig/kg-utils
   intents:
     - common-squids-argue
     - four-rings-relate
-"@tryghost/koenig-lexical@1.9.0":
+'@tryghost/koenig-lexical@1.9.0':
   dir: koenig/koenig-lexical
   intents:
     - bright-walls-preview
-"@tryghost/koenig-lexical@1.9.1":
+'@tryghost/koenig-lexical@1.9.1':
   dir: koenig/koenig-lexical
   intents:
     - warm-hotels-make
-"@tryghost/koenig-lexical@1.9.2":
+'@tryghost/koenig-lexical@1.9.2':
   dir: koenig/koenig-lexical
   intents:
     - funky-bikes-chew

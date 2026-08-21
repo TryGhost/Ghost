@@ -1,326 +1,317 @@
 /// <reference types="vitest/globals" />
-import {act, renderHook} from '@testing-library/react';
-import {type AddressInfo} from 'node:net';
+import { act, renderHook } from '@testing-library/react';
+import { type AddressInfo } from 'node:net';
 import http from 'node:http';
-import {promisify} from 'node:util';
+import { promisify } from 'node:util';
 import * as helpers from '../../../src/utils/helpers';
-import {useKoenigFileUpload} from '../../../src/hooks/use-koenig-file-upload';
+import { useKoenigFileUpload } from '../../../src/hooks/use-koenig-file-upload';
 
 function makeFile(name: string, type = 'image/jpeg'): File {
-    return new File(['content'], name, {type});
+  return new File(['content'], name, { type });
 }
 
 interface UploadResponse {
-    body: Record<string, unknown>;
-    status?: number;
+  body: Record<string, unknown>;
+  status?: number;
 }
 
 const successfulUploadResponse: UploadResponse = {
-    body: {
-        images: [{url: 'https://example.com/image.jpg', ref: null}]
-    },
-    status: 201
+  body: {
+    images: [{ url: 'https://example.com/image.jpg', ref: null }],
+  },
+  status: 201,
 };
 
 const serverErrorUploadResponse: UploadResponse = {
-    body: {
-        errors: [{message: 'File too large', context: 'Max size is 10MB'}]
-    },
-    status: 413
+  body: {
+    errors: [{ message: 'File too large', context: 'Max size is 10MB' }],
+  },
+  status: 413,
 };
 
 // HostLimitError responses use a generic `message` and put the specific,
 // user-actionable text in `context` (see @tryghost/mw-error-handler).
 const hostLimitUploadResponse: UploadResponse = {
-    body: {
-        errors: [{
-            type: 'HostLimitError',
-            message: 'Host Limit error, cannot upload image.',
-            context: 'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
-        }]
-    },
-    status: 403
+  body: {
+    errors: [
+      {
+        type: 'HostLimitError',
+        message: 'Host Limit error, cannot upload image.',
+        context:
+          'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.',
+      },
+    ],
+  },
+  status: 403,
 };
 
 interface RequestLog {
-    method?: string;
-    url?: string;
+  method?: string;
+  url?: string;
 }
 
 describe('useKoenigFileUpload', () => {
-    let server: http.Server;
-    let baseUrl: string;
-    let uploadResponse: UploadResponse;
-    let requestLog: RequestLog[];
+  let server: http.Server;
+  let baseUrl: string;
+  let uploadResponse: UploadResponse;
+  let requestLog: RequestLog[];
 
-    beforeEach(async () => {
-        uploadResponse = successfulUploadResponse;
-        requestLog = [];
+  beforeEach(async () => {
+    uploadResponse = successfulUploadResponse;
+    requestLog = [];
 
-        server = http.createServer((req, res) => {
-            requestLog.push({method: req.method, url: req.url});
+    server = http.createServer((req, res) => {
+      requestLog.push({ method: req.method, url: req.url });
 
-            if (req.method === 'OPTIONS') {
-                res.writeHead(204, {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': '*',
-                    'Access-Control-Allow-Headers': '*',
-                    'Access-Control-Allow-Credentials': 'true'
-                });
-                res.end();
-                return;
-            }
-
-            res.writeHead(uploadResponse.status ?? 200, {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': '*',
-                'Access-Control-Allow-Headers': '*',
-                'Access-Control-Allow-Credentials': 'true'
-            });
-
-            res.end(JSON.stringify(uploadResponse.body));
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': '*',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Allow-Credentials': 'true',
         });
+        res.end();
+        return;
+      }
 
-        await new Promise<void>((resolve) => {
-            server.listen(0, '127.0.0.1', () => {
-                resolve();
-            });
-        });
+      res.writeHead(uploadResponse.status ?? 200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Credentials': 'true',
+      });
 
-        const address = server.address() as AddressInfo;
-        baseUrl = `http://127.0.0.1:${address.port}`;
-
-        vi.spyOn(helpers, 'getGhostPaths').mockReturnValue({
-            subdir: '',
-            adminRoot: '/ghost/',
-            assetRoot: '/ghost/assets/',
-            apiRoot: `${baseUrl}/ghost/api/admin`
-        });
+      res.end(JSON.stringify(uploadResponse.body));
     });
 
-    afterEach(async () => {
-        const close = promisify(server.close.bind(server));
-        await close();
-
-        vi.restoreAllMocks();
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        resolve();
+      });
     });
 
-    it('returns initial state', () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    const address = server.address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${address.port}`;
 
-        expect(result.current.progress).toBe(0);
-        expect(result.current.isLoading).toBe(false);
-        expect(result.current.errors).toEqual([]);
-        expect(result.current.filesNumber).toBe(0);
-        expect(typeof result.current.upload).toBe('function');
+    vi.spyOn(helpers, 'getGhostPaths').mockReturnValue({
+      subdir: '',
+      adminRoot: '/ghost/',
+      assetRoot: '/ghost/assets/',
+      apiRoot: `${baseUrl}/ghost/api/admin`,
+    });
+  });
+
+  afterEach(async () => {
+    const close = promisify(server.close.bind(server));
+    await close();
+
+    vi.restoreAllMocks();
+  });
+
+  it('returns initial state', () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    expect(result.current.progress).toBe(0);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.errors).toEqual([]);
+    expect(result.current.filesNumber).toBe(0);
+    expect(typeof result.current.upload).toBe('function');
+  });
+
+  it('validates file extension and returns error for unsupported type', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    const badFile = makeFile('document.pdf', 'application/pdf');
+
+    const uploadResult = await act(async () => await result.current.upload([badFile]));
+
+    expect(uploadResult).toBeNull();
+    expect(result.current.errors).toHaveLength(1);
+    expect(result.current.errors[0].fileName).toBe('document.pdf');
+    expect(result.current.errors[0].message).toMatch(/not supported/i);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('accepts valid image files', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    const goodFile = makeFile('photo.jpg', 'image/jpeg');
+
+    const uploadResult = await act(async () => await result.current.upload([goodFile]));
+
+    expect(result.current.errors).toHaveLength(0);
+    expect(uploadResult?.[0].url).toBe('https://example.com/image.jpg');
+    expect(uploadResult?.[0].fileName).toBe('photo.jpg');
+  });
+
+  it('sets isLoading to false after upload completes', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    const goodFile = makeFile('photo.jpg');
+    await act(async () => {
+      await result.current.upload([goodFile]);
     });
 
-    it('validates file extension and returns error for unsupported type', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    expect(result.current.isLoading).toBe(false);
+  });
 
-        const badFile = makeFile('document.pdf', 'application/pdf');
+  it('POSTs to the correct image upload endpoint', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
 
-        const uploadResult = await act(async () => (
-            await result.current.upload([badFile])
-        ));
-
-        expect(uploadResult).toBeNull();
-        expect(result.current.errors).toHaveLength(1);
-        expect(result.current.errors[0].fileName).toBe('document.pdf');
-        expect(result.current.errors[0].message).toMatch(/not supported/i);
-        expect(result.current.isLoading).toBe(false);
+    const file = makeFile('photo.jpg');
+    await act(async () => {
+      await result.current.upload([file]);
     });
 
-    it('accepts valid image files', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    const postRequest = requestLog.find((request) => request.method === 'POST');
+    expect(postRequest).toBeDefined();
+    expect(postRequest?.url).toContain('/ghost/api/admin/images/upload/');
+  });
 
-        const goodFile = makeFile('photo.jpg', 'image/jpeg');
+  it('returns null and sets errors when server returns an error status', async () => {
+    uploadResponse = serverErrorUploadResponse;
 
-        const uploadResult = await act(async () => (
-            await result.current.upload([goodFile])
-        ));
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
 
-        expect(result.current.errors).toHaveLength(0);
-        expect(uploadResult?.[0].url).toBe('https://example.com/image.jpg');
-        expect(uploadResult?.[0].fileName).toBe('photo.jpg');
+    const file = makeFile('photo.jpg');
+    const uploadResult = await act(async () => await result.current.upload([file]));
+
+    expect(uploadResult).toBeNull();
+    expect(result.current.errors).toHaveLength(1);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('tracks upload progress', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    const file = makeFile('photo.jpg');
+    await act(async () => {
+      await result.current.upload([file]);
     });
 
-    it('sets isLoading to false after upload completes', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    // After successful upload, progress should be 100
+    expect(result.current.progress).toBe(100);
+  });
 
-        const goodFile = makeFile('photo.jpg');
-        await act(async () => {
-            await result.current.upload([goodFile]);
-        });
+  it('records the number of files being uploaded', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
 
-        expect(result.current.isLoading).toBe(false);
+    const files = [makeFile('a.jpg'), makeFile('b.png')];
+    await act(async () => {
+      await result.current.upload(files);
     });
 
-    it('POSTs to the correct image upload endpoint', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    expect(result.current.filesNumber).toBe(2);
+  });
 
-        const file = makeFile('photo.jpg');
-        await act(async () => {
-            await result.current.upload([file]);
-        });
+  it('clears previous errors on a new successful upload', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
 
-        const postRequest = requestLog.find(request => request.method === 'POST');
-        expect(postRequest).toBeDefined();
-        expect(postRequest?.url).toContain('/ghost/api/admin/images/upload/');
+    const badFile = makeFile('doc.pdf');
+    await act(async () => {
+      await result.current.upload([badFile]);
+    });
+    expect(result.current.errors).toHaveLength(1);
+
+    uploadResponse = successfulUploadResponse;
+    const goodFile = makeFile('photo.jpg');
+    await act(async () => {
+      await result.current.upload([goodFile]);
+    });
+    expect(result.current.errors).toHaveLength(0);
+  });
+
+  it('extracts error message from server error response', async () => {
+    uploadResponse = serverErrorUploadResponse;
+
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    const file = makeFile('photo.jpg');
+    await act(async () => {
+      await result.current.upload([file]);
     });
 
-    it('returns null and sets errors when server returns an error status', async () => {
-        uploadResponse = serverErrorUploadResponse;
+    expect(result.current.errors).toHaveLength(1);
+    expect(result.current.errors[0].fileName).toBe('photo.jpg');
+    expect(result.current.errors[0].message).toBe(
+      'Request is larger than the maximum file size the server allows',
+    );
+  });
 
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+  it('prefers the actionable context message over the generic message', async () => {
+    uploadResponse = hostLimitUploadResponse;
 
-        const file = makeFile('photo.jpg');
-        const uploadResult = await act(async () => (
-            await result.current.upload([file])
-        ));
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
 
-        expect(uploadResult).toBeNull();
-        expect(result.current.errors).toHaveLength(1);
-        expect(result.current.isLoading).toBe(false);
+    const file = makeFile('photo.jpg');
+    await act(async () => {
+      await result.current.upload([file]);
     });
 
-    it('tracks upload progress', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    expect(result.current.errors).toHaveLength(1);
+    expect(result.current.errors[0].fileName).toBe('photo.jpg');
+    // The user should see the specific limit text from `context`, not the
+    // generic "Host Limit error, cannot upload image." wrapper message.
+    expect(result.current.errors[0].message).toBe(
+      'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.',
+    );
+    expect(result.current.errors[0].context).toBe(
+      'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.',
+    );
+  });
 
-        const file = makeFile('photo.jpg');
-        await act(async () => {
-            await result.current.upload([file]);
-        });
+  it('does not accumulate errors across repeated failed uploads', async () => {
+    uploadResponse = hostLimitUploadResponse;
 
-        // After successful upload, progress should be 100
-        expect(result.current.progress).toBe(100);
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    const file = makeFile('photo.jpg');
+
+    await act(async () => {
+      await result.current.upload([file]);
     });
+    expect(result.current.errors).toHaveLength(1);
 
-    it('records the number of files being uploaded', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
-
-        const files = [makeFile('a.jpg'), makeFile('b.png')];
-        await act(async () => {
-            await result.current.upload(files);
-        });
-
-        expect(result.current.filesNumber).toBe(2);
+    // Retrying the same failing upload should replace, not append.
+    await act(async () => {
+      await result.current.upload([file]);
     });
+    expect(result.current.errors).toHaveLength(1);
+  });
 
-    it('clears previous errors on a new successful upload', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+  it('rejects files with no extension for image type', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
 
-        const badFile = makeFile('doc.pdf');
-        await act(async () => {
-            await result.current.upload([badFile]);
-        });
-        expect(result.current.errors).toHaveLength(1);
+    const file = makeFile('README', 'application/octet-stream');
+    const uploadResult = await act(async () => await result.current.upload([file]));
 
-        uploadResponse = successfulUploadResponse;
-        const goodFile = makeFile('photo.jpg');
-        await act(async () => {
-            await result.current.upload([goodFile]);
-        });
-        expect(result.current.errors).toHaveLength(0);
-    });
+    expect(uploadResult).toBeNull();
+    expect(result.current.errors).toHaveLength(1);
+    expect(result.current.errors[0].fileName).toBe('README');
+    expect(result.current.errors[0].message).toMatch(/not supported/i);
+  });
 
-    it('extracts error message from server error response', async () => {
-        uploadResponse = serverErrorUploadResponse;
+  it('skips validation for file type and accepts any extension', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('file'));
 
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
+    const file = makeFile('document.xyz', 'application/octet-stream');
+    const uploadResult = await act(async () => await result.current.upload([file]));
 
-        const file = makeFile('photo.jpg');
-        await act(async () => {
-            await result.current.upload([file]);
-        });
+    expect(uploadResult).not.toBeNull();
+    expect(result.current.errors).toHaveLength(0);
+  });
 
-        expect(result.current.errors).toHaveLength(1);
-        expect(result.current.errors[0].fileName).toBe('photo.jpg');
-        expect(result.current.errors[0].message).toBe(
-            'Request is larger than the maximum file size the server allows'
-        );
-    });
+  it('accepts all supported image extensions', async () => {
+    const supportedExtensions = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
 
-    it('prefers the actionable context message over the generic message', async () => {
-        uploadResponse = hostLimitUploadResponse;
-
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
-
-        const file = makeFile('photo.jpg');
-        await act(async () => {
-            await result.current.upload([file]);
-        });
-
-        expect(result.current.errors).toHaveLength(1);
-        expect(result.current.errors[0].fileName).toBe('photo.jpg');
-        // The user should see the specific limit text from `context`, not the
-        // generic "Host Limit error, cannot upload image." wrapper message.
-        expect(result.current.errors[0].message).toBe(
-            'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
-        );
-        expect(result.current.errors[0].context).toBe(
-            'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
-        );
-    });
-
-    it('does not accumulate errors across repeated failed uploads', async () => {
-        uploadResponse = hostLimitUploadResponse;
-
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
-
-        const file = makeFile('photo.jpg');
-
-        await act(async () => {
-            await result.current.upload([file]);
-        });
-        expect(result.current.errors).toHaveLength(1);
-
-        // Retrying the same failing upload should replace, not append.
-        await act(async () => {
-            await result.current.upload([file]);
-        });
-        expect(result.current.errors).toHaveLength(1);
-    });
-
-    it('rejects files with no extension for image type', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
-
-        const file = makeFile('README', 'application/octet-stream');
-        const uploadResult = await act(async () => (
-            await result.current.upload([file])
-        ));
-
-        expect(uploadResult).toBeNull();
-        expect(result.current.errors).toHaveLength(1);
-        expect(result.current.errors[0].fileName).toBe('README');
-        expect(result.current.errors[0].message).toMatch(/not supported/i);
-    });
-
-    it('skips validation for file type and accepts any extension', async () => {
-        const {result} = renderHook(() => useKoenigFileUpload('file'));
-
-        const file = makeFile('document.xyz', 'application/octet-stream');
-        const uploadResult = await act(async () => (
-            await result.current.upload([file])
-        ));
-
-        expect(uploadResult).not.toBeNull();
-        expect(result.current.errors).toHaveLength(0);
-    });
-
-    it('accepts all supported image extensions', async () => {
-        const supportedExtensions = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
-
-        for (const ext of supportedExtensions) {
-            const {result} = renderHook(() => useKoenigFileUpload('image'));
-            const file = makeFile(`image.${ext}`);
-            const uploadResult = await act(async () => (
-                await result.current.upload([file])
-            ));
-            // Each valid extension should produce a successful upload result
-            expect(uploadResult).not.toBeNull();
-        }
-    });
+    for (const ext of supportedExtensions) {
+      const { result } = renderHook(() => useKoenigFileUpload('image'));
+      const file = makeFile(`image.${ext}`);
+      const uploadResult = await act(async () => await result.current.upload([file]));
+      // Each valid extension should produce a successful upload result
+      expect(uploadResult).not.toBeNull();
+    }
+  });
 });

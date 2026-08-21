@@ -18,6 +18,7 @@ import {formatNumber} from '@tryghost/shade';
 ## When to use formatNumber
 
 Use `formatNumber()` when rendering any numeric value that is displayed to the user, including:
+
 - Member counts, visitor counts, subscriber counts
 - Email engagement metrics (opens, clicks, bounces)
 - Revenue amounts (combine with `centsToDollars()` for monetary values)

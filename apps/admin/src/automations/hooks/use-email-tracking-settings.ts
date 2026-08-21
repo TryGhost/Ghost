@@ -1,8 +1,8 @@
-import {useAppContext} from '@tryghost/admin-x-framework';
+import { useAppContext } from '@tryghost/admin-x-framework';
 
 export const useEmailTrackingSettings = () => {
-    const {appSettings} = useAppContext();
-    const {emailTrackOpens = false, emailTrackClicks = false} = appSettings?.analytics ?? {};
+  const { appSettings } = useAppContext();
+  const { emailTrackOpens = false, emailTrackClicks = false } = appSettings?.analytics ?? {};
 
-    return {emailTrackOpens, emailTrackClicks};
+  return { emailTrackOpens, emailTrackClicks };
 };

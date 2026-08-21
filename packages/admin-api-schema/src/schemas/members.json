@@ -92,11 +92,7 @@
                 "maxLength": 191
               }
             },
-            "anyOf": [
-              { "required": ["id"] },
-              { "required": ["name"] },
-              { "required": ["slug"] }
-            ]
+            "anyOf": [{ "required": ["id"] }, { "required": ["name"] }, { "required": ["slug"] }]
           },
           {
             "type": "string",
@@ -122,10 +118,7 @@
                 "maxLength": 191
               }
             },
-            "anyOf": [
-              { "required": ["id"] },
-              { "required": ["name"] }
-            ]
+            "anyOf": [{ "required": ["id"] }, { "required": ["name"] }]
           },
           {
             "type": "string",
@@ -155,11 +148,7 @@
                 "maxLength": 191
               }
             },
-            "anyOf": [
-              { "required": ["id"] },
-              { "required": ["name"] },
-              { "required": ["slug"] }
-            ]
+            "anyOf": [{ "required": ["id"] }, { "required": ["name"] }, { "required": ["slug"] }]
           },
           {
             "type": "string",

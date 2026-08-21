@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('frontend');
 const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberPageViewEvent} = require('../../shared/events');
+const { MemberPageViewEvent } = require('../../shared/events');
 
 // App requires
 const config = require('../../shared/config');
@@ -29,7 +29,7 @@ const STATIC_FILES_URL_PREFIX = `/${urlUtils.STATIC_FILES_URL_PREFIX}`;
 let router;
 
 function SiteRouter(req, res, next) {
-    router(req, res, next);
+  router(req, res, next);
 }
 
 /**
@@ -38,173 +38,182 @@ function SiteRouter(req, res, next) {
  * @returns {import('express').Application}
  */
 module.exports = function setupSiteApp(routerConfig) {
-    debug('Site setup start', routerConfig);
+  debug('Site setup start', routerConfig);
 
-    const siteApp = express('site');
+  const siteApp = express('site');
 
-    // ## App - specific code
-    // set the view engine
-    siteApp.set('view engine', 'hbs');
+  // ## App - specific code
+  // set the view engine
+  siteApp.set('view engine', 'hbs');
 
-    // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
-    siteApp.use(mw.cors);
+  // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
+  siteApp.use(mw.cors);
 
-    siteApp.use(offersService.middleware);
+  siteApp.use(offersService.middleware);
 
-    linkRedirectsHandler(siteApp);
+  linkRedirectsHandler(siteApp);
 
-    // you can extend Ghost with a custom redirects file
-    // see https://github.com/TryGhost/Ghost/issues/7707
-    siteApp.use(customRedirects.middleware);
+  // you can extend Ghost with a custom redirects file
+  // see https://github.com/TryGhost/Ghost/issues/7707
+  siteApp.use(customRedirects.middleware);
 
-    // (Optionally) redirect any requests to /ghost to the admin panel
-    siteApp.use(mw.redirectGhostToAdmin());
+  // (Optionally) redirect any requests to /ghost to the admin panel
+  siteApp.use(mw.redirectGhostToAdmin());
 
-    // Static content/assets
-    // @TODO make sure all of these have a local 404 error handler
-    // Favicon
-    serveFavicon(siteApp);
+  // Static content/assets
+  // @TODO make sure all of these have a local 404 error handler
+  // Favicon
+  serveFavicon(siteApp);
 
-    // Public files (sitemap.xsl, stylesheets, scripts, etc.)
-    servePublicFiles(siteApp);
+  // Public files (sitemap.xsl, stylesheets, scripts, etc.)
+  servePublicFiles(siteApp);
 
-    const settingsCache = require('../../shared/settings-cache');
-    const routing = require('../services/routing');
-    const {api} = require('../services/proxy');
-    const {createLlmsService} = require('../services/llms/service');
-    const {createLlmsHandler} = require('../services/llms/handler');
-    const {createLlmsDiscovery} = require('./middleware/llms-discovery');
-    const machinePaymentsService = require('../../server/services/machine-payments');
+  const settingsCache = require('../../shared/settings-cache');
+  const routing = require('../services/routing');
+  const { api } = require('../services/proxy');
+  const { createLlmsService } = require('../services/llms/service');
+  const { createLlmsHandler } = require('../services/llms/handler');
+  const { createLlmsDiscovery } = require('./middleware/llms-discovery');
+  const machinePaymentsService = require('../../server/services/machine-payments');
 
-    const llmsService = createLlmsService({
-        settingsCache,
-        config,
-        urlUtils,
-        routing,
-        api,
-        machinePaymentsService
-    });
+  const llmsService = createLlmsService({
+    settingsCache,
+    config,
+    urlUtils,
+    routing,
+    api,
+    machinePaymentsService,
+  });
 
-    siteApp.set('llmsService', llmsService);
-    siteApp.set('machinePaymentsService', machinePaymentsService);
+  siteApp.set('llmsService', llmsService);
+  siteApp.set('machinePaymentsService', machinePaymentsService);
 
-    const llmsHandler = createLlmsHandler({
-        llmsService,
-        config,
-        settingsCache
-    });
+  const llmsHandler = createLlmsHandler({
+    llmsService,
+    config,
+    settingsCache,
+  });
 
-    siteApp.use(createLlmsDiscovery({settingsCache}));
+  siteApp.use(createLlmsDiscovery({ settingsCache }));
 
-    // Serve site images using the storage adapter
-    siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, adapterManager.getAdapter('storage:images').serve());
-    // Serve site media using the storage adapter
-    siteApp.use(STATIC_MEDIA_URL_PREFIX, adapterManager.getAdapter('storage:media').serve());
-    // Serve site files using the storage adapter
-    siteApp.use(STATIC_FILES_URL_PREFIX, adapterManager.getAdapter('storage:files').serve());
+  // Serve site images using the storage adapter
+  siteApp.use(
+    STATIC_IMAGE_URL_PREFIX,
+    mw.handleImageSizes,
+    adapterManager.getAdapter('storage:images').serve(),
+  );
+  // Serve site media using the storage adapter
+  siteApp.use(STATIC_MEDIA_URL_PREFIX, adapterManager.getAdapter('storage:media').serve());
+  // Serve site files using the storage adapter
+  siteApp.use(STATIC_FILES_URL_PREFIX, adapterManager.getAdapter('storage:files').serve());
 
-    // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
-    siteApp.use(
-        '/members/.well-known',
-        shared.middleware.cacheControl('public', {maxAge: config.get('caching:wellKnown:maxAge')}),
-        function lazyWellKnownMw(req, res, next) {
-            return membersService.api.middleware.wellKnown(req, res, next);
-        }
-    );
+  // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
+  siteApp.use(
+    '/members/.well-known',
+    shared.middleware.cacheControl('public', { maxAge: config.get('caching:wellKnown:maxAge') }),
+    function lazyWellKnownMw(req, res, next) {
+      return membersService.api.middleware.wellKnown(req, res, next);
+    },
+  );
 
-    // setup middleware for internal apps
-    // @TODO: refactor this to be a proper app middleware hook for internal apps
-    config.get('apps:internal').forEach((appName) => {
-        const app = require(path.join(config.get('paths').internalAppPath, appName));
+  // setup middleware for internal apps
+  // @TODO: refactor this to be a proper app middleware hook for internal apps
+  config.get('apps:internal').forEach((appName) => {
+    const app = require(path.join(config.get('paths').internalAppPath, appName));
 
-        if (Object.prototype.hasOwnProperty.call(app, 'setupMiddleware')) {
-            app.setupMiddleware(siteApp);
-        }
-    });
+    if (Object.prototype.hasOwnProperty.call(app, 'setupMiddleware')) {
+      app.setupMiddleware(siteApp);
+    }
+  });
 
-    // Serve IndexNow API key verification file (/{key}.txt)
-    siteApp.use(mw.serveIndexNowKey);
+  // Serve IndexNow API key verification file (/{key}.txt)
+  siteApp.use(mw.serveIndexNowKey);
 
-    // Activates the staff toolbar on the frontend domain and marks eligible requests
-    siteApp.use(mw.adminToolbar);
+  // Activates the staff toolbar on the frontend domain and marks eligible requests
+  siteApp.use(mw.adminToolbar);
 
-    // Theme static assets/files
-    siteApp.use(mw.staticTheme());
+  // Theme static assets/files
+  siteApp.use(mw.staticTheme());
 
-    debug('Static content done');
+  debug('Static content done');
 
-    // site map - this should probably be refactored to be an internal app
-    sitemapHandler(siteApp);
+  // site map - this should probably be refactored to be an internal app
+  sitemapHandler(siteApp);
 
-    llmsHandler.mountLlmsRoutes(siteApp);
+  llmsHandler.mountLlmsRoutes(siteApp);
 
-    // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersService.middleware.loadMemberSession);
+  // Global handling for member session, ensures a member is logged in to the frontend
+  siteApp.use(membersService.middleware.loadMemberSession);
 
-    // Theme middleware
-    // This should happen AFTER any shared assets are served, as it only changes things to do with templates
-    siteApp.use(themeMiddleware);
-    debug('Themes done');
+  // Theme middleware
+  // This should happen AFTER any shared assets are served, as it only changes things to do with templates
+  siteApp.use(themeMiddleware);
+  debug('Themes done');
 
-    debug('Internal apps done');
+  debug('Internal apps done');
 
-    // Add in all trailing slashes & remove uppercase
-    // must happen AFTER asset loading and BEFORE routing
-    siteApp.use(shared.middleware.prettyUrls);
+  // Add in all trailing slashes & remove uppercase
+  // must happen AFTER asset loading and BEFORE routing
+  siteApp.use(shared.middleware.prettyUrls);
 
-    // ### Caching
-    siteApp.use(async function frontendCaching(req, res, next) {
-        try {
-            const middleware = await mw.frontendCaching.getMiddleware();
-            return middleware(req, res, next);
-        } catch {
-            return next();
-        }
-    });
+  // ### Caching
+  siteApp.use(async function frontendCaching(req, res, next) {
+    try {
+      const middleware = await mw.frontendCaching.getMiddleware();
+      return middleware(req, res, next);
+    } catch {
+      return next();
+    }
+  });
 
-    siteApp.use(function memberPageViewMiddleware(req, res, next) {
-        if (req.member) {
-            // This event needs memberLastSeenAt to avoid doing un-necessary database queries when updating `last_seen_at`
-            DomainEvents.dispatch(MemberPageViewEvent.create({url: req.url, memberId: req.member.id, memberLastSeenAt: req.member.last_seen_at}, new Date()));
-        }
-        next();
-    });
+  siteApp.use(function memberPageViewMiddleware(req, res, next) {
+    if (req.member) {
+      // This event needs memberLastSeenAt to avoid doing un-necessary database queries when updating `last_seen_at`
+      DomainEvents.dispatch(
+        MemberPageViewEvent.create(
+          { url: req.url, memberId: req.member.id, memberLastSeenAt: req.member.last_seen_at },
+          new Date(),
+        ),
+      );
+    }
+    next();
+  });
 
-    debug('General middleware done');
+  debug('General middleware done');
 
-    // Middleware to set analytics indicator header when analytics tracking is included
-    siteApp.use(function ghostAnalyticsHeaderMiddleware(req, res, next) {
-        const originalSend = res.send;
-        // Has to be on res.send otherwise this executes prior to ghost_head
-        res.send = function (data) {
-            if (res.locals && (res.locals.ghostAnalytics)) {
-                res.set('X-Ghost-Analytics', 'true');
-            }
-            return originalSend.call(this, data);
-        };
-        next();
-    });
+  // Middleware to set analytics indicator header when analytics tracking is included
+  siteApp.use(function ghostAnalyticsHeaderMiddleware(req, res, next) {
+    const originalSend = res.send;
+    // Has to be on res.send otherwise this executes prior to ghost_head
+    res.send = function (data) {
+      if (res.locals && res.locals.ghostAnalytics) {
+        res.set('X-Ghost-Analytics', 'true');
+      }
+      return originalSend.call(this, data);
+    };
+    next();
+  });
 
-    router = siteRoutes(routerConfig);
-    Object.setPrototypeOf(SiteRouter, router);
+  router = siteRoutes(routerConfig);
+  Object.setPrototypeOf(SiteRouter, router);
 
-    // Set up Frontend routes (including private site routes)
-    siteApp.use(SiteRouter);
+  // Set up Frontend routes (including private site routes)
+  siteApp.use(SiteRouter);
 
-    // ### Error handlers
-    siteApp.use(errorHandler.pageNotFound);
-    config.get('apps:internal').forEach((appName) => {
-        const app = require(path.join(config.get('paths').internalAppPath, appName));
+  // ### Error handlers
+  siteApp.use(errorHandler.pageNotFound);
+  config.get('apps:internal').forEach((appName) => {
+    const app = require(path.join(config.get('paths').internalAppPath, appName));
 
-        if (Object.prototype.hasOwnProperty.call(app, 'setupErrorHandling')) {
-            app.setupErrorHandling(siteApp);
-        }
-    });
-    siteApp.use(mw.errorHandler.handleThemeResponse);
+    if (Object.prototype.hasOwnProperty.call(app, 'setupErrorHandling')) {
+      app.setupErrorHandling(siteApp);
+    }
+  });
+  siteApp.use(mw.errorHandler.handleThemeResponse);
 
-    debug('Site setup end');
+  debug('Site setup end');
 
-    return siteApp;
+  return siteApp;
 };
 
 /**
@@ -212,7 +221,7 @@ module.exports = function setupSiteApp(routerConfig) {
  * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
  */
 module.exports.reload = (routerConfig) => {
-    debug('reloading');
-    router = siteRoutes(routerConfig);
-    Object.setPrototypeOf(SiteRouter, router);
+  debug('reloading');
+  router = siteRoutes(routerConfig);
+  Object.setPrototypeOf(SiteRouter, router);
 };

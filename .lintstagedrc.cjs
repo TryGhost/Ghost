@@ -1,137 +1,142 @@
 const path = require('path');
 const fs = require('fs');
-const {quote: shellQuote} = require('shell-quote');
+const { quote: shellQuote } = require('shell-quote');
 
 const ROOT = process.cwd();
 
 function normalize(p) {
-    return p.split(path.sep).join('/');
+  return p.split(path.sep).join('/');
 }
 
 // Parse the `packages:` list from pnpm-workspace.yaml. We only need the simple
 // glob shapes pnpm allows here (`apps/*`, `ghost/*`, `e2e`); anything fancier
 // would warrant a real YAML parser.
 function loadWorkspacePatterns() {
-    const yaml = fs.readFileSync(path.join(ROOT, 'pnpm-workspace.yaml'), 'utf8');
-    const lines = yaml.split('\n');
-    const start = lines.findIndex(line => /^packages:\s*$/.test(line));
-    if (start === -1) {
-        return [];
+  const yaml = fs.readFileSync(path.join(ROOT, 'pnpm-workspace.yaml'), 'utf8');
+  const lines = yaml.split('\n');
+  const start = lines.findIndex((line) => /^packages:\s*$/.test(line));
+  if (start === -1) {
+    return [];
+  }
+  const patterns = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\s+-\s+/.test(line)) {
+      const match = line.match(/^\s+-\s+['"]?([^'"\s]+)['"]?\s*$/);
+      if (match) {
+        patterns.push(match[1]);
+      }
+    } else if (line.trim() !== '' && !/^\s/.test(line)) {
+      break;
     }
-    const patterns = [];
-    for (let i = start + 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (/^\s+-\s+/.test(line)) {
-            const match = line.match(/^\s+-\s+['"]?([^'"\s]+)['"]?\s*$/);
-            if (match) {
-                patterns.push(match[1]);
-            }
-        } else if (line.trim() !== '' && !/^\s/.test(line)) {
-            break;
-        }
-    }
-    return patterns;
+  }
+  return patterns;
 }
 
 function expandPattern(pattern) {
-    const segments = pattern.split('/');
-    let candidates = [''];
-    for (const segment of segments) {
-        const next = [];
-        for (const base of candidates) {
-            const dir = base ? path.join(ROOT, base) : ROOT;
-            if (segment === '*') {
-                if (!fs.existsSync(dir)) {
-                    continue;
-                }
-                for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
-                    if (entry.isDirectory()) {
-                        next.push(base ? `${base}/${entry.name}` : entry.name);
-                    }
-                }
-            } else {
-                const candidate = base ? `${base}/${segment}` : segment;
-                if (fs.existsSync(path.join(ROOT, candidate))) {
-                    next.push(candidate);
-                }
-            }
+  const segments = pattern.split('/');
+  let candidates = [''];
+  for (const segment of segments) {
+    const next = [];
+    for (const base of candidates) {
+      const dir = base ? path.join(ROOT, base) : ROOT;
+      if (segment === '*') {
+        if (!fs.existsSync(dir)) {
+          continue;
         }
-        candidates = next;
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          if (entry.isDirectory()) {
+            next.push(base ? `${base}/${entry.name}` : entry.name);
+          }
+        }
+      } else {
+        const candidate = base ? `${base}/${segment}` : segment;
+        if (fs.existsSync(path.join(ROOT, candidate))) {
+          next.push(candidate);
+        }
+      }
     }
-    return candidates;
+    candidates = next;
+  }
+  return candidates;
 }
 
-const WORKSPACES = new Set(
-    loadWorkspacePatterns().flatMap(expandPattern)
-);
+const WORKSPACES = new Set(loadWorkspacePatterns().flatMap(expandPattern));
 
 function findWorkspace(file) {
-    let dir = path.dirname(path.resolve(file));
-    while (dir.startsWith(ROOT) && dir !== ROOT) {
-        const rel = normalize(path.relative(ROOT, dir));
-        if (WORKSPACES.has(rel)) {
-            return rel;
-        }
-        dir = path.dirname(dir);
+  let dir = path.dirname(path.resolve(file));
+  while (dir.startsWith(ROOT) && dir !== ROOT) {
+    const rel = normalize(path.relative(ROOT, dir));
+    if (WORKSPACES.has(rel)) {
+      return rel;
     }
-    return null;
+    dir = path.dirname(dir);
+  }
+  return null;
 }
 
 function buildCommand(workspace, files) {
-    const base = workspace ? path.join(ROOT, workspace) : ROOT;
-    const relativeFiles = files
-        .map(file => normalize(path.relative(base, file)));
-    const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
-    return `pnpm ${dirArg}exec eslint --cache -- ${shellQuote(relativeFiles)}`;
+  const base = workspace ? path.join(ROOT, workspace) : ROOT;
+  const relativeFiles = files.map((file) => normalize(path.relative(base, file)));
+  const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
+  return `pnpm ${dirArg}exec eslint --cache -- ${shellQuote(relativeFiles)}`;
+}
+
+function buildOxfmtCommand(files) {
+  const relativeFiles = files.map((file) => normalize(path.relative(ROOT, file)));
+  // --no-error-on-unmatched-pattern: a staged set may consist entirely of
+  // files the formatter config ignores, which is otherwise an error.
+  return `node scripts/format.js --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
-    const relativeFiles = files
-        .map(file => normalize(path.relative(ROOT, file)));
-    return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
+  const relativeFiles = files.map((file) => normalize(path.relative(ROOT, file)));
+  return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildMarkdownCommands(files) {
-    const relativeFiles = files
-        .map(file => normalize(path.relative(ROOT, file)))
-        .filter(file => !file.startsWith('.changeset/'))
-        .filter(file => !file.split('/').some(part => part === 'fixture' || part === 'fixtures'));
+  const relativeFiles = files
+    .map((file) => normalize(path.relative(ROOT, file)))
+    .filter((file) => !file.startsWith('.changeset/'))
+    .filter((file) => !file.split('/').some((part) => part === 'fixture' || part === 'fixtures'));
 
-    if (relativeFiles.length === 0) {
-        return [];
-    }
+  if (relativeFiles.length === 0) {
+    return [];
+  }
 
-    const quotedFiles = shellQuote(relativeFiles);
-    return [
-        `pnpm exec markdownlint-cli2 --config .markdownlint-cli2.jsonc ${quotedFiles}`,
-        `pnpm exec remark --use remark-validate-links --frail --quiet --no-stdout ${quotedFiles}`
-    ];
+  const quotedFiles = shellQuote(relativeFiles);
+  return [
+    `pnpm exec markdownlint-cli2 --config .markdownlint-cli2.jsonc ${quotedFiles}`,
+    `pnpm exec remark --use remark-validate-links --frail --quiet --no-stdout ${quotedFiles}`,
+  ];
 }
 
 module.exports = {
-    '*.{js,ts,tsx,jsx,cjs}': (files) => {
-        const groups = new Map();
-        for (const file of files) {
-            const workspace = findWorkspace(file);
-            const key = workspace ?? '';
-            if (!groups.has(key)) {
-                groups.set(key, []);
-            }
-            groups.get(key).push(file);
-        }
-        return [...groups.entries()].map(([workspace, wsFiles]) =>
-            buildCommand(workspace || null, wsFiles)
-        );
-    },
-    'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
-        buildBoundaryCommand(files),
-    'apps/{shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
-        buildBoundaryCommand(files),
-    '**/*.md': buildMarkdownCommands,
-    '{**/AGENTS.md,scripts/check-agent-guidance.js}': () =>
-        'pnpm lint:agent-guidance',
-    '{.agents/skills/**,.claude/skills/**,scripts/check-agent-skill-links.js}': () =>
-        'pnpm lint:agent-skills',
-    '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,scripts/check-internal-packages.js,scripts/create-package.js,scripts/lib/constants.js,scripts/lib/package-template.js}': () =>
-        'pnpm lint:packages'
+  '*.{js,ts,tsx,jsx,cjs}': (files) => {
+    const groups = new Map();
+    for (const file of files) {
+      const workspace = findWorkspace(file);
+      const key = workspace ?? '';
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key).push(file);
+    }
+    return [
+      buildOxfmtCommand(files),
+      ...[...groups.entries()].map(([workspace, wsFiles]) =>
+        buildCommand(workspace || null, wsFiles),
+      ),
+    ];
+  },
+  'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
+  'apps/{shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}':
+    (files) => buildBoundaryCommand(files),
+  '*.{mjs,mts,cts,json,jsonc,json5,yml,yaml,css,mdx}': (files) => buildOxfmtCommand(files),
+  '**/*.md': (files) => [buildOxfmtCommand(files), ...buildMarkdownCommands(files)],
+  '{**/AGENTS.md,scripts/check-agent-guidance.js}': () => 'pnpm lint:agent-guidance',
+  '{.agents/skills/**,.claude/skills/**,scripts/check-agent-skill-links.js}': () =>
+    'pnpm lint:agent-skills',
+  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,scripts/check-internal-packages.js,scripts/create-package.js,scripts/lib/constants.js,scripts/lib/package-template.js}':
+    () => 'pnpm lint:packages',
 };

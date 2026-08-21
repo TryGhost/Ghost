@@ -5,367 +5,379 @@ import MembersHeaderSearch from './components/members-header-search';
 import MembersHelpCards from './components/members-help-cards';
 import MembersList from './components/members-list';
 import MultipleActiveSubscriptionsBanner from './components/multiple-active-subscriptions-banner';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
-import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
-import {Box, Container} from '@tryghost/shade/primitives';
-import {ListPage} from '@tryghost/shade/page-templates';
-import {keepPreviousData} from '@tanstack/react-query';
-import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
-import {CUSTOM_FIELDS_PREFIX} from './member-fields';
-import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
-import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
-import {checkStripeEnabled, getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
-import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useBrowseMemberCustomFieldsIncludingArchived} from '@tryghost/admin-x-framework/api/member-custom-fields';
-import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useDebouncedCallback} from 'use-debounce';
-import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
-import {useLocation, useSearchParams} from '@tryghost/admin-x-framework';
-import {useMultipleActiveSubscriptionsCount} from './hooks/use-multiple-active-subscriptions-count';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
+import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
+import { Box, Container } from '@tryghost/shade/primitives';
+import { ListPage } from '@tryghost/shade/page-templates';
+import { keepPreviousData } from '@tanstack/react-query';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { CUSTOM_FIELDS_PREFIX } from './member-fields';
+import { buildMemberListSearchParams, getMemberActiveColumns } from './member-query-params';
+import { canBulkDeleteMembers, shouldShowMembersLoading } from './members-view-state';
+import {
+  checkStripeEnabled,
+  getSettingValue,
+  useBrowseSettings,
+} from '@tryghost/admin-x-framework/api/settings';
+import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import {
+  shouldDelayMembersDateFilterHydration,
+  useMembersFilterState,
+} from './hooks/use-members-filter-state';
+import { useActiveMemberView, useMemberViews } from './hooks/use-member-views';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/members';
+import { useDebouncedCallback } from 'use-debounce';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
+import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
 
 interface MembersPageProps {
-    emailAnalyticsEnabled: boolean;
-    hasStripeEnabled: boolean;
-    membershipsEnabled: boolean;
-    timezone: string;
+  emailAnalyticsEnabled: boolean;
+  hasStripeEnabled: boolean;
+  membershipsEnabled: boolean;
+  timezone: string;
 }
 
 const MembersPage: React.FC<MembersPageProps> = ({
-    emailAnalyticsEnabled,
-    hasStripeEnabled,
-    membershipsEnabled,
-    timezone
+  emailAnalyticsEnabled,
+  hasStripeEnabled,
+  membershipsEnabled,
+  timezone,
 }) => {
-    const headerRef = useRef<HTMLDivElement | null>(null);
-    const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
-        headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
-    }, []);
-    const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
-    const location = useLocation();
-    const savedViews = useMemberViews();
-    const activeView = useActiveMemberView(savedViews, nql);
-    const [showMobileSearch, setShowMobileSearch] = useState(false);
-    const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
-    const [searchInput, setSearchInput] = useState(search);
-    const commitSearch = useDebouncedCallback((value: string) => {
-        setSearch(value);
-    }, SEARCH_DEBOUNCE_MS);
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
+    headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
+  }, []);
+  const { filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll } =
+    useMembersFilterState(timezone);
+  const location = useLocation();
+  const savedViews = useMemberViews();
+  const activeView = useActiveMemberView(savedViews, nql);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
+  const [searchInput, setSearchInput] = useState(search);
+  const commitSearch = useDebouncedCallback((value: string) => {
+    setSearch(value);
+  }, SEARCH_DEBOUNCE_MS);
 
-    // Fetched once at page level so the banner, and both filter bar instances,
-    // share a single request per visit and always agree on the count.
-    const {
-        count: multipleActiveSubscriptionsCount,
-        hasResolvedCount: hasResolvedMultipleActiveSubscriptionsCount
-    } = useMultipleActiveSubscriptionsCount({enabled: hasStripeEnabled});
+  // Fetched once at page level so the banner, and both filter bar instances,
+  // share a single request per visit and always agree on the count.
+  const {
+    count: multipleActiveSubscriptionsCount,
+    hasResolvedCount: hasResolvedMultipleActiveSubscriptionsCount,
+  } = useMultipleActiveSubscriptionsCount({ enabled: hasStripeEnabled });
 
-    // Names the custom field columns. Archived fields are included so a filter on one
-    // still shows its values, matching the read-only pill the filter bar renders for it.
-    //
-    // Only a filter on a custom field earns a column, and naming one is all these are for,
-    // so the fetch waits for a filter rather than riding every visit to the members list.
-    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-    const hasCustomFieldFilter = useMemo(
-        () => filters.some(filter => filter.field.startsWith(CUSTOM_FIELDS_PREFIX)),
-        [filters]
-    );
-    const {data: customFieldsData} = useBrowseMemberCustomFieldsIncludingArchived({
-        enabled: customFieldsEnabled && hasCustomFieldFilter
+  // Names the custom field columns. Archived fields are included so a filter on one
+  // still shows its values, matching the read-only pill the filter bar renders for it.
+  //
+  // Only a filter on a custom field earns a column, and naming one is all these are for,
+  // so the fetch waits for a filter rather than riding every visit to the members list.
+  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+  const hasCustomFieldFilter = useMemo(
+    () => filters.some((filter) => filter.field.startsWith(CUSTOM_FIELDS_PREFIX)),
+    [filters],
+  );
+  const { data: customFieldsData } = useBrowseMemberCustomFieldsIncludingArchived({
+    enabled: customFieldsEnabled && hasCustomFieldFilter,
+  });
+  // Left undefined until the fetch lands (and while the flag is off) rather than defaulted
+  // to an empty array, so the identity the memos below depend on stays stable.
+  const customFields = customFieldsData?.members_custom_fields;
+
+  const activeColumns = useMemo(() => {
+    return getMemberActiveColumns(filters, { customFields });
+  }, [filters, customFields]);
+
+  const canBulkDelete = useMemo(() => {
+    return canBulkDeleteMembers(filters, nql);
+  }, [filters, nql]);
+
+  const searchParams = useMemo(() => {
+    return buildMemberListSearchParams({
+      filters,
+      nql,
+      search,
     });
-    // Left undefined until the fetch lands (and while the flag is off) rather than defaulted
-    // to an empty array, so the identity the memos below depend on stays stable.
-    const customFields = customFieldsData?.members_custom_fields;
+  }, [filters, nql, search]);
 
-    const activeColumns = useMemo(() => {
-        return getMemberActiveColumns(filters, {customFields});
-    }, [filters, customFields]);
-
-    const canBulkDelete = useMemo(() => {
-        return canBulkDeleteMembers(filters, nql);
-    }, [filters, nql]);
-
-    const searchParams = useMemo(() => {
-        return buildMemberListSearchParams({
-            filters,
-            nql,
-            search
-        });
-    }, [filters, nql, search]);
-
-    const {
-        data,
-        isError,
-        isFetching,
-        isFetchingNextPage,
-        refetch,
-        fetchNextPage,
-        hasNextPage
-    } = useBrowseMembersInfinite({
-        searchParams,
-        placeholderData: keepPreviousData
+  const { data, isError, isFetching, isFetchingNextPage, refetch, fetchNextPage, hasNextPage } =
+    useBrowseMembersInfinite({
+      searchParams,
+      placeholderData: keepPreviousData,
     });
 
-    const shouldShowLoading = shouldShowMembersLoading({
-        isFetching,
-        isFetchingNextPage
-    });
+  const shouldShowLoading = shouldShowMembersLoading({
+    isFetching,
+    isFetchingNextPage,
+  });
 
-    const totalMembers = data?.meta?.pagination?.total ?? 0;
-    const hasFilters = filters.length > 0;
-    const shouldShowMobileSearchRow = showMobileSearch;
-    const shouldShowFiltersRow = hasFilters;
-    const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
-    const shouldShowMembersHelpCards = !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
+  const totalMembers = data?.meta?.pagination?.total ?? 0;
+  const hasFilters = filters.length > 0;
+  const shouldShowMobileSearchRow = showMobileSearch;
+  const shouldShowFiltersRow = hasFilters;
+  const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
+  const shouldShowMembersHelpCards =
+    !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
 
-    // Keep the input in sync with the committed search whenever it changes for
-    // any reason other than typing (browser back/forward, "Show all members",
-    // saved views), and drop any pending commit so the new value wins instead
-    // of being overwritten by a stale keystroke.
-    useEffect(() => {
-        setSearchInput(search);
-        commitSearch.cancel();
-    }, [search, commitSearch]);
+  // Keep the input in sync with the committed search whenever it changes for
+  // any reason other than typing (browser back/forward, "Show all members",
+  // saved views), and drop any pending commit so the new value wins instead
+  // of being overwritten by a stale keystroke.
+  useEffect(() => {
+    setSearchInput(search);
+    commitSearch.cancel();
+  }, [search, commitSearch]);
 
-    const handleSearchChange = (value: string) => {
-        setSearchInput(value);
-        commitSearch(value);
-    };
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    commitSearch(value);
+  };
 
-    const handleMobileSearchToggle = () => {
-        if (showMobileSearch) {
-            setShowMobileSearch(false);
-            setMobileSearchOpenedByUser(false);
-            return;
-        }
+  const handleMobileSearchToggle = () => {
+    if (showMobileSearch) {
+      setShowMobileSearch(false);
+      setMobileSearchOpenedByUser(false);
+      return;
+    }
 
-        setMobileSearchOpenedByUser(true);
-        setShowMobileSearch(true);
-    };
+    setMobileSearchOpenedByUser(true);
+    setShowMobileSearch(true);
+  };
 
-    const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
-    const handleShowAllMembers = () => {
-        commitSearch.cancel();
-        setSearchInput('');
-        clearAll({replace: false});
-    };
+  const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
+  const handleShowAllMembers = () => {
+    commitSearch.cancel();
+    setSearchInput('');
+    clearAll({ replace: false });
+  };
 
-    return (
-        <Box className='size-full'><Container className='relative flex h-full flex-col' size='page'>
-            <ListPage data-testid="members-page">
-                <ListPage.Header className="py-4 sidebar:py-5">
-                    <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
-                        <PageHeader
-                            blurredBackground={false}
-                            sticky={false}
+  return (
+    <Box className="size-full">
+      <Container className="relative flex h-full flex-col" size="page">
+        <ListPage data-testid="members-page">
+          <ListPage.Header className="py-4 sidebar:py-5">
+            <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
+              <PageHeader blurredBackground={false} sticky={false}>
+                <PageHeader.Left>
+                  <PageHeader.Title>
+                    Members{' '}
+                    {!shouldShowLoading && totalMembers > 0 && (
+                      <PageHeader.Count className="hidden sm:inline">
+                        {formatNumber(totalMembers)}
+                      </PageHeader.Count>
+                    )}
+                  </PageHeader.Title>
+                </PageHeader.Left>
+                <PageHeader.Actions>
+                  <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                    {shouldShowMemberControls && (
+                      <>
+                        <div className="hidden lg:flex">
+                          <MembersHeaderSearch
+                            search={searchInput}
+                            onSearchChange={handleSearchChange}
+                          />
+                        </div>
+                        <Button
+                          aria-label={
+                            showMobileSearch ? 'Hide member search' : 'Show member search'
+                          }
+                          className={cn(
+                            'lg:hidden',
+                            showMobileSearch && 'bg-secondary hover:bg-secondary',
+                          )}
+                          variant="outline"
+                          onClick={handleMobileSearchToggle}
                         >
-                            <PageHeader.Left>
-                                <PageHeader.Title>
-                                    Members{' '}
-                                    {!shouldShowLoading && totalMembers > 0 && (
-                                        <PageHeader.Count className="hidden sm:inline">
-                                            {formatNumber(totalMembers)}
-                                        </PageHeader.Count>
-                                    )}
-                                </PageHeader.Title>
-                            </PageHeader.Left>
-                            <PageHeader.Actions>
-                                <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                                    {shouldShowMemberControls && (
-                                        <>
-                                            <div className="hidden lg:flex">
-                                                <MembersHeaderSearch
-                                                    search={searchInput}
-                                                    onSearchChange={handleSearchChange}
-                                                />
-                                            </div>
-                                            <Button
-                                                aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                                className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-                                                variant="outline"
-                                                onClick={handleMobileSearchToggle}
-                                            >
-                                                <LucideIcon.Search className="size-4" />
-                                            </Button>
-                                            {!hasFilters && (
-                                                <MembersFilters
-                                                    activeView={activeView}
-                                                    filters={filters}
-                                                    iconOnly={true}
-                                                    multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                                                    nql={nql}
-                                                    savedViews={savedViews}
-                                                    onFiltersChange={setFilters}
-                                                />
-                                            )}
-                                        </>
-                                    )}
-                                    <MembersActions
-                                        canBulkDelete={canBulkDelete}
-                                        hasFilterOrSearch={hasFilterOrSearch}
-                                        memberCount={totalMembers}
-                                        nql={nql}
-                                        search={search}
-                                        showMenu={shouldShowMemberControls}
-                                        showNewMember={shouldShowMemberControls}
-                                        onImportComplete={() => {
-                                            void refetch();
-                                        }}
-                                    />
-                                </PageHeader.ActionGroup>
-                            </PageHeader.Actions>
-                        </PageHeader>
+                          <LucideIcon.Search className="size-4" />
+                        </Button>
+                        {!hasFilters && (
+                          <MembersFilters
+                            activeView={activeView}
+                            filters={filters}
+                            iconOnly={true}
+                            multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+                            nql={nql}
+                            savedViews={savedViews}
+                            onFiltersChange={setFilters}
+                          />
+                        )}
+                      </>
+                    )}
+                    <MembersActions
+                      canBulkDelete={canBulkDelete}
+                      hasFilterOrSearch={hasFilterOrSearch}
+                      memberCount={totalMembers}
+                      nql={nql}
+                      search={search}
+                      showMenu={shouldShowMemberControls}
+                      showNewMember={shouldShowMemberControls}
+                      onImportComplete={() => {
+                        void refetch();
+                      }}
+                    />
+                  </PageHeader.ActionGroup>
+                </PageHeader.Actions>
+              </PageHeader>
 
-                        {shouldShowMemberControls && (shouldShowFiltersRow || shouldShowMobileSearchRow) && (
-                            <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                                {shouldShowMobileSearchRow && (
-                                    <div className="w-full lg:hidden">
-                                        <MembersHeaderSearch
-                                            ariaLabel="Search members mobile"
-                                            autoFocus={mobileSearchOpenedByUser}
-                                            search={searchInput}
-                                            onSearchChange={handleSearchChange}
-                                        />
-                                    </div>
-                                )}
-                                {shouldShowFiltersRow && (
-                                    <MembersFilters
-                                        activeView={activeView}
-                                        filters={filters}
-                                        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                                        nql={nql}
-                                        savedViews={savedViews}
-                                        onFiltersChange={setFilters}
-                                    />
-                                )}
-                            </FilterBar>
-                        )}
-                        {hasStripeEnabled && (
-                            <MultipleActiveSubscriptionsBanner
-                                count={multipleActiveSubscriptionsCount}
-                                hasResolvedCount={hasResolvedMultipleActiveSubscriptionsCount}
-                                nql={nql}
-                                search={search}
-                            />
-                        )}
+              {shouldShowMemberControls && (shouldShowFiltersRow || shouldShowMobileSearchRow) && (
+                <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                  {shouldShowMobileSearchRow && (
+                    <div className="w-full lg:hidden">
+                      <MembersHeaderSearch
+                        ariaLabel="Search members mobile"
+                        autoFocus={mobileSearchOpenedByUser}
+                        search={searchInput}
+                        onSearchChange={handleSearchChange}
+                      />
                     </div>
-                </ListPage.Header>
-                <ListPage.Body>
-                    {shouldShowLoading ? (
-                        <div className="flex flex-1 items-center justify-center">
-                            <LoadingIndicator size="lg" />
-                        </div>
-                    ) : isError ? (
-                        <div className="mb-16 flex flex-1 flex-col items-center justify-center">
-                            <h2 className="mb-2 text-xl font-medium">
-                                Error loading members
-                            </h2>
-                            <p className="mb-4 text-muted-foreground">
-                                Please reload the page to try again
-                            </p>
-                            <Button onClick={() => window.location.reload()}>
-                                Reload page
-                            </Button>
-                        </div>
-                    ) : !data?.members.length ? (
-                        hasFilterOrSearch ? (
-                            <div className="flex flex-1 flex-col items-center justify-center">
-                                <EmptyIndicator
-                                    actions={
-                                        <Button
-                                            variant="outline"
-                                            onClick={handleShowAllMembers}
-                                        >
-                                            Show all members
-                                        </Button>
-                                    }
-                                    title="No matching members found."
-                                >
-                                    <LucideIcon.Users />
-                                </EmptyIndicator>
-                            </div>
-                        ) : (
-                            <MembersEmptyState membershipsEnabled={membershipsEnabled} onMemberCreated={async () => {
-                                await refetch();
-                            }} />
-                        )
-                    ) : (
-                        <MembersList
-                            activeColumns={activeColumns}
-                            backPath={`${location.pathname}${location.search}`}
-                            fetchNextPage={() => void fetchNextPage()}
-                            hasNextPage={hasNextPage}
-                            isFetchingNextPage={isFetchingNextPage}
-                            isLoading={isFetching && !isFetchingNextPage}
-                            items={data.members}
-                            pageHeaderRef={headerRef}
-                            showEmailOpenRate={emailAnalyticsEnabled}
-                            timezone={timezone}
-                            totalItems={totalMembers}
-                        />
-                    )}
-                    {shouldShowMembersHelpCards && (
-                        <div className={cn(data?.members.length && 'mt-8')}>
-                            <MembersHelpCards />
-                        </div>
-                    )}
-                </ListPage.Body>
-            </ListPage>
-        </Container></Box>
-    );
+                  )}
+                  {shouldShowFiltersRow && (
+                    <MembersFilters
+                      activeView={activeView}
+                      filters={filters}
+                      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+                      nql={nql}
+                      savedViews={savedViews}
+                      onFiltersChange={setFilters}
+                    />
+                  )}
+                </FilterBar>
+              )}
+              {hasStripeEnabled && (
+                <MultipleActiveSubscriptionsBanner
+                  count={multipleActiveSubscriptionsCount}
+                  hasResolvedCount={hasResolvedMultipleActiveSubscriptionsCount}
+                  nql={nql}
+                  search={search}
+                />
+              )}
+            </div>
+          </ListPage.Header>
+          <ListPage.Body>
+            {shouldShowLoading ? (
+              <div className="flex flex-1 items-center justify-center">
+                <LoadingIndicator size="lg" />
+              </div>
+            ) : isError ? (
+              <div className="mb-16 flex flex-1 flex-col items-center justify-center">
+                <h2 className="mb-2 text-xl font-medium">Error loading members</h2>
+                <p className="mb-4 text-muted-foreground">Please reload the page to try again</p>
+                <Button onClick={() => window.location.reload()}>Reload page</Button>
+              </div>
+            ) : !data?.members.length ? (
+              hasFilterOrSearch ? (
+                <div className="flex flex-1 flex-col items-center justify-center">
+                  <EmptyIndicator
+                    actions={
+                      <Button variant="outline" onClick={handleShowAllMembers}>
+                        Show all members
+                      </Button>
+                    }
+                    title="No matching members found."
+                  >
+                    <LucideIcon.Users />
+                  </EmptyIndicator>
+                </div>
+              ) : (
+                <MembersEmptyState
+                  membershipsEnabled={membershipsEnabled}
+                  onMemberCreated={async () => {
+                    await refetch();
+                  }}
+                />
+              )
+            ) : (
+              <MembersList
+                activeColumns={activeColumns}
+                backPath={`${location.pathname}${location.search}`}
+                fetchNextPage={() => void fetchNextPage()}
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                isLoading={isFetching && !isFetchingNextPage}
+                items={data.members}
+                pageHeaderRef={headerRef}
+                showEmailOpenRate={emailAnalyticsEnabled}
+                timezone={timezone}
+                totalItems={totalMembers}
+              />
+            )}
+            {shouldShowMembersHelpCards && (
+              <div className={cn(data?.members.length && 'mt-8')}>
+                <MembersHelpCards />
+              </div>
+            )}
+          </ListPage.Body>
+        </ListPage>
+      </Container>
+    </Box>
+  );
 };
 
 const Members: React.FC = () => {
-    const [searchParams] = useSearchParams();
-    const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
-    const {data: configData, isLoading: isConfigLoading} = useBrowseConfig();
-    const filterParam = searchParams.get('filter') ?? undefined;
-    const hasResolvedSettings = Boolean(settingsData?.settings);
-    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, hasResolvedSettings, isSettingsLoading);
+  const [searchParams] = useSearchParams();
+  const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
+  const { data: configData, isLoading: isConfigLoading } = useBrowseConfig();
+  const filterParam = searchParams.get('filter') ?? undefined;
+  const hasResolvedSettings = Boolean(settingsData?.settings);
+  const shouldDelayHydration = shouldDelayMembersDateFilterHydration(
+    filterParam,
+    hasResolvedSettings,
+    isSettingsLoading,
+  );
 
-    if (isSettingsLoading || isConfigLoading || !settingsData?.settings || !configData?.config || shouldDelayHydration) {
-        return (
-            <Box className='size-full'><Container className='relative flex h-full flex-col' size='page'>
-                <ListPage>
-                    <ListPage.Header className="py-4 sidebar:py-6">
-                        <PageHeader
-                            blurredBackground={false}
-                            sticky={false}
-                        >
-                            <PageHeader.Left>
-                                <PageHeader.Title>Members</PageHeader.Title>
-                            </PageHeader.Left>
-                        </PageHeader>
-                    </ListPage.Header>
-                    <ListPage.Body>
-                        <div className="flex flex-1 items-center justify-center">
-                            <LoadingIndicator size="lg" />
-                        </div>
-                    </ListPage.Body>
-                </ListPage>
-            </Container></Box>
-        );
-    }
-
-    const timezone = getSiteTimezone(settingsData.settings);
-    const membersSignupAccess = getSettingValue<string>(settingsData.settings, 'members_signup_access');
-    const membershipsEnabled = membersSignupAccess !== 'none';
-    const emailAnalyticsEnabled = configData.config.emailAnalytics === true;
-    const hasStripeEnabled = checkStripeEnabled(settingsData.settings, configData.config);
-
+  if (
+    isSettingsLoading ||
+    isConfigLoading ||
+    !settingsData?.settings ||
+    !configData?.config ||
+    shouldDelayHydration
+  ) {
     return (
-        <MembersPage
-            emailAnalyticsEnabled={emailAnalyticsEnabled}
-            hasStripeEnabled={hasStripeEnabled}
-            membershipsEnabled={membershipsEnabled}
-            timezone={timezone}
-        />
+      <Box className="size-full">
+        <Container className="relative flex h-full flex-col" size="page">
+          <ListPage>
+            <ListPage.Header className="py-4 sidebar:py-6">
+              <PageHeader blurredBackground={false} sticky={false}>
+                <PageHeader.Left>
+                  <PageHeader.Title>Members</PageHeader.Title>
+                </PageHeader.Left>
+              </PageHeader>
+            </ListPage.Header>
+            <ListPage.Body>
+              <div className="flex flex-1 items-center justify-center">
+                <LoadingIndicator size="lg" />
+              </div>
+            </ListPage.Body>
+          </ListPage>
+        </Container>
+      </Box>
     );
+  }
+
+  const timezone = getSiteTimezone(settingsData.settings);
+  const membersSignupAccess = getSettingValue<string>(
+    settingsData.settings,
+    'members_signup_access',
+  );
+  const membershipsEnabled = membersSignupAccess !== 'none';
+  const emailAnalyticsEnabled = configData.config.emailAnalytics === true;
+  const hasStripeEnabled = checkStripeEnabled(settingsData.settings, configData.config);
+
+  return (
+    <MembersPage
+      emailAnalyticsEnabled={emailAnalyticsEnabled}
+      hasStripeEnabled={hasStripeEnabled}
+      membershipsEnabled={membershipsEnabled}
+      timezone={timezone}
+    />
+  );
 };
 
 export default Members;

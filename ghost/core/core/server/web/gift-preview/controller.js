@@ -1,78 +1,78 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const {generateGiftPreviewImage} = require('./image');
-const {t} = require('../../services/i18n');
+const { generateGiftPreviewImage } = require('./image');
+const { t } = require('../../services/i18n');
 
 function getCadenceLabel(cadence, duration) {
-    if (cadence === 'year') {
-        return t('{count} year', {count: duration});
-    }
+  if (cadence === 'year') {
+    return t('{count} year', { count: duration });
+  }
 
-    return t('{count} month', {count: duration});
+  return t('{count} month', { count: duration });
 }
 
-function getOgTitle({cadence, duration, tierName, siteTitle}) {
-    if (cadence === 'year') {
-        return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
-            duration,
-            tierName,
-            siteTitle,
-            interpolation: {escapeValue: false}
-        });
-    }
-
-    return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
-        duration,
-        tierName,
-        siteTitle,
-        interpolation: {escapeValue: false}
+function getOgTitle({ cadence, duration, tierName, siteTitle }) {
+  if (cadence === 'year') {
+    return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
+      duration,
+      tierName,
+      siteTitle,
+      interpolation: { escapeValue: false },
     });
+  }
+
+  return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
+    duration,
+    tierName,
+    siteTitle,
+    interpolation: { escapeValue: false },
+  });
 }
 
 function escapeHtml(str) {
-    return str
-        .replaceAll('&', '&amp;')
-        .replaceAll('"', '&quot;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;');
+  return str
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }
 
 async function giftPreview(req, res) {
-    const giftService = require('../../services/gifts').service;
-    const urlUtils = require('../../../shared/url-utils').default;
-    const settingsCache = require('../../../shared/settings-cache');
+  const giftService = require('../../services/gifts').service;
+  const urlUtils = require('../../../shared/url-utils').default;
+  const settingsCache = require('../../../shared/settings-cache');
 
-    const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+  const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
-    const {token} = req.params;
-    const siteTitle = settingsCache.get('title') || 'Ghost';
+  const { token } = req.params;
+  const siteTitle = settingsCache.get('title') || 'Ghost';
 
-    let preview;
+  let preview;
 
-    try {
-        preview = await giftService.getPreview(token);
+  try {
+    preview = await giftService.getPreview(token);
 
-        if (!preview) {
-            throw new errors.NotFoundError({message: `Gift not found for token`});
-        }
-    } catch (err) {
-        logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
-
-        return res.redirect(302, siteUrl + '/');
+    if (!preview) {
+      throw new errors.NotFoundError({ message: `Gift not found for token` });
     }
+  } catch (err) {
+    logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
-    const ogTitle = getOgTitle({
-        cadence: preview.cadence,
-        duration: preview.duration,
-        tierName: preview.tier.name,
-        siteTitle
-    });
-    const ogDescription = t('Open this link to redeem your gift.');
-    const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
-    const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
-    const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
+    return res.redirect(302, siteUrl + '/');
+  }
 
-    const html = `<!DOCTYPE html>
+  const ogTitle = getOgTitle({
+    cadence: preview.cadence,
+    duration: preview.duration,
+    tierName: preview.tier.name,
+    siteTitle,
+  });
+  const ogDescription = t('Open this link to redeem your gift.');
+  const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
+  const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
+  const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
+
+  const html = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -104,47 +104,47 @@ async function giftPreview(req, res) {
 </body>
 </html>`;
 
-    res.set('Cache-Control', 'public, max-age=3600');
-    res.set('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
+  res.set('Cache-Control', 'public, max-age=3600');
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
 }
 
 async function giftPreviewImage(req, res) {
-    const giftService = require('../../services/gifts').service;
-    const settingsCache = require('../../../shared/settings-cache');
+  const giftService = require('../../services/gifts').service;
+  const settingsCache = require('../../../shared/settings-cache');
 
-    const accentColor = settingsCache.get('accent_color') || '#15171A';
-    const siteTitle = settingsCache.get('title') || 'Ghost';
-    const {token} = req.params;
+  const accentColor = settingsCache.get('accent_color') || '#15171A';
+  const siteTitle = settingsCache.get('title') || 'Ghost';
+  const { token } = req.params;
 
-    try {
-        const preview = await giftService.getPreview(token);
+  try {
+    const preview = await giftService.getPreview(token);
 
-        if (!preview) {
-            throw new errors.NotFoundError({message: `Gift not found for token`});
-        }
-
-        const png = await generateGiftPreviewImage({
-            accentColor,
-            siteTitle,
-            tierLabel: t('{tierName} membership', {
-                tierName: preview.tier.name,
-                interpolation: {escapeValue: false}
-            }),
-            cadenceLabel: getCadenceLabel(preview.cadence, preview.duration)
-        });
-
-        res.set('Content-Type', 'image/png');
-        res.set('Cache-Control', 'public, max-age=86400');
-        res.send(png);
-    } catch (err) {
-        logging.error('Gift OG image generation failed', err);
-
-        res.sendStatus(404);
+    if (!preview) {
+      throw new errors.NotFoundError({ message: `Gift not found for token` });
     }
+
+    const png = await generateGiftPreviewImage({
+      accentColor,
+      siteTitle,
+      tierLabel: t('{tierName} membership', {
+        tierName: preview.tier.name,
+        interpolation: { escapeValue: false },
+      }),
+      cadenceLabel: getCadenceLabel(preview.cadence, preview.duration),
+    });
+
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(png);
+  } catch (err) {
+    logging.error('Gift OG image generation failed', err);
+
+    res.sendStatus(404);
+  }
 }
 
 module.exports = {
-    giftPreview,
-    giftPreviewImage
+  giftPreview,
+  giftPreviewImage,
 };

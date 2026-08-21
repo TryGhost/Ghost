@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const supertest = require('supertest');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
@@ -8,508 +8,606 @@ const db = require('../../../../core/server/data/db');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Settings API', function () {
-    let request;
+  let request;
 
-    async function checkCanEdit(key, value, expectedValue) {
-        if (!expectedValue) {
-            expectedValue = value;
-        }
-
-        const settingToChange = {
-            settings: [{key, value}]
-        };
-
-        await request.put(localUtils.API.getApiQuery('settings/'))
-            .set('Origin', config.get('url'))
-            .send(settingToChange)
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .expect((response) => {
-                assertExists(response.headers['x-cache-invalidate']);
-                assert.equal(response.headers['x-cache-invalidate'], '/*');
-            });
-
-        // Check if not changed (also check internal ones)
-        const afterValue = settingsCache.get(key);
-        assert.deepEqual(afterValue, expectedValue);
+  async function checkCanEdit(key, value, expectedValue) {
+    if (!expectedValue) {
+      expectedValue = value;
     }
 
-    async function checkCantEdit(key, value) {
-        // Get current value (internal)
-        const currentValue = settingsCache.get(key);
+    const settingToChange = {
+      settings: [{ key, value }],
+    };
 
-        const settingToChange = {
-            settings: [{key, value}]
-        };
+    await request
+      .put(localUtils.API.getApiQuery('settings/'))
+      .set('Origin', config.get('url'))
+      .send(settingToChange)
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200)
+      .expect((response) => {
+        assertExists(response.headers['x-cache-invalidate']);
+        assert.equal(response.headers['x-cache-invalidate'], '/*');
+      });
 
-        if (currentValue === value) {
-            throw new Error('This test requires a different value than the current one');
-        }
+    // Check if not changed (also check internal ones)
+    const afterValue = settingsCache.get(key);
+    assert.deepEqual(afterValue, expectedValue);
+  }
 
-        await request.put(localUtils.API.getApiQuery('settings/'))
-            .set('Origin', config.get('url'))
-            .send(settingToChange)
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .expect((response) => {
-                assert.equal(response.headers['x-cache-invalidate'], undefined);
-            });
+  async function checkCantEdit(key, value) {
+    // Get current value (internal)
+    const currentValue = settingsCache.get(key);
 
-        // Check if not changed (also check internal ones)
-        const afterValue = settingsCache.get(key);
-        assert.deepEqual(afterValue, currentValue);
+    const settingToChange = {
+      settings: [{ key, value }],
+    };
+
+    if (currentValue === value) {
+      throw new Error('This test requires a different value than the current one');
     }
 
-    describe('As Owner', function () {
-        beforeAll(async function () {
-            await localUtils.startGhost();
-            request = supertest.agent(config.get('url'));
-            await localUtils.doAuth(request);
-        });
+    await request
+      .put(localUtils.API.getApiQuery('settings/'))
+      .set('Origin', config.get('url'))
+      .send(settingToChange)
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200)
+      .expect((response) => {
+        assert.equal(response.headers['x-cache-invalidate'], undefined);
+      });
 
-        it('Can edit newly introduced locale setting', async function () {
-            await checkCanEdit('locale', 'ge');
-        });
+    // Check if not changed (also check internal ones)
+    const afterValue = settingsCache.get(key);
+    assert.deepEqual(afterValue, currentValue);
+  }
 
-        it('Can\'t edit permalinks', async function () {
-            await checkCantEdit('permalinks', '/:primary_author/:slug/');
-        });
-
-        it('Can edit only allowed labs keys', async function () {
-            await checkCanEdit('labs',
-                JSON.stringify({
-                    additionalPaymentMethods: true,
-                    gibberish: true
-                }),
-                {
-                    additionalPaymentMethods: true
-                }
-            );
-        });
-
-        it('Can\'t edit non existent setting', async function () {
-            await checkCantEdit('non-existent-setting', 'value');
-        });
-
-        it('Will transform "1"', function () {
-            return checkCanEdit('is_private', '1', true);
-        });
-
-        it('Can edit multiple setting along with a deprecated one from v4', async function () {
-            const settingToChange = {
-                settings: [
-                    {
-                        key: 'slack',
-                        value: JSON.stringify([{
-                            url: 'https://newurl.tld/slack',
-                            username: 'New Slack Username'
-                        }])
-                    }, {
-                        key: 'unsplash',
-                        value: true
-                    }, {
-                        key: 'title',
-                        value: 'New Value'
-                    }
-                ]
-            };
-
-            const {body, headers} = await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            const putBody = body;
-            assert.equal(headers['x-cache-invalidate'], '/*');
-            assertExists(putBody);
-
-            let setting = putBody.settings.find(s => s.key === 'unsplash');
-            assert.equal(setting.value, true);
-
-            setting = putBody.settings.find(s => s.key === 'title');
-            assert.equal(setting.value, 'New Value');
-
-            localUtils.API.checkResponse(putBody, 'settings');
-        });
-
-        it('Can edit a setting introduced in v4', async function () {
-            const settingToChange = {
-                settings: [
-                    {
-                        key: 'slack_username',
-                        value: 'can edit me'
-                    }
-                ]
-            };
-
-            const {body, headers} = await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            const putBody = body;
-            assert.equal(headers['x-cache-invalidate'], '/*');
-            assertExists(putBody);
-
-            localUtils.API.checkResponse(putBody, 'settings');
-            const setting = putBody.settings.find(s => s.key === 'slack_username');
-            assert.equal(setting.value, 'can edit me');
-        });
-
-        it('Can edit URLs without internal storage format leaking', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'cover_image', value: `${config.get('url')}/content/images/cover_image.png`},
-                    {key: 'logo', value: `${config.get('url')}/content/images/logo.png`},
-                    {key: 'icon', value: `${config.get('url')}/content/images/icon.png`},
-                    {key: 'portal_button_icon', value: `${config.get('url')}/content/images/portal_button_icon.png`},
-                    {key: 'og_image', value: `${config.get('url')}/content/images/og_image.png`},
-                    {key: 'twitter_image', value: `${config.get('url')}/content/images/twitter_image.png`}
-                ]
-            };
-
-            const {body} = await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            const responseSettings = body.settings.reduce((acc, setting) => {
-                acc[setting.key] = setting.value;
-                return acc;
-            }, {});
-
-            assert.equal(responseSettings.cover_image, `${config.get('url')}/content/images/cover_image.png`);
-            assert.equal(responseSettings.logo, `${config.get('url')}/content/images/logo.png`);
-            assert.equal(responseSettings.icon, `${config.get('url')}/content/images/size/w256h256/icon.png`);
-            assert.equal(responseSettings.portal_button_icon, `${config.get('url')}/content/images/portal_button_icon.png`);
-            assert.equal(responseSettings.og_image, `${config.get('url')}/content/images/og_image.png`);
-            assert.equal(responseSettings.twitter_image, `${config.get('url')}/content/images/twitter_image.png`);
-
-            const dbSettingsRows = await db.knex('settings')
-                .select('key', 'value')
-                .whereIn('key', ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image']);
-
-            const dbSettings = dbSettingsRows.reduce((acc, setting) => {
-                acc[setting.key] = setting.value;
-                return acc;
-            }, {});
-
-            assert.equal(dbSettings.cover_image, '__GHOST_URL__/content/images/cover_image.png');
-            assert.equal(dbSettings.logo, '__GHOST_URL__/content/images/logo.png');
-            assert.equal(dbSettings.icon, '__GHOST_URL__/content/images/icon.png');
-            assert.equal(dbSettings.portal_button_icon, '__GHOST_URL__/content/images/portal_button_icon.png');
-            assert.equal(dbSettings.og_image, '__GHOST_URL__/content/images/og_image.png');
-            assert.equal(dbSettings.twitter_image, '__GHOST_URL__/content/images/twitter_image.png');
-        });
-
-        it('Can only send array values for keys defined with array type', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'navigation', value: 'not an array'}
-                ]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-        });
-
-        it('Can edit navigation items with icon and visibility', async function () {
-            await checkCanEdit('navigation', JSON.stringify([{
-                label: 'Members',
-                url: '/members/',
-                icon: `${config.get('url')}/content/images/nav-members.svg`,
-                visibility: 'members'
-            }, {
-                label: 'Free',
-                url: '/free/',
-                visibility: 'public_free'
-            }, {
-                label: 'Hidden',
-                url: '/hidden/',
-                visibility: 'none'
-            }]), [{
-                label: 'Members',
-                url: '/members/',
-                icon: `${config.get('url')}/content/images/nav-members.svg`,
-                visibility: 'members'
-            }, {
-                label: 'Free',
-                url: '/free/',
-                visibility: 'public_free'
-            }, {
-                label: 'Hidden',
-                url: '/hidden/',
-                visibility: 'none'
-            }]);
-
-            const navigationSetting = await db.knex('settings')
-                .select('value')
-                .where('key', 'navigation')
-                .first();
-
-            assert.equal(navigationSetting.value, '[{"label":"Members","url":"/members/","icon":"__GHOST_URL__/content/images/nav-members.svg","visibility":"members"},{"label":"Free","url":"/free/","visibility":"public_free"},{"label":"Hidden","url":"/hidden/","visibility":"none"}]');
-        });
-
-        it('Can edit icon-only navigation items', async function () {
-            await checkCanEdit('navigation', JSON.stringify([{
-                label: '',
-                url: '/icon-only/',
-                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
-            }]), [{
-                label: '',
-                url: '/icon-only/',
-                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
-            }]);
-
-            const navigationSetting = await db.knex('settings')
-                .select('value')
-                .where('key', 'navigation')
-                .first();
-
-            assert.equal(navigationSetting.value, '[{"label":"","url":"/icon-only/","icon":"__GHOST_URL__/content/images/nav-icon-only.svg"}]');
-        });
-
-        it('Can edit icon-only navigation items without a label property', async function () {
-            await checkCanEdit('navigation', JSON.stringify([{
-                url: '/icon-only-without-label/',
-                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
-            }]), [{
-                url: '/icon-only-without-label/',
-                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
-            }]);
-
-            const navigationSetting = await db.knex('settings')
-                .select('value')
-                .where('key', 'navigation')
-                .first();
-
-            assert.equal(navigationSetting.value, '[{"url":"/icon-only-without-label/","icon":"__GHOST_URL__/content/images/nav-icon-only.svg"}]');
-        });
-
-        it('Cannot edit navigation items without a label or icon', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'navigation', value: JSON.stringify([{label: '', url: '/invalid/'}])}
-                ]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-        });
-
-        it('Cannot edit navigation items with invalid visibility', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'navigation', value: JSON.stringify([{label: 'Invalid', url: '/invalid/', visibility: 'invalid'}])}
-                ]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-        });
-
-        it('Cannot edit navigation items with invalid icon', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'navigation', value: JSON.stringify([{label: 'Invalid', url: '/invalid/', icon: 'mailto:test@example.com'}])}
-                ]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-        });
-
-        it('Cannot edit navigation items with non-http icon URL protocols', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'navigation', value: JSON.stringify([{label: 'Invalid', url: '/invalid/', icon: 'ftp://example.com/icon.svg'}])}
-                ]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-        });
-
-        // If this test fails, it can be safely removed
-        // but the front-end should be updated accordingly,
-        // removing the workaround in place for this specific usecase
-        it('Cannot send an empty array', async function () {
-            const settingsToChange = {
-                settings: []
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(400);
-        });
-
-        it('Cannot edit notifications key through API', async function () {
-            await checkCantEdit('notifications', JSON.stringify(['do not touch me']));
-        });
+  describe('As Owner', function () {
+    beforeAll(async function () {
+      await localUtils.startGhost();
+      request = supertest.agent(config.get('url'));
+      await localUtils.doAuth(request);
     });
 
-    describe('As Editor', function () {
-        beforeAll(async function () {
-            await localUtils.startGhost();
-            request = supertest.agent(config.get('url'));
-            // create editor
-            request.user = await testUtils.createUser({
-                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[1].name
+    it('Can edit newly introduced locale setting', async function () {
+      await checkCanEdit('locale', 'ge');
+    });
+
+    it("Can't edit permalinks", async function () {
+      await checkCantEdit('permalinks', '/:primary_author/:slug/');
+    });
+
+    it('Can edit only allowed labs keys', async function () {
+      await checkCanEdit(
+        'labs',
+        JSON.stringify({
+          additionalPaymentMethods: true,
+          gibberish: true,
+        }),
+        {
+          additionalPaymentMethods: true,
+        },
+      );
+    });
+
+    it("Can't edit non existent setting", async function () {
+      await checkCantEdit('non-existent-setting', 'value');
+    });
+
+    it('Will transform "1"', function () {
+      return checkCanEdit('is_private', '1', true);
+    });
+
+    it('Can edit multiple setting along with a deprecated one from v4', async function () {
+      const settingToChange = {
+        settings: [
+          {
+            key: 'slack',
+            value: JSON.stringify([
+              {
+                url: 'https://newurl.tld/slack',
+                username: 'New Slack Username',
+              },
+            ]),
+          },
+          {
+            key: 'unsplash',
+            value: true,
+          },
+          {
+            key: 'title',
+            value: 'New Value',
+          },
+        ],
+      };
+
+      const { body, headers } = await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      const putBody = body;
+      assert.equal(headers['x-cache-invalidate'], '/*');
+      assertExists(putBody);
+
+      let setting = putBody.settings.find((s) => s.key === 'unsplash');
+      assert.equal(setting.value, true);
+
+      setting = putBody.settings.find((s) => s.key === 'title');
+      assert.equal(setting.value, 'New Value');
+
+      localUtils.API.checkResponse(putBody, 'settings');
+    });
+
+    it('Can edit a setting introduced in v4', async function () {
+      const settingToChange = {
+        settings: [
+          {
+            key: 'slack_username',
+            value: 'can edit me',
+          },
+        ],
+      };
+
+      const { body, headers } = await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      const putBody = body;
+      assert.equal(headers['x-cache-invalidate'], '/*');
+      assertExists(putBody);
+
+      localUtils.API.checkResponse(putBody, 'settings');
+      const setting = putBody.settings.find((s) => s.key === 'slack_username');
+      assert.equal(setting.value, 'can edit me');
+    });
+
+    it('Can edit URLs without internal storage format leaking', async function () {
+      const settingsToChange = {
+        settings: [
+          { key: 'cover_image', value: `${config.get('url')}/content/images/cover_image.png` },
+          { key: 'logo', value: `${config.get('url')}/content/images/logo.png` },
+          { key: 'icon', value: `${config.get('url')}/content/images/icon.png` },
+          {
+            key: 'portal_button_icon',
+            value: `${config.get('url')}/content/images/portal_button_icon.png`,
+          },
+          { key: 'og_image', value: `${config.get('url')}/content/images/og_image.png` },
+          { key: 'twitter_image', value: `${config.get('url')}/content/images/twitter_image.png` },
+        ],
+      };
+
+      const { body } = await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      const responseSettings = body.settings.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+
+      assert.equal(
+        responseSettings.cover_image,
+        `${config.get('url')}/content/images/cover_image.png`,
+      );
+      assert.equal(responseSettings.logo, `${config.get('url')}/content/images/logo.png`);
+      assert.equal(
+        responseSettings.icon,
+        `${config.get('url')}/content/images/size/w256h256/icon.png`,
+      );
+      assert.equal(
+        responseSettings.portal_button_icon,
+        `${config.get('url')}/content/images/portal_button_icon.png`,
+      );
+      assert.equal(responseSettings.og_image, `${config.get('url')}/content/images/og_image.png`);
+      assert.equal(
+        responseSettings.twitter_image,
+        `${config.get('url')}/content/images/twitter_image.png`,
+      );
+
+      const dbSettingsRows = await db
+        .knex('settings')
+        .select('key', 'value')
+        .whereIn('key', [
+          'cover_image',
+          'logo',
+          'icon',
+          'portal_button_icon',
+          'og_image',
+          'twitter_image',
+        ]);
+
+      const dbSettings = dbSettingsRows.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+
+      assert.equal(dbSettings.cover_image, '__GHOST_URL__/content/images/cover_image.png');
+      assert.equal(dbSettings.logo, '__GHOST_URL__/content/images/logo.png');
+      assert.equal(dbSettings.icon, '__GHOST_URL__/content/images/icon.png');
+      assert.equal(
+        dbSettings.portal_button_icon,
+        '__GHOST_URL__/content/images/portal_button_icon.png',
+      );
+      assert.equal(dbSettings.og_image, '__GHOST_URL__/content/images/og_image.png');
+      assert.equal(dbSettings.twitter_image, '__GHOST_URL__/content/images/twitter_image.png');
+    });
+
+    it('Can only send array values for keys defined with array type', async function () {
+      const settingsToChange = {
+        settings: [{ key: 'navigation', value: 'not an array' }],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
+    it('Can edit navigation items with icon and visibility', async function () {
+      await checkCanEdit(
+        'navigation',
+        JSON.stringify([
+          {
+            label: 'Members',
+            url: '/members/',
+            icon: `${config.get('url')}/content/images/nav-members.svg`,
+            visibility: 'members',
+          },
+          {
+            label: 'Free',
+            url: '/free/',
+            visibility: 'public_free',
+          },
+          {
+            label: 'Hidden',
+            url: '/hidden/',
+            visibility: 'none',
+          },
+        ]),
+        [
+          {
+            label: 'Members',
+            url: '/members/',
+            icon: `${config.get('url')}/content/images/nav-members.svg`,
+            visibility: 'members',
+          },
+          {
+            label: 'Free',
+            url: '/free/',
+            visibility: 'public_free',
+          },
+          {
+            label: 'Hidden',
+            url: '/hidden/',
+            visibility: 'none',
+          },
+        ],
+      );
+
+      const navigationSetting = await db
+        .knex('settings')
+        .select('value')
+        .where('key', 'navigation')
+        .first();
+
+      assert.equal(
+        navigationSetting.value,
+        '[{"label":"Members","url":"/members/","icon":"__GHOST_URL__/content/images/nav-members.svg","visibility":"members"},{"label":"Free","url":"/free/","visibility":"public_free"},{"label":"Hidden","url":"/hidden/","visibility":"none"}]',
+      );
+    });
+
+    it('Can edit icon-only navigation items', async function () {
+      await checkCanEdit(
+        'navigation',
+        JSON.stringify([
+          {
+            label: '',
+            url: '/icon-only/',
+            icon: `${config.get('url')}/content/images/nav-icon-only.svg`,
+          },
+        ]),
+        [
+          {
+            label: '',
+            url: '/icon-only/',
+            icon: `${config.get('url')}/content/images/nav-icon-only.svg`,
+          },
+        ],
+      );
+
+      const navigationSetting = await db
+        .knex('settings')
+        .select('value')
+        .where('key', 'navigation')
+        .first();
+
+      assert.equal(
+        navigationSetting.value,
+        '[{"label":"","url":"/icon-only/","icon":"__GHOST_URL__/content/images/nav-icon-only.svg"}]',
+      );
+    });
+
+    it('Can edit icon-only navigation items without a label property', async function () {
+      await checkCanEdit(
+        'navigation',
+        JSON.stringify([
+          {
+            url: '/icon-only-without-label/',
+            icon: `${config.get('url')}/content/images/nav-icon-only.svg`,
+          },
+        ]),
+        [
+          {
+            url: '/icon-only-without-label/',
+            icon: `${config.get('url')}/content/images/nav-icon-only.svg`,
+          },
+        ],
+      );
+
+      const navigationSetting = await db
+        .knex('settings')
+        .select('value')
+        .where('key', 'navigation')
+        .first();
+
+      assert.equal(
+        navigationSetting.value,
+        '[{"url":"/icon-only-without-label/","icon":"__GHOST_URL__/content/images/nav-icon-only.svg"}]',
+      );
+    });
+
+    it('Cannot edit navigation items without a label or icon', async function () {
+      const settingsToChange = {
+        settings: [{ key: 'navigation', value: JSON.stringify([{ label: '', url: '/invalid/' }]) }],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
+    it('Cannot edit navigation items with invalid visibility', async function () {
+      const settingsToChange = {
+        settings: [
+          {
+            key: 'navigation',
+            value: JSON.stringify([{ label: 'Invalid', url: '/invalid/', visibility: 'invalid' }]),
+          },
+        ],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
+    it('Cannot edit navigation items with invalid icon', async function () {
+      const settingsToChange = {
+        settings: [
+          {
+            key: 'navigation',
+            value: JSON.stringify([
+              { label: 'Invalid', url: '/invalid/', icon: 'mailto:test@example.com' },
+            ]),
+          },
+        ],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
+    it('Cannot edit navigation items with non-http icon URL protocols', async function () {
+      const settingsToChange = {
+        settings: [
+          {
+            key: 'navigation',
+            value: JSON.stringify([
+              { label: 'Invalid', url: '/invalid/', icon: 'ftp://example.com/icon.svg' },
+            ]),
+          },
+        ],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
+    // If this test fails, it can be safely removed
+    // but the front-end should be updated accordingly,
+    // removing the workaround in place for this specific usecase
+    it('Cannot send an empty array', async function () {
+      const settingsToChange = {
+        settings: [],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(400);
+    });
+
+    it('Cannot edit notifications key through API', async function () {
+      await checkCantEdit('notifications', JSON.stringify(['do not touch me']));
+    });
+  });
+
+  describe('As Editor', function () {
+    beforeAll(async function () {
+      await localUtils.startGhost();
+      request = supertest.agent(config.get('url'));
+      // create editor
+      request.user = await testUtils.createUser({
+        user: testUtils.DataGenerator.forKnex.createUser({ email: 'test+1@ghost.org' }),
+        role: testUtils.DataGenerator.Content.roles[1].name,
+      });
+
+      // by default we login with the owner
+      await localUtils.doAuth(request);
+    });
+
+    it('should not be able to edit settings', function () {
+      return request
+        .get(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .then(function (res) {
+          let jsonResponse = res.body;
+
+          assertExists(jsonResponse);
+          assertExists(jsonResponse.settings);
+          jsonResponse.settings = [{ key: 'visibility', value: 'public' }];
+
+          return request
+            .put(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .send(jsonResponse)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(403)
+            .then(function ({ body, headers }) {
+              jsonResponse = body;
+              assert.equal(headers['x-cache-invalidate'], undefined);
+              assertExists(jsonResponse.errors);
+              testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                'message',
+                'context',
+                'type',
+                'details',
+                'property',
+                'help',
+                'code',
+                'id',
+                'ghostErrorCode',
+              ]);
             });
-
-            // by default we login with the owner
-            await localUtils.doAuth(request);
-        });
-
-        it('should not be able to edit settings', function () {
-            return request.get(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    let jsonResponse = res.body;
-
-                    assertExists(jsonResponse);
-                    assertExists(jsonResponse.settings);
-                    jsonResponse.settings = [{key: 'visibility', value: 'public'}];
-
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(jsonResponse)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(403)
-                        .then(function ({body, headers}) {
-                            jsonResponse = body;
-                            assert.equal(headers['x-cache-invalidate'], undefined);
-                            assertExists(jsonResponse.errors);
-                            testUtils.API.checkResponseValue(jsonResponse.errors[0], [
-                                'message',
-                                'context',
-                                'type',
-                                'details',
-                                'property',
-                                'help',
-                                'code',
-                                'id',
-                                'ghostErrorCode'
-                            ]);
-                        });
-                });
         });
     });
+  });
 
-    describe('As Author', function () {
-        beforeAll(async function () {
-            await localUtils.startGhost();
-            request = supertest.agent(config.get('url'));
+  describe('As Author', function () {
+    beforeAll(async function () {
+      await localUtils.startGhost();
+      request = supertest.agent(config.get('url'));
 
-            // create author
-            request.user = await testUtils.createUser({
-                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[2].name
+      // create author
+      request.user = await testUtils.createUser({
+        user: testUtils.DataGenerator.forKnex.createUser({ email: 'test+2@ghost.org' }),
+        role: testUtils.DataGenerator.Content.roles[2].name,
+      });
+
+      // by default we login with the owner
+      await localUtils.doAuth(request);
+    });
+
+    it('should not be able to edit settings', function () {
+      return request
+        .get(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .then(function (res) {
+          let jsonResponse = res.body;
+          assertExists(jsonResponse);
+          assertExists(jsonResponse.settings);
+          jsonResponse.settings = [{ key: 'visibility', value: 'public' }];
+
+          return request
+            .put(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .send(jsonResponse)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(403)
+            .then(function ({ body, headers }) {
+              jsonResponse = body;
+              assert.equal(headers['x-cache-invalidate'], undefined);
+              assertExists(jsonResponse.errors);
+              testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                'message',
+                'context',
+                'type',
+                'details',
+                'property',
+                'help',
+                'code',
+                'id',
+                'ghostErrorCode',
+              ]);
             });
-
-            // by default we login with the owner
-            await localUtils.doAuth(request);
-        });
-
-        it('should not be able to edit settings', function () {
-            return request.get(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    let jsonResponse = res.body;
-                    assertExists(jsonResponse);
-                    assertExists(jsonResponse.settings);
-                    jsonResponse.settings = [{key: 'visibility', value: 'public'}];
-
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(jsonResponse)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(403)
-                        .then(function ({body, headers}) {
-                            jsonResponse = body;
-                            assert.equal(headers['x-cache-invalidate'], undefined);
-                            assertExists(jsonResponse.errors);
-                            testUtils.API.checkResponseValue(jsonResponse.errors[0], [
-                                'message',
-                                'context',
-                                'type',
-                                'details',
-                                'property',
-                                'help',
-                                'code',
-                                'id',
-                                'ghostErrorCode'
-                            ]);
-                        });
-                });
         });
     });
+  });
 
-    // @TODO swap this internally for using settingsbread and then remove
-    describe('edit via context internal', function () {
-        const api = require('../../../../core/server/api').endpoints;
+  // @TODO swap this internally for using settingsbread and then remove
+  describe('edit via context internal', function () {
+    const api = require('../../../../core/server/api').endpoints;
 
-        beforeAll(async function () {
-            await localUtils.startGhost();
-        });
-
-        it('allows editing settings that cannot be edited via HTTP', async function () {
-            // Get current value
-            const {settings} = await api.settings.browse({}, testUtils.context.internal);
-
-            const currentValue = settings.find(s => s.key === 'email_verification_required');
-
-            if (!currentValue || currentValue.value === true) {
-                throw new Error('Invalid key or unchanged value');
-            }
-
-            let jsonResponse = await api.settings.edit({
-                settings: [{key: 'email_verification_required', value: true}]
-            }, testUtils.context.internal);
-
-            const setting = jsonResponse.settings.find(s => s.key === 'email_verification_required');
-            assertExists(setting);
-            assert.equal(setting.value, true);
-        });
+    beforeAll(async function () {
+      await localUtils.startGhost();
     });
+
+    it('allows editing settings that cannot be edited via HTTP', async function () {
+      // Get current value
+      const { settings } = await api.settings.browse({}, testUtils.context.internal);
+
+      const currentValue = settings.find((s) => s.key === 'email_verification_required');
+
+      if (!currentValue || currentValue.value === true) {
+        throw new Error('Invalid key or unchanged value');
+      }
+
+      let jsonResponse = await api.settings.edit(
+        {
+          settings: [{ key: 'email_verification_required', value: true }],
+        },
+        testUtils.context.internal,
+      );
+
+      const setting = jsonResponse.settings.find((s) => s.key === 'email_verification_required');
+      assertExists(setting);
+      assert.equal(setting.value, true);
+    });
+  });
 });

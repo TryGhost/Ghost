@@ -1,18 +1,18 @@
 {
-    "users": [
+  "users": [
+    {
+      "id": "1",
+      "name": "Test User",
+      "email": "test@example.com",
+      "profile_image": null,
+      "accessibility": "{\"apOnboarding\":{\"welcomeStepsFinished\":true,\"exploreExplainerClosed\":true}}",
+      "roles": [
         {
-            "id": "1",
-            "name": "Test User",
-            "email": "test@example.com",
-            "profile_image": null,
-            "accessibility": "{\"apOnboarding\":{\"welcomeStepsFinished\":true,\"exploreExplainerClosed\":true}}",
-            "roles": [
-                {
-                    "id": "1",
-                    "name": "Owner",
-                    "description": "Owner"
-                }
-            ]
+          "id": "1",
+          "name": "Owner",
+          "description": "Owner"
         }
-    ]
+      ]
+    }
+  ]
 }

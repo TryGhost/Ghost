@@ -1,5 +1,5 @@
 module.exports = {
-    get shared() {
-        return require('./shared');
-    }
+  get shared() {
+    return require('./shared');
+  },
 };

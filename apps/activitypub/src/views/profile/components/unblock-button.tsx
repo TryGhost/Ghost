@@ -1,44 +1,44 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import UnblockDialog from './unblock-dialog';
-import {Account} from '@src/api/activitypub';
-import {Button} from '@tryghost/shade/components';
+import { Account } from '@src/api/activitypub';
+import { Button } from '@tryghost/shade/components';
 
 interface UnblockButtonProps {
-    account: Account,
-    onUnblock: () => void;
-    onDomainUnblock: () => void;
-    className?: string;
+  account: Account;
+  onUnblock: () => void;
+  onDomainUnblock: () => void;
+  className?: string;
 }
 
 const UnblockButton: React.FC<UnblockButtonProps> = ({
-    account,
-    onUnblock,
-    onDomainUnblock,
-    className = ''
+  account,
+  onUnblock,
+  onDomainUnblock,
+  className = '',
 }) => {
-    const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-    const trigger = (
-        <Button
-            className={`min-w-[90px] ${className}`}
-            variant='destructive'
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            {isHovered ? 'Unblock' : 'Blocked'}
-        </Button>
-    );
+  const trigger = (
+    <Button
+      className={`min-w-[90px] ${className}`}
+      variant="destructive"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {isHovered ? 'Unblock' : 'Blocked'}
+    </Button>
+  );
 
-    return (
-        <UnblockDialog
-            handle={account.handle}
-            isDomainBlocked={account.domainBlockedByMe}
-            isUserBlocked={account.blockedByMe}
-            trigger={trigger}
-            onUnblockDomain={onDomainUnblock}
-            onUnblockUser={onUnblock}
-        />
-    );
+  return (
+    <UnblockDialog
+      handle={account.handle}
+      isDomainBlocked={account.domainBlockedByMe}
+      isUserBlocked={account.blockedByMe}
+      trigger={trigger}
+      onUnblockDomain={onDomainUnblock}
+      onUnblockUser={onUnblock}
+    />
+  );
 };
 
 export default UnblockButton;

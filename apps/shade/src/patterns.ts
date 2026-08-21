@@ -9,10 +9,23 @@ export * from './components/patterns/filters';
 export * from './components/patterns/dirty-confirm-dialog';
 export * from './components/patterns/image-upload';
 export * from './components/patterns/setting-group';
-export {default as ColorPicker} from './components/patterns/color-picker';
-export {ColorPickerTrigger, ColorSwatch, ColorSwatchRow} from './components/patterns/color-picker';
-export type {ColorPickerProps, ColorPickerTriggerProps, ColorSwatchOption, ColorSwatchProps, ColorSwatchRowProps} from './components/patterns/color-picker';
-export {default as ShareModal} from './components/patterns/share-modal';
-export type {ShareModalPreviewProps, ShareModalSocialLink} from './components/patterns/share-modal';
-export {SettingsModal, settingsModalVariants} from './components/patterns/settings-modal';
-export type {SettingsModalProps, SettingsModalSize} from './components/patterns/settings-modal';
+export { default as ColorPicker } from './components/patterns/color-picker';
+export {
+  ColorPickerTrigger,
+  ColorSwatch,
+  ColorSwatchRow,
+} from './components/patterns/color-picker';
+export type {
+  ColorPickerProps,
+  ColorPickerTriggerProps,
+  ColorSwatchOption,
+  ColorSwatchProps,
+  ColorSwatchRowProps,
+} from './components/patterns/color-picker';
+export { default as ShareModal } from './components/patterns/share-modal';
+export type {
+  ShareModalPreviewProps,
+  ShareModalSocialLink,
+} from './components/patterns/share-modal';
+export { SettingsModal, settingsModalVariants } from './components/patterns/settings-modal';
+export type { SettingsModalProps, SettingsModalSize } from './components/patterns/settings-modal';

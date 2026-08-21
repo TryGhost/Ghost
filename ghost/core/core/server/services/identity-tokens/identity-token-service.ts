@@ -1,36 +1,32 @@
-import {sign} from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 
 export class IdentityTokenService {
-    private privateKey: string;
-    private issuer: string;
-    private keyId: string;
+  private privateKey: string;
+  private issuer: string;
+  private keyId: string;
 
-    constructor(
-        privateKey: string,
-        issuer: string,
-        keyId: string
-    ) {
-        this.privateKey = privateKey;
-        this.issuer = issuer;
-        this.keyId = keyId;
+  constructor(privateKey: string, issuer: string, keyId: string) {
+    this.privateKey = privateKey;
+    this.issuer = issuer;
+    this.keyId = keyId;
+  }
+
+  async getTokenForUser(email: string, role?: string) {
+    const claims: Record<string, string> = {
+      sub: email,
+    };
+
+    if (typeof role === 'string') {
+      claims.role = role;
     }
 
-    async getTokenForUser(email: string, role?: string) {
-        const claims: Record<string, string> = {
-            sub: email
-        };
+    const token = sign(claims, this.privateKey, {
+      issuer: this.issuer,
+      expiresIn: '5m',
+      algorithm: 'RS256',
+      keyid: this.keyId,
+    });
 
-        if (typeof role === 'string') {
-            claims.role = role;
-        }
-
-        const token = sign(claims, this.privateKey, {
-            issuer: this.issuer,
-            expiresIn: '5m',
-            algorithm: 'RS256',
-            keyid: this.keyId
-        });
-
-        return token;
-    }
+    return token;
+  }
 }

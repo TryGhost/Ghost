@@ -1,6 +1,6 @@
-import {type NavigateOptions, useNavigate} from '@tryghost/admin-x-framework';
-import {useAppBasePath} from './use-app-base-path';
-import {useCallback} from 'react';
+import { type NavigateOptions, useNavigate } from '@tryghost/admin-x-framework';
+import { useAppBasePath } from './use-app-base-path';
+import { useCallback } from 'react';
 
 /**
  * Hook that wraps useNavigate and automatically prepends the app base path
@@ -13,25 +13,25 @@ import {useCallback} from 'react';
  * - Options are preserved: navigate('/reader', {replace: true})
  */
 export function useNavigateWithBasePath() {
-    const navigate = useNavigate();
-    const basePath = useAppBasePath();
+  const navigate = useNavigate();
+  const basePath = useAppBasePath();
 
-    return useCallback((
-        to: string | number,
-        options?: NavigateOptions
-    ) => {
-        if (typeof to === 'number') {
-            // Handle navigate(-1) etc
-            navigate(to, options);
-            return;
-        }
+  return useCallback(
+    (to: string | number, options?: NavigateOptions) => {
+      if (typeof to === 'number') {
+        // Handle navigate(-1) etc
+        navigate(to, options);
+        return;
+      }
 
-        if (to.startsWith('/')) {
-            // Absolute path - prepend base path
-            navigate(`${basePath}${to}`, options);
-        } else {
-            // Relative path - pass through unchanged
-            navigate(to, options);
-        }
-    }, [navigate, basePath]);
+      if (to.startsWith('/')) {
+        // Absolute path - prepend base path
+        navigate(`${basePath}${to}`, options);
+      } else {
+        // Relative path - pass through unchanged
+        navigate(to, options);
+      }
+    },
+    [navigate, basePath],
+  );
 }

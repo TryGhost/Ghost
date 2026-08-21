@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const SwitchStyles = `
     .gh-portal-for-switch label,
@@ -78,55 +78,61 @@ export const SwitchStyles = `
     }
 `;
 
-function Switch({id, label = '', onToggle, checked = false, disabled = false, dataTestId = 'switch-input', presentational = false}) {
-    const [isChecked, setIsChecked] = useState(checked);
+function Switch({
+  id,
+  label = '',
+  onToggle,
+  checked = false,
+  disabled = false,
+  dataTestId = 'switch-input',
+  presentational = false,
+}) {
+  const [isChecked, setIsChecked] = useState(checked);
 
-    useEffect(() => {
-        setIsChecked(checked);
-    }, [checked]);
+  useEffect(() => {
+    setIsChecked(checked);
+  }, [checked]);
 
-    const inputRef = useRef(null);
-    useEffect(() => {
-        if (inputRef.current && inputRef.current.checked !== isChecked) {
-            inputRef.current.checked = isChecked;
-        }
-    }, [isChecked, id]);
+  const inputRef = useRef(null);
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.checked !== isChecked) {
+      inputRef.current.checked = isChecked;
+    }
+  }, [isChecked, id]);
 
-    const handleChange = (event) => {
-        if (disabled) {
-            return;
-        }
+  const handleChange = (event) => {
+    if (disabled) {
+      return;
+    }
 
-        setIsChecked(event.target.checked);
-        onToggle(event, event.target.checked);
-    };
+    setIsChecked(event.target.checked);
+    onToggle(event, event.target.checked);
+  };
 
-    // When `presentational` is true, the surrounding row is the accessible
-    // control (it carries role="button" + aria-pressed). The whole switch is
-    // hidden from the accessibility tree and the checkbox is removed from the
-    // focus order so keyboard/SR users get a single stop with the correct
-    // toggle state.
-    const wrapperProps = presentational ? {'aria-hidden': true} : {};
-    const inputProps = presentational
-        ? {tabIndex: -1}
-        : {'aria-label': label};
+  // When `presentational` is true, the surrounding row is the accessible
+  // control (it carries role="button" + aria-pressed). The whole switch is
+  // hidden from the accessibility tree and the checkbox is removed from the
+  // focus order so keyboard/SR users get a single stop with the correct
+  // toggle state.
+  const wrapperProps = presentational ? { 'aria-hidden': true } : {};
+  const inputProps = presentational ? { tabIndex: -1 } : { 'aria-label': label };
 
-    return (
-        <div className="gh-portal-for-switch" data-test-switch={dataTestId} {...wrapperProps}>
-            <label className="switch" htmlFor={id}>
-                <input
-                    ref={inputRef}
-                    type="checkbox"
-                    checked={isChecked}
-                    disabled={disabled}
-                    id={id}
-                    onChange={handleChange}
-                    {...inputProps}
-                />
-                <span className="input-toggle-component" data-testid={dataTestId}></span>
-            </label>
-        </div>
-    );
+  return (
+    <div className="gh-portal-for-switch" data-test-switch={dataTestId} {...wrapperProps}>
+      <label className="switch" htmlFor={id}>
+        <input
+          ref={inputRef}
+          type="checkbox"
+          checked={isChecked}
+          disabled={disabled}
+          id={id}
+          onChange={handleChange}
+          {...inputProps}
+        />
+        <span className="input-toggle-component" data-testid={dataTestId}></span>
+      </label>
+    </div>
+  );
 }
 
 export default Switch;

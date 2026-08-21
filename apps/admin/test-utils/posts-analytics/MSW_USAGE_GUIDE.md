@@ -36,6 +36,7 @@ mockServer.setup({
 ```
 
 **Available endpoints:**
+
 - `posts` → `/ghost/api/admin/posts/*`
 - `feedback` → `/ghost/api/admin/feedback/*`
 - `links` → `/ghost/api/admin/links/`
@@ -52,16 +53,16 @@ import {endpoint, when} from '@test-utils/posts-analytics/msw-helpers';
 mockServer.setup({
     // Standard data
     posts: [mockData.post()],
-    
+
     // Complex scenarios go in customHandlers
     customHandlers: [
         // External APIs
         endpoint.get('/api/external', {data: 'test'}),
         endpoint.post('/api/webhook', {success: true}, 201),
-        
-        // Error scenarios  
+
+        // Error scenarios
         endpoint.get('/ghost/api/admin/posts/*', {error: 'Server error'}, 500),
-        
+
         // Conditional responses
         when('get', '/ghost/api/admin/feedback/*', [
             {if: req => req.url.includes('score=1'), response: {feedback: positiveFeedback}},
@@ -74,21 +75,23 @@ mockServer.setup({
 ## Practical Examples
 
 ### Basic Hook Testing
+
 ```typescript
 test('loads post data', () => {
     mockServer.setup({
         posts: [mockData.post({id: 'test-id', title: 'Test Post'})]
     });
-    
+
     const {result} = renderHook(() => usePost('test-id'), {
         wrapper: createTestWrapper()
     });
-    
+
     expect(result.current.data?.title).toBe('Test Post');
 });
 ```
 
 ### Error Scenarios
+
 ```typescript
 test('handles server errors', () => {
     mockServer.setup({
@@ -96,12 +99,13 @@ test('handles server errors', () => {
             endpoint.get('/ghost/api/admin/posts/*', {error: 'Server error'}, 500)
         ]
     });
-    
+
     // Test error handling...
 });
 ```
 
 ### Complex Component Testing
+
 ```typescript
 test('PostAnalytics with full data', () => {
     mockServer.setup({
@@ -117,13 +121,14 @@ test('PostAnalytics with full data', () => {
             {id: 'link-1', clicks: 50, link: {title: 'Link', to: '/page'}}
         ]
     });
-    
+
     render(<PostAnalytics postId="post-1" />, {wrapper: createTestWrapper()});
     // Assertions...
 });
 ```
 
 ### Reusable Test Scenarios
+
 ```typescript
 // Store scenarios as plain objects
 const successScenario = {
@@ -163,12 +168,14 @@ test('mixed case', () => {
 ## Built-in Defaults
 
 These are automatically included in every test:
+
 - `site` - Basic site info
-- `config` - App configuration  
+- `config` - App configuration
 - `settings` - Ghost settings
 - `tinybirdToken` - Analytics token
 
 Override if needed:
+
 ```typescript
 mockServer.setup({
     site: {url: 'https://custom.com', title: 'Custom Site'},
@@ -184,7 +191,7 @@ Use `mockData` for consistent test data:
 // With defaults
 mockData.post() // → {id: 'test-post-id', title: 'Test Post', ...}
 
-// With overrides  
+// With overrides
 mockData.post({title: 'Custom Title', count: {clicks: 999}})
 
 // Direct arrays (when you need simple data)

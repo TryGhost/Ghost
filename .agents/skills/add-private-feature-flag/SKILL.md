@@ -6,6 +6,7 @@ description: Use when adding a new private (developer experiments) feature flag 
 # Add Private Feature Flag
 
 ## Overview
+
 Adds a new private feature flag to Ghost. Private flags appear in Labs settings under the "Private features" tab, visible only when developer experiments are enabled.
 
 ## Steps
@@ -22,6 +23,7 @@ Adds a new private feature flag to Ghost. Private flags appear in Labs settings 
    - Review the diff of `ghost/core/test/e2e-api/admin/__snapshots__/config.test.js.snap` to confirm only your new flag was added.
 
 ## Notes
+
 - No database migration is needed. Labs flags are stored in a single JSON `labs` setting.
 - The flag name must be identical in `labs.js`, `private-features.tsx`, and the snapshot.
 - Flags are camelCase strings (e.g. `welcomeEmailDesignCustomization`).

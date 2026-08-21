@@ -5,40 +5,50 @@ const configUtils = require('../../../../utils/config-utils');
 const controller = require('../../../../../core/server/web/admin/controller');
 
 describe('Admin App', function () {
-    describe('controller', function () {
-        const req = {};
-        let res;
+  describe('controller', function () {
+    const req = {};
+    let res;
 
-        beforeEach(async function () {
-            res = {
-                sendFile: sinon.spy()
-            };
+    beforeEach(async function () {
+      res = {
+        sendFile: sinon.spy(),
+      };
 
-            await configUtils.restore();
-            configUtils.set('paths:adminAssets', path.resolve(__dirname, '../../../../utils/fixtures/admin-build'));
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        it('adds x-frame-options header when adminFrameProtection is enabled (default)', function () {
-            // default config: configUtils.set('adminFrameProtection', true);
-            controller(req, res);
-
-            sinon.assert.called(res.sendFile);
-            sinon.assert.calledWith(res.sendFile, sinon.match.string, sinon.match.hasNested('headers.X-Frame-Options', sinon.match('sameorigin')));
-        });
-
-        it('doesn\'t add x-frame-options header when adminFrameProtection is disabled', function () {
-            configUtils.set('adminFrameProtection', false);
-            controller(req, res);
-
-            sinon.assert.called(res.sendFile);
-            assert.equal(res.sendFile.calledWith(
-                sinon.match.string,
-                sinon.match.hasNested('headers.X-Frame-Options')
-            ), false);
-        });
+      await configUtils.restore();
+      configUtils.set(
+        'paths:adminAssets',
+        path.resolve(__dirname, '../../../../utils/fixtures/admin-build'),
+      );
     });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('adds x-frame-options header when adminFrameProtection is enabled (default)', function () {
+      // default config: configUtils.set('adminFrameProtection', true);
+      controller(req, res);
+
+      sinon.assert.called(res.sendFile);
+      sinon.assert.calledWith(
+        res.sendFile,
+        sinon.match.string,
+        sinon.match.hasNested('headers.X-Frame-Options', sinon.match('sameorigin')),
+      );
+    });
+
+    it("doesn't add x-frame-options header when adminFrameProtection is disabled", function () {
+      configUtils.set('adminFrameProtection', false);
+      controller(req, res);
+
+      sinon.assert.called(res.sendFile);
+      assert.equal(
+        res.sendFile.calledWith(
+          sinon.match.string,
+          sinon.match.hasNested('headers.X-Frame-Options'),
+        ),
+        false,
+      );
+    });
+  });
 });

@@ -27,62 +27,62 @@ import ShareModal from './components/pages/share/share-modal';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
-*/
+ */
 const Pages = {
-    signin: SigninPage,
-    signup: SignupPage,
-    accountHome: AccountHomePage,
-    accountPlan: AccountPlanPage,
-    accountProfile: AccountProfilePage,
-    accountEmail: AccountEmailPage,
-    signupNewsletter: NewsletterSelectionPage,
-    unsubscribe: UnsubscribePage,
-    magiclink: MagicLinkPage,
-    loading: LoadingPage,
-    offer: OfferPage,
-    feedback: FeedbackPage,
-    emailSuppressed: EmailSuppressedPage,
-    emailSuppressionFAQ: EmailSuppressionFAQ,
-    emailReceivingFAQ: EmailReceivingFAQ,
-    support: SupportPage,
-    supportSuccess: SupportSuccess,
-    supportError: SupportError,
-    recommendations: RecommendationsPage,
-    gift: GiftPage,
-    giftRedemption: GiftRedemptionPage,
-    giftSuccess: GiftSuccessPage,
-    share: ShareModal
+  signin: SigninPage,
+  signup: SignupPage,
+  accountHome: AccountHomePage,
+  accountPlan: AccountPlanPage,
+  accountProfile: AccountProfilePage,
+  accountEmail: AccountEmailPage,
+  signupNewsletter: NewsletterSelectionPage,
+  unsubscribe: UnsubscribePage,
+  magiclink: MagicLinkPage,
+  loading: LoadingPage,
+  offer: OfferPage,
+  feedback: FeedbackPage,
+  emailSuppressed: EmailSuppressedPage,
+  emailSuppressionFAQ: EmailSuppressionFAQ,
+  emailReceivingFAQ: EmailReceivingFAQ,
+  support: SupportPage,
+  supportSuccess: SupportSuccess,
+  supportError: SupportError,
+  recommendations: RecommendationsPage,
+  gift: GiftPage,
+  giftRedemption: GiftRedemptionPage,
+  giftSuccess: GiftSuccessPage,
+  share: ShareModal,
 };
 
 const BetaPages = {
-    ...Pages,
-    gift: BetaGiftPage,
-    giftRedemption: BetaGiftRedemptionPage,
-    giftSuccess: BetaGiftSuccessPage
+  ...Pages,
+  gift: BetaGiftPage,
+  giftRedemption: BetaGiftRedemptionPage,
+  giftSuccess: BetaGiftSuccessPage,
 };
 
-export const getPages = function ({site} = {}) {
-    return site?.labs?.giftSubCustomization ? BetaPages : Pages;
+export const getPages = function ({ site } = {}) {
+  return site?.labs?.giftSubCustomization ? BetaPages : Pages;
 };
 
 /** Return page if valid, fallback to signup */
-export const getActivePage = function ({page}) {
-    if (Object.keys(Pages).includes(page)) {
-        return page;
-    }
-    return 'signup';
+export const getActivePage = function ({ page }) {
+  if (Object.keys(Pages).includes(page)) {
+    return page;
+  }
+  return 'signup';
 };
 
-export const isAccountPage = function ({page}) {
-    return page.includes('account');
+export const isAccountPage = function ({ page }) {
+  return page.includes('account');
 };
 
-export const isOfferPage = function ({page}) {
-    return page.includes('offer');
+export const isOfferPage = function ({ page }) {
+  return page.includes('offer');
 };
 
-export const isSupportPage = function ({page}) {
-    return page.includes('support');
+export const isSupportPage = function ({ page }) {
+  return page.includes('support');
 };
 
 export default Pages;

@@ -1,12 +1,12 @@
-import { Navigate, Outlet, useLocation, useMatches } from "@tryghost/admin-x-framework";
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { Navigate, Outlet, useLocation, useMatches } from '@tryghost/admin-x-framework';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 
-type CurrentUser = NonNullable<ReturnType<typeof useCurrentUser>["data"]>;
+type CurrentUser = NonNullable<ReturnType<typeof useCurrentUser>['data']>;
 
 export type AccessRule = (user: CurrentUser, location: { pathname: string }) => boolean;
 
 export interface AccessRouteHandle {
-    requiresAccess?: AccessRule;
+  requiresAccess?: AccessRule;
 }
 
 /**
@@ -28,29 +28,29 @@ export interface AccessRouteHandle {
  * ```
  */
 export function RouteAccessGuard() {
-    const { data: currentUser, isError, isLoading } = useCurrentUser();
-    const location = useLocation();
-    const matches = useMatches();
+  const { data: currentUser, isError, isLoading } = useCurrentUser();
+  const location = useLocation();
+  const matches = useMatches();
 
-    const rules = matches
-        .map(match => (match.handle as AccessRouteHandle | undefined)?.requiresAccess)
-        .filter((rule): rule is AccessRule => typeof rule === "function");
+  const rules = matches
+    .map((match) => (match.handle as AccessRouteHandle | undefined)?.requiresAccess)
+    .filter((rule): rule is AccessRule => typeof rule === 'function');
 
-    if (rules.length === 0) {
-        return <Outlet />;
-    }
-
-    if (!currentUser) {
-        if (isError || !isLoading) {
-            return <Navigate to="/" replace />;
-        }
-
-        return null;
-    }
-
-    if (!rules.every(rule => rule(currentUser, location))) {
-        return <Navigate to="/" replace />;
-    }
-
+  if (rules.length === 0) {
     return <Outlet />;
+  }
+
+  if (!currentUser) {
+    if (isError || !isLoading) {
+      return <Navigate to="/" replace />;
+    }
+
+    return null;
+  }
+
+  if (!rules.every((rule) => rule(currentUser, location))) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 }

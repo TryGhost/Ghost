@@ -8,63 +8,66 @@ const configUtils = require('../../../utils/config-utils');
  */
 
 describe('Adapter Config', function () {
-    beforeAll(async function () {
-        await configUtils.restore();
+  beforeAll(async function () {
+    await configUtils.restore();
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
+  });
+
+  describe('Storage', function () {
+    it('should default to local-file-store', function () {
+      assert.equal(
+        configUtils.config.get('paths').internalAdaptersPath,
+        path.join(configUtils.config.get('paths').corePath, '/server/adapters/'),
+      );
+
+      assert.equal(configUtils.config.get('storage').active, 'LocalImagesStorage');
     });
 
-    afterEach(async function () {
-        await configUtils.restore();
+    it('no effect: setting a custom active storage as string', function () {
+      configUtils.set({
+        storage: {
+          active: 's3',
+          s3: {},
+        },
+      });
+
+      assert.equal(configUtils.config.get('storage').active, 's3');
+      assert.deepEqual(configUtils.config.get('storage').s3, {});
     });
 
-    describe('Storage', function () {
-        it('should default to local-file-store', function () {
-            assert.equal(configUtils.config.get('paths').internalAdaptersPath, path.join(configUtils.config.get('paths').corePath, '/server/adapters/'));
+    it('able to set storage for themes (but not officially supported!)', function () {
+      configUtils.set({
+        storage: {
+          active: {
+            images: 'local-file-store',
+            themes: 's3',
+          },
+        },
+      });
 
-            assert.equal(configUtils.config.get('storage').active, 'LocalImagesStorage');
-        });
-
-        it('no effect: setting a custom active storage as string', function () {
-            configUtils.set({
-                storage: {
-                    active: 's3',
-                    s3: {}
-                }
-            });
-
-            assert.equal(configUtils.config.get('storage').active, 's3');
-            assert.deepEqual(configUtils.config.get('storage').s3, {});
-        });
-
-        it('able to set storage for themes (but not officially supported!)', function () {
-            configUtils.set({
-                storage: {
-                    active: {
-                        images: 'local-file-store',
-                        themes: 's3'
-                    }
-                }
-            });
-
-            assert.deepEqual(configUtils.config.get('storage').active, {
-                images: 'local-file-store',
-                themes: 's3'
-            });
-        });
-
-        it('should allow setting a custom active storage as object', function () {
-            configUtils.set({
-                storage: {
-                    active: {
-                        images: 's2',
-                        themes: 'local-file-store'
-                    }
-                }
-            });
-
-            assert.deepEqual(configUtils.config.get('storage').active, {
-                images: 's2',
-                themes: 'local-file-store'
-            });
-        });
+      assert.deepEqual(configUtils.config.get('storage').active, {
+        images: 'local-file-store',
+        themes: 's3',
+      });
     });
+
+    it('should allow setting a custom active storage as object', function () {
+      configUtils.set({
+        storage: {
+          active: {
+            images: 's2',
+            themes: 'local-file-store',
+          },
+        },
+      });
+
+      assert.deepEqual(configUtils.config.get('storage').active, {
+        images: 's2',
+        themes: 'local-file-store',
+      });
+    });
+  });
 });

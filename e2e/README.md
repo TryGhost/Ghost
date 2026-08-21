@@ -3,16 +3,18 @@
 This top-level workspace is Ghost's browser end-to-end test suite. It runs
 automated browser tests against a complete, running Ghost instance to verify
 critical user journeys across packages and applications. A package's own
-Playwright suite is an *acceptance* suite, not an E2E one — see the
+Playwright suite is an _acceptance_ suite, not an E2E one — see the
 [testing guide](../docs/contributing/testing.md) for how the layers differ.
 
 ## Quick Start
 
 ### Prerequisites
+
 - Docker and Docker Compose installed
 - Node.js installed (pnpm is managed via corepack — run `corepack enable pnpm` first)
 
 ### Running Tests
+
 To run the test, within this `e2e` folder run:
 
 ```bash
@@ -26,6 +28,7 @@ pnpm test
 ### Dev Environment Mode (Recommended for Development)
 
 If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
+
 - `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
 - `build` otherwise
 
@@ -83,7 +86,6 @@ For a CI-like local preflight (pulls Playwright + gateway images and starts infr
 pnpm --filter @tryghost/e2e preflight:build
 ```
 
-
 ### Running Specific Tests
 
 ```bash
@@ -107,6 +109,7 @@ fixtures, and commands.
 The test suite is organized into separate directories for different areas/functions:
 
 ### **Current Test Suites**
+
 - `tests/public/` - Public-facing site tests (homepage, posts, etc.)
 - `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
 - `tests/portal/` - Portal member journey tests
@@ -155,6 +158,7 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
 
 The fixtures a test usually reaches for:
+
 - `page` - browser page against this test's Ghost instance
 - `pageWithAuthenticatedUser` - the same, already signed in to Ghost Admin
 - `ghostAccountOwner` - the owner account's credentials
@@ -163,6 +167,7 @@ The fixtures a test usually reaches for:
 - `resetEnvironment()` - force an environment recycle (see the escape hatch below)
 
 The fixture resolves isolation mode per test file:
+
 - Default: per-file isolation (one Ghost environment cycle per file)
 - Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file
 - Forced per-test: any run with `fullyParallel: true`
@@ -174,30 +179,36 @@ Test isolation is still automatic, but no longer always per-test.
 Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `pnpm dev` or `pnpm --filter @tryghost/e2e infra:up`.
 
 Global setup (`tests/global.setup.ts`) does:
+
 - Cleans up e2e containers and test databases
 - Creates a base database, starts Ghost, waits for health, snapshots the DB
 
 Per-file mode (`helpers/playwright/fixture.ts`) does:
+
 - Clones a new database from snapshot at file boundary
 - Restarts Ghost with the new database and waits for readiness
 - Reuses that environment for tests in the file
 
 Per-test mode (`helpers/playwright/fixture.ts`) does:
+
 - Clones a new database from snapshot for each test
 - Restarts Ghost with the new database and waits for readiness
 
 Environment identity for per-file reuse:
+
 - `config` participates in the environment identity.
 - `labs` participates in the environment identity.
 - If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
 - `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
 
 Fixture option behavior:
+
 - `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
 - `labs`: use for labs flags that should get a fresh environment when they change.
 - `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
 
 Escape hatch:
+
 - `resetEnvironment()` is supported only in `beforeEach` hooks for per-file tests.
 - Use it only before resolving stateful fixtures such as `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`.
 - Safe hook pattern: `test.beforeEach(async ({resetEnvironment}) => { ... })`
@@ -205,13 +216,16 @@ Escape hatch:
 - ESLint catches the obvious misuse cases, but the runtime guard in the fixture remains the hard safety check.
 
 Opting into per-test isolation:
+
 - Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file.
 - This configures both Playwright parallel mode and the fixture isolation in one call.
 
 Global teardown (`tests/global.teardown.ts`) does:
+
 - Cleans up e2e containers and test databases (infra services stay running)
 
 Modes:
+
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
 - Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
 

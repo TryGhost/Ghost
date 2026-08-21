@@ -1,33 +1,39 @@
-const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyObjectId, anyISODateTime, anyString} = matchers;
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  matchers,
+} = require('../../utils/e2e-framework');
+const { anyObjectId, anyISODateTime, anyString } = matchers;
 
 const matchMentionShallowIncludes = {
-    id: anyObjectId,
-    source: anyString,
-    target: anyString,
-    timestamp: anyISODateTime,
-    source_title: anyString
+  id: anyObjectId,
+  source: anyString,
+  target: anyString,
+  timestamp: anyISODateTime,
+  source_title: anyString,
 };
 
 describe('Mentions API', function () {
-    let agent;
+  let agent;
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        // TODO: test various users' access
-        await fixtureManager.init('users','mentions');
-        await agent.loginAsOwner();
-    });
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    // TODO: test various users' access
+    await fixtureManager.init('users', 'mentions');
+    await agent.loginAsOwner();
+  });
 
-    afterEach(function () {
-        mockManager.restore();
-    });
+  afterEach(function () {
+    mockManager.restore();
+  });
 
-    it('Can browse with limits', async function () {
-        await agent.get('mentions/?limit=2')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                mentions: new Array(2).fill(matchMentionShallowIncludes)
-            });
-    });
+  it('Can browse with limits', async function () {
+    await agent
+      .get('mentions/?limit=2')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        mentions: new Array(2).fill(matchMentionShallowIncludes),
+      });
+  });
 });

@@ -15,21 +15,20 @@ let overrides: FlagOverrides = {};
  * booleans, so a shallow copy fully isolates).
  */
 export function replace(next: unknown): void {
-    overrides = (next && typeof next === 'object' && !Array.isArray(next))
-        ? {...(next as FlagOverrides)}
-        : {};
+  overrides =
+    next && typeof next === 'object' && !Array.isArray(next) ? { ...(next as FlagOverrides) } : {};
 }
 
 /**
  * Drop all overrides, returning to purely local flag state.
  */
 export function clear(): void {
-    overrides = {};
+  overrides = {};
 }
 
 /**
  * A read-only copy of the active overrides, for the labs overlay and for tests.
  */
 export function getAll(): FlagOverrides {
-    return {...overrides};
+  return { ...overrides };
 }

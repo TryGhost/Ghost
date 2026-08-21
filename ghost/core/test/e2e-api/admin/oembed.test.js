@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const { assertExists } = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
 const localUtils = require('./utils');
-const {mockManager} = require('../../utils/e2e-framework');
+const { mockManager } = require('../../utils/e2e-framework');
 const oembed = require('../../../../core/core/server/services/oembed');
 const urlUtils = require('../../../core/shared/url-utils').default;
 
@@ -14,873 +14,918 @@ const urlUtils = require('../../../core/shared/url-utils').default;
 const dnsPromises = require('dns').promises;
 
 describe('Oembed API', function () {
-    let request;
+  let request;
 
-    beforeAll(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request);
+  beforeAll(async function () {
+    await localUtils.startGhost();
+    request = supertest.agent(config.get('url'));
+    await localUtils.doAuth(request);
+  });
+
+  let processImageFromUrlStub;
+
+  beforeEach(function () {
+    // ensure sure we're not network dependent
+    mockManager.disableNetwork();
+    processImageFromUrlStub = sinon.stub(oembed, 'processImageFromUrl');
+    processImageFromUrlStub.callsFake(async function (imageUrl, imageType) {
+      if (imageUrl === 'http://example.com/bad-image') {
+        throw new Error('Failed to process image');
+      }
+      return `/content/images/${imageType}/image-01.png`;
+    });
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('can fetch an embed', async function () {
+    const requestMock = nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+      html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
+      thumbnail_width: 480,
+      width: 480,
+      author_url: 'https://www.youtube.com/user/gorillaz',
+      height: 270,
+      thumbnail_height: 360,
+      provider_name: 'YouTube',
+      title: 'Gorillaz - Humility (Official Video)',
+      provider_url: 'https://www.youtube.com/',
+      author_name: 'Gorillaz',
+      version: '1.0',
+      thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
+      type: 'video',
     });
 
-    let processImageFromUrlStub;
+    const res = await request
+      .get(
+        localUtils.API.getApiQuery(
+          'oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0',
+        ),
+      )
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-    beforeEach(function () {
-        // ensure sure we're not network dependent
-        mockManager.disableNetwork();
-        processImageFromUrlStub = sinon.stub(oembed, 'processImageFromUrl');
-        processImageFromUrlStub.callsFake(async function (imageUrl, imageType) {
-            if (imageUrl === 'http://example.com/bad-image') {
-                throw new Error('Failed to process image');
-            }
-            return `/content/images/${imageType}/image-01.png`;
+    assert.equal(requestMock.isDone(), true);
+    assertExists(res.body.html);
+  });
+
+  it('does not use http preferentially to https', async function () {
+    const httpMock = nock('https://odysee.com')
+      .get('/$/oembed')
+      .query({ url: 'http://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json' })
+      .reply(200, 'The URL is invalid or is not associated with any claim.');
+
+    const httpsMock = nock('https://odysee.com')
+      .get('/$/oembed')
+      .query({ url: 'https://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json' })
+      .reply(200, {
+        html: '<iframe></iframe>',
+        type: 'rich',
+        version: '1.0',
+      });
+
+    const res = await request
+      .get(
+        localUtils.API.getApiQuery(
+          'oembed/?url=https%3A%2F%2Fodysee.com%2F%40BarnabasNagy%3A5%2FAt-Last-%28Playa%29%3A2',
+        ),
+      )
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private);
+
+    assert.equal(httpMock.isDone(), false);
+    assert.equal(httpsMock.isDone(), true);
+    assertExists(res.body.html);
+  });
+
+  it('errors with a useful message when embedding is disabled', async function () {
+    const requestMock = nock('https://www.youtube.com')
+      .get('/oembed')
+      .query(true)
+      .reply(401, {
+        errors: [
+          {
+            message: 'Authorisation error, cannot read oembed.',
+            context: 'URL contains a private resource.',
+            type: 'UnauthorizedError',
+            details: null,
+            property: null,
+            help: null,
+            code: null,
+            id: 'c51228a0-921a-11ed-8abe-6babfda4d18a',
+            ghostErrorCode: null,
+          },
+        ],
+      });
+
+    const res = await request
+      .get(
+        localUtils.API.getApiQuery(
+          'oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0',
+        ),
+      )
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(422);
+
+    assert.equal(requestMock.isDone(), true);
+    assertExists(res.body.errors);
+    assert.match(res.body.errors[0].context, /URL contains a private resource/i);
+  });
+
+  describe('type: bookmark', function () {
+    it('can fetch a bookmark with ?type=bookmark', async function () {
+      const pageMock = nock('http://example.com')
+        .get('/')
+        .reply(200, '<html><head><title>TESTING</title></head><body></body></html>', {
+          'content-type': 'text/html',
         });
+
+      const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(res.body.type, 'bookmark');
+      assert.equal(res.body.url, 'http://example.com');
+      assert.equal(res.body.metadata.title, 'TESTING');
     });
 
-    afterEach(function () {
-        mockManager.restore();
+    it('falls back to bookmark without ?type=embed and no oembed metatag', async function () {
+      const pageMock = nock('http://example.com')
+        .get('/')
+        .times(1) // url should not be fetched twice
+        .reply(200, '<html><head><title>TESTING</title></head><body></body></html>', {
+          'content-type': 'text/html',
+        });
+
+      const url = encodeURIComponent('http://example.com');
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(res.body.type, 'bookmark');
+      assert.equal(res.body.url, 'http://example.com');
+      assert.equal(res.body.metadata.title, 'TESTING');
     });
 
-    it('can fetch an embed', async function () {
-        const requestMock = nock('https://www.youtube.com')
-            .get('/oembed')
-            .query(true)
-            .reply(200, {
-                html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-                thumbnail_width: 480,
-                width: 480,
-                author_url: 'https://www.youtube.com/user/gorillaz',
-                height: 270,
-                thumbnail_height: 360,
-                provider_name: 'YouTube',
-                title: 'Gorillaz - Humility (Official Video)',
-                provider_url: 'https://www.youtube.com/',
-                author_name: 'Gorillaz',
-                version: '1.0',
-                thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
-                type: 'video'
-            });
+    it('errors with useful message when title is unavailable', async function () {
+      const pageMock = nock('http://example.com')
+        .get('/')
+        .reply(200, '<html><head><title></title></head><body></body></html>', {
+          'content-type': 'text/html',
+        });
 
-        const res = await request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+      const url = encodeURIComponent('http://example.com');
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
 
-        assert.equal(requestMock.isDone(), true);
-        assertExists(res.body.html);
+      assert.equal(pageMock.isDone(), true);
+      assertExists(res.body.errors);
+      assert.match(res.body.errors[0].context, /insufficient metadata/i);
     });
 
-    it('does not use http preferentially to https', async function () {
-        const httpMock = nock('https://odysee.com')
-            .get('/$/oembed')
-            .query({url: 'http://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json'})
-            .reply(200, 'The URL is invalid or is not associated with any claim.');
+    it('errors when fetched url is an IP address', async function () {
+      // in order to follow the 302, we need to stub differently; externalRequest will block the internal IP
+      dnsPromises.lookup.restore();
+      let dnsStub = sinon.stub(dnsPromises, 'lookup');
+      dnsStub.onCall(0).returns(Promise.resolve({ address: '123.123.123.123' }));
+      dnsStub.onCall(1).returns(Promise.resolve({ address: '0.0.0.0' }));
 
-        const httpsMock = nock('https://odysee.com')
-            .get('/$/oembed')
-            .query({url: 'https://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json'})
-            .reply(200, {
-                html: '<iframe></iframe>',
-                type: 'rich',
-                version: '1.0'
-            });
+      nock('http://test.com/').get('/').reply(302, undefined, { Location: 'http://0.0.0.0:8080' });
 
-        const res = await request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fodysee.com%2F%40BarnabasNagy%3A5%2FAt-Last-%28Playa%29%3A2'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private);
+      const pageMock = nock('http://0.0.0.0:8080')
+        .get('/')
+        .reply(200, '<html><head><title>TESTING</title></head><body></body></html>', {
+          'content-type': 'text/html',
+        });
 
-        assert.equal(httpMock.isDone(), false);
-        assert.equal(httpsMock.isDone(), true);
-        assertExists(res.body.html);
+      const url = encodeURIComponent('http://test.com');
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), false); // we shouldn't hit this; blocked by externalRequest
+      assertExists(res.body.errors);
     });
 
-    it('errors with a useful message when embedding is disabled', async function () {
-        const requestMock = nock('https://www.youtube.com')
-            .get('/oembed')
-            .query(true)
-            .reply(401, {
-                errors: [
-                    {
-                        message: 'Authorisation error, cannot read oembed.',
-                        context: 'URL contains a private resource.',
-                        type: 'UnauthorizedError',
-                        details: null,
-                        property: null,
-                        help: null,
-                        code: null,
-                        id: 'c51228a0-921a-11ed-8abe-6babfda4d18a',
-                        ghostErrorCode: null
-                    }
-                ]
-            });
+    it('errors when fetched url is incorrect', async function () {
+      const url = encodeURIComponent('example.com');
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
 
-        const res = await request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422);
-
-        assert.equal(requestMock.isDone(), true);
-        assertExists(res.body.errors);
-        assert.match(res.body.errors[0].context, /URL contains a private resource/i);
+      assertExists(res.body.errors);
     });
 
-    describe('type: bookmark', function () {
-        it('can fetch a bookmark with ?type=bookmark', async function () {
-            const pageMock = nock('http://example.com')
-                .get('/')
-                .reply(
-                    200,
-                    '<html><head><title>TESTING</title></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
+    it('should replace icon URL when it returns 404', async function () {
+      // Mock the page so it contains a readable icon URL
+      const pageMock = nock('http://example.com')
+        .get('/page-with-icon')
+        .reply(
+          200,
+          '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/bad-image"></head><body></body></html>',
+          { 'content-type': 'text/html' },
+        );
 
-            const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
+      const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
 
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(res.body.type, 'bookmark');
-            assert.equal(res.body.url, 'http://example.com');
-            assert.equal(res.body.metadata.title, 'TESTING');
-        });
+      // Check that the icon URL mock was loaded
+      assert.equal(pageMock.isDone(), true);
 
-        it('falls back to bookmark without ?type=embed and no oembed metatag', async function () {
-            const pageMock = nock('http://example.com')
-                .get('/')
-                .times(1) // url should not be fetched twice
-                .reply(
-                    200,
-                    '<html><head><title>TESTING</title></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
+      // Check that the substitute icon URL is returned in place of the original
+      assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+    });
+  });
 
-            const url = encodeURIComponent('http://example.com');
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
+  it('should fetch and store icons', async function () {
+    // Mock the page to contain a readable icon URL
+    const pageMock = nock('http://example.com')
+      .get('/page-with-icon')
+      .reply(
+        200,
+        '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/icon.svg"></head><body></body></html>',
+        { 'content-type': 'text/html' },
+      );
 
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(res.body.type, 'bookmark');
-            assert.equal(res.body.url, 'http://example.com');
-            assert.equal(res.body.metadata.title, 'TESTING');
-        });
+    const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
+    const res = await request
+      .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-        it('errors with useful message when title is unavailable', async function () {
-            const pageMock = nock('http://example.com')
-                .get('/')
-                .reply(
-                    200,
-                    '<html><head><title></title></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
+    // Check that the icon URL mock was loaded
+    assert.equal(pageMock.isDone(), true);
 
-            const url = encodeURIComponent('http://example.com');
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
+    // Check that the substitute icon URL is returned in place of the original
+    assert.equal(
+      res.body.metadata.icon,
+      `${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`,
+    );
+  });
 
-            assert.equal(pageMock.isDone(), true);
-            assertExists(res.body.errors);
-            assert.match(res.body.errors[0].context, /insufficient metadata/i);
-        });
+  it('should fetch and store thumbnails', async function () {
+    // Mock the page to contain a scrapeable thumbnail (og:image)
+    const pageMock = nock('http://example.com')
+      .get('/page-with-thumbnail')
+      .reply(
+        200,
+        '<html><head><title>TESTING</title><meta property="og:image" content="http://example.com/thumbnail.png"></head><body></body></html>',
+        { 'content-type': 'text/html' },
+      );
 
-        it('errors when fetched url is an IP address', async function () {
-            // in order to follow the 302, we need to stub differently; externalRequest will block the internal IP
-            dnsPromises.lookup.restore();
-            let dnsStub = sinon.stub(dnsPromises, 'lookup');
-            dnsStub.onCall(0).returns(Promise.resolve({address: '123.123.123.123'}));
-            dnsStub.onCall(1).returns(Promise.resolve({address: '0.0.0.0'}));
+    const url = encodeURIComponent(' http://example.com/page-with-thumbnail\t '); // Whitespaces are to make sure urls are trimmed
+    const res = await request
+      .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
 
-            nock('http://test.com/')
-                .get('/')
-                .reply(302, undefined, {Location: 'http://0.0.0.0:8080'});
+    // Check that the thumbnail URL mock was loaded
+    assert.equal(pageMock.isDone(), true);
 
-            const pageMock = nock('http://0.0.0.0:8080')
-                .get('/')
-                .reply(
-                    200,
-                    '<html><head><title>TESTING</title></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
+    // Check that the substitute thumbnail URL is returned in place of the original
+    assert.equal(
+      res.body.metadata.thumbnail,
+      `${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`,
+    );
+  });
 
-            const url = encodeURIComponent('http://test.com');
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
+  it('should prevent SSRF attacks via bookmark image fetching', async function () {
+    // This test demonstrates a security vulnerability in bookmark processing
+    // An attacker can create a page with og:image/icon pointing to internal services
+    // Ghost's fetchImageBuffer method will fetch content from private addresses
 
-            assert.equal(pageMock.isDone(), false); // we shouldn't hit this; blocked by externalRequest
-            assertExists(res.body.errors);
-        });
+    // disableNetwork, overrides dnsPromises.lookup to always resolve to 123.123.123.123
+    // we need to keep local ip addresses resolving to local ips for this test
+    dnsPromises.lookup.withArgs('127.0.0.1').returns(Promise.resolve({ address: '127.0.0.1' }));
 
-        it('errors when fetched url is incorrect', async function () {
-            const url = encodeURIComponent('example.com');
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
+    const internalSecretContent =
+      'INTERNAL_SECRET_TOKEN=top-secret-123\nTIMESTAMP=2024-01-01T00:00:00.000Z\n';
 
-            assertExists(res.body.errors);
-        });
+    // Mock the attacker's page with og:image pointing to internal service
+    const attackerPageMock = nock('http://attacker.example.com')
+      .get('/')
+      .reply(
+        200,
+        '<html><head><title>SSRF PoC Page</title><meta property="og:image" content="http://127.0.0.1:5555/secret-thumbnail"><link rel="icon" href="http://127.0.0.1:5555/secret-icon"></head><body><h1>Attack Page</h1></body></html>',
+        { 'content-type': 'text/html' },
+      );
 
-        it('should replace icon URL when it returns 404', async function () {
-            // Mock the page so it contains a readable icon URL
-            const pageMock = nock('http://example.com')
-                .get('/page-with-icon')
-                .reply(
-                    200,
-                    '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/bad-image"></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
+    // Mock the internal service that should not be accessible, 2 interceptors to cover both icon and thumbnail
+    const internalServiceThumbnailMock = nock('http://127.0.0.1:5555')
+      .get('/secret-thumbnail')
+      .reply(200, internalSecretContent, { 'content-type': 'text/plain' });
 
-            const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
+    const internalServiceIconMock = nock('http://127.0.0.1:5555')
+      .get('/secret-icon')
+      .reply(200, internalSecretContent, { 'content-type': 'text/plain' });
 
-            // Check that the icon URL mock was loaded
-            assert.equal(pageMock.isDone(), true);
+    // Don't stub processImageFromUrl - let it call the real fetchImageBuffer that makes the image requests
+    processImageFromUrlStub.restore();
 
-            // Check that the substitute icon URL is returned in place of the original
-            assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
-        });
+    const url = encodeURIComponent('http://attacker.example.com');
+
+    const res = await request
+      .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    // Check that the attacker page was called
+    assert.equal(attackerPageMock.isDone(), true);
+
+    // Check if the internal service was called - this indicates SSRF occurred
+    assert.equal(internalServiceThumbnailMock.isDone(), false, 'Thumbnail SSRF occurred');
+    assert.equal(internalServiceIconMock.isDone(), false, 'Icon SSRF occurred');
+
+    // Body contains the fallback data after requests failed
+    assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+    assert.equal(res.body.metadata.thumbnail, 'http://127.0.0.1:5555/secret-thumbnail');
+  });
+
+  describe('with unknown provider', function () {
+    it('fetches url and follows redirects', async function () {
+      const redirectMock = nock('http://test.com/')
+        .get('/')
+        .reply(302, undefined, { Location: 'http://oembed.test.com' });
+
+      const pageMock = nock('http://oembed.test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"><title>Title</title></head></html>',
+        );
+
+      const oembedMock = nock('http://oembed.test.com').get('/my-embed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://test.com/');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(redirectMock.isDone(), true);
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
     });
 
-    it('should fetch and store icons', async function () {
-        // Mock the page to contain a readable icon URL
-        const pageMock = nock('http://example.com')
-            .get('/page-with-icon')
-            .reply(
-                200,
-                '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/icon.svg"></head><body></body></html>',
-                {'content-type': 'text/html'}
-            );
+    it('fetches url and follows <link rel="alternate">', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>',
+        );
 
-        const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
-        const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
 
-        // Check that the icon URL mock was loaded
-        assert.equal(pageMock.isDone(), true);
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
 
-        // Check that the substitute icon URL is returned in place of the original
-        assert.equal(res.body.metadata.icon, `${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
     });
 
-    it('should fetch and store thumbnails', async function () {
-        // Mock the page to contain a scrapeable thumbnail (og:image)
-        const pageMock = nock('http://example.com')
-            .get('/page-with-thumbnail')
-            .reply(
-                200,
-                '<html><head><title>TESTING</title><meta property="og:image" content="http://example.com/thumbnail.png"></head><body></body></html>',
-                {'content-type': 'text/html'}
-            );
+    it('follows redirects when fetching <link rel="alternate">', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>',
+        );
 
-        const url = encodeURIComponent(' http://example.com/page-with-thumbnail\t '); // Whitespaces are to make sure urls are trimmed
-        const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+      const alternateRedirectMock = nock('http://test.com')
+        .get('/oembed')
+        .reply(301, undefined, { Location: 'http://test.com/oembed-final' });
 
-        // Check that the thumbnail URL mock was loaded
-        assert.equal(pageMock.isDone(), true);
+      const alternateMock = nock('http://test.com').get('/oembed-final').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
 
-        // Check that the substitute thumbnail URL is returned in place of the original
-        assert.equal(res.body.metadata.thumbnail, `${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(alternateRedirectMock.isDone(), true);
+      assert.equal(alternateMock.isDone(), true);
     });
 
-    it('should prevent SSRF attacks via bookmark image fetching', async function () {
-        // This test demonstrates a security vulnerability in bookmark processing
-        // An attacker can create a page with og:image/icon pointing to internal services
-        // Ghost's fetchImageBuffer method will fetch content from private addresses
+    it('rejects invalid oembed responses', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>',
+        );
 
-        // disableNetwork, overrides dnsPromises.lookup to always resolve to 123.123.123.123
-        // we need to keep local ip addresses resolving to local ips for this test
-        dnsPromises.lookup.withArgs('127.0.0.1').returns(Promise.resolve({address: '127.0.0.1'}));
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        version: '1.0',
+        html: 'test',
+      });
 
-        const internalSecretContent = 'INTERNAL_SECRET_TOKEN=top-secret-123\nTIMESTAMP=2024-01-01T00:00:00.000Z\n';
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
 
-        // Mock the attacker's page with og:image pointing to internal service
-        const attackerPageMock = nock('http://attacker.example.com')
-            .get('/')
-            .reply(
-                200,
-                '<html><head><title>SSRF PoC Page</title><meta property="og:image" content="http://127.0.0.1:5555/secret-thumbnail"><link rel="icon" href="http://127.0.0.1:5555/secret-icon"></head><body><h1>Attack Page</h1></body></html>',
-                {'content-type': 'text/html'}
-            );
-
-        // Mock the internal service that should not be accessible, 2 interceptors to cover both icon and thumbnail
-        const internalServiceThumbnailMock = nock('http://127.0.0.1:5555')
-            .get('/secret-thumbnail')
-            .reply(200, internalSecretContent, {'content-type': 'text/plain'});
-
-        const internalServiceIconMock = nock('http://127.0.0.1:5555')
-            .get('/secret-icon')
-            .reply(200, internalSecretContent, {'content-type': 'text/plain'});
-
-        // Don't stub processImageFromUrl - let it call the real fetchImageBuffer that makes the image requests
-        processImageFromUrlStub.restore();
-
-        const url = encodeURIComponent('http://attacker.example.com');
-
-        const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        // Check that the attacker page was called
-        assert.equal(attackerPageMock.isDone(), true);
-
-        // Check if the internal service was called - this indicates SSRF occurred
-        assert.equal(internalServiceThumbnailMock.isDone(), false, 'Thumbnail SSRF occurred');
-        assert.equal(internalServiceIconMock.isDone(), false, 'Icon SSRF occurred');
-
-        // Body contains the fallback data after requests failed
-        assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
-        assert.equal(res.body.metadata.thumbnail, 'http://127.0.0.1:5555/secret-thumbnail');
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
     });
 
-    describe('with unknown provider', function () {
-        it('fetches url and follows redirects', async function () {
-            const redirectMock = nock('http://test.com/')
-                .get('/')
-                .reply(302, undefined, {Location: 'http://oembed.test.com'});
-
-            const pageMock = nock('http://oembed.test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"><title>Title</title></head></html>');
-
-            const oembedMock = nock('http://oembed.test.com')
-                .get('/my-embed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://test.com/');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(redirectMock.isDone(), true);
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('fetches url and follows <link rel="alternate">', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('follows redirects when fetching <link rel="alternate">', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>');
-
-            const alternateRedirectMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(301, undefined, {Location: 'http://test.com/oembed-final'});
-
-            const alternateMock = nock('http://test.com')
-                .get('/oembed-final')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(alternateRedirectMock.isDone(), true);
-            assert.equal(alternateMock.isDone(), true);
-        });
-
-        it('rejects invalid oembed responses', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    html: 'test'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('rejects unknown oembed types', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'unknown'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('rejects invalid photo responses', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    // no `url` field
-                    version: '1.0',
-                    type: 'photo',
-                    thumbnail_url: 'https://test.com/thumbnail.jpg'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('rejects invalid video responses', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    // no `html` field
-                    version: '1.0',
-                    type: 'video',
-                    thumbnail_url: 'https://test.com/thumbnail.jpg'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('strips unknown response fields', async function () {
-            // Uses `photo` because unknown providers returning rich/video are
-            // rejected outright as a security measure (ONC-1648); see the next
-            // test. `photo` still passes through so we can verify the legacy
-            // field-stripping behaviour.
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'photo',
-                    url: 'http://test.com/photo.jpg',
-                    width: 200,
-                    height: 100,
-                    unknown: 'test'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-
-            assert.deepEqual(res.body, {
-                version: '1.0',
-                type: 'photo',
-                url: 'http://test.com/photo.jpg',
-                width: 200,
-                height: 100
-            });
-            assert.equal(res.body.unknown, undefined);
-        });
-
-        it('rejects rich/video responses from non-allowlisted providers (ONC-1648)', async function () {
-            // Self-declared oEmbed endpoints cannot return safe HTML for
-            // embedding in the admin preview or on the public site. Known
-            // providers (YouTube, Twitter, …) go through `knownProvider` with
-            // @extractus's allowlist; anything reaching this fallback path is
-            // an arbitrary site and must not propagate its html.
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://test.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'video',
-                    html: '<img src=x onerror="alert(1)">',
-                    width: 200,
-                    height: 100
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), true);
-        });
-
-        it('skips fetching IPv4 addresses', async function () {
-            dnsPromises.lookup.restore();
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
-                if (hostname === '192.168.0.1') {
-                    return Promise.resolve({address: '192.168.0.1'});
-                } else {
-                    return Promise.resolve({address: '123.123.123.123'});
-                }
-            });
-
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://192.168.0.1/oembed"></head></html>');
-
-            const oembedMock = nock('http://192.168.0.1')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('skips fetching IPv6 addresses', async function () {
-            dnsPromises.lookup.restore();
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
-                if (hostname === '[2607:f0d0:1002:51::4]') {
-                    return Promise.resolve({address: '192.168.0.1'});
-                } else {
-                    return Promise.resolve({address: '123.123.123.123'});
-                }
-            });
-
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://[2607:f0d0:1002:51::4]:9999/oembed"></head></html>');
-
-            const oembedMock = nock('http://[2607:f0d0:1002:51::4]:9999')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('skips fetching localhost', async function () {
-            dnsPromises.lookup.restore();
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
-                if (hostname === 'localhost') {
-                    return Promise.resolve({address: '127.0.0.1'});
-                } else {
-                    return Promise.resolve({address: '123.123.123.123'});
-                }
-            });
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://localhost:9999/oembed"></head></html>');
-
-            const oembedMock = nock('http://localhost:9999')
-                .get('/oembed')
-                .reply(200, {
-                    // no `html` field
-                    version: '1.0',
-                    type: 'video',
-                    thumbnail_url: 'https://test.com/thumbnail.jpg'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('skips fetching url that resolves to private IP', async function () {
-            dnsPromises.lookup.restore();
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
-                if (hostname === 'page.com') {
-                    return Promise.resolve({address: '192.168.0.1'});
-                } else {
-                    return Promise.resolve({address: '123.123.123.123'});
-                }
-            });
-
-            const pageMock = nock('http://page.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://oembed.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://page.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), false);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('aborts fetching if a redirect resolves to private IP', async function () {
-            dnsPromises.lookup.restore();
-            sinon.stub(dnsPromises, 'lookup').callsFake(async function (hostname) {
-                if (hostname === 'page.com') {
-                    return Promise.resolve({address: '192.168.0.1'});
-                } else {
-                    return Promise.resolve({address: '123.123.123.123'});
-                }
-            });
-
-            const redirectMock = nock('http://redirect.com')
-                .get('/')
-                .reply(301, undefined, {Location: 'http://page.com'});
-
-            const pageMock = nock('http://page.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://oembed.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://redirect.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(redirectMock.isDone(), true);
-            assert.equal(pageMock.isDone(), false);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('skips fetching <link rel="alternate"> if it resolves to a private IP', async function () {
-            dnsPromises.lookup.restore();
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
-                if (hostname === 'oembed.com') {
-                    return Promise.resolve({address: '192.168.0.1'});
-                } else {
-                    return Promise.resolve({address: '123.123.123.123'});
-                }
-            });
-
-            const pageMock = nock('http://page.com')
-                .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>');
-
-            const oembedMock = nock('http://oembed.com')
-                .get('/oembed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://page.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('falls back to bookmark card for WP oembeds', async function () {
-            const pageMock = nock('http://test.com')
-                .get('/')
-                .reply(
-                    200,
-                    '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/wp-json/oembed/embed?url=https%3A%2F%2Ftest.com%2F"><title>TESTING</title></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
-
-            const oembedMock = nock('http://test.com')
-                .get('/wp-json/oembed/embed')
-                .reply(200, {
-                    version: '1.0',
-                    type: 'link'
-                });
-
-            const url = encodeURIComponent('http://test.com');
-            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(oembedMock.isDone(), false);
-        });
-
-        it('decodes non utf-8 charsets', async function () {
-            const utfString = '中国abc';
-            const encodedBytes = [0xd6,0xd0,0xb9,0xfa,0x61,0x62,0x63];
-            const replyBuffer = Buffer.concat([
-                Buffer.from('<html><head><title>'),
-                Buffer.from(encodedBytes),
-                Buffer.from('</title><meta charset="gb2312"></head><body></body></html>')
-            ]);
-
-            const pageMock = nock('http://example.com')
-                .get('/')
-                .reply(
-                    200,
-                    replyBuffer,
-                    {'content-type': 'text/html'}
-                );
-
-            const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(res.body.type, 'bookmark');
-            assert.equal(res.body.url, 'http://example.com');
-            assert.equal(res.body.metadata.title, utfString);
-        });
-
-        it('does not fail on unknown charset', async function () {
-            const pageMock = nock('http://example.com')
-                .get('/')
-                .reply(
-                    200,
-                    '<html><head><title>TESTING</title><meta charset="notacharset"></head><body></body></html>',
-                    {'content-type': 'text/html'}
-                );
-
-            const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            assert.equal(pageMock.isDone(), true);
-            assert.equal(res.body.type, 'bookmark');
-            assert.equal(res.body.url, 'http://example.com');
-            assert.equal(res.body.metadata.title, 'TESTING');
-        });
+    it('rejects unknown oembed types', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'unknown',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
     });
+
+    it('rejects invalid photo responses', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        // no `url` field
+        version: '1.0',
+        type: 'photo',
+        thumbnail_url: 'https://test.com/thumbnail.jpg',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
+    });
+
+    it('rejects invalid video responses', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        // no `html` field
+        version: '1.0',
+        type: 'video',
+        thumbnail_url: 'https://test.com/thumbnail.jpg',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
+    });
+
+    it('strips unknown response fields', async function () {
+      // Uses `photo` because unknown providers returning rich/video are
+      // rejected outright as a security measure (ONC-1648); see the next
+      // test. `photo` still passes through so we can verify the legacy
+      // field-stripping behaviour.
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'photo',
+        url: 'http://test.com/photo.jpg',
+        width: 200,
+        height: 100,
+        unknown: 'test',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
+
+      assert.deepEqual(res.body, {
+        version: '1.0',
+        type: 'photo',
+        url: 'http://test.com/photo.jpg',
+        width: 200,
+        height: 100,
+      });
+      assert.equal(res.body.unknown, undefined);
+    });
+
+    it('rejects rich/video responses from non-allowlisted providers (ONC-1648)', async function () {
+      // Self-declared oEmbed endpoints cannot return safe HTML for
+      // embedding in the admin preview or on the public site. Known
+      // providers (YouTube, Twitter, …) go through `knownProvider` with
+      // @extractus's allowlist; anything reaching this fallback path is
+      // an arbitrary site and must not propagate its html.
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://test.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'video',
+        html: '<img src=x onerror="alert(1)">',
+        width: 200,
+        height: 100,
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
+    });
+
+    it('skips fetching IPv4 addresses', async function () {
+      dnsPromises.lookup.restore();
+      sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+        if (hostname === '192.168.0.1') {
+          return Promise.resolve({ address: '192.168.0.1' });
+        } else {
+          return Promise.resolve({ address: '123.123.123.123' });
+        }
+      });
+
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://192.168.0.1/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://192.168.0.1').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('skips fetching IPv6 addresses', async function () {
+      dnsPromises.lookup.restore();
+      sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+        if (hostname === '[2607:f0d0:1002:51::4]') {
+          return Promise.resolve({ address: '192.168.0.1' });
+        } else {
+          return Promise.resolve({ address: '123.123.123.123' });
+        }
+      });
+
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://[2607:f0d0:1002:51::4]:9999/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://[2607:f0d0:1002:51::4]:9999').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('skips fetching localhost', async function () {
+      dnsPromises.lookup.restore();
+      sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+        if (hostname === 'localhost') {
+          return Promise.resolve({ address: '127.0.0.1' });
+        } else {
+          return Promise.resolve({ address: '123.123.123.123' });
+        }
+      });
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://localhost:9999/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://localhost:9999').get('/oembed').reply(200, {
+        // no `html` field
+        version: '1.0',
+        type: 'video',
+        thumbnail_url: 'https://test.com/thumbnail.jpg',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('skips fetching url that resolves to private IP', async function () {
+      dnsPromises.lookup.restore();
+      sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+        if (hostname === 'page.com') {
+          return Promise.resolve({ address: '192.168.0.1' });
+        } else {
+          return Promise.resolve({ address: '123.123.123.123' });
+        }
+      });
+
+      const pageMock = nock('http://page.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://oembed.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://page.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), false);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('aborts fetching if a redirect resolves to private IP', async function () {
+      dnsPromises.lookup.restore();
+      sinon.stub(dnsPromises, 'lookup').callsFake(async function (hostname) {
+        if (hostname === 'page.com') {
+          return Promise.resolve({ address: '192.168.0.1' });
+        } else {
+          return Promise.resolve({ address: '123.123.123.123' });
+        }
+      });
+
+      const redirectMock = nock('http://redirect.com')
+        .get('/')
+        .reply(301, undefined, { Location: 'http://page.com' });
+
+      const pageMock = nock('http://page.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://oembed.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://redirect.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(redirectMock.isDone(), true);
+      assert.equal(pageMock.isDone(), false);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('skips fetching <link rel="alternate"> if it resolves to a private IP', async function () {
+      dnsPromises.lookup.restore();
+      sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+        if (hostname === 'oembed.com') {
+          return Promise.resolve({ address: '192.168.0.1' });
+        } else {
+          return Promise.resolve({ address: '123.123.123.123' });
+        }
+      });
+
+      const pageMock = nock('http://page.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>',
+        );
+
+      const oembedMock = nock('http://oembed.com').get('/oembed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://page.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('falls back to bookmark card for WP oembeds', async function () {
+      const pageMock = nock('http://test.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/wp-json/oembed/embed?url=https%3A%2F%2Ftest.com%2F"><title>TESTING</title></head><body></body></html>',
+          { 'content-type': 'text/html' },
+        );
+
+      const oembedMock = nock('http://test.com').get('/wp-json/oembed/embed').reply(200, {
+        version: '1.0',
+        type: 'link',
+      });
+
+      const url = encodeURIComponent('http://test.com');
+      await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), false);
+    });
+
+    it('decodes non utf-8 charsets', async function () {
+      const utfString = '中国abc';
+      const encodedBytes = [0xd6, 0xd0, 0xb9, 0xfa, 0x61, 0x62, 0x63];
+      const replyBuffer = Buffer.concat([
+        Buffer.from('<html><head><title>'),
+        Buffer.from(encodedBytes),
+        Buffer.from('</title><meta charset="gb2312"></head><body></body></html>'),
+      ]);
+
+      const pageMock = nock('http://example.com')
+        .get('/')
+        .reply(200, replyBuffer, { 'content-type': 'text/html' });
+
+      const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(res.body.type, 'bookmark');
+      assert.equal(res.body.url, 'http://example.com');
+      assert.equal(res.body.metadata.title, utfString);
+    });
+
+    it('does not fail on unknown charset', async function () {
+      const pageMock = nock('http://example.com')
+        .get('/')
+        .reply(
+          200,
+          '<html><head><title>TESTING</title><meta charset="notacharset"></head><body></body></html>',
+          { 'content-type': 'text/html' },
+        );
+
+      const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
+      const res = await request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200);
+
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(res.body.type, 'bookmark');
+      assert.equal(res.body.url, 'http://example.com');
+      assert.equal(res.body.metadata.title, 'TESTING');
+    });
+  });
 });

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const sinon = require('sinon');
 
 // Stuff we are testing
@@ -8,249 +8,245 @@ const date = require('../../../../core/frontend/helpers/date');
 const moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+  it('does not call moment locale method with a path', function () {
+    const localeStub = sinon.stub(moment.prototype, 'locale');
+    date.call('1970-01-01', {
+      hash: {},
+      data: {
+        site: {
+          locale: '../../../content/files/1970/01/hax.js',
+          timezone: 'Europe/Dublin',
+        },
+      },
     });
-    it('does not call moment locale method with a path', function () {
-        const localeStub = sinon.stub(moment.prototype, 'locale');
-        date.call('1970-01-01', {
-            hash: {},
-            data: {
-                site: {
-                    locale: '../../../content/files/1970/01/hax.js',
-                    timezone: 'Europe/Dublin'
-                }
-            }
-        });
-        assert(localeStub.notCalled, 'locale should not have been called with a path');
-    });
+    assert(localeStub.notCalled, 'locale should not have been called with a path');
+  });
 
-    it('creates properly formatted date strings', function () {
-        const testDates = [
-            '2013-12-31T11:28:58.593+02:00',
-            '2014-01-01T01:28:58.593+11:00',
-            '2014-02-20T01:28:58.593-04:00',
-            '2014-03-01T01:28:58.593+00:00'
-        ];
+  it('creates properly formatted date strings', function () {
+    const testDates = [
+      '2013-12-31T11:28:58.593+02:00',
+      '2014-01-01T01:28:58.593+11:00',
+      '2014-02-20T01:28:58.593-04:00',
+      '2014-03-01T01:28:58.593+00:00',
+    ];
 
-        const timezone = 'Europe/Dublin';
-        const format = 'MMM Do, YYYY';
+    const timezone = 'Europe/Dublin';
+    const format = 'MMM Do, YYYY';
 
-        const context = {
-            hash: {
-                format: format
-            },
-            data: {
-                site: {
-                    timezone
-                }
-            }
-        };
+    const context = {
+      hash: {
+        format: format,
+      },
+      data: {
+        site: {
+          timezone,
+        },
+      },
+    };
 
-        let rendered;
+    let rendered;
 
-        testDates.forEach(function (d) {
-            rendered = date.call({published_at: d}, context);
+    testDates.forEach(function (d) {
+      rendered = date.call({ published_at: d }, context);
 
-            assertExists(rendered);
-            assert.equal(String(rendered), moment(d).tz(timezone).format(format));
+      assertExists(rendered);
+      assert.equal(String(rendered), moment(d).tz(timezone).format(format));
 
-            rendered = date.call({}, d, context);
+      rendered = date.call({}, d, context);
 
-            assertExists(rendered);
-            assert.equal(String(rendered), moment(d).tz(timezone).format(format));
-        });
-
-        // No date falls back to now
-        rendered = date.call({}, context);
-        assertExists(rendered);
-        assert.equal(String(rendered), moment().tz(timezone).format(format));
+      assertExists(rendered);
+      assert.equal(String(rendered), moment(d).tz(timezone).format(format));
     });
 
-    it('creates properly localised date strings', function () {
-        const testDates = [
-            '2013-12-31T23:58:58.593+02:00',
-            '2014-01-01T00:28:58.593+11:00',
-            '2014-11-20T01:28:58.593-04:00',
-            '2014-03-01T01:28:58.593+00:00'
-        ];
+    // No date falls back to now
+    rendered = date.call({}, context);
+    assertExists(rendered);
+    assert.equal(String(rendered), moment().tz(timezone).format(format));
+  });
 
-        const locales = [
-            'en',
-            'en-gb',
-            'de'
-        ];
+  it('creates properly localised date strings', function () {
+    const testDates = [
+      '2013-12-31T23:58:58.593+02:00',
+      '2014-01-01T00:28:58.593+11:00',
+      '2014-11-20T01:28:58.593-04:00',
+      '2014-03-01T01:28:58.593+00:00',
+    ];
 
-        const timezone = 'Europe/Dublin';
-        const format = 'll';
+    const locales = ['en', 'en-gb', 'de'];
 
-        locales.forEach(function (locale) {
-            let rendered;
+    const timezone = 'Europe/Dublin';
+    const format = 'll';
 
-            const context = {
-                hash: {},
-                data: {
-                    site: {
-                        timezone,
-                        locale
-                    }
-                }
-            };
+    locales.forEach(function (locale) {
+      let rendered;
 
-            testDates.forEach(function (d) {
-                rendered = date.call({published_at: d}, context);
+      const context = {
+        hash: {},
+        data: {
+          site: {
+            timezone,
+            locale,
+          },
+        },
+      };
 
-                assertExists(rendered);
-                assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
-
-                rendered = date.call({}, d, context);
-
-                assertExists(rendered);
-                assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
-            });
-
-            // No date falls back to now
-            rendered = date.call({}, context);
-            assertExists(rendered);
-            assert.equal(String(rendered), moment().tz(timezone).locale(locale).format(format));
-        });
-    });
-
-    it('resolves i18n locales to regional moment locales', function () {
-        const testDate = '2014-11-20T01:28:58.593-04:00';
-        const timezone = 'Europe/Dublin';
-        const format = 'll';
-
-        // Ghost i18n locale -> moment locale that should be used for rendering
-        const expectations = {
-            zh: 'zh-cn',
-            'zh-Hant': 'zh-tw',
-            pa: 'pa-in',
-            en: 'en',
-            fr: 'fr',
-            kz: 'en', // not shipped by moment, falls back to the default locale
-            'not-a-real-locale-tag': 'en' // invalid tag, falls back to the default locale
-        };
-
-        Object.keys(expectations).forEach(function (locale) {
-            const context = {
-                hash: {format},
-                data: {
-                    site: {
-                        timezone,
-                        locale
-                    }
-                }
-            };
-
-            const rendered = date.call({published_at: testDate}, context);
-
-            assertExists(rendered);
-            assert.equal(
-                String(rendered),
-                moment(testDate).tz(timezone).locale(expectations[locale]).format(format),
-                `locale "${locale}" should render as moment locale "${expectations[locale]}"`
-            );
-        });
-    });
-
-    it('creates properly formatted time ago date strings', function () {
-        const testDates = [
-            '2013-12-31T23:58:58.593+02:00',
-            '2014-01-01T00:28:58.593+11:00',
-            '2014-11-20T01:28:58.593-04:00',
-            '2014-03-01T01:28:58.593+00:00'
-        ];
-
-        const timezone = 'Europe/Dublin';
-        const timeNow = moment().tz('Europe/Dublin');
-
-        const context = {
-            hash: {
-                timeago: true
-            },
-            data: {
-                site: {
-                    timezone
-                }
-            }
-        };
-
-        let rendered;
-
-        testDates.forEach(function (d) {
-            rendered = date.call({published_at: d}, context);
-
-            assertExists(rendered);
-            assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
-
-            rendered = date.call({}, d, context);
-
-            assertExists(rendered);
-            assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
-        });
-
-        // No date falls back to now
-        rendered = date.call({}, context);
-        assertExists(rendered);
-        assert.equal(String(rendered), 'a few seconds ago');
-    });
-
-    it('ignores an invalid date, defaulting to now', function () {
-        const timezone = 'Europe/Dublin';
-
-        const context = {
-            hash: {
-                timeago: true
-            },
-            data: {
-                site: {
-                    timezone
-                }
-            }
-        };
-
-        let invalidDate = 'Fred';
-        let rendered;
-
-        rendered = date.call({published_at: invalidDate}, context);
+      testDates.forEach(function (d) {
+        rendered = date.call({ published_at: d }, context);
 
         assertExists(rendered);
-        assert.equal(String(rendered), 'a few seconds ago');
+        assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
 
-        rendered = date.call({}, invalidDate, context);
+        rendered = date.call({}, d, context);
 
         assertExists(rendered);
-        assert.equal(String(rendered), 'a few seconds ago');
+        assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
+      });
+
+      // No date falls back to now
+      rendered = date.call({}, context);
+      assertExists(rendered);
+      assert.equal(String(rendered), moment().tz(timezone).locale(locale).format(format));
+    });
+  });
+
+  it('resolves i18n locales to regional moment locales', function () {
+    const testDate = '2014-11-20T01:28:58.593-04:00';
+    const timezone = 'Europe/Dublin';
+    const format = 'll';
+
+    // Ghost i18n locale -> moment locale that should be used for rendering
+    const expectations = {
+      zh: 'zh-cn',
+      'zh-Hant': 'zh-tw',
+      pa: 'pa-in',
+      en: 'en',
+      fr: 'fr',
+      kz: 'en', // not shipped by moment, falls back to the default locale
+      'not-a-real-locale-tag': 'en', // invalid tag, falls back to the default locale
+    };
+
+    Object.keys(expectations).forEach(function (locale) {
+      const context = {
+        hash: { format },
+        data: {
+          site: {
+            timezone,
+            locale,
+          },
+        },
+      };
+
+      const rendered = date.call({ published_at: testDate }, context);
+
+      assertExists(rendered);
+      assert.equal(
+        String(rendered),
+        moment(testDate).tz(timezone).locale(expectations[locale]).format(format),
+        `locale "${locale}" should render as moment locale "${expectations[locale]}"`,
+      );
+    });
+  });
+
+  it('creates properly formatted time ago date strings', function () {
+    const testDates = [
+      '2013-12-31T23:58:58.593+02:00',
+      '2014-01-01T00:28:58.593+11:00',
+      '2014-11-20T01:28:58.593-04:00',
+      '2014-03-01T01:28:58.593+00:00',
+    ];
+
+    const timezone = 'Europe/Dublin';
+    const timeNow = moment().tz('Europe/Dublin');
+
+    const context = {
+      hash: {
+        timeago: true,
+      },
+      data: {
+        site: {
+          timezone,
+        },
+      },
+    };
+
+    let rendered;
+
+    testDates.forEach(function (d) {
+      rendered = date.call({ published_at: d }, context);
+
+      assertExists(rendered);
+      assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
+
+      rendered = date.call({}, d, context);
+
+      assertExists(rendered);
+      assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
     });
 
-    it('allows user to override the site\'s locale and timezone', function () {
-        const context = {
-            hash: {
-                format: 'ddd, DD MMM YYYY HH:mm:ss ZZ' // RFC 822
-            },
-            data: {
-                site: {
-                    timezone: 'Asia/Tokyo',
-                    locale: 'ja-jp'
-                }
-            }
-        };
+    // No date falls back to now
+    rendered = date.call({}, context);
+    assertExists(rendered);
+    assert.equal(String(rendered), 'a few seconds ago');
+  });
 
-        // Using the site locale by default, none specified in hash
-        const published_at = '2013-12-31T23:58:58.593+02:00';
-        assert.equal(String(date.call({published_at}, context)), '水, 01 1月 2014 06:58:58 +0900');
+  it('ignores an invalid date, defaulting to now', function () {
+    const timezone = 'Europe/Dublin';
 
-        // Overriding the site locale and timezone in hash
-        context.hash.timezone = 'Europe/Paris';
-        context.hash.locale = 'fr-fr';
-        assert.equal(String(date.call({published_at}, context)), 'mar., 31 déc. 2013 22:58:58 +0100');
+    const context = {
+      hash: {
+        timeago: true,
+      },
+      data: {
+        site: {
+          timezone,
+        },
+      },
+    };
 
-        context.hash.timezone = 'Europe/Moscow';
-        context.hash.locale = 'ru-ru';
-        assert.equal(String(date.call({published_at}, context)), 'ср, 01 янв. 2014 01:58:58 +0400');
+    let invalidDate = 'Fred';
+    let rendered;
 
-        context.hash.locale = 'en-us';
-        assert.equal(String(date.call({published_at}, context)), 'Wed, 01 Jan 2014 01:58:58 +0400');
-    });
+    rendered = date.call({ published_at: invalidDate }, context);
+
+    assertExists(rendered);
+    assert.equal(String(rendered), 'a few seconds ago');
+
+    rendered = date.call({}, invalidDate, context);
+
+    assertExists(rendered);
+    assert.equal(String(rendered), 'a few seconds ago');
+  });
+
+  it("allows user to override the site's locale and timezone", function () {
+    const context = {
+      hash: {
+        format: 'ddd, DD MMM YYYY HH:mm:ss ZZ', // RFC 822
+      },
+      data: {
+        site: {
+          timezone: 'Asia/Tokyo',
+          locale: 'ja-jp',
+        },
+      },
+    };
+
+    // Using the site locale by default, none specified in hash
+    const published_at = '2013-12-31T23:58:58.593+02:00';
+    assert.equal(String(date.call({ published_at }, context)), '水, 01 1月 2014 06:58:58 +0900');
+
+    // Overriding the site locale and timezone in hash
+    context.hash.timezone = 'Europe/Paris';
+    context.hash.locale = 'fr-fr';
+    assert.equal(String(date.call({ published_at }, context)), 'mar., 31 déc. 2013 22:58:58 +0100');
+
+    context.hash.timezone = 'Europe/Moscow';
+    context.hash.locale = 'ru-ru';
+    assert.equal(String(date.call({ published_at }, context)), 'ср, 01 янв. 2014 01:58:58 +0400');
+
+    context.hash.locale = 'en-us';
+    assert.equal(String(date.call({ published_at }, context)), 'Wed, 01 Jan 2014 01:58:58 +0400');
+  });
 });

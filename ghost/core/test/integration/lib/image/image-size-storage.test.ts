@@ -1,4 +1,4 @@
-import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
+import { describe, it, beforeAll, afterEach, afterAll } from 'vitest';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,12 +7,12 @@ import S3Storage from '../../../../core/server/adapters/storage/S3Storage';
 import * as storageUtils from '../../../../core/server/adapters/storage/utils';
 import urlUtils from '../../../../core/shared/url-utils';
 import {
-    createTestS3Client,
-    createTestBucket,
-    emptyTestBucket,
-    deleteTestBucket,
-    getMinioConfig,
-    putObject
+  createTestS3Client,
+  createTestBucket,
+  emptyTestBucket,
+  deleteTestBucket,
+  getMinioConfig,
+  putObject,
 } from '../../../utils/minio';
 
 // CJS Ghost libs
@@ -20,7 +20,7 @@ const ImageSize = require('../../../../core/server/lib/image/image-size');
 const config = require('../../../../core/shared/config');
 const validator = require('@tryghost/validator');
 const request = require('@tryghost/request');
-const {probe} = require('../../../../core/server/lib/image/image-utils');
+const { probe } = require('../../../../core/server/lib/image/image-utils');
 
 const STATIC_PREFIX = 'content/images';
 const minioConfig = getMinioConfig();
@@ -35,73 +35,89 @@ const FIXTURE_HEIGHT = 100;
 // lookup reads it from the images storage adapter. With S3 configured as that
 // adapter, S3Storage.read() must return the bytes so dimensions resolve instead
 // of throwing.
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: image dimensions via S3 storage', function () {
+describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
+  'Integration: image dimensions via S3 storage',
+  function () {
     let adminClient: ReturnType<typeof createTestS3Client>;
     let bucket: string;
 
     const createImageSize = (overrides = {}) => {
-        const s3 = new S3Storage({
-            ...minioConfig,
-            bucket,
-            cdnUrl: `${minioConfig.endpoint}/${bucket}`,
-            staticFileURLPrefix: STATIC_PREFIX,
-            multipartUploadThresholdBytes: 10 * 1024 * 1024,
-            multipartChunkSizeBytes: 10 * 1024 * 1024,
-            ...overrides
-        });
-        // ImageSize asks the storage manager for the 'images' adapter.
-        return new ImageSize({config, imageStore: s3, storageUtils, validator, urlUtils, request, probe});
+      const s3 = new S3Storage({
+        ...minioConfig,
+        bucket,
+        cdnUrl: `${minioConfig.endpoint}/${bucket}`,
+        staticFileURLPrefix: STATIC_PREFIX,
+        multipartUploadThresholdBytes: 10 * 1024 * 1024,
+        multipartChunkSizeBytes: 10 * 1024 * 1024,
+        ...overrides,
+      });
+      // ImageSize asks the storage manager for the 'images' adapter.
+      return new ImageSize({
+        config,
+        imageStore: s3,
+        storageUtils,
+        validator,
+        urlUtils,
+        request,
+        probe,
+      });
     };
 
     beforeAll(async function () {
-        adminClient = createTestS3Client();
-        bucket = await createTestBucket(adminClient, 'test-imagesize');
+      adminClient = createTestS3Client();
+      bucket = await createTestBucket(adminClient, 'test-imagesize');
     });
 
     afterEach(async function () {
-        await emptyTestBucket(adminClient, bucket);
+      await emptyTestBucket(adminClient, bucket);
     });
 
     afterAll(async function () {
-        await deleteTestBucket(adminClient, bucket);
+      await deleteTestBucket(adminClient, bucket);
     });
 
     it('resolves dimensions for a relative /content/images URL backed by S3', async function () {
-        await putObject(adminClient, bucket, 'content/images/2024/06/cover.png', FIXTURE);
+      await putObject(adminClient, bucket, 'content/images/2024/06/cover.png', FIXTURE);
 
-        const result = await createImageSize().getImageSizeFromUrl('/content/images/2024/06/cover.png');
+      const result = await createImageSize().getImageSizeFromUrl(
+        '/content/images/2024/06/cover.png',
+      );
 
-        assert.equal(result.width, FIXTURE_WIDTH);
-        assert.equal(result.height, FIXTURE_HEIGHT);
+      assert.equal(result.width, FIXTURE_WIDTH);
+      assert.equal(result.height, FIXTURE_HEIGHT);
     });
 
     it('resolves dimensions for an absolute site /content/images URL backed by S3', async function () {
-        await putObject(adminClient, bucket, 'content/images/2024/06/cover.png', FIXTURE);
+      await putObject(adminClient, bucket, 'content/images/2024/06/cover.png', FIXTURE);
 
-        const siteUrl = urlUtils.urlFor('home', true).replace(/\/$/, '');
-        const result = await createImageSize().getImageSizeFromUrl(`${siteUrl}/content/images/2024/06/cover.png`);
+      const siteUrl = urlUtils.urlFor('home', true).replace(/\/$/, '');
+      const result = await createImageSize().getImageSizeFromUrl(
+        `${siteUrl}/content/images/2024/06/cover.png`,
+      );
 
-        assert.equal(result.width, FIXTURE_WIDTH);
-        assert.equal(result.height, FIXTURE_HEIGHT);
+      assert.equal(result.width, FIXTURE_WIDTH);
+      assert.equal(result.height, FIXTURE_HEIGHT);
     });
 
     it('resolves dimensions when the adapter uses a tenant prefix', async function () {
-        await putObject(adminClient, bucket, 'tenant-x/content/images/2024/06/cover.png', FIXTURE);
+      await putObject(adminClient, bucket, 'tenant-x/content/images/2024/06/cover.png', FIXTURE);
 
-        const result = await createImageSize({tenantPrefix: 'tenant-x'})
-            .getImageSizeFromUrl('/content/images/2024/06/cover.png');
+      const result = await createImageSize({ tenantPrefix: 'tenant-x' }).getImageSizeFromUrl(
+        '/content/images/2024/06/cover.png',
+      );
 
-        assert.equal(result.width, FIXTURE_WIDTH);
-        assert.equal(result.height, FIXTURE_HEIGHT);
+      assert.equal(result.width, FIXTURE_WIDTH);
+      assert.equal(result.height, FIXTURE_HEIGHT);
     });
 
     it('rejects with NotFoundError when the object is missing in S3', async function () {
-        await assert.rejects(
-            () => createImageSize().getImageSizeFromUrl('/content/images/2024/06/missing.png'),
-            (err: Error) => {
-                assert.equal((err as {errorType?: string}).errorType, 'NotFoundError');
-                return true;
-            }
-        );
+      await assert.rejects(
+        () => createImageSize().getImageSizeFromUrl('/content/images/2024/06/missing.png'),
+        (err: Error) => {
+          assert.equal((err as { errorType?: string }).errorType, 'NotFoundError');
+          return true;
+        },
+      );
     });
-});
+  },
+);
