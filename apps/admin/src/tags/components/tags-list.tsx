@@ -3,6 +3,7 @@ import {LoadMoreButton, useInfiniteVirtualScroll, useVirtualListWindow} from '@/
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
+import {AdminLink} from '@/shared/admin-link';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">
@@ -89,14 +90,11 @@ function TagsList({
                                 data-testid="tag-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
-                                    <a
-                                        className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]"
-                                        href={`#/tags/${item.slug}`}
-                                    >
+                                    <AdminLink className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]" to={`/tags/${item.slug}`}>
                                         <span className="block truncate text-base text-md font-semibold">
                                             {item.name}
                                         </span>
-                                    </a>
+                                    </AdminLink>
                                     <span className="block truncate text-muted-foreground">
                                         {item.description}
                                     </span>

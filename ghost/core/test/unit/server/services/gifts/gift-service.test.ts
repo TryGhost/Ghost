@@ -175,6 +175,7 @@ describe('GiftService', function () {
 
     function createService(overrides: {
         giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
+        timezone?: string;
     } = {}) {
         giftReminderScheduler = overrides.giftReminderScheduler ?? {
             scheduleFor: sinon.stub().resolves()
@@ -183,6 +184,9 @@ describe('GiftService', function () {
             getCustomerId: sinon.stub().resolves(null),
             createSession: sinon.stub().resolves({id: 'cs_checkout', url: 'https://checkout.example/'})
         };
+        const settingsCacheGet = sinon.stub();
+        settingsCacheGet.withArgs('timezone').returns(overrides.timezone);
+
         return new GiftService({
             giftRepository: giftRepository as any,
             giftDeliveryService,
@@ -196,7 +200,7 @@ describe('GiftService', function () {
                 isSet: sinon.stub().returns(false)
             },
             settingsCache: {
-                get: sinon.stub()
+                get: settingsCacheGet
             }
         });
     }
@@ -398,6 +402,29 @@ describe('GiftService', function () {
             assert.equal(gift.status, 'purchased');
         });
 
+        it('stores the claim deadline at the end of the publication-local calendar date', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-08-18T23:30:00.000Z'));
+            const service = createService({timezone: 'America/Los_Angeles'});
+
+            await service.completePurchase(purchaseData);
+
+            const gift = giftRepository.create.firstCall.firstArg;
+            assert.equal(gift.purchasedAt.toISOString(), '2026-08-18T23:30:00.000Z');
+            assert.equal(gift.expiresAt.toISOString(), '2027-08-19T06:59:59.999Z');
+            clock.restore();
+        });
+
+        it('dates the claim deadline in UTC when the publication timezone is not a known zone', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-08-18T23:30:00.000Z'));
+            const service = createService({timezone: 'Not/AZone'});
+
+            await service.completePurchase(purchaseData);
+
+            const gift = giftRepository.create.firstCall.firstArg;
+            assert.equal(gift.expiresAt.toISOString(), '2027-08-18T23:59:59.999Z');
+            clock.restore();
+        });
+
         it('returns false and skips create for duplicate checkout session', async function () {
             giftRepository.existsByCheckoutSessionId.resolves(true);
 
@@ -591,6 +618,7 @@ describe('GiftService', function () {
                 (err: any) => {
                     assert.equal(err.errorType, 'NotFoundError');
                     assert.equal(err.message, 'This gift does not exist.');
+                    assert.equal(err.code, 'GIFT_NOT_FOUND');
                     return true;
                 }
             );

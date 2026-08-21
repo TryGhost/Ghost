@@ -1,7 +1,8 @@
 import {describe, expect, it} from 'vitest';
 import {page} from 'vitest/browser';
 
-import {fakeAdminEndpoint, fakeMembers, member, renderAdminApp, type Member} from '@test-utils/acceptance';
+import {currentRoute, fakeAdminEndpoint, fakeMembers, member, renderAdminApp, type Member} from '@test-utils/acceptance';
+import {sidebarScreen} from '@/layout/sidebar.screen';
 
 function fakeMemberDetailWorld(m: Member) {
     fakeMembers([m]);
@@ -59,5 +60,49 @@ describe('Member detail leave guard', () => {
         await page.getByRole('link', {name: 'Members'}).first().click();
         await page.getByRole('button', {name: 'Leave'}).click();
         await expect.element(page.getByText('New member')).toBeVisible();
+    });
+
+    it('confirms before the back button leaves a dirty member opened from the list', async () => {
+        const m = member({name: 'Ada Lovelace'});
+        fakeMemberDetailWorld(m);
+        await renderAdminApp('/site');
+
+        await sidebarScreen.navLink('Members').click();
+        await expect.poll(currentRoute).toBe('/members');
+        await page.getByRole('link', {name: 'Ada Lovelace'}).click();
+        await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
+        await page.getByLabelText('Name').fill('Ada B');
+        await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
+        });
+
+        window.history.back();
+
+        await expect.element(page.getByText('Discard unsaved changes?')).toBeVisible();
+        await page.getByRole('button', {name: 'Keep editing'}).click();
+        await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
+        await expect.element(page.getByLabelText('Name')).toHaveValue('Ada B');
+
+        window.history.back();
+        await page.getByRole('button', {name: 'Leave'}).click();
+        await expect.poll(currentRoute).toBe('/members');
+    });
+
+    it('allows a back navigation to an untracked history entry', async () => {
+        const m = member({name: 'Ada Lovelace'});
+        fakeMemberDetailWorld(m);
+        await renderAdminApp('/members');
+
+        // Native hash navigations do not carry react-router's history index.
+        // Preserve that legacy target shape before opening the React detail.
+        window.history.replaceState({}, '');
+        await page.getByRole('link', {name: 'Ada Lovelace'}).click();
+        await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
+        await page.getByLabelText('Name').fill('Ada B');
+
+        window.history.back();
+
+        await expect.poll(currentRoute).toBe('/members');
+        expect(page.getByText('Discard unsaved changes?').query()).toBeNull();
     });
 });

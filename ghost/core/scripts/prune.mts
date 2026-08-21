@@ -3,7 +3,7 @@
 /**
  * prune.mts — Strip files no consumer loads from a built Ghost tree.
  *
- * Two callers, two profiles:
+ * Two profiles:
  *
  *   image   — Dockerfile.production's deploy stage, against /home/ghost (Ghost's
  *             `files` set + a resolved production node_modules). The COPY layer
@@ -12,6 +12,12 @@
  *   archive — scripts/pack.mjs, against the extracted package/ dir. No
  *             node_modules there (the consumer installs its own), so only the
  *             source rules apply.
+ *
+ * This file ships inside the release tarballs (a ghost/core `files` entry), so a
+ * downstream Docker build can run the `image` profile against its own installed
+ * tree the same way Dockerfile.production does:
+ *
+ *   node scripts/prune.mts . --profile=image
  *
  * Run directly by node (type stripping, no build step) — `scripts/` is outside
  * the tsconfig `include`, so nothing compiles this.
@@ -34,12 +40,32 @@ interface Rule {
     match: (rel: string) => boolean;
 }
 
+interface Stats {
+    files: number;
+    bytes: number;
+}
+
 export interface PruneResult {
     total: number;
     removed: number;
     bytes: number;
-    byRule: Record<string, {files: number, bytes: number}>;
+    byRule: Record<string, Stats>;
+    /** Surviving bytes per package, present only when `measure` was set. */
+    kept?: Record<string, Stats>;
 }
+
+// Path of this file, relative to the roots both profiles are pointed at.
+const SELF = 'scripts/prune.mts';
+
+/**
+ * Which package a file belongs to. pnpm's virtual store directory name carries
+ * name@version plus any peer suffix, so two peer-forked copies of one version
+ * bucket separately — that duplication is what the report exists to surface.
+ */
+const bucketOf = (rel: string): string => {
+    const match = /^node_modules\/\.pnpm\/([^/]+)\//.exec(rel);
+    return match ? match[1] : '(app)';
+};
 
 // Script files are never build inputs, whatever directory they sit in.
 const isScript = (base: string): boolean => /\.(js|json|mjs|cjs|node)$/.test(base);
@@ -53,7 +79,9 @@ const RULES: Rule[] = [
         // runs node with --enable-source-maps (Sentry resolves frames from maps
         // uploaded at release time, not from disk). `[cm]?ts` covers the
         // declaration variants too — .d.ts, .d.mts, .d.cts.
-        match: rel => /\.(?:[cm]?ts|tsx|map)$/.test(rel)
+        // This file ships in the archive so downstream Docker builds can prune
+        // their own tree; it has to survive its own rule.
+        match: rel => rel !== SELF && /\.(?:[cm]?ts|tsx|map)$/.test(rel)
     },
     {
         name: 'docs',
@@ -126,13 +154,14 @@ async function* walk(dir: string, prefix = ''): AsyncGenerator<string> {
     }
 }
 
-export async function prune(target: string, {profile, dryRun = false}: {profile: Profile, dryRun?: boolean}): Promise<PruneResult> {
+export async function prune(target: string, {profile, dryRun = false, measure = false}: {profile: Profile, dryRun?: boolean, measure?: boolean}): Promise<PruneResult> {
     if (!PROFILES.includes(profile)) {
         throw new Error(`Unknown profile "${profile}" (expected one of: ${PROFILES.join(', ')})`);
     }
 
     const rules = RULES.filter(rule => rule.profiles.includes(profile));
     const byRule = Object.fromEntries(rules.map(rule => [rule.name, {files: 0, bytes: 0}]));
+    const kept: Record<string, Stats> = {};
     let total = 0;
     let removed = 0;
     let bytes = 0;
@@ -141,6 +170,11 @@ export async function prune(target: string, {profile, dryRun = false}: {profile:
         total += 1;
         const rule = rules.find(r => r.match(rel));
         if (!rule) {
+            if (measure) {
+                const bucket = kept[bucketOf(rel)] ??= {files: 0, bytes: 0};
+                bucket.files += 1;
+                bucket.bytes += (await fs.stat(path.join(target, rel))).size;
+            }
             continue;
         }
 
@@ -156,7 +190,7 @@ export async function prune(target: string, {profile, dryRun = false}: {profile:
         bytes += size;
     }
 
-    return {total, removed, bytes, byRule};
+    return {total, removed, bytes, byRule, ...(measure ? {kept} : {})};
 }
 
 const mib = (value: number): string => `${(value / 1024 / 1024).toFixed(1)} MiB`;
@@ -180,18 +214,30 @@ if (import.meta.main) {
         allowPositionals: true,
         options: {
             profile: {type: 'string'},
-            'dry-run': {type: 'boolean', default: false}
+            'dry-run': {type: 'boolean', default: false},
+            // Per-package sizes of what survives, for the CI image-size diff.
+            report: {type: 'string'}
         }
     });
 
     const [target] = positionals;
     const profile = values.profile as Profile | undefined;
     if (!target || !profile) {
-        console.error('Usage: prune.mts <target-dir> --profile=<image|archive> [--dry-run]');
+        console.error('Usage: prune.mts <target-dir> --profile=<image|archive> [--dry-run] [--report=<file>]');
         process.exit(1);
     }
 
     console.log(`Pruning ${target} (profile: ${profile})`);
-    const result = await prune(path.resolve(target), {profile, dryRun: values['dry-run']});
+    const result = await prune(path.resolve(target), {profile, dryRun: values['dry-run'], measure: Boolean(values.report)});
     reportPrune(result, {dryRun: values['dry-run']});
+
+    if (values.report && result.kept) {
+        const packages = result.kept;
+        const total = Object.values(packages).reduce(
+            (acc, stats) => ({files: acc.files + stats.files, bytes: acc.bytes + stats.bytes}),
+            {files: 0, bytes: 0}
+        );
+        await fs.writeFile(values.report, `${JSON.stringify({profile, total, packages}, null, 2)}\n`);
+        console.log(`  wrote ${values.report} (${Object.keys(packages).length} packages, ${total.files} files, ${mib(total.bytes)})`);
+    }
 }

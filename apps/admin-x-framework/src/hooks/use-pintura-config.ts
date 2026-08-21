@@ -34,7 +34,7 @@ export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
     const {data: settingsData} = useBrowseSettings();
 
     const config = configData?.config;
-    const pinturaConfig = config?.hostSettings?.pintura;
+    const pinturaConfig = config?.pintura;
     const settings = settingsData?.settings ?? null;
 
     const [isEnabled, fallbackJsUrl, fallbackCssUrl] = getSettingValues<unknown>(settings, [

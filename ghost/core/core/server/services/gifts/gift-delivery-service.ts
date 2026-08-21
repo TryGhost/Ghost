@@ -148,7 +148,10 @@ export class GiftDeliveryService {
             return 'failed';
         }
 
-        if (gift.status !== 'purchased') {
+        // The cleanup job cancels the pending deliveries of gifts it expires, but
+        // boot recovery runs without that sweep, so the deadline is checked here
+        // too rather than mailing a link that is already dead.
+        if (gift.status !== 'purchased' || !gift.expiresAt || gift.isPastClaimDeadline(now)) {
             await this.deps.giftDeliveryRepository.markCancelled(delivery.id);
             return 'skipped';
         }

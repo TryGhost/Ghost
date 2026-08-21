@@ -83,7 +83,6 @@
         "eslint": "catalog:",
         "eslint-plugin-no-relative-import-paths": "1.6.1",
         "ghost-admin": "workspace:*",
-        "jest-extended": "7.0.0",
         "jsdom": "catalog:",
         "msw": "catalog:",
         "sirv": "3.0.2",
@@ -100,6 +99,11 @@
             "playwright"
         ],
         "targets": {
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "test:acceptance": {
                 "dependsOn": [
                     "^build"
@@ -121,7 +125,7 @@
             },
             "build:dev": {
                 "dependsOn": [
-                    "build",
+                    "^build",
                     {
                         "projects": [
                             "ghost-admin"
@@ -146,7 +150,7 @@
                     "{workspaceRoot}/ghost/core/core/built/admin"
                 ],
                 "dependsOn": [
-                    "build",
+                    "^build",
                     {
                         "projects": [
                             "ghost-admin"

@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
 import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
 import {escapeNqlString} from '@tryghost/nql-string';
 import {useCallback} from 'react';
@@ -19,11 +19,6 @@ export interface LabelsResponseType {
 }
 
 const dataType = 'LabelsResponseType';
-
-export const useBrowseLabels = createQuery<LabelsResponseType>({
-    dataType,
-    path: '/labels/'
-});
 
 export const useBrowseLabelsInfinite = createInfiniteQuery<LabelsResponseType & {isEnd: boolean}>({
     dataType,
@@ -49,11 +44,6 @@ export const useBrowseLabelsInfinite = createInfiniteQuery<LabelsResponseType & 
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
-});
-
-export const getLabelBySlug = createQueryWithId<LabelsResponseType>({
-    dataType,
-    path: slug => `/labels/slug/${slug}/`
 });
 
 export const useCreateLabel = createMutation<LabelsResponseType, Pick<Label, 'name'>>({

@@ -78,29 +78,28 @@ catalog:
   '@tanstack/react-virtual': 3.14.9
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.3.5
+  '@tryghost/api-framework': 3.3.9
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.3.8
-  '@tryghost/domain-events': 3.3.9
-  '@tryghost/errors': 3.3.8
+  '@tryghost/debug': 2.3.9
+  '@tryghost/domain-events': 3.3.10
+  '@tryghost/errors': 3.3.9
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
-  '@tryghost/logging': 5.3.4
-  '@tryghost/metrics': 3.4.2
+  '@tryghost/logging': 5.4.0
+  '@tryghost/metrics': 3.5.0
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/request': 4.0.1
+  '@tryghost/request': 4.0.2
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
-  '@tryghost/tpl': 2.3.8
+  '@tryghost/tpl': 2.3.9
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4
-  '@types/jest': 29.5.14
   '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
   '@types/node': 22.20.1
@@ -198,6 +197,10 @@ catalog:
   shell-quote: 1.10.0
   unidecode: 1.1.0
   mppx: 0.6.20
+  '@x402/core': 2.12.0
+  '@x402/evm': 2.12.0
+  '@x402/hono': 2.12.0
+  hono: 4.12.18
   '@octokit/core': 7.0.7
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5

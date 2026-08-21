@@ -1,5 +1,4 @@
 import {StatsConfig} from '../providers/framework-provider';
-import {getTinybirdToken} from '../api/tinybird';
 
 export const getStatEndpointUrl = (config?: StatsConfig | null, endpointName?: string, params = '') => {
     if (!config) {
@@ -18,12 +17,4 @@ export const getStatEndpointUrl = (config?: StatsConfig | null, endpointName?: s
     const finalEndpointName = config.version ? `${endpointName}_${config.version}` : endpointName;
 
     return `${baseUrl}/v0/pipes/${finalEndpointName}.json?${params}`;
-};
-
-export const getToken = () => {
-    // Get token from getTinybirdToken API - options are now built-in
-    const tinybirdQuery = getTinybirdToken();
-    const apiToken = tinybirdQuery.data?.tinybird?.token;
-
-    return (apiToken && typeof apiToken === 'string') ? apiToken : undefined;
 };

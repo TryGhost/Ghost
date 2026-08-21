@@ -76,7 +76,7 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                             <div className='flex w-full flex-col py-3'>
                                 {paginatedFeedback.map(item => (
                                     <div key={item.id} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent' onClick={() => {
-                                        navigate(`/members/${item.member.id}`, {crossApp: true});
+                                        navigate(`/members/${item.member.id}`);
                                     }}>
                                         <div className='flex items-center gap-2 font-medium'>
                                             <Avatar className='size-7'>
@@ -115,7 +115,7 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                             const positiveFilterParam = `${encodeURIComponent(positiveFilter)}&post=${postId}`;
                             const negativeFilterParam = `${encodeURIComponent(negativeFilter)}&post=${postId}`;
 
-                            navigate(`/members?filter=${activeFeedbackTab === 'positive' ? positiveFilterParam : negativeFilterParam}`, {crossApp: true});
+                            navigate(`/members?filter=${activeFeedbackTab === 'positive' ? positiveFilterParam : negativeFilterParam}`);
                         }}>
                             View all
                             <LucideIcon.TableOfContents />

@@ -1,5 +1,5 @@
 import {Badge, Button, Command, CommandCheck, CommandEmpty, CommandItem, CommandList, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
@@ -117,7 +117,7 @@ export function UnsubscribeModal({
                                         Unsubscribe from all newsletters
                                     </span>
                                     <span className="text-sm text-muted-foreground">
-                                        {memberCount.toLocaleString()}{' '}
+                                        {formatNumber(memberCount)}{' '}
                                         {memberLabel} will be unsubscribed from{' '}
                                         {newsletters.length}{' '}
                                         {newsletters.length === 1
@@ -143,7 +143,7 @@ export function UnsubscribeModal({
                                     </span>
                                     <span className="text-sm text-muted-foreground">
                                         Select which newsletters to unsubscribe{' '}
-                                        {memberCount.toLocaleString()}{' '}
+                                        {formatNumber(memberCount)}{' '}
                                         {memberLabel} from.
                                     </span>
                                 </div>
@@ -266,7 +266,7 @@ export function UnsubscribeModal({
                 ) : (
                     <p className="text-sm text-muted-foreground">
                         Are you sure you want to unsubscribe{' '}
-                        {memberCount.toLocaleString()} {memberLabel} from all
+                        {formatNumber(memberCount)} {memberLabel} from all
                         newsletters? They will no longer receive any email
                         newsletters from you.
                     </p>

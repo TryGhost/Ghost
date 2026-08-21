@@ -266,11 +266,10 @@ export const useFetchApi = () => {
     }, [ghostVersion, sentryDSN]);
 };
 
-const {apiRoot, activityPubRoot} = getGhostPaths();
+const {apiRoot} = getGhostPaths();
 
-export const apiUrl = (path: string, searchParams: Record<string, string> = {}, useActivityPub: boolean = false) => {
-    const root = useActivityPub ? activityPubRoot : apiRoot;
-    const url = new URL(`${root}${path}`, window.location.origin);
+export const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
+    const url = new URL(`${apiRoot}${path}`, window.location.origin);
     url.search = new URLSearchParams(searchParams).toString();
     return url.toString();
 };

@@ -1,9 +1,9 @@
-const assert = require('node:assert/strict');
-const ObjectId = require('bson-objectid').default;
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import ObjectId from 'bson-objectid';
+import sinon from 'sinon';
 
-const automationsApi = require('../../../../../core/server/services/automations/automations-api');
-const {EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL} = require('../../../../utils/automations-fixtures');
+import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+import {EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
     id: ObjectId().toHexString(),

@@ -5,6 +5,13 @@ const {createLlmsService} = require('../../../../core/frontend/services/llms/ser
 const {MachinePaymentsService} = require('../../../../core/server/services/machine-payments/service');
 const {Pricing} = require('../../../../core/server/services/machine-payments/pricing');
 const {TEMPO_USDC} = require('../../../../core/server/services/machine-payments/adapters/mpp-adapter');
+const {
+    BoundedRouteCache,
+    X402Adapter,
+    formatPrice,
+    parseX402Config,
+    settlementReference
+} = require('../../../../core/server/services/machine-payments/adapters/x402-adapter');
 const {DepositAddressStore} = require('../../../../core/server/services/machine-payments/stripe/deposit-address-store');
 const {PaymentRecorder} = require('../../../../core/server/services/machine-payments/stripe/payment-recorder');
 
@@ -239,6 +246,105 @@ describe('Integration: machine-payments orchestration coverage', function () {
                 majorAmount: '2.50'
             });
             assert.equal(TEMPO_USDC, '0x20c000000000000000000000b9537d11c60e8b50');
+        });
+    });
+
+    describe('x402 adapter coverage', function () {
+        it('validates facilitator URLs and settlement helpers', function () {
+            assert.deepEqual(parseX402Config({
+                network: 'eip155:8453',
+                stripeNetwork: 'base',
+                facilitatorUrl: 'https://facilitator.xpay.sh'
+            }), {
+                network: 'eip155:8453',
+                stripeNetwork: 'base',
+                facilitatorUrl: 'https://facilitator.xpay.sh'
+            });
+
+            sinon.stub(logging, 'warn');
+            assert.equal(parseX402Config({
+                network: 'eip155:8453',
+                stripeNetwork: 'base',
+                facilitatorUrl: 'http://facilitator.xpay.sh'
+            }), null);
+            assert.match(String(logging.warn.firstCall.args[0]), /must use HTTPS/);
+
+            assert.equal(parseX402Config({
+                network: 'eip155:8453',
+                stripeNetwork: 'base',
+                facilitatorUrl: 'https://X402.ORG:443/facilitator/'
+            }), null);
+            assert.match(String(logging.warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
+
+            assert.deepEqual(parseX402Config({
+                network: 'eip155:84532',
+                stripeNetwork: 'base',
+                facilitatorUrl: 'https://X402.ORG:443/facilitator/'
+            }), {
+                network: 'eip155:84532',
+                stripeNetwork: 'base',
+                facilitatorUrl: 'https://X402.ORG:443/facilitator/'
+            });
+
+            assert.equal(formatPrice({amount: 100, currency: 'USD', majorAmount: '1.00'}), '$1.00');
+
+            const paymentResponse = Buffer.from(JSON.stringify({txHash: '0xabc'})).toString('base64');
+            assert.equal(settlementReference(paymentResponse), '0xabc');
+
+            const cache = new BoundedRouteCache(1);
+            cache.set('route', 'app');
+            cache.set('other', 'app2');
+            assert.equal(cache.get('route'), undefined);
+            assert.equal(cache.get('other'), 'app2');
+        });
+
+        it('initializes and challenges through the x402 adapter boundary', async function () {
+            const terms = {
+                amount: 100,
+                currency: 'USD',
+                description: 'Paid post',
+                method: 'GET',
+                mimeType: 'text/markdown',
+                url: 'http://example.com/paid-post.md'
+            };
+            const adapter = new X402Adapter({
+                depositAddressStore: {
+                    getOrCreateAddress: async () => '0xrecipient'
+                },
+                configProvider: () => ({
+                    network: 'eip155:8453',
+                    stripeNetwork: 'base',
+                    facilitatorUrl: 'https://facilitator.xpay.sh'
+                }),
+                runtimeFactory: () => ({
+                    paymentMiddlewareFromConfig: () => () => {},
+                    HTTPFacilitatorClient: class {},
+                    ExactEvmScheme: class {},
+                    Hono: class {
+                        use() {}
+
+                        get() {}
+
+                        on() {}
+
+                        fetch() {
+                            return Promise.resolve(new Response('', {
+                                status: 402,
+                                headers: {'payment-required': 'x402'}
+                            }));
+                        }
+                    }
+                })
+            });
+
+            assert.equal(await adapter.init(), true);
+            assert.equal(adapter.canHandle(new Request('http://example.com/paid.md', {
+                headers: {'x-payment': 'abc'}
+            })), true);
+
+            const challenge = await adapter.challenge(new Request('http://example.com/paid.md'), terms);
+            assert.equal(challenge.status, 402);
+            assert.equal(challenge.headers.get('payment-required'), 'x402');
         });
     });
 

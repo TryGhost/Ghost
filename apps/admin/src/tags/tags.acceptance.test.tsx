@@ -6,7 +6,7 @@ import { tagsScreen } from "./tags.screen";
 describe("Tags list", () => {
     it("lists public tags with description and posts count", async () => {
         fakeTags([
-            tag({ name: "News", description: "News description", count: { posts: 1 } }),
+            tag({ name: "News", slug: "news", description: "News description", count: { posts: 1 } }),
         ]);
         await renderAdminApp("/tags");
 
@@ -15,6 +15,7 @@ describe("Tags list", () => {
         await expect.element(row).toHaveTextContent("News");
         await expect.element(row).toHaveTextContent("News description");
         await expect.element(row).toHaveTextContent("1 post");
+        await expect.element(tagsScreen.link("News")).toHaveAttribute("href", "#/tags/news");
 
         // The tabs are a single-select toggle group: role="radio" + aria-checked.
         await expect.element(tagsScreen.publicTab()).toHaveAttribute("aria-checked", "true");
@@ -47,12 +48,14 @@ describe("Tags list", () => {
 
         await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
         await expect.element(tagsScreen.createNewTagLink()).toBeVisible();
+        await expect.element(tagsScreen.createNewTagLink()).toHaveAttribute("href", "#/tags/new");
     });
 
     it("navigates to the new tag editor from the header button", async () => {
         fakeTags([]);
         await renderAdminApp("/tags");
 
+        await expect.element(tagsScreen.newTagLink()).toHaveAttribute("href", "#/tags/new");
         await tagsScreen.newTagLink().click();
 
         // /tags/new is Ember-owned; the shell records the route and defers.

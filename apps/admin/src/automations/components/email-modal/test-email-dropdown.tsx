@@ -81,7 +81,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     };
 
     return (
-        <PopoverContent align='end' className='w-[260px] p-4' data-testid='test-email-dropdown' sideOffset={8}>
+        <PopoverContent align='end' className='w-[260px] p-4' data-sentry-mask='true' data-testid='test-email-dropdown' sideOffset={8}>
             <div className='mb-3'>
                 <label className='mb-2 block text-sm font-semibold' htmlFor='test-email-input'>Send test email</label>
                 <Input

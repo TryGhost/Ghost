@@ -50,6 +50,24 @@ export type StripePaymentMethod = Omit<Pick<Stripe.PaymentMethod, 'billing_detai
     type: 'card';
 };
 
+/**
+ * Stripe returns `plan` on a subscription alongside `items.data[0].price`: a legacy
+ * projection of the same price, with identical id, nickname, currency and product,
+ * `unit_amount` spelled `amount`, and `recurring.interval` flattened to `interval`.
+ *
+ * Ghost reads the `plan` spelling in five places, including the comped check in
+ * member-repository, so a subscription built without it exercises none of them.
+ */
+export type StripeSubscriptionPlan = {
+    amount: number | null;
+    currency: string;
+    id: string;
+    interval: StripePriceInterval | null;
+    nickname: string | null;
+    object: 'plan';
+    product: string;
+};
+
 type StripeSubscriptionItem = Omit<Pick<Stripe.SubscriptionItem, 'price'>, 'price'> & {
     id: string;
     object: 'subscription_item';
@@ -62,6 +80,7 @@ export type StripeSubscription = Omit<Pick<Stripe.Subscription, 'cancel_at_perio
     discount: StripeDiscount | null;
     items: StripeList<StripeSubscriptionItem>;
     metadata: Stripe.Metadata;
+    plan: StripeSubscriptionPlan;
 };
 
 export type StripeCustomer = Omit<Pick<Stripe.Customer, 'email' | 'id' | 'name' | 'object'>, 'email' | 'name'> & {
@@ -217,6 +236,18 @@ export function buildCustomer(opts: {id?: string; email: string; name: string}):
     };
 }
 
+function planFromPrice(price: StripePrice): StripeSubscriptionPlan {
+    return {
+        amount: price.unit_amount,
+        currency: price.currency,
+        id: price.id,
+        interval: price.recurring?.interval ?? null,
+        nickname: price.nickname,
+        object: 'plan',
+        product: price.product
+    };
+}
+
 export function buildSubscription(opts: {
     id?: string;
     customerId: string;
@@ -229,8 +260,10 @@ export function buildSubscription(opts: {
     status?: Stripe.Subscription.Status;
     trialDays?: number;
 }): StripeSubscription {
+    // Spread only the overrides that were given: passing `id: undefined` would
+    // overwrite the generated id with undefined rather than leaving the default.
     const price = opts.price ?? buildPrice({
-        id: opts.priceId,
+        ...(opts.priceId ? {id: opts.priceId} : {}),
         product: opts.productId ?? generateId('prod')
     });
     const startDate = Math.floor(Date.now() / 1000);
@@ -254,6 +287,7 @@ export function buildSubscription(opts: {
         discount: opts.discount ?? null,
         metadata: {},
         default_payment_method: opts.paymentMethod?.id ?? null,
+        plan: planFromPrice(price),
         items: {
             object: 'list',
             data: [{

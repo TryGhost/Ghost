@@ -6,7 +6,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/componen
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useCallback, useMemo, useState} from 'react';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
@@ -28,7 +28,7 @@ function NavigationModal() {
         localSettings,
         ['navigation', 'secondary_navigation', 'members_signup_access']
     );
-    const navigationIconsEnabled = !!config.labs.navigationIcons;
+    const navigationIconsEnabled = useFeatureFlag('navigationIcons');
     const showIcon = navigationIconsEnabled;
     const showVisibility = navigationIconsEnabled && membersSignupAccess !== 'none';
     const showPaidVisibility = checkStripeEnabled(localSettings, config);

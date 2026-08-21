@@ -84,16 +84,21 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
         expect(maxRenderedIndex).toBeGreaterThan(1000);
 
         const renderedCount = await reactMemberRows.count();
-        const targetRowLocator = reactMemberRows.nth(Math.max(0, renderedCount - 5));
+        const candidateRowLocator = reactMemberRows.nth(Math.max(0, renderedCount - 5));
+        const targetIndex = Number(await candidateRowLocator.getAttribute('data-index'));
+        const targetRowLocator = page.getByTestId('members-list').locator(`[data-testid="members-list-item"][data-index="${targetIndex}"]`);
+        const targetLinkLocator = targetRowLocator.getByRole('link');
+
+        await targetLinkLocator.scrollIntoViewIfNeeded();
         const targetRow = {
-            index: Number(await targetRowLocator.getAttribute('data-index')),
+            index: targetIndex,
             text: await targetRowLocator.textContent(),
             scrollTop: await membersPage.getScrollParentScrollTop()
         };
 
         expect(targetRow.index).toBeGreaterThan(1000);
 
-        await targetRowLocator.getByRole('link').click();
+        await targetLinkLocator.click();
 
         await expect(memberDetailsPage.nameInput).toBeVisible();
 

@@ -9,8 +9,7 @@ import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/in
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/providers/global-data-context';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useFeatureFlag, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
@@ -26,8 +25,7 @@ function InviteUserModal() {
     const limiter = useLimiter();
 
     const {updateRoute} = useSettingsNavigation();
-    const {config} = useGlobalData();
-    const editorBeta = config.labs.superEditors;
+    const editorBeta = useFeatureFlag('superEditors');
     const [email, setEmail] = useState<string>('');
     const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
     const [role, setRole] = useState<RoleType>('contributor');

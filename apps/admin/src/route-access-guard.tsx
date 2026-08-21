@@ -42,14 +42,14 @@ export function RouteAccessGuard() {
 
     if (!currentUser) {
         if (isError || !isLoading) {
-            return <Navigate to="/" crossApp />;
+            return <Navigate to="/" replace />;
         }
 
         return null;
     }
 
     if (!rules.every(rule => rule(currentUser, location))) {
-        return <Navigate to="/" crossApp />;
+        return <Navigate to="/" replace />;
     }
 
     return <Outlet />;

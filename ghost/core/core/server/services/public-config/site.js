@@ -12,6 +12,7 @@ module.exports = function getSiteProperties() {
         cover_image: settingsCache.get('cover_image'),
         accent_color: settingsCache.get('accent_color'),
         locale: settingsCache.get('locale'),
+        timezone: settingsCache.get('timezone'),
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         allow_external_signup: settingsCache.get('allow_self_signup') && !(settingsCache.get('portal_signup_checkbox_required') && settingsCache.get('portal_signup_terms_html')),

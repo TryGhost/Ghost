@@ -1,0 +1,53 @@
+{
+  "id": "pm_1U69dYCvhsRvBqJ0aW3bUj9N",
+  "object": "payment_method",
+  "allow_redisplay": "unspecified",
+  "billing_details": {
+    "address": {
+      "city": null,
+      "country": null,
+      "line1": null,
+      "line2": null,
+      "postal_code": null,
+      "state": null
+    },
+    "email": null,
+    "name": null,
+    "phone": null,
+    "tax_id": null
+  },
+  "card": {
+    "brand": "visa",
+    "checks": {
+      "address_line1_check": null,
+      "address_postal_code_check": null,
+      "cvc_check": "pass"
+    },
+    "country": "US",
+    "display_brand": "visa",
+    "exp_month": 8,
+    "exp_year": 2027,
+    "fingerprint": "oPy1RdzaV3YKamXW",
+    "funding": "credit",
+    "generated_from": null,
+    "last4": "4242",
+    "networks": {
+      "available": [
+        "visa"
+      ],
+      "preferred": null
+    },
+    "regulated_status": "unregulated",
+    "three_d_secure_usage": {
+      "supported": true
+    },
+    "wallet": null
+  },
+  "created": 1787146476,
+  "customer": "cus_V6MM2ouqpuTHrR",
+  "customer_account": null,
+  "livemode": false,
+  "metadata": {},
+  "shared_payment_granted_token": null,
+  "type": "card"
+}

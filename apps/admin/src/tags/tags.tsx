@@ -1,5 +1,6 @@
 import React from 'react';
 import TagsList from './components/tags-list';
+import {AdminLink} from '@/shared/admin-link';
 import {Box, Container} from '@tryghost/shade/primitives';
 import {Button, DropdownMenuCheckboxItem, EmptyIndicator, LoadingIndicator, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
@@ -68,10 +69,10 @@ const Tags: React.FC = () => {
                             </PageHeader.ActionGroup>
                             <PageHeader.ActionGroup>
                                 <Button asChild>
-                                    <a className="font-bold" href="#/tags/new">
+                                    <AdminLink className="font-bold" to="/tags/new">
                                         <LucideIcon.Plus className='size-4' />
                                         <span className='hidden sm:inline'>New tag</span>
-                                    </a>
+                                    </AdminLink>
                                 </Button>
                             </PageHeader.ActionGroup>
                         </PageHeader.Actions>
@@ -99,7 +100,7 @@ const Tags: React.FC = () => {
                             <EmptyIndicator
                                 actions={
                                     <Button asChild>
-                                        <a href="#/tags/new">Create a new tag</a>
+                                        <AdminLink to="/tags/new">Create a new tag</AdminLink>
                                     </Button>
                                 }
                                 title="Start organizing your content"

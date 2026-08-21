@@ -3,6 +3,7 @@ import {page, userEvent} from 'vitest/browser';
 
 import {deferred} from '@/utils/deferred';
 import {configResponse, currentRoute, fakeAdminEndpoint, fakeEndpoint, fakeTags, renderAdminApp, tag, type Tag} from '@test-utils/acceptance';
+import {sidebarScreen} from '@/layout/sidebar.screen';
 
 const FLAGS = {labs: {tagDetailsReact: true}};
 
@@ -567,6 +568,35 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByLabelText('Name', {exact: true})).toHaveValue('Renamed');
 
         await page.getByTestId('tag-detail').getByRole('link', {name: 'Tags'}).click();
+        await page.getByRole('button', {name: 'Leave'}).click();
+        await expect.poll(currentRoute).toBe('/tags');
+    });
+});
+
+describe('Tag detail history guard', () => {
+    it('confirms before the back button leaves a dirty tag opened from the list', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTags([t]);
+        fakeTagWorld(t);
+        await renderAdminApp('/site', FLAGS);
+
+        await sidebarScreen.navLink('Tags').click();
+        await expect.poll(currentRoute).toBe('/tags');
+        await page.getByTestId('tag-list-row').getByRole('link', {name: 'News'}).click();
+        await expect.poll(currentRoute).toBe('/tags/news');
+        await page.getByLabelText('Name', {exact: true}).fill('Renamed');
+        await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
+        });
+
+        window.history.back();
+
+        await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
+        await page.getByRole('button', {name: 'Stay'}).click();
+        await expect.poll(currentRoute).toBe('/tags/news');
+        await expect.element(page.getByLabelText('Name', {exact: true})).toHaveValue('Renamed');
+
+        window.history.back();
         await page.getByRole('button', {name: 'Leave'}).click();
         await expect.poll(currentRoute).toBe('/tags');
     });

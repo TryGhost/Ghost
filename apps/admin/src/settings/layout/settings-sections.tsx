@@ -7,7 +7,7 @@ import GeneralSettings from '@/settings/general/general-settings';
 import GrowthSettings from '@/settings/growth/growth-settings';
 import MembershipSettings from '@/settings/membership/membership-settings';
 import SiteSettings from '@/settings/site/site-settings';
-import useFeatureFlag from '@/settings/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const Settings: React.FC = () => {
     const hasAutomations = useFeatureFlag('automations');

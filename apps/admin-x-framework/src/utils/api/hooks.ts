@@ -1,7 +1,6 @@
 import {InfiniteData, InvalidateOptions, InvalidateQueryFilters, QueryKey, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo} from 'react';
 import useHandleError from '../../hooks/use-handle-error';
-import {usePagination} from '../../hooks/use-pagination';
 import {usePermission} from '../../hooks/use-permissions';
 import {UserRoleType} from '../../api/roles';
 import {useFramework} from '../../providers/framework-provider';
@@ -28,7 +27,6 @@ interface QueryOptions<ResponseData> {
     defaultSearchParams?: Record<string, string>;
     permissions?: UserRoleType[];
     returnData?: (originalData: unknown) => ResponseData;
-    useActivityPub?: boolean;
 }
 
 type QueryHookOptions<ResponseData> = Omit<UseQueryOptions<ResponseData>, 'queryKey' | 'queryFn'> & {
@@ -37,7 +35,7 @@ type QueryHookOptions<ResponseData> = Omit<UseQueryOptions<ResponseData>, 'query
 };
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {data: ResponseData | undefined} => {
-    const url = apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub);
+    const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
     const hasPermission = usePermission(options.permissions);
@@ -65,50 +63,6 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     };
 };
 
-export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
-    const [page, setPage] = useState(1);
-    const limit = (searchParams?.limit || options.defaultSearchParams?.limit) ? parseInt(searchParams?.limit || options.defaultSearchParams?.limit || '15') : 15;
-
-    const paginatedSearchParams = searchParams || options.defaultSearchParams || {};
-    paginatedSearchParams.page = page.toString();
-
-    const url = apiUrl(options.path, paginatedSearchParams, options?.useActivityPub);
-    const fetchApi = useFetchApi();
-    const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
-
-    const result = useQuery<ResponseData>({
-        ...query,
-        enabled: hasPermission && (query.enabled ?? true),
-        queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url, {...options})
-    });
-
-    const data = useMemo(() => (
-        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
-    , [result.data]);
-
-    const pagination = usePagination({
-        page,
-        setPage,
-        limit,
-        // Don't pass the meta data if we are fetching, because then it is probably out of date and this causes issues
-        meta: result.isFetching ? undefined : data?.meta?.pagination
-    });
-
-    useEffect(() => {
-        if (result.error && query.defaultErrorHandler !== false) {
-            handleError(result.error);
-        }
-    }, [handleError, result.error, query.defaultErrorHandler]);
-
-    return {
-        ...result,
-        data,
-        pagination
-    };
-};
-
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
     returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
     defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
@@ -132,8 +86,8 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
     const result = useInfiniteQuery<ResponseData, Error, InfiniteData<ResponseData, InfiniteQueryPageParam>, QueryKey, InfiniteQueryPageParam>({
         ...query,
         enabled: hasPermission && (query.enabled ?? true),
-        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub)],
-        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams, options?.useActivityPub)),
+        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
+        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
         initialPageParam: undefined,
         getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {})
     });
@@ -162,7 +116,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
-    invalidateQueries?: { dataType: string; } | {
+    invalidateQueries?: { dataType: string | string[]; } | {
         filters?: InvalidateQueryFilters,
         options?: InvalidateOptions,
     };
@@ -177,7 +131,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     options: Omit<MutationOptions<ResponseData, Payload>, 'path'>
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;
-    const url = apiUrl(path, searchParams || defaultSearchParams, options?.useActivityPub);
+    const url = apiUrl(path, searchParams || defaultSearchParams);
     const generatedBody = payload && body?.(payload);
 
     let requestBody: string | FormData | undefined = undefined;
@@ -200,8 +154,11 @@ export const createMutation = <ResponseData, Payload>({path, searchParams, defau
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
         if (invalidateQueries && 'dataType' in invalidateQueries) {
-            queryClient.invalidateQueries({queryKey: [invalidateQueries.dataType]});
-            onInvalidate(invalidateQueries.dataType);
+            const dataTypes = Array.isArray(invalidateQueries.dataType) ? invalidateQueries.dataType : [invalidateQueries.dataType];
+            for (const dataType of dataTypes) {
+                queryClient.invalidateQueries({queryKey: [dataType]});
+                onInvalidate(dataType);
+            }
         } else if (invalidateQueries) {
             queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
         }

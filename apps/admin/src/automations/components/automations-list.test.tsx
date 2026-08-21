@@ -1,8 +1,8 @@
 import AutomationsList from './automations-list';
 import React from 'react';
-import {MemoryRouter} from 'react-router';
+import {MemoryRouter, Route, Routes, useParams} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 
 const automations = [{
     id: 'automation-id-1',
@@ -27,6 +27,21 @@ const automations = [{
 }];
 
 const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
+
+const AutomationEditorRoute = () => {
+    const {id} = useParams();
+
+    return <div>Automation editor: {id}</div>;
+};
+
+const renderWithRoutes = () => render(
+    <MemoryRouter initialEntries={['/automations']}>
+        <Routes>
+            <Route element={<AutomationsList automations={automations} showRunAnalytics={true} />} path="/automations" />
+            <Route element={<AutomationEditorRoute />} path="/automations/:id" />
+        </Routes>
+    </MemoryRouter>
+);
 
 describe('AutomationsList', () => {
     beforeEach(() => {
@@ -78,6 +93,33 @@ describe('AutomationsList', () => {
         expect(screen.getAllByRole('rowheader')).toHaveLength(2);
         expect(screen.getByRole('link', {name: 'Free member welcome flow'})).toHaveAttribute('href', '/automations/automation-id-1');
         expect(screen.getByRole('link', {name: 'Paid member welcome flow'})).toHaveAttribute('href', '/automations/automation-id-2');
+    });
+
+    it('follows the row link when clicking another cell', () => {
+        renderWithRoutes();
+
+        fireEvent.click(screen.getByText('1,432'));
+
+        expect(screen.getByText('Automation editor: automation-id-1')).toBeInTheDocument();
+    });
+
+    it('lets the existing row link handle its own navigation', () => {
+        renderWithRoutes();
+
+        fireEvent.click(screen.getByRole('link', {name: 'Free member welcome flow'}));
+
+        expect(screen.getByText('Automation editor: automation-id-1')).toBeInTheDocument();
+    });
+
+    it('does not follow the row link when the click is default-prevented', () => {
+        renderWithRoutes();
+        const analyticsCell = screen.getByText('1,432');
+        analyticsCell.addEventListener('click', event => event.preventDefault(), {once: true});
+
+        fireEvent.click(analyticsCell);
+
+        expect(screen.queryByText('Automation editor: automation-id-1')).not.toBeInTheDocument();
+        expect(analyticsCell).toBeInTheDocument();
     });
 
     it('renders a table skeleton while loading', () => {

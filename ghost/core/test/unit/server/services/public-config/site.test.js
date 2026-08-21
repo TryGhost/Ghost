@@ -1,9 +1,32 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
 const getSiteProperties = require('../../../../../core/server/services/public-config/site');
+const settingsCache = require('../../../../../core/shared/settings-cache');
 
 describe('Public-config Service', function () {
     describe('Site Properties', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('includes the publication locale and timezone', function () {
+            sinon.stub(settingsCache, 'get').callsFake((key) => {
+                if (key === 'locale') {
+                    return 'en-GB';
+                }
+                if (key === 'timezone') {
+                    return 'America/Los_Angeles';
+                }
+                return undefined;
+            });
+
+            const siteProperties = getSiteProperties();
+
+            assert.equal(siteProperties.locale, 'en-GB');
+            assert.equal(siteProperties.timezone, 'America/Los_Angeles');
+        });
+
         describe('Sentry', function () {
             const fakeDSN = 'https://aaabbbccc000111222333444555667@sentry.io/1234567';
 

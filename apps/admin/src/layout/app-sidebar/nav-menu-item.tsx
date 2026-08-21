@@ -2,8 +2,7 @@ import React from 'react';
 import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
 import {cn, LucideIcon} from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
-import { Link } from '@tryghost/admin-x-framework';
-import { isEmberOwnedRoute } from '@/routes';
+import { AdminLink } from '@/shared/admin-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (
@@ -121,7 +120,6 @@ function NavMenuLink({
     const isActive = controlledIsActive !== undefined ? controlledIsActive : computedIsActive;
     const { isMobile, setOpenMobile } = useSidebar();
     const isExternal = target === '_blank';
-    const useRouterLink = !isExternal && !isEmberOwnedRoute(path.split('?')[0]);
 
     const handleClick = () => {
         if (isMobile) {
@@ -134,26 +132,25 @@ function NavMenuLink({
             isActive={isActive}
             asChild
             {...props}>
-            {useRouterLink ? (
-                <Link
-                    aria-current={isActive ? 'page' : undefined}
-                    rel={rel}
-                    target={target}
-                    to={path}
-                    onClick={handleClick}
-                >
-                    {children}
-                </Link>
-            ) : (
+            {isExternal ? (
                 <a
                     aria-current={isActive ? 'page' : undefined}
-                    href={isExternal ? to : `#${path}`}
-                    rel={isExternal ? rel ?? 'noopener noreferrer' : rel}
+                    href={to}
+                    rel={rel ?? 'noopener noreferrer'}
                     target={target}
                     onClick={handleClick}
                 >
                     {children}
                 </a>
+            ) : (
+                <AdminLink
+                    aria-current={isActive ? 'page' : undefined}
+                    rel={rel}
+                    to={path}
+                    onClick={handleClick}
+                >
+                    {children}
+                </AdminLink>
             )}
         </SidebarMenuButton>
     )

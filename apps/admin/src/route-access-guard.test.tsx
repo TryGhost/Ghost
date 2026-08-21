@@ -10,8 +10,9 @@ const {mockUseCurrentUser, mockUseMatches} = vi.hoisted(() => ({
 
 vi.mock('@tryghost/admin-x-framework', () => ({
     Outlet: () => React.createElement('div', {'data-testid': 'outlet'}),
-    Navigate: ({crossApp, to}: {crossApp?: boolean; to: string}) => React.createElement('div', {
+    Navigate: ({crossApp, replace, to}: {crossApp?: boolean; replace?: boolean; to: string}) => React.createElement('div', {
         'data-cross-app': String(Boolean(crossApp)),
+        'data-replace': String(Boolean(replace)),
         'data-testid': 'navigate',
         'data-to': to
     }),
@@ -50,7 +51,8 @@ describe('RouteAccessGuard', () => {
         render(<RouteAccessGuard />);
 
         expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/');
-        expect(screen.getByTestId('navigate')).toHaveAttribute('data-cross-app', 'true');
+        expect(screen.getByTestId('navigate')).toHaveAttribute('data-cross-app', 'false');
+        expect(screen.getByTestId('navigate')).toHaveAttribute('data-replace', 'true');
     });
 
     it('renders unguarded routes without waiting for the current user', () => {

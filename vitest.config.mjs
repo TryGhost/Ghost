@@ -16,7 +16,6 @@ export default defineConfig({
             'packages/**',
             '!packages/_template',
             'apps/*',
-            '!apps/admin-x-activitypub',
             '!apps/signup-form'
         ],
         // ghost/core's snapshot tests use @tryghost/jest-snapshot, which

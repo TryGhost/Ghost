@@ -295,7 +295,7 @@ export const useDisableMemberCommenting = createMutation<
         hide_comments: hideComments
     }),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        dataType: ['CommentsResponseType', dataType]
     }
 });
 
@@ -307,7 +307,7 @@ export const useEnableMemberCommenting = createMutation<
     path: ({id}) => `/members/${id}/commenting/enable`,
     body: () => ({}),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        dataType: ['CommentsResponseType', dataType]
     }
 });
 

@@ -7,6 +7,7 @@ import {type Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {trackEvent, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {useIsEmberOwnedRoute} from '@/routes';
 
 // Import the interface from the hook
 import {type LatestPostWithStats} from '@/analytics/hooks/use-latest-post-stats';
@@ -64,6 +65,8 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const hasEmailData = Boolean(latestPostStats?.email);
     const postDestination = getPostDestination({postId: latestPostStats?.id, hasEmailData, analytics: {webAnalytics, membersTrackSources}});
     const shouldGoToEditor = postDestination.startsWith('/editor/');
+    // Editor destinations are still Ember-owned and need a hash navigation.
+    const destinationIsEmberOwned = useIsEmberOwnedRoute(postDestination);
 
     return (
         <Card className='group/card' data-testid='latest-post'>
@@ -118,7 +121,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
                                 <div className='text-md leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
-                                        navigate(postDestination, {crossApp: true});
+                                        navigate(postDestination, {crossApp: destinationIsEmberOwned});
                                     }
                                 }}>
                                     {latestPostStats.title}
@@ -155,7 +158,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         className={latestPostStats.email_only ? 'w-full' : ''}
                                         variant='outline'
                                         onClick={() => {
-                                            navigate(postDestination, {crossApp: true});
+                                            navigate(postDestination, {crossApp: destinationIsEmberOwned});
                                         }}
                                     >
                                         {shouldGoToEditor ? (
@@ -181,7 +184,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && webAnalytics &&
                                     <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {
-                                        navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
+                                        navigate(`/posts/analytics/${latestPostStats.id}/web`);
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
@@ -205,7 +208,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !webAnalytics)) && 'col-[1/2] row-[2/3]'
                                         )
                                     } data-testid='latest-post-members' onClick={() => {
-                                        navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
+                                        navigate(`/posts/analytics/${latestPostStats.id}/growth`);
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
@@ -227,7 +230,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     <>
                                         {emailTrackOpensEnabled && (
                                             <div className={metricClassName} onClick={() => {
-                                                navigate(`/posts/analytics/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                                navigate(`/posts/analytics/${latestPostStats.id}/newsletter`);
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
@@ -243,7 +246,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         )}
                                         {emailTrackClicksEnabled && (
                                             <div className={metricClassName} onClick={() => {
-                                                navigate(`/posts/analytics/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                                navigate(`/posts/analytics/${latestPostStats.id}/newsletter`);
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />

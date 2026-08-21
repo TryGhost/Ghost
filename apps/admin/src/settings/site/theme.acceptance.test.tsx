@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 
 import {
@@ -424,6 +424,22 @@ describe("Theme settings", () => {
             await expect.element(settingsScreen.limitModal()).toHaveTextContent(/Upgrade to use more themes/);
             expect(installApi.requests).toHaveLength(0);
         }
+    });
+
+    it("replaces a blocked marketplace installation in history", async () => {
+        fakeThemeWorld();
+        fakeAdminEndpoint("POST", /^\/themes\/install\/\?/, { themes: [theme({ name: "taste" })] });
+        const replaceState = vi.spyOn(window.history, "replaceState");
+        await renderAdminApp(
+            "/settings/theme/install?source=github&ref=TryGhost/Taste",
+            themeLimits(["casper"], "Upgrade to use custom themes")
+        );
+
+        await expect.element(settingsScreen.limitModal()).toHaveTextContent(/Upgrade to use custom themes/);
+        await expect.poll(currentRoute).toBe("/settings/theme");
+
+        expect(replaceState.mock.calls.some(([, , url]) => String(url).endsWith("#/settings/theme"))).toBe(true);
+        replaceState.mockRestore();
     });
 
     it("confirms before discarding editor changes", async () => {

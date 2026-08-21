@@ -72,8 +72,8 @@ const features: Feature[] = [{
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements'
 }, {
-    title: 'Gift subscription customization',
-    description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
+    title: 'Gift subscription durations and delivery',
+    description: 'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
     flag: 'giftSubCustomization'
 }, {
     title: 'Self-serve archives',

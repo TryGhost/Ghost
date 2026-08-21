@@ -1,42 +1,5 @@
 # Testing with Admin-X-Framework
 
-## Vitest Configuration
-
-The admin-x-framework provides a shared vitest configuration factory to reduce duplication across apps while allowing customization.
-
-### Basic Usage
-
-```typescript
-// vitest.config.ts
-import {createVitestConfig} from '@tryghost/admin-x-framework/test/vitest-config';
-
-export default createVitestConfig();
-```
-
-This provides sensible defaults:
-- **React support** with `@vitejs/plugin-react`
-- **jsdom environment** for DOM testing
-- **Global test APIs** (describe, it, expect, etc.)
-- **Standard aliases** (`@src`, `@test`)
-- **Setup file** at `./test/setup.ts`
-- **Coverage reporting** with text and HTML output
-- **Common exclusions** (node_modules, test files, config files)
-
-### Customization Options
-
-```typescript
-export default createVitestConfig({
-    include: ['./test/unit/**/*.{test,spec}.{js,ts,jsx,tsx}'], // Custom test patterns
-    aliases: {
-        '@components': './src/components',
-        '@utils': './src/utils'
-    },
-    silent: false,
-    reporter: 'basic',
-    setupFiles: ['./test/setup.ts', './test/custom-setup.ts']
-});
-```
-
 ## Test Setup for Shade Components
 
 The admin-x-framework provides shared test setup utilities for apps using shade components. These utilities handle common mocks required for responsive behavior and chart components.
@@ -222,8 +185,6 @@ import {useMyHook} from '../../../src/hooks/useMyHook';
 import MyComponent from '../../../src/components/MyComponent';
 ```
 
-The vitest configuration automatically provides `@src` and `@test` aliases for cleaner imports.
-
 **Important**: For path aliases to work in both tests and builds, you need to configure TypeScript path mapping in your `tsconfig.json`:
 
 ```json
@@ -238,16 +199,7 @@ The vitest configuration automatically provides `@src` and `@test` aliases for c
 }
 ```
 
-### 2. Use Centralized Configuration
-```typescript
-// ✅ Good - Use shared config
-export default createVitestConfig();
-
-// ❌ Avoid - Duplicating configuration
-export default defineConfig({...});
-```
-
-### 3. Leverage MSW for API Testing
+### 2. Leverage MSW for API Testing
 ```typescript
 // ✅ Good - Use centralized MSW setup
 const server = setupMswServer();
@@ -256,7 +208,7 @@ const server = setupMswServer();
 const server = setupServer(/* manual handlers */);
 ```
 
-### 4. Override Only When Needed
+### 3. Override Only When Needed
 ```typescript
 // ✅ Good - Override specific endpoints
 server.use(http.put('/api/endpoint/', () => new HttpResponse(null, {status: 500})));
@@ -264,7 +216,7 @@ server.use(http.put('/api/endpoint/', () => new HttpResponse(null, {status: 500}
 // ❌ Avoid - Recreating entire server setup
 ```
 
-### 5. Proper Cleanup
+### 4. Proper Cleanup
 ```typescript
 // ✅ Good - Use provided setup
 const server = setupMswServer(); // Handles lifecycle automatically

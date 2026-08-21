@@ -40,8 +40,7 @@ describe('usePinturaConfig', () => {
             subdir: '',
             adminRoot: '/ghost/',
             assetRoot: '/ghost/assets/',
-            apiRoot: '/ghost/api/admin',
-            activityPubRoot: '/.ghost/activitypub'
+            apiRoot: '/ghost/api/admin'
         });
     });
 
@@ -88,11 +87,9 @@ describe('usePinturaConfig', () => {
         mockUseBrowseConfig.mockReturnValue({
             data: {
                 config: {
-                    hostSettings: {
-                        pintura: {
-                            js: 'https://config.example.com/pintura.js',
-                            css: 'https://config.example.com/pintura.css'
-                        }
+                    pintura: {
+                        js: 'https://config.example.com/pintura.js',
+                        css: 'https://config.example.com/pintura.css'
                     }
                 }
             }
@@ -111,11 +108,9 @@ describe('usePinturaConfig', () => {
         mockUseBrowseConfig.mockReturnValue({
             data: {
                 config: {
-                    hostSettings: {
-                        pintura: {
-                            js: '/pintura/pintura-umd.js',
-                            css: '/pintura/pintura.css'
-                        }
+                    pintura: {
+                        js: '/pintura/pintura-umd.js',
+                        css: '/pintura/pintura.css'
                     }
                 }
             }
@@ -125,8 +120,7 @@ describe('usePinturaConfig', () => {
             subdir: '',
             adminRoot: '/blog/ghost/',
             assetRoot: '/blog/ghost/assets/',
-            apiRoot: '/blog/ghost/api/admin',
-            activityPubRoot: '/.ghost/activitypub'
+            apiRoot: '/blog/ghost/api/admin'
         });
 
         const {result} = renderHook(() => usePinturaConfig());

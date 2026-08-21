@@ -1151,7 +1151,8 @@
                 },
                 "DB Backup Integration": {
                     "db": "all",
-                    "member": "browse"
+                    "member": "browse",
+                    "post": "browse"
                 },
                 "Scheduler Integration": {
                     "post": "publish",

@@ -6,6 +6,7 @@ import {buildMemberDetailPath} from '@/members/member-detail-hash';
 import {cn, formatPercentage} from '@tryghost/shade/utils';
 import type {MemberActiveColumn} from '@/members/member-query-params';
 import {forwardRef, type CSSProperties} from 'react';
+import {Link} from '@tryghost/admin-x-framework';
 import type {MemberTableColumnStyles} from './member-table-layout';
 
 const PINNED_EDGE_FADE_POSITION_STYLE = {
@@ -77,9 +78,9 @@ function MembersListItemName({item, backPath, onClick}: { item: Member; backPath
                 src={item.avatar_image}
             />
             <div className="min-w-0">
-                <a
+                <Link
                     className="block min-w-0 cursor-pointer"
-                    href={`#${buildMemberDetailPath(item.id, backPath)}`}
+                    to={buildMemberDetailPath(item.id, backPath)}
                     onClick={onClick ? (e) => {
                         if (isModifiedClick(e)) {
                             e.stopPropagation();
@@ -93,7 +94,7 @@ function MembersListItemName({item, backPath, onClick}: { item: Member; backPath
                     <span className="block truncate text-md font-semibold">
                         {item.name || item.email || 'Anonymous'}
                     </span>
-                </a>
+                </Link>
                 {item.name && item.email && (
                     <div
                         className="truncate text-muted-foreground"
