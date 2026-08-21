@@ -2,14 +2,19 @@
   "name": "@tryghost/adapter-base-scheduling",
   "version": "0.2.2",
   "description": "The adapter-base-scheduling package for Ghost.",
-  "type": "module",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/adapters/scheduling-base"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -17,8 +22,6 @@
       "default": "./build/index.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -28,9 +31,9 @@
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
-  "files": [
-    "build"
-  ],
+  "dependencies": {
+    "@tryghost/logging": "catalog:"
+  },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:",
     "@internal/cfg-typescript": "workspace:",
@@ -43,9 +46,6 @@
     "sinon": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "dependencies": {
-    "@tryghost/logging": "catalog:"
   },
   "nx": {
     "targets": {

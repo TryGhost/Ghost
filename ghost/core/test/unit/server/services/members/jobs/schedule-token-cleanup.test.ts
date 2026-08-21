@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import {describe, it, beforeEach, afterEach} from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'vitest';
 import logging from '@tryghost/logging';
 
 // require, not import: these must resolve to the same CommonJS module
@@ -11,38 +11,38 @@ const adapterManager = require('../../../../../../core/server/services/adapter-m
 const memberJobs = require('../../../../../../core/server/services/members/jobs');
 
 describe('member jobs: token cleanup scheduling', function () {
-    let scheduleStub: sinon.SinonStub;
+  let scheduleStub: sinon.SinonStub;
 
-    beforeEach(function () {
-        jobsService.init();
-        const backend = adapterManager.getAdapter('jobs');
-        scheduleStub = sinon.stub(backend, 'scheduleRecurring');
-    });
+  beforeEach(function () {
+    jobsService.init();
+    const backend = adapterManager.getAdapter('jobs');
+    scheduleStub = sinon.stub(backend, 'scheduleRecurring');
+  });
 
-    afterEach(async function () {
-        await jobsService.shutdown({timeoutMs: 100});
-        sinon.restore();
-    });
+  afterEach(async function () {
+    await jobsService.shutdown({ timeoutMs: 100 });
+    sinon.restore();
+  });
 
-    it('does not schedule token cleanup under the test environment', async function () {
-        await memberJobs.scheduleTokenCleanupJob();
+  it('does not schedule token cleanup under the test environment', async function () {
+    await memberJobs.scheduleTokenCleanupJob();
 
-        assert.ok(scheduleStub.notCalled, 'token cleanup must not be scheduled under NODE_ENV=test*');
-    });
+    assert.ok(scheduleStub.notCalled, 'token cleanup must not be scheduled under NODE_ENV=test*');
+  });
 
-    it('schedules a daily clean-tokens job outside the test environment even when logging fails', async function () {
-        const originalEnv = process.env.NODE_ENV;
-        sinon.stub(logging, 'info').throws(new Error('Logger unavailable'));
-        process.env.NODE_ENV = 'production';
-        try {
-            await memberJobs.scheduleTokenCleanupJob();
-        } finally {
-            process.env.NODE_ENV = originalEnv;
-        }
+  it('schedules a daily clean-tokens job outside the test environment even when logging fails', async function () {
+    const originalEnv = process.env.NODE_ENV;
+    sinon.stub(logging, 'info').throws(new Error('Logger unavailable'));
+    process.env.NODE_ENV = 'production';
+    try {
+      await memberJobs.scheduleTokenCleanupJob();
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
 
-        assert.ok(scheduleStub.calledOnce, 'clean-tokens is scheduled outside the test environment');
-        const [envelope, schedule] = scheduleStub.firstCall.args;
-        assert.equal(envelope.type, 'clean-tokens');
-        assert.match(schedule.cron, /^\d+ \d+ \d+ \* \* \*$/, 'a random daily 6-field cron');
-    });
+    assert.ok(scheduleStub.calledOnce, 'clean-tokens is scheduled outside the test environment');
+    const [envelope, schedule] = scheduleStub.firstCall.args;
+    assert.equal(envelope.type, 'clean-tokens');
+    assert.match(schedule.cron, /^\d+ \d+ \d+ \* \* \*$/, 'a random daily 6-field cron');
+  });
 });

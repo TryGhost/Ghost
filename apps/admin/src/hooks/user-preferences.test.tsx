@@ -1,37 +1,46 @@
-import { test as baseTest, describe, expect } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
-import type { QueryClient } from "@tanstack/react-query";
-import { useUserPreferences, useEditUserPreferences, DEFAULT_NAVIGATION_PREFERENCES, DEFAULT_ONBOARDING_PREFERENCES } from "./user-preferences";
-import { HttpResponse, http } from "msw";
-import { mockUser } from "@test-utils/factories";
-import { waitForQuerySettled } from "@test-utils/test-helpers";
-import { serverFixture } from "@test-utils/fixtures/msw";
-import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
-import type { UpdateUserRequestBody, UsersResponseType, User } from "@tryghost/admin-x-framework/api/users";
-import type { SetupServer } from "msw/node";
+import { test as baseTest, describe, expect } from 'vitest';
+import { renderHook, waitFor, act } from '@testing-library/react';
+import type { QueryClient } from '@tanstack/react-query';
+import {
+  useUserPreferences,
+  useEditUserPreferences,
+  DEFAULT_NAVIGATION_PREFERENCES,
+  DEFAULT_ONBOARDING_PREFERENCES,
+} from './user-preferences';
+import { HttpResponse, http } from 'msw';
+import { mockUser } from '@test-utils/factories';
+import { waitForQuerySettled } from '@test-utils/test-helpers';
+import { serverFixture } from '@test-utils/fixtures/msw';
+import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
+import type {
+  UpdateUserRequestBody,
+  UsersResponseType,
+  User,
+} from '@tryghost/admin-x-framework/api/users';
+import type { SetupServer } from 'msw/node';
 
 // Constants
-const USERS_API_URL = "/ghost/api/admin/users/me/";
-const USER_UPDATE_API_URL = "/ghost/api/admin/users/:id/";
+const USERS_API_URL = '/ghost/api/admin/users/me/';
+const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
 
 // Test fixtures
 const fixtures = {
-    emptyPreferences: {},
-    existingPreferences: {
-        existing: "value",
-        shared: "old",
-    },
-    newPreferences: {
-        shared: "new",
-        additional: "data",
-    },
-    singlePreference: {
-        setting: "value",
-    },
-    defaults: {
-        navigation: DEFAULT_NAVIGATION_PREFERENCES,
-        onboarding: DEFAULT_ONBOARDING_PREFERENCES,
-    }
+  emptyPreferences: {},
+  existingPreferences: {
+    existing: 'value',
+    shared: 'old',
+  },
+  newPreferences: {
+    shared: 'new',
+    additional: 'data',
+  },
+  singlePreference: {
+    setting: 'value',
+  },
+  defaults: {
+    navigation: DEFAULT_NAVIGATION_PREFERENCES,
+    onboarding: DEFAULT_ONBOARDING_PREFERENCES,
+  },
 };
 
 // Setup functions
@@ -50,30 +59,30 @@ const fixtures = {
  * @returns The renderHook result with the query in a settled state
  */
 async function setupQuery(
-    server: SetupServer,
-    wrapper: TestWrapperComponent,
-    userOverrides: Partial<User> = {}
+  server: SetupServer,
+  wrapper: TestWrapperComponent,
+  userOverrides: Partial<User> = {},
 ) {
-    // Mock the user API endpoint with customizable user data
-    server.use(
-        http.get(USERS_API_URL, () => {
-            return HttpResponse.json({
-                users: [
-                    {
-                        ...mockUser,
-                        ...userOverrides,
-                    },
-                ],
-            });
-        })
-    );
+  // Mock the user API endpoint with customizable user data
+  server.use(
+    http.get(USERS_API_URL, () => {
+      return HttpResponse.json({
+        users: [
+          {
+            ...mockUser,
+            ...userOverrides,
+          },
+        ],
+      });
+    }),
+  );
 
-    // Render the hook and wait for it to finish loading
-    const { result } = renderHook(() => useUserPreferences(), {
-        wrapper,
-    });
-    await waitForQuerySettled(result);
-    return result;
+  // Render the hook and wait for it to finish loading
+  const { result } = renderHook(() => useUserPreferences(), {
+    wrapper,
+  });
+  await waitForQuerySettled(result);
+  return result;
 }
 
 /**
@@ -91,431 +100,452 @@ async function setupQuery(
  * @returns Both query and mutation hook results, ready for testing edits
  */
 async function setupEdit(
-    server: SetupServer,
-    wrapper: TestWrapperComponent,
-    initialUser: Partial<User> = {}
+  server: SetupServer,
+  wrapper: TestWrapperComponent,
+  initialUser: Partial<User> = {},
 ) {
-    // Mock both the GET endpoint (for reading preferences) and PUT endpoint (for edits)
-    server.use(
-        http.get(USERS_API_URL, () => {
-            return HttpResponse.json({
-                users: [
-                    {
-                        ...mockUser,
-                        ...initialUser,
-                    },
-                ],
-            });
-        }),
-        http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
-            USER_UPDATE_API_URL,
-            async ({ request }) => {
-                const body = await request.json();
-                const accessibility = body.users[0]?.accessibility ?? "";
-                return HttpResponse.json({
-                    users: [
-                        {
-                            ...mockUser,
-                            accessibility,
-                        },
-                    ],
-                });
-            }
-        )
-    );
+  // Mock both the GET endpoint (for reading preferences) and PUT endpoint (for edits)
+  server.use(
+    http.get(USERS_API_URL, () => {
+      return HttpResponse.json({
+        users: [
+          {
+            ...mockUser,
+            ...initialUser,
+          },
+        ],
+      });
+    }),
+    http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
+      USER_UPDATE_API_URL,
+      async ({ request }) => {
+        const body = await request.json();
+        const accessibility = body.users[0]?.accessibility ?? '';
+        return HttpResponse.json({
+          users: [
+            {
+              ...mockUser,
+              accessibility,
+            },
+          ],
+        });
+      },
+    ),
+  );
 
-    // Render the query hook and wait for initial data to load
-    const queryResult = renderHook(() => useUserPreferences(), {
-        wrapper,
-    });
-    await waitForQuerySettled(queryResult.result);
+  // Render the query hook and wait for initial data to load
+  const queryResult = renderHook(() => useUserPreferences(), {
+    wrapper,
+  });
+  await waitForQuerySettled(queryResult.result);
 
-    // Render the mutation hook (ready to call mutateAsync in tests)
-    const mutationResult = renderHook(() => useEditUserPreferences(), { wrapper });
+  // Render the mutation hook (ready to call mutateAsync in tests)
+  const mutationResult = renderHook(() => useEditUserPreferences(), { wrapper });
 
-    return {
-        query: queryResult.result,
-        mutation: mutationResult.result,
-    };
+  return {
+    query: queryResult.result,
+    mutation: mutationResult.result,
+  };
 }
 
 // Test extensions
 const queryTest = baseTest.extend<{
-    server: SetupServer;
-    queryClient: QueryClient;
-    wrapper: TestWrapperComponent;
-    setup: (userOverrides?: Partial<User>) => ReturnType<typeof setupQuery>;
+  server: SetupServer;
+  queryClient: QueryClient;
+  wrapper: TestWrapperComponent;
+  setup: (userOverrides?: Partial<User>) => ReturnType<typeof setupQuery>;
 }>({
-    ...serverFixture,
-    ...queryClientFixtures,
-    setup: async ({ server, wrapper }, provide) => {
-        await provide((userOverrides) => setupQuery(server, wrapper, userOverrides));
-    },
+  ...serverFixture,
+  ...queryClientFixtures,
+  setup: async ({ server, wrapper }, provide) => {
+    await provide((userOverrides) => setupQuery(server, wrapper, userOverrides));
+  },
 });
 
 const editTest = baseTest.extend<{
-    server: SetupServer;
-    queryClient: QueryClient;
-    wrapper: TestWrapperComponent;
-    setup: (initialUser?: Partial<User>) => ReturnType<typeof setupEdit>;
+  server: SetupServer;
+  queryClient: QueryClient;
+  wrapper: TestWrapperComponent;
+  setup: (initialUser?: Partial<User>) => ReturnType<typeof setupEdit>;
 }>({
-    ...serverFixture,
-    ...queryClientFixtures,
-    setup: async ({ server, wrapper }, provide) => {
-        await provide((initialUser) => setupEdit(server, wrapper, initialUser));
-    },
+  ...serverFixture,
+  ...queryClientFixtures,
+  setup: async ({ server, wrapper }, provide) => {
+    await provide((initialUser) => setupEdit(server, wrapper, initialUser));
+  },
 });
 
-describe("useUserPreferences", () => {
-    describe("initialization", () => {
-        [
-            {
-                scenario: "null",
-                accessibility: null,
-            },
-            {
-                scenario: "undefined",
-                accessibility: undefined,
-            },
-            {
-                scenario: "empty string",
-                accessibility: "",
-            },
-        ].forEach(({ scenario, accessibility }) => {
-            queryTest(`returns object with defaults when accessibility is ${scenario}`, async ({ setup }) => {
-                const result = await setup({ accessibility });
+describe('useUserPreferences', () => {
+  describe('initialization', () => {
+    [
+      {
+        scenario: 'null',
+        accessibility: null,
+      },
+      {
+        scenario: 'undefined',
+        accessibility: undefined,
+      },
+      {
+        scenario: 'empty string',
+        accessibility: '',
+      },
+    ].forEach(({ scenario, accessibility }) => {
+      queryTest(
+        `returns object with defaults when accessibility is ${scenario}`,
+        async ({ setup }) => {
+          const result = await setup({ accessibility });
 
-                expect(result.current.data).toEqual(fixtures.defaults);
-            });
-        });
-
-        queryTest("parses JSON from accessibility field", async ({ setup }) => {
-            const result = await setup({
-                accessibility: JSON.stringify(fixtures.existingPreferences),
-            });
-
-            expect(result.current.data).toEqual({
-                ...fixtures.defaults,
-                ...fixtures.existingPreferences,
-            });
-        });
-
-        queryTest("errors when invalid JSON", async ({ setup }) => {
-            const result = await setup({ accessibility: "{invalid json" });
-
-            expect(result.current.isError).toBe(true);
-            expect(result.current.error).toBeInstanceOf(Error);
-        });
-
-        queryTest("gracefully handles invalid schema values", async ({ setup }) => {
-            const result = await setup({
-                accessibility: JSON.stringify({
-                    onboarding: {
-                        checklistState: "unknown",
-                        completedSteps: "customize-design",
-                        startedAt: "not-a-valid-datetime",
-                    },
-                    whatsNew: {
-                        lastSeenDate: "not-a-valid-datetime",
-                    },
-                }),
-            });
-
-            // Should not error - catches and returns undefined for invalid fields
-            expect(result.current.isError).toBe(false);
-            expect(result.current.data).toEqual({
-                ...fixtures.defaults,
-                whatsNew: {
-                    lastSeenDate: undefined,
-                },
-            });
-        });
-
-        queryTest("parses onboarding startedAt into a date", async ({ setup }) => {
-            const result = await setup({
-                accessibility: JSON.stringify({
-                    onboarding: {
-                        completedSteps: ["customize-design"],
-                        checklistState: "started",
-                        startedAt: "2026-04-30T10:00:00.000Z",
-                    },
-                }),
-            });
-
-            expect(result.current.data?.onboarding).toEqual({
-                completedSteps: ["customize-design"],
-                checklistState: "started",
-                startedAt: new Date("2026-04-30T10:00:00.000Z"),
-            });
-        });
-
-        describe("nightShift migration", () => {
-            [
-                {scenario: "legacy boolean true", value: true, expected: "dark"},
-                {scenario: "legacy boolean false", value: false, expected: "light"},
-                {scenario: "dark string", value: "dark", expected: "dark"},
-                {scenario: "light string", value: "light", expected: "light"},
-                {scenario: "system string", value: "system", expected: "system"},
-                {scenario: "invalid value", value: "invalid", expected: "light"},
-            ].forEach(({scenario, value, expected}) => {
-                queryTest(`parses ${scenario}`, async ({ setup }) => {
-                    const result = await setup({
-                        accessibility: JSON.stringify({nightShift: value}),
-                    });
-
-                    expect(result.current.data?.nightShift).toBe(expected);
-                });
-            });
-
-            queryTest("omits nightShift when the preference is absent", async ({ setup }) => {
-                const result = await setup({
-                    accessibility: JSON.stringify({}),
-                });
-
-                // Absent stays absent so it isn't written back on unrelated saves;
-                // the display fallback to "light" lives in useTheme.
-                expect(result.current.data?.nightShift).toBeUndefined();
-            });
-
-            queryTest("preserves explicit system preference", async ({ setup }) => {
-                const result = await setup({
-                    accessibility: JSON.stringify({nightShift: "system"}),
-                });
-
-                expect(result.current.data?.nightShift).toBe("system");
-            });
-        });
-
-        queryTest("returns undefined when user is not loaded", async ({ server, wrapper }) => {
-            server.use(
-                http.get(USERS_API_URL, () => {
-                    return HttpResponse.json({ users: [] });
-                })
-            );
-
-            const { result } = renderHook(() => useUserPreferences(), {
-                wrapper,
-            });
-
-            await waitFor(() => {
-                expect(result.current.isFetching).toBe(false);
-            });
-
-            expect(result.current.data).toBeUndefined();
-        });
+          expect(result.current.data).toEqual(fixtures.defaults);
+        },
+      );
     });
 
-    describe("query options", () => {
-        queryTest("supports select option to transform data", async ({ server, wrapper }) => {
-            server.use(
-                http.get(USERS_API_URL, () => {
-                    return HttpResponse.json({
-                        users: [{
-                            ...mockUser,
-                            accessibility: JSON.stringify({
-                                navigation: {
-                                    expanded: { posts: false },
-                                    menu: { visible: true },
-                                },
-                                nightShift: "dark",
-                            }),
-                        }],
-                    });
-                })
-            );
+    queryTest('parses JSON from accessibility field', async ({ setup }) => {
+      const result = await setup({
+        accessibility: JSON.stringify(fixtures.existingPreferences),
+      });
 
-            const { result } = renderHook(() => useUserPreferences({
-                select: (data) => data.navigation,
-            }), { wrapper });
+      expect(result.current.data).toEqual({
+        ...fixtures.defaults,
+        ...fixtures.existingPreferences,
+      });
+    });
 
-            await waitForQuerySettled(result);
+    queryTest('errors when invalid JSON', async ({ setup }) => {
+      const result = await setup({ accessibility: '{invalid json' });
 
-            expect(result.current.data).toEqual({
-                expanded: { posts: false, members: true },
-                menu: { visible: true },
-            });
+      expect(result.current.isError).toBe(true);
+      expect(result.current.error).toBeInstanceOf(Error);
+    });
+
+    queryTest('gracefully handles invalid schema values', async ({ setup }) => {
+      const result = await setup({
+        accessibility: JSON.stringify({
+          onboarding: {
+            checklistState: 'unknown',
+            completedSteps: 'customize-design',
+            startedAt: 'not-a-valid-datetime',
+          },
+          whatsNew: {
+            lastSeenDate: 'not-a-valid-datetime',
+          },
+        }),
+      });
+
+      // Should not error - catches and returns undefined for invalid fields
+      expect(result.current.isError).toBe(false);
+      expect(result.current.data).toEqual({
+        ...fixtures.defaults,
+        whatsNew: {
+          lastSeenDate: undefined,
+        },
+      });
+    });
+
+    queryTest('parses onboarding startedAt into a date', async ({ setup }) => {
+      const result = await setup({
+        accessibility: JSON.stringify({
+          onboarding: {
+            completedSteps: ['customize-design'],
+            checklistState: 'started',
+            startedAt: '2026-04-30T10:00:00.000Z',
+          },
+        }),
+      });
+
+      expect(result.current.data?.onboarding).toEqual({
+        completedSteps: ['customize-design'],
+        checklistState: 'started',
+        startedAt: new Date('2026-04-30T10:00:00.000Z'),
+      });
+    });
+
+    describe('nightShift migration', () => {
+      [
+        { scenario: 'legacy boolean true', value: true, expected: 'dark' },
+        { scenario: 'legacy boolean false', value: false, expected: 'light' },
+        { scenario: 'dark string', value: 'dark', expected: 'dark' },
+        { scenario: 'light string', value: 'light', expected: 'light' },
+        { scenario: 'system string', value: 'system', expected: 'system' },
+        { scenario: 'invalid value', value: 'invalid', expected: 'light' },
+      ].forEach(({ scenario, value, expected }) => {
+        queryTest(`parses ${scenario}`, async ({ setup }) => {
+          const result = await setup({
+            accessibility: JSON.stringify({ nightShift: value }),
+          });
+
+          expect(result.current.data?.nightShift).toBe(expected);
+        });
+      });
+
+      queryTest('omits nightShift when the preference is absent', async ({ setup }) => {
+        const result = await setup({
+          accessibility: JSON.stringify({}),
         });
 
-        queryTest("keeps previous data during unrelated accessibility updates", async ({ server, wrapper }) => {
-            server.use(
-                http.get(USERS_API_URL, () => {
-                    return HttpResponse.json({
-                        users: [
-                            {
-                                ...mockUser,
-                                accessibility: JSON.stringify({
-                                    navigation: DEFAULT_NAVIGATION_PREFERENCES,
-                                    whatsNew: {
-                                        lastSeenDate: "2025-01-01T00:00:00.000Z",
-                                    },
-                                }),
-                            },
-                        ],
-                    });
+        // Absent stays absent so it isn't written back on unrelated saves;
+        // the display fallback to "light" lives in useTheme.
+        expect(result.current.data?.nightShift).toBeUndefined();
+      });
+
+      queryTest('preserves explicit system preference', async ({ setup }) => {
+        const result = await setup({
+          accessibility: JSON.stringify({ nightShift: 'system' }),
+        });
+
+        expect(result.current.data?.nightShift).toBe('system');
+      });
+    });
+
+    queryTest('returns undefined when user is not loaded', async ({ server, wrapper }) => {
+      server.use(
+        http.get(USERS_API_URL, () => {
+          return HttpResponse.json({ users: [] });
+        }),
+      );
+
+      const { result } = renderHook(() => useUserPreferences(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isFetching).toBe(false);
+      });
+
+      expect(result.current.data).toBeUndefined();
+    });
+  });
+
+  describe('query options', () => {
+    queryTest('supports select option to transform data', async ({ server, wrapper }) => {
+      server.use(
+        http.get(USERS_API_URL, () => {
+          return HttpResponse.json({
+            users: [
+              {
+                ...mockUser,
+                accessibility: JSON.stringify({
+                  navigation: {
+                    expanded: { posts: false },
+                    menu: { visible: true },
+                  },
+                  nightShift: 'dark',
                 }),
-                http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(USER_UPDATE_API_URL, async ({ request }) => {
-                    const body = await request.json();
+              },
+            ],
+          });
+        }),
+      );
 
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, 25);
-                    });
+      const { result } = renderHook(
+        () =>
+          useUserPreferences({
+            select: (data) => data.navigation,
+          }),
+        { wrapper },
+      );
 
-                    return HttpResponse.json({
-                        users: [
-                            {
-                                ...mockUser,
-                                accessibility: body.users[0]?.accessibility ?? "",
-                            },
-                        ],
-                    });
-                })
-            );
+      await waitForQuerySettled(result);
 
-            const snapshots: Array<ReturnType<typeof useUserPreferences>["data"]> = [];
+      expect(result.current.data).toEqual({
+        expanded: { posts: false, members: true },
+        menu: { visible: true },
+      });
+    });
 
-            const { result } = renderHook(() => {
-                const query = useUserPreferences();
-                const mutation = useEditUserPreferences();
-
-                snapshots.push(query.data);
-
-                return {query, mutation};
-            }, { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.query.data).toEqual({
+    queryTest(
+      'keeps previous data during unrelated accessibility updates',
+      async ({ server, wrapper }) => {
+        server.use(
+          http.get(USERS_API_URL, () => {
+            return HttpResponse.json({
+              users: [
+                {
+                  ...mockUser,
+                  accessibility: JSON.stringify({
                     navigation: DEFAULT_NAVIGATION_PREFERENCES,
-                    onboarding: DEFAULT_ONBOARDING_PREFERENCES,
                     whatsNew: {
-                        lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
+                      lastSeenDate: '2025-01-01T00:00:00.000Z',
                     },
-                });
+                  }),
+                },
+              ],
             });
+          }),
+          http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
+            USER_UPDATE_API_URL,
+            async ({ request }) => {
+              const body = await request.json();
 
-            snapshots.length = 0;
+              await new Promise((resolve) => {
+                setTimeout(resolve, 25);
+              });
 
-            await act(async () => {
-                await result.current.mutation.mutateAsync({
-                    navigation: {
-                        expanded: {
-                            posts: false,
-                        },
-                    },
-                });
-            });
+              return HttpResponse.json({
+                users: [
+                  {
+                    ...mockUser,
+                    accessibility: body.users[0]?.accessibility ?? '',
+                  },
+                ],
+              });
+            },
+          ),
+        );
 
-            await waitFor(() => {
-                expect(result.current.query.data).toEqual({
-                    navigation: {
-                        ...DEFAULT_NAVIGATION_PREFERENCES,
-                        expanded: {
-                            ...DEFAULT_NAVIGATION_PREFERENCES.expanded,
-                            posts: false,
-                        },
-                    },
-                    onboarding: DEFAULT_ONBOARDING_PREFERENCES,
-                    whatsNew: {
-                        lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
-                    },
-                });
-            });
+        const snapshots: Array<ReturnType<typeof useUserPreferences>['data']> = [];
 
-            expect(snapshots).not.toContain(undefined);
+        const { result } = renderHook(
+          () => {
+            const query = useUserPreferences();
+            const mutation = useEditUserPreferences();
+
+            snapshots.push(query.data);
+
+            return { query, mutation };
+          },
+          { wrapper },
+        );
+
+        await waitFor(() => {
+          expect(result.current.query.data).toEqual({
+            navigation: DEFAULT_NAVIGATION_PREFERENCES,
+            onboarding: DEFAULT_ONBOARDING_PREFERENCES,
+            whatsNew: {
+              lastSeenDate: new Date('2025-01-01T00:00:00.000Z'),
+            },
+          });
         });
-    });
+
+        snapshots.length = 0;
+
+        await act(async () => {
+          await result.current.mutation.mutateAsync({
+            navigation: {
+              expanded: {
+                posts: false,
+              },
+            },
+          });
+        });
+
+        await waitFor(() => {
+          expect(result.current.query.data).toEqual({
+            navigation: {
+              ...DEFAULT_NAVIGATION_PREFERENCES,
+              expanded: {
+                ...DEFAULT_NAVIGATION_PREFERENCES.expanded,
+                posts: false,
+              },
+            },
+            onboarding: DEFAULT_ONBOARDING_PREFERENCES,
+            whatsNew: {
+              lastSeenDate: new Date('2025-01-01T00:00:00.000Z'),
+            },
+          });
+        });
+
+        expect(snapshots).not.toContain(undefined);
+      },
+    );
+  });
 });
 
-describe("useEditUserPreferences", () => {
-    describe("editing preferences", () => {
-        editTest("merges new preferences with existing ones", async ({ setup }) => {
-            const { query, mutation } = await setup({
-                accessibility: JSON.stringify(fixtures.existingPreferences),
-            });
+describe('useEditUserPreferences', () => {
+  describe('editing preferences', () => {
+    editTest('merges new preferences with existing ones', async ({ setup }) => {
+      const { query, mutation } = await setup({
+        accessibility: JSON.stringify(fixtures.existingPreferences),
+      });
 
-            await act(async () => {
-                await mutation.current.mutateAsync(fixtures.newPreferences);
-            });
+      await act(async () => {
+        await mutation.current.mutateAsync(fixtures.newPreferences);
+      });
 
-            await waitFor(() => {
-                expect(query.current.data).toEqual({
-                    ...fixtures.defaults,
-                    existing: "value",
-                    shared: "new",
-                    additional: "data",
-                });
-            });
+      await waitFor(() => {
+        expect(query.current.data).toEqual({
+          ...fixtures.defaults,
+          existing: 'value',
+          shared: 'new',
+          additional: 'data',
         });
-
-        editTest("creates new accessibility object when none exists", async ({ setup }) => {
-            const { query, mutation } = await setup();
-
-            await act(async () => {
-                await mutation.current.mutateAsync(fixtures.singlePreference);
-            });
-
-            await waitFor(() => {
-                expect(query.current.data).toEqual({
-                    ...fixtures.defaults,
-                    ...fixtures.singlePreference,
-                });
-            });
-        });
-
-        editTest("throws error when user is not loaded", async ({ server, wrapper }) => {
-            server.use(
-                http.get(USERS_API_URL, () => {
-                    return HttpResponse.json({ users: [] });
-                })
-            );
-
-            const { result } = renderHook(() => useEditUserPreferences(), {
-                wrapper,
-            });
-
-            await expect(
-                act(async () => {
-                    await result.current.mutateAsync(fixtures.singlePreference);
-                })
-            ).rejects.toThrow("User is not loaded");
-        });
+      });
     });
 
-    describe("deep merge behavior", () => {
-        editTest("deep merges nested objects while preserving sibling properties", async ({ setup }) => {
-            const { query, mutation } = await setup({
-                accessibility: JSON.stringify({
-                    navigation: {
-                        expanded: { posts: false, members: false },
-                        menu: { visible: true },
-                    },
-                    onboarding: {
-                        completedSteps: ["customize-design"],
-                        checklistState: "started",
-                    },
-                    nightShift: "dark",
-                }),
-            });
+    editTest('creates new accessibility object when none exists', async ({ setup }) => {
+      const { query, mutation } = await setup();
 
-            await act(async () => {
-                await mutation.current.mutateAsync({
-                    navigation: { expanded: { posts: true } },
-                    onboarding: { completedSteps: ["customize-design", "first-post"] },
-                });
-            });
+      await act(async () => {
+        await mutation.current.mutateAsync(fixtures.singlePreference);
+      });
 
-            await waitFor(() => {
-                expect(query.current.data).toEqual({
-                    navigation: {
-                        expanded: { posts: true, members: false },
-                        menu: { visible: true }, // Preserved
-                    },
-                    onboarding: {
-                        completedSteps: ["customize-design", "first-post"],
-                        checklistState: "started",
-                    },
-                    nightShift: "dark", // Preserved
-                });
-            });
+      await waitFor(() => {
+        expect(query.current.data).toEqual({
+          ...fixtures.defaults,
+          ...fixtures.singlePreference,
         });
+      });
     });
+
+    editTest('throws error when user is not loaded', async ({ server, wrapper }) => {
+      server.use(
+        http.get(USERS_API_URL, () => {
+          return HttpResponse.json({ users: [] });
+        }),
+      );
+
+      const { result } = renderHook(() => useEditUserPreferences(), {
+        wrapper,
+      });
+
+      await expect(
+        act(async () => {
+          await result.current.mutateAsync(fixtures.singlePreference);
+        }),
+      ).rejects.toThrow('User is not loaded');
+    });
+  });
+
+  describe('deep merge behavior', () => {
+    editTest(
+      'deep merges nested objects while preserving sibling properties',
+      async ({ setup }) => {
+        const { query, mutation } = await setup({
+          accessibility: JSON.stringify({
+            navigation: {
+              expanded: { posts: false, members: false },
+              menu: { visible: true },
+            },
+            onboarding: {
+              completedSteps: ['customize-design'],
+              checklistState: 'started',
+            },
+            nightShift: 'dark',
+          }),
+        });
+
+        await act(async () => {
+          await mutation.current.mutateAsync({
+            navigation: { expanded: { posts: true } },
+            onboarding: { completedSteps: ['customize-design', 'first-post'] },
+          });
+        });
+
+        await waitFor(() => {
+          expect(query.current.data).toEqual({
+            navigation: {
+              expanded: { posts: true, members: false },
+              menu: { visible: true }, // Preserved
+            },
+            onboarding: {
+              completedSteps: ['customize-design', 'first-post'],
+              checklistState: 'started',
+            },
+            nightShift: 'dark', // Preserved
+          });
+        });
+      },
+    );
+  });
 });

@@ -28,42 +28,42 @@ module.exports = SessionFromToken;
  * @returns {RequestHandler}
  */
 function SessionFromToken({
-    getTokenFromRequest,
-    getLookupFromToken,
-    findUserByLookup,
-    createSession,
-    callNextWithError
+  getTokenFromRequest,
+  getLookupFromToken,
+  findUserByLookup,
+  createSession,
+  callNextWithError,
 }) {
-    /**
-     * @param {Req} req
-     * @param {Res} res
-     * @param {Next} next
-     * @returns {Promise<void>}
-     */
-    async function handler(req, res, next) {
-        try {
-            const token = await getTokenFromRequest(req);
-            if (!token) {
-                return next();
-            }
-            const email = await getLookupFromToken(token);
-            if (!email) {
-                return next();
-            }
-            const user = await findUserByLookup(email);
-            if (!user) {
-                return next();
-            }
-            await createSession(req, res, user);
-            next();
-        } catch (err) {
-            if (callNextWithError) {
-                next(err);
-            } else {
-                next();
-            }
-        }
+  /**
+   * @param {Req} req
+   * @param {Res} res
+   * @param {Next} next
+   * @returns {Promise<void>}
+   */
+  async function handler(req, res, next) {
+    try {
+      const token = await getTokenFromRequest(req);
+      if (!token) {
+        return next();
+      }
+      const email = await getLookupFromToken(token);
+      if (!email) {
+        return next();
+      }
+      const user = await findUserByLookup(email);
+      if (!user) {
+        return next();
+      }
+      await createSession(req, res, user);
+      next();
+    } catch (err) {
+      if (callNextWithError) {
+        next(err);
+      } else {
+        next();
+      }
     }
+  }
 
-    return handler;
+  return handler;
 }

@@ -1,27 +1,31 @@
-import { test as baseTest, describe, expect } from "vitest";
-import { renderHook } from "@testing-library/react";
-import type { QueryClient } from "@tanstack/react-query";
-import { useChangelog, type RawChangelogResponse, ChangelogResponseSchema } from "./use-changelog";
-import { waitForQuerySettled } from "@test-utils/test-helpers";
-import { createChangelogResponse, createRawChangelogEntry, changelogFixtures } from "@test-utils/factories";
-import { serverFixture } from "@test-utils/fixtures/msw";
-import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
-import type { SetupServer } from "msw/node";
-import { http, HttpResponse } from "msw";
+import { test as baseTest, describe, expect } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import type { QueryClient } from '@tanstack/react-query';
+import { useChangelog, type RawChangelogResponse, ChangelogResponseSchema } from './use-changelog';
+import { waitForQuerySettled } from '@test-utils/test-helpers';
+import {
+  createChangelogResponse,
+  createRawChangelogEntry,
+  changelogFixtures,
+} from '@test-utils/factories';
+import { serverFixture } from '@test-utils/fixtures/msw';
+import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
+import type { SetupServer } from 'msw/node';
+import { http, HttpResponse } from 'msw';
 
 // Constants
-const CHANGELOG_API_URL = "https://ghost.org/changelog.json";
+const CHANGELOG_API_URL = 'https://ghost.org/changelog.json';
 const DEFAULT_CHANGELOG_RESPONSE = ChangelogResponseSchema.parse({});
 
 // Types
 type NetworkOptions = {
-    status?: number;
-    networkError?: boolean;
+  status?: number;
+  networkError?: boolean;
 };
 
 type SetupChangelogTest = (
-    data?: Partial<RawChangelogResponse>,
-    networkOptions?: NetworkOptions
+  data?: Partial<RawChangelogResponse>,
+  networkOptions?: NetworkOptions,
 ) => ReturnType<typeof setupChangelog>;
 
 // Setup function
@@ -42,235 +46,238 @@ type SetupChangelogTest = (
  * @returns The renderHook result with the query in a settled state
  */
 async function setupChangelog(
-    server: SetupServer,
-    wrapper: TestWrapperComponent,
-    data?: Partial<RawChangelogResponse>,
-    networkOptions: NetworkOptions = {}
+  server: SetupServer,
+  wrapper: TestWrapperComponent,
+  data?: Partial<RawChangelogResponse>,
+  networkOptions: NetworkOptions = {},
 ) {
-    const { status = 200, networkError = false } = networkOptions;
+  const { status = 200, networkError = false } = networkOptions;
 
-    // Mock the changelog endpoint
-    server.use(
-        http.get(CHANGELOG_API_URL, () => {
-            if (networkError) {
-                return HttpResponse.error();
-            }
-            if (status !== 200) {
-                return new HttpResponse(null, { status });
-            }
-            return HttpResponse.json(createChangelogResponse(data));
-        })
-    );
+  // Mock the changelog endpoint
+  server.use(
+    http.get(CHANGELOG_API_URL, () => {
+      if (networkError) {
+        return HttpResponse.error();
+      }
+      if (status !== 200) {
+        return new HttpResponse(null, { status });
+      }
+      return HttpResponse.json(createChangelogResponse(data));
+    }),
+  );
 
-    const { result } = renderHook(() => useChangelog(), { wrapper });
-    await waitForQuerySettled(result);
-    return result;
+  const { result } = renderHook(() => useChangelog(), { wrapper });
+  await waitForQuerySettled(result);
+  return result;
 }
 
 // Test extension
 const test = baseTest.extend<{
-    server: SetupServer;
-    queryClient: QueryClient;
-    wrapper: TestWrapperComponent;
-    setup: SetupChangelogTest;
+  server: SetupServer;
+  queryClient: QueryClient;
+  wrapper: TestWrapperComponent;
+  setup: SetupChangelogTest;
 }>({
-    ...serverFixture,
-    ...queryClientFixtures,
-    setup: async ({ server, wrapper }, provide) => {
-        await provide((data, networkOptions) => setupChangelog(server, wrapper, data, networkOptions));
-    },
+  ...serverFixture,
+  ...queryClientFixtures,
+  setup: async ({ server, wrapper }, provide) => {
+    await provide((data, networkOptions) => setupChangelog(server, wrapper, data, networkOptions));
+  },
 });
 
-describe("useChangelog", () => {
-    describe("successful data fetching", () => {
-        test("successfully fetches and deserializes changelog entries", async ({ setup }) => {
-            const result = await setup({
-                posts: [changelogFixtures.raw.featuredEntry, changelogFixtures.raw.regularEntry],
-                changelogUrl: "https://custom.ghost.org/changelog",
-            });
+describe('useChangelog', () => {
+  describe('successful data fetching', () => {
+    test('successfully fetches and deserializes changelog entries', async ({ setup }) => {
+      const result = await setup({
+        posts: [changelogFixtures.raw.featuredEntry, changelogFixtures.raw.regularEntry],
+        changelogUrl: 'https://custom.ghost.org/changelog',
+      });
 
-            expect(result.current.data).toEqual({
-                entries: expect.arrayContaining([
-                    changelogFixtures.parsed.featuredEntry,
-                    changelogFixtures.parsed.regularEntry,
-                ]) as unknown,
-                changelogUrl: "https://custom.ghost.org/changelog",
-            });
-        });
+      expect(result.current.data).toEqual({
+        entries: expect.arrayContaining([
+          changelogFixtures.parsed.featuredEntry,
+          changelogFixtures.parsed.regularEntry,
+        ]) as unknown,
+        changelogUrl: 'https://custom.ghost.org/changelog',
+      });
     });
+  });
 
-    describe("valid JSON with missing or empty fields", () => {
-        [
-            {
-                scenario: "missing posts field",
-                input: { changelogUrl: "https://ghost.org/changelog" },
-                expected: {
-                    entries: [],
-                    changelogUrl: "https://ghost.org/changelog",
-                },
-            },
-            {
-                scenario: "empty posts array",
-                input: {
-                    posts: [],
-                    changelogUrl: "https://ghost.org/changelog",
-                },
-                expected: {
-                    entries: [],
-                    changelogUrl: "https://ghost.org/changelog",
-                },
-            },
-            {
-                scenario: "missing changelogUrl",
-                input: { posts: [] },
-                expected: DEFAULT_CHANGELOG_RESPONSE,
-            },
-        ].forEach(({ scenario, input, expected }) => {
-            test(`defaults when ${scenario}`, async ({ server, wrapper }) => {
-                server.use(
-                    http.get(CHANGELOG_API_URL, () => {
-                        return HttpResponse.json(input);
-                    })
-                );
+  describe('valid JSON with missing or empty fields', () => {
+    [
+      {
+        scenario: 'missing posts field',
+        input: { changelogUrl: 'https://ghost.org/changelog' },
+        expected: {
+          entries: [],
+          changelogUrl: 'https://ghost.org/changelog',
+        },
+      },
+      {
+        scenario: 'empty posts array',
+        input: {
+          posts: [],
+          changelogUrl: 'https://ghost.org/changelog',
+        },
+        expected: {
+          entries: [],
+          changelogUrl: 'https://ghost.org/changelog',
+        },
+      },
+      {
+        scenario: 'missing changelogUrl',
+        input: { posts: [] },
+        expected: DEFAULT_CHANGELOG_RESPONSE,
+      },
+    ].forEach(({ scenario, input, expected }) => {
+      test(`defaults when ${scenario}`, async ({ server, wrapper }) => {
+        server.use(
+          http.get(CHANGELOG_API_URL, () => {
+            return HttpResponse.json(input);
+          }),
+        );
 
-                const { result } = renderHook(() => useChangelog(), {
-                    wrapper,
-                });
-                await waitForQuerySettled(result);
-
-                expect(result.current.isSuccess).toBe(true);
-                expect(result.current.data).toEqual(expected);
-            });
+        const { result } = renderHook(() => useChangelog(), {
+          wrapper,
         });
+        await waitForQuerySettled(result);
+
+        expect(result.current.isSuccess).toBe(true);
+        expect(result.current.data).toEqual(expected);
+      });
     });
+  });
 
-    describe("nullable fields", () => {
-        test("accepts null for custom_excerpt, feature_image, and html", async ({ server, wrapper }) => {
-            server.use(
-                http.get(CHANGELOG_API_URL, () => {
-                    return HttpResponse.json({
-                        posts: [
-                            {
-                                slug: "post-without-excerpt",
-                                title: "Post Without Excerpt",
-                                custom_excerpt: null,
-                                feature_image: null,
-                                html: null,
-                                url: "https://ghost.org/changelog/post-without-excerpt",
-                                published_at: "2026-04-29T10:00:00.000+00:00",
-                                featured: "true",
-                            },
-                        ],
-                        changelogUrl: "https://ghost.org/changelog",
-                    });
-                })
-            );
-
-            const { result } = renderHook(() => useChangelog(), { wrapper });
-            await waitForQuerySettled(result);
-
-            expect(result.current.isSuccess).toBe(true);
-            expect(result.current.data?.entries[0]).toMatchObject({
-                slug: "post-without-excerpt",
-                customExcerpt: null,
-                featureImage: null,
+  describe('nullable fields', () => {
+    test('accepts null for custom_excerpt, feature_image, and html', async ({
+      server,
+      wrapper,
+    }) => {
+      server.use(
+        http.get(CHANGELOG_API_URL, () => {
+          return HttpResponse.json({
+            posts: [
+              {
+                slug: 'post-without-excerpt',
+                title: 'Post Without Excerpt',
+                custom_excerpt: null,
+                feature_image: null,
                 html: null,
-            });
-        });
+                url: 'https://ghost.org/changelog/post-without-excerpt',
+                published_at: '2026-04-29T10:00:00.000+00:00',
+                featured: 'true',
+              },
+            ],
+            changelogUrl: 'https://ghost.org/changelog',
+          });
+        }),
+      );
+
+      const { result } = renderHook(() => useChangelog(), { wrapper });
+      await waitForQuerySettled(result);
+
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data?.entries[0]).toMatchObject({
+        slug: 'post-without-excerpt',
+        customExcerpt: null,
+        featureImage: null,
+        html: null,
+      });
+    });
+  });
+
+  describe('network errors', () => {
+    [
+      {
+        scenario: 'HTTP 500 error',
+        networkOptions: { status: 500 },
+        expectedMessage: 'Failed to fetch changelog: 500',
+      },
+      {
+        scenario: 'HTTP 404 error',
+        networkOptions: { status: 404 },
+        expectedMessage: 'Failed to fetch changelog: 404',
+      },
+      {
+        scenario: 'network failure',
+        networkOptions: { networkError: true },
+        expectedMessage: 'Failed to fetch',
+      },
+    ].forEach(({ scenario, networkOptions, expectedMessage }) => {
+      test(`errors when ${scenario}`, async ({ setup }) => {
+        const result = await setup(undefined, networkOptions);
+
+        expect(result.current.isError).toBe(true);
+        expect(result.current.error).toBeInstanceOf(Error);
+        expect((result.current.error as Error).message).toBe(expectedMessage);
+      });
+    });
+  });
+
+  describe('validation errors', () => {
+    test('errors when non-JSON response', async ({ server, wrapper }) => {
+      server.use(
+        http.get(CHANGELOG_API_URL, () => {
+          return new Response('Not JSON', {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }),
+      );
+
+      const { result } = renderHook(() => useChangelog(), { wrapper });
+      await waitForQuerySettled(result);
+
+      expect(result.current.isError).toBe(true);
+      expect(result.current.error).toBeDefined();
     });
 
-    describe("network errors", () => {
-        [
+    [
+      {
+        scenario: 'invalid URL in changelogUrl',
+        input: createChangelogResponse({
+          posts: [],
+          changelogUrl: 'not-a-url',
+        }),
+      },
+      {
+        scenario: 'invalid date format in published_at',
+        input: createChangelogResponse({
+          posts: [
+            createRawChangelogEntry({
+              published_at: 'not-a-date',
+            }),
+          ],
+        }),
+      },
+      {
+        scenario: 'incomplete entry missing required fields',
+        input: {
+          posts: [
             {
-                scenario: "HTTP 500 error",
-                networkOptions: { status: 500 },
-                expectedMessage: "Failed to fetch changelog: 500",
+              slug: 'test-1',
+              title: 'Test',
             },
-            {
-                scenario: "HTTP 404 error",
-                networkOptions: { status: 404 },
-                expectedMessage: "Failed to fetch changelog: 404",
-            },
-            {
-                scenario: "network failure",
-                networkOptions: { networkError: true },
-                expectedMessage: "Failed to fetch",
-            },
-        ].forEach(({ scenario, networkOptions, expectedMessage }) => {
-            test(`errors when ${scenario}`, async ({ setup }) => {
-                const result = await setup(undefined, networkOptions);
+          ],
+          changelogUrl: 'https://ghost.org/changelog',
+        },
+      },
+    ].forEach(({ scenario, input }) => {
+      test(`errors when ${scenario}`, async ({ server, wrapper }) => {
+        server.use(
+          http.get(CHANGELOG_API_URL, () => {
+            return HttpResponse.json(input);
+          }),
+        );
 
-                expect(result.current.isError).toBe(true);
-                expect(result.current.error).toBeInstanceOf(Error);
-                expect((result.current.error as Error).message).toBe(expectedMessage);
-            });
+        const { result } = renderHook(() => useChangelog(), {
+          wrapper,
         });
+        await waitForQuerySettled(result);
+
+        expect(result.current.isError).toBe(true);
+        expect(result.current.error).toBeDefined();
+      });
     });
-
-    describe("validation errors", () => {
-        test("errors when non-JSON response", async ({ server, wrapper }) => {
-            server.use(
-                http.get(CHANGELOG_API_URL, () => {
-                    return new Response("Not JSON", {
-                        status: 200,
-                        headers: { "Content-Type": "text/plain" },
-                    });
-                })
-            );
-
-            const { result } = renderHook(() => useChangelog(), { wrapper });
-            await waitForQuerySettled(result);
-
-            expect(result.current.isError).toBe(true);
-            expect(result.current.error).toBeDefined();
-        });
-
-        [
-            {
-                scenario: "invalid URL in changelogUrl",
-                input: createChangelogResponse({
-                    posts: [],
-                    changelogUrl: "not-a-url",
-                }),
-            },
-            {
-                scenario: "invalid date format in published_at",
-                input: createChangelogResponse({
-                    posts: [
-                        createRawChangelogEntry({
-                            published_at: "not-a-date",
-                        }),
-                    ],
-                }),
-            },
-            {
-                scenario: "incomplete entry missing required fields",
-                input: {
-                    posts: [
-                        {
-                            slug: "test-1",
-                            title: "Test",
-                        },
-                    ],
-                    changelogUrl: "https://ghost.org/changelog",
-                },
-            },
-        ].forEach(({ scenario, input }) => {
-            test(`errors when ${scenario}`, async ({ server, wrapper }) => {
-                server.use(
-                    http.get(CHANGELOG_API_URL, () => {
-                        return HttpResponse.json(input);
-                    })
-                );
-
-                const { result } = renderHook(() => useChangelog(), {
-                    wrapper,
-                });
-                await waitForQuerySettled(result);
-
-                expect(result.current.isError).toBe(true);
-                expect(result.current.error).toBeDefined();
-            });
-        });
-    });
+  });
 });

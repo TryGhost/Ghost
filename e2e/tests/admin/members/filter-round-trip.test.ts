@@ -1,6 +1,6 @@
-import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {MembersListPage} from '@/admin-pages';
-import {expect, test} from '@/helpers/playwright/fixture';
+import { MemberFactory, createMemberFactory } from '@/data-factory';
+import { MembersListPage } from '@/admin-pages';
+import { expect, test } from '@/helpers/playwright/fixture';
 
 // A filter is written into the URL as NQL and read back out of it on every navigation, so
 // what a publisher typed only survives if those two agree. `$` is where they disagreed: it
@@ -16,33 +16,33 @@ import {expect, test} from '@/helpers/playwright/fixture';
 // answers the right question is a separate concern in the query layer, covered at the API
 // level; what is checked here is that admin still asks the question the publisher typed.
 test.describe('Ghost Admin - Members Filter Round Trip', () => {
-    let memberFactory: MemberFactory;
+  let memberFactory: MemberFactory;
 
-    test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(page.request);
-    });
+  test.beforeEach(async ({ page }) => {
+    memberFactory = createMemberFactory(page.request);
+  });
 
-    test('keeps a value ending in a dollar sign across a reload', async ({page}) => {
-        test.slow();
+  test('keeps a value ending in a dollar sign across a reload', async ({ page }) => {
+    test.slow();
 
-        await memberFactory.create({name: 'Ticket 5$', email: 'ticket-dollar@example.com'});
+    await memberFactory.create({ name: 'Ticket 5$', email: 'ticket-dollar@example.com' });
 
-        const membersPage = new MembersListPage(page);
-        await page.goto('/ghost/#/members');
+    const membersPage = new MembersListPage(page);
+    await page.goto('/ghost/#/members');
 
-        await membersPage.addFilter('Name', '5$');
+    await membersPage.addFilter('Name', '5$');
 
-        const filterItem = membersPage.getFilterItem('Name');
-        await expect(filterItem.getByRole('textbox')).toHaveValue('5$');
-        await expect(filterItem).toContainText('contains');
+    const filterItem = membersPage.getFilterItem('Name');
+    await expect(filterItem.getByRole('textbox')).toHaveValue('5$');
+    await expect(filterItem).toContainText('contains');
 
-        await page.reload();
+    await page.reload();
 
-        // Both halves were corrupted together, so both are asserted. The trailing `$` was
-        // taken for an end-of-pattern marker, which turned "contains" into "ends with" and
-        // left the value itself a character short.
-        const reloaded = membersPage.getFilterItem('Name');
-        await expect(reloaded.getByRole('textbox')).toHaveValue('5$');
-        await expect(reloaded).toContainText('contains');
-    });
+    // Both halves were corrupted together, so both are asserted. The trailing `$` was
+    // taken for an end-of-pattern marker, which turned "contains" into "ends with" and
+    // left the value itself a character short.
+    const reloaded = membersPage.getFilterItem('Name');
+    await expect(reloaded.getByRole('textbox')).toHaveValue('5$');
+    await expect(reloaded).toContainText('contains');
+  });
 });

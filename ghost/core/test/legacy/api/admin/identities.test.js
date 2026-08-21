@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
@@ -10,134 +10,136 @@ const config = require('../../../../core/shared/config');
 let request;
 
 const verifyJWKS = (endpoint, token) => {
-    return new Promise((resolve, reject) => {
-        const client = jwksClient({
-            jwksUri: endpoint
-        });
-
-        async function getKey(header, callback) {
-            const key = await client.getSigningKey(header.kid);
-            let signingKey = key.publicKey || key.rsaPublicKey;
-            callback(null, signingKey);
-        }
-
-        jwt.verify(token, getKey, {}, (err, decoded) => {
-            if (err) {
-                reject(err);
-            }
-
-            resolve(decoded);
-        });
+  return new Promise((resolve, reject) => {
+    const client = jwksClient({
+      jwksUri: endpoint,
     });
+
+    async function getKey(header, callback) {
+      const key = await client.getSigningKey(header.kid);
+      let signingKey = key.publicKey || key.rsaPublicKey;
+      callback(null, signingKey);
+    }
+
+    jwt.verify(token, getKey, {}, (err, decoded) => {
+      if (err) {
+        reject(err);
+      }
+
+      resolve(decoded);
+    });
+  });
 };
 
 describe('Identities API', function () {
-    describe('As Owner', function () {
-        beforeAll(async function () {
-            await localUtils.startGhost();
-            request = supertest.agent(config.get('url'));
-            await localUtils.doAuth(request);
+  describe('As Owner', function () {
+    beforeAll(async function () {
+      await localUtils.startGhost();
+      request = supertest.agent(config.get('url'));
+      await localUtils.doAuth(request);
+    });
+
+    it('Can create JWT token and verify it afterwards with public jwks', function () {
+      let identity;
+
+      return request
+        .get(localUtils.API.getApiQuery(`identities/`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200)
+        .then((res) => {
+          assert.equal(res.headers['x-cache-invalidate'], undefined);
+          const jsonResponse = res.body;
+          assertExists(jsonResponse);
+          assertExists(jsonResponse.identities);
+
+          identity = jsonResponse.identities[0];
+        })
+        .then(() => {
+          return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
+        })
+        .then((decoded) => {
+          assert.equal(decoded.sub, 'jbloggs@example.com');
+          assert.equal(decoded.role, 'Owner');
         });
+    });
+  });
 
-        it('Can create JWT token and verify it afterwards with public jwks', function () {
-            let identity;
+  describe('As Administrator', function () {
+    beforeAll(function () {
+      return localUtils
+        .startGhost()
+        .then(function () {
+          request = supertest.agent(config.get('url'));
+        })
+        .then(function () {
+          return testUtils.createUser({
+            user: testUtils.DataGenerator.forKnex.createUser({ email: 'admin+1@ghost.org' }),
+            role: testUtils.DataGenerator.Content.roles[0].name,
+          });
+        })
+        .then(function (admin) {
+          request.user = admin;
 
-            return request
-                .get(localUtils.API.getApiQuery(`identities/`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    assert.equal(res.headers['x-cache-invalidate'], undefined);
-                    const jsonResponse = res.body;
-                    assertExists(jsonResponse);
-                    assertExists(jsonResponse.identities);
-
-                    identity = jsonResponse.identities[0];
-                })
-                .then(() => {
-                    return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
-                })
-                .then((decoded) => {
-                    assert.equal(decoded.sub, 'jbloggs@example.com');
-                    assert.equal(decoded.role, 'Owner');
-                });
+          return localUtils.doAuth(request);
         });
     });
 
-    describe('As Administrator', function () {
-        beforeAll(function () {
-            return localUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[0].name
-                    });
-                })
-                .then(function (admin) {
-                    request.user = admin;
+    it('Can create JWT token and verify it afterwards with public jwks', function () {
+      let identity;
 
-                    return localUtils.doAuth(request);
-                });
+      return request
+        .get(localUtils.API.getApiQuery(`identities/`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200)
+        .then((res) => {
+          assert.equal(res.headers['x-cache-invalidate'], undefined);
+          const jsonResponse = res.body;
+          assertExists(jsonResponse);
+          assertExists(jsonResponse.identities);
+
+          identity = jsonResponse.identities[0];
+        })
+        .then(() => {
+          return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
+        })
+        .then((decoded) => {
+          assert.equal(decoded.sub, 'admin+1@ghost.org');
+          assert.equal(decoded.role, 'Administrator');
         });
+    });
+  });
 
-        it('Can create JWT token and verify it afterwards with public jwks', function () {
-            let identity;
+  describe('As Editor', function () {
+    beforeAll(function () {
+      return localUtils
+        .startGhost()
+        .then(function () {
+          request = supertest.agent(config.get('url'));
+        })
+        .then(function () {
+          return testUtils.createUser({
+            user: testUtils.DataGenerator.forKnex.createUser({ email: 'editor+1@ghost.org' }),
+            role: testUtils.DataGenerator.Content.roles[1].name,
+          });
+        })
+        .then(function (admin) {
+          request.user = admin;
 
-            return request
-                .get(localUtils.API.getApiQuery(`identities/`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    assert.equal(res.headers['x-cache-invalidate'], undefined);
-                    const jsonResponse = res.body;
-                    assertExists(jsonResponse);
-                    assertExists(jsonResponse.identities);
-
-                    identity = jsonResponse.identities[0];
-                })
-                .then(() => {
-                    return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
-                })
-                .then((decoded) => {
-                    assert.equal(decoded.sub, 'admin+1@ghost.org');
-                    assert.equal(decoded.role, 'Administrator');
-                });
+          return localUtils.doAuth(request);
         });
     });
 
-    describe('As Editor', function () {
-        beforeAll(function () {
-            return localUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'editor+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then(function (admin) {
-                    request.user = admin;
-
-                    return localUtils.doAuth(request);
-                });
-        });
-
-        it('Cannot read', function () {
-            return request
-                .get(localUtils.API.getApiQuery(`identities/`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403);
-        });
+    it('Cannot read', function () {
+      return request
+        .get(localUtils.API.getApiQuery(`identities/`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(403);
     });
+  });
 });

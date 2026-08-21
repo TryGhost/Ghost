@@ -1,25 +1,29 @@
-import { StrictMode } from "react";
-import { FrameworkProvider, RouterProvider, type TopLevelFrameworkProps } from "@tryghost/admin-x-framework";
-import { ShadeApp } from "@tryghost/shade/app";
+import { StrictMode } from 'react';
+import {
+  FrameworkProvider,
+  RouterProvider,
+  type TopLevelFrameworkProps,
+} from '@tryghost/admin-x-framework';
+import { ShadeApp } from '@tryghost/shade/app';
 
-import App from "./app.tsx";
-import { routes } from "./routes.tsx";
-import { useTheme } from "./hooks/use-theme";
-import { AppProvider } from "./providers/app-provider";
-import { fetchKoenigLexical } from "./utils/fetch-koenig-lexical";
+import App from './app.tsx';
+import { routes } from './routes.tsx';
+import { useTheme } from './hooks/use-theme';
+import { AppProvider } from './providers/app-provider';
+import { fetchKoenigLexical } from './utils/fetch-koenig-lexical';
 
 function ThemedAdminApp() {
-    const { resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
-    return (
-        <ShadeApp
-            className="shade-admin"
-            darkMode={resolvedTheme === "dark"}
-            fetchKoenigLexical={fetchKoenigLexical}
-        >
-            <App />
-        </ShadeApp>
-    );
+  return (
+    <ShadeApp
+      className="shade-admin"
+      darkMode={resolvedTheme === 'dark'}
+      fetchKoenigLexical={fetchKoenigLexical}
+    >
+      <App />
+    </ShadeApp>
+  );
 }
 
 /**
@@ -30,15 +34,15 @@ function ThemedAdminApp() {
  * query client) differ between the two.
  */
 export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps }) {
-    return (
-        <StrictMode>
-            <FrameworkProvider {...framework}>
-                <RouterProvider prefix={"/"} routes={routes}>
-                    <AppProvider>
-                        <ThemedAdminApp />
-                    </AppProvider>
-                </RouterProvider>
-            </FrameworkProvider>
-        </StrictMode>
-    );
+  return (
+    <StrictMode>
+      <FrameworkProvider {...framework}>
+        <RouterProvider prefix={'/'} routes={routes}>
+          <AppProvider>
+            <ThemedAdminApp />
+          </AppProvider>
+        </RouterProvider>
+      </FrameworkProvider>
+    </StrictMode>
+  );
 }

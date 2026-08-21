@@ -1,48 +1,48 @@
-import { page } from "vitest/browser";
+import { page } from 'vitest/browser';
 import {
-    adminSidebar,
-    appearanceMenuItem,
-    darkAppearanceOption,
-    lightAppearanceOption,
-    networkNotificationBadge,
-    postsToggle,
-    profileMenuItem,
-    signOutMenuItem,
-    systemAppearanceOption,
-    themeErrorsBannerText,
-    themeErrorsDialog,
-    userMenuTrigger,
-} from "@tryghost/test-data/selectors/sidebar";
+  adminSidebar,
+  appearanceMenuItem,
+  darkAppearanceOption,
+  lightAppearanceOption,
+  networkNotificationBadge,
+  postsToggle,
+  profileMenuItem,
+  signOutMenuItem,
+  systemAppearanceOption,
+  themeErrorsBannerText,
+  themeErrorsDialog,
+  userMenuTrigger,
+} from '@tryghost/test-data/selectors/sidebar';
 
 const appearanceOptions = {
-    dark: darkAppearanceOption,
-    light: lightAppearanceOption,
-    system: systemAppearanceOption,
+  dark: darkAppearanceOption,
+  light: lightAppearanceOption,
+  system: systemAppearanceOption,
 } as const;
 
 /** Admin sidebar locators and gestures for acceptance specs; no assertions. */
 export const sidebarScreen = {
-    // The settings app renders its own nav, so the shell sidebar needs its own hook.
-    shellNav: () => page.getByTestId(adminSidebar),
-    /** The shell's content area, rendered by AdminLayout alongside the sidebar. */
-    shellMain: () => page.getByRole("main").first(),
-    navLink: (name: string) => page.getByRole("navigation").getByRole("link", { name, exact: true }),
-    postsToggle: () => page.getByRole("button", { name: postsToggle }),
-    networkBadge: () => page.getByTestId(networkNotificationBadge),
-    userMenuTrigger: () => page.getByRole("button", { name: userMenuTrigger }),
-    profileMenuItem: () => page.getByRole("menuitem", { name: profileMenuItem }),
-    signOutMenuItem: () => page.getByRole("menuitem", { name: signOutMenuItem }),
-    appearanceMenuItem: () => page.getByRole("menuitem", { name: appearanceMenuItem }),
-    appearanceOption: (option: "dark" | "light" | "system") =>
-        page.getByRole("menuitem", { name: appearanceOptions[option] }),
-    errorToast: () => page.getByRole("region", { name: /Notifications/ }).getByRole("listitem"),
-    themeErrorsBanner: () => page.getByRole("status").filter({ hasText: themeErrorsBannerText }),
-    themeErrorsDialog: () => page.getByRole("dialog", { name: themeErrorsDialog }),
+  // The settings app renders its own nav, so the shell sidebar needs its own hook.
+  shellNav: () => page.getByTestId(adminSidebar),
+  /** The shell's content area, rendered by AdminLayout alongside the sidebar. */
+  shellMain: () => page.getByRole('main').first(),
+  navLink: (name: string) => page.getByRole('navigation').getByRole('link', { name, exact: true }),
+  postsToggle: () => page.getByRole('button', { name: postsToggle }),
+  networkBadge: () => page.getByTestId(networkNotificationBadge),
+  userMenuTrigger: () => page.getByRole('button', { name: userMenuTrigger }),
+  profileMenuItem: () => page.getByRole('menuitem', { name: profileMenuItem }),
+  signOutMenuItem: () => page.getByRole('menuitem', { name: signOutMenuItem }),
+  appearanceMenuItem: () => page.getByRole('menuitem', { name: appearanceMenuItem }),
+  appearanceOption: (option: 'dark' | 'light' | 'system') =>
+    page.getByRole('menuitem', { name: appearanceOptions[option] }),
+  errorToast: () => page.getByRole('region', { name: /Notifications/ }).getByRole('listitem'),
+  themeErrorsBanner: () => page.getByRole('status').filter({ hasText: themeErrorsBannerText }),
+  themeErrorsDialog: () => page.getByRole('dialog', { name: themeErrorsDialog }),
 
-    /** Open the user menu and select the appearance choice from its submenu. */
-    async selectAppearance(option: "dark" | "light" | "system"): Promise<void> {
-        await sidebarScreen.userMenuTrigger().click();
-        await sidebarScreen.appearanceMenuItem().click();
-        await sidebarScreen.appearanceOption(option).click();
-    },
+  /** Open the user menu and select the appearance choice from its submenu. */
+  async selectAppearance(option: 'dark' | 'light' | 'system'): Promise<void> {
+    await sidebarScreen.userMenuTrigger().click();
+    await sidebarScreen.appearanceMenuItem().click();
+    await sidebarScreen.appearanceOption(option).click();
+  },
 };

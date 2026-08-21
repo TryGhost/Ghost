@@ -16,5 +16,5 @@
 // The value must be non-empty: NQL's string rule requires at least one
 // character, so `''` is a parse error rather than an empty match.
 export function escapeNqlString(value: string): string {
-    return `'${value.replace(/(['"])/g, '\\$1')}'`;
+  return `'${value.replace(/(['"])/g, '\\$1')}'`;
 }

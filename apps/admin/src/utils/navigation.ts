@@ -11,40 +11,43 @@ const ALLOWED_SCHEMES = ['http:', 'https:', 'mailto:', 'tel:'];
  * @param route - The route to navigate to
  * @returns true if navigation was performed, false otherwise
  */
-export function navigateTo(route: string, {replace = false}: {replace?: boolean} = {}): boolean {
-    const navigateInternal = (internalRoute: string) => {
-        const normalizedRoute = internalRoute.startsWith('/') ? internalRoute : `/${internalRoute}`;
+export function navigateTo(
+  route: string,
+  { replace = false }: { replace?: boolean } = {},
+): boolean {
+  const navigateInternal = (internalRoute: string) => {
+    const normalizedRoute = internalRoute.startsWith('/') ? internalRoute : `/${internalRoute}`;
 
-        if (replace) {
-            window.location.replace(`#${normalizedRoute}`);
-        } else {
-            window.location.hash = normalizedRoute;
-        }
-    };
-
-    // Check if URL has a protocol scheme
-    if (route.match(/^[a-z]+:/i)) {
-        try {
-            const url = new URL(route);
-            // Only allow explicitly safe schemes
-            if (ALLOWED_SCHEMES.includes(url.protocol)) {
-                if (replace) {
-                    window.location.replace(route);
-                } else {
-                    window.location.href = route;
-                }
-                return true;
-            }
-            // Reject dangerous schemes (javascript:, data:, etc.)
-            return false;
-        } catch {
-            // Invalid URL, treat as internal route
-            navigateInternal(route);
-            return true;
-        }
+    if (replace) {
+      window.location.replace(`#${normalizedRoute}`);
     } else {
-        // Internal cross-app navigation - use hash routing
-        navigateInternal(route);
-        return true;
+      window.location.hash = normalizedRoute;
     }
+  };
+
+  // Check if URL has a protocol scheme
+  if (route.match(/^[a-z]+:/i)) {
+    try {
+      const url = new URL(route);
+      // Only allow explicitly safe schemes
+      if (ALLOWED_SCHEMES.includes(url.protocol)) {
+        if (replace) {
+          window.location.replace(route);
+        } else {
+          window.location.href = route;
+        }
+        return true;
+      }
+      // Reject dangerous schemes (javascript:, data:, etc.)
+      return false;
+    } catch {
+      // Invalid URL, treat as internal route
+      navigateInternal(route);
+      return true;
+    }
+  } else {
+    // Internal cross-app navigation - use hash routing
+    navigateInternal(route);
+    return true;
+  }
 }

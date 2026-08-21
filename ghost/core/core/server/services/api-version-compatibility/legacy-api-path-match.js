@@ -1,23 +1,23 @@
 const pathMatch = require('path-match')();
 
 module.exports = (url) => {
-    let basePath = 'ghost/api';
-    let apiRouteMatcher = '/:version(v2|v3|v4|canary)?/:api(admin|content)/*';
-    let urlToMatch = url;
+  let basePath = 'ghost/api';
+  let apiRouteMatcher = '/:version(v2|v3|v4|canary)?/:api(admin|content)/*';
+  let urlToMatch = url;
 
-    if (url.includes(basePath)) {
-        urlToMatch = url.split(basePath)[1];
-    }
+  if (url.includes(basePath)) {
+    urlToMatch = url.split(basePath)[1];
+  }
 
-    if (!urlToMatch.endsWith('/')) {
-        urlToMatch += '/';
-    }
+  if (!urlToMatch.endsWith('/')) {
+    urlToMatch += '/';
+  }
 
-    let {version, api} = pathMatch(apiRouteMatcher)(urlToMatch);
+  let { version, api } = pathMatch(apiRouteMatcher)(urlToMatch);
 
-    if (version === undefined) {
-        version = null;
-    }
+  if (version === undefined) {
+    version = null;
+  }
 
-    return {version, api};
+  return { version, api };
 };

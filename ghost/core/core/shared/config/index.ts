@@ -1,4 +1,4 @@
-import {loadNconf} from './loader';
+import { loadNconf } from './loader';
 
 // NOTE: this file must contain no export other than the `export =` below.
 // esbuild/tsx (used by the dev + test runners) can't combine `export =` with

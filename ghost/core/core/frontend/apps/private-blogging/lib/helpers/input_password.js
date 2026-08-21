@@ -4,31 +4,31 @@
 // Password input used on private.hbs for password-protected blogs
 
 // (less) dirty requires
-const {SafeString, templates} = require('../../../../services/handlebars');
+const { SafeString, templates } = require('../../../../services/handlebars');
 
 // We use the name input_password to match the helper for consistency:
 // eslint-disable-next-line camelcase
 module.exports = function input_password(options) {
-    options = options || {};
-    options.hash = options.hash || {};
+  options = options || {};
+  options.hash = options.hash || {};
 
-    const className = (options.hash.class) ? options.hash.class : 'private-login-password';
-    let extras = 'autofocus="autofocus"';
+  const className = options.hash.class ? options.hash.class : 'private-login-password';
+  let extras = 'autofocus="autofocus"';
 
-    if (options.hash.placeholder) {
-        extras += ` placeholder="${options.hash.placeholder}"`;
-    }
+  if (options.hash.placeholder) {
+    extras += ` placeholder="${options.hash.placeholder}"`;
+  }
 
-    if (options.hash['data-1p-ignore']) {
-        extras += ' data-1p-ignore';
-    }
+  if (options.hash['data-1p-ignore']) {
+    extras += ' data-1p-ignore';
+  }
 
-    const output = templates.input({
-        type: 'password',
-        name: 'password',
-        className,
-        extras
-    });
+  const output = templates.input({
+    type: 'password',
+    name: 'password',
+    className,
+    extras,
+  });
 
-    return new SafeString(output);
+  return new SafeString(output);
 };

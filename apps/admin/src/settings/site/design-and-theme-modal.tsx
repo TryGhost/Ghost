@@ -1,260 +1,297 @@
 import ChangeThemeModal from './theme-modal';
 import DesignModal from './design-modal';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
-import {useConfirmation} from '@/settings/providers/confirmation-context';
-import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
-import {parseEditingThemeRoute} from './theme/theme-editor-utils';
-import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
+import { useConfirmation } from '@/settings/providers/confirmation-context';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { parseEditingThemeRoute } from './theme/theme-editor-utils';
+import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
 
 const DesignAndThemeModal: React.FC = () => {
-    const {route, updateRoute} = useSettingsNavigation();
-    const upgradeRoute = useUpgradeRoute();
-    const currentPath = route;
-    const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
-    const [isCheckingLimit, setIsCheckingLimit] = useState(false);
-    const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
-    const [editorThemeError, setEditorThemeError] = useState<string | null>(null);
-    const [isCheckingEditorLimit, setIsCheckingEditorLimit] = useState(false);
-    const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited} = useCheckThemeLimitError();
-    const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
-    const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
-    const {themeName: editingThemeName, isInvalid: hasInvalidEditingThemeRoute} = parseEditingThemeRoute(currentPath);
-    const {showLimit} = useConfirmation();
+  const { route, updateRoute } = useSettingsNavigation();
+  const upgradeRoute = useUpgradeRoute();
+  const currentPath = route;
+  const [themeChangeError, setThemeChangeError] = useState<string | null>(null);
+  const [isCheckingLimit, setIsCheckingLimit] = useState(false);
+  const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
+  const [editorThemeError, setEditorThemeError] = useState<string | null>(null);
+  const [isCheckingEditorLimit, setIsCheckingEditorLimit] = useState(false);
+  const { checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited } =
+    useCheckThemeLimitError();
+  const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
+  const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
+  const { themeName: editingThemeName, isInvalid: hasInvalidEditingThemeRoute } =
+    parseEditingThemeRoute(currentPath);
+  const { showLimit } = useConfirmation();
 
-    const showThemeLimitModal = useCallback((error: string) => {
-        showLimit({
-            prompt: error,
-            onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
-        });
-    }, [showLimit, updateRoute, upgradeRoute]);
+  const showThemeLimitModal = useCallback(
+    (error: string) => {
+      showLimit({
+        prompt: error,
+        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+      });
+    },
+    [showLimit, updateRoute, upgradeRoute],
+  );
 
-    useEffect(() => {
-        const checkIfThemeChangeAllowed = async () => {
-            // Only check limits if we have a single-theme allowlist
-            // Multiple themes don't need this check since users can change between allowed themes
-            if (!noThemeChangesAllowed) {
-                setIsCheckingLimit(false);
-                setThemeChangeError(null);
-                return;
-            }
+  useEffect(() => {
+    const checkIfThemeChangeAllowed = async () => {
+      // Only check limits if we have a single-theme allowlist
+      // Multiple themes don't need this check since users can change between allowed themes
+      if (!noThemeChangesAllowed) {
+        setIsCheckingLimit(false);
+        setThemeChangeError(null);
+        return;
+      }
 
-            setIsCheckingLimit(true);
-            const error = await checkThemeLimitError();
-            setThemeChangeError(error);
-            setIsCheckingLimit(false);
+      setIsCheckingLimit(true);
+      const error = await checkThemeLimitError();
+      setThemeChangeError(error);
+      setIsCheckingLimit(false);
 
-            // Show limit modal immediately if there's an error
-            if (error) {
-                showThemeLimitModal(error);
-                updateRoute('theme');
-            }
-        };
-
-        if (currentPath === 'design/change-theme' && isThemeLimitCheckReady) {
-            void checkIfThemeChangeAllowed();
-        } else {
-            setThemeChangeError(null);
-            setIsCheckingLimit(false);
-        }
-    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, showThemeLimitModal, updateRoute]);
-
-    // Reset states when the route changes
-    useEffect(() => {
-        if (currentPath !== 'theme/install') {
-            setHasCheckedInstallation(false);
-            setInstallationAllowed(null);
-            setIsCheckingInstallation(false);
-        }
-    }, [currentPath]);
-
-    useEffect(() => {
-        if (!hasInvalidEditingThemeRoute) {
-            return;
-        }
-
+      // Show limit modal immediately if there's an error
+      if (error) {
+        showThemeLimitModal(error);
         updateRoute('theme');
-    }, [hasInvalidEditingThemeRoute, updateRoute]);
+      }
+    };
 
-    useEffect(() => {
-        let isCancelled = false;
-
-        const checkThemeEditorAccess = async () => {
-            if (!editingThemeName) {
-                setEditorThemeError(null);
-                setIsCheckingEditorLimit(false);
-                return;
-            }
-
-            if (!isThemeLimitCheckReady) {
-                setIsCheckingEditorLimit(true);
-                return;
-            }
-
-            if (!isThemeLimited) {
-                setEditorThemeError(null);
-                setIsCheckingEditorLimit(false);
-                return;
-            }
-
-            setIsCheckingEditorLimit(true);
-
-            const error = await checkThemeLimitError('.');
-
-            if (isCancelled) {
-                return;
-            }
-
-            setEditorThemeError(error);
-            setIsCheckingEditorLimit(false);
-
-            if (error) {
-                showThemeLimitModal(error);
-                updateRoute('theme');
-            }
-        };
-
-        void checkThemeEditorAccess();
-
-        return () => {
-            isCancelled = true;
-        };
-    }, [checkThemeLimitError, editingThemeName, isThemeLimitCheckReady, isThemeLimited, showThemeLimitModal, updateRoute]);
-
-    // Check theme installation limits
-    useEffect(() => {
-        // Helper to extract theme ref from URL
-        const getThemeRefFromUrl = () => {
-            const url = window.location.href;
-            const fragment = url.split('#')[1];
-            const queryParams = fragment?.split('?')[1];
-
-            if (!queryParams) {
-                return null;
-            }
-
-            const searchParams = new URLSearchParams(queryParams);
-            return searchParams.get('ref');
-        };
-
-        // Helper to handle theme limit error
-        const handleThemeLimitError = (error: string) => {
-            // Immediately prevent any installation attempts
-            setInstallationAllowed(false);
-            showThemeLimitModal(error);
-            // Replace the install entry so back doesn't re-trigger it
-            updateRoute({route: 'theme', replace: true});
-        };
-
-        const checkThemeInstallation = async () => {
-            // Early return if not on theme/install path
-            if (currentPath !== 'theme/install') {
-                setIsCheckingInstallation(false);
-                return;
-            }
-
-            // Mark that we've started checking
-            setHasCheckedInstallation(true);
-
-            // Still loading limit check
-            if (!isThemeLimitCheckReady) {
-                setIsCheckingInstallation(true);
-                return;
-            }
-
-            // If there are no theme limits at all, allow installation
-            if (!isThemeLimited) {
-                setInstallationAllowed(true);
-                setIsCheckingInstallation(false);
-                return;
-            }
-
-            setIsCheckingInstallation(true);
-
-            const ref = getThemeRefFromUrl();
-
-            if (!ref) {
-                // Invalid URL - no ref param
-                setInstallationAllowed(false);
-                setIsCheckingInstallation(false);
-                return;
-            }
-
-            const themeName = ref.split('/')[1]?.toLowerCase();
-
-            const error = await checkThemeLimitError(themeName);
-
-            // Double-check again after async operation
-            if (currentPath !== 'theme/install') {
-                setIsCheckingInstallation(false);
-                return;
-            }
-
-            if (error) {
-                // Immediately set these to prevent any rendering
-                setInstallationAllowed(false);
-                setIsCheckingInstallation(false);
-                handleThemeLimitError(error);
-                // Don't continue after showing limit modal
-                // This prevents the race condition
-                return;
-            }
-
-            setInstallationAllowed(true);
-            setIsCheckingInstallation(false);
-        };
-
-        void checkThemeInstallation();
-    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, showThemeLimitModal, updateRoute]);
-
-    if (currentPath === 'design/edit') {
-        return <DesignModal />;
-    } else if (currentPath === 'design/change-theme') {
-        // Don't show the change theme modal if we're still checking limits or if there's
-        // a theme limit error
-        if (isCheckingLimit || themeChangeError) {
-            return null;
-        }
-
-        return <ChangeThemeModal />;
-    } else if (currentPath === 'theme/install') {
-        // Always wait for the installation check to complete
-        // This prevents any race conditions
-        if (!hasCheckedInstallation || !isThemeLimitCheckReady || isCheckingInstallation || installationAllowed === null) {
-            return null;
-        }
-
-        // If installation is not allowed, don't render anything
-        // The limit modal has already been shown and we're redirecting
-        if (!installationAllowed) {
-            return null;
-        }
-
-        // Parse URL params only after we know installation is allowed
-        const url = window.location.href;
-        const fragment = url.split('#')[1];
-        const queryParams = fragment?.split('?')[1];
-        let ref: string | null = null;
-        let source: string | null = null;
-
-        if (queryParams) {
-            const searchParams = new URLSearchParams(queryParams);
-            ref = searchParams.get('ref');
-            source = searchParams.get('source');
-        }
-
-        // Installation is allowed, render the ChangeThemeModal with the source and ref
-        return <ChangeThemeModal source={source} themeRef={ref} />;
-    } else if (currentPath.startsWith('theme/edit/')) {
-        if (hasInvalidEditingThemeRoute || !editingThemeName || isCheckingEditorLimit || editorThemeError) {
-            return null;
-        }
-
-        return <ThemeCodeEditorModal themeName={editingThemeName} />;
+    if (currentPath === 'design/change-theme' && isThemeLimitCheckReady) {
+      void checkIfThemeChangeAllowed();
     } else {
-        return null;
+      setThemeChangeError(null);
+      setIsCheckingLimit(false);
     }
+  }, [
+    checkThemeLimitError,
+    currentPath,
+    isThemeLimitCheckReady,
+    noThemeChangesAllowed,
+    showThemeLimitModal,
+    updateRoute,
+  ]);
+
+  // Reset states when the route changes
+  useEffect(() => {
+    if (currentPath !== 'theme/install') {
+      setHasCheckedInstallation(false);
+      setInstallationAllowed(null);
+      setIsCheckingInstallation(false);
+    }
+  }, [currentPath]);
+
+  useEffect(() => {
+    if (!hasInvalidEditingThemeRoute) {
+      return;
+    }
+
+    updateRoute('theme');
+  }, [hasInvalidEditingThemeRoute, updateRoute]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const checkThemeEditorAccess = async () => {
+      if (!editingThemeName) {
+        setEditorThemeError(null);
+        setIsCheckingEditorLimit(false);
+        return;
+      }
+
+      if (!isThemeLimitCheckReady) {
+        setIsCheckingEditorLimit(true);
+        return;
+      }
+
+      if (!isThemeLimited) {
+        setEditorThemeError(null);
+        setIsCheckingEditorLimit(false);
+        return;
+      }
+
+      setIsCheckingEditorLimit(true);
+
+      const error = await checkThemeLimitError('.');
+
+      if (isCancelled) {
+        return;
+      }
+
+      setEditorThemeError(error);
+      setIsCheckingEditorLimit(false);
+
+      if (error) {
+        showThemeLimitModal(error);
+        updateRoute('theme');
+      }
+    };
+
+    void checkThemeEditorAccess();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    checkThemeLimitError,
+    editingThemeName,
+    isThemeLimitCheckReady,
+    isThemeLimited,
+    showThemeLimitModal,
+    updateRoute,
+  ]);
+
+  // Check theme installation limits
+  useEffect(() => {
+    // Helper to extract theme ref from URL
+    const getThemeRefFromUrl = () => {
+      const url = window.location.href;
+      const fragment = url.split('#')[1];
+      const queryParams = fragment?.split('?')[1];
+
+      if (!queryParams) {
+        return null;
+      }
+
+      const searchParams = new URLSearchParams(queryParams);
+      return searchParams.get('ref');
+    };
+
+    // Helper to handle theme limit error
+    const handleThemeLimitError = (error: string) => {
+      // Immediately prevent any installation attempts
+      setInstallationAllowed(false);
+      showThemeLimitModal(error);
+      // Replace the install entry so back doesn't re-trigger it
+      updateRoute({ route: 'theme', replace: true });
+    };
+
+    const checkThemeInstallation = async () => {
+      // Early return if not on theme/install path
+      if (currentPath !== 'theme/install') {
+        setIsCheckingInstallation(false);
+        return;
+      }
+
+      // Mark that we've started checking
+      setHasCheckedInstallation(true);
+
+      // Still loading limit check
+      if (!isThemeLimitCheckReady) {
+        setIsCheckingInstallation(true);
+        return;
+      }
+
+      // If there are no theme limits at all, allow installation
+      if (!isThemeLimited) {
+        setInstallationAllowed(true);
+        setIsCheckingInstallation(false);
+        return;
+      }
+
+      setIsCheckingInstallation(true);
+
+      const ref = getThemeRefFromUrl();
+
+      if (!ref) {
+        // Invalid URL - no ref param
+        setInstallationAllowed(false);
+        setIsCheckingInstallation(false);
+        return;
+      }
+
+      const themeName = ref.split('/')[1]?.toLowerCase();
+
+      const error = await checkThemeLimitError(themeName);
+
+      // Double-check again after async operation
+      if (currentPath !== 'theme/install') {
+        setIsCheckingInstallation(false);
+        return;
+      }
+
+      if (error) {
+        // Immediately set these to prevent any rendering
+        setInstallationAllowed(false);
+        setIsCheckingInstallation(false);
+        handleThemeLimitError(error);
+        // Don't continue after showing limit modal
+        // This prevents the race condition
+        return;
+      }
+
+      setInstallationAllowed(true);
+      setIsCheckingInstallation(false);
+    };
+
+    void checkThemeInstallation();
+  }, [
+    checkThemeLimitError,
+    currentPath,
+    isThemeLimitCheckReady,
+    noThemeChangesAllowed,
+    isThemeLimited,
+    showThemeLimitModal,
+    updateRoute,
+  ]);
+
+  if (currentPath === 'design/edit') {
+    return <DesignModal />;
+  } else if (currentPath === 'design/change-theme') {
+    // Don't show the change theme modal if we're still checking limits or if there's
+    // a theme limit error
+    if (isCheckingLimit || themeChangeError) {
+      return null;
+    }
+
+    return <ChangeThemeModal />;
+  } else if (currentPath === 'theme/install') {
+    // Always wait for the installation check to complete
+    // This prevents any race conditions
+    if (
+      !hasCheckedInstallation ||
+      !isThemeLimitCheckReady ||
+      isCheckingInstallation ||
+      installationAllowed === null
+    ) {
+      return null;
+    }
+
+    // If installation is not allowed, don't render anything
+    // The limit modal has already been shown and we're redirecting
+    if (!installationAllowed) {
+      return null;
+    }
+
+    // Parse URL params only after we know installation is allowed
+    const url = window.location.href;
+    const fragment = url.split('#')[1];
+    const queryParams = fragment?.split('?')[1];
+    let ref: string | null = null;
+    let source: string | null = null;
+
+    if (queryParams) {
+      const searchParams = new URLSearchParams(queryParams);
+      ref = searchParams.get('ref');
+      source = searchParams.get('source');
+    }
+
+    // Installation is allowed, render the ChangeThemeModal with the source and ref
+    return <ChangeThemeModal source={source} themeRef={ref} />;
+  } else if (currentPath.startsWith('theme/edit/')) {
+    if (
+      hasInvalidEditingThemeRoute ||
+      !editingThemeName ||
+      isCheckingEditorLimit ||
+      editorThemeError
+    ) {
+      return null;
+    }
+
+    return <ThemeCodeEditorModal themeName={editingThemeName} />;
+  } else {
+    return null;
+  }
 };
 
 export default DesignAndThemeModal;

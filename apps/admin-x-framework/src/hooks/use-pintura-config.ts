@@ -1,24 +1,24 @@
-import {useMemo} from 'react';
-import {useBrowseConfig} from '../api/config';
-import {getSettingValues, useBrowseSettings} from '../api/settings';
-import {getGhostPaths} from '../utils/helpers';
+import { useMemo } from 'react';
+import { useBrowseConfig } from '../api/config';
+import { getSettingValues, useBrowseSettings } from '../api/settings';
+import { getGhostPaths } from '../utils/helpers';
 
 const parseOptionalString = (value: unknown): undefined | string => {
-    if (value === null || typeof value === 'undefined') {
-        return undefined;
-    }
-    if (typeof value === 'string') {
-        return value;
-    }
-    throw new TypeError('Expected value to be null, undefined, or a string');
+  if (value === null || typeof value === 'undefined') {
+    return undefined;
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  throw new TypeError('Expected value to be null, undefined, or a string');
 };
 
 const resolveUrl = (url: string): string => {
-    if (url.startsWith('/')) {
-        const {adminRoot} = getGhostPaths();
-        return window.location.origin + adminRoot.replace(/\/$/, '') + url;
-    }
-    return url;
+  if (url.startsWith('/')) {
+    const { adminRoot } = getGhostPaths();
+    return window.location.origin + adminRoot.replace(/\/$/, '') + url;
+  }
+  return url;
 };
 
 /**
@@ -30,32 +30,32 @@ const resolveUrl = (url: string): string => {
  * config.
  */
 export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
-    const {data: configData} = useBrowseConfig();
-    const {data: settingsData} = useBrowseSettings();
+  const { data: configData } = useBrowseConfig();
+  const { data: settingsData } = useBrowseSettings();
 
-    const config = configData?.config;
-    const pinturaConfig = config?.pintura;
-    const settings = settingsData?.settings ?? null;
+  const config = configData?.config;
+  const pinturaConfig = config?.pintura;
+  const settings = settingsData?.settings ?? null;
 
-    const [isEnabled, fallbackJsUrl, fallbackCssUrl] = getSettingValues<unknown>(settings, [
-        'pintura',
-        'pintura_js_url',
-        'pintura_css_url'
-    ]);
-    let configJsUrl: undefined | string;
-    let configCssUrl: undefined | string;
-    if (isEnabled) {
-        configJsUrl = pinturaConfig?.js || parseOptionalString(fallbackJsUrl);
-        configCssUrl = pinturaConfig?.css || parseOptionalString(fallbackCssUrl);
+  const [isEnabled, fallbackJsUrl, fallbackCssUrl] = getSettingValues<unknown>(settings, [
+    'pintura',
+    'pintura_js_url',
+    'pintura_css_url',
+  ]);
+  let configJsUrl: undefined | string;
+  let configCssUrl: undefined | string;
+  if (isEnabled) {
+    configJsUrl = pinturaConfig?.js || parseOptionalString(fallbackJsUrl);
+    configCssUrl = pinturaConfig?.css || parseOptionalString(fallbackCssUrl);
+  }
+
+  return useMemo(() => {
+    if (!configJsUrl || !configCssUrl) {
+      return null;
     }
-
-    return useMemo(() => {
-        if (!configJsUrl || !configCssUrl) {
-            return null;
-        }
-        return {
-            jsUrl: resolveUrl(configJsUrl),
-            cssUrl: resolveUrl(configCssUrl)
-        };
-    }, [configJsUrl, configCssUrl]);
+    return {
+      jsUrl: resolveUrl(configJsUrl),
+      cssUrl: resolveUrl(configCssUrl),
+    };
+  }, [configJsUrl, configCssUrl]);
 }

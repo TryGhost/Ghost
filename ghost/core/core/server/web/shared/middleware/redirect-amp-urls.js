@@ -15,22 +15,22 @@ const localUtils = require('../utils');
  *   /welcome/amp/?q=1  -> /welcome/?q=1
  *
  * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object  
+ * @param {import('express').Response} res - Express response object
  * @param {import('express').NextFunction} next - Express next function
  * @returns {void}
  */
 function redirectAmpUrls(req, res, next) {
-    const ampPattern = /\/amp\/?$/i;
-    const url = new URL(req.url, 'http://example.com');
-    
-    if (!ampPattern.test(url.pathname)) {
-        return next();
-    }
+  const ampPattern = /\/amp\/?$/i;
+  const url = new URL(req.url, 'http://example.com');
 
-    const sanitizedPath = url.pathname.replace(ampPattern, '/') + url.search;
-    const redirectPath = localUtils.removeOpenRedirectFromUrl(sanitizedPath);
+  if (!ampPattern.test(url.pathname)) {
+    return next();
+  }
 
-    return urlUtils.redirect301(res, redirectPath);
+  const sanitizedPath = url.pathname.replace(ampPattern, '/') + url.search;
+  const redirectPath = localUtils.removeOpenRedirectFromUrl(sanitizedPath);
+
+  return urlUtils.redirect301(res, redirectPath);
 }
 
-module.exports = redirectAmpUrls; 
+module.exports = redirectAmpUrls;

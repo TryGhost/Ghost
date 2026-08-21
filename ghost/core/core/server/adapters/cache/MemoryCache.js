@@ -1,36 +1,36 @@
-const {CacheBase} = require('@tryghost/adapter-base-cache');
+const { CacheBase } = require('@tryghost/adapter-base-cache');
 
 class MemoryCache extends CacheBase {
-    constructor() {
-        super();
+  constructor() {
+    super();
 
-        this._data = {};
-    }
+    this._data = {};
+  }
 
-    get(key) {
-        return this._data[key];
-    }
+  get(key) {
+    return this._data[key];
+  }
 
-    /**
-     *
-     * @param {string} key
-     * @param {*} value
-     */
-    set(key, value) {
-        this._data[key] = value;
-    }
+  /**
+   *
+   * @param {string} key
+   * @param {*} value
+   */
+  set(key, value) {
+    this._data[key] = value;
+  }
 
-    reset() {
-        this._data = {};
-    }
+  reset() {
+    this._data = {};
+  }
 
-    /**
-     * Helper method to assist "getAll" type of operations
-     * @returns {Array<String>} all keys present in the cache
-     */
-    keys() {
-        return Object.keys(this._data);
-    }
+  /**
+   * Helper method to assist "getAll" type of operations
+   * @returns {Array<String>} all keys present in the cache
+   */
+  keys() {
+    return Object.keys(this._data);
+  }
 }
 
 module.exports = MemoryCache;

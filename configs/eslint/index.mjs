@@ -22,91 +22,106 @@ import * as tseslint from 'typescript-eslint';
 // ============================================================================
 
 export const correctnessRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+  curly: 'error',
+  camelcase: ['error', { properties: 'never' }],
+  'dot-notation': 'error',
+  eqeqeq: ['error', 'always'],
+  'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+  'no-eval': 'error',
+  'no-useless-call': 'error',
+  'no-console': 'error',
+  'no-shadow': 'error',
+  'array-callback-return': 'error',
+  'no-constructor-return': 'error',
+  'no-promise-executor-return': 'error',
+  'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
 };
 
 export const tsUnusedVarsRule = {
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-        caughtErrors: 'none'
-    }]
+  'no-unused-vars': 'off',
+  '@typescript-eslint/no-unused-vars': [
+    'error',
+    {
+      args: 'after-used',
+      argsIgnorePattern: '^_',
+      caughtErrors: 'none',
+    },
+  ],
 };
 
 // ESLint 9 flipped the no-unused-vars default for caughtErrors from 'none' to
 // 'all'. Restore the previous behavior so unused catch bindings stay tolerated.
 export const jsUnusedVarsRule = {
-    'no-unused-vars': ['error', {caughtErrors: 'none'}]
+  'no-unused-vars': ['error', { caughtErrors: 'none' }],
 };
 
 export const sortImportsRule = {
-    'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
-        memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
-    }]
+  'ghost/sort-imports-es6-autofix/sort-imports-es6': [
+    'error',
+    {
+      memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple'],
+    },
+  ],
 };
 
 export const shadeLayeredImportsRule = {
-    'no-restricted-imports': ['error', {
-        paths: [{
-            name: '@tryghost/shade',
-            message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
-        }]
-    }]
+  'no-restricted-imports': [
+    'error',
+    {
+      paths: [
+        {
+          name: '@tryghost/shade',
+          message:
+            'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).',
+        },
+      ],
+    },
+  ],
 };
 
 export const reactDefaultsOff = {
-    'react/react-in-jsx-scope': 'off',  // not needed with the new JSX transform
-    'react/prop-types': 'off'           // codebase uses TypeScript for prop typing
+  'react/react-in-jsx-scope': 'off', // not needed with the new JSX transform
+  'react/prop-types': 'off', // codebase uses TypeScript for prop typing
 };
 
 export const reactStrictRules = {
-    'react/jsx-sort-props': ['error', {
-        reservedFirst: true,
-        callbacksLast: true,
-        shorthandLast: true,
-        locale: 'en'
-    }],
-    'react/button-has-type': 'error',
-    'react/no-array-index-key': 'error',
-    'react/jsx-key': 'error'
+  'react/jsx-sort-props': [
+    'error',
+    {
+      reservedFirst: true,
+      callbacksLast: true,
+      shorthandLast: true,
+      locale: 'en',
+    },
+  ],
+  'react/button-has-type': 'error',
+  'react/no-array-index-key': 'error',
+  'react/jsx-key': 'error',
 };
 
 // Tailwind v4 ruleset (settings-based config).
 export const tailwindRulesV4 = {
-    'tailwindcss/classnames-order': 'error',
-    'tailwindcss/enforces-negative-arbitrary-values': 'error',
-    'tailwindcss/enforces-shorthand': 'error',
-    'tailwindcss/migration-from-tailwind-2': 'off',  // already on v4; rule is a v2 migration helper
-    'tailwindcss/no-arbitrary-value': 'off',          // intentionally allowed
-    'tailwindcss/no-custom-classname': 'off',         // codebase relies on custom classnames
-    'tailwindcss/no-contradicting-classname': 'error'
+  'tailwindcss/classnames-order': 'error',
+  'tailwindcss/enforces-negative-arbitrary-values': 'error',
+  'tailwindcss/enforces-shorthand': 'error',
+  'tailwindcss/migration-from-tailwind-2': 'off', // already on v4; rule is a v2 migration helper
+  'tailwindcss/no-arbitrary-value': 'off', // intentionally allowed
+  'tailwindcss/no-custom-classname': 'off', // codebase relies on custom classnames
+  'tailwindcss/no-contradicting-classname': 'error',
 };
 
 // Tailwind v3 ruleset (per-rule config). LEGACY — used only by comments-ui
 // and signup-form until they migrate to v4.
 export function tailwindRulesWithConfig(config) {
-    return {
-        'tailwindcss/classnames-order': ['error', {config}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['error', {config}],
-        'tailwindcss/enforces-shorthand': ['error', {config}],
-        'tailwindcss/migration-from-tailwind-2': 'off',
-        'tailwindcss/no-arbitrary-value': 'off',
-        'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config}]
-    };
+  return {
+    'tailwindcss/classnames-order': ['error', { config }],
+    'tailwindcss/enforces-negative-arbitrary-values': ['error', { config }],
+    'tailwindcss/enforces-shorthand': ['error', { config }],
+    'tailwindcss/migration-from-tailwind-2': 'off',
+    'tailwindcss/no-arbitrary-value': 'off',
+    'tailwindcss/no-custom-classname': 'off',
+    'tailwindcss/no-contradicting-classname': ['error', { config }],
+  };
 }
 
 // Composite rule sets used by factories. Every rule is 'error' or 'off' —
@@ -114,58 +129,58 @@ export function tailwindRulesWithConfig(config) {
 // re-enabling them is a scoped cleanup PR.
 
 export const tsReactAppRules = {
-    ...correctnessRules,
-    ...tsUnusedVarsRule,
-    ...reactDefaultsOff,
-    ...reactStrictRules,
-    // Apply react-hooks rules at the rule-set level so they cover BOTH src and
-    // test blocks. The src block ALSO extends reactHooks.configs.recommended-latest
-    // which is fine — these match. exhaustive-deps stays off everywhere; the
-    // workspace-specific overrides for src already handle TODO counts.
-    'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'off',
-    'no-var': 'error',
-    // TS handles these at compile time; turning them off in ESLint avoids
-    // duplicate/contradictory reports.
-    'no-undef': 'off',
-    'no-redeclare': 'off',
-    'no-unexpected-multiline': 'off',
-    '@typescript-eslint/no-inferrable-types': 'off',
-    // Catches real type-safety regressions. Workspaces with legacy violations
-    // override to 'off' explicitly (comments-ui: 41).
-    '@typescript-eslint/no-explicit-any': 'error',
-    // TODO: 97 violations across 8 workspaces. Cleanup PR will flip to 'error'.
-    '@typescript-eslint/no-non-null-assertion': 'off',
-    // TODO: 121 violations across all 9 TS React workspaces. Cleanup PR will flip to 'error'.
-    '@typescript-eslint/no-empty-function': 'off'
+  ...correctnessRules,
+  ...tsUnusedVarsRule,
+  ...reactDefaultsOff,
+  ...reactStrictRules,
+  // Apply react-hooks rules at the rule-set level so they cover BOTH src and
+  // test blocks. The src block ALSO extends reactHooks.configs.recommended-latest
+  // which is fine — these match. exhaustive-deps stays off everywhere; the
+  // workspace-specific overrides for src already handle TODO counts.
+  'react-hooks/rules-of-hooks': 'error',
+  'react-hooks/exhaustive-deps': 'off',
+  'no-var': 'error',
+  // TS handles these at compile time; turning them off in ESLint avoids
+  // duplicate/contradictory reports.
+  'no-undef': 'off',
+  'no-redeclare': 'off',
+  'no-unexpected-multiline': 'off',
+  '@typescript-eslint/no-inferrable-types': 'off',
+  // Catches real type-safety regressions. Workspaces with legacy violations
+  // override to 'off' explicitly (comments-ui: 41).
+  '@typescript-eslint/no-explicit-any': 'error',
+  // TODO: 97 violations across 8 workspaces. Cleanup PR will flip to 'error'.
+  '@typescript-eslint/no-non-null-assertion': 'off',
+  // TODO: 121 violations across all 9 TS React workspaces. Cleanup PR will flip to 'error'.
+  '@typescript-eslint/no-empty-function': 'off',
 };
 
 // Extras for Vite-based apps with eslint-plugin-react-refresh registered.
 // (react-hooks is loaded by every React app now, including UMD — react-refresh
 // is the Vite-specific HMR rule.)
 export const viteOnlyExtras = {
-    // LEGACY: 195 violations across 7 Vite apps. The rule fires on any module
-    // that exports a non-component alongside a component (utils, constants,
-    // hooks). React/Vite patterns mix these constantly — fixing 195 cases means
-    // splitting hundreds of files. Practically permanent; the rule's HMR
-    // benefit doesn't justify the codebase upheaval.
-    'react-refresh/only-export-components': 'off'
+  // LEGACY: 195 violations across 7 Vite apps. The rule fires on any module
+  // that exports a non-component alongside a component (utils, constants,
+  // hooks). React/Vite patterns mix these constantly — fixing 195 cases means
+  // splitting hundreds of files. Practically permanent; the rule's HMR
+  // benefit doesn't justify the codebase upheaval.
+  'react-refresh/only-export-components': 'off',
 };
 
 export const jsReactAppRules = {
-    ...correctnessRules,
-    ...jsUnusedVarsRule,
-    ...reactDefaultsOff,
-    'no-var': 'error'
+  ...correctnessRules,
+  ...jsUnusedVarsRule,
+  ...reactDefaultsOff,
+  'no-var': 'error',
 };
 
 export const nodeLibRules = {
-    ...correctnessRules,
-    'no-var': 'error',
-    'one-var': ['error', 'never'],
-    'ghost/ghost-custom/no-native-error': 'error',
-    'ghost/ghost-custom/ghost-error-usage': 'error',
-    'ghost/ghost-custom/ghost-tpl-usage': 'error'
+  ...correctnessRules,
+  'no-var': 'error',
+  'one-var': ['error', 'never'],
+  'ghost/ghost-custom/no-native-error': 'error',
+  'ghost/ghost-custom/ghost-error-usage': 'error',
+  'ghost/ghost-custom/ghost-tpl-usage': 'error',
 };
 
 // Ban top-level await in shipped Node-library source. It makes the ESM module
@@ -175,31 +190,38 @@ export const nodeLibRules = {
 // module-level ones are the problem. Applied to src blocks only — test files
 // are never require()d.
 export const noTopLevelAwaitRule = {
-    'no-restricted-syntax': ['error',
-        {
-            selector: 'AwaitExpression:not(:function AwaitExpression)',
-            message: 'Top-level await is not allowed — it breaks require(esm) consumers like ghost/core. Move it inside an async function.'
-        },
-        {
-            selector: 'ForOfStatement[await=true]:not(:function ForOfStatement)',
-            message: 'Top-level for-await-of is not allowed — it breaks require(esm) consumers like ghost/core. Move it inside an async function.'
-        }
-    ]
+  'no-restricted-syntax': [
+    'error',
+    {
+      selector: 'AwaitExpression:not(:function AwaitExpression)',
+      message:
+        'Top-level await is not allowed — it breaks require(esm) consumers like ghost/core. Move it inside an async function.',
+    },
+    {
+      selector: 'ForOfStatement[await=true]:not(:function ForOfStatement)',
+      message:
+        'Top-level for-await-of is not allowed — it breaks require(esm) consumers like ghost/core. Move it inside an async function.',
+    },
+  ],
 };
 
 export const noGhostIgnitionRequireRule = {
-    'ghost/node/no-restricted-require': ['error', [
-        {
-            name: 'ghost-ignition',
-            message: '@deprecated, please use @tryghost/errors, @tryghost/logging or @tryghost/debug. Config and Server are coming soon!'
-        }
-    ]]
+  'ghost/node/no-restricted-require': [
+    'error',
+    [
+      {
+        name: 'ghost-ignition',
+        message:
+          '@deprecated, please use @tryghost/errors, @tryghost/logging or @tryghost/debug. Config and Server are coming soon!',
+      },
+    ],
+  ],
 };
 
 export const strictLinterOptions = {
-    linterOptions: {
-        reportUnusedDisableDirectives: 'error'
-    }
+  linterOptions: {
+    reportUnusedDisableDirectives: 'error',
+  },
 };
 
 // ============================================================================
@@ -209,11 +231,11 @@ export const strictLinterOptions = {
 // Disables every `ghost/mocha/*` rule. Used in test blocks so Vitest patterns
 // don't trip false-positive mocha-style warnings.
 export function mochaRulesOff(plugin) {
-    return Object.fromEntries(
-        Object.keys(plugin.rules || {})
-            .filter(rule => rule.startsWith('mocha/'))
-            .map(rule => [`ghost/${rule}`, 'off'])
-    );
+  return Object.fromEntries(
+    Object.keys(plugin.rules || {})
+      .filter((rule) => rule.startsWith('mocha/'))
+      .map((rule) => [`ghost/${rule}`, 'off']),
+  );
 }
 
 // ============================================================================
@@ -223,47 +245,44 @@ export function mochaRulesOff(plugin) {
 // ESLint-9-compatible replacement for eslint-plugin-filenames-ts's match-regex
 // rule (the upstream calls context.getScope() which ESLint 9 removed).
 const filenamesMatchRegex = {
-    meta: {
-        type: 'problem',
-        schema: [
-            {type: 'string'},
-            {type: ['boolean', 'null']},
-            {type: ['boolean', 'null']}
-        ]
-    },
-    create(context) {
-        const pattern = new RegExp(context.options[0]);
-        const ignoreExporting = Boolean(context.options[1]);
-        return {
-            Program(node) {
-                if (ignoreExporting) {
-                    const hasExport = node.body.some(stmt =>
-                        stmt.type === 'ExportDefaultDeclaration' ||
-                        stmt.type === 'ExportNamedDeclaration' ||
-                        (stmt.type === 'ExpressionStatement' &&
-                         stmt.expression.type === 'AssignmentExpression' &&
-                         stmt.expression.left.type === 'MemberExpression' &&
-                         stmt.expression.left.object.type === 'Identifier' &&
-                         stmt.expression.left.object.name === 'module' &&
-                         stmt.expression.left.property.type === 'Identifier' &&
-                         stmt.expression.left.property.name === 'exports')
-                    );
-                    if (hasExport) return;
-                }
-                const filename = path.parse(context.filename).name;
-                if (!pattern.test(filename)) {
-                    context.report({
-                        node,
-                        message: `Filename '${filename}' does not match the naming convention.`
-                    });
-                }
-            }
-        };
-    }
+  meta: {
+    type: 'problem',
+    schema: [{ type: 'string' }, { type: ['boolean', 'null'] }, { type: ['boolean', 'null'] }],
+  },
+  create(context) {
+    const pattern = new RegExp(context.options[0]);
+    const ignoreExporting = Boolean(context.options[1]);
+    return {
+      Program(node) {
+        if (ignoreExporting) {
+          const hasExport = node.body.some(
+            (stmt) =>
+              stmt.type === 'ExportDefaultDeclaration' ||
+              stmt.type === 'ExportNamedDeclaration' ||
+              (stmt.type === 'ExpressionStatement' &&
+                stmt.expression.type === 'AssignmentExpression' &&
+                stmt.expression.left.type === 'MemberExpression' &&
+                stmt.expression.left.object.type === 'Identifier' &&
+                stmt.expression.left.object.name === 'module' &&
+                stmt.expression.left.property.type === 'Identifier' &&
+                stmt.expression.left.property.name === 'exports'),
+          );
+          if (hasExport) return;
+        }
+        const filename = path.parse(context.filename).name;
+        if (!pattern.test(filename)) {
+          context.report({
+            node,
+            message: `Filename '${filename}' does not match the naming convention.`,
+          });
+        }
+      },
+    };
+  },
 };
 
 export const localFilenamesPlugin = {
-    rules: {'match-regex': filenamesMatchRegex}
+  rules: { 'match-regex': filenamesMatchRegex },
 };
 
 // ============================================================================
@@ -314,101 +333,113 @@ export const localFilenamesPlugin = {
  * export default nodeLibConfig();
  */
 const NODE_LIB_PARAMS = new Set([
-    'typescript', 'commonjs', 'legacyLocalFilenames', 'srcGlobs', 'testGlobs',
-    'ignores', 'extraSrcRules', 'extraTestRules', 'extraBlocks'
+  'typescript',
+  'commonjs',
+  'legacyLocalFilenames',
+  'srcGlobs',
+  'testGlobs',
+  'ignores',
+  'extraSrcRules',
+  'extraTestRules',
+  'extraBlocks',
 ]);
 
 export function nodeLibConfig(options = {}) {
-    const unknown = Object.keys(options).filter(k => !NODE_LIB_PARAMS.has(k));
-    if (unknown.length) {
-        throw new Error(`nodeLibConfig: unknown options ${JSON.stringify(unknown)}. Valid keys: ${JSON.stringify([...NODE_LIB_PARAMS])}`);
-    }
-    const {
-        typescript = true,
-        commonjs = false,
-        legacyLocalFilenames = false,
-        srcGlobs,
-        testGlobs,
-        ignores = ['build/**/*'],
-        extraSrcRules = {},
-        extraTestRules = {},
-        extraBlocks = []
-    } = options;
+  const unknown = Object.keys(options).filter((k) => !NODE_LIB_PARAMS.has(k));
+  if (unknown.length) {
+    throw new Error(
+      `nodeLibConfig: unknown options ${JSON.stringify(unknown)}. Valid keys: ${JSON.stringify([...NODE_LIB_PARAMS])}`,
+    );
+  }
+  const {
+    typescript = true,
+    commonjs = false,
+    legacyLocalFilenames = false,
+    srcGlobs,
+    testGlobs,
+    ignores = ['build/**/*'],
+    extraSrcRules = {},
+    extraTestRules = {},
+    extraBlocks = [],
+  } = options;
 
-    const defaultTsSrcGlobs = ['src/**/*.ts'];
-    const defaultJsSrcGlobs = ['*.js', 'lib/**/*.js'];
-    const defaultTsTestGlobs = ['test/**/*.ts'];
-    const defaultJsTestGlobs = ['test/**/*.js'];
+  const defaultTsSrcGlobs = ['src/**/*.ts'];
+  const defaultJsSrcGlobs = ['*.js', 'lib/**/*.js'];
+  const defaultTsTestGlobs = ['test/**/*.ts'];
+  const defaultJsTestGlobs = ['test/**/*.js'];
 
-    const sourceType = commonjs ? 'commonjs' : 'module';
+  const sourceType = commonjs ? 'commonjs' : 'module';
 
-    const unusedVarsRule = typescript ? tsUnusedVarsRule : jsUnusedVarsRule;
-    const baseRules = {
-        ...nodeLibRules,
-        ...unusedVarsRule,
-        // Turn off the eslint-plugin-ghost filename rule when using the
-        // local-filenames variant — they're equivalent in intent.
-        ...(legacyLocalFilenames ? {'ghost/filenames/match-regex': 'off'} : {})
-    };
+  const unusedVarsRule = typescript ? tsUnusedVarsRule : jsUnusedVarsRule;
+  const baseRules = {
+    ...nodeLibRules,
+    ...unusedVarsRule,
+    // Turn off the eslint-plugin-ghost filename rule when using the
+    // local-filenames variant — they're equivalent in intent.
+    ...(legacyLocalFilenames ? { 'ghost/filenames/match-regex': 'off' } : {}),
+  };
 
-    const plugins = {
-        ghost: ghostPlugin,
-        ...(legacyLocalFilenames && {'local-filenames': localFilenamesPlugin})
-    };
+  const plugins = {
+    ghost: ghostPlugin,
+    ...(legacyLocalFilenames && { 'local-filenames': localFilenamesPlugin }),
+  };
 
-    const srcLanguageOptions = {
-        ecmaVersion: 2022,
-        sourceType,
-        globals: globals.node
-    };
+  const srcLanguageOptions = {
+    ecmaVersion: 2022,
+    sourceType,
+    globals: globals.node,
+  };
 
-    const testLanguageOptions = {
-        ecmaVersion: 2022,
-        sourceType,
-        globals: {
-            ...globals.node,
-            ...globals.mocha,
-            ...globals.vitest,
-            vi: 'readonly',
-            beforeAll: 'readonly',
-            should: 'readonly',
-            sinon: 'readonly'
-        }
-    };
+  const testLanguageOptions = {
+    ecmaVersion: 2022,
+    sourceType,
+    globals: {
+      ...globals.node,
+      ...globals.mocha,
+      ...globals.vitest,
+      vi: 'readonly',
+      beforeAll: 'readonly',
+      should: 'readonly',
+      sinon: 'readonly',
+    },
+  };
 
-    const srcBlock = {
-        files: srcGlobs ?? (typescript ? defaultTsSrcGlobs : defaultJsSrcGlobs),
-        ...(typescript ? {extends: [...tseslint.configs.recommended]} : js.configs.recommended),
-        languageOptions: srcLanguageOptions,
-        plugins,
-        rules: {
-            ...js.configs.recommended.rules,
-            ...baseRules,
-            ...noTopLevelAwaitRule,
-            ...(typescript ? {'no-undef': 'off'} : {}),
-            ...extraSrcRules
-        }
-    };
+  const srcBlock = {
+    files: srcGlobs ?? (typescript ? defaultTsSrcGlobs : defaultJsSrcGlobs),
+    ...(typescript ? { extends: [...tseslint.configs.recommended] } : js.configs.recommended),
+    languageOptions: srcLanguageOptions,
+    plugins,
+    rules: {
+      ...js.configs.recommended.rules,
+      ...baseRules,
+      ...noTopLevelAwaitRule,
+      ...(typescript ? { 'no-undef': 'off' } : {}),
+      ...extraSrcRules,
+    },
+  };
 
-    const testBlock = testGlobs === false ? null : {
-        files: testGlobs ?? (typescript ? defaultTsTestGlobs : defaultJsTestGlobs),
-        ...(typescript ? {extends: [...tseslint.configs.recommended]} : js.configs.recommended),
-        languageOptions: testLanguageOptions,
-        plugins,
-        rules: {
+  const testBlock =
+    testGlobs === false
+      ? null
+      : {
+          files: testGlobs ?? (typescript ? defaultTsTestGlobs : defaultJsTestGlobs),
+          ...(typescript ? { extends: [...tseslint.configs.recommended] } : js.configs.recommended),
+          languageOptions: testLanguageOptions,
+          plugins,
+          rules: {
             ...js.configs.recommended.rules,
             ...baseRules,
             ...mochaRulesOff(ghostPlugin),
-            ...(typescript ? {'no-undef': 'off'} : {}),
-            ...extraTestRules
-        }
-    };
+            ...(typescript ? { 'no-undef': 'off' } : {}),
+            ...extraTestRules,
+          },
+        };
 
-    return tseslint.config(
-        {ignores},
-        {files: ['**/*'], ...strictLinterOptions},
-        srcBlock,
-        ...extraBlocks,
-        ...(testBlock ? [testBlock] : [])
-    );
+  return tseslint.config(
+    { ignores },
+    { files: ['**/*'], ...strictLinterOptions },
+    srcBlock,
+    ...extraBlocks,
+    ...(testBlock ? [testBlock] : []),
+  );
 }

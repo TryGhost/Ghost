@@ -3,21 +3,21 @@ const StartGiftReminderFlushEvent = require('../../services/gifts/events/start-g
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'gifts',
+  docName: 'gifts',
 
-    flushReminders: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: {
-            docName: 'gifts',
-            method: 'flushReminders'
-        },
-        query() {
-            domainEvents.dispatch(StartGiftReminderFlushEvent.create());
-        }
-    }
+  flushReminders: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      docName: 'gifts',
+      method: 'flushReminders',
+    },
+    query() {
+      domainEvents.dispatch(StartGiftReminderFlushEvent.create());
+    },
+  },
 };
 
 module.exports = controller;

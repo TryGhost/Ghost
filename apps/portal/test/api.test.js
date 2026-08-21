@@ -1,385 +1,466 @@
 import setupGhostApi from '../src/utils/api';
-import {HumanReadableError} from '../src/utils/errors';
-import {vi} from 'vitest';
+import { HumanReadableError } from '../src/utils/errors';
+import { vi } from 'vitest';
 
 describe('Portal API gift redemption', () => {
-    beforeEach(() => {
-        vi.restoreAllMocks();
-    });
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
 
-    test('returns the gifts api payload for redeemable gift tokens', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+  test('returns the gifts api payload for redeemable gift tokens', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
-        vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-            gifts: [{
-                token: 'gift-token-123'
-            }]
-        }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }));
-
-        const response = await ghostApi.gift.fetchRedemptionData({token: 'gift-token-123'});
-
-        expect(response.gifts[0].token).toBe('gift-token-123');
-        expect(window.fetch).toHaveBeenCalledWith('https://example.com/members/api/gifts/gift-token-123/redeem/', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          gifts: [
+            {
+              token: 'gift-token-123',
             },
-            credentials: 'same-origin',
-            body: undefined
-        });
-    });
+          ],
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
 
-    test('throws a human-readable error for 400 members api gift responses', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+    const response = await ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' });
 
-        vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-            errors: [{
-                message: 'This gift has expired.'
-            }]
-        }), {
-            status: 400,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }));
+    expect(response.gifts[0].token).toBe('gift-token-123');
+    expect(window.fetch).toHaveBeenCalledWith(
+      'https://example.com/members/api/gifts/gift-token-123/redeem/',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: undefined,
+      },
+    );
+  });
 
-        await expect(ghostApi.gift.fetchRedemptionData({token: 'gift-token-123'})).rejects.toEqual(new HumanReadableError('This gift has expired.'));
-    });
+  test('throws a human-readable error for 400 members api gift responses', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
-    test('preserves the api error message for 404 members api gift responses', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-
-        vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-            errors: [{
-                message: 'Gift not found.'
-            }]
-        }), {
-            status: 404,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }));
-
-        await expect(ghostApi.gift.fetchRedemptionData({token: 'gift-token-123'})).rejects.toEqual(new HumanReadableError('Gift not found.'));
-    });
-
-    test('redeems a gift for a logged-in member via POST', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-
-        vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-            gifts: [{
-                token: 'gift-token-123',
-                status: 'redeemed',
-                consumes_at: '2030-01-01T00:00:00.000Z'
-            }]
-        }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }));
-
-        const response = await ghostApi.gift.redeem({token: 'gift-token-123'});
-
-        expect(response.gifts[0].status).toBe('redeemed');
-        expect(window.fetch).toHaveBeenCalledWith('https://example.com/members/api/gifts/gift-token-123/redeem/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              message: 'This gift has expired.',
             },
-            credentials: 'same-origin',
-            body: '{}'
-        });
-    });
+          ],
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
 
-    test('throws a human-readable error for 400 members api gift redeem responses', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+    await expect(ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' })).rejects.toEqual(
+      new HumanReadableError('This gift has expired.'),
+    );
+  });
 
-        vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-            errors: [{
-                message: 'This gift has already been redeemed.'
-            }]
-        }), {
-            status: 400,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }));
+  test('preserves the api error message for 404 members api gift responses', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
-        await expect(ghostApi.gift.redeem({token: 'gift-token-123'})).rejects.toEqual(new HumanReadableError('This gift has already been redeemed.'));
-    });
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              message: 'Gift not found.',
+            },
+          ],
+        }),
+        {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' })).rejects.toEqual(
+      new HumanReadableError('Gift not found.'),
+    );
+  });
+
+  test('redeems a gift for a logged-in member via POST', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          gifts: [
+            {
+              token: 'gift-token-123',
+              status: 'redeemed',
+              consumes_at: '2030-01-01T00:00:00.000Z',
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    const response = await ghostApi.gift.redeem({ token: 'gift-token-123' });
+
+    expect(response.gifts[0].status).toBe('redeemed');
+    expect(window.fetch).toHaveBeenCalledWith(
+      'https://example.com/members/api/gifts/gift-token-123/redeem/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: '{}',
+      },
+    );
+  });
+
+  test('throws a human-readable error for 400 members api gift redeem responses', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              message: 'This gift has already been redeemed.',
+            },
+          ],
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(ghostApi.gift.redeem({ token: 'gift-token-123' })).rejects.toEqual(
+      new HumanReadableError('This gift has already been redeemed.'),
+    );
+  });
 });
 
 describe('Portal API gift checkout', () => {
-    let originalLocation;
+  let originalLocation;
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        originalLocation = window.location;
-        delete window.location;
-        window.location = {
-            href: 'https://example.com/#/portal/gift',
-            assign: vi.fn()
-        };
-    });
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    originalLocation = window.location;
+    delete window.location;
+    window.location = {
+      href: 'https://example.com/#/portal/gift',
+      assign: vi.fn(),
+    };
+  });
 
-    afterEach(() => {
-        window.location = originalLocation;
-    });
+  afterEach(() => {
+    window.location = originalLocation;
+  });
 
-    test('passes customer email when creating a gift checkout session', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+  test('passes customer email when creating a gift checkout session', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
-        vi.spyOn(window, 'fetch').mockImplementation((url) => {
-            if (url.includes('/members/api/session/')) {
-                return Promise.resolve(new Response('identity-token', {status: 200}));
-            }
+    vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
 
-            return Promise.resolve(new Response(JSON.stringify({
-                url: 'https://checkout.stripe.com/gift-session'
-            }), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }));
-        });
-
-        await ghostApi.member.checkoutGift({
-            tierId: 'tier_123',
-            cadence: 'month',
-            email: 'jamie@example.com'
-        });
-
-        expect(window.fetch).toHaveBeenLastCalledWith('https://example.com/members/api/create-stripe-checkout-session/', {
-            method: 'POST',
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            url: 'https://checkout.stripe.com/gift-session',
+          }),
+          {
+            status: 200,
             headers: {
-                'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                identity: 'identity-token',
-                metadata: {
-                    requestSrc: 'portal'
-                },
-                type: 'gift',
-                tierId: 'tier_123',
-                cadence: 'month',
-                cancelUrl: 'https://example.com/#/portal/gift',
-                customerEmail: 'jamie@example.com'
-            })
-        });
-        expect(window.location.assign).toHaveBeenCalledWith('https://checkout.stripe.com/gift-session');
+          },
+        ),
+      );
     });
 
-    test('sends duration without cadence for customized gift checkout', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
-            if (url.includes('/members/api/session/')) {
-                return Promise.resolve(new Response('identity-token', {status: 200}));
-            }
-
-            return Promise.resolve(new Response(JSON.stringify({
-                url: 'https://checkout.stripe.com/gift-session'
-            }), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }));
-        });
-
-        await ghostApi.member.checkoutGift({
-            tierId: 'tier_123',
-            duration: 3
-        });
-
-        const [, request] = requestSpy.mock.calls.at(-1);
-        const body = JSON.parse(request.body);
-
-        expect(body).toMatchObject({
-            type: 'gift',
-            tierId: 'tier_123',
-            duration: 3
-        });
-        expect(body).not.toHaveProperty('cadence');
+    await ghostApi.member.checkoutGift({
+      tierId: 'tier_123',
+      cadence: 'month',
+      email: 'jamie@example.com',
     });
 
-    test('sends immediate gift delivery details', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
-            if (url.includes('/members/api/session/')) {
-                return Promise.resolve(new Response('identity-token', {status: 200}));
-            }
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      'https://example.com/members/api/create-stripe-checkout-session/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identity: 'identity-token',
+          metadata: {
+            requestSrc: 'portal',
+          },
+          type: 'gift',
+          tierId: 'tier_123',
+          cadence: 'month',
+          cancelUrl: 'https://example.com/#/portal/gift',
+          customerEmail: 'jamie@example.com',
+        }),
+      },
+    );
+    expect(window.location.assign).toHaveBeenCalledWith('https://checkout.stripe.com/gift-session');
+  });
 
-            return Promise.resolve(new Response(JSON.stringify({
-                url: 'https://checkout.stripe.com/gift-session'
-            }), {status: 200, headers: {'Content-Type': 'application/json'}}));
-        });
+  test('sends duration without cadence for customized gift checkout', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
 
-        await ghostApi.member.checkoutGift({
-            tierId: 'tier_123',
-            duration: 3,
-            deliveryMethod: 'email',
-            recipientEmail: 'recipient@example.com',
-            recipientName: 'Taylor',
-            buyerName: 'Jamie',
-            personalMessage: 'Enjoy!'
-        });
-
-        const [, request] = requestSpy.mock.calls.at(-1);
-        expect(JSON.parse(request.body)).toMatchObject({
-            type: 'gift',
-            tierId: 'tier_123',
-            duration: 3,
-            deliveryMethod: 'email',
-            recipientEmail: 'recipient@example.com',
-            recipientName: 'Taylor',
-            buyerName: 'Jamie',
-            personalMessage: 'Enjoy!'
-        });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            url: 'https://checkout.stripe.com/gift-session',
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
     });
+
+    await ghostApi.member.checkoutGift({
+      tierId: 'tier_123',
+      duration: 3,
+    });
+
+    const [, request] = requestSpy.mock.calls.at(-1);
+    const body = JSON.parse(request.body);
+
+    expect(body).toMatchObject({
+      type: 'gift',
+      tierId: 'tier_123',
+      duration: 3,
+    });
+    expect(body).not.toHaveProperty('cadence');
+  });
+
+  test('sends immediate gift delivery details', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
+
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            url: 'https://checkout.stripe.com/gift-session',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+    });
+
+    await ghostApi.member.checkoutGift({
+      tierId: 'tier_123',
+      duration: 3,
+      deliveryMethod: 'email',
+      recipientEmail: 'recipient@example.com',
+      recipientName: 'Taylor',
+      buyerName: 'Jamie',
+      personalMessage: 'Enjoy!',
+    });
+
+    const [, request] = requestSpy.mock.calls.at(-1);
+    expect(JSON.parse(request.body)).toMatchObject({
+      type: 'gift',
+      tierId: 'tier_123',
+      duration: 3,
+      deliveryMethod: 'email',
+      recipientEmail: 'recipient@example.com',
+      recipientName: 'Taylor',
+      buyerName: 'Jamie',
+      personalMessage: 'Enjoy!',
+    });
+  });
 });
 
 describe('Portal API member checkout', () => {
-    let originalLocation;
+  let originalLocation;
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        originalLocation = window.location;
-        delete window.location;
-        window.location = {
-            href: 'https://example.com/#/portal/offers/offer_123',
-            assign: vi.fn()
-        };
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    originalLocation = window.location;
+    delete window.location;
+    window.location = {
+      href: 'https://example.com/#/portal/offers/offer_123',
+      assign: vi.fn(),
+    };
+  });
+
+  afterEach(() => {
+    window.location = originalLocation;
+  });
+
+  test('preserves checkout session error code', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+
+    vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
+
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            errors: [
+              {
+                message: 'A subscription exists for this Member.',
+                code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION',
+              },
+            ],
+          }),
+          {
+            status: 403,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
     });
 
-    afterEach(() => {
-        window.location = originalLocation;
+    await expect(
+      ghostApi.member.checkoutPlan({
+        plan: 'price_123',
+        tierId: 'tier_123',
+        cadence: 'month',
+        email: 'jamie@example.com',
+        offerId: 'offer_123',
+      }),
+    ).rejects.toMatchObject({
+      message: 'A subscription exists for this Member.',
+      code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION',
     });
-
-    test('preserves checkout session error code', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-
-        vi.spyOn(window, 'fetch').mockImplementation((url) => {
-            if (url.includes('/members/api/session/')) {
-                return Promise.resolve(new Response('identity-token', {status: 200}));
-            }
-
-            return Promise.resolve(new Response(JSON.stringify({
-                errors: [{
-                    message: 'A subscription exists for this Member.',
-                    code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
-                }]
-            }), {
-                status: 403,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }));
-        });
-
-        await expect(ghostApi.member.checkoutPlan({
-            plan: 'price_123',
-            tierId: 'tier_123',
-            cadence: 'month',
-            email: 'jamie@example.com',
-            offerId: 'offer_123'
-        })).rejects.toMatchObject({
-            message: 'A subscription exists for this Member.',
-            code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
-        });
-    });
+  });
 });
 
 describe('Portal API plan checkout', () => {
-    let originalLocation;
+  let originalLocation;
 
-    const mockCheckoutFetch = () => {
-        vi.spyOn(window, 'fetch').mockImplementation((url) => {
-            if (url.includes('/members/api/session/')) {
-                return Promise.resolve(new Response('identity-token', {status: 200}));
-            }
+  const mockCheckoutFetch = () => {
+    vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
 
-            return Promise.resolve(new Response(JSON.stringify({
-                url: 'https://checkout.stripe.com/plan-session'
-            }), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }));
-        });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            url: 'https://checkout.stripe.com/plan-session',
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
+    });
+  };
+
+  const lastCheckoutBody = () => {
+    const call = window.fetch.mock.calls.find(([url]) =>
+      url.includes('/members/api/create-stripe-checkout-session/'),
+    );
+    return JSON.parse(call[1].body);
+  };
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    originalLocation = window.location;
+    delete window.location;
+    window.location = {
+      href: 'https://example.com/paid-article/',
+      assign: vi.fn(),
     };
+  });
 
-    const lastCheckoutBody = () => {
-        const call = window.fetch.mock.calls.find(([url]) => url.includes('/members/api/create-stripe-checkout-session/'));
-        return JSON.parse(call[1].body);
-    };
+  afterEach(() => {
+    window.location = originalLocation;
+  });
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        originalLocation = window.location;
-        delete window.location;
-        window.location = {
-            href: 'https://example.com/paid-article/',
-            assign: vi.fn()
-        };
+  test('derives a contextual successUrl from the current page when none is supplied', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    mockCheckoutFetch();
+
+    await ghostApi.member.checkoutPlan({
+      plan: 'price_123',
+      tierId: 'tier_123',
+      cadence: 'month',
     });
 
-    afterEach(() => {
-        window.location = originalLocation;
+    const body = lastCheckoutBody();
+    expect(body.successUrl).toBe('https://example.com/paid-article/?stripe=success');
+    expect(body.cancelUrl).toBe('https://example.com/paid-article/?stripe=cancel');
+  });
+
+  test('falls back to the site root when the current page is off-site', async () => {
+    window.location.href = 'https://evil.example.org/phishing/';
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    mockCheckoutFetch();
+
+    await ghostApi.member.checkoutPlan({
+      plan: 'price_123',
+      tierId: 'tier_123',
+      cadence: 'month',
     });
 
-    test('derives a contextual successUrl from the current page when none is supplied', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        mockCheckoutFetch();
+    const body = lastCheckoutBody();
+    expect(body.successUrl).toBe('https://example.com/?stripe=success');
+    expect(body.cancelUrl).toBe('https://example.com/?stripe=cancel');
+  });
 
-        await ghostApi.member.checkoutPlan({
-            plan: 'price_123',
-            tierId: 'tier_123',
-            cadence: 'month'
-        });
+  test('preserves an explicitly supplied successUrl', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    mockCheckoutFetch();
 
-        const body = lastCheckoutBody();
-        expect(body.successUrl).toBe('https://example.com/paid-article/?stripe=success');
-        expect(body.cancelUrl).toBe('https://example.com/paid-article/?stripe=cancel');
+    await ghostApi.member.checkoutPlan({
+      plan: 'price_123',
+      tierId: 'tier_123',
+      cadence: 'month',
+      successUrl: 'https://example.com/custom-welcome/',
+      cancelUrl: 'https://example.com/custom-cancel/',
     });
 
-    test('falls back to the site root when the current page is off-site', async () => {
-        window.location.href = 'https://evil.example.org/phishing/';
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        mockCheckoutFetch();
-
-        await ghostApi.member.checkoutPlan({
-            plan: 'price_123',
-            tierId: 'tier_123',
-            cadence: 'month'
-        });
-
-        const body = lastCheckoutBody();
-        expect(body.successUrl).toBe('https://example.com/?stripe=success');
-        expect(body.cancelUrl).toBe('https://example.com/?stripe=cancel');
-    });
-
-    test('preserves an explicitly supplied successUrl', async () => {
-        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        mockCheckoutFetch();
-
-        await ghostApi.member.checkoutPlan({
-            plan: 'price_123',
-            tierId: 'tier_123',
-            cadence: 'month',
-            successUrl: 'https://example.com/custom-welcome/',
-            cancelUrl: 'https://example.com/custom-cancel/'
-        });
-
-        const body = lastCheckoutBody();
-        expect(body.successUrl).toBe('https://example.com/custom-welcome/');
-        expect(body.cancelUrl).toBe('https://example.com/custom-cancel/');
-    });
+    const body = lastCheckoutBody();
+    expect(body.successUrl).toBe('https://example.com/custom-welcome/');
+    expect(body.cancelUrl).toBe('https://example.com/custom-cancel/');
+  });
 });

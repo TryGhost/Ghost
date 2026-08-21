@@ -7,40 +7,41 @@ const membersService = require('../../services/members');
 
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
-const {getCSVExportFileName} = require('./utils/csv-export-filename');
+const { getCSVExportFileName } = require('./utils/csv-export-filename');
 
 // Shape the import service's outcome into the API response envelope: an inline import
 // reports its stats and label, a deferred one only how much it accepted.
 function importCSVResponse(outcome) {
-    if (outcome.deferred) {
-        return {meta: {originalImportSize: outcome.originalImportSize}};
-    }
-    return {
-        meta: {
-            originalImportSize: outcome.originalImportSize,
-            stats: {imported: outcome.result.imported, invalid: outcome.result.errors},
-            import_label: outcome.result.importLabel || null
-        }
-    };
+  if (outcome.deferred) {
+    return { meta: { originalImportSize: outcome.originalImportSize } };
+  }
+  return {
+    meta: {
+      originalImportSize: outcome.originalImportSize,
+      stats: { imported: outcome.result.imported, invalid: outcome.result.errors },
+      import_label: outcome.result.importLabel || null,
+    },
+  };
 }
 
 const messages = {
-    memberNotFound: 'Member not found.',
-    notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
-    memberAlreadyExists: {
-        message: 'Member already exists',
-        context: 'Attempting to {action} member with existing email address.'
-    },
-    stripeNotConnected: {
-        message: 'Missing Stripe connection.',
-        context: 'Attempting to import members with Stripe data when there is no Stripe account connected.',
-        help: 'help'
-    },
-    stripeCustomerNotFound: {
-        context: 'Missing Stripe customer.',
-        help: 'Make sure you\'re connected to the correct Stripe Account.'
-    },
-    resourceNotFound: '{resource} not found.'
+  memberNotFound: 'Member not found.',
+  notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
+  memberAlreadyExists: {
+    message: 'Member already exists',
+    context: 'Attempting to {action} member with existing email address.',
+  },
+  stripeNotConnected: {
+    message: 'Missing Stripe connection.',
+    context:
+      'Attempting to import members with Stripe data when there is no Stripe account connected.',
+    help: 'help',
+  },
+  stripeCustomerNotFound: {
+    context: 'Missing Stripe customer.',
+    help: "Make sure you're connected to the correct Stripe Account.",
+  },
+  resourceNotFound: '{resource} not found.',
 };
 
 // `custom_fields` is a browse include only: a read returns values whenever the
@@ -50,515 +51,481 @@ const allowedIncludes = ['email_recipients', 'products', 'tiers', 'custom_fields
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'members',
+  docName: 'members',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'debug',
-            'page',
-            'search',
-            'include'
-        ],
-        permissions: true,
-        validation: {
-            options: {
-                include: {
-                    values: allowedIncludes
-                }
-            }
-        },
-        async query(frame) {
-            const page = await membersService.api.memberBREADService.browse(frame.options);
-
-            return page;
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        options: [
-            'include'
-        ],
-        headers: {
-            cacheInvalidate: false
+    options: ['limit', 'fields', 'filter', 'order', 'debug', 'page', 'search', 'include'],
+    permissions: true,
+    validation: {
+      options: {
+        include: {
+          values: allowedIncludes,
         },
-        data: [
-            'id',
-            'email'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: allowedIncludes
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            const member = await membersService.api.memberBREADService.read(frame.data, frame.options);
-
-            if (!member) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                });
-            }
-
-            return member;
-        }
+      },
     },
+    async query(frame) {
+      const page = await membersService.api.memberBREADService.browse(frame.options);
 
-    add: {
-        statusCode: 201,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'send_email',
-            'email_type'
-        ],
-        validation: {
-            data: {
-                email: {required: true}
-            },
-            options: {
-                email_type: {
-                    values: ['signin', 'signup', 'subscribe']
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            if (await membersService.verificationTrigger.checkVerificationRequired()) {
-                logging.warn(tpl(messages.notSendingWelcomeEmail));
-                frame.options.send_email = false;
-            }
-            const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
-
-            return member;
-        }
+      return page;
     },
+  },
 
-    edit: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            const member = await membersService.api.memberBREADService.edit(frame.data.members[0], frame.options);
-
-            return member;
-        }
+  read: {
+    options: ['include'],
+    headers: {
+      cacheInvalidate: false,
     },
-
-    logout: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
+    data: ['id', 'email'],
+    validation: {
+      options: {
+        include: {
+          values: allowedIncludes,
         },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            method: 'edit'
-        },
-        async query(frame) {
-            const member = await membersService.api.memberBREADService.logout(frame.options);
-
-            return member;
-        }
+      },
     },
+    permissions: true,
+    async query(frame) {
+      const member = await membersService.api.memberBREADService.read(frame.data, frame.options);
 
-    editSubscription: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id',
-            'subscription_id'
-        ],
-        data: [
-            'cancel_at_period_end',
-            'status'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                },
-                subscription_id: {
-                    required: true
-                }
-            },
-            data: {
-                cancel_at_period_end: {
-                    required: true
-                },
-                status: {
-                    values: ['canceled']
-                }
-            }
-        },
-        permissions: {
-            method: 'edit'
-        },
-        async query(frame) {
-            if (frame.data.status === 'canceled') {
-                await membersService.api.members.cancelSubscription({
-                    id: frame.options.id,
-                    subscription: {
-                        subscription_id: frame.options.subscription_id
-                    }
-                });
-            } else {
-                await membersService.api.members.updateSubscription({
-                    id: frame.options.id,
-                    subscription: {
-                        subscription_id: frame.options.subscription_id,
-                        cancel_at_period_end: frame.data.cancel_at_period_end
-                    }
-                });
-            }
-            let model = await membersService.api.memberBREADService.read({id: frame.options.id});
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                });
-            }
+      if (!member) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.memberNotFound),
+        });
+      }
 
-            return model;
-        }
+      return member;
     },
+  },
 
-    createSubscription: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        data: [
-            'stripe_price_id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            },
-            data: {
-                stripe_price_id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            method: 'edit'
-        },
-        async query(frame) {
-            await membersService.api.members.createSubscription({
-                id: frame.options.id,
-                subscription: {
-                    stripe_price_id: frame.data.stripe_price_id
-                }
-            });
-            let model = await membersService.api.memberBREADService.read({id: frame.options.id});
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                });
-            }
-
-            return model;
-        }
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
     },
-
-    destroy: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
+    options: ['send_email', 'email_type'],
+    validation: {
+      data: {
+        email: { required: true },
+      },
+      options: {
+        email_type: {
+          values: ['signin', 'signup', 'subscribe'],
         },
-        options: [
-            'id',
-            'cancel'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            return membersService.api.members.destroy({
-                id: frame.options.id
-            }, {
-                ...frame.options, require: true, cancelStripeSubscriptions: frame.options.cancel
-            });
-        }
+      },
     },
+    permissions: true,
+    async query(frame) {
+      if (await membersService.verificationTrigger.checkVerificationRequired()) {
+        logging.warn(tpl(messages.notSendingWelcomeEmail));
+        frame.options.send_email = false;
+      }
+      const member = await membersService.api.memberBREADService.add(
+        frame.data.members[0],
+        frame.options,
+      );
 
-    bulkDestroy: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'all',
-            'filter',
-            'search'
-        ],
-        permissions: {
-            method: 'destroy'
-        },
-        async query(frame) {
-            const bulkDestroyResult = await membersService.api.members.bulkDestroy(frame.options);
-
-            // shaped to match the importer response
-            return {
-                meta: {
-                    stats: {
-                        successful: bulkDestroyResult.successful,
-                        unsuccessful: bulkDestroyResult.unsuccessful
-                    },
-                    unsuccessfulIds: bulkDestroyResult.unsuccessfulIds,
-                    errors: bulkDestroyResult.errors
-                }
-            };
-        }
+      return member;
     },
+  },
 
-    bulkEdit: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'all',
-            'filter',
-            'search'
-        ],
-        data: [
-            'action',
-            'meta'
-        ],
-        validation: {
-            data: {
-                action: {
-                    required: true,
-                    values: ['unsubscribe', 'addLabel', 'removeLabel']
-                }
-            }
-        },
-        permissions: {
-            method: 'edit'
-        },
-        async query(frame) {
-            return membersService.api.members.bulkEdit(frame.data.bulk, frame.options);
-        }
+  edit: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
     },
-
-    exportCSV: {
-        options: [
-            'limit',
-            'filter',
-            'search'
-        ],
-        headers: {
-            disposition: {
-                type: 'csv',
-                value() {
-                    return getCSVExportFileName('members');
-                }
-            },
-            contentType: 'text/csv',
-            cacheInvalidate: false
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        response: {
-            format: 'plain',
-            stream: true
-        },
-        permissions: {
-            method: 'browse'
-        },
-        validation: {},
-        async query(frame) {
-            return {
-                data: await membersService.export(frame.options),
-                filename: getCSVExportFileName('members')
-            };
-        }
+      },
     },
+    permissions: true,
+    async query(frame) {
+      const member = await membersService.api.memberBREADService.edit(
+        frame.data.members[0],
+        frame.options,
+      );
 
-    importCSV: {
-        headers: {
-            cacheInvalidate: false
-        },
-        statusCode(result) {
-            if (result && result.meta && result.meta.stats && result.meta.stats.imported !== null) {
-                return 201;
-            } else {
-                return 202;
-            }
-        },
-        permissions: {
-            method: 'add'
-        },
-        async query(frame) {
-            // The endpoint adapts the request frame into the import service's arguments
-            // and shapes its outcome into the response envelope, so neither the frame nor
-            // the meta shape crosses into the domain. The recipient is the request user;
-            // the service falls back to the site owner when there is none.
-            const outcome = await membersService.importCSV({
-                filePath: frame.file.path,
-                mapping: frame.data.mapping,
-                extraLabels: frame.data.labels || [],
-                requestUserEmail: frame.user ? frame.user.get('email') : null
-            });
-            return importCSVResponse(outcome);
-        }
+      return member;
     },
+  },
 
-    memberStats: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: {
-            method: 'browse'
-        },
-        async query() {
-            const memberStats = await membersService.api.events.getStatuses();
-            const last = _.last(memberStats);
-            let totalMembers = last ? (last.paid + last.free + last.comped + last.gift) : 0;
-
-            return {
-                resource: 'members',
-                total: totalMembers,
-                data: memberStats.map((d) => {
-                    const {paid, free, comped, gift} = d;
-                    return {
-                        date: moment(d.date).format('YYYY-MM-DD'),
-                        paid, free, comped, gift
-                    };
-                })
-            };
-        }
+  logout: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
     },
-
-    mrrStats: {
-        headers: {
-            cacheInvalidate: false
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        permissions: {
-            method: 'browse'
-        },
-        async query() {
-            const mrrData = await membersService.api.events.getMRR();
-            const mrrStats = Object.keys(mrrData).map((curr) => {
-                return {
-                    currency: curr,
-                    data: mrrData[curr].map((d) => {
-                        return Object.assign({}, {
-                            date: moment(d.date).format('YYYY-MM-DD'),
-                            value: d.mrr
-                        });
-                    })
-                };
-            });
-            return {
-                resource: 'mrr',
-                data: mrrStats
-            };
-        }
+      },
     },
-
-    activityFeed: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'limit',
-            'filter'
-        ],
-        permissions: {
-            method: 'browse'
-        },
-        async query(frame) {
-            return await membersService.api.events.getEventTimeline(frame.options);
-        }
+    permissions: {
+      method: 'edit',
     },
+    async query(frame) {
+      const member = await membersService.api.memberBREADService.logout(frame.options);
 
-    deleteEmailSuppression: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
+      return member;
+    },
+  },
+
+  editSubscription: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id', 'subscription_id'],
+    data: ['cancel_at_period_end', 'status'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
+        subscription_id: {
+          required: true,
         },
-        permissions: {
-            method: 'edit'
+      },
+      data: {
+        cancel_at_period_end: {
+          required: true,
         },
-        async query(frame) {
-            const emailSuppressionList = require('../../services/email-suppression-list');
+        status: {
+          values: ['canceled'],
+        },
+      },
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      if (frame.data.status === 'canceled') {
+        await membersService.api.members.cancelSubscription({
+          id: frame.options.id,
+          subscription: {
+            subscription_id: frame.options.subscription_id,
+          },
+        });
+      } else {
+        await membersService.api.members.updateSubscription({
+          id: frame.options.id,
+          subscription: {
+            subscription_id: frame.options.subscription_id,
+            cancel_at_period_end: frame.data.cancel_at_period_end,
+          },
+        });
+      }
+      let model = await membersService.api.memberBREADService.read({ id: frame.options.id });
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.memberNotFound),
+        });
+      }
 
-            // Get the member first to retrieve their email
-            const member = await membersService.api.memberBREADService.read({id: frame.options.id}, {});
+      return model;
+    },
+  },
 
-            if (!member) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                });
-            }
+  createSubscription: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    data: ['stripe_price_id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
+        },
+      },
+      data: {
+        stripe_price_id: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      await membersService.api.members.createSubscription({
+        id: frame.options.id,
+        subscription: {
+          stripe_price_id: frame.data.stripe_price_id,
+        },
+      });
+      let model = await membersService.api.memberBREADService.read({ id: frame.options.id });
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.memberNotFound),
+        });
+      }
 
-            // Remove the email from the suppression list
-            const didRemoveSuppression = await emailSuppressionList.removeEmail(member.email);
+      return model;
+    },
+  },
 
-            if (!didRemoveSuppression) {
-                throw new errors.InternalServerError({
-                    message: 'Failed to remove email suppression.'
-                });
-            }
+  destroy: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id', 'cancel'],
+    validation: {
+      options: {
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      return membersService.api.members.destroy(
+        {
+          id: frame.options.id,
+        },
+        {
+          ...frame.options,
+          require: true,
+          cancelStripeSubscriptions: frame.options.cancel,
+        },
+      );
+    },
+  },
 
-            // Update the member to re-enable email
-            await membersService.api.memberBREADService.edit({email_disabled: false}, {id: frame.options.id});
+  bulkDestroy: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['all', 'filter', 'search'],
+    permissions: {
+      method: 'destroy',
+    },
+    async query(frame) {
+      const bulkDestroyResult = await membersService.api.members.bulkDestroy(frame.options);
 
-            return null;
-        }
-    }
+      // shaped to match the importer response
+      return {
+        meta: {
+          stats: {
+            successful: bulkDestroyResult.successful,
+            unsuccessful: bulkDestroyResult.unsuccessful,
+          },
+          unsuccessfulIds: bulkDestroyResult.unsuccessfulIds,
+          errors: bulkDestroyResult.errors,
+        },
+      };
+    },
+  },
+
+  bulkEdit: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['all', 'filter', 'search'],
+    data: ['action', 'meta'],
+    validation: {
+      data: {
+        action: {
+          required: true,
+          values: ['unsubscribe', 'addLabel', 'removeLabel'],
+        },
+      },
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      return membersService.api.members.bulkEdit(frame.data.bulk, frame.options);
+    },
+  },
+
+  exportCSV: {
+    options: ['limit', 'filter', 'search'],
+    headers: {
+      disposition: {
+        type: 'csv',
+        value() {
+          return getCSVExportFileName('members');
+        },
+      },
+      contentType: 'text/csv',
+      cacheInvalidate: false,
+    },
+    response: {
+      format: 'plain',
+      stream: true,
+    },
+    permissions: {
+      method: 'browse',
+    },
+    validation: {},
+    async query(frame) {
+      return {
+        data: await membersService.export(frame.options),
+        filename: getCSVExportFileName('members'),
+      };
+    },
+  },
+
+  importCSV: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    statusCode(result) {
+      if (result && result.meta && result.meta.stats && result.meta.stats.imported !== null) {
+        return 201;
+      } else {
+        return 202;
+      }
+    },
+    permissions: {
+      method: 'add',
+    },
+    async query(frame) {
+      // The endpoint adapts the request frame into the import service's arguments
+      // and shapes its outcome into the response envelope, so neither the frame nor
+      // the meta shape crosses into the domain. The recipient is the request user;
+      // the service falls back to the site owner when there is none.
+      const outcome = await membersService.importCSV({
+        filePath: frame.file.path,
+        mapping: frame.data.mapping,
+        extraLabels: frame.data.labels || [],
+        requestUserEmail: frame.user ? frame.user.get('email') : null,
+      });
+      return importCSVResponse(outcome);
+    },
+  },
+
+  memberStats: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'browse',
+    },
+    async query() {
+      const memberStats = await membersService.api.events.getStatuses();
+      const last = _.last(memberStats);
+      let totalMembers = last ? last.paid + last.free + last.comped + last.gift : 0;
+
+      return {
+        resource: 'members',
+        total: totalMembers,
+        data: memberStats.map((d) => {
+          const { paid, free, comped, gift } = d;
+          return {
+            date: moment(d.date).format('YYYY-MM-DD'),
+            paid,
+            free,
+            comped,
+            gift,
+          };
+        }),
+      };
+    },
+  },
+
+  mrrStats: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'browse',
+    },
+    async query() {
+      const mrrData = await membersService.api.events.getMRR();
+      const mrrStats = Object.keys(mrrData).map((curr) => {
+        return {
+          currency: curr,
+          data: mrrData[curr].map((d) => {
+            return Object.assign(
+              {},
+              {
+                date: moment(d.date).format('YYYY-MM-DD'),
+                value: d.mrr,
+              },
+            );
+          }),
+        };
+      });
+      return {
+        resource: 'mrr',
+        data: mrrStats,
+      };
+    },
+  },
+
+  activityFeed: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['limit', 'filter'],
+    permissions: {
+      method: 'browse',
+    },
+    async query(frame) {
+      return await membersService.api.events.getEventTimeline(frame.options);
+    },
+  },
+
+  deleteEmailSuppression: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      const emailSuppressionList = require('../../services/email-suppression-list');
+
+      // Get the member first to retrieve their email
+      const member = await membersService.api.memberBREADService.read({ id: frame.options.id }, {});
+
+      if (!member) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.memberNotFound),
+        });
+      }
+
+      // Remove the email from the suppression list
+      const didRemoveSuppression = await emailSuppressionList.removeEmail(member.email);
+
+      if (!didRemoveSuppression) {
+        throw new errors.InternalServerError({
+          message: 'Failed to remove email suppression.',
+        });
+      }
+
+      // Update the member to re-enable email
+      await membersService.api.memberBREADService.edit(
+        { email_disabled: false },
+        { id: frame.options.id },
+      );
+
+      return null;
+    },
+  },
 };
 
 module.exports = controller;

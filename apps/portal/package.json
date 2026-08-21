@@ -1,84 +1,84 @@
 {
-    "name": "@tryghost/portal",
-    "type": "module",
-    "version": "2.70.0",
-    "description": "Drop-in membership interface for Ghost sites",
-    "license": "MIT",
-    "repository": "https://github.com/TryGhost/Ghost",
-    "author": "Ghost Foundation",
-    "files": [
-        "umd/",
-        "LICENSE",
-        "README.md"
+  "name": "@tryghost/portal",
+  "version": "2.70.0",
+  "description": "Drop-in membership interface for Ghost sites",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "pnpm test --coverage",
+    "test:unit": "pnpm test:ci",
+    "lint:code": "eslint src test --cache",
+    "lint:types": "tsc --noEmit",
+    "lint": "pnpm run '/^lint:/'",
+    "preship": "pnpm lint",
+    "ship": "node ../../scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@tryghost/debug": "catalog:"
+  },
+  "devDependencies": {
+    "@doist/react-interpolate": "2.2.4",
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
+    "@sentry/react": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@testing-library/user-event": "14.6.3",
+    "@tryghost/i18n": "workspace:*",
+    "@types/react": "catalog:react17",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "dompurify": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
     ],
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/portal",
+          "command": "vite build --watch --mode development"
+        }
+      }
     },
-    "scripts": {
-        "dev": "vite build --watch --mode development",
-        "build": "vite build",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:ci": "pnpm test --coverage",
-        "test:unit": "pnpm test:ci",
-        "lint:code": "eslint src test --cache",
-        "lint:types": "tsc --noEmit",
-        "lint": "pnpm run '/^lint:/'",
-        "preship": "pnpm lint",
-        "ship": "node ../../scripts/release-apps.js",
-        "prepublishOnly": "pnpm build"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "devDependencies": {
-        "@typescript/native": "catalog:",
-        "typescript": "catalog:",
-        "@doist/react-interpolate": "2.2.4",
-        "@internal/cfg-eslint-react": "workspace:*",
-        "@internal/cfg-vite-public-app": "workspace:*",
-        "@sentry/react": "catalog:",
-        "@testing-library/jest-dom": "catalog:",
-        "@testing-library/react": "catalog:react17",
-        "@types/react": "catalog:react17",
-        "@testing-library/user-event": "14.6.3",
-        "@tryghost/i18n": "workspace:*",
-        "@vitest/coverage-v8": "catalog:",
-        "dompurify": "catalog:",
-        "eslint": "catalog:",
-        "jsdom": "catalog:",
-        "react": "catalog:react17",
-        "react-dom": "catalog:react17",
-        "vite": "catalog:",
-        "vitest": "catalog:"
-    },
-    "dependencies": {
-        "@tryghost/debug": "catalog:"
-    },
-    "nx": {
-        "targets": {
-            "dev": {
-                "continuous": true,
-                "executor": "nx:run-commands",
-                "options": {
-                    "cwd": "apps/portal",
-                    "command": "vite build --watch --mode development"
-                }
-            }
-        },
-        "tags": [
-            "i18n",
-            "public-app"
-        ]
-    }
+    "tags": [
+      "i18n",
+      "public-app"
+    ]
+  }
 }

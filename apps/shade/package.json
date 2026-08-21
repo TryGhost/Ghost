@@ -1,183 +1,183 @@
 {
-    "name": "@tryghost/shade",
-    "type": "module",
-    "version": "0.0.0",
-    "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/shade",
-    "author": "Ghost Foundation",
-    "private": true,
-    "main": "es/index.js",
-    "types": "types/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./types/index.d.ts",
-            "import": "./es/index.js",
-            "default": "./es/index.js"
-        },
-        "./tokens": {
-            "types": "./types/tokens.d.ts",
-            "import": "./es/tokens.js",
-            "default": "./es/tokens.js"
-        },
-        "./primitives": {
-            "types": "./types/primitives.d.ts",
-            "import": "./es/primitives.js",
-            "default": "./es/primitives.js"
-        },
-        "./components": {
-            "types": "./types/components.d.ts",
-            "import": "./es/components.js",
-            "default": "./es/components.js"
-        },
-        "./patterns": {
-            "types": "./types/patterns.d.ts",
-            "import": "./es/patterns.js",
-            "default": "./es/patterns.js"
-        },
-        "./page-templates": {
-            "types": "./types/page-templates.d.ts",
-            "import": "./es/page-templates.js",
-            "default": "./es/page-templates.js"
-        },
-        "./app": {
-            "types": "./types/app.d.ts",
-            "import": "./es/app.js",
-            "default": "./es/app.js"
-        },
-        "./utils": {
-            "types": "./types/utils.d.ts",
-            "import": "./es/utils.js",
-            "default": "./es/utils.js"
-        },
-        "./styles.css": "./styles.css",
-        "./tailwind.theme.css": "./tailwind.theme.css",
-        "./tokens.css": "./tokens.css",
-        "./package.json": "./package.json"
+  "name": "@tryghost/shade",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/shade",
+  "files": [
+    "es",
+    "types",
+    "styles.css",
+    "tailwind.theme.css",
+    "theme-variables.css",
+    "tokens.css",
+    "preflight.css"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "es/index.js",
+  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "default": "./es/index.js"
     },
-    "sideEffects": false,
-    "scripts": {
-        "dev": "vite build --watch",
-        "build": "tsc -p tsconfig.declaration.json && tsc-alias -p tsconfig.declaration.json && vite build",
-        "test": "pnpm test:types && vitest run --coverage",
-        "test:unit": "pnpm test:types && vitest run",
-        "test:types": "tsc --noEmit",
-        "lint:code": "eslint src/ scripts/ --cache",
-        "lint": "pnpm run '/^lint:/'",
-        "lint:test": "eslint test/ --cache",
-        "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build",
-        "adoption:extract": "tsx scripts/extract-adoption.ts"
+    "./tokens": {
+      "types": "./types/tokens.d.ts",
+      "import": "./es/tokens.js",
+      "default": "./es/tokens.js"
     },
-    "files": [
-        "es",
-        "types",
-        "styles.css",
-        "tailwind.theme.css",
-        "theme-variables.css",
-        "tokens.css",
-        "preflight.css"
-    ],
-    "devDependencies": {
-        "@internal/cfg-eslint-react": "workspace:*",
-        "@storybook/addon-docs": "catalog:",
-        "@storybook/addon-links": "catalog:",
-        "@storybook/react-vite": "catalog:",
-        "@tailwindcss/postcss": "catalog:",
-        "@testing-library/react": "catalog:",
-        "@types/node": "catalog:",
-        "@typescript/native": "catalog:",
-        "@vitejs/plugin-react": "catalog:",
-        "@vitest/coverage-v8": "catalog:",
-        "eslint": "catalog:",
-        "glob": "catalog:",
-        "jsdom": "catalog:",
-        "postcss": "catalog:",
-        "remark-gfm": "4.0.1",
-        "storybook": "catalog:",
-        "tailwindcss": "catalog:",
-        "tsc-alias": "1.8.17",
-        "tsx": "catalog:",
-        "tw-animate-css": "catalog:",
-        "typescript": "catalog:",
-        "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:",
-        "vitest": "catalog:"
+    "./primitives": {
+      "types": "./types/primitives.d.ts",
+      "import": "./es/primitives.js",
+      "default": "./es/primitives.js"
     },
-    "dependencies": {
-        "@codemirror/state": "catalog:",
-        "@dnd-kit/core": "catalog:",
-        "@dnd-kit/sortable": "catalog:",
-        "@dnd-kit/utilities": "catalog:",
-        "@hookform/resolvers": "5.4.0",
-        "@number-flow/react": "0.6.2",
-        "@radix-ui/react-accordion": "1.2.15",
-        "@radix-ui/react-alert-dialog": "1.1.18",
-        "@radix-ui/react-avatar": "catalog:",
-        "@radix-ui/react-checkbox": "catalog:",
-        "@radix-ui/react-context-menu": "catalog:",
-        "@radix-ui/react-dialog": "1.1.18",
-        "@radix-ui/react-dropdown-menu": "2.1.19",
-        "@radix-ui/react-hover-card": "1.1.18",
-        "@radix-ui/react-label": "2.1.11",
-        "@radix-ui/react-popover": "catalog:",
-        "@radix-ui/react-radio-group": "catalog:",
-        "@radix-ui/react-select": "2.3.2",
-        "@radix-ui/react-separator": "catalog:",
-        "@radix-ui/react-slider": "1.4.2",
-        "@radix-ui/react-slot": "1.3.0",
-        "@radix-ui/react-switch": "catalog:",
-        "@radix-ui/react-tabs": "catalog:",
-        "@radix-ui/react-toggle": "1.1.13",
-        "@radix-ui/react-toggle-group": "1.1.14",
-        "@radix-ui/react-tooltip": "catalog:",
-        "@types/react": "catalog:",
-        "@types/react-dom": "catalog:",
-        "@types/validator": "catalog:",
-        "@uiw/react-codemirror": "catalog:",
-        "class-variance-authority": "0.7.1",
-        "clsx": "catalog:",
-        "cmdk": "1.1.1",
-        "color": "5.0.3",
-        "country-flag-icons": "catalog:",
-        "lucide-react": "catalog:",
-        "moment-timezone": "^0.5.48",
-        "react": "catalog:",
-        "react-day-picker": "9.14.0",
-        "react-dom": "catalog:",
-        "react-dropzone": "14.4.1",
-        "react-hook-form": "7.80.0",
-        "recharts": "2.15.4",
-        "sonner": "catalog:",
-        "tailwind-merge": "3.6.0",
-        "validator": "catalog:",
-        "zod": "catalog:"
+    "./components": {
+      "types": "./types/components.d.ts",
+      "import": "./es/components.js",
+      "default": "./es/components.js"
     },
-    "peerDependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+    "./patterns": {
+      "types": "./types/patterns.d.ts",
+      "import": "./es/patterns.js",
+      "default": "./es/patterns.js"
     },
-    "nx": {
-        "targets": {
-            "dev": {
-                "continuous": true,
-                "executor": "nx:run-commands",
-                "options": {
-                    "cwd": "apps/shade",
-                    "command": "vite build --watch"
-                },
-                "dependsOn": [
-                    "build"
-                ]
-            },
-            "build": {
-                "dependsOn": [
-                    "^build"
-                ]
-            },
-            "test:unit": {
-                "dependsOn": [
-                    "^build"
-                ]
-            }
-        }
+    "./page-templates": {
+      "types": "./types/page-templates.d.ts",
+      "import": "./es/page-templates.js",
+      "default": "./es/page-templates.js"
+    },
+    "./app": {
+      "types": "./types/app.d.ts",
+      "import": "./es/app.js",
+      "default": "./es/app.js"
+    },
+    "./utils": {
+      "types": "./types/utils.d.ts",
+      "import": "./es/utils.js",
+      "default": "./es/utils.js"
+    },
+    "./styles.css": "./styles.css",
+    "./tailwind.theme.css": "./tailwind.theme.css",
+    "./tokens.css": "./tokens.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc -p tsconfig.declaration.json && tsc-alias -p tsconfig.declaration.json && vite build",
+    "test": "pnpm test:types && vitest run --coverage",
+    "test:unit": "pnpm test:types && vitest run",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ scripts/ --cache",
+    "lint": "pnpm run '/^lint:/'",
+    "lint:test": "eslint test/ --cache",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "adoption:extract": "tsx scripts/extract-adoption.ts"
+  },
+  "dependencies": {
+    "@codemirror/state": "catalog:",
+    "@dnd-kit/core": "catalog:",
+    "@dnd-kit/sortable": "catalog:",
+    "@dnd-kit/utilities": "catalog:",
+    "@hookform/resolvers": "5.4.0",
+    "@number-flow/react": "0.6.2",
+    "@radix-ui/react-accordion": "1.2.15",
+    "@radix-ui/react-alert-dialog": "1.1.18",
+    "@radix-ui/react-avatar": "catalog:",
+    "@radix-ui/react-checkbox": "catalog:",
+    "@radix-ui/react-context-menu": "catalog:",
+    "@radix-ui/react-dialog": "1.1.18",
+    "@radix-ui/react-dropdown-menu": "2.1.19",
+    "@radix-ui/react-hover-card": "1.1.18",
+    "@radix-ui/react-label": "2.1.11",
+    "@radix-ui/react-popover": "catalog:",
+    "@radix-ui/react-radio-group": "catalog:",
+    "@radix-ui/react-select": "2.3.2",
+    "@radix-ui/react-separator": "catalog:",
+    "@radix-ui/react-slider": "1.4.2",
+    "@radix-ui/react-slot": "1.3.0",
+    "@radix-ui/react-switch": "catalog:",
+    "@radix-ui/react-tabs": "catalog:",
+    "@radix-ui/react-toggle": "1.1.13",
+    "@radix-ui/react-toggle-group": "1.1.14",
+    "@radix-ui/react-tooltip": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/validator": "catalog:",
+    "@uiw/react-codemirror": "catalog:",
+    "class-variance-authority": "0.7.1",
+    "clsx": "catalog:",
+    "cmdk": "1.1.1",
+    "color": "5.0.3",
+    "country-flag-icons": "catalog:",
+    "lucide-react": "catalog:",
+    "moment-timezone": "^0.5.48",
+    "react": "catalog:",
+    "react-day-picker": "9.14.0",
+    "react-dom": "catalog:",
+    "react-dropzone": "14.4.1",
+    "react-hook-form": "7.80.0",
+    "recharts": "2.15.4",
+    "sonner": "catalog:",
+    "tailwind-merge": "3.6.0",
+    "validator": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@storybook/addon-docs": "catalog:",
+    "@storybook/addon-links": "catalog:",
+    "@storybook/react-vite": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "glob": "catalog:",
+    "jsdom": "catalog:",
+    "postcss": "catalog:",
+    "remark-gfm": "4.0.1",
+    "storybook": "catalog:",
+    "tailwindcss": "catalog:",
+    "tsc-alias": "1.8.17",
+    "tsx": "catalog:",
+    "tw-animate-css": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/shade",
+          "command": "vite build --watch"
+        },
+        "dependsOn": [
+          "build"
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
     }
+  }
 }

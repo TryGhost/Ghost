@@ -1,21 +1,24 @@
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
-import type {Knex} from 'knex';
-import {z} from 'zod';
-import {CustomField} from './models';
-import {FieldTypeSchema} from '@tryghost/custom-field-types';
-import {customFieldCodec} from './codec';
-import {FIELD_STATUS, FieldStatusSchema} from './schema';
-import {activeFields, inFieldOrder} from './queries';
-import {mintableKey} from './key';
-import {type RecordCustomFieldAction, type RequestContext} from './actions';
+import type { Knex } from 'knex';
+import { z } from 'zod';
+import { CustomField } from './models';
+import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { customFieldCodec } from './codec';
+import { FIELD_STATUS, FieldStatusSchema } from './schema';
+import { activeFields, inFieldOrder } from './queries';
+import { mintableKey } from './key';
+import { type RecordCustomFieldAction, type RequestContext } from './actions';
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
 // our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
 // turns that into parametrised WHERE clauses. Neither needs a Bookshelf model.
-const nql = require('@tryghost/nql') as (filter: string) => {toJSON(): object};
-const knexify = require('@tryghost/mongo-knex') as
-    <T extends Knex.QueryBuilder>(qb: T, mongoQuery: object, config: {tableName: string}) => T;
+const nql = require('@tryghost/nql') as (filter: string) => { toJSON(): object };
+const knexify = require('@tryghost/mongo-knex') as <T extends Knex.QueryBuilder>(
+  qb: T,
+  mongoQuery: object,
+  config: { tableName: string },
+) => T;
 
 const TABLE = 'members_custom_fields';
 
@@ -38,15 +41,20 @@ const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length 
 // Derived rather than listed, because the set is a consequence of how keys are
 // minted: minting lowercases and trims leading underscores, so a prototype name
 // survives only if it has neither. `constructor` is the only one.
-const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype)
-    .filter(name => mintableKey(name) === name);
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter(
+  (name) => mintableKey(name) === name,
+);
 
-const FieldName = z.string().trim().min(1, {message: 'Custom field name is required.'}).max(MAX_NAME_LENGTH, {message: 'Custom field name is too long.'});
+const FieldName = z
+  .string()
+  .trim()
+  .min(1, { message: 'Custom field name is required.' })
+  .max(MAX_NAME_LENGTH, { message: 'Custom field name is too long.' });
 
 // The backend mints the key from the name, so create takes just a name and type.
 const AddFieldInput = z.object({
-    name: FieldName,
-    type: FieldTypeSchema
+  name: FieldName,
+  type: FieldTypeSchema,
 });
 
 // A bound on the work one request can ask for, separate from how many definitions
@@ -58,393 +66,456 @@ const MAX_FIELDS_PER_REQUEST = 100;
 // Create accepts a batch. The framework guarantees a non-empty array by the time a
 // query runs, but the service validates the whole payload up front so a bad item
 // anywhere fails the request before anything is written.
-const AddFieldsInput = z.array(AddFieldInput)
-    .min(1)
-    .max(MAX_FIELDS_PER_REQUEST, {message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`});
+const AddFieldsInput = z
+  .array(AddFieldInput)
+  .min(1)
+  .max(MAX_FIELDS_PER_REQUEST, {
+    message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`,
+  });
 
 // Only the key is read; the client sends whole field objects because that is the shape
 // the API speaks in.
-const ReorderInput = z.array(z.object({
-    key: z.string().min(1, {message: 'Every custom field in the order needs a key.'})
-})).min(1, {message: 'The order must name every custom field.'});
+const ReorderInput = z
+  .array(
+    z.object({
+      key: z.string().min(1, { message: 'Every custom field in the order needs a key.' }),
+    }),
+  )
+  .min(1, { message: 'The order must name every custom field.' });
 
 // Name and status are mutable. `key` and `type` are accepted so the immutability
 // rules can reject a change loudly; they are never persisted.
 const EditFieldInput = z.object({
-    name: FieldName.optional(),
-    status: FieldStatusSchema.optional(),
-    key: z.string().optional(),
-    type: FieldTypeSchema.optional()
+  name: FieldName.optional(),
+  status: FieldStatusSchema.optional(),
+  key: z.string().optional(),
+  type: FieldTypeSchema.optional(),
 });
 
 export class CustomFieldDefinitionsService {
-    private knex: Knex;
-    private recordAction: RecordCustomFieldAction;
-    private getMaxDefinitions: () => number;
+  private knex: Knex;
+  private recordAction: RecordCustomFieldAction;
+  private getMaxDefinitions: () => number;
 
-    constructor({knex, recordAction, getMaxDefinitions}: {knex: Knex; recordAction: RecordCustomFieldAction; getMaxDefinitions: () => number}) {
-        this.knex = knex;
-        this.recordAction = recordAction;
-        // A getter, not a value: the ceiling can be raised or lowered at any time,
-        // and a Ghost container holds no state across requests, so the limit that
-        // applies is whatever it resolves to when the request lands. Asking on
-        // every create means a change takes effect on the next one, with no
-        // restart. Where the number comes from is the caller's business.
-        this.getMaxDefinitions = getMaxDefinitions;
+  constructor({
+    knex,
+    recordAction,
+    getMaxDefinitions,
+  }: {
+    knex: Knex;
+    recordAction: RecordCustomFieldAction;
+    getMaxDefinitions: () => number;
+  }) {
+    this.knex = knex;
+    this.recordAction = recordAction;
+    // A getter, not a value: the ceiling can be raised or lowered at any time,
+    // and a Ghost container holds no state across requests, so the limit that
+    // applies is whatever it resolves to when the request lands. Asking on
+    // every create means a change takes effect on the next one, with no
+    // restart. Where the number comes from is the caller's business.
+    this.getMaxDefinitions = getMaxDefinitions;
+  }
+
+  async browse(options: { filter?: string } = {}): Promise<CustomField[]> {
+    // Archived fields are hidden by default: most surfaces (member details, the
+    // filter picker, the importer) only ever want active fields. A caller-
+    // supplied `filter` can widen that — Settings pulls active and archived
+    // together in one request (`filter=status:[active,archived]`).
+    //
+    // Whichever set comes back, it comes back in the publisher's order: filtering
+    // narrows the list, it never reorders it.
+    const query = options.filter
+      ? applyFilter(this.knex(TABLE), options.filter)
+      : activeFields(this.knex);
+    return this.list(query);
+  }
+
+  /**
+   * Decode a definition query into the domain, in the publisher's order.
+   *
+   * Typed off `activeFields` so the builder keeps the table's row type: every caller
+   * hands over a query against the definitions table, whatever it has narrowed.
+   */
+  private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
+    const rows = await inFieldOrder(query).select('*');
+    return rows.map((row) => z.decode(customFieldCodec, row));
+  }
+
+  async read(key: string): Promise<CustomField> {
+    const row = await this.knex(TABLE).where('key', key).first();
+    if (!row) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
+    return z.decode(customFieldCodec, row);
+  }
 
-    async browse(options: {filter?: string} = {}): Promise<CustomField[]> {
-        // Archived fields are hidden by default: most surfaces (member details, the
-        // filter picker, the importer) only ever want active fields. A caller-
-        // supplied `filter` can widen that — Settings pulls active and archived
-        // together in one request (`filter=status:[active,archived]`).
-        //
-        // Whichever set comes back, it comes back in the publisher's order: filtering
-        // narrows the list, it never reorders it.
-        const query = options.filter
-            ? applyFilter(this.knex(TABLE), options.filter)
-            : activeFields(this.knex);
-        return this.list(query);
+  /**
+   * Create one or more field definitions. All-or-nothing: the batch runs in a
+   * single transaction, so a name clash or the operational cap on the third item
+   * leaves the first two unwritten rather than half-applying the request.
+   *
+   * Running inside the transaction also makes a batch self-consistent for free —
+   * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
+   * batch, so two items sharing a name are caught and two items deriving the same
+   * key get distinct ones, exactly as if they had arrived as separate requests.
+   */
+  async add(context: RequestContext, input: unknown): Promise<CustomField[]> {
+    const requestedCount = Array.isArray(input) ? input.length : 0;
+
+    const parsed = AddFieldsInput.safeParse(input);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      throw new errors.ValidationError({
+        message: issue.message,
+        property: propertyOf(issue.path),
+        context: batchContext(issue.path[0], requestedCount),
+      });
     }
+    const fields = parsed.data;
 
-    /**
-     * Decode a definition query into the domain, in the publisher's order.
-     *
-     * Typed off `activeFields` so the builder keeps the table's row type: every caller
-     * hands over a query against the definitions table, whatever it has narrowed.
-     */
-    private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
-        const rows = await inFieldOrder(query).select('*');
-        return rows.map(row => z.decode(customFieldCodec, row));
-    }
-
-    async read(key: string): Promise<CustomField> {
-        const row = await this.knex(TABLE).where('key', key).first();
-        if (!row) {
-            throw new errors.NotFoundError({message: 'Custom field not found.'});
-        }
-        return z.decode(customFieldCodec, row);
-    }
-
-    /**
-     * Create one or more field definitions. All-or-nothing: the batch runs in a
-     * single transaction, so a name clash or the operational cap on the third item
-     * leaves the first two unwritten rather than half-applying the request.
-     *
-     * Running inside the transaction also makes a batch self-consistent for free —
-     * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
-     * batch, so two items sharing a name are caught and two items deriving the same
-     * key get distinct ones, exactly as if they had arrived as separate requests.
-     */
-    async add(context: RequestContext, input: unknown): Promise<CustomField[]> {
-        const requestedCount = Array.isArray(input) ? input.length : 0;
-
-        const parsed = AddFieldsInput.safeParse(input);
-        if (!parsed.success) {
-            const issue = parsed.error.issues[0];
-            throw new errors.ValidationError({
-                message: issue.message,
-                property: propertyOf(issue.path),
-                context: batchContext(issue.path[0], requestedCount)
-            });
-        }
-        const fields = parsed.data;
-
-        // Mint before opening the transaction: it needs no database access, and
-        // an unusable name is a payload problem worth reporting on its own terms.
-        const bases = fields.map((field, index) => {
-            const base = mintableKey(field.name);
-            if (!base) {
-                throw new errors.ValidationError({
-                    message: 'Custom field name must contain at least one usable character.',
-                    property: 'name',
-                    context: batchContext(index, requestedCount)
-                });
-            }
-            return base;
+    // Mint before opening the transaction: it needs no database access, and
+    // an unusable name is a payload problem worth reporting on its own terms.
+    const bases = fields.map((field, index) => {
+      const base = mintableKey(field.name);
+      if (!base) {
+        throw new errors.ValidationError({
+          message: 'Custom field name must contain at least one usable character.',
+          property: 'name',
+          context: batchContext(index, requestedCount),
         });
+      }
+      return base;
+    });
 
-        let created: CustomField[];
-        try {
-            created = await this.knex.transaction(async (trx) => {
-                await this.assertWithinLimit(trx, fields.length);
+    let created: CustomField[];
+    try {
+      created = await this.knex.transaction(async (trx) => {
+        await this.assertWithinLimit(trx, fields.length);
 
-                // Read once, before the loop: a batch appends as consecutive ranks, so
-                // the five fields of one request land in the order the request gave
-                // them rather than all sharing the end of the list.
-                const firstSortOrder = await this.nextSortOrder(trx);
+        // Read once, before the loop: a batch appends as consecutive ranks, so
+        // the five fields of one request land in the order the request gave
+        // them rather than all sharing the end of the list.
+        const firstSortOrder = await this.nextSortOrder(trx);
 
-                const keys: string[] = [];
-                for (const [index, field] of fields.entries()) {
-                    await this.assertNameAvailable(trx, field.name);
-                    const key = await this.mintKey(trx, bases[index]);
-                    await trx(TABLE).insert({
-                        id: new ObjectID().toHexString(),
-                        key,
-                        name: field.name,
-                        type: field.type,
-                        sort_order: firstSortOrder + index,
-                        created_at: new Date()
-                    });
-                    keys.push(key);
-                }
-                return this.readMany(trx, keys);
-            });
-        } catch (err) {
-            // mintKey already picked a free key, so a unique violation here only
-            // means a concurrent create claimed the same key in between. The index
-            // is the final arbiter; surface a retryable conflict rather than a 500.
-            if (isUniqueConstraintViolation(err)) {
-                throw new errors.ConflictError({message: 'Could not create the custom field, please try again.'});
-            }
-            throw err;
+        const keys: string[] = [];
+        for (const [index, field] of fields.entries()) {
+          await this.assertNameAvailable(trx, field.name);
+          const key = await this.mintKey(trx, bases[index]);
+          await trx(TABLE).insert({
+            id: new ObjectID().toHexString(),
+            key,
+            name: field.name,
+            type: field.type,
+            sort_order: firstSortOrder + index,
+            created_at: new Date(),
+          });
+          keys.push(key);
         }
-
-        // Logged after the commit: the action log is a separate Bookshelf write
-        // outside this transaction, so recording inside it would leave orphaned
-        // "added" entries for fields a rollback never created.
-        for (const field of created) {
-            await this.recordAction({context, verb: 'create', subject: field.id, details: {primary_name: field.name, key: field.key}});
-        }
-        return created;
-    }
-
-    /**
-     * The operational ceiling on how many definitions a site can hold. This is a
-     * safeguard against the database load unbounded definitions would create, not
-     * a pricing or packaging limit, so it applies wherever the feature is available
-     * and is deliberately not routed through the entitlement-driven limit service.
-     *
-     * Both active and archived definitions count: an archived field still occupies
-     * a row and still carries its members' values, so archiving alone frees no
-     * space. Deleting an archived field is what releases a slot.
-     *
-     * The count is a consistent read, not a locking one, so two creates landing at
-     * the same instant can both pass and take a site one over. That is deliberate:
-     * this is a ceiling on database load, and holding a table lock across every
-     * create to make it exact would cost more than the overshoot it prevents.
-     *
-     */
-    private async assertWithinLimit(db: Knex, addedCount: number): Promise<void> {
-        const max = this.getMaxDefinitions();
-
-        const row = await db(TABLE).count({count: '*'}).first();
-        const total = Number(row?.count ?? 0);
-        if (total + addedCount <= max) {
-            return;
-        }
-
-        // Two different situations reach here and they need different advice. At or
-        // over the ceiling there is nothing to do but free a slot. With slots still
-        // free the request was simply too big, and telling that operator to delete
-        // something is wrong: they have room, just not this much.
-        const remaining = max - total;
-        const advice = remaining > 0
-            ? `You can add ${remaining} more.`
-            : 'Delete a field you no longer need to make room.';
-
-        throw new errors.HostLimitError({
-            message: `Custom fields are limited to ${max} per site. ${advice}`,
-            code: 'CUSTOM_FIELDS_LIMIT_REACHED',
-            // `requested` is carried alongside the limit-service shape so a batch
-            // rejection is self-describing: without it a client sees free slots and
-            // a refusal, and has to re-derive its own payload size to explain why.
-            errorDetails: {limit: max, total, requested: addedCount}
+        return this.readMany(trx, keys);
+      });
+    } catch (err) {
+      // mintKey already picked a free key, so a unique violation here only
+      // means a concurrent create claimed the same key in between. The index
+      // is the final arbiter; surface a retryable conflict rather than a 500.
+      if (isUniqueConstraintViolation(err)) {
+        throw new errors.ConflictError({
+          message: 'Could not create the custom field, please try again.',
         });
+      }
+      throw err;
     }
 
-    /**
-     * Set the order of the whole list, stated rather than adjusted: every row gets a
-     * fresh rank, so a move is well-defined even where every rank is still the default.
-     * Returns every definition, archived included, matching what the request named.
-     */
-    async reorder(context: RequestContext, input: unknown): Promise<CustomField[]> {
-        const parsed = ReorderInput.safeParse(input);
-        if (!parsed.success) {
-            const issue = parsed.error.issues[0];
-            throw new errors.ValidationError({message: issue.message, property: propertyOf(issue.path)});
-        }
-        const keys = parsed.data.map(item => item.key);
+    // Logged after the commit: the action log is a separate Bookshelf write
+    // outside this transaction, so recording inside it would leave orphaned
+    // "added" entries for fields a rollback never created.
+    for (const field of created) {
+      await this.recordAction({
+        context,
+        verb: 'create',
+        subject: field.id,
+        details: { primary_name: field.name, key: field.key },
+      });
+    }
+    return created;
+  }
 
-        const ordered = await this.knex.transaction(async (trx) => {
-            await this.assertNamesEveryField(trx, keys);
+  /**
+   * The operational ceiling on how many definitions a site can hold. This is a
+   * safeguard against the database load unbounded definitions would create, not
+   * a pricing or packaging limit, so it applies wherever the feature is available
+   * and is deliberately not routed through the entitlement-driven limit service.
+   *
+   * Both active and archived definitions count: an archived field still occupies
+   * a row and still carries its members' values, so archiving alone frees no
+   * space. Deleting an archived field is what releases a slot.
+   *
+   * The count is a consistent read, not a locking one, so two creates landing at
+   * the same instant can both pass and take a site one over. That is deliberate:
+   * this is a ceiling on database load, and holding a table lock across every
+   * create to make it exact would cost more than the overshoot it prevents.
+   *
+   */
+  private async assertWithinLimit(db: Knex, addedCount: number): Promise<void> {
+    const max = this.getMaxDefinitions();
 
-            // Ranks come from the request's order; the statements go out in key order, so
-            // two concurrent reorders take their row locks in the same sequence and
-            // cannot deadlock. `updated_at` is left alone — the definitions did not
-            // change, the list around them did.
-            const ranks = new Map(keys.map((key, rank) => [key, rank]));
-            for (const key of [...keys].sort()) {
-                await trx(TABLE).where('key', key).update({sort_order: ranks.get(key)!});
-            }
-
-            return this.list(trx(TABLE));
-        });
-
-        await this.recordAction({
-            context,
-            verb: 'reorder',
-            subject: null,
-            details: {action_name: 'reordered', count: ordered.length}
-        });
-        return ordered;
+    const row = await db(TABLE).count({ count: '*' }).first();
+    const total = Number(row?.count ?? 0);
+    if (total + addedCount <= max) {
+      return;
     }
 
-    /**
-     * A partial order is ambiguous, so a reorder that does not name every field exactly
-     * once is refused rather than half-applied. A client that loaded before a colleague
-     * added a field cannot name it, and is told to reload.
-     */
-    private async assertNamesEveryField(db: Knex, keys: string[]): Promise<void> {
-        const named = new Set(keys);
-        const existing = new Set(await db(TABLE).pluck<string[]>('key'));
+    // Two different situations reach here and they need different advice. At or
+    // over the ceiling there is nothing to do but free a slot. With slots still
+    // free the request was simply too big, and telling that operator to delete
+    // something is wrong: they have room, just not this much.
+    const remaining = max - total;
+    const advice =
+      remaining > 0
+        ? `You can add ${remaining} more.`
+        : 'Delete a field you no longer need to make room.';
 
-        const matches = named.size === keys.length
-            && named.size === existing.size
-            && keys.every(key => existing.has(key));
+    throw new errors.HostLimitError({
+      message: `Custom fields are limited to ${max} per site. ${advice}`,
+      code: 'CUSTOM_FIELDS_LIMIT_REACHED',
+      // `requested` is carried alongside the limit-service shape so a batch
+      // rejection is self-describing: without it a client sees free slots and
+      // a refusal, and has to re-derive its own payload size to explain why.
+      errorDetails: { limit: max, total, requested: addedCount },
+    });
+  }
 
-        if (!matches) {
-            throw new errors.ValidationError({
-                message: 'The order must name every custom field exactly once. Reload and try again.',
-                property: 'key'
-            });
-        }
+  /**
+   * Set the order of the whole list, stated rather than adjusted: every row gets a
+   * fresh rank, so a move is well-defined even where every rank is still the default.
+   * Returns every definition, archived included, matching what the request named.
+   */
+  async reorder(context: RequestContext, input: unknown): Promise<CustomField[]> {
+    const parsed = ReorderInput.safeParse(input);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      throw new errors.ValidationError({
+        message: issue.message,
+        property: propertyOf(issue.path),
+      });
+    }
+    const keys = parsed.data.map((item) => item.key);
+
+    const ordered = await this.knex.transaction(async (trx) => {
+      await this.assertNamesEveryField(trx, keys);
+
+      // Ranks come from the request's order; the statements go out in key order, so
+      // two concurrent reorders take their row locks in the same sequence and
+      // cannot deadlock. `updated_at` is left alone — the definitions did not
+      // change, the list around them did.
+      const ranks = new Map(keys.map((key, rank) => [key, rank]));
+      for (const key of [...keys].sort()) {
+        await trx(TABLE)
+          .where('key', key)
+          .update({ sort_order: ranks.get(key)! });
+      }
+
+      return this.list(trx(TABLE));
+    });
+
+    await this.recordAction({
+      context,
+      verb: 'reorder',
+      subject: null,
+      details: { action_name: 'reordered', count: ordered.length },
+    });
+    return ordered;
+  }
+
+  /**
+   * A partial order is ambiguous, so a reorder that does not name every field exactly
+   * once is refused rather than half-applied. A client that loaded before a colleague
+   * added a field cannot name it, and is told to reload.
+   */
+  private async assertNamesEveryField(db: Knex, keys: string[]): Promise<void> {
+    const named = new Set(keys);
+    const existing = new Set(await db(TABLE).pluck<string[]>('key'));
+
+    const matches =
+      named.size === keys.length &&
+      named.size === existing.size &&
+      keys.every((key) => existing.has(key));
+
+    if (!matches) {
+      throw new errors.ValidationError({
+        message: 'The order must name every custom field exactly once. Reload and try again.',
+        property: 'key',
+      });
+    }
+  }
+
+  /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
+  private async nextSortOrder(db: Knex): Promise<number> {
+    const row = await db(TABLE).max({ highest: 'sort_order' }).first();
+    const highest = row?.highest;
+    // No fields yet, so this one starts the order.
+    if (highest === null || highest === undefined) {
+      return 0;
+    }
+    return Number(highest) + 1;
+  }
+
+  /** Read back a batch in the order its keys were created, not the table's order. */
+  private async readMany(db: Knex, keys: string[]): Promise<CustomField[]> {
+    const rows = await db(TABLE).whereIn('key', keys).select('*');
+    const byKey = new Map(rows.map((row) => [row.key, row]));
+    return keys.map((key) => z.decode(customFieldCodec, byKey.get(key)!));
+  }
+
+  /**
+   * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
+   * Reads the keys already taken by that base — including archived fields, so a
+   * key is never reused once minted.
+   */
+  private async mintKey(db: Knex, base: string): Promise<string> {
+    // Trimmed again after cutting, because the cut can land mid-separator and
+    // a key that ends in one is not a shape minting is allowed to produce. The
+    // base starts with an alphanumeric, so something always survives.
+    const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
+    const taken = new Set([
+      ...RESERVED_KEYS,
+      ...(await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')),
+    ]);
+    if (!taken.has(safeBase)) {
+      return safeBase;
+    }
+    for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
+      const candidate = `${safeBase}_${suffix}`;
+      if (!taken.has(candidate)) {
+        return candidate;
+      }
+    }
+    throw new errors.ValidationError({
+      message: 'Could not mint a unique key for this custom field.',
+      property: 'name',
+    });
+  }
+
+  /**
+   * Names are globally unique (across active and archived) so the label is
+   * never ambiguous — a unique index on `name` enforces it. This read gives a
+   * clean `property: name` 422 for the common case (the raw index violation
+   * can't be told apart from a key clash); the index is the race backstop.
+   *
+   * The LOWER() normalises case in application code because the engines
+   * disagree: MySQL's default collation is case-insensitive, SQLite's is not,
+   * so relying on the index alone would reject "Company"/"company" in prod but
+   * allow it in the SQLite test/dev suites. `exceptKey` lets a field keep its
+   * own name on an unrelated edit.
+   */
+  private async assertNameAvailable(db: Knex, name: string, exceptKey?: string): Promise<void> {
+    const query = db(TABLE).whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
+    if (exceptKey) {
+      query.whereNot('key', exceptKey);
+    }
+    const clash = await query.first();
+    if (clash) {
+      throw new errors.ValidationError({
+        message: 'A custom field with this name already exists.',
+        property: 'name',
+      });
+    }
+  }
+
+  async edit(context: RequestContext, key: string, input: unknown): Promise<CustomField> {
+    const parsed = EditFieldInput.safeParse(input);
+    if (!parsed.success) {
+      throw new errors.ValidationError({
+        message: parsed.error.issues[0].message,
+        property: parsed.error.issues[0].path[0]?.toString(),
+      });
+    }
+    const patch = parsed.data;
+
+    const existing = await this.read(key);
+
+    // Key and type are immutable after creation: values are addressed by key
+    // and interpreted by type, so changing either would silently orphan or
+    // corrupt stored values. Reject a differing value rather than ignore it.
+    if (patch.key !== undefined && patch.key !== existing.key) {
+      throw new errors.ValidationError({
+        message: 'Custom field keys cannot be changed once created.',
+        property: 'key',
+      });
+    }
+    if (patch.type !== undefined && patch.type !== existing.type) {
+      throw new errors.ValidationError({
+        message: 'Custom field types cannot be changed once created.',
+        property: 'type',
+      });
     }
 
-    /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
-    private async nextSortOrder(db: Knex): Promise<number> {
-        const row = await db(TABLE).max({highest: 'sort_order'}).first();
-        const highest = row?.highest;
-        // No fields yet, so this one starts the order.
-        if (highest === null || highest === undefined) {
-            return 0;
+    // Only write (and log a rename) when the name actually changes, so
+    // re-saving an unchanged field is a no-op rather than a spurious edit.
+    if (patch.name !== undefined && patch.name !== existing.name) {
+      await this.assertNameAvailable(this.knex, patch.name, key);
+      try {
+        await this.knex(TABLE)
+          .where('key', key)
+          .update({ name: patch.name, updated_at: new Date() });
+      } catch (err) {
+        if (isUniqueConstraintViolation(err)) {
+          throw new errors.ConflictError({
+            message: 'Could not rename the custom field, please try again.',
+          });
         }
-        return Number(highest) + 1;
+        throw err;
+      }
+      await this.recordAction({
+        context,
+        verb: 'rename',
+        subject: existing.id,
+        details: { primary_name: patch.name, key, previous_name: existing.name },
+      });
     }
 
-    /** Read back a batch in the order its keys were created, not the table's order. */
-    private async readMany(db: Knex, keys: string[]): Promise<CustomField[]> {
-        const rows = await db(TABLE).whereIn('key', keys).select('*');
-        const byKey = new Map(rows.map(row => [row.key, row]));
-        return keys.map(key => z.decode(customFieldCodec, byKey.get(key)!));
+    // A status change is the archive/restore transition. Only write (and log)
+    // when it actually flips, so re-sending the current status is a no-op.
+    if (patch.status !== undefined && patch.status !== existing.status) {
+      await this.knex(TABLE)
+        .where('key', key)
+        .update({ status: patch.status, updated_at: new Date() });
+      const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
+      await this.recordAction({
+        context,
+        verb,
+        subject: existing.id,
+        details: { primary_name: patch.name ?? existing.name, key },
+      });
     }
 
-    /**
-     * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
-     * Reads the keys already taken by that base — including archived fields, so a
-     * key is never reused once minted.
-     */
-    private async mintKey(db: Knex, base: string): Promise<string> {
-        // Trimmed again after cutting, because the cut can land mid-separator and
-        // a key that ends in one is not a shape minting is allowed to produce. The
-        // base starts with an alphanumeric, so something always survives.
-        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
-        const taken = new Set([
-            ...RESERVED_KEYS,
-            ...await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
-        ]);
-        if (!taken.has(safeBase)) {
-            return safeBase;
-        }
-        for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
-            const candidate = `${safeBase}_${suffix}`;
-            if (!taken.has(candidate)) {
-                return candidate;
-            }
-        }
-        throw new errors.ValidationError({message: 'Could not mint a unique key for this custom field.', property: 'name'});
+    return this.read(key);
+  }
+
+  /**
+   * Permanently delete a field and every member value attached to it (the FK
+   * cascades the values). Destructive and irreversible, so it's gated on the
+   * field already being archived: a publisher must archive first, then delete,
+   * which makes accidental data loss a deliberate two-step. Archiving is the
+   * reversible soft state (see `edit` with a status change).
+   */
+  async destroy(context: RequestContext, key: string): Promise<void> {
+    const field = await this.knex(TABLE).where('key', key).first();
+    if (!field) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
-
-    /**
-     * Names are globally unique (across active and archived) so the label is
-     * never ambiguous — a unique index on `name` enforces it. This read gives a
-     * clean `property: name` 422 for the common case (the raw index violation
-     * can't be told apart from a key clash); the index is the race backstop.
-     *
-     * The LOWER() normalises case in application code because the engines
-     * disagree: MySQL's default collation is case-insensitive, SQLite's is not,
-     * so relying on the index alone would reject "Company"/"company" in prod but
-     * allow it in the SQLite test/dev suites. `exceptKey` lets a field keep its
-     * own name on an unrelated edit.
-     */
-    private async assertNameAvailable(db: Knex, name: string, exceptKey?: string): Promise<void> {
-        const query = db(TABLE).whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
-        if (exceptKey) {
-            query.whereNot('key', exceptKey);
-        }
-        const clash = await query.first();
-        if (clash) {
-            throw new errors.ValidationError({message: 'A custom field with this name already exists.', property: 'name'});
-        }
+    if (field.status !== FIELD_STATUS.archived) {
+      throw new errors.ValidationError({
+        message: 'Only archived custom fields can be deleted. Archive the field first.',
+      });
     }
-
-    async edit(context: RequestContext, key: string, input: unknown): Promise<CustomField> {
-        const parsed = EditFieldInput.safeParse(input);
-        if (!parsed.success) {
-            throw new errors.ValidationError({message: parsed.error.issues[0].message, property: parsed.error.issues[0].path[0]?.toString()});
-        }
-        const patch = parsed.data;
-
-        const existing = await this.read(key);
-
-        // Key and type are immutable after creation: values are addressed by key
-        // and interpreted by type, so changing either would silently orphan or
-        // corrupt stored values. Reject a differing value rather than ignore it.
-        if (patch.key !== undefined && patch.key !== existing.key) {
-            throw new errors.ValidationError({message: 'Custom field keys cannot be changed once created.', property: 'key'});
-        }
-        if (patch.type !== undefined && patch.type !== existing.type) {
-            throw new errors.ValidationError({message: 'Custom field types cannot be changed once created.', property: 'type'});
-        }
-
-        // Only write (and log a rename) when the name actually changes, so
-        // re-saving an unchanged field is a no-op rather than a spurious edit.
-        if (patch.name !== undefined && patch.name !== existing.name) {
-            await this.assertNameAvailable(this.knex, patch.name, key);
-            try {
-                await this.knex(TABLE)
-                    .where('key', key)
-                    .update({name: patch.name, updated_at: new Date()});
-            } catch (err) {
-                if (isUniqueConstraintViolation(err)) {
-                    throw new errors.ConflictError({message: 'Could not rename the custom field, please try again.'});
-                }
-                throw err;
-            }
-            await this.recordAction({context, verb: 'rename', subject: existing.id, details: {primary_name: patch.name, key, previous_name: existing.name}});
-        }
-
-        // A status change is the archive/restore transition. Only write (and log)
-        // when it actually flips, so re-sending the current status is a no-op.
-        if (patch.status !== undefined && patch.status !== existing.status) {
-            await this.knex(TABLE)
-                .where('key', key)
-                .update({status: patch.status, updated_at: new Date()});
-            const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
-            await this.recordAction({context, verb, subject: existing.id, details: {primary_name: patch.name ?? existing.name, key}});
-        }
-
-        return this.read(key);
-    }
-
-    /**
-     * Permanently delete a field and every member value attached to it (the FK
-     * cascades the values). Destructive and irreversible, so it's gated on the
-     * field already being archived: a publisher must archive first, then delete,
-     * which makes accidental data loss a deliberate two-step. Archiving is the
-     * reversible soft state (see `edit` with a status change).
-     */
-    async destroy(context: RequestContext, key: string): Promise<void> {
-        const field = await this.knex(TABLE).where('key', key).first();
-        if (!field) {
-            throw new errors.NotFoundError({message: 'Custom field not found.'});
-        }
-        if (field.status !== FIELD_STATUS.archived) {
-            throw new errors.ValidationError({message: 'Only archived custom fields can be deleted. Archive the field first.'});
-        }
-        await this.knex(TABLE).where('key', key).del();
-        await this.recordAction({context, verb: 'delete', subject: field.id, details: {primary_name: field.name, key}});
-    }
+    await this.knex(TABLE).where('key', key).del();
+    await this.recordAction({
+      context,
+      verb: 'delete',
+      subject: field.id,
+      details: { primary_name: field.name, key },
+    });
+  }
 }
 
 // The field a zod issue points at. Create validates an array, so an issue's path
@@ -453,22 +524,22 @@ export class CustomFieldDefinitionsService {
 // separately by batchContext, keeping `property` the bare field name a client can
 // map straight onto its form input.
 function propertyOf(path: PropertyKey[]): string | undefined {
-    return path.find(segment => typeof segment === 'string');
+  return path.find((segment) => typeof segment === 'string');
 }
 
 // Which definition of a batch an error belongs to. Only set when the request
 // carried more than one: a lone definition needs no pointer, and every client
 // today sends exactly one, so this stays absent on the common path.
 function batchContext(index: PropertyKey | undefined, requestedCount: number): string | undefined {
-    if (requestedCount <= 1 || typeof index !== 'number') {
-        return undefined;
-    }
-    return `Custom field ${index + 1} of ${requestedCount}.`;
+  if (requestedCount <= 1 || typeof index !== 'number') {
+    return undefined;
+  }
+  return `Custom field ${index + 1} of ${requestedCount}.`;
 }
 
 function isUniqueConstraintViolation(error: unknown): boolean {
-    const code = (error as {code?: string})?.code;
-    return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
+  const code = (error as { code?: string })?.code;
+  return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
 }
 
 // Apply a caller-supplied NQL filter to the definition query. A malformed filter
@@ -477,30 +548,34 @@ function isUniqueConstraintViolation(error: unknown): boolean {
 // can never surface archived fields — this is the invariant queries.ts centralises,
 // held here as the per-field default override Bookshelf's filter plugin does.
 function applyFilter<T extends Knex.QueryBuilder>(query: T, filter: string): T {
-    let mongoQuery: Record<string, unknown>;
-    try {
-        mongoQuery = nql(filter).toJSON() as Record<string, unknown>;
-        knexify(query, mongoQuery, {tableName: TABLE});
-    } catch (err) {
-        throw new errors.BadRequestError({message: 'Could not parse the filter parameter.', property: 'filter', err: err as Error});
-    }
-    if (!filterReferencesStatus(mongoQuery)) {
-        query.where('status', FIELD_STATUS.active);
-    }
-    return query;
+  let mongoQuery: Record<string, unknown>;
+  try {
+    mongoQuery = nql(filter).toJSON() as Record<string, unknown>;
+    knexify(query, mongoQuery, { tableName: TABLE });
+  } catch (err) {
+    throw new errors.BadRequestError({
+      message: 'Could not parse the filter parameter.',
+      property: 'filter',
+      err: err as Error,
+    });
+  }
+  if (!filterReferencesStatus(mongoQuery)) {
+    query.where('status', FIELD_STATUS.active);
+  }
+  return query;
 }
 
 // Whether an NQL-parsed filter constrains `status` anywhere, including inside the
 // $and/$or/$nor combinators — so a status filter at any nesting counts as the
 // caller opting in to (or out of) archived fields.
 function filterReferencesStatus(query: Record<string, unknown>): boolean {
-    return Object.entries(query).some(([key, value]) => {
-        if (key === 'status') {
-            return true;
-        }
-        if ((key === '$and' || key === '$or' || key === '$nor') && Array.isArray(value)) {
-            return value.some(sub => filterReferencesStatus(sub as Record<string, unknown>));
-        }
-        return false;
-    });
+  return Object.entries(query).some(([key, value]) => {
+    if (key === 'status') {
+      return true;
+    }
+    if ((key === '$and' || key === '$or' || key === '$nor') && Array.isArray(value)) {
+      return value.some((sub) => filterReferencesStatus(sub as Record<string, unknown>));
+    }
+    return false;
+  });
 }

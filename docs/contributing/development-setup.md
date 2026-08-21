@@ -87,33 +87,33 @@ runs.
 
 ## Accessing services
 
-| Service | Address |
-| --- | --- |
-| Ghost site | [http://localhost:2368](http://localhost:2368) |
-| Ghost site (gateway alias) | [http://localhost](http://localhost) |
-| Ghost Admin | [http://localhost:2368/ghost/](http://localhost:2368/ghost/) |
-| Mailpit | [http://localhost:8025](http://localhost:8025) |
-| Mailpit (E2E) | [http://localhost:8026](http://localhost:8026) |
-| MySQL | `localhost:3306` using the `ghost_dev` database |
-| Redis | `localhost:6379` |
-| Tinybird | [http://localhost:7181](http://localhost:7181) with `pnpm dev:analytics` |
-| MinIO console | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage` |
-| MinIO S3 API | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage` |
+| Service                    | Address                                                                  |
+| -------------------------- | ------------------------------------------------------------------------ |
+| Ghost site                 | [http://localhost:2368](http://localhost:2368)                           |
+| Ghost site (gateway alias) | [http://localhost](http://localhost)                                     |
+| Ghost Admin                | [http://localhost:2368/ghost/](http://localhost:2368/ghost/)             |
+| Mailpit                    | [http://localhost:8025](http://localhost:8025)                           |
+| Mailpit (E2E)              | [http://localhost:8026](http://localhost:8026)                           |
+| MySQL                      | `localhost:3306` using the `ghost_dev` database                          |
+| Redis                      | `localhost:6379`                                                         |
+| Tinybird                   | [http://localhost:7181](http://localhost:7181) with `pnpm dev:analytics` |
+| MinIO console              | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage`   |
+| MinIO S3 API               | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage`   |
 
 ## Development variants
 
 Run one root command at a time. Each variant includes the standard development
 environment and adds the listed tooling:
 
-| Command | Use it when working on |
-| --- | --- |
-| `pnpm dev` | Ghost Core, Admin, or Portal |
-| `pnpm dev:public` | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar |
-| `pnpm dev:lexical` | Koenig's Lexical editor inside Ghost Admin |
-| `pnpm dev:analytics` | Tinybird-backed analytics; also exposes Tinybird on port `7181` |
-| `pnpm dev:storage` | S3-compatible storage through MinIO on ports `9000` and `9001` |
-| `pnpm dev:stripe` | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file |
-| `pnpm dev:full` | Public app watchers plus analytics, storage, and Stripe |
+| Command              | Use it when working on                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| `pnpm dev`           | Ghost Core, Admin, or Portal                                                            |
+| `pnpm dev:public`    | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                    |
+| `pnpm dev:lexical`   | Koenig's Lexical editor inside Ghost Admin                                              |
+| `pnpm dev:analytics` | Tinybird-backed analytics; also exposes Tinybird on port `7181`                         |
+| `pnpm dev:storage`   | S3-compatible storage through MinIO on ports `9000` and `9001`                          |
+| `pnpm dev:stripe`    | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file |
+| `pnpm dev:full`      | Public app watchers plus analytics, storage, and Stripe                                 |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.

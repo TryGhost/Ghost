@@ -4,220 +4,228 @@ const errors = require('@tryghost/errors');
 const commands = require('../../../../../core/server/data/schema/commands');
 
 describe('schema commands', function () {
-    it('_hasForeignSQLite throws when knex is nox configured to use sqlite3', async function () {
-        const Knex = require('knex');
-        const knex = Knex({
-            client: 'mysql'
-        });
-
-        try {
-            await commands._hasForeignSQLite({transaction: knex});
-            assert.fail('addForeign did not throw');
-        } catch (err) {
-            assert.equal(errors.utils.isGhostError(err), true);
-            assert.equal(err.message, 'Must use hasForeignSQLite3 on an SQLite3 database');
-        }
+  it('_hasForeignSQLite throws when knex is nox configured to use sqlite3', async function () {
+    const Knex = require('knex');
+    const knex = Knex({
+      client: 'mysql',
     });
 
-    it('_hasPrimaryKeySQLite throws when knex is configured to use sqlite', async function () {
-        const Knex = require('knex');
-        const knex = Knex({
-            client: 'mysql'
-        });
+    try {
+      await commands._hasForeignSQLite({ transaction: knex });
+      assert.fail('addForeign did not throw');
+    } catch (err) {
+      assert.equal(errors.utils.isGhostError(err), true);
+      assert.equal(err.message, 'Must use hasForeignSQLite3 on an SQLite3 database');
+    }
+  });
 
-        try {
-            await commands._hasPrimaryKeySQLite(null, knex);
-            assert.fail('hasPrimaryKeySQLite did not throw');
-        } catch (err) {
-            assert.equal(errors.utils.isGhostError(err), true);
-            assert.equal(err.message, 'Must use hasPrimaryKeySQLite on an SQLite3 database');
-        }
+  it('_hasPrimaryKeySQLite throws when knex is configured to use sqlite', async function () {
+    const Knex = require('knex');
+    const knex = Knex({
+      client: 'mysql',
     });
 
-    describe('addTableColumn', function () {
-        // addTableColumn isn't exported, so we exercise it through createTable
-        // and stringify the builder rather than running it against a database.
-        function ddlFor(client, tableSpec) {
-            const Knex = require('knex');
-            const knex = Knex({client, useNullAsDefault: true});
+    try {
+      await commands._hasPrimaryKeySQLite(null, knex);
+      assert.fail('hasPrimaryKeySQLite did not throw');
+    } catch (err) {
+      assert.equal(errors.utils.isGhostError(err), true);
+      assert.equal(err.message, 'Must use hasPrimaryKeySQLite on an SQLite3 database');
+    }
+  });
 
-            try {
-                return commands.createTable('test_table', knex, tableSpec).toString();
-            } finally {
-                knex.destroy();
-            }
-        }
+  describe('addTableColumn', function () {
+    // addTableColumn isn't exported, so we exercise it through createTable
+    // and stringify the builder rather than running it against a database.
+    function ddlFor(client, tableSpec) {
+      const Knex = require('knex');
+      const knex = Knex({ client, useNullAsDefault: true });
 
-        it('gives a binary column with a maxlength a bounded varbinary type on MySQL', function () {
-            const ddl = ddlFor('mysql2', {
-                to_hash: {type: 'binary', maxlength: 32, nullable: true}
-            });
+      try {
+        return commands.createTable('test_table', knex, tableSpec).toString();
+      } finally {
+        knex.destroy();
+      }
+    }
 
-            assert.match(ddl, /`to_hash` varbinary\(32\)/);
-        });
+    it('gives a binary column with a maxlength a bounded varbinary type on MySQL', function () {
+      const ddl = ddlFor('mysql2', {
+        to_hash: { type: 'binary', maxlength: 32, nullable: true },
+      });
 
-        // The bounded type is what makes the column indexable in full: MySQL
-        // can only index an unbounded blob with a prefix, and a prefix on a
-        // UNIQUE index would enforce uniqueness over the prefix alone.
-        it('falls back to an unbounded blob when a binary column has no maxlength', function () {
-            const ddl = ddlFor('mysql2', {
-                to_hash: {type: 'binary', nullable: true}
-            });
-
-            assert.match(ddl, /`to_hash` blob/);
-        });
-
-        it('indexes the whole binary column in a unique constraint, without a prefix', function () {
-            const ddl = ddlFor('mysql2', {
-                owner_id: {type: 'string', maxlength: 24, nullable: true},
-                to_hash: {type: 'binary', maxlength: 32, nullable: true},
-                '@@UNIQUE_CONSTRAINTS@@': [['owner_id', 'to_hash']]
-            });
-
-            // The column has to be bounded for this to be legal: MySQL rejects
-            // an unbounded blob in a key without a prefix length (ER_BLOB_KEY_WITHOUT_LENGTH).
-            assert.match(ddl, /`to_hash` varbinary\(32\)/);
-            assert.match(ddl, /add unique `test_table_owner_id_to_hash_unique`\(`owner_id`, `to_hash`\)/);
-        });
-
-        it('uses blob for binary columns on SQLite, which has no bounded binary type', function () {
-            const ddl = ddlFor('better-sqlite3', {
-                to_hash: {type: 'binary', maxlength: 32, nullable: true}
-            });
-
-            assert.match(ddl, /`to_hash` blob/);
-        });
-
-        it('still applies maxlength to string columns, defaulting to 191', function () {
-            const ddl = ddlFor('mysql2', {
-                bounded: {type: 'string', maxlength: 50, nullable: true},
-                unbounded: {type: 'string', nullable: true}
-            });
-
-            assert.match(ddl, /`bounded` varchar\(50\)/);
-            assert.match(ddl, /`unbounded` varchar\(191\)/);
-        });
+      assert.match(ddl, /`to_hash` varbinary\(32\)/);
     });
 
-    describe('createViewOrReplace', function () {
-        // Guards the portability fix: views must never be created with MySQL's
-        // default DEFINER security, which binds them to the migrating account
-        // and breaks when a backup is restored under a different MySQL user.
-        it('creates the view with SQL SECURITY INVOKER on MySQL', async function () {
-            const rawStatements = [];
-            const fakeKnex = {
-                client: {config: {client: 'mysql2'}},
-                raw: (sql) => {
-                    rawStatements.push(sql);
-                    return Promise.resolve();
-                }
-            };
+    // The bounded type is what makes the column indexable in full: MySQL
+    // can only index an unbounded blob with a prefix, and a prefix on a
+    // UNIQUE index would enforce uniqueness over the prefix alone.
+    it('falls back to an unbounded blob when a binary column has no maxlength', function () {
+      const ddl = ddlFor('mysql2', {
+        to_hash: { type: 'binary', nullable: true },
+      });
 
-            await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
-
-            assert.equal(rawStatements.length, 1);
-            assert.match(rawStatements[0], /CREATE OR REPLACE SQL SECURITY INVOKER VIEW/);
-            assert.match(rawStatements[0], /`my_view`/);
-            assert.doesNotMatch(rawStatements[0], /DEFINER/);
-        });
-
-        it('uses the plain builder (no security clause) on SQLite', async function () {
-            const builderViews = [];
-            const fakeKnex = {
-                client: {config: {client: 'sqlite3'}},
-                raw: sql => sql,
-                schema: {
-                    createViewOrReplace: (name) => {
-                        builderViews.push(name);
-                        return Promise.resolve();
-                    }
-                }
-            };
-
-            await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
-
-            assert.deepEqual(builderViews, ['my_view']);
-        });
+      assert.match(ddl, /`to_hash` blob/);
     });
 
-    describe('renameColumn', function () {
-        it('uses requested algorithm on MySQL', async function () {
-            const rawStatements = [];
-            const fakeKnex = {
-                client: {config: {client: 'mysql2'}},
-                raw: (sql) => {
-                    rawStatements.push(sql);
-                    return Promise.resolve();
-                }
-            };
+    it('indexes the whole binary column in a unique constraint, without a prefix', function () {
+      const ddl = ddlFor('mysql2', {
+        owner_id: { type: 'string', maxlength: 24, nullable: true },
+        to_hash: { type: 'binary', maxlength: 32, nullable: true },
+        '@@UNIQUE_CONSTRAINTS@@': [['owner_id', 'to_hash']],
+      });
 
-            await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'});
+      // The column has to be bounded for this to be legal: MySQL rejects
+      // an unbounded blob in a key without a prefix length (ER_BLOB_KEY_WITHOUT_LENGTH).
+      assert.match(ddl, /`to_hash` varbinary\(32\)/);
+      assert.match(ddl, /add unique `test_table_owner_id_to_hash_unique`\(`owner_id`, `to_hash`\)/);
+    });
 
-            assert.deepEqual(rawStatements, [
-                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant'
-            ]);
-        });
+    it('uses blob for binary columns on SQLite, which has no bounded binary type', function () {
+      const ddl = ddlFor('better-sqlite3', {
+        to_hash: { type: 'binary', maxlength: 32, nullable: true },
+      });
 
-        it('does not force an algorithm when none is requested', async function () {
-            const rawStatements = [];
-            const fakeKnex = {
-                client: {config: {client: 'mysql2'}},
-                raw: (sql) => {
-                    rawStatements.push(sql);
-                    return Promise.resolve();
-                }
-            };
+      assert.match(ddl, /`to_hash` blob/);
+    });
 
-            await commands.renameColumn('table', 'old_column', 'new_column', fakeKnex);
+    it('still applies maxlength to string columns, defaulting to 191', function () {
+      const ddl = ddlFor('mysql2', {
+        bounded: { type: 'string', maxlength: 50, nullable: true },
+        unbounded: { type: 'string', nullable: true },
+      });
 
-            assert.deepEqual(rawStatements, [
-                'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`'
-            ]);
-        });
+      assert.match(ddl, /`bounded` varchar\(50\)/);
+      assert.match(ddl, /`unbounded` varchar\(191\)/);
+    });
+  });
 
-        it('retries without the algorithm when the server does not support it', async function () {
-            const rawStatements = [];
-            const fakeKnex = {
-                client: {config: {client: 'mysql2'}},
-                raw: (sql) => {
-                    rawStatements.push(sql);
+  describe('createViewOrReplace', function () {
+    // Guards the portability fix: views must never be created with MySQL's
+    // default DEFINER security, which binds them to the migrating account
+    // and breaks when a backup is restored under a different MySQL user.
+    it('creates the view with SQL SECURITY INVOKER on MySQL', async function () {
+      const rawStatements = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql) => {
+          rawStatements.push(sql);
+          return Promise.resolve();
+        },
+      };
 
-                    if (sql.includes('algorithm=')) {
-                        const error = new Error('ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.');
-                        error.code = 'ER_ALTER_OPERATION_NOT_SUPPORTED';
-                        return Promise.reject(error);
-                    }
+      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
 
-                    return Promise.resolve();
-                }
-            };
+      assert.equal(rawStatements.length, 1);
+      assert.match(rawStatements[0], /CREATE OR REPLACE SQL SECURITY INVOKER VIEW/);
+      assert.match(rawStatements[0], /`my_view`/);
+      assert.doesNotMatch(rawStatements[0], /DEFINER/);
+    });
 
-            await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'});
+    it('uses the plain builder (no security clause) on SQLite', async function () {
+      const builderViews = [];
+      const fakeKnex = {
+        client: { config: { client: 'sqlite3' } },
+        raw: (sql) => sql,
+        schema: {
+          createViewOrReplace: (name) => {
+            builderViews.push(name);
+            return Promise.resolve();
+          },
+        },
+      };
 
-            assert.deepEqual(rawStatements, [
-                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
-                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`'
-            ]);
-        });
+      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
 
-        it('does not retry on unrelated errors', async function () {
-            const rawStatements = [];
-            const fakeKnex = {
-                client: {config: {client: 'mysql2'}},
-                raw: (sql) => {
-                    rawStatements.push(sql);
-                    const error = new Error("Table 'email_batches' doesn't exist");
-                    error.code = 'ER_NO_SUCH_TABLE';
-                    return Promise.reject(error);
-                }
-            };
+      assert.deepEqual(builderViews, ['my_view']);
+    });
+  });
 
-            await assert.rejects(
-                commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'}),
-                /doesn't exist/
+  describe('renameColumn', function () {
+    it('uses requested algorithm on MySQL', async function () {
+      const rawStatements = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql) => {
+          rawStatements.push(sql);
+          return Promise.resolve();
+        },
+      };
+
+      await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
+        algorithm: 'instant',
+      });
+
+      assert.deepEqual(rawStatements, [
+        'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
+      ]);
+    });
+
+    it('does not force an algorithm when none is requested', async function () {
+      const rawStatements = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql) => {
+          rawStatements.push(sql);
+          return Promise.resolve();
+        },
+      };
+
+      await commands.renameColumn('table', 'old_column', 'new_column', fakeKnex);
+
+      assert.deepEqual(rawStatements, [
+        'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`',
+      ]);
+    });
+
+    it('retries without the algorithm when the server does not support it', async function () {
+      const rawStatements = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql) => {
+          rawStatements.push(sql);
+
+          if (sql.includes('algorithm=')) {
+            const error = new Error(
+              'ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.',
             );
+            error.code = 'ER_ALTER_OPERATION_NOT_SUPPORTED';
+            return Promise.reject(error);
+          }
 
-            assert.equal(rawStatements.length, 1);
-        });
+          return Promise.resolve();
+        },
+      };
+
+      await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
+        algorithm: 'instant',
+      });
+
+      assert.deepEqual(rawStatements, [
+        'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
+        'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`',
+      ]);
     });
+
+    it('does not retry on unrelated errors', async function () {
+      const rawStatements = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql) => {
+          rawStatements.push(sql);
+          const error = new Error("Table 'email_batches' doesn't exist");
+          error.code = 'ER_NO_SUCH_TABLE';
+          return Promise.reject(error);
+        },
+      };
+
+      await assert.rejects(
+        commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
+          algorithm: 'instant',
+        }),
+        /doesn't exist/,
+      );
+
+      assert.equal(rawStatements.length, 1);
+    });
+  });
 });

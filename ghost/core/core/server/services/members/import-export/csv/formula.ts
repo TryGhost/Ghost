@@ -7,8 +7,8 @@ const FORMULA_TRIGGERS = ['=', '+', '-', '@', '\t', '\r'];
 // round trip. Only a lone apostrophe before a trigger is the guard; one before anything
 // else is a character the value actually starts with, and is left alone.
 export function stripFormulaGuard(cell: string): string {
-    if (cell.charAt(0) === '\'' && FORMULA_TRIGGERS.includes(cell.charAt(1))) {
-        return cell.slice(1);
-    }
-    return cell;
+  if (cell.charAt(0) === "'" && FORMULA_TRIGGERS.includes(cell.charAt(1))) {
+    return cell.slice(1);
+  }
+  return cell;
 }

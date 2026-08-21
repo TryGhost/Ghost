@@ -1,120 +1,120 @@
 {
-    "url": "http://127.0.0.1:2369",
-    "server": {
-        "port": 2369
-    },
-    "metrics_server": {
-        "port": 9417
-    },
-    "database": {
-        "client": "mysql",
-        "connection": {
-            "host"     : "127.0.0.1",
-            "user"     : "root",
-            "password" : "",
-            "database" : "ghost_testing"
-        }
-    },
-    "logging": {
-        "level": "error",
-        "logClientErrorsAsError": false
-    },
-    "adapters": {
-        "Redis": {
-            "host": "127.0.0.1",
-            "port": 6379
-        }
-    },
-    "security": {
-        "staffDeviceVerification": false,
-        "allowWebhookInternalIPs": true
-    },
-    "spam": {
-        "user_login": {
-            "minWait": 600000,
-            "maxWait": 604800000,
-            "freeRetries": 3
-        },
-        "user_reset": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries": 4
-        },
-        "user_verification": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries": 4
-        },
-        "send_verification_code": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries": 4
-        },
-        "global_reset": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries":4
-        },
-        "global_block": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries":4
-        },
-        "private_block": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries":99
-        },
-        "webmentions_block": {
-            "minWait": 100000,
-            "maxWait": 100000,
-            "lifetime": 3600,
-            "freeRetries": 3
-        },
-        "email_preview_block": {
-            "minWait": 360000,
-            "maxWait": 360000,
-            "lifetime": 3600,
-            "freeRetries": 10
-        },
-        "checkout_session_global": {
-            "minWait": 3600000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries": 99
-        },
-        "checkout_session_email": {
-            "minWait": 600000,
-            "maxWait": 43200000,
-            "lifetime": 43200,
-            "freeRetries": 8
-        },
-        "otc_verification_enumeration": {
-            "minWait": 600000,
-            "maxWait": 43200000,
-            "lifetime": 43200,
-            "freeRetries": 8
-        },
-        "otc_verification": {
-            "minWait": 300000,
-            "maxWait": 3600000,
-            "lifetime": 3600,
-            "freeRetries": 4
-        }
-    },
-    "privacy": {
-        "useTinfoil": true,
-        "useStructuredData": true
-    },
-    "useMinFiles": false,
-    "paths": {
-        "fixtures": "test/utils/fixtures/fixtures",
-        "defaultSettings": "test/utils/fixtures/default-settings.json"
+  "url": "http://127.0.0.1:2369",
+  "server": {
+    "port": 2369
+  },
+  "metrics_server": {
+    "port": 9417
+  },
+  "database": {
+    "client": "mysql",
+    "connection": {
+      "host": "127.0.0.1",
+      "user": "root",
+      "password": "",
+      "database": "ghost_testing"
     }
+  },
+  "logging": {
+    "level": "error",
+    "logClientErrorsAsError": false
+  },
+  "adapters": {
+    "Redis": {
+      "host": "127.0.0.1",
+      "port": 6379
+    }
+  },
+  "security": {
+    "staffDeviceVerification": false,
+    "allowWebhookInternalIPs": true
+  },
+  "spam": {
+    "user_login": {
+      "minWait": 600000,
+      "maxWait": 604800000,
+      "freeRetries": 3
+    },
+    "user_reset": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "user_verification": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "send_verification_code": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "global_reset": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "global_block": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "private_block": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 99
+    },
+    "webmentions_block": {
+      "minWait": 100000,
+      "maxWait": 100000,
+      "lifetime": 3600,
+      "freeRetries": 3
+    },
+    "email_preview_block": {
+      "minWait": 360000,
+      "maxWait": 360000,
+      "lifetime": 3600,
+      "freeRetries": 10
+    },
+    "checkout_session_global": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 99
+    },
+    "checkout_session_email": {
+      "minWait": 600000,
+      "maxWait": 43200000,
+      "lifetime": 43200,
+      "freeRetries": 8
+    },
+    "otc_verification_enumeration": {
+      "minWait": 600000,
+      "maxWait": 43200000,
+      "lifetime": 43200,
+      "freeRetries": 8
+    },
+    "otc_verification": {
+      "minWait": 300000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    }
+  },
+  "privacy": {
+    "useTinfoil": true,
+    "useStructuredData": true
+  },
+  "useMinFiles": false,
+  "paths": {
+    "fixtures": "test/utils/fixtures/fixtures",
+    "defaultSettings": "test/utils/fixtures/default-settings.json"
+  }
 }

@@ -1,153 +1,160 @@
-import {InfiniteData, useIsFetching, useQueryClient} from '@tanstack/react-query';
-import {useEffect} from 'react';
-import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
-import {apiUrl} from '../utils/api/fetch-api';
-import type {FieldValue} from '@tryghost/custom-field-types';
-import {useCurrentUser} from './current-user';
-import {canManageMembers} from './users';
+import { InfiniteData, useIsFetching, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
+import { apiUrl } from '../utils/api/fetch-api';
+import type { FieldValue } from '@tryghost/custom-field-types';
+import { useCurrentUser } from './current-user';
+import { canManageMembers } from './users';
 
 export type MemberLabel = {
-    id: string;
-    name: string;
-    slug: string;
-    created_at: string;
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
 };
 
 export type MemberTier = {
-    id: string;
-    name: string;
-    slug: string;
-    active: boolean;
-    type: string;
-    // Populated for complimentary / gift subscriptions; the tier expiry the admin
-    // set when the comp was created, or the gift expiry from the redemption.
-    expiry_at?: string | null;
+  id: string;
+  name: string;
+  slug: string;
+  active: boolean;
+  type: string;
+  // Populated for complimentary / gift subscriptions; the tier expiry the admin
+  // set when the comp was created, or the gift expiry from the redemption.
+  expiry_at?: string | null;
 };
 
 export type MemberNewsletter = {
-    id: string;
-    uuid: string;
-    name: string;
-    slug: string;
-    status: string;
+  id: string;
+  uuid: string;
+  name: string;
+  slug: string;
+  status: string;
 };
 
 export type MemberSubscription = {
-    // Complimentary and gift subscriptions arrive from the members BREAD service
-    // with `id: ''` — they're synthesised from the member's tier and carry no
-    // Stripe subscription id. Paid ones always have a real Stripe id. The Ember
-    // screen classifies via `!sub.id` (empty-string is falsy) combined with the
-    // plan nickname.
+  // Complimentary and gift subscriptions arrive from the members BREAD service
+  // with `id: ''` — they're synthesised from the member's tier and carry no
+  // Stripe subscription id. Paid ones always have a real Stripe id. The Ember
+  // screen classifies via `!sub.id` (empty-string is falsy) combined with the
+  // plan nickname.
+  id: string;
+  customer: {
     id: string;
-    customer: {
-        id: string;
-        name: string | null;
-        email: string;
-    };
-    plan: {
-        id: string;
-        nickname: string;
-        interval: 'month' | 'year';
-        currency: string;
-        amount: number;
-    };
-    status: string;
-    start_date: string;
-    current_period_end: string;
-    cancel_at_period_end: boolean;
-    // Populated for subscriptions currently in a Stripe trial; used to render
-    // "Free trial" + "Ends <date>" copy without leaning on the paid-price branch.
-    trial_end_at?: string | null;
-    price: {
-        id: string;
-        price_id: string;
-        nickname: string;
-        amount: number;
-        currency: string;
-        type: string;
-        interval: 'month' | 'year';
-    };
-    tier: MemberTier;
-    offer: {
-        id: string;
-        name: string;
-    } | null;
-    attribution?: {
-        id?: string | null;
-        type?: string | null;
-        url?: string | null;
-        title?: string | null;
-        referrer_source?: string | null;
-        referrer_medium?: string | null;
-        referrer_url?: string | null;
-    } | null;
+    name: string | null;
+    email: string;
+  };
+  plan: {
+    id: string;
+    nickname: string;
+    interval: 'month' | 'year';
+    currency: string;
+    amount: number;
+  };
+  status: string;
+  start_date: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  // Populated for subscriptions currently in a Stripe trial; used to render
+  // "Free trial" + "Ends <date>" copy without leaning on the paid-price branch.
+  trial_end_at?: string | null;
+  price: {
+    id: string;
+    price_id: string;
+    nickname: string;
+    amount: number;
+    currency: string;
+    type: string;
+    interval: 'month' | 'year';
+  };
+  tier: MemberTier;
+  offer: {
+    id: string;
+    name: string;
+  } | null;
+  attribution?: {
+    id?: string | null;
+    type?: string | null;
+    url?: string | null;
+    title?: string | null;
+    referrer_source?: string | null;
+    referrer_medium?: string | null;
+    referrer_url?: string | null;
+  } | null;
 };
 
 export type Member = {
-    id: string;
-    transient_id: string;
-    uuid: string;
-    name?: string;
-    email?: string;
-    avatar_image?: string;
-    status: 'free' | 'paid' | 'comped' | 'gift';
-    note?: string;
-    subscribed: boolean;
-    labels?: MemberLabel[];
-    tiers?: MemberTier[];
-    newsletters?: MemberNewsletter[];
-    subscriptions?: MemberSubscription[];
-    current_subscription?: MemberSubscription | null;
-    email_count?: number;
-    email_opened_count?: number;
-    email_open_rate?: number | null;
-    // TODO: The server returns geolocation as a JSON-encoded string (not a parsed object).
-    // Long term we should parse this on the server side and return a proper object.
-    geolocation?: string | null;
-    attribution?: {
-        id?: string | null;
-        type?: string | null;
-        url?: string | null;
-        title?: string | null;
-        referrer_source?: string | null;
-        referrer_medium?: string | null;
-        referrer_url?: string | null;
-    } | null;
-    email_suppression?: {
-        suppressed: boolean;
-        info?: {
-            reason: string;
-            timestamp: string;
-        };
+  id: string;
+  transient_id: string;
+  uuid: string;
+  name?: string;
+  email?: string;
+  avatar_image?: string;
+  status: 'free' | 'paid' | 'comped' | 'gift';
+  note?: string;
+  subscribed: boolean;
+  labels?: MemberLabel[];
+  tiers?: MemberTier[];
+  newsletters?: MemberNewsletter[];
+  subscriptions?: MemberSubscription[];
+  current_subscription?: MemberSubscription | null;
+  email_count?: number;
+  email_opened_count?: number;
+  email_open_rate?: number | null;
+  // TODO: The server returns geolocation as a JSON-encoded string (not a parsed object).
+  // Long term we should parse this on the server side and return a proper object.
+  geolocation?: string | null;
+  attribution?: {
+    id?: string | null;
+    type?: string | null;
+    url?: string | null;
+    title?: string | null;
+    referrer_source?: string | null;
+    referrer_medium?: string | null;
+    referrer_url?: string | null;
+  } | null;
+  email_suppression?: {
+    suppressed: boolean;
+    info?: {
+      reason: string;
+      timestamp: string;
     };
-    last_seen_at: string | null;
-    last_commented_at: string | null;
-    // Custom field values keyed by field key, present only when requested via
-    // `include=custom_fields` (behind the `membersCustomFields` flag). Values
-    // are type-dependent: string for text-backed fields, an object for
-    // composites like address — hence `unknown`; consumers narrow per field type.
-    custom_fields?: Record<string, unknown>;
-    can_comment?: boolean;
-    commenting?: {
-        disabled: boolean;
-        disabled_reason?: string;
-        disabled_until?: string;
-    };
-    created_at: string;
-    updated_at: string;
+  };
+  last_seen_at: string | null;
+  last_commented_at: string | null;
+  // Custom field values keyed by field key, present only when requested via
+  // `include=custom_fields` (behind the `membersCustomFields` flag). Values
+  // are type-dependent: string for text-backed fields, an object for
+  // composites like address — hence `unknown`; consumers narrow per field type.
+  custom_fields?: Record<string, unknown>;
+  can_comment?: boolean;
+  commenting?: {
+    disabled: boolean;
+    disabled_reason?: string;
+    disabled_until?: string;
+  };
+  created_at: string;
+  updated_at: string;
 };
 
 export interface MembersResponseType {
-    meta?: Meta
-    members: Member[];
+  meta?: Meta;
+  members: Member[];
 }
 
 const dataType = 'MembersResponseType';
 const membersPath = '/members/';
 
-const memberCountSearchParams = {limit: '1'} as const;
+const memberCountSearchParams = { limit: '1' } as const;
 
-export const getMemberCountQueryKey = () => [dataType, apiUrl(membersPath, memberCountSearchParams)] as const;
+export const getMemberCountQueryKey = () =>
+  [dataType, apiUrl(membersPath, memberCountSearchParams)] as const;
 
 /**
  * True while any member query is in flight. Callers use this to hold a control
@@ -158,82 +165,84 @@ export const getMemberCountQueryKey = () => [dataType, apiUrl(membersPath, membe
  * a consumer means hand-copying the string, which then breaks silently and
  * without a type error if it ever changes.
  */
-export const useMembersFetching = () => useIsFetching({queryKey: [dataType]}) > 0;
+export const useMembersFetching = () => useIsFetching({ queryKey: [dataType] }) > 0;
 
 export const useBrowseMembers = createQuery<MembersResponseType>({
-    dataType,
-    path: membersPath
+  dataType,
+  path: membersPath,
 });
 
 const useBrowseMemberCount = createQuery<MembersResponseType>({
-    dataType,
-    path: membersPath,
-    defaultSearchParams: memberCountSearchParams
+  dataType,
+  path: membersPath,
+  defaultSearchParams: memberCountSearchParams,
 });
 
 export function useMemberCount() {
-    const {data: currentUser} = useCurrentUser();
-    const {data} = useBrowseMemberCount({
-        enabled: Boolean(currentUser && canManageMembers(currentUser))
-    });
+  const { data: currentUser } = useCurrentUser();
+  const { data } = useBrowseMemberCount({
+    enabled: Boolean(currentUser && canManageMembers(currentUser)),
+  });
 
-    return data?.meta?.pagination.total;
+  return data?.meta?.pagination.total;
 }
 
 export type NewMember = {
-    email: string;
-    name?: string | null;
-    note?: string | null;
-    // Matched/created by name on the server, same as the edit payload.
-    labels?: Array<{name: string; slug?: string}>;
-    // Explicit initial subscription set. When omitted, the server falls back
-    // to `subscribe_on_signup:true + visibility:members` newsletters
-    // (`member-repository.js:460-464`). The Ember admin sends the same set
-    // explicitly so the outcome doesn't drift if the server-side default
-    // ever changes; the React admin now matches.
-    newsletters?: Array<{id: string}>;
+  email: string;
+  name?: string | null;
+  note?: string | null;
+  // Matched/created by name on the server, same as the edit payload.
+  labels?: Array<{ name: string; slug?: string }>;
+  // Explicit initial subscription set. When omitted, the server falls back
+  // to `subscribe_on_signup:true + visibility:members` newsletters
+  // (`member-repository.js:460-464`). The Ember admin sends the same set
+  // explicitly so the outcome doesn't drift if the server-side default
+  // ever changes; the React admin now matches.
+  newsletters?: Array<{ id: string }>;
 };
 
 export const useAddMember = createMutation<MembersResponseType, NewMember>({
-    method: 'POST',
-    path: () => '/members/',
-    body: member => ({
-        members: [member]
-    }),
-    invalidateQueries: {dataType}
+  method: 'POST',
+  path: () => '/members/',
+  body: (member) => ({
+    members: [member],
+  }),
+  invalidateQueries: { dataType },
 });
 
 export type ImportMembersImportLabel = {
-    name: string;
-    slug: string;
+  name: string;
+  slug: string;
 };
 
 export type ImportMembersAcceptedResponseType = {
-    meta: {
-        originalImportSize: number;
-        import_label?: ImportMembersImportLabel | null;
-    };
+  meta: {
+    originalImportSize: number;
+    import_label?: ImportMembersImportLabel | null;
+  };
 };
 
 export type ImportMembersCompleteResponseType = {
-    meta: {
-        originalImportSize?: number;
-        stats: {
-            imported: number;
-            // The submitted row echoed back, so the remaining keys are whatever columns the
-            // CSV had. `errors` is why the row failed; `error` is those reasons written out
-            // for the error report's single cell.
-            invalid?: Array<{
-                [column: string]: unknown;
-                error: string;
-                errors: string[];
-            }>;
-        };
-        import_label?: ImportMembersImportLabel | null;
+  meta: {
+    originalImportSize?: number;
+    stats: {
+      imported: number;
+      // The submitted row echoed back, so the remaining keys are whatever columns the
+      // CSV had. `errors` is why the row failed; `error` is those reasons written out
+      // for the error report's single cell.
+      invalid?: Array<{
+        [column: string]: unknown;
+        error: string;
+        errors: string[];
+      }>;
     };
+    import_label?: ImportMembersImportLabel | null;
+  };
 };
 
-export type ImportMembersResponseType = ImportMembersAcceptedResponseType | ImportMembersCompleteResponseType;
+export type ImportMembersResponseType =
+  | ImportMembersAcceptedResponseType
+  | ImportMembersCompleteResponseType;
 
 // The upload endpoint returns one of two success shapes (see the importCSV
 // controller): a "complete" response carrying meta.stats (inline import), or an
@@ -241,109 +250,108 @@ export type ImportMembersResponseType = ImportMembersAcceptedResponseType | Impo
 // processing). We discriminate on the presence of meta.stats. The optional chain
 // is deliberate - this guard validates an untrusted parsed response, so it returns
 // false on a malformed payload rather than throwing.
-export function isImportMembersCompleteResponse(response: ImportMembersResponseType): response is ImportMembersCompleteResponseType {
-    return typeof (response as ImportMembersCompleteResponseType).meta?.stats?.imported === 'number';
+export function isImportMembersCompleteResponse(
+  response: ImportMembersResponseType,
+): response is ImportMembersCompleteResponseType {
+  return typeof (response as ImportMembersCompleteResponseType).meta?.stats?.imported === 'number';
 }
 
 export type ImportMembersPayload = {
-    file: File;
-    labels?: string[];
-    mapping?: Record<string, string | null | undefined>;
+  file: File;
+  labels?: string[];
+  mapping?: Record<string, string | null | undefined>;
 };
 
-function buildImportMembersFormData({file, labels = [], mapping = {}}: ImportMembersPayload) {
-    const formData = new FormData();
-    formData.append('membersfile', file);
+function buildImportMembersFormData({ file, labels = [], mapping = {} }: ImportMembersPayload) {
+  const formData = new FormData();
+  formData.append('membersfile', file);
 
-    for (const label of labels) {
-        formData.append('labels', label);
+  for (const label of labels) {
+    formData.append('labels', label);
+  }
+
+  // An empty target is the caller naming a column to leave out of the import, and the
+  // importer only honours a column it is told about — so it has to survive to the wire.
+  // Null and undefined stay dropped: they are a column with nothing said about it.
+  for (const [key, val] of Object.entries(mapping)) {
+    if (typeof val === 'string') {
+      formData.append(`mapping[${key}]`, val);
     }
+  }
 
-    // An empty target is the caller naming a column to leave out of the import, and the
-    // importer only honours a column it is told about — so it has to survive to the wire.
-    // Null and undefined stay dropped: they are a column with nothing said about it.
-    for (const [key, val] of Object.entries(mapping)) {
-        if (typeof val === 'string') {
-            formData.append(`mapping[${key}]`, val);
-        }
-    }
-
-    return formData;
+  return formData;
 }
 
 export const useImportMembers = createMutation<ImportMembersResponseType, ImportMembersPayload>({
-    method: 'POST',
-    retry: false,
-    path: () => '/members/upload/',
-    body: buildImportMembersFormData,
-    invalidateQueries: {dataType}
+  method: 'POST',
+  retry: false,
+  path: () => '/members/upload/',
+  body: buildImportMembersFormData,
+  invalidateQueries: { dataType },
 });
 
 export const getMember = createQueryWithId<MembersResponseType>({
-    dataType,
-    path: id => `/members/${id}/`
+  dataType,
+  path: (id) => `/members/${id}/`,
 });
 
 export const useDisableMemberCommenting = createMutation<
-    MembersResponseType,
-    {id: string; reason: string; hideComments?: boolean}
+  MembersResponseType,
+  { id: string; reason: string; hideComments?: boolean }
 >({
-    method: 'POST',
-    path: ({id}) => `/members/${id}/commenting/disable`,
-    body: ({reason, hideComments}) => ({
-        reason,
-        hide_comments: hideComments
-    }),
-    invalidateQueries: {
-        dataType: ['CommentsResponseType', dataType]
-    }
+  method: 'POST',
+  path: ({ id }) => `/members/${id}/commenting/disable`,
+  body: ({ reason, hideComments }) => ({
+    reason,
+    hide_comments: hideComments,
+  }),
+  invalidateQueries: {
+    dataType: ['CommentsResponseType', dataType],
+  },
 });
 
-export const useEnableMemberCommenting = createMutation<
-    MembersResponseType,
-    {id: string}
->({
-    method: 'POST',
-    path: ({id}) => `/members/${id}/commenting/enable`,
-    body: () => ({}),
-    invalidateQueries: {
-        dataType: ['CommentsResponseType', dataType]
-    }
+export const useEnableMemberCommenting = createMutation<MembersResponseType, { id: string }>({
+  method: 'POST',
+  path: ({ id }) => `/members/${id}/commenting/enable`,
+  body: () => ({}),
+  invalidateQueries: {
+    dataType: ['CommentsResponseType', dataType],
+  },
 });
 
 // Infinite query for members list with virtual scrolling
 export interface MembersInfiniteResponseType extends MembersResponseType {
-    isEnd: boolean;
+  isEnd: boolean;
 }
 
 const useBrowseMembersInfiniteQuery = createInfiniteQuery<MembersInfiniteResponseType>({
-    dataType,
-    path: membersPath,
-    defaultSearchParams: {
-        include: 'labels,tiers',
-        limit: '100',
-        order: 'created_at desc'
-    },
-    defaultNextPageParams: (lastPage, otherParams) => {
-        if (!lastPage.meta?.pagination.next) {
-            return undefined;
-        }
-        return {
-            ...otherParams,
-            page: lastPage.meta.pagination.next.toString()
-        };
-    },
-    returnData: (originalData) => {
-        const {pages} = originalData as InfiniteData<MembersResponseType>;
-        const members = pages.flatMap(page => page.members);
-        const meta = pages[pages.length - 1].meta;
-
-        return {
-            members,
-            meta,
-            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
-        };
+  dataType,
+  path: membersPath,
+  defaultSearchParams: {
+    include: 'labels,tiers',
+    limit: '100',
+    order: 'created_at desc',
+  },
+  defaultNextPageParams: (lastPage, otherParams) => {
+    if (!lastPage.meta?.pagination.next) {
+      return undefined;
     }
+    return {
+      ...otherParams,
+      page: lastPage.meta.pagination.next.toString(),
+    };
+  },
+  returnData: (originalData) => {
+    const { pages } = originalData as InfiniteData<MembersResponseType>;
+    const members = pages.flatMap((page) => page.members);
+    const meta = pages[pages.length - 1].meta;
+
+    return {
+      members,
+      meta,
+      isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
+    };
+  },
 });
 
 type BrowseMembersInfiniteOptions = Parameters<typeof useBrowseMembersInfiniteQuery>[0];
@@ -353,7 +361,7 @@ type BrowseMembersInfiniteResult = ReturnType<typeof useBrowseMembersInfiniteQue
 // when it isn't narrowed by a filter or search - otherwise its `total` reflects
 // the filtered subset rather than every member.
 function isUnfilteredMemberList(searchParams?: Record<string, string>) {
-    return !searchParams?.filter && !searchParams?.search;
+  return !searchParams?.filter && !searchParams?.search;
 }
 
 /**
@@ -365,131 +373,157 @@ function isUnfilteredMemberList(searchParams?: Record<string, string>) {
  * It only updates the count query if it already exists, and never overwrites a
  * count that was fetched more recently than the list.
  */
-function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchParams?: Record<string, string>) {
-    const queryClient = useQueryClient();
-    const listTotal = result.data?.meta?.pagination?.total;
-    // Derive a stable boolean so an inline `searchParams` object literal doesn't re-run the effect every render.
-    const listIsUnfiltered = isUnfilteredMemberList(searchParams);
+function useSyncMemberCountFromList(
+  result: BrowseMembersInfiniteResult,
+  searchParams?: Record<string, string>,
+) {
+  const queryClient = useQueryClient();
+  const listTotal = result.data?.meta?.pagination?.total;
+  // Derive a stable boolean so an inline `searchParams` object literal doesn't re-run the effect every render.
+  const listIsUnfiltered = isUnfilteredMemberList(searchParams);
 
-    useEffect(() => {
-        const listTotalIsAuthoritative = listIsUnfiltered
-            && !result.isError
-            && !result.isPlaceholderData
-            && typeof listTotal === 'number';
+  useEffect(() => {
+    const listTotalIsAuthoritative =
+      listIsUnfiltered &&
+      !result.isError &&
+      !result.isPlaceholderData &&
+      typeof listTotal === 'number';
 
-        if (!listTotalIsAuthoritative) {
-            return;
-        }
+    if (!listTotalIsAuthoritative) {
+      return;
+    }
 
-        const memberCountQueryKey = getMemberCountQueryKey();
-        const memberCountQueryState = queryClient.getQueryState<MembersResponseType>(memberCountQueryKey);
-        const memberCountData = memberCountQueryState?.data;
-        const cachedPagination = memberCountData?.meta?.pagination;
+    const memberCountQueryKey = getMemberCountQueryKey();
+    const memberCountQueryState =
+      queryClient.getQueryState<MembersResponseType>(memberCountQueryKey);
+    const memberCountData = memberCountQueryState?.data;
+    const cachedPagination = memberCountData?.meta?.pagination;
 
-        // Only update the count query if it already exists.
-        if (!memberCountQueryState || !memberCountData || !cachedPagination) {
-            return;
-        }
+    // Only update the count query if it already exists.
+    if (!memberCountQueryState || !memberCountData || !cachedPagination) {
+      return;
+    }
 
-        const sidebarCountMatchesList = cachedPagination.total === listTotal;
-        // A more recent dedicated count fetch wins over an older list read.
-        const listIsAtLeastAsFresh = memberCountQueryState.dataUpdatedAt <= result.dataUpdatedAt;
+    const sidebarCountMatchesList = cachedPagination.total === listTotal;
+    // A more recent dedicated count fetch wins over an older list read.
+    const listIsAtLeastAsFresh = memberCountQueryState.dataUpdatedAt <= result.dataUpdatedAt;
 
-        if (sidebarCountMatchesList || !listIsAtLeastAsFresh) {
-            return;
-        }
+    if (sidebarCountMatchesList || !listIsAtLeastAsFresh) {
+      return;
+    }
 
-        // Only `total` is read from the count query (via useMemberCount), so we patch just that and
-        // leave the rest of the pagination block untouched rather than synthesise values nobody reads.
-        // Stamp the entry with the list's fetch time so a genuinely newer count fetch still wins later.
-        queryClient.setQueryData<MembersResponseType>(memberCountQueryKey, {
-            ...memberCountData,
-            meta: {
-                ...memberCountData.meta,
-                pagination: {
-                    ...cachedPagination,
-                    total: listTotal
-                }
-            }
-        }, {updatedAt: result.dataUpdatedAt});
-    }, [queryClient, listIsUnfiltered, listTotal, result.dataUpdatedAt, result.isError, result.isPlaceholderData]);
+    // Only `total` is read from the count query (via useMemberCount), so we patch just that and
+    // leave the rest of the pagination block untouched rather than synthesise values nobody reads.
+    // Stamp the entry with the list's fetch time so a genuinely newer count fetch still wins later.
+    queryClient.setQueryData<MembersResponseType>(
+      memberCountQueryKey,
+      {
+        ...memberCountData,
+        meta: {
+          ...memberCountData.meta,
+          pagination: {
+            ...cachedPagination,
+            total: listTotal,
+          },
+        },
+      },
+      { updatedAt: result.dataUpdatedAt },
+    );
+  }, [
+    queryClient,
+    listIsUnfiltered,
+    listTotal,
+    result.dataUpdatedAt,
+    result.isError,
+    result.isPlaceholderData,
+  ]);
 }
 
-export function useBrowseMembersInfinite(options: BrowseMembersInfiniteOptions = {}): BrowseMembersInfiniteResult {
-    const result = useBrowseMembersInfiniteQuery(options);
+export function useBrowseMembersInfinite(
+  options: BrowseMembersInfiniteOptions = {},
+): BrowseMembersInfiniteResult {
+  const result = useBrowseMembersInfiniteQuery(options);
 
-    useSyncMemberCountFromList(result, options.searchParams);
+  useSyncMemberCountFromList(result, options.searchParams);
 
-    return result;
+  return result;
 }
 
 // Bulk operations
 export interface BulkEditAction {
-    type: 'addLabel' | 'removeLabel' | 'unsubscribe';
-    meta?: {
-        label?: {id: string};
-    };
-    newsletter?: string | null;
+  type: 'addLabel' | 'removeLabel' | 'unsubscribe';
+  meta?: {
+    label?: { id: string };
+  };
+  newsletter?: string | null;
 }
 
 export interface BulkOperationResponseType {
-    meta: {
-        stats: {
-            successful: number;
-            unsuccessful: number;
-        };
-        unsuccessfulIds?: string[];
-        errors?: Array<{id?: string; message: string}>;
+  meta: {
+    stats: {
+      successful: number;
+      unsuccessful: number;
     };
+    unsuccessfulIds?: string[];
+    errors?: Array<{ id?: string; message: string }>;
+  };
 }
 
-function buildBulkMemberSearchParams({filter, search, all}: {filter?: string; search?: string; all?: boolean}) {
-    if (!all && !filter && !search) {
-        throw new Error('Bulk operation requires a filter, search, or all flag');
-    }
+function buildBulkMemberSearchParams({
+  filter,
+  search,
+  all,
+}: {
+  filter?: string;
+  search?: string;
+  all?: boolean;
+}) {
+  if (!all && !filter && !search) {
+    throw new Error('Bulk operation requires a filter, search, or all flag');
+  }
 
-    const params: Record<string, string> = {};
+  const params: Record<string, string> = {};
 
-    if (all) {
-        params.all = 'true';
-    }
+  if (all) {
+    params.all = 'true';
+  }
 
-    if (filter) {
-        params.filter = filter;
-    }
+  if (filter) {
+    params.filter = filter;
+  }
 
-    if (search) {
-        params.search = search;
-    }
+  if (search) {
+    params.search = search;
+  }
 
-    return params;
+  return params;
 }
 
 export const useBulkEditMembers = createMutation<
-    BulkOperationResponseType,
-    {filter?: string; search?: string; all?: boolean; action: BulkEditAction}
+  BulkOperationResponseType,
+  { filter?: string; search?: string; all?: boolean; action: BulkEditAction }
 >({
-    method: 'PUT',
-    path: () => '/members/bulk/',
-    body: ({action}) => ({
-        bulk: {
-            action: action.type,
-            meta: action.meta || {},
-            newsletter: action.newsletter
-        }
-    }),
-    searchParams: buildBulkMemberSearchParams,
-    invalidateQueries: {dataType}
+  method: 'PUT',
+  path: () => '/members/bulk/',
+  body: ({ action }) => ({
+    bulk: {
+      action: action.type,
+      meta: action.meta || {},
+      newsletter: action.newsletter,
+    },
+  }),
+  searchParams: buildBulkMemberSearchParams,
+  invalidateQueries: { dataType },
 });
 
 export const useBulkDeleteMembers = createMutation<
-    BulkOperationResponseType,
-    {filter?: string; search?: string; all?: boolean}
+  BulkOperationResponseType,
+  { filter?: string; search?: string; all?: boolean }
 >({
-    method: 'DELETE',
-    path: () => '/members/',
-    searchParams: buildBulkMemberSearchParams,
-    invalidateQueries: {dataType}
+  method: 'DELETE',
+  path: () => '/members/',
+  searchParams: buildBulkMemberSearchParams,
+  invalidateQueries: { dataType },
 });
 
 // -----------------------------------------------------------------------------
@@ -501,59 +535,59 @@ export const useBulkDeleteMembers = createMutation<
 // a shorter list removes the omitted comp tiers. `include=tiers` mirrors the
 // Ember save so the response carries the refreshed tier list.
 export interface EditMemberData {
-    id: string;
-    name?: string;
-    email?: string;
-    note?: string | null;
-    subscribed?: boolean;
-    labels?: Array<{name: string; slug?: string}>;
-    newsletters?: Array<{id: string}>;
-    tiers?: Array<{id: string; expiry_at?: string | null}>;
-    // Merge semantics: only the keys present are written; `null` clears a
-    // value. The value union is derived from the shared schemas, so a field type
-    // added there is writable here without this line being edited. Requires the
-    // `membersCustomFields` flag server-side.
-    custom_fields?: Record<string, FieldValue | null>;
+  id: string;
+  name?: string;
+  email?: string;
+  note?: string | null;
+  subscribed?: boolean;
+  labels?: Array<{ name: string; slug?: string }>;
+  newsletters?: Array<{ id: string }>;
+  tiers?: Array<{ id: string; expiry_at?: string | null }>;
+  // Merge semantics: only the keys present are written; `null` clears a
+  // value. The value union is derived from the shared schemas, so a field type
+  // added there is writable here without this line being edited. Requires the
+  // `membersCustomFields` flag server-side.
+  custom_fields?: Record<string, FieldValue | null>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
-    method: 'PUT',
-    path: ({id}) => `/members/${id}/`,
-    // `custom_fields` is asked back only when the payload writes it, so the
-    // request stays valid on sites where the flag (and the include) is off.
-    searchParams: payload => ({include: payload.custom_fields ? 'tiers,custom_fields' : 'tiers'}),
-    body: ({id, ...rest}) => ({members: [{id, ...rest}]}),
-    invalidateQueries: {dataType}
+  method: 'PUT',
+  path: ({ id }) => `/members/${id}/`,
+  // `custom_fields` is asked back only when the payload writes it, so the
+  // request stays valid on sites where the flag (and the include) is off.
+  searchParams: (payload) => ({ include: payload.custom_fields ? 'tiers,custom_fields' : 'tiers' }),
+  body: ({ id, ...rest }) => ({ members: [{ id, ...rest }] }),
+  invalidateQueries: { dataType },
 });
 
-export const useDeleteMember = createMutation<void, {id: string; cancel?: boolean}>({
-    method: 'DELETE',
-    path: ({id}) => `/members/${id}/`,
-    searchParams: ({cancel}) => ({cancel: cancel ? 'true' : 'false'}),
-    invalidateQueries: {dataType}
+export const useDeleteMember = createMutation<void, { id: string; cancel?: boolean }>({
+  method: 'DELETE',
+  path: ({ id }) => `/members/${id}/`,
+  searchParams: ({ cancel }) => ({ cancel: cancel ? 'true' : 'false' }),
+  invalidateQueries: { dataType },
 });
 
 export interface MemberSigninUrlResponseType {
-    member_id: string;
-    url: string;
+  member_id: string;
+  url: string;
 }
 
 // The Admin API wraps the controller payload in the `member_signin_urls` array
 // envelope (see `member-signin-urls.js` + framework serializer). Unwrap here so
 // consumers get the flat `{member_id, url}` object they actually want.
 export const getMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
-    dataType: 'MemberSigninUrlResponseType',
-    path: id => `/members/${id}/signin_urls/`,
-    returnData: (originalData) => {
-        const envelope = originalData as {member_signin_urls?: MemberSigninUrlResponseType[]};
-        return envelope.member_signin_urls?.[0] ?? {member_id: '', url: ''};
-    }
+  dataType: 'MemberSigninUrlResponseType',
+  path: (id) => `/members/${id}/signin_urls/`,
+  returnData: (originalData) => {
+    const envelope = originalData as { member_signin_urls?: MemberSigninUrlResponseType[] };
+    return envelope.member_signin_urls?.[0] ?? { member_id: '', url: '' };
+  },
 });
 
-export const useMemberLogout = createMutation<void, {id: string}>({
-    method: 'DELETE',
-    path: ({id}) => `/members/${id}/sessions/`,
-    invalidateQueries: {dataType}
+export const useMemberLogout = createMutation<void, { id: string }>({
+  method: 'DELETE',
+  path: ({ id }) => `/members/${id}/sessions/`,
+  invalidateQueries: { dataType },
 });
 
 // cancel_at_period_end true=cancel / false=continue; status:'canceled' is used by
@@ -562,27 +596,30 @@ export const useMemberLogout = createMutation<void, {id: string}>({
 // you're hard-canceling. A discriminated union prevents callers from accidentally
 // setting both at once (which the request body would silently send together).
 interface EditMemberSubscriptionBase {
-    memberId: string;
-    subscriptionId: string;
+  memberId: string;
+  subscriptionId: string;
 }
 export type EditMemberSubscriptionData =
-    | (EditMemberSubscriptionBase & {cancelAtPeriodEnd: boolean; status?: undefined})
-    | (EditMemberSubscriptionBase & {status: 'canceled'; cancelAtPeriodEnd?: undefined});
+  | (EditMemberSubscriptionBase & { cancelAtPeriodEnd: boolean; status?: undefined })
+  | (EditMemberSubscriptionBase & { status: 'canceled'; cancelAtPeriodEnd?: undefined });
 
-export const useEditMemberSubscription = createMutation<MembersResponseType, EditMemberSubscriptionData>({
-    method: 'PUT',
-    path: ({memberId, subscriptionId}) => `/members/${memberId}/subscriptions/${subscriptionId}/`,
-    body: ({cancelAtPeriodEnd, status}) => ({
-        ...(cancelAtPeriodEnd !== undefined ? {cancel_at_period_end: cancelAtPeriodEnd} : {}),
-        ...(status ? {status} : {})
-    }),
-    invalidateQueries: {dataType}
+export const useEditMemberSubscription = createMutation<
+  MembersResponseType,
+  EditMemberSubscriptionData
+>({
+  method: 'PUT',
+  path: ({ memberId, subscriptionId }) => `/members/${memberId}/subscriptions/${subscriptionId}/`,
+  body: ({ cancelAtPeriodEnd, status }) => ({
+    ...(cancelAtPeriodEnd !== undefined ? { cancel_at_period_end: cancelAtPeriodEnd } : {}),
+    ...(status ? { status } : {}),
+  }),
+  invalidateQueries: { dataType },
 });
 
-export const useRemoveMemberEmailSuppression = createMutation<void, {id: string}>({
-    method: 'DELETE',
-    path: ({id}) => `/members/${id}/suppression/`,
-    invalidateQueries: {dataType}
+export const useRemoveMemberEmailSuppression = createMutation<void, { id: string }>({
+  method: 'DELETE',
+  path: ({ id }) => `/members/${id}/suppression/`,
+  invalidateQueries: { dataType },
 });
 
 // -----------------------------------------------------------------------------
@@ -590,32 +627,32 @@ export const useRemoveMemberEmailSuppression = createMutation<void, {id: string}
 // -----------------------------------------------------------------------------
 
 export interface MemberActivityEventMember {
-    id: string;
-    uuid: string;
-    name: string | null;
-    email: string;
-    avatar_image: string | null;
+  id: string;
+  uuid: string;
+  name: string | null;
+  email: string;
+  avatar_image: string | null;
 }
 
 // The feed returns heterogeneous event types (signup, subscription, email,
 // click, comment, feedback, …); `data` is narrowed per-type at the render layer.
 // `data.created_at` is the pagination cursor field and is present on every event.
 export interface MemberActivityEvent {
-    type: string;
-    data: {
-        created_at?: string;
-        member?: MemberActivityEventMember | null;
-        [key: string]: unknown;
-    };
+  type: string;
+  data: {
+    created_at?: string;
+    member?: MemberActivityEventMember | null;
+    [key: string]: unknown;
+  };
 }
 
 export interface MemberActivityFeedResponseType {
-    events: MemberActivityEvent[];
-    meta?: Meta;
+  events: MemberActivityEvent[];
+  meta?: Meta;
 }
 
 export interface MemberActivityFeedInfiniteResponseType extends MemberActivityFeedResponseType {
-    isEnd: boolean;
+  isEnd: boolean;
 }
 
 const MEMBER_ACTIVITY_LIMIT = '20';
@@ -631,59 +668,63 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // never calls `fetchNextPage`, so this is not exploitable today; add an id
 // secondary cursor before another screen starts paginating.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
-    const createdAt = events[events.length - 1]?.data?.created_at;
-    if (!createdAt) {
-        return undefined;
-    }
-    return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
+  const createdAt = events[events.length - 1]?.data?.created_at;
+  if (!createdAt) {
+    return undefined;
+  }
+  return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
 }
 
 function buildMemberEventsFilter(memberId: string): string {
-    return `data.member_id:'${memberId}'`;
+  return `data.member_id:'${memberId}'`;
 }
 
 const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
-    dataType: 'MemberActivityFeedResponseType',
-    path: '/members/events/',
-    defaultSearchParams: {limit: MEMBER_ACTIVITY_LIMIT},
-    defaultNextPageParams: (lastPage, otherParams) => {
-        const limit = Number(otherParams.limit ?? MEMBER_ACTIVITY_LIMIT);
-        const cursor = memberEventsCursor(lastPage.events);
-        // Stop when the last page wasn't full or we can't advance the cursor.
-        if (!cursor || lastPage.events.length < limit) {
-            return undefined;
-        }
-        // otherParams.filter is the base member filter (no cursor) — rebuild with it.
-        return {
-            ...otherParams,
-            filter: `data.created_at:<'${cursor}'+${otherParams.filter ?? ''}`
-        };
-    },
-    returnData: (originalData) => {
-        const {pages} = originalData as InfiniteData<MemberActivityFeedResponseType>;
-        const events = pages.flatMap(page => page.events);
-        const lastPage = pages[pages.length - 1];
-        // Use the actual page limit echoed back in the server-side pagination
-        // meta so callers that override the default (e.g. `useMemberActivityFeed`
-        // passes `limit: '5'` for the sidebar preview) don't get a premature
-        // `isEnd=true` on a full page of results.
-        const paginationLimit = lastPage?.meta?.pagination?.limit;
-        const effectiveLimit = typeof paginationLimit === 'number' ? paginationLimit : Number(MEMBER_ACTIVITY_LIMIT);
-        return {
-            events,
-            meta: lastPage?.meta,
-            isEnd: (lastPage?.events.length ?? 0) < effectiveLimit
-        };
+  dataType: 'MemberActivityFeedResponseType',
+  path: '/members/events/',
+  defaultSearchParams: { limit: MEMBER_ACTIVITY_LIMIT },
+  defaultNextPageParams: (lastPage, otherParams) => {
+    const limit = Number(otherParams.limit ?? MEMBER_ACTIVITY_LIMIT);
+    const cursor = memberEventsCursor(lastPage.events);
+    // Stop when the last page wasn't full or we can't advance the cursor.
+    if (!cursor || lastPage.events.length < limit) {
+      return undefined;
     }
+    // otherParams.filter is the base member filter (no cursor) — rebuild with it.
+    return {
+      ...otherParams,
+      filter: `data.created_at:<'${cursor}'+${otherParams.filter ?? ''}`,
+    };
+  },
+  returnData: (originalData) => {
+    const { pages } = originalData as InfiniteData<MemberActivityFeedResponseType>;
+    const events = pages.flatMap((page) => page.events);
+    const lastPage = pages[pages.length - 1];
+    // Use the actual page limit echoed back in the server-side pagination
+    // meta so callers that override the default (e.g. `useMemberActivityFeed`
+    // passes `limit: '5'` for the sidebar preview) don't get a premature
+    // `isEnd=true` on a full page of results.
+    const paginationLimit = lastPage?.meta?.pagination?.limit;
+    const effectiveLimit =
+      typeof paginationLimit === 'number' ? paginationLimit : Number(MEMBER_ACTIVITY_LIMIT);
+    return {
+      events,
+      meta: lastPage?.meta,
+      isEnd: (lastPage?.events.length ?? 0) < effectiveLimit,
+    };
+  },
 });
 
-export function useMemberActivityFeed(memberId: string, options: {enabled?: boolean; limit?: string} = {}) {
-    const {limit = MEMBER_ACTIVITY_LIMIT, enabled} = options;
-    return useMemberActivityFeedQuery({
-        searchParams: {
-            filter: buildMemberEventsFilter(memberId),
-            limit
-        },
-        ...(enabled !== undefined ? {enabled} : {})
-    });
+export function useMemberActivityFeed(
+  memberId: string,
+  options: { enabled?: boolean; limit?: string } = {},
+) {
+  const { limit = MEMBER_ACTIVITY_LIMIT, enabled } = options;
+  return useMemberActivityFeedQuery({
+    searchParams: {
+      filter: buildMemberEventsFilter(memberId),
+      limit,
+    },
+    ...(enabled !== undefined ? { enabled } : {}),
+  });
 }

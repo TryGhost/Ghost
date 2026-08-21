@@ -1,26 +1,26 @@
-import {EventProcessingResult} from './event-processing-result';
+import { EventProcessingResult } from './event-processing-result';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
-import type {BatchEventProcessor} from './batch-event-processor';
-import type {Queries} from './lib/queries';
+import type { BatchEventProcessor } from './batch-event-processor';
+import type { Queries } from './lib/queries';
 
 /**
  * Data stored for the progress of a fetch operation.
  */
 export type FetchData = {
-    running: boolean;
-    /** Name of the job that is running */
-    jobName: string;
-    /** Date the last fetch started on */
-    lastStarted?: Date;
-    /** The begin time used during the last fetch */
-    lastBegin?: Date;
-    lastEventTimestamp?: Date;
-    /** Set to quit the job early */
-    canceled?: boolean;
+  running: boolean;
+  /** Name of the job that is running */
+  jobName: string;
+  /** Date the last fetch started on */
+  lastStarted?: Date;
+  /** The begin time used during the last fetch */
+  lastBegin?: Date;
+  lastEventTimestamp?: Date;
+  /** Set to quit the job early */
+  canceled?: boolean;
 };
 
-type FetchDataScheduled = FetchData & {schedule?: {begin: Date; end: Date}};
+type FetchDataScheduled = FetchData & { schedule?: { begin: Date; end: Date } };
 
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained';
 
@@ -29,10 +29,10 @@ type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed' | 'unsubscribed' | 
  * cursors don't overwrite each other in the jobs table.
  */
 export type JobNames = {
-    latestNonOpened: string;
-    missing: string;
-    latestOpened: string;
-    scheduled: string;
+  latestNonOpened: string;
+  missing: string;
+  latestOpened: string;
+  scheduled: string;
 };
 
 /**
@@ -41,34 +41,33 @@ export type JobNames = {
  *
  */
 export type CursorSeed = {
-    tableName: string;
-    eventColumns: Partial<Record<EmailAnalyticsEvent, string>>;
+  tableName: string;
+  eventColumns: Partial<Record<EmailAnalyticsEvent, string>>;
 };
 
 export type EmailAnalyticsFetchResult = {
-    /** The number of events fetched */
-    eventCount: number;
-    /** Time spent polling the API in milliseconds */
-    apiPollingTimeMs: number;
-    /** Time spent processing events in milliseconds */
-    processingTimeMs: number;
-    /** Time spent aggregating stats in milliseconds */
-    aggregationTimeMs: number;
-    /** Time spent aggregating email stats in milliseconds */
-    emailAggregationTimeMs: number;
-    /** Time spent aggregating member stats in milliseconds */
-    memberAggregationTimeMs: number;
-    /** The processing result with event breakdown */
-    result: EventProcessingResult;
+  /** The number of events fetched */
+  eventCount: number;
+  /** Time spent polling the API in milliseconds */
+  apiPollingTimeMs: number;
+  /** Time spent processing events in milliseconds */
+  processingTimeMs: number;
+  /** Time spent aggregating stats in milliseconds */
+  aggregationTimeMs: number;
+  /** Time spent aggregating email stats in milliseconds */
+  emailAggregationTimeMs: number;
+  /** Time spent aggregating member stats in milliseconds */
+  memberAggregationTimeMs: number;
+  /** The processing result with event breakdown */
+  result: EventProcessingResult;
 };
 
-
 type FetchEvents = (options: {
-    batchHandler: (events: any[]) => Promise<void>;
-    begin: Date;
-    end: Date;
-    maxEvents: number;
-    events?: EmailAnalyticsEvent[];
+  batchHandler: (events: any[]) => Promise<void>;
+  begin: Date;
+  end: Date;
+  maxEvents: number;
+  events?: EmailAnalyticsEvent[];
 }) => Promise<void>;
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
@@ -79,427 +78,538 @@ const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer t
  * @returns {EmailAnalyticsFetchResult}
  */
 function createEmptyResult(): EmailAnalyticsFetchResult {
-    return {
-        eventCount: 0,
-        apiPollingTimeMs: 0,
-        processingTimeMs: 0,
-        aggregationTimeMs: 0,
-        emailAggregationTimeMs: 0,
-        memberAggregationTimeMs: 0,
-        result: new EventProcessingResult()
-    };
+  return {
+    eventCount: 0,
+    apiPollingTimeMs: 0,
+    processingTimeMs: 0,
+    aggregationTimeMs: 0,
+    emailAggregationTimeMs: 0,
+    memberAggregationTimeMs: 0,
+    result: new EventProcessingResult(),
+  };
 }
 
 export class EmailAnalyticsService {
+  queries: Queries;
+  #fetchEvents: FetchEvents;
+  #createEventProcessor: () => BatchEventProcessor;
+
+  #jobNames: JobNames;
+  #cursorSeed: CursorSeed;
+
+  #fetchLatestNonOpenedData: FetchData;
+  #fetchMissingData: FetchData;
+  #fetchLatestOpenedData: FetchData;
+  #fetchScheduledData: FetchDataScheduled;
+
+  constructor({
+    queries,
+    fetchEvents,
+    createEventProcessor,
+    jobNames,
+    cursorSeed,
+  }: {
     queries: Queries;
-    #fetchEvents: FetchEvents;
-    #createEventProcessor: () => BatchEventProcessor;
+    fetchEvents: FetchEvents;
+    createEventProcessor: () => BatchEventProcessor;
+    jobNames: JobNames;
+    cursorSeed: CursorSeed;
+  }) {
+    this.queries = queries;
+    this.#fetchEvents = fetchEvents;
+    this.#createEventProcessor = createEventProcessor;
+    this.#jobNames = jobNames;
+    this.#cursorSeed = cursorSeed;
 
-    #jobNames: JobNames;
-    #cursorSeed: CursorSeed;
+    this.#fetchLatestNonOpenedData = {
+      running: false,
+      jobName: jobNames.latestNonOpened,
+    };
+    this.#fetchMissingData = {
+      running: false,
+      jobName: jobNames.missing,
+    };
+    this.#fetchLatestOpenedData = {
+      running: false,
+      jobName: jobNames.latestOpened,
+    };
+    this.#fetchScheduledData = {
+      running: false,
+      jobName: jobNames.scheduled,
+    };
+  }
 
-    #fetchLatestNonOpenedData: FetchData;
-    #fetchMissingData: FetchData;
-    #fetchLatestOpenedData: FetchData;
-    #fetchScheduledData: FetchDataScheduled;
+  #clearScheduledData() {
+    this.#fetchScheduledData = {
+      running: false,
+      jobName: this.#jobNames.scheduled,
+    };
+    this.queries.setJobMetadata(this.#jobNames.scheduled, null);
+  }
 
-    constructor({queries, fetchEvents, createEventProcessor, jobNames, cursorSeed}: {
-        queries: Queries;
-        fetchEvents: FetchEvents;
-        createEventProcessor: () => BatchEventProcessor;
-        jobNames: JobNames;
-        cursorSeed: CursorSeed;
-    }) {
-        this.queries = queries;
-        this.#fetchEvents = fetchEvents;
-        this.#createEventProcessor = createEventProcessor;
-        this.#jobNames = jobNames;
-        this.#cursorSeed = cursorSeed;
+  getStatus() {
+    return {
+      latest: this.#fetchLatestNonOpenedData,
+      missing: this.#fetchMissingData,
+      scheduled: this.#fetchScheduledData,
+      latestOpened: this.#fetchLatestOpenedData,
+    };
+  }
 
-        this.#fetchLatestNonOpenedData = {
-            running: false,
-            jobName: jobNames.latestNonOpened
-        };
-        this.#fetchMissingData = {
-            running: false,
-            jobName: jobNames.missing
-        };
-        this.#fetchLatestOpenedData = {
-            running: false,
-            jobName: jobNames.latestOpened
-        };
-        this.#fetchScheduledData = {
-            running: false,
-            jobName: jobNames.scheduled
-        };
+  /**
+   * Returns the timestamp of the last non-opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
+   */
+  async getLastNonOpenedEventTimestamp() {
+    return (
+      this.#fetchLatestNonOpenedData?.lastEventTimestamp ??
+      (await this.queries.getLastEventTimestamp(
+        this.#fetchLatestNonOpenedData.jobName,
+        ['delivered', 'failed'],
+        this.#cursorSeed,
+      )) ??
+      new Date(Date.now() - TRUST_THRESHOLD_MS)
+    );
+  }
+
+  /**
+   * Returns the timestamp of the last opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
+   */
+  async getLastOpenedEventTimestamp() {
+    return (
+      this.#fetchLatestOpenedData?.lastEventTimestamp ??
+      (await this.queries.getLastEventTimestamp(
+        this.#fetchLatestOpenedData.jobName,
+        ['opened'],
+        this.#cursorSeed,
+      )) ??
+      new Date(Date.now() - TRUST_THRESHOLD_MS)
+    );
+  }
+
+  /**
+   * Returns the timestamp of the last missing event we processed. Defaults to now minus 2h if we have no data yet.
+   */
+  async getLastMissingEventTimestamp() {
+    return (
+      this.#fetchMissingData?.lastEventTimestamp ??
+      (await this.queries.getLastJobRunTimestamp(this.#fetchMissingData.jobName)) ??
+      new Date(Date.now() - TRUST_THRESHOLD_MS * 4)
+    );
+  }
+
+  /**
+   * Fetches the latest opened events.
+   */
+  async fetchLatestOpenedEvents({
+    maxEvents = Infinity,
+  }: { maxEvents?: number } = {}): Promise<EmailAnalyticsFetchResult> {
+    const begin = await this.getLastOpenedEventTimestamp();
+    const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
+
+    if (end <= begin) {
+      // Skip for now
+      logging.info(
+        '[EmailAnalytics] Skipping fetchLatestOpenedEvents because end (' +
+          end +
+          ') is before begin (' +
+          begin +
+          ')',
+      );
+      return createEmptyResult();
     }
 
-    #clearScheduledData() {
-        this.#fetchScheduledData = {
-            running: false,
-            jobName: this.#jobNames.scheduled
-        };
+    return await this.#fetchEventsForJob(this.#fetchLatestOpenedData, {
+      begin,
+      end,
+      maxEvents,
+      eventTypes: ['opened'],
+    });
+  }
+
+  /**
+   * Fetches the latest non-opened events.
+   */
+  async fetchLatestNonOpenedEvents({
+    maxEvents = Infinity,
+  }: { maxEvents?: number } = {}): Promise<EmailAnalyticsFetchResult> {
+    const begin = await this.getLastNonOpenedEventTimestamp();
+    const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
+
+    if (end <= begin) {
+      // Skip for now
+      logging.info(
+        '[EmailAnalytics] Skipping fetchLatestNonOpenedEvents because end (' +
+          end +
+          ') is before begin (' +
+          begin +
+          ')',
+      );
+      return createEmptyResult();
+    }
+
+    return await this.#fetchEventsForJob(this.#fetchLatestNonOpenedData, {
+      begin,
+      end,
+      maxEvents,
+      eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained'],
+    });
+  }
+
+  /**
+   * Fetches events that are older than 30 minutes, because then the 'storage' of the Mailgun API is stable. And we are sure we don't miss any events.
+   * @param [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+   */
+  async fetchMissing({
+    maxEvents = Infinity,
+  }: { maxEvents?: number } = {}): Promise<EmailAnalyticsFetchResult> {
+    const begin = await this.getLastMissingEventTimestamp();
+
+    // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
+    const end = new Date(
+      Math.min(
+        Date.now() - TRUST_THRESHOLD_MS,
+        this.#fetchLatestNonOpenedData?.lastBegin?.getTime() || Date.now(), // Fallback to now if the previous job didn't run, for whatever reason, prevents catastrophic error
+      ),
+    );
+
+    if (end <= begin) {
+      // Skip for now
+      logging.info(
+        '[EmailAnalytics] Skipping fetchMissing because end (' +
+          end +
+          ') is before begin (' +
+          begin +
+          ')',
+      );
+      return createEmptyResult();
+    }
+
+    return await this.#fetchEventsForJob(this.#fetchMissingData, { begin, end, maxEvents });
+  }
+
+  /**
+   * Schedule a new fetch for email analytics events.
+   * @throws {errors.ValidationError} Throws an error if a fetch is already in progress.
+   */
+  async schedule({ begin, end }: { begin: Date; end: Date }): Promise<void> {
+    if (this.#fetchScheduledData && this.#fetchScheduledData.running) {
+      throw new errors.ValidationError({
+        message:
+          'Already fetching scheduled events. Wait for it to finish before scheduling a new one.',
+      });
+    }
+    logging.info(
+      '[EmailAnalytics] Scheduling fetch from ' +
+        begin.toISOString() +
+        ' until ' +
+        end.toISOString(),
+    );
+    this.#fetchScheduledData = {
+      running: false,
+      jobName: this.#jobNames.scheduled,
+      schedule: {
+        begin,
+        end,
+      },
+    };
+    await this.queries.setJobMetadata(this.#jobNames.scheduled, {
+      begin: begin.toISOString(),
+      end: end.toISOString(),
+    });
+  }
+
+  /**
+   * Cancels the scheduled fetch of email analytics events.
+   * If a fetch is currently running, it marks it for cancellation.
+   * If no fetch is running, it clears the scheduled fetch data.
+   */
+  cancelScheduled() {
+    if (this.#fetchScheduledData) {
+      if (this.#fetchScheduledData.running) {
+        this.#fetchScheduledData.canceled = true;
+        // Clear metadata eagerly; fetchScheduled() will clear in-memory state next cycle
         this.queries.setJobMetadata(this.#jobNames.scheduled, null);
+      } else {
+        this.#clearScheduledData();
+      }
     }
+  }
 
-    getStatus() {
-        return {
-            latest: this.#fetchLatestNonOpenedData,
-            missing: this.#fetchMissingData,
-            scheduled: this.#fetchScheduledData,
-            latestOpened: this.#fetchLatestOpenedData
-        };
-    }
+  /**
+   * Restores a previously persisted scheduled fetch from the database.
+   * Must only be called once on startup (caller guards against repeated calls).
+   */
+  async restoreScheduled() {
+    try {
+      const jobData = await this.queries.getJobData(this.#jobNames.scheduled);
+      if (!jobData) {
+        return;
+      }
 
-    /**
-     * Returns the timestamp of the last non-opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
-     */
-    async getLastNonOpenedEventTimestamp() {
-        return this.#fetchLatestNonOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(this.#fetchLatestNonOpenedData.jobName, ['delivered', 'failed'], this.#cursorSeed)) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
-    }
+      const { metadata } = jobData;
+      if (metadata.begin && metadata.end) {
+        const begin = new Date(metadata.begin);
+        const end = new Date(metadata.end);
 
-    /**
-     * Returns the timestamp of the last opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
-     */
-    async getLastOpenedEventTimestamp() {
-        return this.#fetchLatestOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(this.#fetchLatestOpenedData.jobName, ['opened'], this.#cursorSeed)) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
-    }
-
-    /**
-     * Returns the timestamp of the last missing event we processed. Defaults to now minus 2h if we have no data yet.
-     */
-    async getLastMissingEventTimestamp() {
-        return this.#fetchMissingData?.lastEventTimestamp ?? (await this.queries.getLastJobRunTimestamp(this.#fetchMissingData.jobName)) ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 4);
-    }
-
-    /**
-     * Fetches the latest opened events.
-     */
-    async fetchLatestOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
-        const begin = await this.getLastOpenedEventTimestamp();
-        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
-
-        if (end <= begin) {
-            // Skip for now
-            logging.info('[EmailAnalytics] Skipping fetchLatestOpenedEvents because end (' + end + ') is before begin (' + begin + ')');
-            return createEmptyResult();
-        }
-
-        return await this.#fetchEventsForJob(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
-    }
-
-    /**
-     * Fetches the latest non-opened events.
-     */
-    async fetchLatestNonOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
-        const begin = await this.getLastNonOpenedEventTimestamp();
-        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
-
-        if (end <= begin) {
-            // Skip for now
-            logging.info('[EmailAnalytics] Skipping fetchLatestNonOpenedEvents because end (' + end + ') is before begin (' + begin + ')');
-            return createEmptyResult();
-        }
-
-        return await this.#fetchEventsForJob(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
-    }
-
-    /**
-     * Fetches events that are older than 30 minutes, because then the 'storage' of the Mailgun API is stable. And we are sure we don't miss any events.
-     * @param [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-     */
-    async fetchMissing({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
-        const begin = await this.getLastMissingEventTimestamp();
-
-        // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
-        const end = new Date(
-            Math.min(
-                Date.now() - TRUST_THRESHOLD_MS,
-                this.#fetchLatestNonOpenedData?.lastBegin?.getTime() || Date.now() // Fallback to now if the previous job didn't run, for whatever reason, prevents catastrophic error
-            )
-        );
-
-        if (end <= begin) {
-            // Skip for now
-            logging.info('[EmailAnalytics] Skipping fetchMissing because end (' + end + ') is before begin (' + begin + ')');
-            return createEmptyResult();
-        }
-
-        return await this.#fetchEventsForJob(this.#fetchMissingData, {begin, end, maxEvents});
-    }
-
-    /**
-     * Schedule a new fetch for email analytics events.
-     * @throws {errors.ValidationError} Throws an error if a fetch is already in progress.
-     */
-    async schedule({begin, end}: {begin: Date; end: Date}): Promise<void> {
-        if (this.#fetchScheduledData && this.#fetchScheduledData.running) {
-            throw new errors.ValidationError({
-                message: 'Already fetching scheduled events. Wait for it to finish before scheduling a new one.'
-            });
-        }
-        logging.info('[EmailAnalytics] Scheduling fetch from ' + begin.toISOString() + ' until ' + end.toISOString());
         this.#fetchScheduledData = {
-            running: false,
-            jobName: this.#jobNames.scheduled,
-            schedule: {
-                begin,
-                end
-            }
+          running: false,
+          jobName: this.#jobNames.scheduled,
+          schedule: { begin, end },
         };
-        await this.queries.setJobMetadata(this.#jobNames.scheduled, {
-            begin: begin.toISOString(),
-            end: end.toISOString()
+
+        // Use finished_at as the resume cursor if available
+        if (jobData.finished_at) {
+          this.#fetchScheduledData.lastEventTimestamp = new Date(jobData.finished_at);
+        }
+
+        logging.info(
+          '[EmailAnalytics] Restored scheduled fetch: ' +
+            begin.toISOString() +
+            ' to ' +
+            end.toISOString(),
+        );
+      }
+    } catch (e) {
+      logging.error('[EmailAnalytics] Failed to restore scheduled fetch', e);
+    }
+  }
+
+  /**
+   * Continues fetching the scheduled events (does not start one). Resets the scheduled event when received 0 events.
+   */
+  async fetchScheduled({
+    maxEvents = Infinity,
+  }: { maxEvents?: number } = {}): Promise<EmailAnalyticsFetchResult> {
+    if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
+      // Nothing scheduled
+      return createEmptyResult();
+    }
+
+    if (this.#fetchScheduledData.canceled) {
+      this.#clearScheduledData();
+      return createEmptyResult();
+    }
+
+    let begin = this.#fetchScheduledData.schedule.begin;
+    const end = this.#fetchScheduledData.schedule.end;
+
+    if (
+      this.#fetchScheduledData.lastEventTimestamp &&
+      this.#fetchScheduledData.lastEventTimestamp > begin
+    ) {
+      // Continue where we left of
+      begin = this.#fetchScheduledData.lastEventTimestamp;
+    }
+
+    if (end <= begin) {
+      logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
+      this.#clearScheduledData();
+      return createEmptyResult();
+    }
+
+    const fetchResult = await this.#fetchEventsForJob(this.#fetchScheduledData, {
+      begin,
+      end,
+      maxEvents,
+    });
+    if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
+      this.#clearScheduledData();
+    }
+
+    this.queries.setJobTimestamp(
+      this.#fetchScheduledData.jobName,
+      'finished',
+      this.#fetchScheduledData.lastEventTimestamp!,
+    );
+    return fetchResult;
+  }
+  /**
+   * Start fetching analytics and store the data of the progress inside fetchData
+   * @param [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+   * @param [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
+   */
+  async #fetchEventsForJob(
+    fetchData: FetchData,
+    {
+      begin,
+      end,
+      maxEvents = Infinity,
+      eventTypes,
+    }: {
+      begin: Date;
+      end: Date;
+      maxEvents?: number;
+      eventTypes?: EmailAnalyticsEvent[];
+    },
+  ): Promise<EmailAnalyticsFetchResult> {
+    // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
+    // Store that we started fetching
+    fetchData.running = true;
+    fetchData.lastStarted = new Date();
+    fetchData.lastBegin = begin;
+    await this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
+
+    // Timing metrics
+    const fetchStartMs = Date.now();
+    let processingTimeMs = 0;
+    let aggregationTimeMs = 0;
+    let emailAggregationTimeMs = 0;
+    let memberAggregationTimeMs = 0;
+
+    let eventCount = 0;
+    const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
+
+    const eventProcessor = this.#createEventProcessor();
+
+    // We keep the processing result here, so we also have a result in case of failures
+    const processingResult = new EventProcessingResult();
+    // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
+    const cumulativeResult = new EventProcessingResult();
+    let error: unknown = null;
+
+    const aggregate = async (isFinal: boolean): Promise<void> => {
+      if (!eventProcessor.aggregate) {
+        return;
+      }
+      const start = Date.now();
+      const timings = await eventProcessor.aggregate({
+        includeOpenedEvents,
+        processingResult,
+        isFinal,
+      });
+      if (!timings) {
+        return;
+      }
+      aggregationTimeMs += Date.now() - start;
+      emailAggregationTimeMs += timings.emailAggregationTimeMs;
+      memberAggregationTimeMs += timings.memberAggregationTimeMs;
+    };
+
+    const processBatch = async (events: any[]): Promise<void> => {
+      // Even if the fetching is interrupted because of an error, we still store the last event timestamp
+      const processingStart = Date.now();
+      // Capture the state before processing to calculate delta
+      const beforeCounts = {
+        opened: processingResult.opened,
+        delivered: processingResult.delivered,
+        temporaryFailed: processingResult.temporaryFailed,
+        permanentFailed: processingResult.permanentFailed,
+        unsubscribed: processingResult.unsubscribed,
+        complained: processingResult.complained,
+        unhandled: processingResult.unhandled,
+        unprocessable: processingResult.unprocessable,
+      };
+      const beforeEmailIds = new Set(processingResult.emailIds);
+      const beforeMemberIds = new Set(processingResult.memberIds);
+
+      await eventProcessor.processBatch(events, processingResult, fetchData);
+      processingTimeMs += Date.now() - processingStart;
+      eventCount += events.length;
+
+      // Calculate delta (only new counts from this batch) and accumulate for final reporting
+      const batchDelta = new EventProcessingResult({
+        opened: processingResult.opened - beforeCounts.opened,
+        delivered: processingResult.delivered - beforeCounts.delivered,
+        temporaryFailed: processingResult.temporaryFailed - beforeCounts.temporaryFailed,
+        permanentFailed: processingResult.permanentFailed - beforeCounts.permanentFailed,
+        unsubscribed: processingResult.unsubscribed - beforeCounts.unsubscribed,
+        complained: processingResult.complained - beforeCounts.complained,
+        unhandled: processingResult.unhandled - beforeCounts.unhandled,
+        unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
+        emailIds: processingResult.emailIds.filter((id) => !beforeEmailIds.has(id)),
+        memberIds: processingResult.memberIds.filter((id) => !beforeMemberIds.has(id)),
+      });
+      cumulativeResult.merge(batchDelta);
+
+      // Offer the event processor a chance to aggregate mid-fetch.
+      try {
+        if (eventCount) {
+          await aggregate(false);
+        }
+      } catch (err) {
+        logging.error('[EmailAnalytics] Error while aggregating stats');
+        logging.error(err);
+      }
+
+      if (fetchData.canceled) {
+        throw new errors.InternalServerError({
+          message: 'Fetching canceled',
         });
+      }
+    };
+
+    try {
+      await this.#fetchEvents({
+        batchHandler: processBatch,
+        begin,
+        end,
+        maxEvents,
+        events: eventTypes,
+      });
+    } catch (err) {
+      if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
+        logging.error('[EmailAnalytics] Error while fetching');
+        logging.error(err);
+        error = err;
+      } else {
+        logging.error('[EmailAnalytics] Canceled fetching');
+      }
     }
 
-    /**
-     * Cancels the scheduled fetch of email analytics events.
-     * If a fetch is currently running, it marks it for cancellation.
-     * If no fetch is running, it clears the scheduled fetch data.
-     */
-    cancelScheduled() {
-        if (this.#fetchScheduledData) {
-            if (this.#fetchScheduledData.running) {
-                this.#fetchScheduledData.canceled = true;
-                // Clear metadata eagerly; fetchScheduled() will clear in-memory state next cycle
-                this.queries.setJobMetadata(this.#jobNames.scheduled, null);
-            } else {
-                this.#clearScheduledData();
-            }
-        }
+    // Final aggregation.
+    try {
+      await aggregate(true);
+    } catch (err) {
+      logging.error('[EmailAnalytics] Error while aggregating stats');
+      logging.error(err);
+
+      if (!error) {
+        error = err;
+      }
     }
 
-    /**
-     * Restores a previously persisted scheduled fetch from the database.
-     * Must only be called once on startup (caller guards against repeated calls).
-     */
-    async restoreScheduled() {
-        try {
-            const jobData = await this.queries.getJobData(this.#jobNames.scheduled);
-            if (!jobData) {
-                return;
-            }
-
-            const {metadata} = jobData;
-            if (metadata.begin && metadata.end) {
-                const begin = new Date(metadata.begin);
-                const end = new Date(metadata.end);
-
-                this.#fetchScheduledData = {
-                    running: false,
-                    jobName: this.#jobNames.scheduled,
-                    schedule: {begin, end}
-                };
-
-                // Use finished_at as the resume cursor if available
-                if (jobData.finished_at) {
-                    this.#fetchScheduledData.lastEventTimestamp = new Date(jobData.finished_at);
-                }
-
-                logging.info('[EmailAnalytics] Restored scheduled fetch: ' + begin.toISOString() + ' to ' + end.toISOString());
-            }
-        } catch (e) {
-            logging.error('[EmailAnalytics] Failed to restore scheduled fetch', e);
-        }
+    // When we've consumed all available events (eventCount < maxEvents), advance the cursor by 1 second
+    // to avoid re-fetching the same batch on the next cycle. When we hit the maxEvents budget mid-second,
+    // do NOT advance — the next pass needs to re-cover that second to pick up any remaining events.
+    if (
+      !error &&
+      eventCount > 0 &&
+      fetchData.lastEventTimestamp &&
+      fetchData.lastEventTimestamp.getTime() < Date.now() - 2000
+    ) {
+      // Persist cursor to DB so we can resume after reboot
+      await this.queries.setJobTimestamp(
+        fetchData.jobName,
+        'finished',
+        new Date(fetchData.lastEventTimestamp.getTime()),
+      );
+      if (eventCount < maxEvents) {
+        // Consumed everything in the window — advance to avoid re-fetching same batch
+        fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
+      }
+    } else {
+      await this.queries.setJobStatus(fetchData.jobName, 'finished');
     }
 
-    /**
-     * Continues fetching the scheduled events (does not start one). Resets the scheduled event when received 0 events.
-     */
-    async fetchScheduled({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
-        if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
-            // Nothing scheduled
-            return createEmptyResult();
-        }
+    fetchData.running = false;
 
-        if (this.#fetchScheduledData.canceled) {
-            this.#clearScheduledData();
-            return createEmptyResult();
-        }
+    const totalTimeMs = Date.now() - fetchStartMs;
+    // Derived by subtraction because fetchLatest() invokes processBatch internally,
+    // so directly timing fetchLatest() would double-count processing and aggregation time.
+    const apiPollingTimeMs = totalTimeMs - processingTimeMs - aggregationTimeMs;
 
-        let begin = this.#fetchScheduledData.schedule.begin;
-        const end = this.#fetchScheduledData.schedule.end;
-
-        if (this.#fetchScheduledData.lastEventTimestamp && this.#fetchScheduledData.lastEventTimestamp > begin) {
-            // Continue where we left of
-            begin = this.#fetchScheduledData.lastEventTimestamp;
-        }
-
-        if (end <= begin) {
-            logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
-            this.#clearScheduledData();
-            return createEmptyResult();
-        }
-
-        const fetchResult = await this.#fetchEventsForJob(this.#fetchScheduledData, {begin, end, maxEvents});
-        if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
-            this.#clearScheduledData();
-        }
-
-        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp!);
-        return fetchResult;
+    if (error) {
+      throw error;
     }
-    /**
-     * Start fetching analytics and store the data of the progress inside fetchData
-     * @param [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-     * @param [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
-     */
-    async #fetchEventsForJob(fetchData: FetchData, {begin, end, maxEvents = Infinity, eventTypes}: {
-        begin: Date;
-        end: Date;
-        maxEvents?: number;
-        eventTypes?: EmailAnalyticsEvent[];
-    }): Promise<EmailAnalyticsFetchResult> {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        // Store that we started fetching
-        fetchData.running = true;
-        fetchData.lastStarted = new Date();
-        fetchData.lastBegin = begin;
-        await this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
 
-        // Timing metrics
-        const fetchStartMs = Date.now();
-        let processingTimeMs = 0;
-        let aggregationTimeMs = 0;
-        let emailAggregationTimeMs = 0;
-        let memberAggregationTimeMs = 0;
-
-        let eventCount = 0;
-        const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
-
-        const eventProcessor = this.#createEventProcessor();
-
-        // We keep the processing result here, so we also have a result in case of failures
-        const processingResult = new EventProcessingResult();
-        // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
-        const cumulativeResult = new EventProcessingResult();
-        let error: unknown = null;
-
-        const aggregate = async (isFinal: boolean): Promise<void> => {
-            if (!eventProcessor.aggregate) {
-                return;
-            }
-            const start = Date.now();
-            const timings = await eventProcessor.aggregate({includeOpenedEvents, processingResult, isFinal});
-            if (!timings) {
-                return;
-            }
-            aggregationTimeMs += Date.now() - start;
-            emailAggregationTimeMs += timings.emailAggregationTimeMs;
-            memberAggregationTimeMs += timings.memberAggregationTimeMs;
-        };
-
-        const processBatch = async (events: any[]): Promise<void> => {
-            // Even if the fetching is interrupted because of an error, we still store the last event timestamp
-            const processingStart = Date.now();
-            // Capture the state before processing to calculate delta
-            const beforeCounts = {
-                opened: processingResult.opened,
-                delivered: processingResult.delivered,
-                temporaryFailed: processingResult.temporaryFailed,
-                permanentFailed: processingResult.permanentFailed,
-                unsubscribed: processingResult.unsubscribed,
-                complained: processingResult.complained,
-                unhandled: processingResult.unhandled,
-                unprocessable: processingResult.unprocessable
-            };
-            const beforeEmailIds = new Set(processingResult.emailIds);
-            const beforeMemberIds = new Set(processingResult.memberIds);
-
-            await eventProcessor.processBatch(events, processingResult, fetchData);
-            processingTimeMs += (Date.now() - processingStart);
-            eventCount += events.length;
-
-            // Calculate delta (only new counts from this batch) and accumulate for final reporting
-            const batchDelta = new EventProcessingResult({
-                opened: processingResult.opened - beforeCounts.opened,
-                delivered: processingResult.delivered - beforeCounts.delivered,
-                temporaryFailed: processingResult.temporaryFailed - beforeCounts.temporaryFailed,
-                permanentFailed: processingResult.permanentFailed - beforeCounts.permanentFailed,
-                unsubscribed: processingResult.unsubscribed - beforeCounts.unsubscribed,
-                complained: processingResult.complained - beforeCounts.complained,
-                unhandled: processingResult.unhandled - beforeCounts.unhandled,
-                unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
-                emailIds: processingResult.emailIds.filter(id => !beforeEmailIds.has(id)),
-                memberIds: processingResult.memberIds.filter(id => !beforeMemberIds.has(id))
-            });
-            cumulativeResult.merge(batchDelta);
-
-            // Offer the event processor a chance to aggregate mid-fetch.
-            try {
-                if (eventCount) {
-                    await aggregate(false);
-                }
-            } catch (err) {
-                logging.error('[EmailAnalytics] Error while aggregating stats');
-                logging.error(err);
-            }
-
-            if (fetchData.canceled) {
-                throw new errors.InternalServerError({
-                    message: 'Fetching canceled'
-                });
-            }
-        };
-
-        try {
-            await this.#fetchEvents({batchHandler: processBatch, begin, end, maxEvents, events: eventTypes});
-        } catch (err) {
-            if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
-                logging.error('[EmailAnalytics] Error while fetching');
-                logging.error(err);
-                error = err;
-            } else {
-                logging.error('[EmailAnalytics] Canceled fetching');
-            }
-        }
-
-        // Final aggregation.
-        try {
-            await aggregate(true);
-        } catch (err) {
-            logging.error('[EmailAnalytics] Error while aggregating stats');
-            logging.error(err);
-
-            if (!error) {
-                error = err;
-            }
-        }
-
-        // When we've consumed all available events (eventCount < maxEvents), advance the cursor by 1 second
-        // to avoid re-fetching the same batch on the next cycle. When we hit the maxEvents budget mid-second,
-        // do NOT advance — the next pass needs to re-cover that second to pick up any remaining events.
-        if (!error && eventCount > 0 && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
-            // Persist cursor to DB so we can resume after reboot
-            await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
-            if (eventCount < maxEvents) {
-                // Consumed everything in the window — advance to avoid re-fetching same batch
-                fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
-            }
-        } else {
-            await this.queries.setJobStatus(fetchData.jobName, 'finished');
-        }
-
-        fetchData.running = false;
-
-        const totalTimeMs = Date.now() - fetchStartMs;
-        // Derived by subtraction because fetchLatest() invokes processBatch internally,
-        // so directly timing fetchLatest() would double-count processing and aggregation time.
-        const apiPollingTimeMs = totalTimeMs - processingTimeMs - aggregationTimeMs;
-
-        if (error) {
-            throw error;
-        }
-
-        return {
-            eventCount,
-            apiPollingTimeMs,
-            processingTimeMs,
-            aggregationTimeMs,
-            emailAggregationTimeMs,
-            memberAggregationTimeMs,
-            result: cumulativeResult
-        };
-    }
+    return {
+      eventCount,
+      apiPollingTimeMs,
+      processingTimeMs,
+      aggregationTimeMs,
+      emailAggregationTimeMs,
+      memberAggregationTimeMs,
+      result: cumulativeResult,
+    };
+  }
 }

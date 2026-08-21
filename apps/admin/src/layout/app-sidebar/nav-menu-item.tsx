@@ -1,221 +1,199 @@
 import React from 'react';
-import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
-import {cn, LucideIcon} from '@tryghost/shade/utils';
+import { Button, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@tryghost/shade/components';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
 import { AdminLink } from '@/shared/admin-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
-    return (
-        <SidebarMenuItem {...props}>
-            {children}
-        </SidebarMenuItem>
-    );
+  return <SidebarMenuItem {...props}>{children}</SidebarMenuItem>;
 }
 
 interface NavMenuCollapsibleContextValue {
-    expanded: boolean;
-    id: string;
-    onExpandedChange: (expanded: boolean) => void | Promise<void>;
+  expanded: boolean;
+  id: string;
+  onExpandedChange: (expanded: boolean) => void | Promise<void>;
 }
 
 const NavMenuCollapsibleContext = React.createContext<NavMenuCollapsibleContextValue | null>(null);
 
 function useNavMenuCollapsibleContext() {
-    const context = React.useContext(NavMenuCollapsibleContext);
+  const context = React.useContext(NavMenuCollapsibleContext);
 
-    if (!context) {
-        throw new Error('NavMenuItem.Collapsible components must be used within NavMenuItem.Collapsible');
-    }
+  if (!context) {
+    throw new Error(
+      'NavMenuItem.Collapsible components must be used within NavMenuItem.Collapsible',
+    );
+  }
 
-    return context;
+  return context;
 }
 
 interface NavMenuCollapsibleProps {
-    children: React.ReactNode;
-    expanded: boolean;
-    id: string;
-    onExpandedChange: (expanded: boolean) => void | Promise<void>;
+  children: React.ReactNode;
+  expanded: boolean;
+  id: string;
+  onExpandedChange: (expanded: boolean) => void | Promise<void>;
 }
 
-function NavMenuCollapsible({children, expanded, id, onExpandedChange}: NavMenuCollapsibleProps) {
-    const value = {
-        expanded,
-        id,
-        onExpandedChange
-    };
+function NavMenuCollapsible({ children, expanded, id, onExpandedChange }: NavMenuCollapsibleProps) {
+  const value = {
+    expanded,
+    id,
+    onExpandedChange,
+  };
 
-    return (
-        <NavMenuCollapsibleContext.Provider value={value}>
-            {children}
-        </NavMenuCollapsibleContext.Provider>
-    );
+  return (
+    <NavMenuCollapsibleContext.Provider value={value}>
+      {children}
+    </NavMenuCollapsibleContext.Provider>
+  );
 }
 
 interface NavMenuCollapsibleItemProps {
-    ariaLabel: string;
-    children: React.ReactNode;
+  ariaLabel: string;
+  children: React.ReactNode;
 }
 
-function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemProps) {
-    const {expanded, id, onExpandedChange} = useNavMenuCollapsibleContext();
+function NavMenuCollapsibleItem({ ariaLabel, children }: NavMenuCollapsibleItemProps) {
+  const { expanded, id, onExpandedChange } = useNavMenuCollapsibleContext();
 
-    return (
-        <NavMenuItem>
-            <Button
-                aria-controls={id}
-                aria-expanded={expanded}
-                aria-label={ariaLabel}
-                className="hover:text-gray-black absolute top-0 left-3 h-(--control-height) w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
-                size="icon"
-                variant="ghost"
-                onClick={() => void onExpandedChange(!expanded)}
-            >
-                <LucideIcon.ChevronRight
-                    className={`transition-all ${expanded ? 'rotate-[90deg]' : ''}`}
-                    size={16}
-                />
-            </Button>
-            {children}
-        </NavMenuItem>
-    );
+  return (
+    <NavMenuItem>
+      <Button
+        aria-controls={id}
+        aria-expanded={expanded}
+        aria-label={ariaLabel}
+        className="hover:text-gray-black absolute top-0 left-3 h-(--control-height) w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+        size="icon"
+        variant="ghost"
+        onClick={() => void onExpandedChange(!expanded)}
+      >
+        <LucideIcon.ChevronRight
+          className={`transition-all ${expanded ? 'rotate-[90deg]' : ''}`}
+          size={16}
+        />
+      </Button>
+      {children}
+    </NavMenuItem>
+  );
 }
 
 interface NavMenuCollapsibleMenuProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
-function NavMenuCollapsibleMenu({children}: NavMenuCollapsibleMenuProps) {
-    const {expanded, id} = useNavMenuCollapsibleContext();
+function NavMenuCollapsibleMenu({ children }: NavMenuCollapsibleMenuProps) {
+  const { expanded, id } = useNavMenuCollapsibleContext();
 
-    return (
-        <div
-            className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr]' : '-mb-px grid-rows-[0fr]'}`}
-            id={id}
-        >
-            <div className="flex flex-col gap-px overflow-hidden">
-                {expanded ? children : null}
-            </div>
-        </div>
-    );
+  return (
+    <div
+      className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr]' : '-mb-px grid-rows-[0fr]'}`}
+      id={id}
+    >
+      <div className="flex flex-col gap-px overflow-hidden">{expanded ? children : null}</div>
+    </div>
+  );
 }
 
 type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
-    to?: string
-    target?: string
-    rel?: string
-    activeOnSubpath?: boolean
-    isActive?: boolean
+  to?: string;
+  target?: string;
+  rel?: string;
+  activeOnSubpath?: boolean;
+  isActive?: boolean;
 };
 function NavMenuLink({
-    to,
-    target,
-    rel,
-    activeOnSubpath = false,
-    isActive: controlledIsActive,
-    children,
-    ...props
+  to,
+  target,
+  rel,
+  activeOnSubpath = false,
+  isActive: controlledIsActive,
+  children,
+  ...props
 }: NavMenuLinkProps) {
-    const path = `/${to?.replace(/^\/?#\//, '')}`;
-    const computedIsActive = useIsActiveLink({ path: to, activeOnSubpath });
-    const isActive = controlledIsActive !== undefined ? controlledIsActive : computedIsActive;
-    const { isMobile, setOpenMobile } = useSidebar();
-    const isExternal = target === '_blank';
+  const path = `/${to?.replace(/^\/?#\//, '')}`;
+  const computedIsActive = useIsActiveLink({ path: to, activeOnSubpath });
+  const isActive = controlledIsActive !== undefined ? controlledIsActive : computedIsActive;
+  const { isMobile, setOpenMobile } = useSidebar();
+  const isExternal = target === '_blank';
 
-    const handleClick = () => {
-        if (isMobile) {
-            setOpenMobile(false);
-        }
-    };
+  const handleClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
-    return (
-        <SidebarMenuButton
-            isActive={isActive}
-            asChild
-            {...props}>
-            {isExternal ? (
-                <a
-                    aria-current={isActive ? 'page' : undefined}
-                    href={to}
-                    rel={rel ?? 'noopener noreferrer'}
-                    target={target}
-                    onClick={handleClick}
-                >
-                    {children}
-                </a>
-            ) : (
-                <AdminLink
-                    aria-current={isActive ? 'page' : undefined}
-                    rel={rel}
-                    to={path}
-                    onClick={handleClick}
-                >
-                    {children}
-                </AdminLink>
-            )}
-        </SidebarMenuButton>
-    )
-}
-
-interface NavMenuLabelProps extends React.HTMLAttributes<HTMLSpanElement>
-{
-    children?: React.ReactNode
-}
-function NavMenuLabel({children, ...props}: NavMenuLabelProps) {
-    return (
-        <span
-            {...props}
-            className={cn('min-w-0 truncate', props.className)}
+  return (
+    <SidebarMenuButton isActive={isActive} asChild {...props}>
+      {isExternal ? (
+        <a
+          aria-current={isActive ? 'page' : undefined}
+          href={to}
+          rel={rel ?? 'noopener noreferrer'}
+          target={target}
+          onClick={handleClick}
         >
-            {children}
-        </span>
-    );
+          {children}
+        </a>
+      ) : (
+        <AdminLink
+          aria-current={isActive ? 'page' : undefined}
+          rel={rel}
+          to={path}
+          onClick={handleClick}
+        >
+          {children}
+        </AdminLink>
+      )}
+    </SidebarMenuButton>
+  );
+}
+
+interface NavMenuLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children?: React.ReactNode;
+}
+function NavMenuLabel({ children, ...props }: NavMenuLabelProps) {
+  return (
+    <span {...props} className={cn('min-w-0 truncate', props.className)}>
+      {children}
+    </span>
+  );
 }
 
 type NavSubmenuItemProps = NavMenuLinkProps;
-function NavSubmenuItem({
-    children,
-    className,
-    ...props
-}: NavSubmenuItemProps) {
-    return (
-        <NavMenuItem className="before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent">
-            <div className="min-w-0 pl-7">
-                <NavMenuItem.Link
-                    className={cn('w-full min-w-0 pl-2 focus-visible:ring-inset', className)}
-                    {...props}
-                >
-                    {children}
-                </NavMenuItem.Link>
-            </div>
-        </NavMenuItem>
-    );
+function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) {
+  return (
+    <NavMenuItem className="before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent">
+      <div className="min-w-0 pl-7">
+        <NavMenuItem.Link
+          className={cn('w-full min-w-0 pl-2 focus-visible:ring-inset', className)}
+          {...props}
+        >
+          {children}
+        </NavMenuItem.Link>
+      </div>
+    </NavMenuItem>
+  );
 }
 
 type NavMenuButtonProps = React.ComponentProps<typeof SidebarMenuButton> & {
-    onClick?: () => void
+  onClick?: () => void;
 };
-function NavMenuButton({
-    onClick,
-    children,
-    ...props
-}: NavMenuButtonProps) {
-    const { isMobile, setOpenMobile } = useSidebar();
+function NavMenuButton({ onClick, children, ...props }: NavMenuButtonProps) {
+  const { isMobile, setOpenMobile } = useSidebar();
 
-    const handleClick = () => {
-        if (isMobile) {
-            setOpenMobile(false);
-        }
-        onClick?.();
-    };
+  const handleClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+    onClick?.();
+  };
 
-    return (
-        <SidebarMenuButton
-            onClick={handleClick}
-            {...props}
-        >
-            {children}
-        </SidebarMenuButton>
-    );
+  return (
+    <SidebarMenuButton onClick={handleClick} {...props}>
+      {children}
+    </SidebarMenuButton>
+  );
 }
 
 NavMenuItem.Link = NavMenuLink;
@@ -226,4 +204,4 @@ NavMenuItem.Collapsible = NavMenuCollapsible;
 NavMenuItem.CollapsibleItem = NavMenuCollapsibleItem;
 NavMenuItem.CollapsibleMenu = NavMenuCollapsibleMenu;
 
-export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton }
+export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton };

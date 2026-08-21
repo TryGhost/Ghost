@@ -1,4 +1,4 @@
-import {type MockInstance, vi} from 'vitest';
+import { type MockInstance, vi } from 'vitest';
 
 /**
  * Date testing utilities to provide consistent, reliable date mocking
@@ -13,17 +13,17 @@ export const FIXED_DATE = new Date('2024-01-15T12:00:00.000Z');
  * Prevents tests from failing due to timing issues across midnight
  */
 export const mockSystemDate = (date: Date = FIXED_DATE): MockInstance => {
-    const mockDate = vi.spyOn(Date, 'now').mockReturnValue(date.getTime());
-    vi.setSystemTime(date);
-    return mockDate;
+  const mockDate = vi.spyOn(Date, 'now').mockReturnValue(date.getTime());
+  vi.setSystemTime(date);
+  return mockDate;
 };
 
 /**
  * Restore system date to normal behavior
  */
 export const restoreSystemDate = () => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 };
 
 /**
@@ -31,13 +31,13 @@ export const restoreSystemDate = () => {
  * This replaces the fragile moment().subtract() pattern
  */
 export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) => {
-    const startDate = new Date(baseDate);
-    startDate.setDate(startDate.getDate() - (days - 1));
+  const startDate = new Date(baseDate);
+  startDate.setDate(startDate.getDate() - (days - 1));
 
-    return {
-        expectedDateFrom: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
-        expectedDateTo: baseDate.toISOString().split('T')[0]
-    };
+  return {
+    expectedDateFrom: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
+    expectedDateTo: baseDate.toISOString().split('T')[0],
+  };
 };
 
 /**
@@ -45,10 +45,10 @@ export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) 
  * This should be called in beforeEach for hooks that use date functions
  */
 export const setupDateMocking = () => {
-    const mockDate = mockSystemDate();
+  const mockDate = mockSystemDate();
 
-    return {
-        mockDate,
-        cleanup: restoreSystemDate
-    };
+  return {
+    mockDate,
+    cleanup: restoreSystemDate,
+  };
 };

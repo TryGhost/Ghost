@@ -1,13 +1,14 @@
-import type {ReadonlyDeep} from 'type-fest';
+import type { ReadonlyDeep } from 'type-fest';
 
 export type StaffTextBaseData = ReadonlyDeep<{
-    toEmail: string;
-    siteDomain: string;
-    staffUrl: string;
+  toEmail: string;
+  siteDomain: string;
+  staffUrl: string;
 }>;
 
-export type StaffMemberTextData = StaffTextBaseData & ReadonlyDeep<{
+export type StaffMemberTextData = StaffTextBaseData &
+  ReadonlyDeep<{
     memberData: {
-        name: string;
+      name: string;
     };
-}>;
+  }>;

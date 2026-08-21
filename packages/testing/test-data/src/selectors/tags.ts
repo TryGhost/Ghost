@@ -4,21 +4,21 @@
  */
 
 // testids
-export const tagsPage = "tags-page";
-export const tagsList = "tags-list";
-export const tagListRow = "tag-list-row";
-export const tagsHeaderTabs = "tags-header-tabs";
-export const tagDetail = "tag-detail";
-export const tagDetailTitle = "tag-detail-title";
-export const deleteTagModal = "delete-tag-modal";
-export const deleteTagPostsCount = "delete-tag-posts-count";
-export const confirmDeleteTag = "confirm-delete-tag";
+export const tagsPage = 'tags-page';
+export const tagsList = 'tags-list';
+export const tagListRow = 'tag-list-row';
+export const tagsHeaderTabs = 'tags-header-tabs';
+export const tagDetail = 'tag-detail';
+export const tagDetailTitle = 'tag-detail-title';
+export const deleteTagModal = 'delete-tag-modal';
+export const deleteTagPostsCount = 'delete-tag-posts-count';
+export const confirmDeleteTag = 'confirm-delete-tag';
 
 // accessible names
-export const publicTab = "Public tags";
-export const internalTab = "Internal tags";
-export const newTagLink = "New tag";
-export const createNewTagLink = "Create a new tag";
+export const publicTab = 'Public tags';
+export const internalTab = 'Internal tags';
+export const newTagLink = 'New tag';
+export const createNewTagLink = 'Create a new tag';
 
 // text fragments
-export const emptyStateText = "Start organizing your content";
+export const emptyStateText = 'Start organizing your content';

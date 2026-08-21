@@ -1,116 +1,148 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
-import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {Text} from '@tryghost/shade/primitives';
-import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
-import {downloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
-import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
-import {useConfirmation} from '@/settings/providers/confirmation-context';
-import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
-import {withErrorBoundary} from '@/settings/components/with-error-boundary';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@tryghost/shade/components';
+import { LucideIcon } from '@tryghost/shade/utils';
+import { SettingGroupContent } from '@tryghost/shade/patterns';
+import { Text } from '@tryghost/shade/primitives';
+import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
+import { downloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
+import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
+import { useConfirmation } from '@/settings/providers/confirmation-context';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
-const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const [themeLimitError, setThemeLimitError] = useState<string|null>(null);
-    const [isCheckingLimit, setIsCheckingLimit] = useState(false);
-    const {checkThemeLimitError} = useCheckThemeLimitError();
-    const {route, updateRoute} = useSettingsNavigation();
-    const upgradeRoute = useUpgradeRoute();
-    const {showLimit} = useConfirmation();
-    const {data: themesData} = useBrowseThemes();
-    const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
+const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
+  const [themeLimitError, setThemeLimitError] = useState<string | null>(null);
+  const [isCheckingLimit, setIsCheckingLimit] = useState(false);
+  const { checkThemeLimitError } = useCheckThemeLimitError();
+  const { route, updateRoute } = useSettingsNavigation();
+  const upgradeRoute = useUpgradeRoute();
+  const { showLimit } = useConfirmation();
+  const { data: themesData } = useBrowseThemes();
+  const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
 
-    useEffect(() => {
-        const checkIfThemeChangeAllowed = async () => {
-            setIsCheckingLimit(true);
-            const error = await checkThemeLimitError();
-            setThemeLimitError(error);
-            setIsCheckingLimit(false);
-        };
-
-        void checkIfThemeChangeAllowed();
-    }, [checkThemeLimitError]);
-
-    const openPreviewModal = () => {
-        // Wait for limit check if still in progress
-        if (isCheckingLimit) {
-            return;
-        }
-
-        if (themeLimitError) {
-            showLimit({
-                prompt: themeLimitError,
-                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
-            });
-        } else {
-            updateRoute('design/change-theme');
-        }
+  useEffect(() => {
+    const checkIfThemeChangeAllowed = async () => {
+      setIsCheckingLimit(true);
+      const error = await checkThemeLimitError();
+      setThemeLimitError(error);
+      setIsCheckingLimit(false);
     };
 
-    const openThemeEditor = async () => {
-        if (!activeTheme) {
-            return;
-        }
+    void checkIfThemeChangeAllowed();
+  }, [checkThemeLimitError]);
 
-        const limitError = await checkThemeLimitError('.');
+  const openPreviewModal = () => {
+    // Wait for limit check if still in progress
+    if (isCheckingLimit) {
+      return;
+    }
 
-        if (limitError) {
-            showLimit({
-                prompt: limitError,
-                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
-            });
-            return;
-        }
+    if (themeLimitError) {
+      showLimit({
+        prompt: themeLimitError,
+        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+      });
+    } else {
+      updateRoute('design/change-theme');
+    }
+  };
 
-        updateRoute(`theme/edit/${encodeURIComponent(activeTheme.name)}?from=${encodeURIComponent(route ?? '')}`);
-    };
+  const openThemeEditor = async () => {
+    if (!activeTheme) {
+      return;
+    }
 
-    const downloadTheme = () => {
-        if (!activeTheme) {
-            return;
-        }
+    const limitError = await checkThemeLimitError('.');
 
-        downloadFromEndpoint(`/themes/${activeTheme.name}/download`);
-    };
+    if (limitError) {
+      showLimit({
+        prompt: limitError,
+        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+      });
+      return;
+    }
 
-    const values = (
-        <SettingGroupContent>
-            <div className='flex flex-col'>
-                <Text as='h6' className='text-base' weight='semibold'>Active theme</Text>
-                <div className='mt-1 flex w-full items-center justify-between gap-4'>
-                    <div>{activeTheme ? `${activeTheme.name} (v${activeTheme.package?.version || '1.0'})` : 'Loading...'}</div>
-                    <div className='-mr-3'>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button aria-label='Menu' disabled={!activeTheme} size='icon' type='button' variant='ghost'><LucideIcon.Ellipsis /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align='end'>
-                                <DropdownMenuItem onSelect={() => void openThemeEditor()}>Edit code</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={downloadTheme}>Download</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
-            </div>
-        </SettingGroupContent>
+    updateRoute(
+      `theme/edit/${encodeURIComponent(activeTheme.name)}?from=${encodeURIComponent(route ?? '')}`,
     );
+  };
 
-    return (
-        <TopLevelGroup
-            customButtons={
-                <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openPreviewModal}>Change theme</Button>
-            }
-            description="Browse and install official themes or upload one"
-            keywords={keywords}
-            navid='theme'
-            testId='theme'
-            title="Theme"
+  const downloadTheme = () => {
+    if (!activeTheme) {
+      return;
+    }
+
+    downloadFromEndpoint(`/themes/${activeTheme.name}/download`);
+  };
+
+  const values = (
+    <SettingGroupContent>
+      <div className="flex flex-col">
+        <Text as="h6" className="text-base" weight="semibold">
+          Active theme
+        </Text>
+        <div className="mt-1 flex w-full items-center justify-between gap-4">
+          <div>
+            {activeTheme
+              ? `${activeTheme.name} (v${activeTheme.package?.version || '1.0'})`
+              : 'Loading...'}
+          </div>
+          <div className="-mr-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label="Menu"
+                  disabled={!activeTheme}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <LucideIcon.Ellipsis />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => void openThemeEditor()}>
+                  Edit code
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={downloadTheme}>Download</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+    </SettingGroupContent>
+  );
+
+  return (
+    <TopLevelGroup
+      customButtons={
+        <Button
+          className="mt-[-5px]"
+          size="sm"
+          type="button"
+          variant="ghost"
+          onClick={openPreviewModal}
         >
-            {values}
-        </TopLevelGroup>
-    );
+          Change theme
+        </Button>
+      }
+      description="Browse and install official themes or upload one"
+      keywords={keywords}
+      navid="theme"
+      testId="theme"
+      title="Theme"
+    >
+      {values}
+    </TopLevelGroup>
+  );
 };
 
 export default withErrorBoundary(ChangeTheme, 'Branding and design');

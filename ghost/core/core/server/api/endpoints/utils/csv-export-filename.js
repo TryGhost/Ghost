@@ -1,4 +1,4 @@
-const {slugify} = require('@tryghost/string');
+const { slugify } = require('@tryghost/string');
 const settingsCache = require('../../../../shared/settings-cache');
 
 /**
@@ -14,11 +14,11 @@ const settingsCache = require('../../../../shared/settings-cache');
  * @returns {string}
  */
 function getExportFileName(type, extension) {
-    const datetime = (new Date()).toJSON().substring(0, 10);
-    const slug = slugify(settingsCache.get('title') || '');
-    const titlePrefix = slug ? `${slug}.` : '';
+  const datetime = new Date().toJSON().substring(0, 10);
+  const slug = slugify(settingsCache.get('title') || '');
+  const titlePrefix = slug ? `${slug}.` : '';
 
-    return `${titlePrefix}ghost.${type}.${datetime}.${extension}`;
+  return `${titlePrefix}ghost.${type}.${datetime}.${extension}`;
 }
 
 /**
@@ -26,10 +26,10 @@ function getExportFileName(type, extension) {
  * @returns {string}
  */
 function getCSVExportFileName(type) {
-    return getExportFileName(type, 'csv');
+  return getExportFileName(type, 'csv');
 }
 
 module.exports = {
-    getCSVExportFileName,
-    getExportFileName
+  getCSVExportFileName,
+  getExportFileName,
 };

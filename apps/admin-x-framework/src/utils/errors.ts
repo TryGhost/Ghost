@@ -1,122 +1,140 @@
 // API errors
 
 export interface ErrorResponse {
-    errors: Array<{
-        code: string
-        context: string | null
-        details: string | null
-        ghostErrorCode: string | null
-        help: string
-        id: string
-        message: string
-        property: string | null
-        type: string
-    }>
+  errors: Array<{
+    code: string;
+    context: string | null;
+    details: string | null;
+    ghostErrorCode: string | null;
+    help: string;
+    id: string;
+    message: string;
+    property: string | null;
+    type: string;
+  }>;
 }
 
 export class APIError extends Error {
-    public readonly response?: Response;
-    public readonly data?: unknown;
+  public readonly response?: Response;
+  public readonly data?: unknown;
 
-    constructor(
-        response?: Response,
-        data?: unknown,
-        message?: string,
-        errorOptions?: ErrorOptions
-    ) {
-        if (!message && response && response.url.includes('/ghost/api/admin/')) {
-            message = `Something went wrong while loading ${response.url.replace(/.+\/ghost\/api\/admin\//, '').replace(/\W.*/, '').replace('_', ' ')}, please try again.`;
-        }
-
-        super(message || 'Something went wrong, please try again.', errorOptions);
-        this.response = response;
-        this.data = data;
+  constructor(response?: Response, data?: unknown, message?: string, errorOptions?: ErrorOptions) {
+    if (!message && response && response.url.includes('/ghost/api/admin/')) {
+      message = `Something went wrong while loading ${response.url
+        .replace(/.+\/ghost\/api\/admin\//, '')
+        .replace(/\W.*/, '')
+        .replace('_', ' ')}, please try again.`;
     }
+
+    super(message || 'Something went wrong, please try again.', errorOptions);
+    this.response = response;
+    this.data = data;
+  }
 }
 
 export class JSONError extends APIError {
-    public readonly data?: ErrorResponse;
+  public readonly data?: ErrorResponse;
 
-    constructor(
-        response: Response,
-        data?: ErrorResponse,
-        message?: string,
-        errorOptions?: ErrorOptions
-    ) {
-        super(response, data, message, errorOptions);
-        this.data = data;
-    }
+  constructor(
+    response: Response,
+    data?: ErrorResponse,
+    message?: string,
+    errorOptions?: ErrorOptions,
+  ) {
+    super(response, data, message, errorOptions);
+    this.data = data;
+  }
 }
 
 export class VersionMismatchError extends JSONError {
-    constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
-        super(response, data, 'API server is running a newer version of Ghost, please upgrade.', errorOptions);
-    }
+  constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
+    super(
+      response,
+      data,
+      'API server is running a newer version of Ghost, please upgrade.',
+      errorOptions,
+    );
+  }
 }
 
 export class ServerUnreachableError extends APIError {
-    constructor(errorOptions?: ErrorOptions) {
-        super(undefined, undefined, 'Something went wrong, please try again.', errorOptions);
-    }
+  constructor(errorOptions?: ErrorOptions) {
+    super(undefined, undefined, 'Something went wrong, please try again.', errorOptions);
+  }
 }
 
 export class TimeoutError extends APIError {
-    constructor(errorOptions?: ErrorOptions) {
-        super(undefined, undefined, 'Request timed out, please try again.', errorOptions);
-    }
+  constructor(errorOptions?: ErrorOptions) {
+    super(undefined, undefined, 'Request timed out, please try again.', errorOptions);
+  }
 }
 
 export class RequestEntityTooLargeError extends APIError {
-    constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
-        super(response, data, 'Request is larger than the maximum file size the server allows', errorOptions);
-    }
+  constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
+    super(
+      response,
+      data,
+      'Request is larger than the maximum file size the server allows',
+      errorOptions,
+    );
+  }
 }
 
 export class UnsupportedMediaTypeError extends APIError {
-    constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
-        super(response, data, 'Request contains an unknown or unsupported file type.', errorOptions);
-    }
+  constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
+    super(response, data, 'Request contains an unknown or unsupported file type.', errorOptions);
+  }
 }
 
 export class MaintenanceError extends APIError {
-    constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
-        super(response, data, 'Ghost is currently undergoing maintenance, please wait a moment then retry.', errorOptions);
-    }
+  constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
+    super(
+      response,
+      data,
+      'Ghost is currently undergoing maintenance, please wait a moment then retry.',
+      errorOptions,
+    );
+  }
 }
 
 export class UnauthorizedError extends APIError {
-    constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
-        super(response, data, 'You are not authorised to make this request.', errorOptions);
-    }
+  constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
+    super(response, data, 'You are not authorised to make this request.', errorOptions);
+  }
 }
 
 export class SessionExpiredError extends UnauthorizedError {}
 
 export class ThemeValidationError extends JSONError {
-    constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
-        super(response, data, 'Theme is not compatible or contains errors.', errorOptions);
-    }
+  constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
+    super(response, data, 'Theme is not compatible or contains errors.', errorOptions);
+  }
 }
 
 export class HostLimitError extends JSONError {
-    constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
-        super(response, data, 'A hosting plan limit was reached or exceeded.', errorOptions);
-    }
+  constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
+    super(response, data, 'A hosting plan limit was reached or exceeded.', errorOptions);
+  }
 }
 
 export class EmailError extends JSONError {
-    constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
-        super(response, data, 'Please verify your email settings', errorOptions);
-    }
+  constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
+    super(response, data, 'Please verify your email settings', errorOptions);
+  }
 }
 
 export class ValidationError extends JSONError {
-    constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
-        super(response, data, data.errors[0].message, errorOptions);
-    }
+  constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
+    super(response, data, data.errors[0].message, errorOptions);
+  }
 }
 
-export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLimitError, EmailError];
+export const errorsWithMessage = [
+  ValidationError,
+  ThemeValidationError,
+  HostLimitError,
+  EmailError,
+];
 
 /**
  * What the server said went wrong, for showing to a person.
@@ -128,15 +146,15 @@ export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLim
  * other one showing "Could not save…" while the reason sat unread in the payload.
  */
 export function getErrorMessage(error: unknown, fallback: string): string {
-    const apiError = error instanceof JSONError ? error.data?.errors?.[0] : undefined;
+  const apiError = error instanceof JSONError ? error.data?.errors?.[0] : undefined;
 
-    return apiError?.context || apiError?.message || fallback;
+  return apiError?.context || apiError?.message || fallback;
 }
 
 // Frontend errors
 
 export class AlreadyExistsError extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
+  constructor(message?: string) {
+    super(message);
+  }
 }

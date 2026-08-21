@@ -13,11 +13,11 @@ exist for external consumers only (see [Shipping](#shipping)).
 
 ### Editor UI
 
-| Package | What it is | Consumed by |
-| --- | --- | --- |
-| [koenig-lexical](./koenig-lexical) | The Lexical-based rich text editor (React). Ships as a UMD bundle with styles and SVGs inlined | `ghost/admin` (bundled into admin assets at build time), `apps/admin`, `apps/admin-x-framework` |
-| [kg-simplemde](./kg-simplemde) | Customised fork of SimpleMDE, used by koenig-lexical's markdown card | `koenig-lexical` |
-| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker | `koenig-lexical`, `apps/admin` |
+| Package                                        | What it is                                                                                     | Consumed by                                                                                     |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [koenig-lexical](./koenig-lexical)             | The Lexical-based rich text editor (React). Ships as a UMD bundle with styles and SVGs inlined | `ghost/admin` (bundled into admin assets at build time), `apps/admin`, `apps/admin-x-framework` |
+| [kg-simplemde](./kg-simplemde)                 | Customised fork of SimpleMDE, used by koenig-lexical's markdown card                           | `koenig-lexical`                                                                                |
+| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker                                                                    | `koenig-lexical`, `apps/admin`                                                                  |
 
 ### Lexical node definitions & rendering
 
@@ -25,31 +25,31 @@ These are plain TypeScript Node libraries. `kg-default-nodes` is the single
 source of truth for node rendering — both the editor and the server render
 through it.
 
-| Package | What it is | Consumed by |
-| --- | --- | --- |
-| [kg-default-nodes](./kg-default-nodes) | Lexical node definitions for all of Ghost's cards, including each node's HTML renderer. Must stay browser-safe (it runs in the editor as well as on the server) | `ghost/core`, `koenig-lexical`, most other kg-* packages |
-| [kg-default-transforms](./kg-default-transforms) | Lexical node transforms (denesting, blockquote children, etc.) shared between editor and server | `koenig-lexical`, `kg-lexical-html-renderer`, `kg-html-to-lexical` |
-| [kg-lexical-html-renderer](./kg-lexical-html-renderer) | Renders a serialized Lexical state to front-end/email HTML server-side (not editor DOM — output differs per target, e.g. `<table>` markup for email) | `ghost/core` |
-| [kg-html-to-lexical](./kg-html-to-lexical) | Converts HTML strings into Lexical editor state (imports, API `?source=html`) | `ghost/core` |
-| [kg-converters](./kg-converters) | Converts between serialized Mobiledoc and Lexical formats | `ghost/core`, `ghost/admin` |
+| Package                                                | What it is                                                                                                                                                      | Consumed by                                                        |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [kg-default-nodes](./kg-default-nodes)                 | Lexical node definitions for all of Ghost's cards, including each node's HTML renderer. Must stay browser-safe (it runs in the editor as well as on the server) | `ghost/core`, `koenig-lexical`, most other kg-* packages           |
+| [kg-default-transforms](./kg-default-transforms)       | Lexical node transforms (denesting, blockquote children, etc.) shared between editor and server                                                                 | `koenig-lexical`, `kg-lexical-html-renderer`, `kg-html-to-lexical` |
+| [kg-lexical-html-renderer](./kg-lexical-html-renderer) | Renders a serialized Lexical state to front-end/email HTML server-side (not editor DOM — output differs per target, e.g. `<table>` markup for email)            | `ghost/core`                                                       |
+| [kg-html-to-lexical](./kg-html-to-lexical)             | Converts HTML strings into Lexical editor state (imports, API `?source=html`)                                                                                   | `ghost/core`                                                       |
+| [kg-converters](./kg-converters)                       | Converts between serialized Mobiledoc and Lexical formats                                                                                                       | `ghost/core`, `ghost/admin`                                        |
 
 ### Shared helpers
 
-| Package | What it is | Consumed by |
-| --- | --- | --- |
-| [kg-clean-basic-html](./kg-clean-basic-html) | Sanitises/normalises snippets of "basic HTML" (card captions etc.) | `ghost/core`, `ghost/admin`, `kg-default-nodes` |
-| [kg-markdown-html-renderer](./kg-markdown-html-renderer) | Markdown → HTML rendering for the markdown card | `ghost/core`, `kg-default-nodes`, `kg-default-cards` |
-| [kg-utils](./kg-utils) | Small shared utilities (slugify) | `kg-default-cards`, `kg-lexical-html-renderer`, `kg-markdown-html-renderer` |
+| Package                                                  | What it is                                                         | Consumed by                                                                 |
+| -------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [kg-clean-basic-html](./kg-clean-basic-html)             | Sanitises/normalises snippets of "basic HTML" (card captions etc.) | `ghost/core`, `ghost/admin`, `kg-default-nodes`                             |
+| [kg-markdown-html-renderer](./kg-markdown-html-renderer) | Markdown → HTML rendering for the markdown card                    | `ghost/core`, `kg-default-nodes`, `kg-default-cards`                        |
+| [kg-utils](./kg-utils)                                   | Small shared utilities (slugify)                                   | `kg-default-cards`, `kg-lexical-html-renderer`, `kg-markdown-html-renderer` |
 
 ### Legacy (Mobiledoc era)
 
 Still consumed by `ghost/core` to render posts that have never been converted
 from Mobiledoc. Avoid new work here.
 
-| Package | What it is | Consumed by |
-| --- | --- | --- |
-| [kg-card-factory](./kg-card-factory) | Card definition factory for the Mobiledoc renderer | `ghost/core` |
-| [kg-default-cards](./kg-default-cards) | Mobiledoc card definitions | `ghost/core` |
+| Package                                | What it is                                         | Consumed by  |
+| -------------------------------------- | -------------------------------------------------- | ------------ |
+| [kg-card-factory](./kg-card-factory)   | Card definition factory for the Mobiledoc renderer | `ghost/core` |
+| [kg-default-cards](./kg-default-cards) | Mobiledoc card definitions                         | `ghost/core` |
 
 ## Development
 
@@ -65,8 +65,7 @@ Two modes:
   no Ghost required.
 - **Integrated** — `pnpm dev:lexical` from the monorepo root starts the full
   Ghost dev environment plus a rebuild watcher for the editor (and
-  kg-default-nodes / kg-default-transforms) with a preview server on port
-  4173. Ghost Admin at http://localhost:2368/ghost loads your local editor
+  kg-default-nodes / kg-default-transforms) with a preview server on port 4173. Ghost Admin at http://localhost:2368/ghost loads your local editor
   build; changes appear after the few seconds it takes to rebuild.
 
 See [koenig-lexical/README.md](./koenig-lexical/README.md) for card-specific

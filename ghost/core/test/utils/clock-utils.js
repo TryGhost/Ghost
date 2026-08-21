@@ -15,7 +15,7 @@ const sinon = require('sinon');
  * @returns {import('sinon').SinonFakeTimers}
  */
 function mockSystemTime(now = Date.now()) {
-    return sinon.useFakeTimers({now, toFake: ['Date']});
+  return sinon.useFakeTimers({ now, toFake: ['Date'] });
 }
 
-module.exports = {mockSystemTime};
+module.exports = { mockSystemTime };

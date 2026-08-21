@@ -1,10 +1,13 @@
 const ghostBookshelf = require('./base');
 
-const Recommendation = ghostBookshelf.Model.extend({
+const Recommendation = ghostBookshelf.Model.extend(
+  {
     tableName: 'recommendations',
-    defaults: {}
-}, {});
+    defaults: {},
+  },
+  {},
+);
 
 module.exports = {
-    Recommendation: ghostBookshelf.model('Recommendation', Recommendation)
+  Recommendation: ghostBookshelf.model('Recommendation', Recommendation),
 };

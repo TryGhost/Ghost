@@ -1,15 +1,19 @@
 import Interpolate from '@doist/react-interpolate';
-import {useContext, useEffect, useState} from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AppContext from '../../app-context';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import InputForm from '../common/input-form';
-import {ValidateInputForm} from '../../utils/form';
-import {getSiteDateString} from '../../utils/date-time';
-import {getGiftDurationLabel, getGiftIntroduction, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
-import {t} from '../../utils/i18n';
+import { ValidateInputForm } from '../../utils/form';
+import { getSiteDateString } from '../../utils/date-time';
+import {
+  getGiftDurationLabel,
+  getGiftIntroduction,
+  getGiftRedemptionErrorMessage,
+} from '../../utils/gift-redemption-notification';
+import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 
 export const BetaGiftRedemptionStyles = `
@@ -52,219 +56,230 @@ export const BetaGiftRedemptionStyles = `
 `;
 
 const BetaGiftRedemptionPage = () => {
-    const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
-    const gift = pageData?.gift;
-    const isLoggedIn = !!member;
-    const [name, setName] = useState(member?.name || gift?.recipient_name || '');
-    const [email, setEmail] = useState(member?.email || '');
-    const [errors, setErrors] = useState({});
-    const [showDetails, setShowDetails] = useState(false);
-    const {cardRef, containerProps: cardTiltProps} = useCardTilt();
+  const { action, brandColor, doAction, member, pageData, site } = useContext(AppContext);
+  const gift = pageData?.gift;
+  const isLoggedIn = !!member;
+  const [name, setName] = useState(member?.name || gift?.recipient_name || '');
+  const [email, setEmail] = useState(member?.email || '');
+  const [errors, setErrors] = useState({});
+  const [showDetails, setShowDetails] = useState(false);
+  const { cardRef, containerProps: cardTiltProps } = useCardTilt();
 
-    useEffect(() => {
-        // Prefill with the recipient name the buyer entered, so the gift card
-        // is personal before the recipient types anything.
-        setName(member?.name || gift?.recipient_name || '');
-        setEmail(member?.email || '');
-        setErrors({});
-    }, [member?.email, member?.name, gift?.recipient_name]);
+  useEffect(() => {
+    // Prefill with the recipient name the buyer entered, so the gift card
+    // is personal before the recipient types anything.
+    setName(member?.name || gift?.recipient_name || '');
+    setEmail(member?.email || '');
+    setErrors({});
+  }, [member?.email, member?.name, gift?.recipient_name]);
 
-    useEffect(() => {
-        if (gift) {
-            return;
-        }
-
-        doAction('openNotification', {
-            action: 'giftRedemption:failed',
-            status: 'error',
-            autoHide: false,
-            closeable: true,
-            message: getGiftRedemptionErrorMessage({code: 'GIFT_NOT_FOUND'})
-        });
-        doAction('closePopup');
-    }, [doAction, gift]);
-
-    if (!gift) {
-        return null;
+  useEffect(() => {
+    if (gift) {
+      return;
     }
 
-    const formFields = [
-        {
-            type: 'text',
-            value: name,
-            placeholder: t('Jamie Larson'),
-            label: t('Your name'),
-            name: 'name',
-            required: false,
-            errorMessage: errors.name || '',
-            tabIndex: 1,
-            // If the buyer already supplied the recipient's name, land the cursor
-            // on the email — the one field they still need to fill.
-            autoFocus: !name && !email
-        },
-        {
-            type: 'email',
-            value: email,
-            placeholder: t('jamie@example.com'),
-            label: t('Your email'),
-            name: 'email',
-            required: true,
-            errorMessage: errors.email || '',
-            tabIndex: 2,
-            autoFocus: !!email || (!!name && !email)
-        }
-    ];
+    doAction('openNotification', {
+      action: 'giftRedemption:failed',
+      status: 'error',
+      autoHide: false,
+      closeable: true,
+      message: getGiftRedemptionErrorMessage({ code: 'GIFT_NOT_FOUND' }),
+    });
+    doAction('closePopup');
+  }, [doAction, gift]);
 
-    const handleFieldChange = (event, field) => {
-        setErrors(currentErrors => ({
-            ...currentErrors,
-            [field.name]: ''
-        }));
+  if (!gift) {
+    return null;
+  }
 
-        if (field.name === 'name') {
-            setName(event.target.value);
-        }
+  const formFields = [
+    {
+      type: 'text',
+      value: name,
+      placeholder: t('Jamie Larson'),
+      label: t('Your name'),
+      name: 'name',
+      required: false,
+      errorMessage: errors.name || '',
+      tabIndex: 1,
+      // If the buyer already supplied the recipient's name, land the cursor
+      // on the email — the one field they still need to fill.
+      autoFocus: !name && !email,
+    },
+    {
+      type: 'email',
+      value: email,
+      placeholder: t('jamie@example.com'),
+      label: t('Your email'),
+      name: 'email',
+      required: true,
+      errorMessage: errors.email || '',
+      tabIndex: 2,
+      autoFocus: !!email || (!!name && !email),
+    },
+  ];
 
-        if (field.name === 'email') {
-            setEmail(event.target.value);
-        }
-    };
+  const handleFieldChange = (event, field) => {
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [field.name]: '',
+    }));
 
-    const handleKeyDown = (event) => {
-        if (event.keyCode === 13) {
-            if (isRedeeming) {
-                return;
-            }
+    if (field.name === 'name') {
+      setName(event.target.value);
+    }
 
-            handleRedeemClick(event);
-        }
-    };
+    if (field.name === 'email') {
+      setEmail(event.target.value);
+    }
+  };
 
-    const handleRedeemClick = (event) => {
-        event.preventDefault();
+  const handleKeyDown = (event) => {
+    if (event.keyCode === 13) {
+      if (isRedeeming) {
+        return;
+      }
 
-        if (isRedeeming) {
-            return;
-        }
+      handleRedeemClick(event);
+    }
+  };
 
-        if (isLoggedIn) {
-            doAction('redeemGift', {
-                giftToken: pageData?.token
-            });
-            return;
-        }
+  const handleRedeemClick = (event) => {
+    event.preventDefault();
 
-        const formErrors = ValidateInputForm({fields: formFields});
-        const hasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+    if (isRedeeming) {
+      return;
+    }
 
-        setErrors(formErrors);
+    if (isLoggedIn) {
+      doAction('redeemGift', {
+        giftToken: pageData?.token,
+      });
+      return;
+    }
 
-        if (hasErrors) {
-            return;
-        }
+    const formErrors = ValidateInputForm({ fields: formFields });
+    const hasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
 
-        doAction('redeemGift', {
-            email,
-            name,
-            giftToken: pageData?.token
-        });
-    };
+    setErrors(formErrors);
 
-    const isRedeeming = action === 'redeemGift:running';
-    const buttonLabel = isRedeeming
-        ? t('Redeeming...')
-        : t('Redeem your gift');
-    const siteIcon = site?.icon;
-    const siteTitle = site?.title || '';
-    const buyerName = gift.buyer_name || '';
-    const tierName = gift.tier.name;
-    const giftDetails = {
-        buyerName: <strong>{buyerName}</strong>,
-        duration: <strong>{gift.duration}</strong>,
-        tierName: <strong>{tierName}</strong>,
-        siteTitle
-    };
-    const headerText = getGiftIntroduction({buyerName, cadence: gift.cadence, duration: gift.duration, siteTitle});
-    const expiryLabel = gift.expires_at
-        ? getSiteDateString(gift.expires_at, {locale: site?.locale, timezone: site?.timezone})
-        : '';
-    const benefits = gift.tier.benefits || [];
-    const tierDescription = gift.tier.description || '';
+    if (hasErrors) {
+      return;
+    }
 
-    return (
-        <>
-            <div className='gh-portal-content giftRedemption'>
-                <CloseButton />
-                <div className='gh-portal-gift-checkout'>
-                    <div className='gh-portal-gift-checkout-left'>
-                        <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
-                        <div className='gh-portal-gift-checkout-inner'>
-                            <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>{t('A gift, just for you')}</h1>
-                                <p className='gh-portal-gift-checkout-subtitle'>
-                                    <Interpolate mapping={giftDetails} string={headerText} />
-                                </p>
-                            </header>
+    doAction('redeemGift', {
+      email,
+      name,
+      giftToken: pageData?.token,
+    });
+  };
 
-                            {gift.message && (
-                                <div className='gh-portal-gift-redemption-message' data-testid='gift-message'>
-                                    <p className='gh-portal-gift-redemption-message-text'>&ldquo;{gift.message}&rdquo;</p>
-                                    {buyerName && (
-                                        <p className='gh-portal-gift-redemption-message-from'>&mdash; {buyerName}</p>
-                                    )}
-                                </div>
-                            )}
+  const isRedeeming = action === 'redeemGift:running';
+  const buttonLabel = isRedeeming ? t('Redeeming...') : t('Redeem your gift');
+  const siteIcon = site?.icon;
+  const siteTitle = site?.title || '';
+  const buyerName = gift.buyer_name || '';
+  const tierName = gift.tier.name;
+  const giftDetails = {
+    buyerName: <strong>{buyerName}</strong>,
+    duration: <strong>{gift.duration}</strong>,
+    tierName: <strong>{tierName}</strong>,
+    siteTitle,
+  };
+  const headerText = getGiftIntroduction({
+    buyerName,
+    cadence: gift.cadence,
+    duration: gift.duration,
+    siteTitle,
+  });
+  const expiryLabel = gift.expires_at
+    ? getSiteDateString(gift.expires_at, { locale: site?.locale, timezone: site?.timezone })
+    : '';
+  const benefits = gift.tier.benefits || [];
+  const tierDescription = gift.tier.description || '';
 
-                            {!isLoggedIn && (
-                                <div className='gh-portal-gift-redemption-form'>
-                                    <InputForm fields={formFields} onChange={handleFieldChange} onKeyDown={handleKeyDown} />
-                                </div>
-                            )}
+  return (
+    <>
+      <div className="gh-portal-content giftRedemption">
+        <CloseButton />
+        <div className="gh-portal-gift-checkout">
+          <div className="gh-portal-gift-checkout-left">
+            <div className="gh-portal-gift-checkout-bg" aria-hidden="true" />
+            <div className="gh-portal-gift-checkout-inner">
+              <header className="gh-portal-gift-checkout-header">
+                <h1 className="gh-portal-main-title">{t('A gift, just for you')}</h1>
+                <p className="gh-portal-gift-checkout-subtitle">
+                  <Interpolate mapping={giftDetails} string={headerText} />
+                </p>
+              </header>
 
-                            <ActionButton
-                                brandColor={brandColor}
-                                classes='gh-portal-gift-checkout-cta'
-                                label={buttonLabel}
-                                onClick={handleRedeemClick}
-                                style={{width: '100%'}}
-                                disabled={isRedeeming}
-                                isRunning={isRedeeming}
-                            />
-
-                            {expiryLabel && (
-                                <p className='gh-portal-gift-checkout-cta-note'>
-                                    {t('This gift can only be redeemed once and expires on {expiryDate}.', {expiryDate: expiryLabel})}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className='gh-portal-gift-checkout-right' {...cardTiltProps}>
-                        <div className='gh-portal-gift-checkout-right-panel'>
-                            <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
-                                <GiftCard
-                                    cardRef={cardRef}
-                                    duration={getGiftDurationLabel(gift)}
-                                    tierName={gift.tier.name}
-                                    toName={name.trim() || null}
-                                    fromName={buyerName || null}
-                                    siteIcon={siteIcon}
-                                    siteTitle={siteTitle}
-                                />
-
-                                <GiftDetailsToggle
-                                    description={tierDescription}
-                                    benefits={benefits}
-                                    showDetails={showDetails}
-                                    onToggle={() => setShowDetails(s => !s)}
-                                />
-                            </div>
-                        </div>
-                    </div>
+              {gift.message && (
+                <div className="gh-portal-gift-redemption-message" data-testid="gift-message">
+                  <p className="gh-portal-gift-redemption-message-text">
+                    &ldquo;{gift.message}&rdquo;
+                  </p>
+                  {buyerName && (
+                    <p className="gh-portal-gift-redemption-message-from">&mdash; {buyerName}</p>
+                  )}
                 </div>
+              )}
+
+              {!isLoggedIn && (
+                <div className="gh-portal-gift-redemption-form">
+                  <InputForm
+                    fields={formFields}
+                    onChange={handleFieldChange}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+              )}
+
+              <ActionButton
+                brandColor={brandColor}
+                classes="gh-portal-gift-checkout-cta"
+                label={buttonLabel}
+                onClick={handleRedeemClick}
+                style={{ width: '100%' }}
+                disabled={isRedeeming}
+                isRunning={isRedeeming}
+              />
+
+              {expiryLabel && (
+                <p className="gh-portal-gift-checkout-cta-note">
+                  {t('This gift can only be redeemed once and expires on {expiryDate}.', {
+                    expiryDate: expiryLabel,
+                  })}
+                </p>
+              )}
             </div>
-        </>
-    );
+          </div>
+
+          <div className="gh-portal-gift-checkout-right" {...cardTiltProps}>
+            <div className="gh-portal-gift-checkout-right-panel">
+              <div className="gh-portal-gift-checkout-card-stack" data-revealing={showDetails}>
+                <GiftCard
+                  cardRef={cardRef}
+                  duration={getGiftDurationLabel(gift)}
+                  tierName={gift.tier.name}
+                  toName={name.trim() || null}
+                  fromName={buyerName || null}
+                  siteIcon={siteIcon}
+                  siteTitle={siteTitle}
+                />
+
+                <GiftDetailsToggle
+                  description={tierDescription}
+                  benefits={benefits}
+                  showDetails={showDetails}
+                  onToggle={() => setShowDetails((s) => !s)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default BetaGiftRedemptionPage;

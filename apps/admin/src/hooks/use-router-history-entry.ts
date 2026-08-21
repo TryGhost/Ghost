@@ -1,8 +1,10 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-const historyStateSchema = z.looseObject({
-    idx: z.number().int().nonnegative().optional()
-}).nullable();
+const historyStateSchema = z
+  .looseObject({
+    idx: z.number().int().nonnegative().optional(),
+  })
+  .nullable();
 
 /**
  * Whether the active history entry was created by the router (it carries a
@@ -11,6 +13,6 @@ const historyStateSchema = z.looseObject({
  * synchronously from inside the blocker rather than cached per location.
  */
 export function isOnRouterHistoryEntry(): boolean {
-    const historyState = historyStateSchema.safeParse(window.history.state);
-    return historyState.success && historyState.data?.idx !== undefined;
+  const historyState = historyStateSchema.safeParse(window.history.state);
+  return historyState.success && historyState.data?.idx !== undefined;
 }

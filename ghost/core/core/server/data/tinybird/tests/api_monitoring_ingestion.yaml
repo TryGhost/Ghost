@@ -1,4 +1,3 @@
-
 - name: default_date_range
   description: Test default behavior without date parameters (last 7 days)
   parameters: ''

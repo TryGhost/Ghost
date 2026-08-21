@@ -1,9 +1,12 @@
 {
   "name": "@tryghost/e2e",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
-  "author": "Ghost Foundation",
   "private": true,
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
+  "files": [
+    "build"
+  ],
   "type": "module",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --noEmit",
@@ -29,18 +32,16 @@
     "test:types": "tsc --noEmit",
     "lint": "eslint . --cache"
   },
-  "files": [
-    "build"
-  ],
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
-    "@tryghost/test-data": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",
+    "@tryghost/test-data": "workspace:*",
     "@types/dockerode": "4.0.1",
     "@types/express": "catalog:",
+    "@typescript/native": "catalog:",
     "busboy": "1.6.0",
     "dockerode": "5.0.1",
     "dotenv": "catalog:",
@@ -51,9 +52,8 @@
     "express": "4.22.2",
     "knex": "3.1.0",
     "stripe": "8.222.0",
-    "zod": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "zod": "catalog:"
   }
 }

@@ -12,46 +12,47 @@ const testUtils = require('../../utils');
  */
 
 describe('Settings', function () {
-    beforeAll(testUtils.setup());
+  beforeAll(testUtils.setup());
 
-    // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
-    const coreSettingKeys = [
-        'last_mentions_report_email_timestamp',
-        'db_hash',
-        'next_update_check',
-        'notifications',
-        'version_notifications',
-        'admin_session_secret',
-        'theme_session_secret',
-        'ghost_public_key',
-        'ghost_private_key',
-        'members_public_key',
-        'members_private_key',
-        'members_email_auth_secret',
-        'members_stripe_webhook_id',
-        'members_stripe_webhook_secret',
-        'members_otc_secret',
-        'machine_payments_secret',
-        'machine_payments_deposit_address',
-        'site_uuid'
-    ];
-    // If this test is failing, then it is likely a new setting has been added without group migration
-    // In case of `core` setting modifications, allowlist above needs to be updated
-    it('should not modify core keys without fixing this test', function () {
-        return db.knex('settings')
-            .where('group', 'core')
-            .whereNotIn('key', coreSettingKeys)
-            .count('*')
-            .then(function (data) {
-                const countResult = data[0]['count(*)'];
-                assert.equal(countResult, 0);
-            })
-            .catch(function (err) {
-            // CASE: table does not exist
-                if (err.errno === 1146) {
-                    return Promise.resolve();
-                }
-                throw err;
-            });
-    });
+  // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
+  const coreSettingKeys = [
+    'last_mentions_report_email_timestamp',
+    'db_hash',
+    'next_update_check',
+    'notifications',
+    'version_notifications',
+    'admin_session_secret',
+    'theme_session_secret',
+    'ghost_public_key',
+    'ghost_private_key',
+    'members_public_key',
+    'members_private_key',
+    'members_email_auth_secret',
+    'members_stripe_webhook_id',
+    'members_stripe_webhook_secret',
+    'members_otc_secret',
+    'machine_payments_secret',
+    'machine_payments_deposit_address',
+    'site_uuid',
+  ];
+  // If this test is failing, then it is likely a new setting has been added without group migration
+  // In case of `core` setting modifications, allowlist above needs to be updated
+  it('should not modify core keys without fixing this test', function () {
+    return db
+      .knex('settings')
+      .where('group', 'core')
+      .whereNotIn('key', coreSettingKeys)
+      .count('*')
+      .then(function (data) {
+        const countResult = data[0]['count(*)'];
+        assert.equal(countResult, 0);
+      })
+      .catch(function (err) {
+        // CASE: table does not exist
+        if (err.errno === 1146) {
+          return Promise.resolve();
+        }
+        throw err;
+      });
+  });
 });

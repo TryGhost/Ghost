@@ -1,54 +1,61 @@
-import {Locator, Page} from '@playwright/test';
-import {TagDetailsPage} from './tag-details-page';
-import {confirmDeleteTag, deleteTagModal, deleteTagPostsCount} from '@tryghost/test-data/selectors/tags';
+import { Locator, Page } from '@playwright/test';
+import { TagDetailsPage } from './tag-details-page';
+import {
+  confirmDeleteTag,
+  deleteTagModal,
+  deleteTagPostsCount,
+} from '@tryghost/test-data/selectors/tags';
 
 export class TagEditorPage extends TagDetailsPage {
-    readonly deleteModal: Locator;
-    readonly deleteModalPostsCount: Locator;
-    readonly deleteModalConfirmButton: Locator;
-    readonly tagActionsButton: Locator;
-    readonly deleteMenuItem: Locator;
+  readonly deleteModal: Locator;
+  readonly deleteModalPostsCount: Locator;
+  readonly deleteModalConfirmButton: Locator;
+  readonly tagActionsButton: Locator;
+  readonly deleteMenuItem: Locator;
 
-    constructor(page: Page) {
-        super(page);
+  constructor(page: Page) {
+    super(page);
 
-        this.pageUrl = '/ghost/#/tags';
+    this.pageUrl = '/ghost/#/tags';
 
-        // Ember renders data-test-* attributes; React renders data-testid.
-        // Match either so the same flows drive both implementations.
-        this.deleteModal = page.locator('[data-test-modal="confirm-delete-tag"]')
-            .or(page.getByTestId(deleteTagModal))
-            .filter({visible: true});
-        this.deleteModalPostsCount = this.deleteModal.locator('[data-test-text="posts-count"]')
-            .or(this.deleteModal.getByTestId(deleteTagPostsCount));
-        this.deleteModalConfirmButton = this.deleteModal.locator('[data-test-button="confirm"]')
-            .or(this.deleteModal.getByTestId(confirmDeleteTag));
-        this.tagActionsButton = page.getByRole('button', {name: 'Tag actions'});
-        this.deleteMenuItem = page.getByRole('menuitem', {name: 'Delete tag'});
+    // Ember renders data-test-* attributes; React renders data-testid.
+    // Match either so the same flows drive both implementations.
+    this.deleteModal = page
+      .locator('[data-test-modal="confirm-delete-tag"]')
+      .or(page.getByTestId(deleteTagModal))
+      .filter({ visible: true });
+    this.deleteModalPostsCount = this.deleteModal
+      .locator('[data-test-text="posts-count"]')
+      .or(this.deleteModal.getByTestId(deleteTagPostsCount));
+    this.deleteModalConfirmButton = this.deleteModal
+      .locator('[data-test-button="confirm"]')
+      .or(this.deleteModal.getByTestId(confirmDeleteTag));
+    this.tagActionsButton = page.getByRole('button', { name: 'Tag actions' });
+    this.deleteMenuItem = page.getByRole('menuitem', { name: 'Delete tag' });
+  }
+
+  async gotoTagBySlug(slug: string) {
+    this.pageUrl = `/ghost/#/tags/${slug}`;
+    await this.page.goto(this.pageUrl);
+  }
+
+  async updateTag(name: string, slug: string) {
+    await this.fillTagName(name);
+    await this.fillTagSlug(slug);
+    await this.save();
+  }
+
+  async deleteTag() {
+    if (await this.tagActionsButton.isVisible()) {
+      await this.tagActionsButton.click();
+      await this.deleteMenuItem.click();
+      return;
     }
 
-    async gotoTagBySlug(slug: string) {
-        this.pageUrl = `/ghost/#/tags/${slug}`;
-        await this.page.goto(this.pageUrl);
-    }
+    await this.deleteButton.click();
+  }
 
-    async updateTag(name: string, slug: string) {
-        await this.fillTagName(name);
-        await this.fillTagSlug(slug);
-        await this.save();
-    }
-
-    async deleteTag() {
-        if (await this.tagActionsButton.isVisible()) {
-            await this.tagActionsButton.click();
-            await this.deleteMenuItem.click();
-            return;
-        }
-
-        await this.deleteButton.click();
-    }
-
-    async confirmDelete() {
-        await this.deleteModalConfirmButton.click();
-    }
+  async confirmDelete() {
+    await this.deleteModalConfirmButton.click();
+  }
 }

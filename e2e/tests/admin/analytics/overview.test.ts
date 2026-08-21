@@ -1,79 +1,75 @@
-import {
-    AnalyticsGrowthPage,
-    AnalyticsOverviewPage,
-    AnalyticsWebTrafficPage
-} from '@/admin-pages';
-import {HomePage} from '@/public-pages';
-import {createPostFactory} from '@/data-factory';
-import {expect, test, withIsolatedPage} from '@/helpers/playwright';
+import { AnalyticsGrowthPage, AnalyticsOverviewPage, AnalyticsWebTrafficPage } from '@/admin-pages';
+import { HomePage } from '@/public-pages';
+import { createPostFactory } from '@/data-factory';
+import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Analytics Overview', () => {
-    test.beforeEach(async ({page}) => {
-        const postFactory = createPostFactory(page.request);
-        await postFactory.create({
-            title: 'Analytics overview test post',
-            status: 'published'
-        });
+  test.beforeEach(async ({ page }) => {
+    const postFactory = createPostFactory(page.request);
+    await postFactory.create({
+      title: 'Analytics overview test post',
+      status: 'published',
+    });
+  });
+
+  test('records visitor when homepage is visited', async ({ page, browser, baseURL }) => {
+    await withIsolatedPage(browser, { baseURL }, async ({ page: publicPage }) => {
+      const homePage = new HomePage(publicPage);
+      await homePage.goto();
     });
 
-    test('records visitor when homepage is visited', async ({page, browser, baseURL}) => {
-        await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-            const homePage = new HomePage(publicPage);
-            await homePage.goto();
-        });
+    const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+    await analyticsOverviewPage.goto();
+    await analyticsOverviewPage.refreshData();
 
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
-        await analyticsOverviewPage.refreshData();
+    expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(1);
+  });
 
-        expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(1);
-    });
+  test('latest post', async ({ page }) => {
+    const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+    await analyticsOverviewPage.goto();
 
-    test('latest post', async ({page}) => {
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
+    const membersCount = await analyticsOverviewPage.latestPost.membersCount();
+    const visitorsCount = await analyticsOverviewPage.latestPost.visitorsCount();
 
-        const membersCount = await analyticsOverviewPage.latestPost.membersCount();
-        const visitorsCount = await analyticsOverviewPage.latestPost.visitorsCount();
+    await expect(analyticsOverviewPage.latestPost.post).toBeVisible();
+    expect(visitorsCount).toContain('0');
+    expect(membersCount).toContain('0');
+  });
 
-        await expect(analyticsOverviewPage.latestPost.post).toBeVisible();
-        expect(visitorsCount).toContain('0');
-        expect(membersCount).toContain('0');
-    });
+  test('top posts', async ({ page }) => {
+    const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+    await analyticsOverviewPage.goto();
 
-    test('top posts', async ({page}) => {
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
+    await expect(analyticsOverviewPage.topPosts.post).toBeVisible();
 
-        await expect(analyticsOverviewPage.topPosts.post).toBeVisible();
+    const visitorsStatistics = await analyticsOverviewPage.topPosts.uniqueVisitorsStatistics();
+    const membersStatistics = await analyticsOverviewPage.topPosts.membersStatistics();
 
-        const visitorsStatistics = await analyticsOverviewPage.topPosts.uniqueVisitorsStatistics();
-        const membersStatistics = await analyticsOverviewPage.topPosts.membersStatistics();
+    expect(visitorsStatistics).toContain('Unique visitors');
+    expect(visitorsStatistics).toContain('0');
+    expect(membersStatistics).toContain('New members');
+    expect(membersStatistics).toContain('Free');
+    expect(membersStatistics).toContain('0');
+  });
 
-        expect(visitorsStatistics).toContain('Unique visitors');
-        expect(visitorsStatistics).toContain('0');
-        expect(membersStatistics).toContain('New members');
-        expect(membersStatistics).toContain('Free');
-        expect(membersStatistics).toContain('0');
-    });
+  test('view more unique visitors details', async ({ page }) => {
+    const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+    await analyticsOverviewPage.goto();
 
-    test('view more unique visitors details', async ({page}) => {
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
+    await analyticsOverviewPage.viewMoreUniqueVisitorDetails();
 
-        await analyticsOverviewPage.viewMoreUniqueVisitorDetails();
+    const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
+    await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toBeVisible();
+  });
 
-        const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-        await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toBeVisible();
-    });
+  test('view more members details', async ({ page }) => {
+    const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+    await analyticsOverviewPage.goto();
 
-    test('view more members details', async ({page}) => {
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
+    await analyticsOverviewPage.viewMoreMembersDetails();
 
-        await analyticsOverviewPage.viewMoreMembersDetails();
-
-        const analyticsGrowthPage = new AnalyticsGrowthPage(page);
-        await expect(analyticsGrowthPage.totalMembersCard).toBeVisible();
-    });
+    const analyticsGrowthPage = new AnalyticsGrowthPage(page);
+    await expect(analyticsGrowthPage.totalMembersCard).toBeVisible();
+  });
 });

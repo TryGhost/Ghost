@@ -1,304 +1,436 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
-import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, Field, FieldDescription, FieldLabel, GoogleLogo, Input, Switch, Tabs, TabsContent, TabsList, TabsTrigger, XLogo} from '@tryghost/shade/components';
-import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {LucideIcon} from '@tryghost/shade/utils';
-import {Pencil, Trash2} from 'lucide-react';
-import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {withErrorBoundary} from '@/settings/components/with-error-boundary';
+import { APIError } from '@tryghost/admin-x-framework/errors';
+import {
+  FacebookLogo,
+  Field,
+  FieldDescription,
+  FieldLabel,
+  GoogleLogo,
+  Input,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  XLogo,
+} from '@tryghost/shade/components';
+import {
+  ImageUpload,
+  ImageUploadAction,
+  ImageUploadActions,
+  ImageUploadDropzone,
+  ImageUploadImage,
+  ImageUploadPreview,
+} from '@tryghost/shade/patterns';
+import { LucideIcon } from '@tryghost/shade/utils';
+import { Pencil, Trash2 } from 'lucide-react';
+import { SettingGroupContent } from '@tryghost/shade/patterns';
+import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 interface SearchEnginePreviewProps {
-    title: string;
-    description: string;
-    icon?: string;
-    url?: string;
+  title: string;
+  description: string;
+  icon?: string;
+  url?: string;
 }
 
 const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
-    title,
-    description,
-    icon,
-    url
+  title,
+  description,
+  icon,
+  url,
 }) => {
-    const siteUrl = url?.replace(/\/$/, '');
-    const siteDomain = siteUrl?.replace(/^https?:\/\//, '').replace(/\/?$/, '');
+  const siteUrl = url?.replace(/\/$/, '');
+  const siteDomain = siteUrl?.replace(/^https?:\/\//, '').replace(/\/?$/, '');
 
-    return (
-        <div>
-            <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
-                <div className='-mt-4 mb-2 text-sm text-grey-500 uppercase dark:text-grey-800'>Preview</div>
-                <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-950'>
-                    <div className='mt-3 flex items-center'>
-                        <div>
-                            <GoogleLogo className='mr-7 h-7' />
-                        </div>
-                        <div className='grow'>
-                            <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
-                                <LucideIcon.Search className='size-4 stroke-2 text-blue-600' />
-                            </div>
-                        </div>
-                    </div>
-                    <div className='mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900'>
-                        <div className='flex size-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
-                            backgroundImage: icon ? `url(${icon})` : 'none',
-                            backgroundSize: 'contain'
-                        }}>
-                        </div>
-                        <div className='flex flex-col'>
-                            <span>{siteDomain}</span>
-                            <span className='-mt-0.5 inline-block text-sm text-grey-600'>{siteUrl}</span>
-                        </div>
-                    </div>
-                    <div className='mt-1 flex flex-col'>
-                        <span className='text-lg text-[#1a0dab] dark:text-blue'>{title}</span>
-                        <span className='text-grey-900 dark:text-grey-700'>{description}</span>
-                    </div>
-                </div>
+  return (
+    <div>
+      <div className="-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950">
+        <div className="-mt-4 mb-2 text-sm text-grey-500 uppercase dark:text-grey-800">Preview</div>
+        <div className="rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-950">
+          <div className="mt-3 flex items-center">
+            <div>
+              <GoogleLogo className="mr-7 h-7" />
             </div>
+            <div className="grow">
+              <div className="flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900">
+                <LucideIcon.Search className="size-4 stroke-2 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900">
+            <div
+              className="flex size-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700"
+              style={{
+                backgroundImage: icon ? `url(${icon})` : 'none',
+                backgroundSize: 'contain',
+              }}
+            ></div>
+            <div className="flex flex-col">
+              <span>{siteDomain}</span>
+              <span className="-mt-0.5 inline-block text-sm text-grey-600">{siteUrl}</span>
+            </div>
+          </div>
+          <div className="mt-1 flex flex-col">
+            <span className="text-lg text-[#1a0dab] dark:text-blue">{title}</span>
+            <span className="text-grey-900 dark:text-grey-700">{description}</span>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
-const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {
-        localSettings,
-        saveState,
-        siteData,
-        focusRef,
-        isEditing,
-        handleSave,
-        handleCancel,
-        handleEditingChange,
-        updateSetting
-    } = useSettingGroup();
+const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
+  const {
+    localSettings,
+    saveState,
+    siteData,
+    focusRef,
+    isEditing,
+    handleSave,
+    handleCancel,
+    handleEditingChange,
+    updateSetting,
+  } = useSettingGroup();
 
-    const handleError = useHandleError();
-    const {mutateAsync: uploadImage} = useUploadImage();
-    const editor = usePinturaEditor();
+  const handleError = useHandleError();
+  const { mutateAsync: uploadImage } = useUploadImage();
+  const editor = usePinturaEditor();
 
-    // Get all settings needed for all tabs
-    const [
-        metaTitle,
-        metaDescription,
-        siteTitle,
-        siteDescription,
-        facebookTitle,
-        facebookDescription,
-        facebookImage,
-        twitterTitle,
-        twitterDescription,
-        twitterImage
-    ] = getSettingValues(localSettings, [
-        'meta_title',
-        'meta_description',
-        'title',
-        'description',
-        'og_title',
-        'og_description',
-        'og_image',
-        'twitter_title',
-        'twitter_description',
-        'twitter_image'
-    ]).map(value => value || '') as string[];
+  // Get all settings needed for all tabs
+  const [
+    metaTitle,
+    metaDescription,
+    siteTitle,
+    siteDescription,
+    facebookTitle,
+    facebookDescription,
+    facebookImage,
+    twitterTitle,
+    twitterDescription,
+    twitterImage,
+  ] = getSettingValues(localSettings, [
+    'meta_title',
+    'meta_description',
+    'title',
+    'description',
+    'og_title',
+    'og_description',
+    'og_image',
+    'twitter_title',
+    'twitter_description',
+    'twitter_image',
+  ]).map((value) => value || '') as string[];
 
-    const [llmsEnabledValue] = getSettingValues(localSettings, ['llms_enabled']);
-    const llmsEnabled = llmsEnabledValue !== false;
+  const [llmsEnabledValue] = getSettingValues(localSettings, ['llms_enabled']);
+  const llmsEnabled = llmsEnabledValue !== false;
 
-    // Tab management
-    const [selectedTab, setSelectedTab] = useState('metadata');
+  // Tab management
+  const [selectedTab, setSelectedTab] = useState('metadata');
 
-    const createSettingHandler = (settingKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting(settingKey, e.target.value);
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
+  const createSettingHandler = (settingKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSetting(settingKey, e.target.value);
+    if (!isEditing) {
+      handleEditingChange(true);
+    }
+  };
 
-    const createImageUploadHandler = (settingKey: string) => async (file: File) => {
-        try {
-            const imageUrl = getImageUrl(await uploadImage({file}));
-            updateSetting(settingKey, imageUrl);
-            if (!isEditing) {
-                handleEditingChange(true);
-            }
-        } catch (e) {
-            const error = e as APIError;
-            if (error.response!.status === 415) {
-                error.message = 'Unsupported file type';
-            }
-            handleError(error);
-        }
-    };
+  const createImageUploadHandler = (settingKey: string) => async (file: File) => {
+    try {
+      const imageUrl = getImageUrl(await uploadImage({ file }));
+      updateSetting(settingKey, imageUrl);
+      if (!isEditing) {
+        handleEditingChange(true);
+      }
+    } catch (e) {
+      const error = e as APIError;
+      if (error.response!.status === 415) {
+        error.message = 'Unsupported file type';
+      }
+      handleError(error);
+    }
+  };
 
-    const createImageDeleteHandler = (settingKey: string) => () => {
-        updateSetting(settingKey, '');
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
+  const createImageDeleteHandler = (settingKey: string) => () => {
+    updateSetting(settingKey, '');
+    if (!isEditing) {
+      handleEditingChange(true);
+    }
+  };
 
-    // Meta data handlers
-    const handleLlmsToggleChange = (checked: boolean) => {
-        updateSetting('llms_enabled', checked);
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
-    const handleMetaTitleChange = createSettingHandler('meta_title');
-    const handleMetaDescriptionChange = createSettingHandler('meta_description');
+  // Meta data handlers
+  const handleLlmsToggleChange = (checked: boolean) => {
+    updateSetting('llms_enabled', checked);
+    if (!isEditing) {
+      handleEditingChange(true);
+    }
+  };
+  const handleMetaTitleChange = createSettingHandler('meta_title');
+  const handleMetaDescriptionChange = createSettingHandler('meta_description');
 
-    // Facebook handlers
-    const handleFacebookTitleChange = createSettingHandler('og_title');
-    const handleFacebookDescriptionChange = createSettingHandler('og_description');
-    const handleFacebookImageUpload = createImageUploadHandler('og_image');
-    const handleFacebookImageDelete = createImageDeleteHandler('og_image');
+  // Facebook handlers
+  const handleFacebookTitleChange = createSettingHandler('og_title');
+  const handleFacebookDescriptionChange = createSettingHandler('og_description');
+  const handleFacebookImageUpload = createImageUploadHandler('og_image');
+  const handleFacebookImageDelete = createImageDeleteHandler('og_image');
 
-    // Twitter handlers
-    const handleTwitterTitleChange = createSettingHandler('twitter_title');
-    const handleTwitterDescriptionChange = createSettingHandler('twitter_description');
-    const handleTwitterImageUpload = createImageUploadHandler('twitter_image');
-    const handleTwitterImageDelete = createImageDeleteHandler('twitter_image');
+  // Twitter handlers
+  const handleTwitterTitleChange = createSettingHandler('twitter_title');
+  const handleTwitterDescriptionChange = createSettingHandler('twitter_description');
+  const handleTwitterImageUpload = createImageUploadHandler('twitter_image');
+  const handleTwitterImageDelete = createImageDeleteHandler('twitter_image');
 
-    // Tab contents
-    const metadataTabContent = (
-        <>
-            <SettingGroupContent className="my-6 gap-3">
-                <Field orientation='horizontal'>
-                    <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
-                    <Switch checked={llmsEnabled} id='llms-enabled' onCheckedChange={handleLlmsToggleChange} />
-                </Field>
-                <Field><FieldLabel htmlFor='meta-title'>Meta title</FieldLabel><Input ref={focusRef} id='meta-title' maxLength={300} placeholder={siteTitle} value={metaTitle} onChange={handleMetaTitleChange} /><FieldDescription>Recommended: 70 characters</FieldDescription></Field>
-                <Field><FieldLabel htmlFor='meta-description'>Meta description</FieldLabel><Input id='meta-description' maxLength={500} placeholder={siteDescription} value={metaDescription} onChange={handleMetaDescriptionChange} /><FieldDescription>Recommended: 156 characters</FieldDescription></Field>
-            </SettingGroupContent>
-            <SearchEnginePreview
-                description={metaDescription ? metaDescription : siteDescription}
-                icon={siteData?.icon}
-                title={metaTitle ? metaTitle : siteTitle}
-                url={siteData?.url}
-            />
-        </>
-    );
+  // Tab contents
+  const metadataTabContent = (
+    <>
+      <SettingGroupContent className="my-6 gap-3">
+        <Field orientation="horizontal">
+          <FieldLabel htmlFor="llms-enabled">
+            Enable structured data for LLMs and AI search engines
+          </FieldLabel>
+          <Switch
+            checked={llmsEnabled}
+            id="llms-enabled"
+            onCheckedChange={handleLlmsToggleChange}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="meta-title">Meta title</FieldLabel>
+          <Input
+            ref={focusRef}
+            id="meta-title"
+            maxLength={300}
+            placeholder={siteTitle}
+            value={metaTitle}
+            onChange={handleMetaTitleChange}
+          />
+          <FieldDescription>Recommended: 70 characters</FieldDescription>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="meta-description">Meta description</FieldLabel>
+          <Input
+            id="meta-description"
+            maxLength={500}
+            placeholder={siteDescription}
+            value={metaDescription}
+            onChange={handleMetaDescriptionChange}
+          />
+          <FieldDescription>Recommended: 156 characters</FieldDescription>
+        </Field>
+      </SettingGroupContent>
+      <SearchEnginePreview
+        description={metaDescription ? metaDescription : siteDescription}
+        icon={siteData?.icon}
+        title={metaTitle ? metaTitle : siteTitle}
+        url={siteData?.url}
+      />
+    </>
+  );
 
-    const facebookTabContent = (
-        <div className="mt-6 md:mx-[52px]">
-            <div className="mb-4 flex items-center gap-2">
-                <div>
-                    <FacebookLogo className='size-10' />
-                </div>
-                <div>
-                    <div className="mb-1 leading-none font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</div>
-                    <div className="leading-none text-grey-700">2h</div>
-                </div>
-            </div>
-            <div>
-                <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
-                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
-                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
-                    <ImageUpload className='h-75 rounded-b-none'>
-                        {facebookImage ? (
-                            <ImageUploadPreview className='rounded-b-none'>
-                                <ImageUploadImage id='facebook-image' src={facebookImage} />
-                                <ImageUploadActions>
-                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit Facebook image' onClick={() => editor.openEditor({
-                                        image: facebookImage,
-                                        handleSave: async (file: File) => {
-                                            const imageUrl = getImageUrl(await uploadImage({file}));
-                                            updateSetting('og_image', imageUrl);
-                                        }
-                                    })}><Pencil /></ImageUploadAction>}
-                                    <ImageUploadAction aria-label='Remove Facebook image' data-testid='image-delete-button' onClick={handleFacebookImageDelete}><Trash2 /></ImageUploadAction>
-                                </ImageUploadActions>
-                            </ImageUploadPreview>
-                        ) : (
-                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload Facebook image' inputId='facebook-image' onDropAccepted={files => void handleFacebookImageUpload(files[0])}>
-                                Upload Facebook image
-                            </ImageUploadDropzone>
-                        )}
-                    </ImageUpload>
-                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
-                        <Field><FieldLabel htmlFor='facebook-title'>Facebook title</FieldLabel><Input id='facebook-title' maxLength={300} placeholder={siteTitle} value={facebookTitle} onChange={handleFacebookTitleChange} /></Field>
-                        <Field><FieldLabel htmlFor='facebook-description'>Facebook description</FieldLabel><Input id='facebook-description' maxLength={300} placeholder={siteDescription} value={facebookDescription} onChange={handleFacebookDescriptionChange} /></Field>
-                    </div>
-                </SettingGroupContent>
-            </div>
+  const facebookTabContent = (
+    <div className="mt-6 md:mx-[52px]">
+      <div className="mb-4 flex items-center gap-2">
+        <div>
+          <FacebookLogo className="size-10" />
         </div>
-    );
-
-    const twitterTabContent = (
-        <div className="mt-6 flex flex-col gap-3 md:flex-row">
-            <div className="pt-1">
-                <XLogo className='-mb-1 size-10' />
-            </div>
-            <div className="w-full md:mr-[52px]">
-                <div className="mb-2">
-                    <span className="mr-1 font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</span>
-                    <span className="text-grey-700">&#183; 2h</span>
-                </div>
-                <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
-                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
-                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
-                    <ImageUpload className='h-75 rounded-b-none'>
-                        {twitterImage ? (
-                            <ImageUploadPreview className='rounded-b-none'>
-                                <ImageUploadImage id='twitter-image' src={twitterImage} />
-                                <ImageUploadActions>
-                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit X image' onClick={() => editor.openEditor({
-                                        image: twitterImage,
-                                        handleSave: async (file: File) => {
-                                            const imageUrl = getImageUrl(await uploadImage({file}));
-                                            updateSetting('twitter_image', imageUrl);
-                                        }
-                                    })}><Pencil /></ImageUploadAction>}
-                                    <ImageUploadAction aria-label='Remove X image' data-testid='image-delete-button' onClick={handleTwitterImageDelete}><Trash2 /></ImageUploadAction>
-                                </ImageUploadActions>
-                            </ImageUploadPreview>
-                        ) : (
-                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload X image' inputId='twitter-image' onDropAccepted={files => void handleTwitterImageUpload(files[0])}>
-                                Upload X image
-                            </ImageUploadDropzone>
-                        )}
-                    </ImageUpload>
-                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
-                        <Field><FieldLabel htmlFor='x-title'>X title</FieldLabel><Input id='x-title' maxLength={300} placeholder={siteTitle} value={twitterTitle} onChange={handleTwitterTitleChange} /></Field>
-                        <Field><FieldLabel htmlFor='x-description'>X description</FieldLabel><Input id='x-description' maxLength={300} placeholder={siteDescription} value={twitterDescription} onChange={handleTwitterDescriptionChange} /></Field>
-                    </div>
-                </SettingGroupContent>
-            </div>
+        <div>
+          <div className="mb-1 leading-none font-semibold text-grey-900 dark:text-grey-300">
+            {siteTitle}
+          </div>
+          <div className="leading-none text-grey-700">2h</div>
         </div>
-    );
+      </div>
+      <div>
+        <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
+        <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
+        <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
+          <ImageUpload className="h-75 rounded-b-none">
+            {facebookImage ? (
+              <ImageUploadPreview className="rounded-b-none">
+                <ImageUploadImage id="facebook-image" src={facebookImage} />
+                <ImageUploadActions>
+                  {editor.isEnabled && (
+                    <ImageUploadAction
+                      aria-label="Edit Facebook image"
+                      onClick={() =>
+                        editor.openEditor({
+                          image: facebookImage,
+                          handleSave: async (file: File) => {
+                            const imageUrl = getImageUrl(await uploadImage({ file }));
+                            updateSetting('og_image', imageUrl);
+                          },
+                        })
+                      }
+                    >
+                      <Pencil />
+                    </ImageUploadAction>
+                  )}
+                  <ImageUploadAction
+                    aria-label="Remove Facebook image"
+                    data-testid="image-delete-button"
+                    onClick={handleFacebookImageDelete}
+                  >
+                    <Trash2 />
+                  </ImageUploadAction>
+                </ImageUploadActions>
+              </ImageUploadPreview>
+            ) : (
+              <ImageUploadDropzone
+                className="rounded-b-none"
+                inputAriaLabel="Upload Facebook image"
+                inputId="facebook-image"
+                onDropAccepted={(files) => void handleFacebookImageUpload(files[0])}
+              >
+                Upload Facebook image
+              </ImageUploadDropzone>
+            )}
+          </ImageUpload>
+          <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
+            <Field>
+              <FieldLabel htmlFor="facebook-title">Facebook title</FieldLabel>
+              <Input
+                id="facebook-title"
+                maxLength={300}
+                placeholder={siteTitle}
+                value={facebookTitle}
+                onChange={handleFacebookTitleChange}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="facebook-description">Facebook description</FieldLabel>
+              <Input
+                id="facebook-description"
+                maxLength={300}
+                placeholder={siteDescription}
+                value={facebookDescription}
+                onChange={handleFacebookDescriptionChange}
+              />
+            </Field>
+          </div>
+        </SettingGroupContent>
+      </div>
+    </div>
+  );
 
-    return (
-        <TopLevelGroup
-            description='Extra content for search engines and social accounts'
-            isEditing={isEditing}
-            keywords={keywords}
-            navid='metadata'
-            saveState={saveState}
-            testId='seometa'
-            title='Meta data'
-            hideEditButton
-            onCancel={handleCancel}
-            onEditingChange={handleEditingChange}
-            onSave={handleSave}
-        >
-            <Tabs data-testid='seo-tabview' value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
-                <TabsList>
-                    <TabsTrigger value='metadata'>Search</TabsTrigger>
-                    <TabsTrigger value='twitter'>X card</TabsTrigger>
-                    <TabsTrigger value='facebook'>Facebook card</TabsTrigger>
-                </TabsList>
-                <TabsContent value='metadata'>{metadataTabContent}</TabsContent>
-                <TabsContent value='twitter'>{twitterTabContent}</TabsContent>
-                <TabsContent value='facebook'>{facebookTabContent}</TabsContent>
-            </Tabs>
-        </TopLevelGroup>
-    );
+  const twitterTabContent = (
+    <div className="mt-6 flex flex-col gap-3 md:flex-row">
+      <div className="pt-1">
+        <XLogo className="-mb-1 size-10" />
+      </div>
+      <div className="w-full md:mr-[52px]">
+        <div className="mb-2">
+          <span className="mr-1 font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</span>
+          <span className="text-grey-700">&#183; 2h</span>
+        </div>
+        <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
+        <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
+        <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
+          <ImageUpload className="h-75 rounded-b-none">
+            {twitterImage ? (
+              <ImageUploadPreview className="rounded-b-none">
+                <ImageUploadImage id="twitter-image" src={twitterImage} />
+                <ImageUploadActions>
+                  {editor.isEnabled && (
+                    <ImageUploadAction
+                      aria-label="Edit X image"
+                      onClick={() =>
+                        editor.openEditor({
+                          image: twitterImage,
+                          handleSave: async (file: File) => {
+                            const imageUrl = getImageUrl(await uploadImage({ file }));
+                            updateSetting('twitter_image', imageUrl);
+                          },
+                        })
+                      }
+                    >
+                      <Pencil />
+                    </ImageUploadAction>
+                  )}
+                  <ImageUploadAction
+                    aria-label="Remove X image"
+                    data-testid="image-delete-button"
+                    onClick={handleTwitterImageDelete}
+                  >
+                    <Trash2 />
+                  </ImageUploadAction>
+                </ImageUploadActions>
+              </ImageUploadPreview>
+            ) : (
+              <ImageUploadDropzone
+                className="rounded-b-none"
+                inputAriaLabel="Upload X image"
+                inputId="twitter-image"
+                onDropAccepted={(files) => void handleTwitterImageUpload(files[0])}
+              >
+                Upload X image
+              </ImageUploadDropzone>
+            )}
+          </ImageUpload>
+          <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
+            <Field>
+              <FieldLabel htmlFor="x-title">X title</FieldLabel>
+              <Input
+                id="x-title"
+                maxLength={300}
+                placeholder={siteTitle}
+                value={twitterTitle}
+                onChange={handleTwitterTitleChange}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="x-description">X description</FieldLabel>
+              <Input
+                id="x-description"
+                maxLength={300}
+                placeholder={siteDescription}
+                value={twitterDescription}
+                onChange={handleTwitterDescriptionChange}
+              />
+            </Field>
+          </div>
+        </SettingGroupContent>
+      </div>
+    </div>
+  );
+
+  return (
+    <TopLevelGroup
+      description="Extra content for search engines and social accounts"
+      isEditing={isEditing}
+      keywords={keywords}
+      navid="metadata"
+      saveState={saveState}
+      testId="seometa"
+      title="Meta data"
+      hideEditButton
+      onCancel={handleCancel}
+      onEditingChange={handleEditingChange}
+      onSave={handleSave}
+    >
+      <Tabs
+        data-testid="seo-tabview"
+        value={selectedTab}
+        variant="underline"
+        onValueChange={setSelectedTab}
+      >
+        <TabsList>
+          <TabsTrigger value="metadata">Search</TabsTrigger>
+          <TabsTrigger value="twitter">X card</TabsTrigger>
+          <TabsTrigger value="facebook">Facebook card</TabsTrigger>
+        </TabsList>
+        <TabsContent value="metadata">{metadataTabContent}</TabsContent>
+        <TabsContent value="twitter">{twitterTabContent}</TabsContent>
+        <TabsContent value="facebook">{facebookTabContent}</TabsContent>
+      </Tabs>
+    </TopLevelGroup>
+  );
 };
 
 export default withErrorBoundary(SEOMeta, 'SEO meta');

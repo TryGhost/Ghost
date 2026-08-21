@@ -1,45 +1,45 @@
-import {Gift} from '../../../../../core/server/services/gifts/gift';
-import type {GiftDeliveryData} from '../../../../../core/server/services/gifts/gift-delivery-schema';
+import { Gift } from '../../../../../core/server/services/gifts/gift';
+import type { GiftDeliveryData } from '../../../../../core/server/services/gifts/gift-delivery-schema';
 
 export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
-    return new Gift({
-        token: 'gift-token',
-        buyerEmail: 'buyer@example.com',
-        buyerMemberId: 'buyer_member_1',
-        redeemerMemberId: null,
-        tierId: 'tier_1',
-        cadence: 'year',
-        duration: 1,
-        currency: 'usd',
-        amount: 5000,
-        stripeCheckoutSessionId: 'cs_123',
-        stripePaymentIntentId: 'pi_456',
-        checkoutStartedAt: new Date('2026-01-01T00:00:00.000Z'),
-        consumesAt: null,
-        expiresAt: new Date('2030-01-01T00:00:00.000Z'),
-        status: 'purchased',
-        purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
-        redeemedAt: null,
-        consumedAt: null,
-        expiredAt: null,
-        refundedAt: null,
-        consumesSoonReminderSentAt: null,
-        ...overrides
-    });
+  return new Gift({
+    token: 'gift-token',
+    buyerEmail: 'buyer@example.com',
+    buyerMemberId: 'buyer_member_1',
+    redeemerMemberId: null,
+    tierId: 'tier_1',
+    cadence: 'year',
+    duration: 1,
+    currency: 'usd',
+    amount: 5000,
+    stripeCheckoutSessionId: 'cs_123',
+    stripePaymentIntentId: 'pi_456',
+    checkoutStartedAt: new Date('2026-01-01T00:00:00.000Z'),
+    consumesAt: null,
+    expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+    status: 'purchased',
+    purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
+    redeemedAt: null,
+    consumedAt: null,
+    expiredAt: null,
+    refundedAt: null,
+    consumesSoonReminderSentAt: null,
+    ...overrides,
+  });
 }
 
 export function buildGiftDelivery(overrides: Partial<GiftDeliveryData> = {}): GiftDeliveryData {
-    return {
-        id: 'delivery_1',
-        giftId: 'gift_1',
-        recipientEmail: 'recipient@example.com',
-        status: 'pending',
-        startedAt: null,
-        emailSentAt: null,
-        emailProviderMessageId: null,
-        outcome: 'unknown',
-        outcomeAt: null,
-        outcomeError: null,
-        ...overrides
-    };
+  return {
+    id: 'delivery_1',
+    giftId: 'gift_1',
+    recipientEmail: 'recipient@example.com',
+    status: 'pending',
+    startedAt: null,
+    emailSentAt: null,
+    emailProviderMessageId: null,
+    outcome: 'unknown',
+    outcomeAt: null,
+    outcomeError: null,
+    ...overrides,
+  };
 }

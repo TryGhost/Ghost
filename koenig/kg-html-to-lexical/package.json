@@ -2,16 +2,18 @@
   "name": "@tryghost/kg-html-to-lexical",
   "version": "1.4.0",
   "description": "Converts HTML strings into Lexical editor state for Ghost",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "koenig/kg-html-to-lexical"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
-  "engines": {
-    "node": "^22.22.2 || ^24.15.0"
-  },
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -23,6 +25,9 @@
       "require": "./build/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -30,24 +35,6 @@
     "test:types": "tsc --noEmit",
     "test": "pnpm run '/^test:/'",
     "lint": "eslint"
-  },
-  "files": [
-    "build",
-    "LICENSE",
-    "README.md"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@types/jsdom": "catalog:",
-    "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
@@ -60,5 +47,18 @@
     "@tryghost/kg-default-transforms": "workspace:~",
     "jsdom": "catalog:",
     "lexical": "0.13.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/jsdom": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0"
   }
 }

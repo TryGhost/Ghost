@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 /* Disable scrolling inside iframe */
-body, html {
-    overflow: hidden;
+body,
+html {
+  overflow: hidden;
 }
