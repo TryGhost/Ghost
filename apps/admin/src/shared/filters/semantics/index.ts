@@ -1,4 +1,3 @@
-
 export * from './types';
 export * from './operator-table';
 export * from './text';

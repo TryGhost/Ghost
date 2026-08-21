@@ -8,24 +8,24 @@
  * A namespace may be written with or without its trailing dot; both name the same steps.
  */
 function steps(key: string): string[] {
-    return key.split('.').filter(Boolean);
+  return key.split('.').filter(Boolean);
 }
 
 /** Whether `key` is the namespace itself, or sits somewhere beneath it. */
 export function keyIsUnder(key: string, namespace: string): boolean {
-    const under = steps(key);
-    const above = steps(namespace);
+  const under = steps(key);
+  const above = steps(namespace);
 
-    return above.length <= under.length && above.every((step, index) => step === under[index]);
+  return above.length <= under.length && above.every((step, index) => step === under[index]);
 }
 
 /** What `key` is called beneath `namespace`, or null when it does not sit beneath it. */
 export function keyBelow(key: string, namespace: string): string | null {
-    if (!keyIsUnder(key, namespace)) {
-        return null;
-    }
+  if (!keyIsUnder(key, namespace)) {
+    return null;
+  }
 
-    const rest = steps(key).slice(steps(namespace).length);
+  const rest = steps(key).slice(steps(namespace).length);
 
-    return rest.length ? rest.join('.') : null;
+  return rest.length ? rest.join('.') : null;
 }

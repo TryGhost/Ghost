@@ -17,8 +17,8 @@ export * from './filter-relative-date';
 export * from './filter-types';
 export * from './resolve-field';
 
-export type {FieldIcon} from './filter-providers';
-export {FIELD_ICONS} from './field-icons';
+export type { FieldIcon } from './filter-providers';
+export { FIELD_ICONS } from './field-icons';
 
-export {domainField} from './filter-providers';
-export type {PlainAddressing, PresenceAddressing} from './filter-addressing';
+export { domainField } from './filter-providers';
+export type { PlainAddressing, PresenceAddressing } from './filter-addressing';

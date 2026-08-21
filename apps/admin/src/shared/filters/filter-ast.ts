@@ -1,73 +1,80 @@
 export type AstNode = Record<string, unknown>;
 
 export function isAstNode(value: unknown): value is AstNode {
-    return typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof RegExp);
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !(value instanceof RegExp)
+  );
 }
 
 export function getCompoundChildren(node: AstNode, operator: '$and' | '$or'): AstNode[] | null {
-    const children = node[operator];
+  const children = node[operator];
 
-    if (!Array.isArray(children) || !children.every(isAstNode)) {
-        return null;
-    }
+  if (!Array.isArray(children) || !children.every(isAstNode)) {
+    return null;
+  }
 
-    return children;
+  return children;
 }
 
 export function readNegatedString(value: unknown): string | null {
-    if (!isAstNode(value)) {
-        return null;
-    }
+  if (!isAstNode(value)) {
+    return null;
+  }
 
-    return typeof value.$ne === 'string' ? value.$ne : null;
+  return typeof value.$ne === 'string' ? value.$ne : null;
 }
 
 export function extractFieldName(node: AstNode): string | undefined {
-    const keys = Object.keys(node);
+  const keys = Object.keys(node);
 
-    if (keys.length !== 1) {
-        return undefined;
-    }
+  if (keys.length !== 1) {
+    return undefined;
+  }
 
-    const [field] = keys;
+  const [field] = keys;
 
-    if (field.startsWith('$')) {
-        return undefined;
-    }
+  if (field.startsWith('$')) {
+    return undefined;
+  }
 
-    return field;
+  return field;
 }
 
-export function toComparator(value: unknown): {operator: string; value: unknown} | undefined {
-    if (isAstNode(value)) {
-        const entries = Object.entries(value);
+export function toComparator(value: unknown): { operator: string; value: unknown } | undefined {
+  if (isAstNode(value)) {
+    const entries = Object.entries(value);
 
-        if (entries.length !== 1) {
-            return undefined;
-        }
-
-        const [operator, comparatorValue] = entries[0];
-        return {operator, value: comparatorValue};
+    if (entries.length !== 1) {
+      return undefined;
     }
 
-    return {
-        operator: '$eq',
-        value
-    };
+    const [operator, comparatorValue] = entries[0];
+    return { operator, value: comparatorValue };
+  }
+
+  return {
+    operator: '$eq',
+    value,
+  };
 }
 
-export function extractComparator(node: AstNode): {field: string; operator: string; value: unknown} | undefined {
-    const field = extractFieldName(node);
+export function extractComparator(
+  node: AstNode,
+): { field: string; operator: string; value: unknown } | undefined {
+  const field = extractFieldName(node);
 
-    if (!field) {
-        return undefined;
-    }
+  if (!field) {
+    return undefined;
+  }
 
-    const comparator = toComparator(node[field]);
+  const comparator = toComparator(node[field]);
 
-    if (!comparator) {
-        return undefined;
-    }
+  if (!comparator) {
+    return undefined;
+  }
 
-    return {field, ...comparator};
+  return { field, ...comparator };
 }

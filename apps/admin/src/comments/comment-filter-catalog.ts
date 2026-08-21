@@ -1,6 +1,6 @@
-import {buildCatalog} from '@/shared/filters';
-import {COMMENT_FIELDS} from './comment-fields';
-import type {FilterField} from '@/shared/filters';
+import { buildCatalog } from '@/shared/filters';
+import { COMMENT_FIELDS } from './comment-fields';
+import type { FilterField } from '@/shared/filters';
 
 export type CommentFields = Record<string, FilterField>;
 
