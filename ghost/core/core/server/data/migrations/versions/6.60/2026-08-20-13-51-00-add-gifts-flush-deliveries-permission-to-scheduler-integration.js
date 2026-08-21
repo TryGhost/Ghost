@@ -1,9 +1,10 @@
-const {addPermissionWithRoles} = require('../../utils');
+const { addPermissionWithRoles } = require('../../utils');
 
-module.exports = addPermissionWithRoles({
+module.exports = addPermissionWithRoles(
+  {
     name: 'Flush gift deliveries',
     action: 'flushDeliveries',
-    object: 'gift'
-}, [
-    'Scheduler Integration'
-]);
+    object: 'gift',
+  },
+  ['Scheduler Integration'],
+);
