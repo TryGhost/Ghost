@@ -105,6 +105,22 @@ const appRoutes: RouteObject[] = [
         handle: {hideAdminSidebar: true, requiresAccess: canManageAutomations} satisfies AdminRouteHandle & AccessRouteHandle,
         lazy: lazyComponent(() => import("./automations/editor")),
     },
+    // Automations prototype. Reached directly by URL — there's no index; the
+    // sidebar item points at it. Same access rule as the real automations
+    // routes. (A second concept, "surface", lived here until its variants were
+    // decided; it's in the branch history if it's ever wanted back.)
+    {
+        path: "/automations-proto/float",
+        handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+        lazy: lazyComponent(() => import("./automations/proto/float/list")),
+    },
+    {
+        // Float replaces the docked left pane with floating chrome, so the
+        // detail screen hides the admin sidebar for a full-screen canvas.
+        path: "/automations-proto/float/:id",
+        handle: {hideAdminSidebar: true, requiresAccess: canManageAutomations} satisfies AdminRouteHandle & AccessRouteHandle,
+        lazy: lazyComponent(() => import("./automations/proto/float/detail")),
+    },
     {
         // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
         // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
