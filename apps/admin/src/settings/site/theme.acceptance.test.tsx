@@ -14,6 +14,8 @@ import {
   type Theme,
 } from '@test-utils/acceptance';
 import * as sel from '@tryghost/test-data/selectors/settings';
+import { STICKY_FOOTER_TESTID } from '@/settings/components/confirmation-modal';
+import { THEME_PROBLEM_LIST_TESTID } from '@/settings/site/theme/theme-validation-details';
 import { settingsScreen } from '@/settings/settings.screen';
 
 function themes(): Theme[] {
@@ -132,6 +134,12 @@ function codeSpan(text: string): HTMLElement {
     throw new Error(`No <code> reading ${text} was rendered`);
   }
   return match;
+}
+
+/** Every bordered problem list in the open dialog, in document order. */
+function problemLists(): HTMLElement[] {
+  const dialog = settingsScreen.confirmationModal().element();
+  return [...dialog.querySelectorAll<HTMLElement>(`[data-testid="${THEME_PROBLEM_LIST_TESTID}"]`)];
 }
 
 async function editorTextbox() {
@@ -455,11 +463,13 @@ describe('Theme settings', () => {
     await expect.element(dialog).toHaveTextContent('1 error, 8 warnings');
 
     const scroller = dialog.element() as HTMLElement;
-    const list = scroller.querySelector<HTMLElement>('div.overflow-hidden.rounded-lg.border')!;
-    const footer = scroller.querySelector<HTMLElement>('.z-\\[297\\]')!;
-    // The footer's own background: `sticky bottom-0`, 84px tall, and the
-    // only thing standing between scrolling rows and the buttons.
-    const mask = scroller.querySelector<HTMLElement>('.z-\\[299\\]')!;
+    const [list] = problemLists();
+    const footer = scroller.querySelector<HTMLElement>(`[data-testid="${STICKY_FOOTER_TESTID}"]`)!;
+    // The footer's own background: `sticky bottom-0`, 84px tall, and the only
+    // thing standing between scrolling rows and the buttons. It's the part of
+    // the footer the buttons sit in — the other parts are decoration.
+    const okButton = dialog.getByTestId('ok-modal').element();
+    const mask = [...footer.children].find((part) => part.contains(okButton)) as HTMLElement;
     expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
     expect(getComputedStyle(mask).backgroundColor).not.toMatch(/rgba\(.*, 0\)$/);
 
@@ -581,9 +591,7 @@ describe('Theme settings', () => {
 
     // Both groups are errors; only one of them stopped the upload. Labelling
     // them identically leaves the dialog unable to say which.
-    const lists = errorModal
-      .element()
-      .querySelectorAll<HTMLElement>('div.overflow-hidden.rounded-lg.border');
+    const lists = problemLists();
     expect(lists).toHaveLength(2);
     expect(lists[0].textContent).toContain('GS010-PJ-REQ');
     expect(lists[0].textContent).toContain('Blocking');
@@ -672,6 +680,59 @@ describe('Theme settings', () => {
     await expect.element(settingsScreen.successToast()).toHaveTextContent(/Theme saved/i);
     expect(uploadApi.requests).toHaveLength(1);
   });
+
+  it.each([
+    {
+      severity: 'warnings',
+      problems: { warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })] },
+      sentence: 'edition is now visible to your readers, but it has some warnings.',
+      summary: '1 warning',
+    },
+    {
+      severity: 'issues',
+      problems: {
+        errors: [
+          themeProblem({
+            code: 'GS005-TPL-ERR',
+            level: 'error',
+            rule: 'Templates must contain valid Handlebars',
+          }),
+        ],
+        warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })],
+      },
+      sentence: 'edition is now visible to your readers, but it has some issues.',
+      summary: '1 error, 1 warning',
+    },
+  ])(
+    'says the live theme carries $severity after saving it',
+    async ({ problems, sentence, summary }) => {
+      fakeThemeWorld();
+      await fakeThemeDownload('edition');
+      fakeAdminEndpoint('POST', '/themes/upload/', {
+        themes: [theme({ name: 'edition', active: true, ...problems })],
+      });
+      await renderAdminApp('/settings/theme/edit/edition');
+
+      const editor = await editorTextbox();
+      await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+      await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
+      await settingsScreen
+        .themeEditorConfirmModal()
+        .getByRole('button', { name: 'Replace theme' })
+        .click();
+
+      // The saved theme is the live one, so the dialog reports it as live —
+      // but a set of problems is listed directly underneath, and calling that
+      // a clean success contradicts the list saying otherwise.
+      const installedModal = settingsScreen.confirmationModal();
+      await expect.element(installedModal).toHaveTextContent(sentence);
+      await expect.element(installedModal).not.toHaveTextContent('successfully');
+      await expect.element(installedModal).toHaveTextContent(summary);
+      await expect.element(installedModal.getByRole('link', { name: /Take a look/ })).toBeVisible();
+      // Nothing left to activate, so the dialog only acknowledges.
+      await expect.element(installedModal.getByTestId('ok-modal')).toHaveTextContent('OK');
+    },
+  );
 
   it('runs the current save flow from the keyboard shortcut', async () => {
     fakeThemeWorld();

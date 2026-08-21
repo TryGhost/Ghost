@@ -7,8 +7,10 @@ import {
   Badge,
 } from '@tryghost/shade/components';
 import {
+  type DisplayVariant,
   SEVERITY_ORDER,
   getDisplaySeverity,
+  getDisplayVariant,
   hasErrorProblem,
   sortBySeverity,
 } from './theme-validation-issues';
@@ -21,40 +23,42 @@ import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
  * selector loses to any class, so each property it sets has to be answered
  * explicitly — including `border-radius`, `vertical-align` and `line-height`,
  * whose absence reads as baseline drift rather than an obvious box.
+ *
+ * Written once and applied to `<code>` descendants, so inline mono looks the
+ * same whether the markup came from gscan or from us. Class names are spelled
+ * out in full rather than assembled, because Tailwind only generates the
+ * utilities it can find literally in the source.
  */
-const LEGACY_CODE_RESET =
-  '[&_code]:rounded-none [&_code]:border-0 [&_code]:bg-transparent [&_code]:p-0 [&_code]:align-baseline [&_code]:text-inherit [&_code]:leading-[inherit]';
+const CODE_RESET =
+  '[&_code]:rounded-none [&_code]:border-0 [&_code]:bg-transparent [&_code]:p-0 [&_code]:align-baseline [&_code]:font-mono [&_code]:text-inherit [&_code]:leading-[inherit]';
 
 /**
- * The same reset applied straight to a `<code>` element we render ourselves,
- * so inline mono looks identical whether it came from gscan's HTML or from us.
- * Size is left to the line it sits on: nothing should read larger than its
- * surrounding text.
+ * A bare `font-family: monospace` drops to the browser's mono default, which
+ * reads a size smaller, so the size of the surrounding text is restated.
  */
-const INLINE_CODE =
-  'rounded-none border-0 bg-transparent p-0 align-baseline font-mono text-inherit leading-[inherit]';
+const CODE_SIZE = {
+  base: '[&_code]:text-base',
+  sm: '[&_code]:text-sm',
+} as const;
+
+/** The reset, at the size of the text the code sits in. */
+function codeStyles(size: keyof typeof CODE_SIZE): string {
+  return `${CODE_RESET} ${CODE_SIZE[size]}`;
+}
 
 /**
  * gscan writes `rule` and `details` as HTML containing `<code>`, `<br>` and
- * `<a>`. We render it verbatim, so the mono treatment for inline code is
- * applied by styling those descendants rather than touching the markup. The
- * explicit `[&_code]:text-*` matches the block's own size, because a bare
- * `font-family: monospace` otherwise drops to the browser's mono default.
+ * `<a>`. We render it verbatim, so inline code is styled through those
+ * descendants rather than by touching the markup.
  */
-const RULE_HTML = `text-base leading-[1.45] font-semibold text-foreground [&_code]:font-mono [&_code]:text-base ${LEGACY_CODE_RESET}`;
-const DETAILS_HTML = `text-sm leading-[1.45] text-foreground [&_a]:underline [&_code]:font-mono [&_code]:text-sm ${LEGACY_CODE_RESET}`;
+const RULE_HTML = `text-base leading-[1.45] font-semibold text-foreground ${codeStyles('base')}`;
+const DETAILS_HTML = `text-sm leading-[1.45] text-foreground [&_a]:underline ${codeStyles('sm')}`;
 
-function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | 'secondary' {
-  if (problem.level === 'warning') {
-    return 'warning';
-  }
-
-  if (problem.level === 'recommendation') {
-    return 'secondary';
-  }
-
-  return 'destructive';
-}
+/**
+ * A filename is inline mono like any other, so it carries no chip: the same
+ * reset the details above it get, at the same size.
+ */
+const FAILURE_LIST = `space-y-1 text-sm text-muted-foreground ${codeStyles('sm')}`;
 
 /**
  * Counts a set of problems by display severity, most severe first, dropping
@@ -86,13 +90,7 @@ function problemValue(problem: ThemeProblem, index: number): string {
   return `${problem.code || 'issue'}-${index}`;
 }
 
-function SeverityBadge({
-  children,
-  variant,
-}: {
-  children: string;
-  variant: 'destructive' | 'warning' | 'secondary';
-}) {
+function SeverityBadge({ children, variant }: { children: string; variant: DisplayVariant }) {
   return (
     <Badge className="py-1 font-mono text-sm leading-none uppercase" variant={variant}>
       {children}
@@ -107,12 +105,10 @@ function ProblemDetails({ problem }: { problem: ThemeProblem }) {
       {problem.failures?.length > 0 && (
         <div>
           <h6 className="mb-1 text-base font-semibold text-muted-foreground">Affected files</h6>
-          <ul className="space-y-1 text-sm text-muted-foreground">
+          <ul className={FAILURE_LIST}>
             {problem.failures.map((failure) => (
               <li key={`${failure.ref}-${failure.message || ''}`}>
-                {/* A filename is inline mono like any other, so it carries no chip:
-                                    same size, colour and family as the code in the details above. */}
-                <code className={`${INLINE_CODE} text-sm`}>{failure.ref}</code>
+                <code>{failure.ref}</code>
                 {failure.message ? <span>: {failure.message}</span> : null}
               </li>
             ))}
@@ -134,8 +130,12 @@ function ValidationProblemItem({
 }) {
   const severity = getDisplaySeverity(problem);
 
+  // Shade's own `border-b` leaves the colour to the cascade. A row divider
+  // inside an opaque card takes the opaque token, not the translucent one
+  // floating surfaces composite with — which reads as a missing line in dark
+  // mode.
   return (
-    <AccordionItem className="last:border-b-0" value={value}>
+    <AccordionItem className="border-border-default last:border-b-0" value={value}>
       {/* Expanding closes the trigger's own bottom padding so the details
                 sit under the rule line rather than a row's worth of space. */}
       <AccordionTrigger className="items-start gap-3 p-5 hover:no-underline data-[state=open]:pb-1 [&>svg]:mt-1">
@@ -163,7 +163,7 @@ function ValidationProblemItem({
 /** A bare error string from the API: same row as a problem, minus anything to expand. */
 function ValidationMessageRow({ errorLabel, message }: { errorLabel: string; message: string }) {
   return (
-    <div className="flex flex-col gap-2 border-b border-border p-5 last:border-b-0">
+    <div className="flex flex-col gap-2 border-b border-border-default p-5 last:border-b-0">
       <div className="flex items-center gap-3">
         <SeverityBadge variant="destructive">{errorLabel}</SeverityBadge>
       </div>
@@ -171,6 +171,12 @@ function ValidationMessageRow({ errorLabel, message }: { errorLabel: string; mes
     </div>
   );
 }
+
+/**
+ * Names the bordered container so tests can address a whole list — and tell
+ * two of them apart — without reaching for the utility classes that draw it.
+ */
+export const THEME_PROBLEM_LIST_TESTID = 'theme-problem-list';
 
 /**
  * The problems themselves: one bordered container, one row per problem,
@@ -183,13 +189,11 @@ function ValidationMessageRow({ errorLabel, message }: { errorLabel: string; mes
  * `Blocking`, the ones merely reported alongside them stay `Error`.
  */
 export function ValidationProblemList({
-  className,
   errorLabel = 'Error',
   expandedByDefault = false,
   messages = [],
   problems,
 }: {
-  className?: string;
   errorLabel?: string;
   expandedByDefault?: boolean;
   messages?: string[];
@@ -203,7 +207,10 @@ export function ValidationProblemList({
   }
 
   return (
-    <div className={cn('overflow-hidden rounded-lg border border-border', className)}>
+    <div
+      className="overflow-hidden rounded-lg border border-border-default"
+      data-testid={THEME_PROBLEM_LIST_TESTID}
+    >
       {messages.map((message) => (
         <ValidationMessageRow key={message} errorLabel={errorLabel} message={message} />
       ))}

@@ -1,18 +1,20 @@
 import React from 'react';
 import { ConfirmationModalContent } from '@/settings/components/confirmation-modal';
 import { ThemeValidationIssueList, ValidationProblemList } from './theme-validation-details';
-import { type FatalErrors, getIssuesFromFatalErrors } from './theme-validation-issues';
+import {
+  type FatalErrors,
+  type ThemeAction,
+  getIssuesFromFatalErrors,
+} from './theme-validation-issues';
 
 export type { FatalErrors } from './theme-validation-issues';
-
-/** Past tense of the action that Ghost refused to complete. */
-export type InvalidThemeAction = 'uploaded' | 'activated' | 'saved';
 
 export type InvalidThemeModalProps = {
   title: string;
   /** Theme the failed action applied to, named in the status sentence. */
   themeName?: string;
-  action?: InvalidThemeAction;
+  /** Past tense of the action that Ghost refused to complete. */
+  action?: ThemeAction;
   cancelLabel?: string;
   /** Defaults to `Try again` when the caller can retry, and to no button when it can't. */
   okLabel?: string;

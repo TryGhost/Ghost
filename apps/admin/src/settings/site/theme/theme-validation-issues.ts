@@ -93,19 +93,37 @@ export function getIssuesFromInstalledTheme(installedTheme: InstalledTheme): The
 
 export type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
 
+/** The Shade `Badge` variants a severity is allowed to take. */
+export type DisplayVariant = 'destructive' | 'warning' | 'secondary';
+
 /** Most to least severe — drives both the list order and the summary order. */
 export const SEVERITY_ORDER: DisplaySeverity[] = ['Error', 'Warning', 'Recommendation'];
 
+/**
+ * What each gscan level is called and how it is coloured, in one row per
+ * level. Name and colour are read from the same place, so a badge can never
+ * say "Warning" in the red that means error. Anything unrecognised is treated
+ * as an error rather than silently rendering as the mildest severity.
+ */
+const SEVERITY_DISPLAY: Record<
+  ThemeProblem['level'],
+  { severity: DisplaySeverity; variant: DisplayVariant }
+> = {
+  error: { severity: 'Error', variant: 'destructive' },
+  warning: { severity: 'Warning', variant: 'warning' },
+  recommendation: { severity: 'Recommendation', variant: 'secondary' },
+};
+
+function displayFor(problem: ThemeProblem) {
+  return SEVERITY_DISPLAY[problem.level] ?? SEVERITY_DISPLAY.error;
+}
+
 export function getDisplaySeverity(problem: ThemeProblem): DisplaySeverity {
-  if (problem.level === 'warning') {
-    return 'Warning';
-  }
+  return displayFor(problem).severity;
+}
 
-  if (problem.level === 'recommendation') {
-    return 'Recommendation';
-  }
-
-  return 'Error';
+export function getDisplayVariant(problem: ThemeProblem): DisplayVariant {
+  return displayFor(problem).variant;
 }
 
 export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
@@ -124,17 +142,28 @@ export function hasErrorProblem(problems: ThemeProblem[]): boolean {
   return problems.some((problem) => getDisplaySeverity(problem) === 'Error');
 }
 
+/** Past tense of what Ghost did, or refused to do, with a theme. */
+export type ThemeAction = 'uploaded' | 'installed' | 'activated' | 'saved';
+
+/**
+ * What to call a non-empty set of problems. `errors` and `warnings` are merged
+ * by `getIssuesFromInstalledTheme`, so the noun has to look at the levels
+ * rather than the count: calling a set that contains errors "warnings"
+ * contradicts the issue list rendered beside it. Every sentence that names a
+ * set reads it from here, so no two of them can disagree.
+ */
+export function describeProblemSet(problems: ThemeProblem[]): string {
+  return hasErrorProblem(problems) ? 'issues' : 'warnings';
+}
+
 /**
  * Completes "<theme> was ..." for a theme that installed successfully but may
- * carry non-blocking problems. `errors` and `warnings` are merged by
- * `getIssuesFromInstalledTheme`, so the phrase has to look at the levels
- * rather than the count: calling a set that contains errors "warnings"
- * contradicts the issue list rendered directly beneath it.
+ * carry non-blocking problems.
  */
-export function describeThemeOutcome(action: string, problems: ThemeProblem[]): string {
+export function describeThemeOutcome(action: ThemeAction, problems: ThemeProblem[]): string {
   if (!problems.length) {
     return `${action} successfully`;
   }
 
-  return `${action}, but it has some ${hasErrorProblem(problems) ? 'issues' : 'warnings'}`;
+  return `${action}, but it has some ${describeProblemSet(problems)}`;
 }

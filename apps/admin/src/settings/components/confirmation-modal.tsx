@@ -13,6 +13,12 @@ import {
 } from '@tryghost/shade/components';
 import { cn } from '@tryghost/shade/utils';
 
+/**
+ * Names the sticky footer box so tests can address it without depending on the
+ * z-index utilities Shade happens to draw it with.
+ */
+export const STICKY_FOOTER_TESTID = 'modal-sticky-footer';
+
 export interface ConfirmationModalProps {
   title?: React.ReactNode;
   prompt?: React.ReactNode;
@@ -172,6 +178,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
             <StickyFooter
               className="-mx-6 w-auto [&>div:first-child]:hidden [&>div:last-child]:hidden"
               contentClassName="px-6 mb-0 *:w-full"
+              data-testid={STICKY_FOOTER_TESTID}
               height={84}
               style={{ bottom: 0, height: '84px' }}
             >

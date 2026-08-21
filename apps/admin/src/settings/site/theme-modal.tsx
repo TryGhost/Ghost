@@ -3,7 +3,6 @@ import InvalidThemeModal, { type FatalErrors } from './theme/invalid-theme-modal
 import OfficialThemes from './theme/official-themes';
 import React, { useEffect, useState } from 'react';
 import ThemeInstalledModal, { type ThemeInstalledModalProps } from './theme/theme-installed-modal';
-import { describeThemeOutcome, getIssuesFromInstalledTheme } from './theme/theme-validation-issues';
 import ThemePreview from './theme/theme-preview';
 import {
   Button,
@@ -516,18 +515,10 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
           return;
         }
 
-        const newlyInstalledTheme = data.themes[0];
-        const outcome = describeThemeOutcome(
-          'installed',
-          getIssuesFromInstalledTheme(newlyInstalledTheme),
-        );
-
-        statusMessage = (
-          <>
-            <strong>{newlyInstalledTheme.name}</strong> was {outcome}. Do you want to activate it?
-          </>
-        );
-        installedTheme = newlyInstalledTheme;
+        // No `statusMessage`: an install that reached the API is described by
+        // `action: 'installed'` alone, and restating that sentence here would
+        // give one line two sources to drift between.
+        installedTheme = data.themes[0];
       }
 
       setInstalledModal({
