@@ -515,9 +515,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
           return;
         }
 
-        // No `statusMessage`: an install that reached the API is described by
-        // `action: 'installed'` alone, and restating that sentence here would
-        // give one line two sources to drift between.
         installedTheme = data.themes[0];
       }
 

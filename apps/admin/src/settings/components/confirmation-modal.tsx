@@ -13,10 +13,6 @@ import {
 } from '@tryghost/shade/components';
 import { cn } from '@tryghost/shade/utils';
 
-/**
- * Names the sticky footer box so tests can address it without depending on the
- * z-index utilities Shade happens to draw it with.
- */
 export const STICKY_FOOTER_TESTID = 'modal-sticky-footer';
 
 export interface ConfirmationModalProps {
@@ -88,8 +84,6 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
   };
 
   const defaultFooter = (
-    // Inside the sticky footer the row is stretched to full width, so below
-    // `sm` its column-reverse buttons would otherwise touch.
     <AlertDialogFooter className={cn(stickyFooter && 'gap-2')}>
       {cancelLabel && (
         <Button
@@ -125,13 +119,8 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
       <AlertDialogContent
         className={cn(
           'z-[1100] max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] overflow-y-auto bg-background',
-          // A sticky grid item is boxed in by its own grid area and never
-          // sticks, so the footer needs a flex column to stick within.
-          // Sticky offsets resolve against the scroll container's content
-          // box, so any bottom padding here becomes dead space the footer
-          // can never reach — the footer supplies its own instead. The
-          // row gap goes too: it lands between the issue list and the
-          // footer and reads as an empty band above the buttons.
+          // A sticky element never sticks inside a grid item, so the footer
+          // needs a flex column to stick within.
           stickyFooter && 'flex flex-col gap-0 pb-0',
         )}
         data-testid={testId}
@@ -149,32 +138,9 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
         </AlertDialogHeader>
         {footer &&
           (stickyFooter ? (
-            // StickyFooter sizes its own box in raw pixels but spaces its
-            // parts with `h-6`/`-mb-6`, which Shade's `--spacing: 0.4rem`
-            // scale renders as 38.4px rather than the 24px its own maths
-            // assumes — so the box is sized here explicitly, and it bleeds
-            // across the dialog's horizontal padding.
-            //
-            // The leading spacer goes entirely. Both it and the content div
-            // are `sticky bottom-0` with `bg-background`, but the content
-            // div is 84px tall and sits a layer above, so it already masks
-            // the full visible strip on its own and the spacer is never
-            // seen mid-scroll. At the bottom of the scroll everything
-            // returns to flow and the spacer becomes a visible empty band
-            // between the last row and the buttons.
-            //
-            // The trailing shadow rule goes with it. It's a decorative
-            // scroll affordance that reads as a hairline drawn straight
-            // across the buttons here, and with the spacer gone there is
-            // nothing left for it to shade.
-            //
-            // That leaves the content div as the only part still in flow,
-            // so its negative margin has to go too or the 84px box would
-            // reserve 24px of slack the `sticky bottom-0` content can never
-            // drop into — the same empty band, just below the buttons
-            // instead of above them. Content height, flow height and box
-            // height all sit at 84px, which keeps the buttons on the
-            // container's bottom edge.
+            // StickyFooter sizes its box in raw pixels but spaces its parts
+            // with `h-6`/`-mb-6`, which render at 38.4px on Shade's `0.4rem`
+            // scale — hence the explicit sizing overrides.
             <StickyFooter
               className="-mx-6 w-auto [&>div:first-child]:hidden [&>div:last-child]:hidden"
               contentClassName="px-6 mb-0 *:w-full"
