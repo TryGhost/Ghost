@@ -49,10 +49,8 @@ async function fakeThemeDownload(name: string): Promise<void> {
 }
 
 /**
- * This tier serves no Ember CSS, so nothing here collides with Ghost's legacy
- * unlayered stylesheet unless the collision is staged. Without staging, both
- * assertions AND screenshots taken from this harness flatter the UI for
- * anything `ghost.css` touches.
+ * This tier serves no Ember CSS, so a collision with Ghost's legacy unlayered
+ * stylesheet only shows up here if it is staged deliberately.
  */
 function stageLegacyGhostCss(css: string): void {
   const style = document.createElement('style');
@@ -61,11 +59,7 @@ function stageLegacyGhostCss(css: string): void {
   onTestFinished(() => style.remove());
 }
 
-/**
- * Verbatim from `ghost/core/core/built/admin/assets/ghost.css` — a bare element
- * selector that turns every `<code>` in Admin into a bordered grey chip with
- * pink text.
- */
+/** Verbatim from `ghost/core/core/built/admin/assets/ghost.css`. */
 const LEGACY_CODE_CSS = `code, tt {
     padding: 0.2rem 0.3rem;
     border: 1px solid hsl(203, 12.29%, 91.14%);
@@ -316,12 +310,9 @@ describe('Theme settings', () => {
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
 
-    // Ghost's legacy Ember stylesheet ships Tachyons' `.rotate-180 {transform:
-    // rotate(180deg)}` unlayered alongside Tailwind v4's `.rotate-180 {rotate:
-    // 180deg}`. An icon carrying that literal class picks up both and turns a
-    // full circle, landing back where it started — the bug this dialog was
-    // rebuilt to fix. This tier serves no Ember CSS, so the collision is staged
-    // here; the chevron must rotate via a selector that rule cannot match.
+    // Legacy Tachyons `.rotate-180` (transform) and Tailwind v4's (rotate)
+    // both apply to that literal class, turning the icon a full circle. The
+    // chevron must rotate via a selector the legacy rule cannot match.
     stageLegacyGhostCss(LEGACY_TACHYONS_CSS);
 
     const row = settingsScreen.confirmationModal().getByRole('button', { name: /GS001-DEPR-PURL/ });
@@ -331,10 +322,8 @@ describe('Theme settings', () => {
 
     await row.click();
 
-    // Polling rides out the expand transition without a fixed wait: an
-    // interpolated frame reads as an intermediate angle, never as 180deg.
     await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('180deg');
-    // ...and nothing may add a second rotation on top of that one.
+    // Nothing may add a second rotation on top of that one.
     expect(getComputedStyle(chevron()).transform).toBe('none');
   });
 
@@ -373,10 +362,8 @@ describe('Theme settings', () => {
       const style = getComputedStyle(code);
       expect(style.fontFamily).toContain('mono');
       expect(style.color).toBe(surrounding.color);
-      // Nothing reads optically larger than the text it sits in.
       expect(style.fontSize).toBe(surrounding.fontSize);
-      // The legacy `line-height: 1em` computes to exactly the font size;
-      // inheriting the surrounding ratio is what its absence would give.
+      // The legacy `line-height: 1em` computes to exactly the font size.
       expect(style.lineHeight).not.toBe(style.fontSize);
       expect(lineRatio(style)).toBeCloseTo(lineRatio(surrounding), 2);
       expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
@@ -386,8 +373,7 @@ describe('Theme settings', () => {
       expect(style.verticalAlign).toBe('baseline');
     }
 
-    // An affected file is inline mono too: same size, family and weight as the
-    // code in the details above it, with no chip of its own left behind.
+    // An affected file is inline mono too, with no chip left behind.
     const filenameCode = codeSpan('default.hbs');
     const filename = getComputedStyle(filenameCode);
     const detailsCode = getComputedStyle(codeSpan('{{@blog.title}}'));
@@ -399,8 +385,7 @@ describe('Theme settings', () => {
     expect(filename.fontSize).toBe(detailsCode.fontSize);
     expect(filename.fontFamily).toBe(detailsCode.fontFamily);
     expect(filename.fontWeight).toBe(detailsCode.fontWeight);
-    // Same foreground as the line it sits on — the affected-files list stays
-    // muted while the details read as body copy — i.e. not the legacy pink.
+    // Same foreground as the line it sits on, i.e. not the legacy pink.
     expect(filename.color).toBe(getComputedStyle(filenameCode.parentElement!).color);
   });
 
@@ -465,32 +450,26 @@ describe('Theme settings', () => {
     const scroller = dialog.element() as HTMLElement;
     const [list] = problemLists();
     const footer = scroller.querySelector<HTMLElement>(`[data-testid="${STICKY_FOOTER_TESTID}"]`)!;
-    // The footer's own background: `sticky bottom-0`, 84px tall, and the only
-    // thing standing between scrolling rows and the buttons. It's the part of
-    // the footer the buttons sit in — the other parts are decoration.
+    // The part of the footer the buttons sit in; the rest is decoration.
     const okButton = dialog.getByTestId('ok-modal').element();
     const mask = [...footer.children].find((part) => part.contains(okButton)) as HTMLElement;
     expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
     expect(getComputedStyle(mask).backgroundColor).not.toMatch(/rgba\(.*, 0\)$/);
 
-    // The component closes with a decorative scroll rule. Over a dialog
-    // whose footer already reads as a distinct block it lands as a hairline
-    // drawn across the buttons, so it must not render at all...
+    // StickyFooter's decorative scroll rule lands as a hairline across the
+    // buttons here, so it must not render — and nothing may replace it.
     const rule = footer.lastElementChild as HTMLElement;
     expect(rule).not.toBe(mask);
-    // ...and this is the element that would draw it.
     expect(getComputedStyle(rule).boxShadow).not.toBe('none');
     expect(getComputedStyle(rule).display).toBe('none');
     expect(rule.getBoundingClientRect().height).toBe(0);
-    // Nothing else in the footer paints one in its place.
     for (const part of [footer, ...footer.children]) {
       if (part !== rule) {
         expect(getComputedStyle(part).boxShadow).toBe('none');
       }
     }
 
-    // Mid-scroll the mask is pinned to the bottom of the scroll port and
-    // rows run underneath it rather than showing through.
+    // Mid-scroll: pinned to the scroll port, rows running underneath.
     scroller.scrollTop = Math.floor((scroller.scrollHeight - scroller.clientHeight) / 2);
     await expect
       .poll(() => Math.round(mask.getBoundingClientRect().bottom))
@@ -498,12 +477,8 @@ describe('Theme settings', () => {
     await expect.poll(() => Math.round(mask.getBoundingClientRect().height)).toBe(84);
     expect(list.getBoundingClientRect().bottom).toBeGreaterThan(mask.getBoundingClientRect().top);
 
-    // Scrolled to the end the footer returns to flow, and every part of it
-    // has to close up: the list ends exactly where the footer's background
-    // begins, and that background reaches the dialog's own bottom edge.
-    // Slack left anywhere in the footer's 84px box reads as an empty band —
-    // above the buttons if it sits before the background, below them if it
-    // sits after.
+    // Scrolled to the end the footer returns to flow and must close up:
+    // slack anywhere in its 84px box reads as an empty band.
     scroller.scrollTop = scroller.scrollHeight;
     await expect
       .poll(() => edgeGap(mask.getBoundingClientRect().top, list.getBoundingClientRect().bottom))
@@ -589,8 +564,7 @@ describe('Theme settings', () => {
     const errorModal = settingsScreen.confirmationModal();
     await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
 
-    // Both groups are errors; only one of them stopped the upload. Labelling
-    // them identically leaves the dialog unable to say which.
+    // Both groups are errors; only one stopped the upload.
     const lists = problemLists();
     expect(lists).toHaveLength(2);
     expect(lists[0].textContent).toContain('GS010-PJ-REQ');

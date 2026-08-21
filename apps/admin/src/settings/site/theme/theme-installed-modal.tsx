@@ -18,11 +18,8 @@ export type ThemeInstalledModalProps = {
   /** Past tense of how the theme arrived, named in the status sentence. */
   action?: ThemeAction;
   /**
-   * Replaces the derived "was uploaded" sentence for a flow whose outcome
-   * `action` cannot describe — activating a default or legacy theme, which was
-   * never installed at all. A flow that only restates the derived sentence
-   * should leave this unset rather than give one line two sources to drift
-   * between. Ignored when the theme is already active, which has its own copy.
+   * Replaces the derived "was uploaded" sentence for a flow `action` cannot
+   * describe. Ignored when the theme is already active.
    */
   statusMessage?: ReactNode;
   installedTheme: InstalledTheme;
@@ -44,8 +41,6 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
   const problems = getIssuesFromInstalledTheme(installedTheme);
   const homepageUrl = siteData?.site ? getHomepageUrl(siteData.site) : undefined;
 
-  // Activating a theme Ghost has already flagged is a decision, not a default:
-  // the button says what the user is about to accept.
   const okLabel = installedTheme.active
     ? 'OK'
     : hasErrorProblem(problems)

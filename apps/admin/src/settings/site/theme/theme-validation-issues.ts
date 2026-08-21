@@ -85,12 +85,6 @@ export function getIssuesFromInstalledTheme(installedTheme: InstalledTheme): The
   return [...(installedTheme.errors || []), ...(installedTheme.warnings || [])];
 }
 
-/*
- * Display layer. Everything above turns an API payload into buckets of
- * `ThemeProblem`; everything below classifies those problems for the UI that
- * renders them.
- */
-
 export type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
 
 /** The Shade `Badge` variants a severity is allowed to take. */
@@ -99,12 +93,7 @@ export type DisplayVariant = 'destructive' | 'warning' | 'secondary';
 /** Most to least severe — drives both the list order and the summary order. */
 export const SEVERITY_ORDER: DisplaySeverity[] = ['Error', 'Warning', 'Recommendation'];
 
-/**
- * What each gscan level is called and how it is coloured, in one row per
- * level. Name and colour are read from the same place, so a badge can never
- * say "Warning" in the red that means error. Anything unrecognised is treated
- * as an error rather than silently rendering as the mildest severity.
- */
+/** Name and colour in one row per level, so a badge can never mix the two. */
 const SEVERITY_DISPLAY: Record<
   ThemeProblem['level'],
   { severity: DisplaySeverity; variant: DisplayVariant }
@@ -133,11 +122,6 @@ export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
   );
 }
 
-/**
- * Whether a set of problems contains anything Ghost displays as an error. The
- * single answer to that question: copy, badges and button labels all read it,
- * so none of them can classify a set differently from the list beside them.
- */
 export function hasErrorProblem(problems: ThemeProblem[]): boolean {
   return problems.some((problem) => getDisplaySeverity(problem) === 'Error');
 }
@@ -146,11 +130,9 @@ export function hasErrorProblem(problems: ThemeProblem[]): boolean {
 export type ThemeAction = 'uploaded' | 'installed' | 'activated' | 'saved';
 
 /**
- * Completes "<theme> was ..." for a theme that installed successfully but may
- * carry non-blocking problems. `errors` and `warnings` are merged by
- * `getIssuesFromInstalledTheme`, so the noun naming the set has to look at the
- * levels rather than the count: calling a set that contains errors "warnings"
- * contradicts the issue list rendered beside it.
+ * Completes "<theme> was ...". `errors` and `warnings` arrive merged, so the
+ * noun reads the severities present rather than the count — a set containing
+ * errors called "warnings" contradicts the list rendered beside it.
  */
 export function describeThemeOutcome(action: ThemeAction, problems: ThemeProblem[]): string {
   if (!problems.length) {
