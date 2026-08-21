@@ -1,83 +1,59 @@
-import React, { type ReactNode } from 'react';
-import { ConfirmationModalContent } from '@/settings/components/confirmation-modal';
-import {
-  ErrorTextCard,
-  ThemeValidationDetailsDisclosure,
-  ValidationProblemCard,
-} from './theme-validation-details';
-import { type FatalErrors, getIssuesFromFatalErrors } from './theme-validation-issues';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { formatNumber } from '@tryghost/shade/utils';
+import React from 'react';
+import {ConfirmationModalContent} from '@/settings/components/confirmation-modal';
+import {ThemeValidationIssueList, ValidationProblemList} from './theme-validation-details';
+import {type FatalErrors, getIssuesFromFatalErrors} from './theme-validation-issues';
 
-export type { FatalErrors } from './theme-validation-issues';
+export type {FatalErrors} from './theme-validation-issues';
+
+/** Past tense of the action that Ghost refused to complete. */
+export type InvalidThemeAction = 'uploaded' | 'activated' | 'saved';
 
 export type InvalidThemeModalProps = {
-  title: string;
-  prompt?: ReactNode;
-  fatalErrors?: FatalErrors;
-  validationDetailsDefaultOpen?: boolean;
-  onRetry?: (modal?: { remove: () => void }) => void | Promise<void>;
+    title: string;
+    /** Theme the failed action applied to, named in the status sentence. */
+    themeName?: string;
+    action?: InvalidThemeAction;
+    cancelLabel?: string;
+    /** Defaults to `Try again` when the caller can retry, and to no button when it can't. */
+    okLabel?: string;
+    fatalErrors?: FatalErrors;
+    onRetry?: (modal?: {
+        remove: () => void;
+    }) => void | Promise<void>;
 };
 
-const InvalidThemeModal: React.FC<InvalidThemeModalProps & { onClose: () => void }> = ({
-  title,
-  prompt,
-  fatalErrors,
-  validationDetailsDefaultOpen,
-  onRetry,
-  onClose,
+const InvalidThemeModal: React.FC<InvalidThemeModalProps & {onClose: () => void}> = ({
+    title,
+    themeName,
+    action = 'uploaded',
+    cancelLabel = 'Cancel',
+    okLabel,
+    fatalErrors,
+    onRetry,
+    onClose
 }) => {
-  const { data: configData } = useBrowseConfig();
-  const defaultOpen =
-    validationDetailsDefaultOpen ?? configData?.config?.environment === 'development';
-  const { blockingProblems, secondaryProblems, stringErrors } =
-    getIssuesFromFatalErrors(fatalErrors);
-  const blockingIssueCount = blockingProblems.length + stringErrors.length;
-  const promptText = prompt ?? (
-    <>
-      Ghost found{' '}
-      {blockingIssueCount === 1
-        ? 'a blocking validation error'
-        : `${formatNumber(blockingIssueCount)} blocking validation errors`}{' '}
-      and did not save your theme. Fix {blockingIssueCount === 1 ? 'the issue' : 'the issues'} below
-      and try again.
-    </>
-  );
+    const {blockingProblems, secondaryProblems, stringErrors} = getIssuesFromFatalErrors(fatalErrors);
 
-  return (
-    <ConfirmationModalContent
-      cancelLabel="Close"
-      okLabel={onRetry ? 'Retry' : ''}
-      okVariant="default"
-      prompt={
-        <>
-          <div className="space-y-5">
-            <div className="text-sm text-foreground">{promptText}</div>
+    return <ConfirmationModalContent
+        cancelLabel={cancelLabel}
+        okLabel={okLabel ?? (onRetry ? 'Try again' : '')}
+        okVariant='default'
+        prompt={
+            <div className='space-y-5'>
+                <p className='text-sm text-foreground'>
+                    {themeName ? <strong>{themeName}</strong> : 'This theme'} couldn&apos;t be {action}. Fix the errors below and try again.
+                </p>
 
-            {(blockingProblems.length > 0 || stringErrors.length > 0) && (
-              <div className="space-y-3">
-                {blockingProblems.map((problem) => (
-                  <ValidationProblemCard key={problem.code} problem={problem} prominent />
-                ))}
-                {stringErrors.map((error) => (
-                  <ErrorTextCard key={error} message={error} />
-                ))}
-              </div>
-            )}
+                <ValidationProblemList messages={stringErrors} problems={blockingProblems} expandedByDefault />
 
-            <ThemeValidationDetailsDisclosure
-              defaultOpen={defaultOpen}
-              problems={secondaryProblems}
-            />
-          </div>
-        </>
-      }
-      stickyFooter={true}
-      title={title}
-      onOk={onRetry}
-      onRemove={onClose}
-    />
-  );
+                <ThemeValidationIssueList problems={secondaryProblems} />
+            </div>
+        }
+        stickyFooter={true}
+        title={title}
+        onOk={onRetry}
+        onRemove={onClose}
+    />;
 };
 
 export default InvalidThemeModal;
