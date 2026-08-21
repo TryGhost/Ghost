@@ -16,7 +16,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
 const appService = require('./frontend/services/apps');
-const {adminAuthAssets, cardAssets} = require('./frontend/services/assets-minification');
+const { adminAuthAssets, cardAssets } = require('./frontend/services/assets-minification');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 
@@ -24,91 +24,93 @@ const settingsCache = require('./shared/settings-cache');
 const events = require('./server/lib/common/events');
 
 const messages = {
-    activateFailed: 'Unable to activate the theme "{theme}".'
+  activateFailed: 'Unable to activate the theme "{theme}".',
 };
 
 class Bridge {
-    init() {
-        /**
-         * When locale changes, we reload theme translations
-         */
-        events.on('settings.locale.edited', (model) => {
-            debug('locale changed, updating i18n to', model.get('value'));
-            this.getActiveTheme().initI18n({locale: model.get('value')});
-        });
+  init() {
+    /**
+     * When locale changes, we reload theme translations
+     */
+    events.on('settings.locale.edited', (model) => {
+      debug('locale changed, updating i18n to', model.get('value'));
+      this.getActiveTheme().initI18n({ locale: model.get('value') });
+    });
 
-        // NOTE: eventually this event should somehow be listened on and handled by the URL Service
-        //       for now this eliminates the need for the frontend routing to listen to
-        //       server events
-        events.on('settings.timezone.edited', (model) => {
-            routerManager.handleTimezoneEdit(model);
-        });
+    // NOTE: eventually this event should somehow be listened on and handled by the URL Service
+    //       for now this eliminates the need for the frontend routing to listen to
+    //       server events
+    events.on('settings.timezone.edited', (model) => {
+      routerManager.handleTimezoneEdit(model);
+    });
+  }
+
+  getActiveTheme() {
+    return themeEngine.getActive();
+  }
+
+  ensureAdminAuthAssetsMiddleware() {
+    return adminAuthAssets.serveMiddleware();
+  }
+
+  async activateTheme(loadedTheme, checkedTheme) {
+    let settings = {
+      locale: settingsCache.get('locale'),
+    };
+    // no need to check the score, activation should be used in combination with validate.check
+    // Use the two theme objects to set the current active theme
+    try {
+      themeEngine.setActive(settings, loadedTheme, checkedTheme);
+
+      logging.info('Invalidating assets for regeneration');
+
+      const cardAssetConfig = this.getCardAssetConfig();
+      debug('reload card assets config', cardAssetConfig);
+      cardAssets.invalidate(cardAssetConfig);
+
+      // rebuild asset files
+      adminAuthAssets.invalidate();
+    } catch (err) {
+      logging.error(
+        new errors.InternalServerError({
+          message: tpl(messages.activateFailed, { theme: loadedTheme.name }),
+          err: err,
+        }),
+      );
     }
+  }
 
-    getActiveTheme() {
-        return themeEngine.getActive();
+  getCardAssetConfig() {
+    if (this.getActiveTheme()) {
+      return this.getActiveTheme().config('card_assets');
+    } else {
+      return true;
     }
+  }
 
-    ensureAdminAuthAssetsMiddleware() {
-        return adminAuthAssets.serveMiddleware();
-    }
+  async reloadFrontend(routeSettings, urlService) {
+    debug('reload frontend');
+    const siteApp = require('./frontend/web/site');
 
-    async activateTheme(loadedTheme, checkedTheme) {
-        let settings = {
-            locale: settingsCache.get('locale')
-        };
-        // no need to check the score, activation should be used in combination with validate.check
-        // Use the two theme objects to set the current active theme
-        try {
-            themeEngine.setActive(settings, loadedTheme, checkedTheme);
+    const routerConfig = {
+      routeSettings: await routeSettings.loadRouteSettings(),
+      urlService,
+    };
 
-            logging.info('Invalidating assets for regeneration');
+    // Clear lazy router configs before re-registration so they don't pile
+    // up across reloads — but only once the settings read has resolved.
+    // reset() also clears `routersReady`, which gates the maintenance
+    // middleware, so doing this before the await 503s the site and the
+    // Admin API for the length of a read that is a network round trip on
+    // Pro, and leaves them 503ing with no recovery but a restart if it
+    // rejects. Nothing re-registers after a failed reload.
+    urlService.reset();
 
-            const cardAssetConfig = this.getCardAssetConfig();
-            debug('reload card assets config', cardAssetConfig);
-            cardAssets.invalidate(cardAssetConfig);
+    siteApp.reload(routerConfig);
 
-            // rebuild asset files
-            adminAuthAssets.invalidate();
-        } catch (err) {
-            logging.error(new errors.InternalServerError({
-                message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
-                err: err
-            }));
-        }
-    }
-
-    getCardAssetConfig() {
-        if (this.getActiveTheme()) {
-            return this.getActiveTheme().config('card_assets');
-        } else {
-            return true;
-        }
-    }
-
-    async reloadFrontend(routeSettings, urlService) {
-        debug('reload frontend');
-        const siteApp = require('./frontend/web/site');
-
-        const routerConfig = {
-            routeSettings: await routeSettings.loadRouteSettings(),
-            urlService
-        };
-
-        // Clear lazy router configs before re-registration so they don't pile
-        // up across reloads — but only once the settings read has resolved.
-        // reset() also clears `routersReady`, which gates the maintenance
-        // middleware, so doing this before the await 503s the site and the
-        // Admin API for the length of a read that is a network round trip on
-        // Pro, and leaves them 503ing with no recovery but a restart if it
-        // rejects. Nothing re-registers after a failed reload.
-        urlService.reset();
-
-        siteApp.reload(routerConfig);
-
-        // re-initialize apps (register app routers, because we have re-initialized the site routers)
-        appService.init();
-    }
+    // re-initialize apps (register app routers, because we have re-initialized the site routers)
+    appService.init();
+  }
 }
 
 const bridge = new Bridge();

@@ -13,24 +13,24 @@ const themesPath = path.join(__dirname, './fixtures/themes/');
  * @param {string} [options.activeTheme='locale-theme'] - theme fixture name
  * @returns {object} { teardown }
  */
-function setupI18nTest({locale = 'en', activeTheme = 'locale-theme'} = {}) {
-    const ogBasePath = themeI18n.basePath;
+function setupI18nTest({ locale = 'en', activeTheme = 'locale-theme' } = {}) {
+  const ogBasePath = themeI18n.basePath;
 
-    themeI18n.basePath = themesPath;
+  themeI18n.basePath = themesPath;
 
-    initLocale({locale, activeTheme});
+  initLocale({ locale, activeTheme });
 
-    return {
-        /**
-         * Clean up all i18n state. Call in `after()`.
-         */
-        teardown() {
-            themeI18n.basePath = ogBasePath;
-            themeI18n._i18n = null;
-            themeI18n._locale = 'en';
-            themeI18n._activeTheme = null;
-        }
-    };
+  return {
+    /**
+     * Clean up all i18n state. Call in `after()`.
+     */
+    teardown() {
+      themeI18n.basePath = ogBasePath;
+      themeI18n._i18n = null;
+      themeI18n._locale = 'en';
+      themeI18n._activeTheme = null;
+    },
+  };
 }
 
 /**
@@ -41,11 +41,11 @@ function setupI18nTest({locale = 'en', activeTheme = 'locale-theme'} = {}) {
  * @param {string} [options.locale='en']
  * @param {string} [options.activeTheme='locale-theme']
  */
-function initLocale({locale = 'en', activeTheme = 'locale-theme'} = {}) {
-    themeI18n.init({activeTheme, locale});
+function initLocale({ locale = 'en', activeTheme = 'locale-theme' } = {}) {
+  themeI18n.init({ activeTheme, locale });
 }
 
 module.exports = {
-    setupI18nTest,
-    initLocale
+  setupI18nTest,
+  initLocale,
 };
