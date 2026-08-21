@@ -1,107 +1,309 @@
-&nbsp;
-<p align="center">
-  <a href="https://ghost.org/#gh-light-mode-only" target="_blank">
-    <img src="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png" alt="Ghost" width="200px">
-  </a>
-  <a href="https://ghost.org/#gh-dark-mode-only" target="_blank">
-    <img src="https://user-images.githubusercontent.com/65487235/157849205-aa24152c-4610-4d7d-b752-3a8c4f9319e6.png" alt="Ghost" width="200px">
-  </a>
-</p>
-&nbsp;
+# GhostX
 
-<p align="center">
-    <a href="https://ghost.org/">Ghost.org</a> •
-    <a href="https://forum.ghost.org">Forum</a> •
-    <a href="https://docs.ghost.org">Docs</a> •
-    <a href="https://github.com/TryGhost/Ghost/blob/main/docs/README.md">Contributing</a> •
-    <a href="https://twitter.com/ghost">Twitter</a>
-    <br /><br />
-    <a href="https://ghost.org/">
-        <img src="https://img.shields.io/badge/downloads-100M+-brightgreen.svg" alt="Downloads" />
-    </a>
-    <a href="https://github.com/TryGhost/Ghost/releases/">
-        <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
-    </a>
-    <a href="https://github.com/TryGhost/Ghost/actions">
-        <img src="https://github.com/TryGhost/Ghost/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build status" />
-    </a>
-    <a href="https://github.com/TryGhost/Ghost/contributors/">
-        <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
-    </a>
-    <a href="https://digitalpublicgoods.net/r/ghost"><img src="https://img.shields.io/badge/Verified-DPG-3333AB?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMzMiIHZpZXdCb3g9IjAgMCAzMSAzMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjIwMDggMjEuMzY3OEwxMC4xNzM2IDE4LjAxMjRMMTEuNTIxOSAxNi40MDAzTDEzLjk5MjggMTguNDU5TDE5LjYyNjkgMTIuMjExMUwyMS4xOTA5IDEzLjYxNkwxNC4yMDA4IDIxLjM2NzhaTTI0LjYyNDEgOS4zNTEyN0wyNC44MDcxIDMuMDcyOTdMMTguODgxIDUuMTg2NjJMMTUuMzMxNCAtMi4zMzA4MmUtMDVMMTEuNzgyMSA1LjE4NjYyTDUuODU2MDEgMy4wNzI5N0w2LjAzOTA2IDkuMzUxMjdMMCAxMS4xMTc3TDMuODQ1MjEgMTYuMDg5NUwwIDIxLjA2MTJMNi4wMzkwNiAyMi44Mjc3TDUuODU2MDEgMjkuMTA2TDExLjc4MjEgMjYuOTkyM0wxNS4zMzE0IDMyLjE3OUwxOC44ODEgMjYuOTkyM0wyNC44MDcxIDI5LjEwNkwyNC42MjQxIDIyLjgyNzdMMzAuNjYzMSAyMS4wNjEyTDI2LjgxNzYgMTYuMDg5NUwzMC42NjMxIDExLjExNzdMMjQuNjI0MSA5LjM1MTI3WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==" alt="DPG Badge"/></a>
-</p>
+> A modern, customizable publishing platform built on top of Ghost, designed for creators, communities, memberships, newsletters, and digital content.
 
-&nbsp;
+[![Based on Ghost](https://img.shields.io/badge/Based%20on-Ghost-15171A?logo=ghost)](https://github.com/TryGhost/Ghost)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active%20Development-orange.svg)](#project-status)
 
-> [!NOTE]
-> Love open source? We're hiring! Ghost is looking staff engineers to [join the team](https://careers.ghost.org) and work with us full-time
+## 📖 About
 
-<a href="https://ghost.org/"><img src="https://user-images.githubusercontent.com/353959/169805900-66be5b89-0859-4816-8da9-528ed7534704.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
+**GhostX** is a customized and extended version of the open-source [Ghost](https://github.com/TryGhost/Ghost) publishing platform.
 
-&nbsp;
+The project aims to build a flexible and modern publishing ecosystem while preserving Ghost's powerful publishing capabilities and introducing additional features for creators, communities, publishers, and digital content platforms.
 
-<a href="https://ghost.org/pricing/#gh-light-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849437-9b8fcc48-1920-4b26-a1e8-5806db0e6bb9.png" alt="Ghost(Pro)" width="165px" /></a>
-<a href="https://ghost.org/pricing/#gh-dark-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849438-79889b04-b7b6-4ba7-8de6-4c1e4b4e16a5.png" alt="Ghost(Pro)" width="165px" /></a>
+GhostX is currently under active development.
 
-The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
+## ✨ Features
 
-For most people this ends up being the best value option because of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software *and* getting a great service!
+* 📝 Powerful content publishing
+* 👤 User and member accounts
+* 📧 Newsletter support
+* 💳 Memberships and subscriptions
+* 🔒 Members-only content
+* 🎨 Customizable themes and interfaces
+* 🔌 API-driven architecture
+* 📚 Digital content publishing
+* ⚡ High-performance publishing infrastructure
+* 🛠️ Extensible architecture
+* 🔐 Security-focused development
+* 📊 Analytics and content management capabilities
 
-&nbsp;
+## 🏗️ Technology
 
-# Quickstart install
+GhostX is based on the Ghost codebase and its existing technology stack.
 
-If you want to run your own instance of Ghost, in most cases the best way is to use our **CLI tool**
+Key technologies include:
 
-```
-npm install ghost-cli -g
-```
+* **Node.js**
+* **JavaScript / TypeScript**
+* **React**
+* **Ember.js**
+* **Express**
+* **MySQL**
+* **Redis**
+* **pnpm**
+* **Nx**
 
-&nbsp;
+> GhostX follows the upstream Ghost development workflow and currently uses **pnpm** as its package manager.
 
-Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://ghost.org/docs/install/local/)
+## 📂 Project Structure
 
-```
-ghost install local
-```
-
-&nbsp;
-
-or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://ghost.org/docs/install/ubuntu/)
-
-```
-ghost install
+```text
+GhostX/
+├── apps/                 # Application packages
+├── configs/              # Shared configuration
+├── docker/               # Docker configuration
+├── docs/                 # Documentation
+├── e2e/                  # End-to-end tests
+├── ghost/
+│   └── core/             # Ghost Core
+├── koenig/               # Editor-related packages
+├── packages/             # Shared packages and libraries
+├── scripts/              # Development and build scripts
+├── .github/              # GitHub workflows and configuration
+├── package.json          # Root package configuration
+├── pnpm-workspace.yaml   # pnpm workspace configuration
+└── README.md             # Project documentation
 ```
 
-&nbsp;
+> The project structure may change as GhostX evolves.
 
-Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/hosting/) & properly [upgrading Ghost](https://ghost.org/docs/update/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/themes/) or work with [our API](https://ghost.org/docs/content-api/).
+## 🚀 Getting Started
 
-### Contributors & advanced developers
+### Prerequisites
 
-To contribute to Ghost, start with the
-[contributing guide](.github/CONTRIBUTING.md). To work on the monorepo, see the
-[codebase documentation](docs/README.md).
+Before developing GhostX, make sure you have the required tools installed:
 
-&nbsp;
+* [Node.js](https://nodejs.org/)
+* [pnpm](https://pnpm.io/)
+* Git
+* MySQL
+* Redis
+* Docker *(optional)*
 
-# Ghost sponsors
+### Clone the Repository
 
-A big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
+```bash
+git clone https://github.com/YOUR_USERNAME/GhostX.git
+cd GhostX
+```
 
-**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)** • **[Tinybird](https://tbrd.co/ghost)** • **[BairesDev](https://www.bairesdev.com)**
+### Initialize pnpm
 
-&nbsp;
+For a fresh checkout:
 
-# Getting help
+```bash
+pnpm setup
+```
 
-Everyone can get help and support from a large community of developers over on the [Ghost forum](https://forum.ghost.org/). **Ghost(Pro)** customers have access to 24/7 email support.
+Restart your terminal if required so that pnpm becomes available.
 
-To stay up to date with all the latest news and product updates, make sure you [subscribe to our changelog newsletter](https://ghost.org/changelog/) — or follow us [on Twitter](https://twitter.com/Ghost), if you prefer your updates bite-sized and facetious. :saxophone::turtle:
+### Install Dependencies
 
-&nbsp;
+```bash
+pnpm install
+```
 
-# License & trademark
+### Start Development
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
-Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
+Use the development commands defined by the current GhostX codebase:
+
+```bash
+pnpm dev
+```
+
+For the complete development workflow, consult the project's development documentation.
+
+## ⚙️ Environment Configuration
+
+GhostX may require environment variables for local development and production.
+
+If the repository provides an environment template, copy it before starting development:
+
+```bash
+cp .env.example .env
+```
+
+Configure the required values in `.env`.
+
+### 🔐 Important
+
+**Never commit secrets to GitHub.**
+
+Do not commit:
+
+* API keys
+* Database passwords
+* Authentication secrets
+* Private tokens
+* Cloud credentials
+* Encryption keys
+* Production environment variables
+
+Make sure sensitive files are included in `.gitignore`.
+
+## 🧪 Testing
+
+Run the project's standard validation checks with:
+
+```bash
+pnpm check
+```
+
+Additional tests may be available for individual applications and packages.
+
+For example:
+
+```bash
+pnpm test
+```
+
+Refer to the relevant package documentation before running specialized tests.
+
+## 🐳 Docker
+
+Docker can be used for local development and infrastructure services.
+
+Start the development environment with the appropriate Compose configuration:
+
+```bash
+docker compose up
+```
+
+For production deployment, use the project's production documentation and configuration rather than the development Compose setup.
+
+## 🗺️ Roadmap
+
+GhostX is evolving continuously.
+
+### Planned Features
+
+* [ ] Modernized user experience
+* [ ] Enhanced creator profiles
+* [ ] Community functionality
+* [ ] Advanced content discovery
+* [ ] Improved analytics
+* [ ] Additional membership tools
+* [ ] Digital content marketplace
+* [ ] Creator monetization features
+* [ ] Enhanced administration tools
+* [ ] Performance improvements
+* [ ] Security hardening
+* [ ] Mobile-focused improvements
+* [ ] Developer APIs and integrations
+* [ ] Additional customization options
+
+## 🔐 Security
+
+Security is a core priority of GhostX.
+
+If you discover a security vulnerability, **do not publicly disclose it through GitHub Issues**.
+
+Please report security issues privately through the appropriate security reporting process.
+
+See [SECURITY.md](SECURITY.md) for additional information.
+
+## 🤝 Contributing
+
+Contributions are welcome.
+
+### 1. Fork GhostX
+
+Create your own fork of the GhostX repository.
+
+### 2. Clone Your Fork
+
+```bash
+git clone https://github.com/YOUR_USERNAME/GhostX.git
+cd GhostX
+```
+
+### 3. Create a Branch
+
+```bash
+git checkout -b feature/my-feature
+```
+
+### 4. Make Your Changes
+
+Implement your changes while following the project's coding and contribution guidelines.
+
+### 5. Validate Your Changes
+
+```bash
+pnpm check
+```
+
+Run any additional tests required for the area you modified.
+
+### 6. Commit Your Changes
+
+```bash
+git add .
+git commit -m "feat: add my feature"
+```
+
+### 7. Push Your Branch
+
+```bash
+git push origin feature/my-feature
+```
+
+### 8. Open a Pull Request
+
+Open a Pull Request on GitHub and explain:
+
+* What you changed
+* Why you changed it
+* How you tested it
+* Any relevant screenshots or documentation
+
+## 📜 License
+
+GhostX is derived from the open-source [Ghost](https://github.com/TryGhost/Ghost) project.
+
+The upstream Ghost project is released under the **MIT License**. Ghost and the Ghost logo are trademarks of the Ghost Foundation.
+
+GhostX must retain and comply with the applicable licenses, copyright notices, and trademark requirements of the upstream project and its dependencies.
+
+See [LICENSE](LICENSE) for the applicable license information.
+
+## 🙏 Acknowledgements
+
+GhostX is built upon the work of the Ghost Foundation and the Ghost open-source community.
+
+Special thanks to the developers and contributors behind:
+
+* [Ghost](https://github.com/TryGhost/Ghost)
+* Node.js
+* React
+* Ember.js
+* Express
+* MySQL
+* Redis
+* Nx
+* pnpm
+
+## 📌 Project Status
+
+**🚧 Active Development**
+
+GhostX is currently being customized and developed.
+
+Features, APIs, architecture, and project structure may change as development progresses.
+
+This project should be considered experimental until a stable release is announced.
+
+## 🌐 Links
+
+* **GhostX:** `https://github.com/evilhere7/GhostX`
+* **Original Ghost Repository:** `https://github.com/TryGhost/Ghost`
+* **Ghost Website:** `https://ghost.org`
+* **Ghost Documentation:** `https://ghost.org/docs/`
+
+---
+
+⭐ **If you find GhostX useful, consider starring the repository and contributing to the project.**
+
+**Built with ❤️ by the GhostX community.**
