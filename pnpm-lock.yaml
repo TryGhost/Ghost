@@ -358,8 +358,8 @@ catalogs:
       specifier: 3.3.1
       version: 3.3.1
     knex-migrator:
-      specifier: 5.4.1
-      version: 5.4.1
+      specifier: 6.0.0
+      version: 6.0.0
     knip:
       specifier: 6.32.1
       version: 6.32.1
@@ -515,7 +515,6 @@ catalogs:
 
 overrides:
   cron-validate: 1.4.5
-  knex-migrator>knex: 2.4.2
   '@tryghost/errors': 3.3.9
   '@tryghost/logging': 5.4.0
   '@tryghost/nql': 0.13.4
@@ -2565,7 +2564,7 @@ importers:
         version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
-        version: 5.4.1(@types/node@22.20.1)(supports-color@10.2.2)
+        version: 6.0.0(@types/node@22.20.1)(supports-color@10.2.2)
       leaky-bucket:
         specifier: 2.2.0
         version: 2.2.0
@@ -9311,8 +9310,8 @@ packages:
   '@tryghost/custom-fonts@1.0.11':
     resolution: {integrity: sha512-WAc3LkrgMKBk+pGyFfkR+5eoS4C52RXMBWBj4kNa+tcP51f/U3DIl8QKfp9M3XrcGS44Qpwq9C5nYKRp+sz1ig==}
 
-  '@tryghost/database-info@0.3.35':
-    resolution: {integrity: sha512-S9OapApwzdh3GS0d3m+KgwH7IhZII6b9Aw5I89HA5VJRPeo6HdaDXiZzSDNcFaUzpx1FFBR0kDu7G+IRPD0eFA==}
+  '@tryghost/database-info@2.3.1':
+    resolution: {integrity: sha512-D/ByHaaDkS1Do88A0x6ffsCdVGxgxIkXu4CLkQmO1SSTtlSGyd9bgVnxpfr6DWAHkaoU2NYjaNYbu2rXNbxPuw==}
 
   '@tryghost/database-info@2.3.2':
     resolution: {integrity: sha512-v8DFbv2IrGfCd45akvbjKzZ26tTAqaX4FE7sGYv0aFrj98mEfwedjCd9sc6tjJxOXGNWplAZDAeZo5dcwkbxDQ==}
@@ -9413,11 +9412,16 @@ packages:
   '@tryghost/pretty-stream@2.3.9':
     resolution: {integrity: sha512-5bq3xDBmLm1auQzsuoIxxwimuQFSnTia+rV9kQ6HmId4GRCbZrqcQOx7y9MVe2kwAUkdHqQrkSZkxoNebCiaRQ==}
 
+  '@tryghost/pro-ship@1.1.4':
+    resolution: {integrity: sha512-k4okNuZwxWfyumyC5+A+/96cE/bnBZmcigghWNTP6n/8QuMX4eFQoPlu3XGyUToF5vKGfl1HU5pELPbwSLDYLA==}
+    engines: {node: '>=20.20.0'}
+    hasBin: true
+
   '@tryghost/prometheus-metrics@1.0.8':
     resolution: {integrity: sha512-E1LRRwLgiWIN/P20uHgpTK+JVYYQ3+BarKCBszB6qmK5IBANJvQHI3LQV0wDWefVwFyl5FI6AqxLpOOpquvahA==}
 
-  '@tryghost/promise@0.3.20':
-    resolution: {integrity: sha512-afHCBoS72XabqRi7GmHdVAWC/UMsVPGlxnL/epNVp0c/C7tEn6+MgHABXNAW4wViZFhuOda3k7fk3i2K0FAZQg==}
+  '@tryghost/promise@2.3.1':
+    resolution: {integrity: sha512-5shPVEzwkJHj8gW4EWztKRRRCApHLKd9kTKv6jqjpkWpVZ3bVOJomRRifG9MofvAAC07y4huIc8VlVk15Ess+g==}
 
   '@tryghost/promise@2.3.2':
     resolution: {integrity: sha512-WAwvjo85D5DVHfQ+YhBAb8Vq8h3NS/tfn/gVzrIy/L6TztvSxxPG2t9hU/XVsPbFguEV8lqhInowHdJehW/f0w==}
@@ -12299,10 +12303,6 @@ packages:
 
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
-    engines: {node: '>= 6'}
-
-  commander@5.1.0:
-    resolution: {integrity: sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==}
     engines: {node: '>= 6'}
 
   commander@6.2.1:
@@ -16543,9 +16543,9 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  knex-migrator@5.4.1:
-    resolution: {integrity: sha512-u+wmvy6tYtGfR9NFt0kGCLu+wNLK3WevTZXFtFPqrzQi3nDa67SoySV+qLhGavEWjis8QD980MeDjpzdH1wWVA==}
-    engines: {node: ^14.18.0 || ^16.13.0 || ^18.12.1 || ^20.11.1 || ^22.13.1}
+  knex-migrator@6.0.0:
+    resolution: {integrity: sha512-EKqs3+FIINQDaZG+N1HIQVi3Y+Z2Fp2eTpn8OTkVDiPHSkPNKNk/qQ9zKKpYxm/oKCmLOulFLSkb/edC1iQpAw==}
+    engines: {node: ^22.13.1 || ^24.14.1}
     hasBin: true
 
   knex@0.21.21:
@@ -22796,9 +22796,6 @@ packages:
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
-ignoredOptionalDependencies:
-  - sqlite3
-
 snapshots:
 
   '@adobe/css-tools@4.5.0': {}
@@ -28756,7 +28753,7 @@ snapshots:
 
   '@tryghost/custom-fonts@1.0.11': {}
 
-  '@tryghost/database-info@0.3.35': {}
+  '@tryghost/database-info@2.3.1': {}
 
   '@tryghost/database-info@2.3.2': {}
 
@@ -28989,6 +28986,11 @@ snapshots:
       lodash: 4.18.1
       prettyjson: 1.2.5
 
+  '@tryghost/pro-ship@1.1.4':
+    dependencies:
+      '@tryghost/root-utils': 2.3.1
+      semver: 7.8.5
+
   '@tryghost/prometheus-metrics@1.0.8(supports-color@10.2.2)':
     dependencies:
       '@tryghost/logging': 5.4.0(supports-color@10.2.2)
@@ -28999,7 +29001,7 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/promise@0.3.20': {}
+  '@tryghost/promise@2.3.1': {}
 
   '@tryghost/promise@2.3.2': {}
 
@@ -33186,8 +33188,6 @@ snapshots:
   commander@2.3.0: {}
 
   commander@4.1.1: {}
-
-  commander@5.1.0: {}
 
   commander@6.2.1: {}
 
@@ -39598,13 +39598,14 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex-migrator@5.4.1(@types/node@22.20.1)(supports-color@10.2.2):
+  knex-migrator@6.0.0(@types/node@22.20.1)(supports-color@10.2.2):
     dependencies:
-      '@tryghost/database-info': 0.3.35
+      '@tryghost/database-info': 2.3.1
       '@tryghost/errors': 3.3.9
       '@tryghost/logging': 5.4.0(supports-color@10.2.2)
-      '@tryghost/promise': 0.3.20
-      commander: 5.1.0
+      '@tryghost/pro-ship': 1.1.4
+      '@tryghost/promise': 2.3.1
+      commander: 15.0.0
       compare-ver: 2.0.2
       debug: 4.4.3(supports-color@10.2.2)
       knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
