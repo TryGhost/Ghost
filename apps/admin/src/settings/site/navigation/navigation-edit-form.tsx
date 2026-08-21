@@ -4,6 +4,7 @@ import { Button, SortableList } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type NavigationEditor } from '@/settings/hooks/site/use-navigation-editor';
+import { type NavigationLinkSuggestionGroup } from '@/settings/hooks/site/use-navigation-link-suggestions';
 import {
   navigationColumnClasses,
   navigationDragHandleSpacerClasses,
@@ -16,6 +17,7 @@ const NavigationEditForm: React.FC<{
   baseUrl: string;
   idPrefix: string;
   navigation: NavigationEditor;
+  loadSuggestions: (term: string) => Promise<NavigationLinkSuggestionGroup[]>;
   showIcon: boolean;
   showPaidVisibility: boolean;
   showVisibility: boolean;
@@ -24,6 +26,7 @@ const NavigationEditForm: React.FC<{
   baseUrl,
   idPrefix,
   navigation,
+  loadSuggestions,
   showIcon,
   showPaidVisibility,
   showVisibility,
@@ -71,6 +74,7 @@ const NavigationEditForm: React.FC<{
             clearError={(key) => navigation.clearError(item.id, key)}
             idPrefix={idPrefix}
             item={item}
+            loadSuggestions={loadSuggestions}
             showIcon={showIcon}
             showPaidVisibility={showPaidVisibility}
             showVisibility={showVisibility}
@@ -95,7 +99,7 @@ const NavigationEditForm: React.FC<{
               size="icon"
               type="button"
               variant="ghost"
-              onClick={navigation.addItem}
+              onClick={() => navigation.addItem()}
             >
               <LucideIcon.Plus />
             </Button>
@@ -108,6 +112,7 @@ const NavigationEditForm: React.FC<{
           idPrefix={idPrefix}
           item={navigation.newItem}
           labelPlaceholder="New item label"
+          loadSuggestions={loadSuggestions}
           showIcon={showIcon}
           showPaidVisibility={showPaidVisibility}
           showVisibility={showVisibility}

@@ -54,6 +54,29 @@ describe('useSortableIndexedList', () => {
     assert.deepEqual(items, [...initialItems, { name: 'New Item' }]);
   });
 
+  it('should add a new item from overrides that have not been set yet', () => {
+    let items = initialItems;
+    const setItems = (newItems: { name: string }[]) => {
+      items = newItems;
+    };
+
+    const { result } = renderHook(() =>
+      useSortableIndexedList({
+        items,
+        setItems,
+        blank: blankItem,
+        canAddNewItem,
+      }),
+    );
+
+    // No setNewItem call — the value is only known to the caller
+    act(() => {
+      result.current.addItem({ name: 'Overridden' });
+    });
+
+    assert.deepEqual(items, [...initialItems, { name: 'Overridden' }]);
+  });
+
   it('should update an item', () => {
     let items = initialItems;
     const setItems = (newItems: { name: string }[]) => {
@@ -75,6 +98,32 @@ describe('useSortableIndexedList', () => {
 
     // Assert item updated correctly
     assert.deepEqual(items[0], { name: 'Updated Item 1' });
+  });
+
+  it('builds consecutive updates in one event on each other', () => {
+    let items = initialItems;
+    const setItems = (newItems: { name: string }[]) => {
+      items = newItems;
+    };
+
+    const { result } = renderHook(() =>
+      useSortableIndexedList({
+        items,
+        setItems,
+        blank: blankItem,
+        canAddNewItem,
+      }),
+    );
+
+    // Two updates before any re-render — e.g. committing a value and then
+    // clearing its validation error in the same event. The second must see
+    // the first's result, not the shared pre-event snapshot.
+    act(() => {
+      result.current.updateItem('0', { name: 'Committed' });
+      result.current.updateItem('0', (current) => ({ name: `${current.name}!` }));
+    });
+
+    assert.deepEqual(items[0], { name: 'Committed!' });
   });
 
   it('should remove an item', () => {
