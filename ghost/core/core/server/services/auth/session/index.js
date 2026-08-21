@@ -1,6 +1,6 @@
 const adapterManager = require('../../adapter-manager').default;
 const createSessionService = require('./session-service');
-const sessionFromToken = require('./session-from-token');
+const { sessionFromToken } = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
 const { GhostMailer } = require('../../mail');

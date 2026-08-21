@@ -1,8 +1,8 @@
-const express = require('express');
-const sinon = require('sinon');
-const SessionFromToken = require('../../../../../core/server/services/auth/session/session-from-token');
+import express from 'express';
+import sinon from 'sinon';
+import { sessionFromToken } from '../../../../../core/server/services/auth/session/session-from-token';
 
-describe('SessionFromToken', function () {
+describe('sessionFromToken', function () {
   it('Parses the request, matches the user to the token, sets the user on req.user and calls createSession', async function () {
     const createSession = sinon.spy(async (req, res, user) => {
       req.session = user;
@@ -11,7 +11,7 @@ describe('SessionFromToken', function () {
     const getTokenFromRequest = sinon.spy(async (req) => req.token);
     const getLookupFromToken = sinon.spy(async (token) => token.email);
 
-    const handler = SessionFromToken({
+    const handler = sessionFromToken({
       getTokenFromRequest,
       getLookupFromToken,
       findUserByLookup,
