@@ -1,4 +1,4 @@
-const getDiscountWindow = require('./get-discount-window');
+const {getDiscountWindow} = require('./get-discount-window');
 
 /**
  * Determines if a subscription has an offer that still affects the next payment,

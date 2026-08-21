@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const getDiscountWindow = require('../../../../../../../core/server/services/members/members-api/utils/get-discount-window');
+const {getDiscountWindow} = require('../../../../../../../core/server/services/members/members-api/utils/get-discount-window');
 
 /**
  * @typedef {import('../../../../../../../core/server/services/offers/application/offer-mapper').OfferDTO} OfferDTO
