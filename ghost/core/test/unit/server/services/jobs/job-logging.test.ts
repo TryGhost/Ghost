@@ -1,7 +1,7 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const jobLogging = require('../../../../../core/server/services/jobs/job-logging');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import * as jobLogging from '../../../../../core/server/services/jobs/job-logging';
 
 describe('Background job logging', function () {
     afterEach(function () {
