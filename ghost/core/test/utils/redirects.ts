@@ -1,10 +1,13 @@
-const fs = require('fs-extra');
-const path = require('path');
+import * as fs from 'fs-extra';
+import * as path from 'node:path';
 
 /**
  * Set up the redirects file with the extension you want.
  */
-module.exports.setupFile = async (contentFolderForTests, ext) => {
+export const setupFile = async (
+  contentFolderForTests: string,
+  ext: null | string,
+): Promise<void> => {
   const yamlPath = path.join(contentFolderForTests, 'data', 'redirects.yaml');
   const jsonPath = path.join(contentFolderForTests, 'data', 'redirects.json');
 
