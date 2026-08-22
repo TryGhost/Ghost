@@ -8,7 +8,10 @@ import type {AddonManifest} from '../types.ts';
  * just a different source for this list.
  */
 export const MARKETPLACE_CATALOG: string[] = [
-    'http://localhost:4650/manifest.json'
+    'http://localhost:4650/manifest.json',
+    'http://localhost:4651/manifest.json',
+    'http://localhost:4652/manifest.json',
+    'http://localhost:4653/manifest.json'
 ];
 
 export interface MarketplaceCatalogItem {

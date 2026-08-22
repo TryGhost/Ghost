@@ -56,7 +56,7 @@ export function AddonMarketplacePage() {
             {!isLoading && available.length === 0 && (
                 <EmptyIndicator
                     className="grow"
-                    description="No add-ons could be loaded from the catalog. Is the demo provider server running on port 4650?"
+                    description="No add-ons could be loaded from the catalog. Are the demo provider servers running?"
                     title="Marketplace unavailable"
                 >
                     <LucideIcon.Store />

@@ -62,6 +62,22 @@ Server-side, the `addons` key must be listed in the settings API's `EDITABLE_SET
 
 For local development, set `localStorage['ghost-addons-dev'] = JSON.stringify(['http://localhost:4650/manifest.json'])` in the admin console — dev manifests load unpinned and override same-handle installs (an installed record's pinned integrity breaks when you rebuild bundles without bumping the version; the dev path exists precisely for that loop). See `apps/addon-demo`.
 
+### Full editor-block demo
+
+Start the SEO baseline and all three editor-block providers together from the repository root:
+
+```bash
+pnpm dev:addons
+```
+
+With Ghost and React Admin running, enable the **Add-ons** developer experiment and open **Apps → Browse marketplace**. The marketplace contains all four local providers. Install the three editor demos, then create a post and insert each named block from the slash menu:
+
+- **Event** is the static baseline. Change the title, date, location, description, and link; the same useful content is saved for web, email, and RSS without a hydration runtime.
+- **Podcast player** accepts a public episode URL. Its provider backend resolves the episode into a durable snapshot, and the public web card hydrates into an audio player.
+- **Interactive chart** starts with sample data. Import [`../addon-demo-chart/demo-data.csv`](../addon-demo-chart/demo-data.csv), switch the chart mode or series, and observe the SVG update before the Ghost-hosted email/RSS image fallback finishes uploading.
+
+Publish or preview the post to compare the static event, hydrated podcast player, and progressively enhanced chart. Temporarily stopping the provider processes after saving is a useful final check: durable card snapshots should continue rendering.
+
 ## Contract notes
 
 - The authoring contract promises only that `gh-*` primitives are observed. Add-ons run in an iframe realm today (a real, hidden, inert DOM exists), but DOM fidelity beyond the primitives is explicitly not promised, so the execution model can move into a Worker without breaking add-ons.
