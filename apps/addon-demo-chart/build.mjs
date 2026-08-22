@@ -35,10 +35,13 @@ async function bundle(name) {
     return {bundle: `./${name}.js`, integrity: `sha256-${createHash('sha256').update(source).digest('base64')}`};
 }
 
+const content = await bundle('editor-content');
+const settings = await bundle('editor-settings');
+
 const manifest = {
     name: 'Interactive Chart (demo)',
     handle: 'interactive-chart-demo',
-    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0',
+    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0-dev',
     api_version: '2026-01',
     publisher: 'Ghost Demo Co.',
     description: 'Imports local CSV data into a durable SVG chart with presentation-only hydration.',
@@ -62,11 +65,15 @@ const manifest = {
                 fallbackImageUrl: null
             }
         }],
-        content: await bundle('editor-content'),
-        settings: await bundle('editor-settings')
+        content,
+        settings
     },
     targeting: []
 };
+
+if (!process.env.ADDON_DEMO_VERSION) {
+    manifest.version = `0.1.0-dev.${createHash('sha256').update(JSON.stringify(manifest)).digest('hex').slice(0, 12)}`;
+}
 
 await writeFile(resolve(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`);
 console.log('Built chart content + settings bundles and manifest.json into dist/'); // eslint-disable-line no-console

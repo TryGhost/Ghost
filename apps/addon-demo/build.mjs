@@ -58,7 +58,7 @@ const editorSettingsIntegrity = `sha256-${createHash('sha256').update(editorSett
 const manifest = {
     name: 'SEO Assistant (demo)',
     handle: 'seo-assistant-demo',
-    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0',
+    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0-dev',
     api_version: '2026-01',
     publisher: 'Ghost Demo Co.',
     description: 'Crawls your published posts for missing meta descriptions, feature images, and overlong titles or slugs, and tracks your SEO score over time.',
@@ -93,6 +93,10 @@ const manifest = {
     },
     targeting
 };
+
+if (!process.env.ADDON_DEMO_VERSION) {
+    manifest.version = `0.1.0-dev.${createHash('sha256').update(JSON.stringify(manifest)).digest('hex').slice(0, 12)}`;
+}
 
 await writeFile(resolve(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`);
 console.log(`Built ${ENTRIES.length + 2} bundles + manifest.json into dist/`); // eslint-disable-line no-console

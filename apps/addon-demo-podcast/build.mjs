@@ -31,10 +31,13 @@ async function bundle(name) {
     return {bundle: `./${name}.js`, integrity: `sha256-${createHash('sha256').update(source).digest('base64')}`};
 }
 
+const content = await bundle('editor-content');
+const settings = await bundle('editor-settings');
+
 const manifest = {
     name: 'Podcast Player (demo)',
     handle: 'podcast-player-demo',
-    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0',
+    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0-dev',
     api_version: '2026-01',
     publisher: 'Ghost Demo Co.',
     description: 'Turns a public episode URL into a durable, hydrated podcast player.',
@@ -49,11 +52,15 @@ const manifest = {
             resourcePolicy: {images: ['https:'], media: ['https:']},
             initialProperties: {submittedUrl: ''}
         }],
-        content: await bundle('editor-content'),
-        settings: await bundle('editor-settings')
+        content,
+        settings
     },
     targeting: []
 };
+
+if (!process.env.ADDON_DEMO_VERSION) {
+    manifest.version = `0.1.0-dev.${createHash('sha256').update(JSON.stringify(manifest)).digest('hex').slice(0, 12)}`;
+}
 
 await writeFile(resolve(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`);
 console.log('Built podcast content + settings bundles and manifest.json into dist/'); // eslint-disable-line no-console

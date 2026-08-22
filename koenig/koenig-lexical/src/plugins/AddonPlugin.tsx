@@ -8,6 +8,9 @@ import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {AddonBlockDefinition} from '../utils/addon-blocks';
 
+const FAILED_RENDER_HTML = '<div data-ghost-addon-error role="alert"><strong>Add-on block failed to load</strong><span>Remove it and try inserting it again.</span></div>';
+const FAILED_RENDER_CSS = '[data-ghost-addon-error]{box-sizing:border-box;display:grid;gap:6px;padding:20px;border:1px solid #f2b8b5;border-radius:8px;background:#fff7f6;color:#3b1d1b;font:14px sans-serif}[data-ghost-addon-error] strong{font-size:15px}[data-ghost-addon-error] span{color:#6b4a47}';
+
 function createBlockId(config): string {
     return config.createId?.() ?? globalThis.crypto.randomUUID();
 }
@@ -24,6 +27,14 @@ function updateAddonNode(node, dataset) {
     node.resourcePolicy = dataset.resourcePolicy ? structuredClone(dataset.resourcePolicy) : undefined;
     node.hydrate = dataset.hydrate;
     node.initialHeight = dataset.initialHeight;
+}
+
+function showAddonRenderError(node) {
+    node.html = FAILED_RENDER_HTML;
+    node.css = FAILED_RENDER_CSS;
+    node.portableHtml = '<p>Add-on block failed to load.</p>';
+    node.hydrate = false;
+    node.initialHeight = 120;
 }
 
 export const AddonPlugin = () => {
@@ -97,7 +108,7 @@ export const AddonPlugin = () => {
                             editor.update(() => {
                                 const node = $getNodeByKey(placeholderKey);
                                 if ($isAddonNode(node) && node.id === id) {
-                                    node.remove();
+                                    showAddonRenderError(node);
                                 }
                             });
                             onError?.(error instanceof Error ? error : new Error(String(error)));

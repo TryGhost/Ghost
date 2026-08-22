@@ -221,6 +221,59 @@ describe('AddonPlugin', function () {
         });
     });
 
+    it('keeps a visible error card when the initial provider render fails', async function () {
+        const renderError = new Error('Add-on bundle failed integrity verification');
+        const renderBlock = vi.fn().mockRejectedValue(renderError);
+        const onError = vi.fn();
+        let editor;
+
+        render(
+            <KoenigComposerContext.Provider value={{
+                ...defaultKoenigComposerContext,
+                onError,
+                cardConfig: {
+                    addons: {
+                        blocks: [],
+                        createId: () => 'block-failed',
+                        renderBlock
+                    }
+                }
+            }}>
+                <LexicalComposer initialConfig={{
+                    namespace: 'addon-plugin-failed-test',
+                    nodes: [AddonNode],
+                    onError(error) {
+                        throw error;
+                    }
+                }}>
+                    <AddonPlugin />
+                    <EditorHarness onEditor={(value) => {
+                        editor = value;
+                    }} />
+                </LexicalComposer>
+            </KoenigComposerContext.Provider>
+        );
+
+        await waitFor(() => expect(editor).toBeDefined());
+        act(() => {
+            editor.dispatchCommand(INSERT_ADDON_COMMAND, {
+                addonHandle: 'chart',
+                blockName: 'interactive-chart',
+                label: 'Interactive chart'
+            });
+        });
+
+        await waitFor(() => {
+            editor.getEditorState().read(() => {
+                const addonNode = $getRoot().getChildren().find($isAddonNode);
+                expect(addonNode?.html).toContain('data-ghost-addon-error');
+                expect(addonNode?.portableHtml).toContain('failed to load');
+                expect(addonNode?.hydrate).toBe(false);
+            });
+        });
+        expect(onError).toHaveBeenCalledWith(renderError);
+    });
+
     it('commits properties and regenerated snapshots atomically and ignores stale responses', async function () {
         const pending = [];
         const renderBlock = vi.fn()
