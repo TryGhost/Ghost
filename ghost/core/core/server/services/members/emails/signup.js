@@ -150,12 +150,12 @@ module.exports = ({ t, siteTitle, email, url, accentColor = '#15212A', siteDomai
 
               <tr>
                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 80px;">
-                  <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}</p>
+                  <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #5B6B73; font-weight: normal; margin: 0;">${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}</p>
                 </td>
               </tr>
               <tr>
                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 2px;">
-                  <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">${t('This message was sent from {siteDomain} to {email}.', { siteDomain: '<a class="small" href="' + siteUrl + '" style="text-decoration: underline; color: #738A94; font-size: 11px;">' + siteDomain + '</a>', email: '<a class="small" href="mailto:' + email + '" style="text-decoration: underline; color: #738A94; font-size: 11px;">' + email + '</a>', interpolation: { escapeValue: false } })}</p>
+                  <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #5B6B73; font-weight: normal; margin: 0;">${t('This message was sent from {siteDomain} to {email}.', { siteDomain: '<a class="small" href="' + siteUrl + '" style="text-decoration: underline; color: #5B6B73; font-size: 11px;">' + siteDomain + '</a>', email: '<a class="small" href="mailto:' + email + '" style="text-decoration: underline; color: #5B6B73; font-size: 11px;">' + email + '</a>', interpolation: { escapeValue: false } })}</p>
                 </td>
               </tr>
 
