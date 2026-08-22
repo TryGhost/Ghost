@@ -74,7 +74,7 @@ With Ghost and React Admin running, enable the **Add-ons** developer experiment 
 
 - **Event** is the static baseline. Change the title, date, location, description, and link; the same useful content is saved for web, email, and RSS without a hydration runtime.
 - **Podcast player** accepts a public episode URL. Its provider backend resolves the episode into a durable snapshot, and the public web card hydrates into an audio player.
-- **Interactive chart** starts with sample data. Import [`../addon-demo-chart/demo-data.csv`](../addon-demo-chart/demo-data.csv), switch the chart mode or series, and observe the SVG update before the Ghost-hosted email/RSS image fallback finishes uploading.
+- **Chart** starts with sample data. Import [`../addon-demo-chart/demo-data.csv`](../addon-demo-chart/demo-data.csv), switch the chart mode or series, and observe the SVG update before the Ghost-hosted email/RSS image fallback finishes uploading.
 
 Publish or preview the post to compare the static event, hydrated podcast player, and progressively enhanced chart. Temporarily stopping the provider processes after saving is a useful final check: durable card snapshots should continue rendering.
 

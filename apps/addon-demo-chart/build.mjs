@@ -39,7 +39,7 @@ const content = await bundle('editor-content');
 const settings = await bundle('editor-settings');
 
 const manifest = {
-    name: 'Interactive Chart (demo)',
+    name: 'Chart (demo)',
     handle: 'interactive-chart-demo',
     version: process.env.ADDON_DEMO_VERSION ?? '0.1.0-dev',
     api_version: '2026-01',
@@ -48,8 +48,8 @@ const manifest = {
     editor: {
         blocks: [{
             name: 'interactive-chart',
-            label: 'Interactive chart',
-            description: 'Import CSV data and publish an interactive chart',
+            label: 'Chart',
+            description: 'Import CSV data and publish a chart',
             keywords: ['csv', 'data', 'graph', 'visualization'],
             hydrate: true,
             resourcePolicy: {images: ['https:', 'http://localhost:2368']},
