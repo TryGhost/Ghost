@@ -31,6 +31,92 @@ describe('resolveEpisode', function () {
         expect(fetchPage).toHaveBeenCalledWith('https://example.com/episodes/publishing', expect.objectContaining({redirect: 'manual'}));
     });
 
+    it('discovers an RSS feed from an episode page and matches the canonical episode URL', async function () {
+        const fetchPage = vi.fn()
+            .mockResolvedValueOnce(new Response(`
+                <html><head>
+                    <meta property="og:title" content="Episode page title">
+                    <meta property="og:image" content="https://example.com/page-art.jpg">
+                    <link rel="canonical" href="https://example.com/p/design">
+                    <link rel="alternate" type="application/rss+xml" href="/feed">
+                </head></html>
+            `, {
+                headers: {'content-type': 'text/html'},
+                status: 200
+            }))
+            .mockResolvedValueOnce(new Response(`
+                <rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+                    <channel>
+                        <title>The Design Podcast</title>
+                        <image><url>https://example.com/show-art.jpg</url></image>
+                        <item>
+                            <title>Another episode</title>
+                            <link>https://example.com/p/another</link>
+                            <enclosure url="https://media.example.com/another.mp3" type="audio/mpeg" />
+                        </item>
+                        <item>
+                            <title><![CDATA[Design &amp; AI]]></title>
+                            <description><![CDATA[<p>A conversation about designing with AI.</p>]]></description>
+                            <link>https://example.com/p/design</link>
+                            <enclosure length="123" type="audio/mpeg" url="https://media.example.com/design.mp3" />
+                            <itunes:duration>4324</itunes:duration>
+                            <itunes:image href="https://example.com/episode-art.jpg" />
+                        </item>
+                    </channel>
+                </rss>
+            `, {
+                headers: {'content-type': 'application/rss+xml'},
+                status: 200
+            }));
+
+        await expect(resolveEpisode('https://example.com/p/design', fetchPage)).resolves.toEqual({
+            submittedUrl: 'https://example.com/p/design',
+            canonicalUrl: 'https://example.com/p/design',
+            title: 'Design & AI',
+            showName: 'The Design Podcast',
+            description: 'A conversation about designing with AI.',
+            artworkUrl: 'https://example.com/episode-art.jpg',
+            audioUrl: 'https://media.example.com/design.mp3',
+            duration: '72 min'
+        });
+        expect(fetchPage).toHaveBeenNthCalledWith(2, 'https://example.com/feed', expect.objectContaining({redirect: 'manual'}));
+    });
+
+    it('accepts a bounded podcast feed larger than the HTML page limit and uses its newest audio item', async function () {
+        const fetchPage = vi.fn().mockResolvedValue(new Response(`
+            <rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+                <channel>
+                    <title>Lenny's Podcast</title>
+                    <item>
+                        <title>OpenAI's Head of Design</title>
+                        <description>The best time in history to be a designer.</description>
+                        <link>https://www.lennysnewsletter.com/p/openais-head-of-design-this-is-the</link>
+                        <enclosure url="https://api.substack.com/feed/podcast/209801560/episode.mp3" type="audio/mpeg" />
+                        <itunes:duration>4324</itunes:duration>
+                        <itunes:image href="https://substackcdn.com/feed/podcast/10845/episode.jpg" />
+                    </item>
+                </channel>
+            </rss>
+        `, {
+            headers: {
+                'content-length': String(3 * 1024 * 1024),
+                'content-type': 'application/xml; charset=utf-8'
+            },
+            status: 200
+        }));
+
+        await expect(resolveEpisode('https://api.substack.com/feed/podcast/10845.rss', fetchPage)).resolves.toEqual({
+            submittedUrl: 'https://api.substack.com/feed/podcast/10845.rss',
+            canonicalUrl: 'https://www.lennysnewsletter.com/p/openais-head-of-design-this-is-the',
+            title: 'OpenAI\'s Head of Design',
+            showName: 'Lenny\'s Podcast',
+            description: 'The best time in history to be a designer.',
+            artworkUrl: 'https://substackcdn.com/feed/podcast/10845/episode.jpg',
+            audioUrl: 'https://api.substack.com/feed/podcast/209801560/episode.mp3',
+            duration: '72 min'
+        });
+    });
+
     it('rejects private literal and DNS-resolved addresses', async function () {
         const fetchPage = vi.fn();
 
