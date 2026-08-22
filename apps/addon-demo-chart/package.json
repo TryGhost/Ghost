@@ -1,0 +1,43 @@
+{
+    "name": "@tryghost/addon-demo-chart",
+    "type": "module",
+    "version": "0.0.0",
+    "license": "MIT",
+    "private": true,
+    "scripts": {
+        "dev": "node build.mjs && node server.mjs",
+        "build": "tsc && node build.mjs",
+        "serve": "node server.mjs",
+        "test": "vitest run",
+        "lint": "eslint --cache src test",
+        "lint:fix": "eslint --cache --fix src test"
+    },
+    "dependencies": {
+        "@tryghost/addon-kit": "workspace:*",
+        "echarts": "catalog:",
+        "papaparse": "catalog:",
+        "preact": "catalog:"
+    },
+    "devDependencies": {
+        "@internal/cfg-eslint-react": "workspace:*",
+        "@typescript/native": "catalog:",
+        "@types/node": "catalog:",
+        "@types/papaparse": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vite": "catalog:",
+        "vitest": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "dependsOn": ["^build"]
+            },
+            "build": {
+                "outputs": ["{projectRoot}/dist"],
+                "dependsOn": ["^build"]
+            }
+        }
+    }
+}

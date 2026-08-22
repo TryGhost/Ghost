@@ -1,5 +1,7 @@
-export {GhEditorInput, GhEditorSelect, GhEditorToggle} from './components.ts';
+export {GhEditorFileInput, GhEditorInput, GhEditorSelect, GhEditorToggle} from './components.ts';
 export type {
+    GhEditorFile,
+    GhEditorFileInputProperties,
     GhEditorInputProperties,
     GhEditorSelectOption,
     GhEditorSelectProperties,

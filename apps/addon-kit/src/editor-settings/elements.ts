@@ -80,10 +80,42 @@ export const GhEditorSelectElement = createRemoteElement<
     events: ['change']
 });
 
+export interface GhEditorFile {
+    name: string;
+    type: string;
+    size: number;
+    bytes: Uint8Array;
+}
+
+export interface GhEditorFileInputProperties extends EditorControlProperties {
+    accept?: string;
+    maxBytes?: number;
+}
+
+interface GhEditorFileInputEventListeners {
+    change(event: CustomEvent<GhEditorFile>): void;
+}
+
+export const GhEditorFileInputElement = createRemoteElement<
+    GhEditorFileInputProperties,
+    Record<string, never>,
+    Record<string, never>,
+    GhEditorFileInputEventListeners
+>({
+    properties: {
+        label: {type: String},
+        description: {type: String},
+        accept: {type: String},
+        maxBytes: {type: Number}
+    },
+    events: ['change']
+});
+
 const EDITOR_SETTING_ELEMENTS = {
     'gh-editor-input': GhEditorInputElement,
     'gh-editor-toggle': GhEditorToggleElement,
-    'gh-editor-select': GhEditorSelectElement
+    'gh-editor-select': GhEditorSelectElement,
+    'gh-editor-file-input': GhEditorFileInputElement
 } as const;
 
 export function registerEditorSettingsElements(): void {
@@ -99,5 +131,6 @@ declare global {
         'gh-editor-input': InstanceType<typeof GhEditorInputElement>;
         'gh-editor-toggle': InstanceType<typeof GhEditorToggleElement>;
         'gh-editor-select': InstanceType<typeof GhEditorSelectElement>;
+        'gh-editor-file-input': InstanceType<typeof GhEditorFileInputElement>;
     }
 }

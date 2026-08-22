@@ -187,6 +187,7 @@ tsconfig.tsbuildinfo
 /apps/addon-demo/dist
 /apps/addon-demo-events/dist
 /apps/addon-demo-podcast/dist
+/apps/addon-demo-chart/dist
 
 # Tinybird
 .tinyb

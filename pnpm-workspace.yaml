@@ -111,6 +111,7 @@ catalog:
   '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
   '@types/node': 22.20.1
+  '@types/papaparse': 5.5.2
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
@@ -139,6 +140,7 @@ catalog:
   dequal: 2.0.3
   dompurify: 3.4.13
   dotenv: 17.4.2
+  echarts: 6.1.0
   entities: 4.5.0
   esbuild: 0.28.2
   eslint: 9.39.4
@@ -170,6 +172,7 @@ catalog:
   node-html-markdown: 2.0.0
   oxfmt: 0.63.0
   postcss: 8.5.26
+  papaparse: 5.5.4
   preact: ^10.29.2
   preact-render-to-string: 6.7.0
   prettier: 3.9.6
