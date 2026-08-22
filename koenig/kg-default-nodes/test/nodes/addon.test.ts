@@ -179,7 +179,7 @@ describe('AddonNode', function () {
         });
     });
 
-    it('builds a non-interactive editor preview from the saved snapshot', function () {
+    it('builds a non-interactive editor preview with the resize lifecycle', function () {
         const srcdoc = renderAddonEditorPreview({
             id: 'episode-player-1',
             addonHandle: 'transistor',
@@ -196,8 +196,11 @@ describe('AddonNode', function () {
 
         expect(srcdoc).toContain('<article><a href="https://example.com">Episode 12</a></article>');
         expect(srcdoc).toContain('article { color: rebeccapurple; }');
-        expect(srcdoc).toContain('script-src \'none\'');
-        expect(srcdoc).not.toContain('ghost-addon-bootstrap');
+        expect(srcdoc).toContain('script-src \'nonce-ghost-addon-bootstrap\'');
+        expect(srcdoc).toContain('ghost-addon-bootstrap');
+        expect(srcdoc).toContain('ResizeObserver');
+        expect(srcdoc).toContain(',false);</script>');
+        expect(srcdoc).not.toContain('\'unsafe-eval\'');
         expect(srcdoc).not.toContain('steal()');
     });
 });

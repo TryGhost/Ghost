@@ -3,7 +3,7 @@ import KoenigComposerContext, {defaultKoenigComposerContext} from '../../src/con
 import React from 'react';
 import {AddonNodeComponent} from '../../src/nodes/AddonNode';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
-import {render, screen, waitFor} from '@testing-library/react';
+import {act, render, screen, waitFor} from '@testing-library/react';
 import {vi} from 'vitest';
 
 vi.stubGlobal('ResizeObserver', class ResizeObserver {
@@ -30,11 +30,30 @@ describe('AddonNodeComponent', function () {
         render(<AddonNodeComponent dataset={dataset} />);
 
         const iframe = screen.getByTitle('Transistor podcast player');
-        expect(iframe).toHaveAttribute('sandbox', '');
+        expect(iframe).toHaveAttribute('sandbox', 'allow-scripts');
         expect(iframe).toHaveAttribute('tabindex', '-1');
         expect(iframe).toHaveStyle({height: '240px', pointerEvents: 'none'});
         expect(iframe.getAttribute('srcdoc')).toContain('<article>Episode 12</article>');
-        expect(iframe.getAttribute('srcdoc')).not.toContain('ghost-addon-bootstrap');
+        expect(iframe.getAttribute('srcdoc')).toContain('ghost-addon-bootstrap');
+    });
+
+    it('resizes the preview when its sandbox reports a new content height', async function () {
+        render(<AddonNodeComponent dataset={dataset} />);
+
+        const iframe = screen.getByTitle('Transistor podcast player');
+        act(() => {
+            window.dispatchEvent(new MessageEvent('message', {
+                data: {
+                    type: 'ghost-addon',
+                    instanceId: 'block-1',
+                    action: 'resize',
+                    height: 381.2
+                },
+                source: iframe.contentWindow
+            }));
+        });
+
+        await waitFor(() => expect(iframe).toHaveStyle({height: '382px'}));
     });
 
     it('shows the saved snapshot when the host has no image uploader', function () {

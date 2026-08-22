@@ -310,7 +310,7 @@ function buildResourceSources(values: string[], {includeData = false, allowHttp 
     return [...(includeData ? ['data:'] : []), ...uniqueSources].join(' ') || '\'none\'';
 }
 
-function buildStaticDocument(document: Document, node: AddonNodeData, {includeBootstrap = true} = {}): string {
+function buildStaticDocument(document: Document, node: AddonNodeData, {includeBootstrap = true, enableHydration = true} = {}): string {
     const markup = sanitizeMarkup(document, node.html);
     // A style element is a raw-text element. CSS-escaping `<` prevents a
     // provider string from terminating it and injecting executable markup.
@@ -322,7 +322,7 @@ function buildStaticDocument(document: Document, node: AddonNodeData, {includeBo
     const mediaSources = policy ? buildResourceSources(policy.media ?? [], {includeData: true}) : legacySources;
     const fontSources = policy ? 'data:' : legacySources;
     const connectSources = policy ? '\'none\'' : legacySources;
-    const shouldHydrate = node.hydrate === true;
+    const shouldHydrate = enableHydration && node.hydrate === true;
     const scriptSource = includeBootstrap ? `'nonce-${BOOTSTRAP_NONCE}'${shouldHydrate ? ' \'unsafe-eval\'' : ''}` : '\'none\'';
     const connectSource = shouldHydrate ? connectSources : '\'none\'';
 
@@ -349,7 +349,7 @@ export function renderAddonEditorPreview(node: AddonNodeData, options: ExportDOM
         return '';
     }
 
-    return buildStaticDocument(document, node, {includeBootstrap: false});
+    return buildStaticDocument(document, node, {enableHydration: false});
 }
 
 export function renderAddonNode(node: AddonNodeData, options: ExportDOMOptions = {}): ExportDOMOutput {

@@ -130,15 +130,51 @@ function AddonNodeSettings({dataset, nodeKey}) {
 
 export function AddonNodeComponent({dataset, nodeKey}) {
     const srcDoc = renderAddonEditorPreview(dataset);
-    const height = normalizeAddonHeight(dataset.initialHeight);
+    const iframeRef = React.useRef<HTMLIFrameElement>(null);
+    const [height, setHeight] = React.useState(() => normalizeAddonHeight(dataset.initialHeight));
+
+    React.useEffect(() => {
+        setHeight(normalizeAddonHeight(dataset.initialHeight));
+    }, [dataset.id, dataset.initialHeight]);
+
+    React.useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            const iframe = iframeRef.current;
+            const message = event.data;
+            if (event.source !== iframe?.contentWindow
+                || !message
+                || message.type !== 'ghost-addon'
+                || message.instanceId !== dataset.id) {
+                return;
+            }
+
+            iframe.contentWindow?.postMessage({
+                type: 'ghost-addon-host',
+                instanceId: dataset.id,
+                action: 'connected'
+            }, '*');
+
+            if (message.action !== 'resize') {
+                return;
+            }
+            const requestedHeight = Number(message.height);
+            if (Number.isFinite(requestedHeight)) {
+                setHeight(normalizeAddonHeight(Math.ceil(requestedHeight)));
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [dataset.id]);
 
     return (
         <>
             <div className="relative w-full overflow-hidden" data-kg-addon-preview={dataset.blockName}>
                 <iframe
+                    ref={iframeRef}
                     className="block w-full border-0"
                     height={height}
-                    sandbox=""
+                    sandbox="allow-scripts"
                     srcDoc={srcDoc}
                     style={{height: `${height}px`, pointerEvents: 'none'}}
                     tabIndex={-1}
