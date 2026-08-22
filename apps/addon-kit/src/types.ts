@@ -114,6 +114,7 @@ export interface SandboxExports {
         bundleUrl: string;
         connection: RemoteConnection;
         request: AddonEditorBlockRequest;
+        capabilities: Pick<HostCapabilities, 'fetch'>;
         proposePatch: (patch: Record<string, unknown>) => Promise<void>;
     }): Promise<void>;
 
@@ -195,6 +196,7 @@ export interface AddonEditorSettingsBridge {
     readonly blockName: string;
     readonly props: Record<string, unknown>;
     readonly context?: AddonEditorPresentationContext;
+    fetch(url: string, init?: {method?: string; headers?: Record<string, string>; body?: string}): Promise<Response>;
     proposePatch(patch: Record<string, unknown>): Promise<void>;
     onPropsChange(listener: (props: Record<string, unknown>) => void): () => void;
 }
@@ -229,8 +231,15 @@ export interface AddonManifestEditorBlock {
     initialProperties?: Record<string, unknown>;
     /** Public resource policy declared at install time, never by render output. */
     resourceOrigins?: string[];
+    /** Type-specific public iframe resource policy. Scheme sources such as `https:` may be used. */
+    resourcePolicy?: AddonResourcePolicy;
     /** Opts this block into lazy public hydration by the shared content bundle. */
     hydrate?: boolean;
+}
+
+export interface AddonResourcePolicy {
+    images?: string[];
+    media?: string[];
 }
 
 export interface AddonManifestEditor {

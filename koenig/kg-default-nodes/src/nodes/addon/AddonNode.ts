@@ -6,7 +6,7 @@ export {
     normalizeAddonHeight,
     renderAddonEditorPreview
 } from './addon-renderer.js';
-export type {AddonNodeData} from './addon-renderer.js';
+export type {AddonNodeData, AddonResourcePolicy} from './addon-renderer.js';
 
 const addonProperties = {
     id: {default: ''},
@@ -18,6 +18,7 @@ const addonProperties = {
     css: {default: ''},
     portableHtml: {default: '', urlType: 'html'},
     resourceOrigins: {default: [] as string[]},
+    resourcePolicy: {default: undefined as import('./addon-renderer.js').AddonResourcePolicy | undefined},
     hydrate: {default: false},
     initialHeight: {default: 320}
 } satisfies DecoratorNodePropertyMap;
@@ -33,7 +34,8 @@ export class AddonNode extends generateDecoratorNode({
         super({
             ...dataset,
             props: structuredClone(dataset.props ?? {}),
-            resourceOrigins: [...(dataset.resourceOrigins ?? [])]
+            resourceOrigins: [...(dataset.resourceOrigins ?? [])],
+            resourcePolicy: dataset.resourcePolicy ? structuredClone(dataset.resourcePolicy) : undefined
         }, key);
     }
 }

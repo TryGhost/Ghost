@@ -10,6 +10,7 @@ import type {
     SandboxExports
 } from '../types.ts';
 import {renderEditorBlockModule} from './render-block.ts';
+import {deserializeResponse} from './serialized-response.ts';
 import {verifyBundleIntegrity} from '../integrity.ts';
 
 /**
@@ -61,11 +62,7 @@ function bootstrap({port}: BootstrapInit): void {
                     headers: init?.headers,
                     body: init?.body
                 });
-                return new Response(serialized.body, {
-                    status: serialized.status,
-                    statusText: serialized.statusText,
-                    headers: serialized.headers
-                });
+                return deserializeResponse(serialized);
             }
         };
     }
@@ -140,13 +137,14 @@ function bootstrap({port}: BootstrapInit): void {
             return renderEditorBlockModule(moduleExports, request);
         },
 
-        async renderSettings({bundleUrl, connection, request, proposePatch}) {
+        async renderSettings({bundleUrl, connection, request, capabilities, proposePatch}) {
             if (rendered) {
                 throw new Error('This sandbox has already rendered — one render per sandbox instance');
             }
             rendered = true;
             retain(connection);
             retain(proposePatch);
+            retain(capabilities);
             settingsProps = structuredClone(request.props);
             const connect = (globalThis as Record<string, unknown>).__ghostAddonConnect as
                 ((remoteConnection: RemoteConnection, root: Node) => unknown) | undefined;
@@ -158,6 +156,15 @@ function bootstrap({port}: BootstrapInit): void {
             await moduleExports.default({
                 blockName: request.blockName,
                 context: request.context ? structuredClone(request.context) : undefined,
+                fetch: async (url, init) => {
+                    const serialized = await capabilities.fetch({
+                        url,
+                        method: init?.method,
+                        headers: init?.headers,
+                        body: init?.body
+                    });
+                    return deserializeResponse(serialized);
+                },
                 get props() {
                     return settingsProps!;
                 },

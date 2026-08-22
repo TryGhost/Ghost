@@ -138,6 +138,7 @@ describe('createAddonEditorBlocksConfig', function () {
             bundleUrl: 'https://podcasts.example/settings.js',
             connection: receiver.connection,
             request: {blockName: 'episode-player', props: {episodeId: '123'}},
+            capabilities: {fetch: expect.any(Function)},
             proposePatch: expect.any(Function)
         });
 

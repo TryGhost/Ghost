@@ -21,6 +21,7 @@ function updateAddonNode(node, dataset) {
     node.css = dataset.css;
     node.portableHtml = dataset.portableHtml;
     node.resourceOrigins = [...dataset.resourceOrigins];
+    node.resourcePolicy = dataset.resourcePolicy ? structuredClone(dataset.resourcePolicy) : undefined;
     node.hydrate = dataset.hydrate;
     node.initialHeight = dataset.initialHeight;
 }
@@ -63,6 +64,7 @@ export const AddonPlugin = () => {
                         css: '[data-ghost-addon-loading]{box-sizing:border-box;padding:24px;color:#738a94;font:14px sans-serif}',
                         portableHtml: '<p>Loading add-on block…</p>',
                         resourceOrigins: [],
+                        resourcePolicy: definition.resourcePolicy ? structuredClone(definition.resourcePolicy) : undefined,
                         hydrate: definition.hasHydration === true,
                         initialHeight: 80
                     });

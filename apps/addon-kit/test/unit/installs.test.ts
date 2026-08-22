@@ -20,6 +20,7 @@ const manifest: AddonManifest = {
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
             resourceOrigins: ['https://scores.example.com'],
+            resourcePolicy: {images: ['https:'], media: ['https:']},
             hydrate: true
         }],
         content: {bundle: './editor-content.js', integrity: 'sha256-editor'},
@@ -139,6 +140,7 @@ describe('getEditorBlockDefinitions', function () {
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
             resourceOrigins: ['https://scores.example.com'],
+            resourcePolicy: {images: ['https:'], media: ['https:']},
             hasSettings: true,
             hasHydration: true
         }]);
@@ -194,5 +196,21 @@ describe('fetchManifest editor validation', function () {
 
         const {fetchManifest} = await import('../../src/host/installs.ts');
         await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('hydrate');
+    });
+
+    it('rejects deferred network capabilities in editor resource policies', async function () {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                ...manifest,
+                editor: {
+                    ...manifest.editor,
+                    blocks: [{name: 'networked', label: 'Networked', resourcePolicy: {connect: ['https:']}}]
+                }
+            })
+        }));
+
+        const {fetchManifest} = await import('../../src/host/installs.ts');
+        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('resourcePolicy');
     });
 });

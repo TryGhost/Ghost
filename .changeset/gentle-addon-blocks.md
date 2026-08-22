@@ -3,4 +3,4 @@
 "@tryghost/kg-default-nodes": patch
 ---
 
-Added manifest-driven add-on block registration, sandboxed static Preact rendering, and non-interactive editor previews.
+Added manifest-driven add-on blocks with sandboxed Preact rendering, dynamic settings, type-specific public resource policies, and lazy public hydration.

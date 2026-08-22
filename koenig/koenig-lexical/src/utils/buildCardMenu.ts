@@ -100,7 +100,9 @@ export function buildCardMenu(nodes, {query, config} = {}) {
                 initialProperties: structuredClone(definition.initialProperties ?? {}),
                 resourceOrigins: Array.isArray(definition.resourceOrigins)
                     ? definition.resourceOrigins.filter(origin => typeof origin === 'string')
-                    : []
+                    : [],
+                resourcePolicy: definition.resourcePolicy ? structuredClone(definition.resourcePolicy) : undefined,
+                hasHydration: definition.hasHydration === true
             }
         });
     });

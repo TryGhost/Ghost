@@ -39,6 +39,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+function isResourcePolicy(value: unknown): boolean {
+    if (!isRecord(value)) {
+        return false;
+    }
+    const allowedKeys = new Set(['images', 'media']);
+    return Object.entries(value).every(([key, sources]) => allowedKeys.has(key) && isStringArray(sources));
+}
+
 function isValidEditorBlock(value: unknown): value is NonNullable<AddonManifest['editor']>['blocks'][number] {
     if (!isRecord(value)) {
         return false;
@@ -54,6 +62,7 @@ function isValidEditorBlock(value: unknown): value is NonNullable<AddonManifest[
         && (value.keywords === undefined || isStringArray(value.keywords))
         && (value.initialProperties === undefined || isRecord(value.initialProperties))
         && (value.resourceOrigins === undefined || isStringArray(value.resourceOrigins))
+        && (value.resourcePolicy === undefined || isResourcePolicy(value.resourcePolicy))
         && (value.hydrate === undefined || typeof value.hydrate === 'boolean');
 }
 
@@ -114,6 +123,9 @@ function parseManifest(value: unknown): AddonManifest {
             }
             if (block.resourceOrigins !== undefined && !isStringArray(block.resourceOrigins)) {
                 throw new Error(`Manifest editor block "${block.name}" resourceOrigins must be an array of strings`);
+            }
+            if (block.resourcePolicy !== undefined && !isResourcePolicy(block.resourcePolicy)) {
+                throw new Error(`Manifest editor block "${block.name}" resourcePolicy is invalid`);
             }
             if (block.hydrate !== undefined && typeof block.hydrate !== 'boolean') {
                 throw new Error(`Manifest editor block "${block.name}" hydrate must be a boolean`);
@@ -229,6 +241,7 @@ export interface InstalledEditorBlockDefinition {
     keywords?: string[];
     initialProperties?: Record<string, unknown>;
     resourceOrigins?: string[];
+    resourcePolicy?: import('../types.ts').AddonResourcePolicy;
     hasSettings?: boolean;
     hasHydration?: boolean;
 }
@@ -247,6 +260,7 @@ export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): Insta
             keywords: block.keywords ? [...block.keywords] : undefined,
             initialProperties: block.initialProperties ? structuredClone(block.initialProperties) : undefined,
             resourceOrigins: block.resourceOrigins ? [...block.resourceOrigins] : undefined,
+            resourcePolicy: block.resourcePolicy ? structuredClone(block.resourcePolicy) : undefined,
             hasSettings: typeof install.editor?.settingsBundleUrl === 'string' && install.editor.settingsBundleUrl.length > 0,
             hasHydration: block.hydrate === true
         }));

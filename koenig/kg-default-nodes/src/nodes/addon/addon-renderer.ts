@@ -2,6 +2,11 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
+export type AddonResourcePolicy = {
+    images?: string[];
+    media?: string[];
+};
+
 export type AddonNodeData = {
     id: string;
     addonHandle: string;
@@ -12,6 +17,7 @@ export type AddonNodeData = {
     css: string;
     portableHtml: string;
     resourceOrigins: string[];
+    resourcePolicy?: AddonResourcePolicy;
     hydrate?: boolean;
     initialHeight: number;
 };
@@ -61,6 +67,17 @@ function hasSafeProperties(value: unknown): value is Record<string, unknown> {
     } catch {
         return false;
     }
+}
+
+function hasSafeResourcePolicy(value: unknown): value is AddonResourcePolicy {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+    const policy = value as Record<string, unknown>;
+    const allowedKeys = new Set(['images', 'media']);
+    return Object.keys(policy).every(key => allowedKeys.has(key)
+        && Array.isArray(policy[key])
+        && policy[key].every(source => typeof source === 'string'));
 }
 
 const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProps, shouldHydrate) {
@@ -197,6 +214,7 @@ export function isSafeAddonSnapshot(node: AddonNodeData): boolean {
         && typeof node.portableHtml === 'string'
         && Array.isArray(node.resourceOrigins)
         && node.resourceOrigins.every(origin => typeof origin === 'string')
+        && (node.resourcePolicy === undefined || hasSafeResourcePolicy(node.resourcePolicy))
         && (node.hydrate === undefined || typeof node.hydrate === 'boolean')
         && new TextEncoder().encode(node.html).byteLength <= MAX_ADDON_SNAPSHOT_BYTES
         && new TextEncoder().encode(node.css).byteLength <= MAX_ADDON_SNAPSHOT_BYTES
@@ -275,17 +293,21 @@ function serializeScriptJson(value: unknown): string {
     }
 }
 
-function buildResourceSources(resourceOrigins: string[]): string {
-    const origins = resourceOrigins.flatMap((value) => {
+function buildResourceSources(values: string[], {includeData = false, allowHttp = false}: {includeData?: boolean; allowHttp?: boolean} = {}): string {
+    const sources = values.flatMap((value) => {
+        if (value === 'https:' || (allowHttp && value === 'http:')) {
+            return [value];
+        }
         try {
             const url = new URL(value);
-            return url.protocol === 'http:' || url.protocol === 'https:' ? [url.origin] : [];
+            return url.protocol === 'https:' || (allowHttp && url.protocol === 'http:') ? [url.origin] : [];
         } catch {
             return [];
         }
     });
 
-    return ['data:', ...new Set(origins)].join(' ');
+    const uniqueSources = [...new Set(sources)];
+    return [...(includeData ? ['data:'] : []), ...uniqueSources].join(' ') || '\'none\'';
 }
 
 function buildStaticDocument(document: Document, node: AddonNodeData, {includeBootstrap = true} = {}): string {
@@ -294,17 +316,22 @@ function buildStaticDocument(document: Document, node: AddonNodeData, {includeBo
     // provider string from terminating it and injecting executable markup.
     const css = node.css.replaceAll('<', '\\3c ');
     const title = escapeHtml(node.label || node.blockName);
-    const resourceSources = buildResourceSources(node.resourceOrigins);
+    const legacySources = buildResourceSources(node.resourceOrigins, {includeData: true, allowHttp: true});
+    const policy = node.resourcePolicy;
+    const imageSources = policy ? buildResourceSources(policy.images ?? [], {includeData: true}) : legacySources;
+    const mediaSources = policy ? buildResourceSources(policy.media ?? [], {includeData: true}) : legacySources;
+    const fontSources = policy ? 'data:' : legacySources;
+    const connectSources = policy ? '\'none\'' : legacySources;
     const shouldHydrate = node.hydrate === true;
     const scriptSource = includeBootstrap ? `'nonce-${BOOTSTRAP_NONCE}'${shouldHydrate ? ' \'unsafe-eval\'' : ''}` : '\'none\'';
-    const connectSource = shouldHydrate ? resourceSources : '\'none\'';
+    const connectSource = shouldHydrate ? connectSources : '\'none\'';
 
     return '<!doctype html>'
         + '<html><head>'
         + '<meta charset="utf-8">'
         + '<meta name="viewport" content="width=device-width,initial-scale=1">'
         + '<meta name="referrer" content="no-referrer">'
-        + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${scriptSource}; style-src 'unsafe-inline'; img-src ${resourceSources}; media-src ${resourceSources}; font-src ${resourceSources}; connect-src ${connectSource}; frame-src 'none'; form-action 'none'; base-uri 'none'">`
+        + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${scriptSource}; style-src 'unsafe-inline'; img-src ${imageSources}; media-src ${mediaSources}; font-src ${fontSources}; connect-src ${connectSource}; frame-src 'none'; form-action 'none'; base-uri 'none'">`
         + `<title>${title}</title>`
         + '<style>html,body{margin:0;padding:0}#ghost-addon-root{display:flow-root}</style>'
         + `<style data-ghost-addon-content-style>${css}</style>`

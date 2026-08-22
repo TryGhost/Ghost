@@ -1,4 +1,5 @@
 import {AddonSandboxController} from './sandbox-controller.ts';
+import {createEditorFetchCapability} from './host-fetch.ts';
 import {getEditorBlockDefinitions} from './installs.ts';
 import {RemoteReceiver} from '@remote-dom/core/receivers';
 import {release, retain} from '@quilted/threads';
@@ -42,6 +43,7 @@ interface EditorBlockController {
         bundleUrl: string;
         connection: RemoteConnection;
         request: AddonEditorBlockRequest;
+        capabilities: ReturnType<typeof createEditorFetchCapability>;
         proposePatch: (patch: Record<string, unknown>) => Promise<void>;
     }): Promise<void>;
     updateSettingsProps(props: Record<string, unknown>): Promise<void>;
@@ -106,7 +108,7 @@ export function createAddonEditorBlocksConfig(
             const install = installs.find(candidate => candidate.enabled && candidate.handle === addonHandle);
             const editor = install?.editor;
             const bundleUrl = editor?.settingsBundleUrl;
-            if (!block?.hasSettings || typeof bundleUrl !== 'string' || bundleUrl.length === 0) {
+            if (!install || !block?.hasSettings || typeof bundleUrl !== 'string' || bundleUrl.length === 0) {
                 throw new Error(`Add-on editor block "${addonHandle}/${blockName}" has no settings bundle`);
             }
 
@@ -119,6 +121,7 @@ export function createAddonEditorBlocksConfig(
                     bundleUrl,
                     connection: receiver.connection,
                     request: {blockName, props: structuredClone(props), ...(presentationContext ? {context: structuredClone(presentationContext)} : {})},
+                    capabilities: createEditorFetchCapability(install),
                     proposePatch: patch => onPatch(structuredClone(patch))
                 });
             })();

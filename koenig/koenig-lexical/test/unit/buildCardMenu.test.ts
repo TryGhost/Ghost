@@ -552,7 +552,8 @@ describe('buildCardMenu', function () {
                         description: 'Embed an episode from Transistor FM',
                         keywords: ['podcast', 'audio'],
                         initialProperties: {episodeId: ''},
-                        resourceOrigins: ['https://media.transistor.fm']
+                        resourceOrigins: ['https://media.transistor.fm'],
+                        hasHydration: true
                     }, {
                         addonHandle: 'forms',
                         blockName: 'signup-form',
@@ -575,7 +576,8 @@ describe('buildCardMenu', function () {
                     blockName: 'episode-player',
                     label: 'Transistor podcast player',
                     initialProperties: {episodeId: ''},
-                    resourceOrigins: ['https://media.transistor.fm']
+                    resourceOrigins: ['https://media.transistor.fm'],
+                    hasHydration: true
                 }
             });
             expect(items[0].insertCommand).toBeDefined();

@@ -114,6 +114,38 @@ describe('AddonNode', function () {
         });
     });
 
+    it('keeps broad HTTPS image and media access separate from network and frame access', async function () {
+        await new Promise<void>((resolve, reject) => {
+            editor.update(() => {
+                try {
+                    const node = $createAddonNode({
+                        id: 'podcast-player-1',
+                        addonHandle: 'podcast-demo',
+                        blockName: 'podcast-player',
+                        label: 'Podcast player',
+                        html: '<article><img src="https://cdn.example/cover.jpg"><audio src="https://media.example/episode.mp3"></audio></article>',
+                        resourcePolicy: {
+                            images: ['https:'],
+                            media: ['https:']
+                        },
+                        hydrate: true
+                    });
+
+                    const iframe = (node.exportDOM(editor, {dom}).element as HTMLElement).querySelector('iframe');
+
+                    expect(iframe?.srcdoc).toContain('img-src data: https:');
+                    expect(iframe?.srcdoc).toContain('media-src data: https:');
+                    expect(iframe?.srcdoc).toContain('font-src data:');
+                    expect(iframe?.srcdoc).toContain('connect-src \'none\'');
+                    expect(iframe?.srcdoc).toContain('frame-src \'none\'');
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    });
+
     it('renders the portable snapshot for email without executable markup', async function () {
         await new Promise<void>((resolve, reject) => {
             editor.update(() => {

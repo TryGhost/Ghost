@@ -8,7 +8,8 @@ describe('add-on editor blocks', function () {
             blockName: 'episode-player',
             label: 'Transistor podcast player',
             initialProperties: {episodeId: '1234'},
-            resourceOrigins: ['https://media.transistor.fm']
+            resourceOrigins: ['https://media.transistor.fm'],
+            resourcePolicy: {images: ['https:'], media: ['https:']}
         };
         const renderOutput = {
             html: '<article>Episode 12</article>',
@@ -28,6 +29,7 @@ describe('add-on editor blocks', function () {
             css: 'article { color: rebeccapurple; }',
             portableHtml: '<p>Episode 12</p>',
             resourceOrigins: ['https://media.transistor.fm'],
+            resourcePolicy: {images: ['https:'], media: ['https:']},
             hydrate: false,
             initialHeight: 240
         });

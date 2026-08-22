@@ -1,5 +1,5 @@
 import {isSafeAddonSnapshot, normalizeAddonHeight} from '@tryghost/kg-default-nodes';
-import type {AddonNodeData} from '@tryghost/kg-default-nodes';
+import type {AddonNodeData, AddonResourcePolicy} from '@tryghost/kg-default-nodes';
 
 export interface AddonBlockDefinition {
     addonHandle: string;
@@ -9,6 +9,7 @@ export interface AddonBlockDefinition {
     keywords?: string[];
     initialProperties?: Record<string, unknown>;
     resourceOrigins?: string[];
+    resourcePolicy?: AddonResourcePolicy;
     hasSettings?: boolean;
     hasHydration?: boolean;
 }
@@ -68,6 +69,7 @@ export function buildAddonNodeData(
         css: typeof output.css === 'string' ? output.css : '',
         portableHtml: typeof output.portableHtml === 'string' ? output.portableHtml : '',
         resourceOrigins: [...resourceOrigins],
+        resourcePolicy: definition.resourcePolicy ? structuredClone(definition.resourcePolicy) : undefined,
         hydrate: definition.hasHydration === true,
         initialHeight: normalizeAddonHeight(output.initialHeight)
     };
