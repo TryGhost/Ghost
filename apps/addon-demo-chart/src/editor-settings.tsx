@@ -1,12 +1,14 @@
 import {GhEditorFileInput, GhEditorSelect, GhEditorToggle, type AddonEditorSettingsBridge, type GhEditorFile} from '@tryghost/addon-kit/editor-settings';
-import {createChartConfigurationPatch, createChartPatchFromFile, createLabelColumnPatch} from './editor-settings-model.ts';
+import {createChartConfigurationPatch, createChartFallbackWorkflow, createChartPatchFromFile, createLabelColumnPatch} from './editor-settings-model.ts';
 import {isChartTable, numericValueColumns, readChartConfig, sampleChartTable} from './chart-data.ts';
+import {renderChartPng} from './chart-engine.ts';
 import {render} from 'preact';
-import {useEffect, useState} from 'preact/hooks';
+import {useEffect, useMemo, useRef, useState} from 'preact/hooks';
 
 function Settings({ghost}: {ghost: AddonEditorSettingsBridge}) {
     const [props, setProps] = useState(() => ghost.props);
     const [status, setStatus] = useState('Choose a CSV with a header row and up to 100 data rows.');
+    const propsRef = useRef(ghost.props);
     const table = isChartTable(props.table) ? props.table : sampleChartTable;
     const config = readChartConfig(props, table);
     const columnOptions = table.columns.map(column => ({label: column, value: column}));
@@ -14,23 +16,44 @@ function Settings({ghost}: {ghost: AddonEditorSettingsBridge}) {
     const valueColumns = numericValueColumns(table, config.labelColumn);
     const valueOptions = columnOptions.filter(option => valueColumns.includes(option.value));
 
-    useEffect(() => ghost.onPropsChange(setProps), [ghost]);
+    const fallbackWorkflow = useMemo(() => createChartFallbackWorkflow({
+        renderImage: renderChartPng,
+        uploadImage: image => ghost.assets.uploadImage(image),
+        proposePatch: patch => ghost.proposePatch(patch),
+        onError: error => setStatus(`Could not generate the email image: ${error.message}`)
+    }), [ghost]);
 
-    const propose = async (patch: Record<string, unknown>) => {
-        setProps(current => ({...current, ...patch}));
-        await ghost.proposePatch(patch);
+    useEffect(() => {
+        const unsubscribe = ghost.onPropsChange((nextProps) => {
+            propsRef.current = nextProps;
+            setProps(nextProps);
+            fallbackWorkflow.sync(nextProps);
+        });
+        fallbackWorkflow.sync(propsRef.current);
+        return () => {
+            unsubscribe();
+            fallbackWorkflow.cancel();
+        };
+    }, [fallbackWorkflow, ghost]);
+
+    const changeChart = async (patch: Record<string, unknown>) => {
+        const currentProps = propsRef.current;
+        const nextProps = {...currentProps, ...patch, fallbackImageUrl: null};
+        propsRef.current = nextProps;
+        setProps(nextProps);
+        await fallbackWorkflow.commit(currentProps, patch);
     };
 
     const selectFile = async (file: GhEditorFile) => {
         try {
-            await propose(createChartPatchFromFile(file));
+            await changeChart(createChartPatchFromFile(file));
             setStatus(`Imported ${file.name}. The normalized table is now stored with the card.`);
         } catch (error) {
             setStatus(error instanceof Error ? error.message : 'Could not import this file.');
         }
     };
 
-    const configure = (patch: Record<string, unknown>) => propose(createChartConfigurationPatch(patch));
+    const configure = (patch: Record<string, unknown>) => changeChart(createChartConfigurationPatch(patch));
 
     return (
         <>
@@ -51,7 +74,7 @@ function Settings({ghost}: {ghost: AddonEditorSettingsBridge}) {
                 label="Label column"
                 options={labelOptions}
                 value={config.labelColumn}
-                onChange={event => void propose(createLabelColumnPatch(table, event.detail, config.valueColumn))}
+                onChange={event => void changeChart(createLabelColumnPatch(table, event.detail, config.valueColumn))}
             />
             <GhEditorSelect
                 label="Value series"

@@ -36,6 +36,17 @@ export interface AddonBlocksConfig {
 
 export interface AddonSettingsSurfaceRequest extends AddonBlockRenderRequest {
     onPatch: (patch: Record<string, unknown>) => Promise<void>;
+    uploadImage: (image: AddonGeneratedImage) => Promise<AddonAssetReference>;
+}
+
+export interface AddonGeneratedImage {
+    name: string;
+    type: string;
+    bytes: Uint8Array;
+}
+
+export interface AddonAssetReference {
+    url: string;
 }
 
 export interface AddonSettingsSurface {

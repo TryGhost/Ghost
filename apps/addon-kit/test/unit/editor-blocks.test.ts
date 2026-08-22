@@ -96,7 +96,8 @@ describe('createAddonEditorBlocksConfig', function () {
             addonHandle: 'transistor',
             blockName: 'episode-player',
             props: {},
-            onPatch: vi.fn().mockResolvedValue(undefined)
+            onPatch: vi.fn().mockResolvedValue(undefined),
+            uploadImage: vi.fn().mockResolvedValue({url: 'https://site.example/content/images/chart.png'})
         });
         await surface.ready;
 
@@ -115,6 +116,7 @@ describe('createAddonEditorBlocksConfig', function () {
             destroy: vi.fn()
         };
         const onPatch = vi.fn().mockResolvedValue(undefined);
+        const uploadImage = vi.fn().mockResolvedValue({url: 'https://site.example/content/images/chart.png'});
         const config = createAddonEditorBlocksConfig([install], {
             createController: () => controller,
             createReceiver: () => receiver
@@ -124,7 +126,8 @@ describe('createAddonEditorBlocksConfig', function () {
             addonHandle: 'transistor',
             blockName: 'episode-player',
             props: {episodeId: '123'},
-            onPatch
+            onPatch,
+            uploadImage
         });
 
         expect(surface.receiver).toBe(receiver);
@@ -138,13 +141,20 @@ describe('createAddonEditorBlocksConfig', function () {
             bundleUrl: 'https://podcasts.example/settings.js',
             connection: receiver.connection,
             request: {blockName: 'episode-player', props: {episodeId: '123'}},
-            capabilities: {fetch: expect.any(Function)},
+            capabilities: {fetch: expect.any(Function), uploadImage: expect.any(Function)},
             proposePatch: expect.any(Function)
         });
 
         const proposePatch = controller.renderSettings.mock.calls[0][0].proposePatch;
         await proposePatch({episodeId: '456'});
         expect(onPatch).toHaveBeenCalledWith({episodeId: '456'});
+
+        const uploadGeneratedImage = controller.renderSettings.mock.calls[0][0].capabilities.uploadImage;
+        const image = {name: 'chart.png', type: 'image/png', bytes: new Uint8Array([1, 2, 3])};
+        await expect(uploadGeneratedImage(image)).resolves.toEqual({url: 'https://site.example/content/images/chart.png'});
+        expect(uploadImage).toHaveBeenCalledOnce();
+        expect(uploadImage.mock.calls[0][0]).toMatchObject({name: 'chart.png', type: 'image/png'});
+        expect([...uploadImage.mock.calls[0][0].bytes]).toEqual([1, 2, 3]);
 
         await surface.updateProps({episodeId: '456'});
         expect(controller.updateSettingsProps).toHaveBeenCalledWith({episodeId: '456'});

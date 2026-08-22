@@ -7,4 +7,4 @@ export type {
     GhEditorSelectProperties,
     GhEditorToggleProperties
 } from './elements.ts';
-export type {AddonEditorSettingsBridge} from '../types.ts';
+export type {AddonAssetReference, AddonEditorSettingsBridge, AddonGeneratedImage} from '../types.ts';

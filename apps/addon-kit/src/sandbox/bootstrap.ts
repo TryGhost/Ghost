@@ -156,6 +156,12 @@ function bootstrap({port}: BootstrapInit): void {
             await moduleExports.default({
                 blockName: request.blockName,
                 context: request.context ? structuredClone(request.context) : undefined,
+                assets: {
+                    async uploadImage(image) {
+                        const asset = await capabilities.uploadImage(structuredClone(image));
+                        return structuredClone(asset);
+                    }
+                },
                 fetch: async (url, init) => {
                     const serialized = await capabilities.fetch({
                         url,

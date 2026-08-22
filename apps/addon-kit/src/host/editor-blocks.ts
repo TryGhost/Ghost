@@ -5,9 +5,11 @@ import {RemoteReceiver} from '@remote-dom/core/receivers';
 import {release, retain} from '@quilted/threads';
 import type {RemoteConnection} from '@remote-dom/core/elements';
 import type {
+    AddonAssetReference,
     AddonEditorBlockRenderOutput,
     AddonEditorBlockRequest,
     AddonEditorPresentationContext,
+    AddonGeneratedImage,
     AddonInstallRecord
 } from '../types.ts';
 
@@ -23,6 +25,7 @@ export interface AddonEditorBlocksConfig {
 
 export interface AddonEditorSettingsSurfaceRequest extends AddonEditorRenderRequest {
     onPatch(patch: Record<string, unknown>): Promise<void>;
+    uploadImage(image: AddonGeneratedImage): Promise<AddonAssetReference>;
 }
 
 export interface AddonEditorSettingsSurface {
@@ -43,7 +46,9 @@ interface EditorBlockController {
         bundleUrl: string;
         connection: RemoteConnection;
         request: AddonEditorBlockRequest;
-        capabilities: ReturnType<typeof createEditorFetchCapability>;
+        capabilities: ReturnType<typeof createEditorFetchCapability> & {
+            uploadImage(image: AddonGeneratedImage): Promise<AddonAssetReference>;
+        };
         proposePatch: (patch: Record<string, unknown>) => Promise<void>;
     }): Promise<void>;
     updateSettingsProps(props: Record<string, unknown>): Promise<void>;
@@ -103,7 +108,7 @@ export function createAddonEditorBlocksConfig(
                 controller.destroy();
             }
         },
-        createSettingsSurface({addonHandle, blockName, props, onPatch}) {
+        createSettingsSurface({addonHandle, blockName, props, onPatch, uploadImage}) {
             const block = blocks.find(candidate => candidate.addonHandle === addonHandle && candidate.blockName === blockName);
             const install = installs.find(candidate => candidate.enabled && candidate.handle === addonHandle);
             const editor = install?.editor;
@@ -121,7 +126,12 @@ export function createAddonEditorBlocksConfig(
                     bundleUrl,
                     connection: receiver.connection,
                     request: {blockName, props: structuredClone(props), ...(presentationContext ? {context: structuredClone(presentationContext)} : {})},
-                    capabilities: createEditorFetchCapability(install),
+                    capabilities: {
+                        ...createEditorFetchCapability(install),
+                        async uploadImage(image) {
+                            return structuredClone(await uploadImage(structuredClone(image)));
+                        }
+                    },
                     proposePatch: patch => onPatch(structuredClone(patch))
                 });
             })();

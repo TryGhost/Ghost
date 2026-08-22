@@ -60,6 +60,21 @@ export interface SerializedResponse {
     body: string;
 }
 
+export interface AddonGeneratedImage {
+    name: string;
+    type: string;
+    bytes: Uint8Array;
+}
+
+export interface AddonAssetReference {
+    url: string;
+}
+
+export interface AddonEditorSettingsCapabilities {
+    fetch(request: SerializedRequest): Promise<SerializedResponse>;
+    uploadImage(image: AddonGeneratedImage): Promise<AddonAssetReference>;
+}
+
 /**
  * Host-implemented capabilities passed into the sandbox over the thread.
  * Everything is async: there are no synchronous reads of host state.
@@ -114,7 +129,7 @@ export interface SandboxExports {
         bundleUrl: string;
         connection: RemoteConnection;
         request: AddonEditorBlockRequest;
-        capabilities: Pick<HostCapabilities, 'fetch'>;
+        capabilities: AddonEditorSettingsCapabilities;
         proposePatch: (patch: Record<string, unknown>) => Promise<void>;
     }): Promise<void>;
 
@@ -196,6 +211,9 @@ export interface AddonEditorSettingsBridge {
     readonly blockName: string;
     readonly props: Record<string, unknown>;
     readonly context?: AddonEditorPresentationContext;
+    readonly assets: {
+        uploadImage(image: AddonGeneratedImage): Promise<AddonAssetReference>;
+    };
     fetch(url: string, init?: {method?: string; headers?: Record<string, string>; body?: string}): Promise<Response>;
     proposePatch(patch: Record<string, unknown>): Promise<void>;
     onPropsChange(listener: (props: Record<string, unknown>) => void): () => void;

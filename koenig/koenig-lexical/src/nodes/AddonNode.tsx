@@ -15,15 +15,19 @@ export const UPDATE_ADDON_COMMAND = createCommand();
 function AddonNodeSettings({dataset, nodeKey}) {
     const [editor] = useLexicalComposerContext();
     const {cardWidth, isEditing} = React.useContext(CardContext);
-    const {cardConfig, darkMode, onError} = React.useContext(KoenigComposerContext);
+    const {cardConfig, darkMode, fileUploader, onError} = React.useContext(KoenigComposerContext);
+    const imageUploader = fileUploader.useFileUpload('image');
     const [surface, setSurface] = React.useState(null);
     const [status, setStatus] = React.useState('loading');
+    const [activated, setActivated] = React.useState(false);
     const propsRef = React.useRef(dataset.props);
     propsRef.current = dataset.props;
     const createSettingsSurfaceRef = React.useRef(cardConfig.addons?.createSettingsSurface);
     createSettingsSurfaceRef.current = cardConfig.addons?.createSettingsSurface;
     const hasSettingsSurface = typeof cardConfig.addons?.createSettingsSurface === 'function';
     const definition = cardConfig.addons?.blocks.find(candidate => candidate.addonHandle === dataset.addonHandle && candidate.blockName === dataset.blockName);
+    const uploadRef = React.useRef(imageUploader?.upload);
+    uploadRef.current = imageUploader?.upload;
 
     const onPatch = React.useCallback((patch) => new Promise<void>((resolve, reject) => {
         const handled = editor.dispatchCommand(UPDATE_ADDON_COMMAND, {nodeKey, patch, resolve, reject});
@@ -32,8 +36,39 @@ function AddonNodeSettings({dataset, nodeKey}) {
         }
     }), [editor, nodeKey]);
 
+    const uploadImage = React.useCallback(async ({bytes, name, type}) => {
+        if (!(bytes instanceof Uint8Array) || typeof name !== 'string' || name.length === 0 || typeof type !== 'string' || !type.startsWith('image/')) {
+            throw new Error('Add-on generated images require image bytes, a filename, and an image content type');
+        }
+        if (typeof uploadRef.current !== 'function') {
+            throw new Error('This editor host does not support generated image uploads');
+        }
+        const file = new File([bytes.slice().buffer], name, {type});
+        let result;
+        try {
+            result = await uploadRef.current([file], {throwOnError: true});
+        } catch (error) {
+            const uploadError = error && typeof error === 'object' ? error as Record<string, unknown> : {};
+            const message = typeof uploadError.context === 'string' && uploadError.context.length > 0
+                ? uploadError.context
+                : uploadError.message;
+            throw new Error(typeof message === 'string' && message.length > 0 ? message : 'Add-on generated image upload failed');
+        }
+        const url = result?.[0]?.url;
+        if (typeof url !== 'string' || url.length === 0) {
+            throw new Error('Add-on generated image upload failed');
+        }
+        return {url};
+    }, []);
+
     React.useEffect(() => {
-        if (!isEditing || !definition?.hasSettings || !createSettingsSurfaceRef.current) {
+        if (isEditing && definition?.hasSettings && hasSettingsSurface) {
+            setActivated(true);
+        }
+    }, [definition?.hasSettings, hasSettingsSurface, isEditing]);
+
+    React.useEffect(() => {
+        if (!activated || !definition?.hasSettings || !createSettingsSurfaceRef.current) {
             setSurface(null);
             return;
         }
@@ -42,7 +77,8 @@ function AddonNodeSettings({dataset, nodeKey}) {
             addonHandle: dataset.addonHandle,
             blockName: dataset.blockName,
             props: structuredClone(propsRef.current),
-            onPatch
+            onPatch,
+            uploadImage
         });
         let cancelled = false;
         setSurface(nextSurface);
@@ -63,7 +99,7 @@ function AddonNodeSettings({dataset, nodeKey}) {
             cancelled = true;
             nextSurface.destroy();
         };
-    }, [dataset.addonHandle, dataset.blockName, definition?.hasSettings, hasSettingsSurface, isEditing, onError, onPatch]);
+    }, [activated, dataset.addonHandle, dataset.blockName, definition?.hasSettings, hasSettingsSurface, onError, onPatch, uploadImage]);
 
     React.useEffect(() => {
         let cancelled = false;

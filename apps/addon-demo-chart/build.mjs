@@ -49,7 +49,7 @@ const manifest = {
             description: 'Import CSV data and publish an interactive chart',
             keywords: ['csv', 'data', 'graph', 'visualization'],
             hydrate: true,
-            resourcePolicy: {images: ['https:']},
+            resourcePolicy: {images: ['https:', 'http://localhost:2368']},
             initialProperties: {
                 table: {
                     columns: ['Month', 'Readers'],
