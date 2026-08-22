@@ -493,7 +493,7 @@ describe('GiftEmailService', function () {
 
       const html = bulkMailer.send.firstCall.firstArg.html;
       sinon.assert.match(html, sinon.match('background:#F4F5F6'));
-      sinon.assert.match(html, sinon.match('color:#738A94'));
+      sinon.assert.match(html, sinon.match('color:#5B6B73'));
     });
 
     it('falls back to transactional email when bulk Mailgun is not configured', async function () {
