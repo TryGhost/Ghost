@@ -28,6 +28,7 @@ export {
     isApiVersionCompatible,
     parseInstallRecords,
     pinManifest,
+    refreshInstallRecords,
     removeDevManifestUrl,
     removeInstallRecord,
     upsertInstallRecord,

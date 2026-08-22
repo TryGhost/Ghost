@@ -5,6 +5,7 @@ import sirv from 'sirv';
 
 const GHOST_ADMIN_PATH = path.resolve(__dirname, '../../ghost/core/core/built/admin');
 const GHOST_ADMIN_DIST = path.resolve(__dirname, '../ember-admin/dist');
+const KOENIG_LEXICAL_DIST = path.resolve(__dirname, '../../koenig/koenig-lexical/dist');
 
 function isAbsoluteUrl(url: string): boolean {
   return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/');
@@ -108,11 +109,25 @@ export function emberAssetsPlugin() {
         dev: true,
         etag: true,
       });
+            const koenigLexicalMiddleware = sirv(KOENIG_LEXICAL_DIST, {
+                dev: true,
+                etag: true
+            });
 
       const base = (server.config.base ?? '/ghost').replace(/\/$/, '');
       const assetsPrefix = `${base}/assets/`;
+            const koenigLexicalPrefix = `${assetsPrefix}koenig-lexical/`;
 
       server.middlewares.use((req, res, next) => {
+                if (req.url?.startsWith(koenigLexicalPrefix)) {
+                    const originalUrl = req.url;
+                    req.url = req.url.replace(koenigLexicalPrefix, '/');
+                    koenigLexicalMiddleware(req, res, () => {
+                        req.url = originalUrl;
+                        next();
+                    });
+                    return;
+                }
         if (req.url?.startsWith(assetsPrefix)) {
           const originalUrl = req.url;
           req.url = req.url.replace(assetsPrefix, '/');

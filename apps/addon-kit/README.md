@@ -60,7 +60,7 @@ Around it: `#/apps` (installed list; dev-manifest loads appear with a **Dev** ba
 
 Server-side, the `addons` key must be listed in the settings API's `EDITABLE_SETTINGS` allowlist (input serializer) and in `useBrowseSettings`' group list — both silently drop unknown keys otherwise.
 
-For local development, set `localStorage['ghost-addons-dev'] = JSON.stringify(['http://localhost:4650/manifest.json'])` in the admin console — dev manifests load unpinned and override same-handle installs (an installed record's pinned integrity breaks when you rebuild bundles without bumping the version; the dev path exists precisely for that loop). See `apps/addon-demo`.
+For local development, set `localStorage['ghost-addons-dev'] = JSON.stringify(['http://localhost:4650/manifest.json'])` in the admin console — dev manifests load unpinned and override same-handle installs. See `apps/addon-demo`.
 
 ### Full editor-block demo
 
@@ -69,6 +69,8 @@ Start the SEO baseline and all three editor-block providers together from the re
 ```bash
 pnpm dev:addons
 ```
+
+This starts the four providers and Koenig's integrated build watcher, so editor-host changes are served without a separate `pnpm dev:lexical` process.
 
 With Ghost and React Admin running, enable the **Add-ons** developer experiment and open **Apps → Browse marketplace**. The marketplace contains all four local providers. Install the three editor demos, then create a post and insert each named block from the slash menu:
 

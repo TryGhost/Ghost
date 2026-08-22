@@ -108,7 +108,10 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
         postToParent({type: 'ghost-addon', instanceId: instanceId, action: action}, '*');
     };
     var measure = function () {
-        var height = Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
+        var root = document.getElementById('ghost-addon-root');
+        var height = root
+            ? Math.ceil(Math.max(root.scrollHeight, root.getBoundingClientRect().height))
+            : Math.ceil(document.body.scrollHeight);
         sendResize(height);
     };
     document.addEventListener('click', function (event) {
@@ -132,7 +135,7 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
         }
     }, true);
     if (typeof ResizeObserver !== 'undefined') {
-        new ResizeObserver(measure).observe(document.body);
+        new ResizeObserver(measure).observe(document.getElementById('ghost-addon-root') || document.body);
     }
     var announce = function () {
         if (connected || attempts >= 40) {

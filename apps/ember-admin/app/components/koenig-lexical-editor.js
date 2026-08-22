@@ -3,7 +3,7 @@ import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
-import {createAddonEditorBlocksConfig, parseInstallRecords} from '@tryghost/addon-kit/editor-host';
+import {createAddonEditorBlocksConfig, parseInstallRecords, refreshInstallRecords} from '@tryghost/addon-kit/editor-host';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
@@ -115,6 +115,36 @@ export function buildAddonBlocksConfig(rawInstallRecords, enabled, context = {},
     }
 
     return createConfig(parseInstallRecords(rawInstallRecords), undefined, context);
+}
+
+function useAddonBlocksConfig(rawInstallRecords, enabled, siteTimezone) {
+    const [records, setRecords] = React.useState(null);
+
+    React.useEffect(() => {
+        if (!enabled) {
+            setRecords(null);
+            return;
+        }
+
+        let cancelled = false;
+        setRecords(null);
+        refreshInstallRecords(parseInstallRecords(rawInstallRecords)).then((nextRecords) => {
+            if (!cancelled) {
+                setRecords(nextRecords);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [enabled, rawInstallRecords]);
+
+    return React.useMemo(() => {
+        if (!enabled || records === null) {
+            return undefined;
+        }
+        return createAddonEditorBlocksConfig(records, undefined, {siteTimezone});
+    }, [enabled, records, siteTimezone]);
 }
 
 /**
@@ -348,6 +378,7 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = (props) => {
+        const addonBlocksConfig = useAddonBlocksConfig(this.settings.addons, this.feature.addons, this.settings.timezone);
         const fetchEmbed = async (url, {type}) => {
             let oembedEndpoint = this.ghostPaths.url.api('oembed');
             let response = await this.ajax.request(oembedEndpoint, {
@@ -501,7 +532,7 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const defaultCardConfig = {
-            addons: buildAddonBlocksConfig(this.settings.addons, this.feature.addons, {siteTimezone: this.settings.timezone}),
+            addons: addonBlocksConfig,
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
             fetchAutocompleteLinks,

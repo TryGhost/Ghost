@@ -199,6 +199,8 @@ describe('AddonNode', function () {
         expect(srcdoc).toContain('script-src \'nonce-ghost-addon-bootstrap\'');
         expect(srcdoc).toContain('ghost-addon-bootstrap');
         expect(srcdoc).toContain('ResizeObserver');
+        expect(srcdoc).toContain('root.getBoundingClientRect().height');
+        expect(srcdoc).toContain('observe(document.getElementById(\'ghost-addon-root\') || document.body)');
         expect(srcdoc).toContain(',false);</script>');
         expect(srcdoc).not.toContain('\'unsafe-eval\'');
         expect(srcdoc).not.toContain('steal()');

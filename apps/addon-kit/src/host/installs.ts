@@ -183,6 +183,26 @@ export async function fetchManifest(manifestUrl: string): Promise<AddonManifest>
     return manifest;
 }
 
+/**
+ * Refreshes settings-backed records against their manifests while retaining
+ * the last pin when a provider is unavailable. Editor hosts use this before
+ * exposing blocks so rebuilt or updated bundles are never paired with stale
+ * integrity metadata.
+ */
+export async function refreshInstallRecords(records: AddonInstallRecord[]): Promise<AddonInstallRecord[]> {
+    return Promise.all(records.map(async (record) => {
+        try {
+            const manifest = await fetchManifest(record.manifestUrl);
+            if (manifest.handle === record.handle && manifest.version !== record.version) {
+                return pinManifest(manifest, record.manifestUrl, record.enabled);
+            }
+        } catch (error) {
+            console.warn('[addons] manifest refresh failed', record.handle, error); // eslint-disable-line no-console
+        }
+        return record;
+    }));
+}
+
 function readDevManifestUrls(): string[] {
     try {
         const raw = window.localStorage.getItem(DEV_ADDONS_STORAGE_KEY);
@@ -297,20 +317,8 @@ export function useAddonInstalls(): UseAddonInstallsResult {
             let recordsChanged = false;
 
             // Settings-backed records, auto-updated against fresh manifests.
-            const updated = await Promise.all(records.map(async (record) => {
-                try {
-                    const manifest = await fetchManifest(record.manifestUrl);
-                    if (manifest.handle === record.handle && manifest.version !== record.version) {
-                        recordsChanged = true;
-                        return pinManifest(manifest, record.manifestUrl, record.enabled);
-                    }
-                } catch (error) {
-                    // Provider unreachable or incompatible release: keep the
-                    // existing pin — cached bundles may still load.
-                    console.warn('[addons] manifest refresh failed', record.handle, error); // eslint-disable-line no-console
-                }
-                return record;
-            }));
+            const updated = await refreshInstallRecords(records);
+            recordsChanged = updated.some((record, index) => record !== records[index]);
             for (const record of updated) {
                 resolved.set(record.handle, record);
             }

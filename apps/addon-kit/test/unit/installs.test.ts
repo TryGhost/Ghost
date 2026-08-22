@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {getEditorBlockDefinitions, isApiVersionCompatible, parseInstallRecords, pinManifest, removeInstallRecord, upsertInstallRecord} from '../../src/host/installs.ts';
+import {getEditorBlockDefinitions, isApiVersionCompatible, parseInstallRecords, pinManifest, refreshInstallRecords, removeInstallRecord, upsertInstallRecord} from '../../src/host/installs.ts';
 import {derivePermissions} from '../../src/host/permissions.ts';
 import {ADDON_API_VERSION, type AddonManifest} from '../../src/types.ts';
 
@@ -125,6 +125,43 @@ describe('parseInstallRecords', function () {
         expect(parseInstallRecords(null)).toEqual([]);
         expect(parseInstallRecords('not json')).toEqual([]);
         expect(parseInstallRecords('{"a":1}')).toEqual([]);
+    });
+});
+
+describe('refreshInstallRecords', function () {
+    afterEach(function () {
+        vi.unstubAllGlobals();
+    });
+
+    it('re-pins changed manifests before an editor uses their bundles', async function () {
+        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+        const updatedManifest = {
+            ...manifest,
+            version: '0.2.0',
+            editor: {
+                ...manifest.editor!,
+                blocks: [{...manifest.editor!.blocks[0], label: 'Updated SEO score'}],
+                content: {bundle: './editor-content.js', integrity: 'sha256-updated'}
+            }
+        };
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => updatedManifest
+        }));
+
+        const [updated] = await refreshInstallRecords([record]);
+
+        expect(updated.version).toBe('0.2.0');
+        expect(updated.editor?.blocks[0].label).toBe('Updated SEO score');
+        expect(updated.editor?.integrity).toBe('sha256-updated');
+    });
+
+    it('retains the existing pin when its provider is unavailable', async function () {
+        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+        vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        await expect(refreshInstallRecords([record])).resolves.toEqual([record]);
     });
 });
 
