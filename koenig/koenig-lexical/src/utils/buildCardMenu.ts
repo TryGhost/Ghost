@@ -1,8 +1,23 @@
 import AddonCardIcon from '../assets/icons/kg-card-type-other.svg?react';
+import AddonChartIcon from '../assets/icons/kg-card-type-chart.svg?react';
+import AddonEventIcon from '../assets/icons/kg-card-type-event.svg?react';
+import AddonPodcastIcon from '../assets/icons/kg-card-type-audio.svg?react';
+import AddonSearchIcon from '../assets/icons/kg-search.svg?react';
 import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
 import {INSERT_ADDON_COMMAND} from '../nodes/AddonNode';
 import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
 import type React from 'react';
+
+const ADDON_CARD_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+    'calendar-days': AddonEventIcon,
+    'chart-column': AddonChartIcon,
+    podcast: AddonPodcastIcon,
+    search: AddonSearchIcon
+};
+
+function getAddonCardIcon(icon: unknown) {
+    return typeof icon === 'string' ? ADDON_CARD_ICONS[icon] ?? AddonCardIcon : AddonCardIcon;
+}
 
 export interface CardMenuItem {
     nodeType?: string;
@@ -88,7 +103,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             nodeType: 'addon',
             label: definition.label,
             desc: definition.description,
-            Icon: AddonCardIcon,
+            Icon: getAddonCardIcon(definition.icon),
             section: 'Add-ons',
             matches,
             shortcut: `/${definition.blockName}`,

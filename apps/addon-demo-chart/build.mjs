@@ -49,6 +49,7 @@ const manifest = {
         blocks: [{
             name: 'interactive-chart',
             label: 'Chart',
+            icon: 'chart-column',
             description: 'Import CSV data and publish a chart',
             keywords: ['csv', 'data', 'graph', 'visualization'],
             hydrate: true,

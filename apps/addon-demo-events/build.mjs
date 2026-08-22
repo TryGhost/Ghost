@@ -54,6 +54,7 @@ const manifest = {
         blocks: [{
             name: 'event',
             label: 'Event',
+            icon: 'calendar-days',
             description: 'Add a static event card',
             keywords: ['calendar', 'meetup', 'conference'],
             initialProperties: {

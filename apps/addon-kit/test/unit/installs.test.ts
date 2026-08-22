@@ -16,6 +16,7 @@ const manifest: AddonManifest = {
         blocks: [{
             name: 'seo-score',
             label: 'SEO score',
+            icon: 'search',
             description: 'Show a durable SEO score card',
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
@@ -173,6 +174,7 @@ describe('getEditorBlockDefinitions', function () {
             addonHandle: 'seo-assistant-demo',
             blockName: 'seo-score',
             label: 'SEO score',
+            icon: 'search',
             description: 'Show a durable SEO score card',
             keywords: ['search', 'score'],
             initialProperties: {postId: ''},
@@ -233,6 +235,22 @@ describe('fetchManifest editor validation', function () {
 
         const {fetchManifest} = await import('../../src/host/installs.ts');
         await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('hydrate');
+    });
+
+    it('requires editor block icons to be bounded strings', async function () {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                ...manifest,
+                editor: {
+                    ...manifest.editor,
+                    blocks: [{name: 'broken', label: 'Broken', icon: {name: 'search'}}]
+                }
+            })
+        }));
+
+        const {fetchManifest} = await import('../../src/host/installs.ts');
+        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('icon');
     });
 
     it('rejects deferred network capabilities in editor resource policies', async function () {

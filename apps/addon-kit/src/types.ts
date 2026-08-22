@@ -244,6 +244,8 @@ export interface AddonManifestTargeting {
 export interface AddonManifestEditorBlock {
     name: string;
     label: string;
+    /** Kebab-case semantic icon name. Unknown icons use the host's add-on fallback. */
+    icon?: string;
     description?: string;
     keywords?: string[];
     initialProperties?: Record<string, unknown>;

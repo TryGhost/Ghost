@@ -30,6 +30,7 @@ export const DEV_ADDONS_STORAGE_KEY = 'ghost-addons-dev';
 const KNOWN_TARGETS = new Set<string>([...RENDER_TARGETS, ...SHOULD_RENDER_TARGETS]);
 const MAX_EDITOR_BLOCK_NAME_LENGTH = 256;
 const MAX_EDITOR_BLOCK_LABEL_LENGTH = 200;
+const MAX_EDITOR_BLOCK_ICON_LENGTH = 64;
 
 function isStringArray(value: unknown): value is string[] {
     return Array.isArray(value) && value.every(entry => typeof entry === 'string');
@@ -58,6 +59,7 @@ function isValidEditorBlock(value: unknown): value is NonNullable<AddonManifest[
         && typeof value.label === 'string'
         && value.label.length > 0
         && value.label.length <= MAX_EDITOR_BLOCK_LABEL_LENGTH
+        && (value.icon === undefined || (typeof value.icon === 'string' && value.icon.length > 0 && value.icon.length <= MAX_EDITOR_BLOCK_ICON_LENGTH))
         && (value.description === undefined || typeof value.description === 'string')
         && (value.keywords === undefined || isStringArray(value.keywords))
         && (value.initialProperties === undefined || isRecord(value.initialProperties))
@@ -111,6 +113,9 @@ function parseManifest(value: unknown): AddonManifest {
             }
             if (block.name.length > MAX_EDITOR_BLOCK_NAME_LENGTH || block.label.length > MAX_EDITOR_BLOCK_LABEL_LENGTH) {
                 throw new Error('Manifest editor block name or label is too long');
+            }
+            if (block.icon !== undefined && (typeof block.icon !== 'string' || block.icon.length === 0 || block.icon.length > MAX_EDITOR_BLOCK_ICON_LENGTH)) {
+                throw new Error(`Manifest editor block "${block.name}" icon must be a non-empty string of at most ${MAX_EDITOR_BLOCK_ICON_LENGTH} characters`);
             }
             if (block.description !== undefined && typeof block.description !== 'string') {
                 throw new Error(`Manifest editor block "${block.name}" description must be a string`);
@@ -257,6 +262,7 @@ export interface InstalledEditorBlockDefinition {
     addonHandle: string;
     blockName: string;
     label: string;
+    icon?: string;
     description?: string;
     keywords?: string[];
     initialProperties?: Record<string, unknown>;
@@ -276,6 +282,7 @@ export function getEditorBlockDefinitions(installs: AddonInstallRecord[]): Insta
             addonHandle: install.handle,
             blockName: block.name,
             label: block.label,
+            icon: block.icon,
             description: block.description,
             keywords: block.keywords ? [...block.keywords] : undefined,
             initialProperties: block.initialProperties ? structuredClone(block.initialProperties) : undefined,

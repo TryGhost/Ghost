@@ -72,6 +72,7 @@ const manifest = {
         blocks: [{
             name: 'seo-summary',
             label: 'SEO summary card',
+            icon: 'search',
             description: 'Add a durable SEO summary to the post',
             keywords: ['search', 'preview', 'metadata'],
             hydrate: true,

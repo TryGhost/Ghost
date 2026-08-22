@@ -46,6 +46,7 @@ const manifest = {
         blocks: [{
             name: 'podcast-player',
             label: 'Podcast player',
+            icon: 'podcast',
             description: 'Resolve an episode URL into a rich podcast card',
             keywords: ['audio', 'episode', 'player'],
             hydrate: true,

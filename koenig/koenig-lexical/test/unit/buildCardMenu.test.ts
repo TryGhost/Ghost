@@ -1,3 +1,7 @@
+import ChartCardIcon from '../../src/assets/icons/kg-card-type-chart.svg?react';
+import EventCardIcon from '../../src/assets/icons/kg-card-type-event.svg?react';
+import PodcastCardIcon from '../../src/assets/icons/kg-card-type-audio.svg?react';
+import SearchCardIcon from '../../src/assets/icons/kg-search.svg?react';
 import {buildCardMenu} from '../../src/utils/buildCardMenu';
 import {describe, expect, it} from 'vitest';
 
@@ -549,6 +553,7 @@ describe('buildCardMenu', function () {
                         addonHandle: 'transistor',
                         blockName: 'episode-player',
                         label: 'Transistor podcast player',
+                        icon: 'podcast',
                         description: 'Embed an episode from Transistor FM',
                         keywords: ['podcast', 'audio'],
                         initialProperties: {episodeId: ''},
@@ -581,6 +586,29 @@ describe('buildCardMenu', function () {
                 }
             });
             expect(items[0].insertCommand).toBeDefined();
+            expect(items[0].Icon).toBe(PodcastCardIcon);
+        });
+
+        it('maps semantic manifest icons to native Koenig picker icons', function () {
+            const config = {
+                addons: {
+                    blocks: [
+                        {addonHandle: 'seo', blockName: 'summary', label: 'SEO', icon: 'search'},
+                        {addonHandle: 'charts', blockName: 'chart', label: 'Chart', icon: 'chart-column'},
+                        {addonHandle: 'events', blockName: 'event', label: 'Event', icon: 'calendar-days'},
+                        {addonHandle: 'podcasts', blockName: 'player', label: 'Podcast', icon: 'podcast'}
+                    ]
+                }
+            };
+
+            const items = buildCardMenu([], {config}).menu.get('Add-ons');
+
+            expect(items.map(item => item.Icon)).toEqual([
+                SearchCardIcon,
+                ChartCardIcon,
+                EventCardIcon,
+                PodcastCardIcon
+            ]);
         });
     });
 });
