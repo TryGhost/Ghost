@@ -136,6 +136,7 @@ export function buildChartOption(table: ChartTable, config: ChartConfig): EChart
     const title = chartTitle(config);
     return {
         aria: {enabled: true, description: `${title} chart.`},
+        textStyle: {fontFamily: 'inherit'},
         title: {text: title, left: 24, top: 16},
         tooltip: {trigger: 'axis'},
         legend: {top: 20, right: 24},

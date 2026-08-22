@@ -17,6 +17,7 @@ describe('chart editor block', () => {
         expect(output.html).toContain('<svg');
         expect(output.html).toContain('Readers by Month');
         expect(output.html).toContain('Readers');
+        expect(output.html).toMatch(/font-family:\s*inherit/);
         expect(output.portableHtml).toBe('');
         expect(renderer.hydrate).toBeTypeOf('function');
     });
@@ -38,5 +39,7 @@ describe('chart editor block', () => {
         expect(output.portableHtml).toContain('Readers by Month');
         expect(output.portableHtml).toContain('border:1px solid');
         expect(output.portableHtml).toContain('border-radius:18px');
+        expect(output.css).not.toContain('font-family');
+        expect(output.portableHtml).not.toContain('font-family');
     });
 });

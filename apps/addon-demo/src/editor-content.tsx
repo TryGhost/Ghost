@@ -54,7 +54,6 @@ function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
                 border-radius: 16px;
                 background: linear-gradient(135deg, #f4fbf6, #ffffff);
                 color: #15261b;
-                font-family: ui-sans-serif, system-ui, sans-serif;
             }
             .seo-summary__eyebrow {
                 color: #41845a;

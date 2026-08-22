@@ -100,6 +100,7 @@ describe('AddonNode', function () {
                     expect(iframe?.srcdoc).not.toContain('Object.assign');
                     expect(iframe?.srcdoc).toContain('window.setInterval(announce, 250)');
                     expect(iframe?.srcdoc).toContain('message.action === \'connect\'');
+                    expect(iframe?.srcdoc).toContain('document.documentElement.style.fontFamily = message.fontFamily');
                     expect(iframe?.srcdoc).not.toContain('steal()');
                     expect(iframe?.srcdoc).not.toContain('shadowAttack()');
                     expect(iframe?.srcdoc).not.toContain('shadowrootmode');

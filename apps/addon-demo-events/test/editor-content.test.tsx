@@ -25,8 +25,13 @@ describe('events editor block', function () {
             expect(markup).toContain('https://example.com/register');
         }
 
-        expect(output.portableHtml).toContain('border:1px solid');
-        expect(output.portableHtml).toContain('border-radius:18px');
+        expect(output.portableHtml).toContain('border-top:1px solid');
+        expect(output.portableHtml).toContain('border-bottom:1px solid');
+        expect(output.portableHtml).toContain('text-decoration:underline');
+        expect(output.portableHtml).not.toContain('border-radius');
+        expect(output.css).not.toContain('linear-gradient');
+        expect(output.css).not.toContain('font-family');
+        expect(output.portableHtml).not.toContain('font-family');
 
         expect(renderer.hydrate).toBeUndefined();
     });

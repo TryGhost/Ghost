@@ -41,6 +41,8 @@ describe('AddonNodeComponent', function () {
         render(<AddonNodeComponent dataset={dataset} />);
 
         const iframe = screen.getByTitle('Transistor podcast player');
+        iframe.style.fontFamily = '"Publisher Sans", sans-serif';
+        const postMessage = vi.spyOn(iframe.contentWindow!, 'postMessage');
         act(() => {
             window.dispatchEvent(new MessageEvent('message', {
                 data: {
@@ -54,6 +56,12 @@ describe('AddonNodeComponent', function () {
         });
 
         await waitFor(() => expect(iframe).toHaveStyle({height: '382px'}));
+        expect(postMessage).toHaveBeenCalledWith({
+            type: 'ghost-addon-host',
+            instanceId: 'block-1',
+            action: 'connected',
+            fontFamily: '"Publisher Sans", sans-serif'
+        }, '*');
     });
 
     it('shows the saved snapshot when the host has no image uploader', function () {

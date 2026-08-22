@@ -17,7 +17,7 @@ describe('Add-on public card runtime', function () {
         assert.match(runtime, /navigationTokens/);
 
         dom = new JSDOM(`
-            <!doctype html><html><body>
+            <!doctype html><html><body style="font-family: 'Publisher Sans', sans-serif">
                 <figure class="kg-card kg-addon-card" data-addon-id="episode-player-1">
                     <iframe class="kg-addon-card-frame" height="240"></iframe>
                 </figure>
@@ -37,6 +37,7 @@ describe('Add-on public card runtime', function () {
         assert.equal(hostMessages[0].type, 'ghost-addon-host');
         assert.equal(hostMessages[0].instanceId, 'episode-player-1');
         assert.equal(hostMessages[0].action, 'connect');
+        assert.equal(hostMessages[0].fontFamily, '"Publisher Sans", sans-serif');
 
         dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
             data: {type: 'ghost-addon', instanceId: 'episode-player-1', action: 'resize', height: 50_000},
@@ -72,6 +73,7 @@ describe('Add-on public card runtime', function () {
         assert.equal(connectionMessage.type, 'ghost-addon-host');
         assert.equal(connectionMessage.instanceId, 'episode-player-1');
         assert.equal(connectionMessage.action, 'connected');
+        assert.equal(connectionMessage.fontFamily, '"Publisher Sans", sans-serif');
     });
 
     it('loads the current hydration bundle only when an opted-in card approaches the viewport', async function () {

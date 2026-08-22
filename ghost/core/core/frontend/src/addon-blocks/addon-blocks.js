@@ -12,6 +12,11 @@
     const hydrationSent = new WeakSet();
     const runtimePromises = new Map();
 
+    function inheritedFontFamily(card) {
+        const fontFamily = window.getComputedStyle(card).fontFamily;
+        return typeof fontFamily === 'string' && fontFamily.length <= 512 ? fontFamily : '';
+    }
+
     function findFrame(event, instanceId) {
         if (typeof instanceId !== 'string') {
             return null;
@@ -145,7 +150,8 @@
                 frame.contentWindow.postMessage({
                     type: 'ghost-addon-host',
                     instanceId,
-                    action: 'connect'
+                    action: 'connect',
+                    fontFamily: inheritedFontFamily(card)
                 }, '*');
             }
         }
@@ -165,7 +171,8 @@
         event.source.postMessage({
             type: 'ghost-addon-host',
             instanceId: message.instanceId,
-            action: 'connected'
+            action: 'connected',
+            fontFamily: inheritedFontFamily(match.card)
         }, '*');
 
         if (message.action === 'resize') {

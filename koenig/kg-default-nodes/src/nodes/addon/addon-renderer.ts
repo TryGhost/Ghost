@@ -107,6 +107,11 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
     var sendHydrationState = function (action) {
         postToParent({type: 'ghost-addon', instanceId: instanceId, action: action}, '*');
     };
+    var applyHostTypography = function (message) {
+        if (typeof message.fontFamily === 'string' && message.fontFamily.length > 0 && message.fontFamily.length <= 512) {
+            document.documentElement.style.fontFamily = message.fontFamily;
+        }
+    };
     var measure = function () {
         var root = document.getElementById('ghost-addon-root');
         var height = root
@@ -151,6 +156,7 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
         if (event.source !== window.parent || !message || message.type !== 'ghost-addon-host' || message.instanceId !== instanceId) {
             return;
         }
+        applyHostTypography(message);
         if (message.action === 'connect') {
             measure();
             sendReady();

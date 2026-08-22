@@ -38,5 +38,6 @@ describe('chart data', () => {
             series: [{type: 'line', smooth: true, encode: {x: 'Month', y: 'Readers'}}]
         });
         expect(bar).toMatchObject({title: {text: 'Readers by Month'}});
+        expect(bar).toMatchObject({textStyle: {fontFamily: 'inherit'}});
     });
 });

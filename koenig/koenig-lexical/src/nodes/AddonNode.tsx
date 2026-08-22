@@ -151,7 +151,8 @@ export function AddonNodeComponent({dataset, nodeKey}) {
             iframe.contentWindow?.postMessage({
                 type: 'ghost-addon-host',
                 instanceId: dataset.id,
-                action: 'connected'
+                action: 'connected',
+                fontFamily: window.getComputedStyle(iframe).fontFamily
             }, '*');
 
             if (message.action !== 'resize') {

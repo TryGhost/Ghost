@@ -37,14 +37,14 @@ function renderChart(request: AddonEditorBlockRequest) {
         content: <Chart request={request} />,
         portableContent: fallbackImageUrl
             ? (
-                <figure style={{background: '#ffffff', border: '1px solid #dedee3', borderRadius: '18px', color: '#242426', fontFamily: 'Arial, sans-serif', margin: '0', padding: '20px'}}>
+                <figure style={{background: '#ffffff', border: '1px solid #dedee3', borderRadius: '18px', color: '#242426', margin: '0', padding: '20px'}}>
                     <img alt={`${title} chart`} src={fallbackImageUrl} style={{borderRadius: '10px', display: 'block', height: 'auto', width: '100%'}} />
                     <figcaption style={{color: '#626269', fontSize: '13px', lineHeight: '1.4', marginTop: '10px'}}>{title} chart.</figcaption>
                 </figure>
             )
             : null,
         css: `
-            .chart-card { box-sizing:border-box;margin:0;padding:22px;border:1px solid #dedee3;border-radius:20px;background:linear-gradient(145deg,#fff,#fafafd);box-shadow:0 12px 30px rgba(32,29,45,.08);color:#242426;font-family:ui-sans-serif,system-ui,sans-serif }
+            .chart-card { box-sizing:border-box;margin:0;padding:22px;border:1px solid #dedee3;border-radius:20px;background:linear-gradient(145deg,#fff,#fafafd);box-shadow:0 12px 30px rgba(32,29,45,.08);color:#242426 }
             .chart-card__visual { width:100%;min-height:380px }
             .chart-card__visual>svg { display:block;width:100%;height:auto }
             .chart-card figcaption { margin-top:8px;color:#626269;font-size:13px;line-height:1.4 }
