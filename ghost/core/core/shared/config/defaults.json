@@ -283,6 +283,13 @@
       "stripeNetwork": "base",
       "facilitatorUrl": "https://facilitator.xpay.sh"
     },
+    "casper": {
+      "enabled": false,
+      "network": "casper:casper",
+      "facilitatorUrl": "https://x402-facilitator.cspr.cloud",
+      "payTo": null,
+      "asset": null
+    },
     "mpp": {
       "secretKey": null,
       "stripeNetwork": "tempo",

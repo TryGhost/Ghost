@@ -58,6 +58,52 @@ To use a different mainnet facilitator:
 
 If x402 challenges are missing from 402 responses while MPP works, check Ghost logs for x402 warnings (network/facilitator mismatch is the usual cause).
 
+## Casper configuration
+
+Casper is an optional third rail, **off by default**. It speaks the same x402 `exact` scheme over the [Casper Network](https://casper.network), settling in **wCSPR** — a CEP-18 token — through `transfer_with_authorization` calls authorized by EIP-712 typed-data signatures and relayed by the [cspr.cloud facilitator](https://x402-facilitator.cspr.cloud).
+
+Unlike the Base rail, the recipient address cannot be minted by Stripe (Stripe issues no Casper deposit addresses), so the publisher must configure `payTo` explicitly. The settlement asset is a CEP-18 **contract package hash** (64 hex characters), not an `0x` EVM contract address, so `asset` is required too.
+
+Supported values are validated at boot:
+
+- `enabled`: `false` by default; the rail is only registered when this is `true`
+- `network`: `casper:casper` (mainnet) or `casper:casper-test` (testnet)
+- `facilitatorUrl`: HTTPS URL, defaults to `https://x402-facilitator.cspr.cloud`
+- `payTo`: the publisher's Casper account address that receives wCSPR
+- `asset`: the 64-character wCSPR CEP-18 contract package hash for the chosen network
+
+Invalid or incomplete Casper config disables the rail at boot with a warning; the x402 (Base) and MPP rails continue to work untouched.
+
+```json
+{
+  "machinePayments": {
+    "casper": {
+      "enabled": true,
+      "network": "casper:casper",
+      "payTo": "<your-casper-account-address>",
+      "asset": "<wcspr-cep18-contract-package-hash>"
+    }
+  }
+}
+```
+
+For local development against Casper testnet:
+
+```json
+{
+  "machinePayments": {
+    "casper": {
+      "enabled": true,
+      "network": "casper:casper-test",
+      "payTo": "<your-testnet-casper-account-address>",
+      "asset": "<testnet-wcspr-cep18-contract-package-hash>"
+    }
+  }
+}
+```
+
+Agents that don't speak Casper simply ignore the extra `accepts` entry and pay over an existing rail.
+
 ## Architecture boundary
 
 Membership and content gating stay frozen. Adapters only implement `canHandle` / `challenge` / `fulfill`. The orchestrator loads full post HTML and writes `machine_payment_events` only after a successful `fulfill`.

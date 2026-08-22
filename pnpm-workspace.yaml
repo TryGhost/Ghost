@@ -197,6 +197,7 @@ catalog:
   shell-quote: 1.10.0
   unidecode: 1.1.0
   mppx: 0.6.20
+  '@make-software/casper-x402': 1.0.0
   '@x402/core': 2.12.0
   '@x402/evm': 2.12.0
   '@x402/hono': 2.12.0

@@ -10,6 +10,7 @@ const { DepositAddressStore } = require('./stripe/deposit-address-store');
 const { PaymentRecorder } = require('./stripe/payment-recorder');
 const { MppAdapter } = require('./adapters/mpp-adapter');
 const { X402Adapter } = require('./adapters/x402-adapter');
+const { CasperX402Adapter } = require('./adapters/casper-x402-adapter');
 const { MachinePaymentEventRepository } = require('./events/machine-payment-event-repository');
 const { ContentLoader } = require('./content-loader');
 const { Pricing } = require('./pricing');
@@ -56,6 +57,11 @@ class MachinePaymentsServiceWrapper {
     const x402Adapter = new X402Adapter({ depositAddressStore });
     if (await x402Adapter.init()) {
       adapters.push(x402Adapter);
+    }
+
+    const casperX402Adapter = new CasperX402Adapter();
+    if (await casperX402Adapter.init()) {
+      adapters.push(casperX402Adapter);
     }
 
     this.service = new MachinePaymentsService({
