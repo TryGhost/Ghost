@@ -20,9 +20,14 @@ describe('podcast editor block', function () {
         expect(output.html).toContain('The Publisher Podcast');
         expect(output.html).toContain('https://images.example/show.jpg');
         expect(output.html).toContain('https://media.example/episode.mp3');
-        expect(output.html).toContain('Listen on the source site');
+        expect(output.html).toContain('podcast-card__progress');
+        expect(output.html).toContain('type="range"');
+        expect(output.html).not.toContain('Listen on the source site');
         expect(output.portableHtml).toContain('How independent publishing wins');
-        expect(output.portableHtml).toContain('Listen on the source site');
+        expect(output.portableHtml).toContain('https://podcasts.example/episodes/independent-publishing');
+        expect(output.portableHtml).toContain('Play episode on The Publisher Podcast');
+        expect(output.portableHtml).toContain('border:1px solid');
+        expect(output.portableHtml).not.toContain('Listen on the source site');
         expect(output.portableHtml).not.toContain('<audio');
         expect(renderer.hydrate).toBeTypeOf('function');
     });

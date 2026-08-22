@@ -25,6 +25,9 @@ describe('events editor block', function () {
             expect(markup).toContain('https://example.com/register');
         }
 
+        expect(output.portableHtml).toContain('border:1px solid');
+        expect(output.portableHtml).toContain('border-radius:18px');
+
         expect(renderer.hydrate).toBeUndefined();
     });
 

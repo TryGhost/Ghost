@@ -36,5 +36,7 @@ describe('chart editor block', () => {
         expect(output.portableHtml).toContain('<img');
         expect(output.portableHtml).toContain('https://example.com/chart.png');
         expect(output.portableHtml).toContain('Readers by Month');
+        expect(output.portableHtml).toContain('border:1px solid');
+        expect(output.portableHtml).toContain('border-radius:18px');
     });
 });
