@@ -81,6 +81,7 @@
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
+    "@make-software/casper-x402": "catalog:",
     "@sentry/node": "7.120.4",
     "@slack/webhook": "7.1.0",
     "@tryghost/adapter-base-cache": "workspace:*",
