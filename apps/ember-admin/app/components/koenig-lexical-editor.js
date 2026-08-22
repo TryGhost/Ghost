@@ -109,12 +109,12 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
     };
 }
 
-export function buildAddonBlocksConfig(rawInstallRecords, enabled, createConfig = createAddonEditorBlocksConfig) {
+export function buildAddonBlocksConfig(rawInstallRecords, enabled, context = {}, createConfig = createAddonEditorBlocksConfig) {
     if (!enabled) {
         return undefined;
     }
 
-    return createConfig(parseInstallRecords(rawInstallRecords));
+    return createConfig(parseInstallRecords(rawInstallRecords), undefined, context);
 }
 
 /**
@@ -501,7 +501,7 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const defaultCardConfig = {
-            addons: buildAddonBlocksConfig(this.settings.addons, this.feature.addons),
+            addons: buildAddonBlocksConfig(this.settings.addons, this.feature.addons, {siteTimezone: this.settings.timezone}),
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
             fetchAutocompleteLinks,

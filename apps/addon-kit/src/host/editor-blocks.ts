@@ -6,6 +6,7 @@ import type {RemoteConnection} from '@remote-dom/core/elements';
 import type {
     AddonEditorBlockRenderOutput,
     AddonEditorBlockRequest,
+    AddonEditorPresentationContext,
     AddonInstallRecord
 } from '../types.ts';
 
@@ -68,10 +69,12 @@ const defaultDependencies: AddonEditorBlocksDependencies = {
  */
 export function createAddonEditorBlocksConfig(
     installs: AddonInstallRecord[],
-    dependencies: Partial<AddonEditorBlocksDependencies> = defaultDependencies
+    dependencies: Partial<AddonEditorBlocksDependencies> = defaultDependencies,
+    context: AddonEditorPresentationContext = {}
 ): AddonEditorBlocksConfig {
     const resolvedDependencies = {...defaultDependencies, ...dependencies};
     const blocks = getEditorBlockDefinitions(installs);
+    const presentationContext = Object.keys(context).length > 0 ? structuredClone(context) : undefined;
 
     return {
         blocks,
@@ -92,7 +95,7 @@ export function createAddonEditorBlocksConfig(
                 });
                 return await controller.renderBlock({
                     bundleUrl: editor.contentBundleUrl,
-                    request: {blockName, props}
+                    request: {blockName, props, ...(presentationContext ? {context: structuredClone(presentationContext)} : {})}
                 });
             } finally {
                 controller.destroy();
@@ -115,7 +118,7 @@ export function createAddonEditorBlocksConfig(
                 await controller.renderSettings({
                     bundleUrl,
                     connection: receiver.connection,
-                    request: {blockName, props: structuredClone(props)},
+                    request: {blockName, props: structuredClone(props), ...(presentationContext ? {context: structuredClone(presentationContext)} : {})},
                     proposePatch: patch => onPatch(structuredClone(patch))
                 });
             })();

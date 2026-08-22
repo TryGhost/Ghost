@@ -157,6 +157,7 @@ function bootstrap({port}: BootstrapInit): void {
             const moduleExports = getModule(bundleUrl) as AddonEditorSettingsModuleExports;
             await moduleExports.default({
                 blockName: request.blockName,
+                context: request.context ? structuredClone(request.context) : undefined,
                 get props() {
                     return settingsProps!;
                 },

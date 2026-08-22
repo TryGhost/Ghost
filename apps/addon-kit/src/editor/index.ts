@@ -56,6 +56,7 @@ export function defineEditorBlockRenderer(renderer: AddonEditorComponentRenderer
 
 export type {
     AddonEditorBlockRequest,
+    AddonEditorPresentationContext,
     AddonEditorComponentOutput,
     AddonEditorComponentRenderer,
     AddonEditorContentRenderer,

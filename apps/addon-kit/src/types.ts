@@ -162,6 +162,11 @@ export interface AddonModuleExports {
 export interface AddonEditorBlockRequest {
     blockName: string;
     props: Record<string, unknown>;
+    context?: AddonEditorPresentationContext;
+}
+
+export interface AddonEditorPresentationContext {
+    siteTimezone?: string;
 }
 
 export interface AddonEditorComponentOutput {
@@ -189,6 +194,7 @@ export interface AddonEditorContentRenderer {
 export interface AddonEditorSettingsBridge {
     readonly blockName: string;
     readonly props: Record<string, unknown>;
+    readonly context?: AddonEditorPresentationContext;
     proposePatch(patch: Record<string, unknown>): Promise<void>;
     onPropsChange(listener: (props: Record<string, unknown>) => void): () => void;
 }

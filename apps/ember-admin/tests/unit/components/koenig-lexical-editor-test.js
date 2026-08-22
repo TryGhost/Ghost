@@ -8,7 +8,7 @@ describe('Unit: Component: koenig-lexical-editor', function () {
         it('keeps add-on blocks out of Koenig when the labs flag is disabled', function () {
             const createConfig = sinon.stub();
 
-            expect(buildAddonBlocksConfig('[]', false, createConfig)).to.be.undefined;
+            expect(buildAddonBlocksConfig('[]', false, {}, createConfig)).to.be.undefined;
             expect(createConfig).not.to.have.been.called;
         });
 
@@ -17,8 +17,8 @@ describe('Unit: Component: koenig-lexical-editor', function () {
             const expected = {blocks: [{label: 'Transistor episode'}]};
             const createConfig = sinon.stub().returns(expected);
 
-            expect(buildAddonBlocksConfig(JSON.stringify(records), true, createConfig)).to.equal(expected);
-            expect(createConfig).to.have.been.calledOnceWithExactly(records);
+            expect(buildAddonBlocksConfig(JSON.stringify(records), true, {siteTimezone: 'Europe/Stockholm'}, createConfig)).to.equal(expected);
+            expect(createConfig).to.have.been.calledOnceWithExactly(records, undefined, {siteTimezone: 'Europe/Stockholm'});
         });
     });
 

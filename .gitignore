@@ -185,6 +185,7 @@ tsconfig.tsbuildinfo
 # Add-ons (spike)
 /apps/addon-kit/dist
 /apps/addon-demo/dist
+/apps/addon-demo-events/dist
 
 # Tinybird
 .tinyb

@@ -72,6 +72,38 @@ describe('createAddonEditorBlocksConfig', function () {
         expect(controller.destroy).toHaveBeenCalledOnce();
     });
 
+    it('passes site presentation context to content and settings renderers', async function () {
+        const receiver = {connection: {mutate: vi.fn(), call: vi.fn()}};
+        const controller = {
+            start: vi.fn().mockResolvedValue(undefined),
+            loadBundle: vi.fn().mockResolvedValue(undefined),
+            renderBlock: vi.fn().mockResolvedValue({html: '<p>Event</p>', portableHtml: '<p>Event</p>', css: '', initialHeight: 240}),
+            renderSettings: vi.fn().mockResolvedValue(undefined),
+            updateSettingsProps: vi.fn().mockResolvedValue(undefined),
+            destroy: vi.fn()
+        };
+        const config = createAddonEditorBlocksConfig([install], {
+            createController: () => controller,
+            createReceiver: () => receiver
+        }, {siteTimezone: 'Europe/Stockholm'});
+
+        await config.renderBlock({
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            props: {}
+        });
+        const surface = config.createSettingsSurface!({
+            addonHandle: 'transistor',
+            blockName: 'episode-player',
+            props: {},
+            onPatch: vi.fn().mockResolvedValue(undefined)
+        });
+        await surface.ready;
+
+        expect(controller.renderBlock.mock.calls[0][0].request.context).toEqual({siteTimezone: 'Europe/Stockholm'});
+        expect(controller.renderSettings.mock.calls[0][0].request.context).toEqual({siteTimezone: 'Europe/Stockholm'});
+    });
+
     it('creates a long-lived remote settings surface for one block', async function () {
         const receiver = {connection: {mutate: vi.fn(), call: vi.fn()}};
         const controller = {
