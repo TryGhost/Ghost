@@ -2898,7 +2898,7 @@ describe('Email renderer', function () {
       customSettings.locale = 'pt-PT';
       const post = createModel(
         Object.assign({}, basePost, {
-          published_at: new Date(2026, 2, 19),
+          published_at: new Date(Date.UTC(2026, 2, 19)),
           authors: [createModel({ name: "Author/Name O'Brien & Co." })],
         }),
       );

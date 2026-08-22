@@ -149,7 +149,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       } catch (err) {
         logging.error(`Recurring job "${envelope.type}" tick failed to enqueue`, err);
       }
-    }, parsed);
+    }, parsed, 'UTC');
     this._recurring.set(envelope.type, timer);
   }
 
