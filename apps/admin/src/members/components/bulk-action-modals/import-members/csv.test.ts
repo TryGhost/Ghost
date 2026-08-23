@@ -47,8 +47,22 @@ describe('csv helpers', () => {
       '"email","name","note","subscribed_to_emails","complimentary_plan","stripe_customer_id","created_at","labels","gift_id","error"',
     );
     expect(output).toContain('"vip,gold"');
+    expect(output.split('\n')[1]).toContain('"true"');
     expect(output).not.toContain('[object Object]');
     expect(output).toContain('"Invalid email, ""quote"""');
+  });
+
+  it('drops malformed label entries instead of crashing the download', () => {
+    const output = unparseErrorCSV([
+      {
+        email: 'a@example.com',
+        labels: [null, { name: 'vip' }, 42, { name: 'gold' }],
+        error: 'nope',
+      },
+    ]);
+
+    expect(output).toContain('"vip,gold"');
+    expect(output).not.toContain('[object Object]');
   });
 
   it('keeps a column carried only by a later row, with the error column last', () => {

@@ -1,4 +1,5 @@
 import Papa from 'papaparse';
+import { z } from 'zod';
 
 export function parseCSV(text: string): Record<string, string>[] {
   const parsed = Papa.parse(text, {
@@ -30,19 +31,29 @@ export function parseCSV(text: string): Record<string, string>[] {
 // so rows are shaped into the members export vocabulary first, matching the emailed
 // error report. The newsletters column only appears when the submitted file carried
 // one: an empty cell in that column reads back as an explicit "no newsletters".
-type RawErrorRow = Record<string, unknown> & { error: string };
+const nameEntrySchema = z.union([z.string(), z.object({ name: z.string() })]);
+
+const rawErrorRowSchema = z.object({ error: z.string().catch('') }).catchall(z.unknown());
+
+type RawErrorRow = z.infer<typeof rawErrorRowSchema>;
 
 function joinNames(value: unknown): string {
   if (typeof value === 'string') {
     return value;
   }
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => (typeof item === 'string' ? item : ((item as { name?: string }).name ?? '')))
-      .filter(Boolean)
-      .join(',');
+  if (!Array.isArray(value)) {
+    return '';
   }
-  return '';
+  return value
+    .map((item) => {
+      const parsed = nameEntrySchema.safeParse(item);
+      if (!parsed.success) {
+        return '';
+      }
+      return typeof parsed.data === 'string' ? parsed.data : parsed.data.name;
+    })
+    .filter(Boolean)
+    .join(',');
 }
 
 function cell(value: unknown): string {
@@ -83,12 +94,12 @@ function toExportErrorRow(row: RawErrorRow): Record<string, string> {
   return shaped;
 }
 
-export function unparseErrorCSV(rows: RawErrorRow[]): string {
+export function unparseErrorCSV(rows: unknown[]): string {
   if (rows.length === 0) {
     return '';
   }
 
-  const shaped = rows.map(toExportErrorRow);
+  const shaped = rows.map((row) => toExportErrorRow(rawErrorRowSchema.parse(row)));
 
   // Columns come from every row, not just the first: Papa.unparse otherwise takes the
   // header from the first row's keys, dropping an optional column (newsletters, a
