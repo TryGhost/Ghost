@@ -88,7 +88,23 @@ export function unparseErrorCSV(rows: RawErrorRow[]): string {
     return '';
   }
 
-  return Papa.unparse(rows.map(toExportErrorRow), {
+  const shaped = rows.map(toExportErrorRow);
+
+  // Columns come from every row, not just the first: Papa.unparse otherwise takes the
+  // header from the first row's keys, dropping an optional column (newsletters, a
+  // custom field) that only a later row carries. The error column stays last.
+  const columns: string[] = [];
+  for (const row of shaped) {
+    for (const key of Object.keys(row)) {
+      if (key !== 'error' && !columns.includes(key)) {
+        columns.push(key);
+      }
+    }
+  }
+  columns.push('error');
+
+  return Papa.unparse(shaped, {
     quotes: true,
+    columns,
   });
 }

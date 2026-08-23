@@ -51,6 +51,24 @@ describe('csv helpers', () => {
     expect(output).toContain('"Invalid email, ""quote"""');
   });
 
+  it('keeps a column carried only by a later row, with the error column last', () => {
+    const output = unparseErrorCSV([
+      { email: 'a@example.com', labels: [], error: 'nope' },
+      {
+        email: 'b@example.com',
+        labels: [],
+        newsletters: [{ name: 'Daily News' }],
+        'custom_fields.topic': 'ghosts',
+        error: 'nope',
+      },
+    ]);
+
+    const header = output.split('\n')[0].trimEnd();
+    expect(header).toContain('"newsletters"');
+    expect(header).toContain('"custom_fields.topic"');
+    expect(header.endsWith('"error"')).toBe(true);
+  });
+
   it('carries the newsletters column only when the submitted file did', () => {
     const withColumn = unparseErrorCSV([
       {
