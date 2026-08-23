@@ -72,7 +72,7 @@
     "Continue to payment": "Weiter zur Bezahlung",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Du kannst jederzeit in ein bezahltes Abo wechseln. Dein verbleibender Geschenk-Zeitraum wird als kostenloser Probezeitraum hinzugefügt.",
     "Copied": "Kopiert",
-    "Copy": "kopieren",
+    "Copy": "Kopieren",
     "Copy link": "Link kopieren",
     "Could not create Stripe billing portal session": "Konnte keine Stripe-Bezahl-Session erstellen",
     "Could not create Stripe checkout session": "Zahlungsabwicklung über Stripe konnte nicht erstellt werden",
@@ -206,7 +206,7 @@
     "Recommendations": "Empfehlungen",
     "Redeem your gift": "Aktiviere dein Geschenk",
     "Redeem your membership": "Aktiviere deine Mitgliedschaft",
-    "Redeeming...": "Aktiviere...",
+    "Redeeming...": "Wird aktiviert...",
     "Renews at {price}.": "Wird zum Preis von {price} verlängert.",
     "Resume subscription": "Abonnement fortsetzen",
     "Retry": "Nochmals versuchen",
@@ -332,5 +332,5 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Dein Abonnement wurde gekündigt und wird am {expiryDate} ablaufen.",
     "Your subscription will expire on {expiryDate}": "Dein Abonnement wird am {expiryDate} ablaufen.",
     "Your subscription will renew on {renewalDate}": "Dein Abonnement wird am {renewalDate} erneuert.",
-    "Your subscription will start on {subscriptionStart}": "Dein Abonnement started am {subscriptionStart}."
+    "Your subscription will start on {subscriptionStart}": "Dein Abonnement beginnt am {subscriptionStart}."
 }
