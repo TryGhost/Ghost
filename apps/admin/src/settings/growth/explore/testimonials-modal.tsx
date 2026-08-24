@@ -63,6 +63,7 @@ const TestimonialsModal = () => {
         throw new Error('Something went wrong, please try again later.');
       }
 
+      // eslint-disable-next-line no-restricted-syntax -- external Ghost Explore service, not the Admin API
       const response = await fetch(exploreTestimonialsUrl, {
         method: 'POST',
         headers: {

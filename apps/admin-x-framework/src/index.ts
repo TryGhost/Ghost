@@ -84,6 +84,7 @@ export {
 export { useNavigationStack } from './providers/navigation-stack-provider';
 export {
   Link,
+  NavigationType,
   Outlet,
   useBlocker,
   useLocation,
@@ -95,6 +96,7 @@ export {
   useMatch,
   useMatches,
 } from 'react-router';
+export type { BlockerFunction } from 'react-router';
 
 // Lazy component loader
 export { lazyComponent } from './utils/lazy-component';
