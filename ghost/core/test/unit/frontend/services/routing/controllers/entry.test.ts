@@ -311,6 +311,7 @@ describe('Unit - services/routing/controllers/entry', function () {
       assert.match(body, /Free preview/);
       assert.match(body, /This post is for subscribers only\./);
       assert.match(body, /Subscribe:/);
+      sinon.assert.neverCalledWith(res.set, 'Cache-Control', sinon.match.any);
       sinon.assert.notCalled(res.redirect);
     });
 
@@ -362,6 +363,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
       sinon.assert.calledWith(res.type, 'text/markdown');
       sinon.assert.calledOnce(res.send);
+      sinon.assert.neverCalledWith(res.set, 'Cache-Control', sinon.match.any);
       sinon.assert.notCalled(res.redirect);
     });
   });

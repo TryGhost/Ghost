@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import type { Entry, EntryResponse } from '../entry';
 import buildCanonicalUrl from './canonical-url';
 
-const config = require('../../../../../shared/config');
 const urlUtils = require('../../../../../shared/url-utils').default;
 const {
   getAcceptedMarkdownContentType,
@@ -61,7 +60,6 @@ export function isPublic(entry: Entry): boolean {
 
 function serveMarkdown(res: Response, entry: Entry) {
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
-  res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
   res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
   res.type('text/markdown');
   return res.send(renderEntryMarkdown(entry, { llmsIndexUrl }));
@@ -85,7 +83,6 @@ function servePreviewMarkdown(res: EntryResponse, entry: Entry) {
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
   const subscribeUrl = urlUtils.urlFor({ relativeUrl: '/#/portal/signup' }, true);
 
-  res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
   res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
   res.type('text/markdown');
   return res.send(
