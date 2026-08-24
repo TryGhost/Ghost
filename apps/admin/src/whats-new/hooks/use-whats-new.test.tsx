@@ -3,7 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import type { QueryClient } from '@tanstack/react-query';
 import { useWhatsNew, useDismissWhatsNew } from './use-whats-new';
 import { HttpResponse, http } from 'msw';
-import { mockUser, createRawChangelogEntry } from '@test-utils/factories';
+import { changelogEntry, staffUser } from '@tryghost/test-data';
 import type {
   UpdateUserRequestBody,
   UsersResponseType,
@@ -18,6 +18,8 @@ import { DEFAULT_NAVIGATION_PREFERENCES } from '@/hooks/user-preferences';
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
 const CHANGELOG_API_URL = 'https://ghost.org/changelog.json';
+
+const mockUser = staffUser();
 
 // Types
 interface SetupQueryOptions {
@@ -44,11 +46,11 @@ const dates = {
 const fixtures = {
   entries: {
     newEntry: () =>
-      createRawChangelogEntry({
+      changelogEntry({
         published_at: dates.current,
       }),
     oldEntry: () =>
-      createRawChangelogEntry({
+      changelogEntry({
         published_at: dates.past,
       }),
   },
@@ -368,13 +370,13 @@ describe('useDismissWhatsNew', () => {
   mutationTest('works with multiple entries', async ({ setup }) => {
     const { query, mutation } = await setup({
       posts: [
-        createRawChangelogEntry({
+        changelogEntry({
           published_at: dates.future,
         }),
-        createRawChangelogEntry({
+        changelogEntry({
           published_at: dates.current,
         }),
-        createRawChangelogEntry({
+        changelogEntry({
           published_at: dates.recent,
         }),
       ],

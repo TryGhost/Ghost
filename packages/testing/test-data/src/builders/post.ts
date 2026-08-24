@@ -54,7 +54,7 @@ export interface Post {
   /** Only present when the request includes `email`; set for posts sent as an email. */
   email?: { email_count: number; opened_count: number; status?: string } | null;
   /** Only present when the request includes `newsletter`; the newsletter the email went to. */
-  newsletter?: { id: string; feedback_enabled?: boolean } | null;
+  newsletter?: { id: string; name?: string; feedback_enabled?: boolean } | null;
   created_at: string;
   updated_at: string;
   published_at: string | null;
