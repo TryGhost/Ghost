@@ -175,7 +175,7 @@ interface GiftServiceDeps {
   giftRepository: GiftRepository;
   giftDeliveryService: Pick<
     GiftDeliveryService,
-    'createForCheckout' | 'dispatchForGift' | 'cancelPendingForGift'
+    'createForCheckout' | 'dispatchForGift' | 'cancelPendingForGift' | 'recoverPending'
   >;
   memberRepository: MemberRepository;
   tiersService: TiersService;
@@ -1360,6 +1360,53 @@ export class GiftService {
     const deletedCount = await this.deps.giftRepository.deleteAbandonedCheckouts(cutoff);
 
     return { deletedCount };
+  }
+
+  async cleanup(): Promise<void> {
+    const checkoutStart = Date.now();
+    try {
+      const { deletedCount } = await this.processAbandonedCheckouts();
+
+      logging.info(
+        `[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`,
+      );
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing abandoned checkouts');
+    }
+
+    const consumedStart = Date.now();
+    try {
+      const { consumedCount, updatedMemberCount } = await this.processConsumed();
+
+      logging.info(
+        `[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`,
+      );
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing consumed gifts');
+    }
+
+    const expiredStart = Date.now();
+    try {
+      const { expiredCount } = await this.processExpired();
+
+      logging.info(
+        `[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`,
+      );
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing expired gifts');
+    }
+
+    try {
+      const { sentCount, skippedCount, failedCount } =
+        await this.deps.giftDeliveryService.recoverPending();
+      if (sentCount + skippedCount + failedCount > 0) {
+        logging.info(
+          `[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
+        );
+      }
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing pending gift deliveries');
+    }
   }
 
   async processReminders(): Promise<{
