@@ -9,7 +9,7 @@ const shadeRestrictedPaths = shadeLayeredImportsRule['no-restricted-imports'][1]
 
 const emberBridgeImportPatterns = [
   {
-    group: ['@/ember-bridge/ember-bridge', '**/ember-bridge/ember-bridge'],
+    group: ['@/ember-bridge/*', '**/ember-bridge/ember-bridge'],
     message: 'Import bridge helpers from the @/ember-bridge barrel, not the implementation module.',
   },
 ];
@@ -122,7 +122,14 @@ export default tseslint.config(
                 'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
             },
           ],
-          patterns: emberBridgeImportPatterns,
+          patterns: [
+            ...emberBridgeImportPatterns,
+            {
+              group: ['react-router/*'],
+              message:
+                'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
+            },
+          ],
         },
       ],
       'no-restricted-syntax': [
@@ -134,6 +141,12 @@ export default tseslint.config(
         },
         {
           selector: "MemberExpression[property.value='EmberBridge']",
+          message:
+            'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
+        },
+        {
+          selector:
+            "VariableDeclarator[init.name=/^(window|globalThis)$/] Property[key.name='EmberBridge']",
           message:
             'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
         },

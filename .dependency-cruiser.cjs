@@ -135,10 +135,10 @@ module.exports = {
     {
       name: 'admin-is-app',
       comment:
-        'Libraries and sibling apps (shade, admin-x-framework, activitypub) must not depend on @tryghost/admin. Admin sits at the top of the layer stack.',
+        'No sibling app or library may depend on @tryghost/admin - whether by package specifier or by relative reach-in. Admin sits at the top of the layer stack.',
       severity: 'error',
-      from: { path: '^apps/(admin-x-framework|shade|activitypub)/' },
-      to: { path: '^@tryghost/admin($|/)' },
+      from: { path: '^apps/', pathNot: '^apps/admin/' },
+      to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
     },
     // ============================================================
     // apps/admin — shared/ must stay domain-free
@@ -150,7 +150,7 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/admin/src/shared/' },
       to: {
-        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|layout)/',
+        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|layout)($|/)',
       },
     },
   ],
