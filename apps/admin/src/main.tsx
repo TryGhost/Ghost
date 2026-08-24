@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { defaultUnsplashConfig } from '@tryghost/admin-x-framework';
 import './index.css';
 import { AdminAppRoot } from './app-root.tsx';
+import { emberMutationHandlers } from './ember-bridge';
 import { navigateTo } from './utils/navigation';
 
 const framework = {
@@ -11,15 +12,7 @@ const framework = {
   },
   unsplashConfig: defaultUnsplashConfig,
   sentryDSN: null,
-  onUpdate: (dataType: string, response: unknown) => {
-    window.EmberBridge?.state.onUpdate(dataType, response);
-  },
-  onInvalidate: (dataType: string) => {
-    window.EmberBridge?.state.onInvalidate(dataType);
-  },
-  onDelete: (dataType: string, id: string) => {
-    window.EmberBridge?.state.onDelete(dataType, id);
-  },
+  ...emberMutationHandlers,
 };
 
 createRoot(document.getElementById('root')!).render(<AdminAppRoot framework={framework} />);

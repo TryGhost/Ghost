@@ -12,5 +12,14 @@ export {
   useEmberRouting,
   useForceUpgrade,
   subscribeOpenGiftLinkModal,
+  isEmberThemeManaged,
+  preloadEmberAdminThemeStylesheet,
+  applyEmberAdminThemePreference,
+  emberMutationHandlers,
 } from './ember-bridge';
-export type { EmberDataChangeEvent, EmberRouting, OpenGiftLinkModalEvent } from './ember-bridge';
+export type {
+  AdminThemeMode,
+  EmberDataChangeEvent,
+  EmberRouting,
+  OpenGiftLinkModalEvent,
+} from './ember-bridge';

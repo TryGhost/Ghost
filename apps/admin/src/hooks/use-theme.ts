@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  applyEmberAdminThemePreference,
+  isEmberThemeManaged,
+  preloadEmberAdminThemeStylesheet,
+} from '@/ember-bridge';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -33,22 +38,11 @@ function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
   });
 }
 
-// In the embedded admin, Ember owns the DOM theme: it manages both the `dark`
-// class and the dark stylesheet, and installs its own prefers-color-scheme
-// listener. The class-toggling and media-query effects below are only a fallback
-// for running this hook standalone (no EmberBridge), so they must not fight Ember.
-function isEmberManaged(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
-}
-
-async function preloadAdminThemeStylesheet() {
-  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
-}
-
+// The class-toggling and media-query effects below are only a fallback for
+// running this hook standalone (no EmberBridge), so they must not fight Ember
+// when it manages the DOM theme — see isEmberThemeManaged.
 function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
-  if (window.EmberBridge?.state.applyAdminThemePreference) {
-    void window.EmberBridge.state.applyAdminThemePreference(mode);
-  } else {
+  if (!applyEmberAdminThemePreference(mode)) {
     applyThemeClass(resolvedTheme);
   }
 }
@@ -68,7 +62,7 @@ export function useTheme() {
 
   useEffect(() => {
     if (
-      isEmberManaged() ||
+      isEmberThemeManaged() ||
       typeof window === 'undefined' ||
       typeof window.matchMedia !== 'function'
     ) {
@@ -97,7 +91,7 @@ export function useTheme() {
   }, []);
 
   useEffect(() => {
-    if (isEmberManaged()) {
+    if (isEmberThemeManaged()) {
       return;
     }
     applyThemeClass(resolvedTheme);
@@ -126,7 +120,7 @@ export function useTheme() {
 
       try {
         const nextResolvedTheme = mode === 'system' ? systemTheme : mode;
-        await preloadAdminThemeStylesheet().catch((error) => {
+        await preloadEmberAdminThemeStylesheet().catch((error) => {
           // eslint-disable-next-line no-console
           console.error('[Theme] Failed to preload admin theme stylesheet:', error);
         });
