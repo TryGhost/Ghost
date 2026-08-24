@@ -18,7 +18,7 @@ import {
   useBrowseCommentLikes,
 } from '@tryghost/admin-x-framework/api/comments';
 import { LucideIcon, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
-import { formatMemberName } from '@tryghost/shade/app';
+import { formatMemberName, getMemberInitials } from '@/members/member-format';
 
 type DefaultTab = 'likes' | 'dislikes';
 
@@ -73,8 +73,8 @@ function CommentLikesModal({
           <div className="flex min-w-0 items-start gap-3">
             <Avatar
               className="shrink-0"
-              email={comment.member?.email}
-              name={comment.member?.name}
+              colorSeed={comment.member ? comment.member.name || comment.member.email : undefined}
+              initials={comment.member ? getMemberInitials(comment.member) : undefined}
               src={comment.member?.avatar_image}
             />
             <div className="flex min-w-0 flex-col overflow-hidden">
@@ -121,8 +121,10 @@ function CommentLikesModal({
                         <div className="flex items-center gap-3">
                           <div className="relative shrink-0">
                             <Avatar
-                              email={like.member?.email}
-                              name={like.member?.name}
+                              colorSeed={
+                                like.member ? like.member.name || like.member.email : undefined
+                              }
+                              initials={like.member ? getMemberInitials(like.member) : undefined}
                               src={like.member?.avatar_image}
                             />
                             <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-gray-500 text-white">
@@ -165,8 +167,14 @@ function CommentLikesModal({
                         <div className="flex items-center gap-3">
                           <div className="relative shrink-0">
                             <Avatar
-                              email={dislike.member?.email}
-                              name={dislike.member?.name}
+                              colorSeed={
+                                dislike.member
+                                  ? dislike.member.name || dislike.member.email
+                                  : undefined
+                              }
+                              initials={
+                                dislike.member ? getMemberInitials(dislike.member) : undefined
+                              }
                               src={dislike.member?.avatar_image}
                             />
                             <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-gray-500 text-white">
@@ -205,8 +213,10 @@ function CommentLikesModal({
                     <div className="flex items-center gap-3">
                       <div className="relative shrink-0">
                         <Avatar
-                          email={like.member?.email}
-                          name={like.member?.name}
+                          colorSeed={
+                            like.member ? like.member.name || like.member.email : undefined
+                          }
+                          initials={like.member ? getMemberInitials(like.member) : undefined}
                           src={like.member?.avatar_image}
                         />
                         <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-pink-500 text-white">

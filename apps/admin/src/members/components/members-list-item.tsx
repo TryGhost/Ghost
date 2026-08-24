@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import { Avatar, TableCell, TableRow } from '@tryghost/shade/components';
 import { type Member } from '@tryghost/admin-x-framework/api/members';
 import { buildMemberDetailPath } from '@/members/member-detail-hash';
+import { getMemberInitials } from '@/members/member-format';
 import { cn, formatPercentage } from '@tryghost/shade/utils';
 import type { MemberActiveColumn } from '@/members/member-query-params';
 import { forwardRef, type CSSProperties } from 'react';
@@ -86,8 +87,8 @@ function MembersListItemName({
     <div className="flex min-w-0 items-center gap-3">
       <Avatar
         className="size-8 min-w-8"
-        email={item.email}
-        name={item.name}
+        colorSeed={item.name || item.email}
+        initials={getMemberInitials(item)}
         src={item.avatar_image}
       />
       <div className="min-w-0">

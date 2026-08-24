@@ -37,7 +37,7 @@ import {
   useNewslettersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
-import { getRangeDates } from '@tryghost/shade/app';
+import { getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useAnalytics } from '@/analytics/providers/analytics-context';

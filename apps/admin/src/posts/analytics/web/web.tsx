@@ -17,13 +17,17 @@ import { type KpiDataItem, getWebKpiValues } from '@/posts/analytics/utils/kpi-h
 import { LucideIcon, getScrollParent } from '@tryghost/shade/utils';
 import { STATS_RANGES, UNKNOWN_LOCATION_VALUES } from '@/shared/analytics/constants';
 import { createFilter } from '@tryghost/shade/patterns';
-import { formatQueryDate, getRangeDates, getRangeForStartDate } from '@tryghost/shade/app';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from '@/shared/analytics/audience';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import {
   useBrowseSettings,
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
+  formatQueryDate,
+  getPeriodText,
+  getRangeDates,
+  getRangeForStartDate,
+} from '@/shared/analytics/chart-helpers';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   POST_ANALYTICS_FILTER_FIELDS,

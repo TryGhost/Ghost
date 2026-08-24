@@ -2,9 +2,13 @@ import moment from 'moment-timezone';
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from '@/shared/analytics/constants';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  centsToDollars,
+  formatQueryDate,
   getAggregationStrategy,
   getEffectiveChartRange,
   getPeriodText,
+  getRangeDates,
+  getRangeForStartDate,
   resolveEffectiveRangeDays,
   sanitizeChartData,
   truncateLeadingEmptyData,
@@ -463,6 +467,56 @@ describe('chart-helpers', () => {
       expect(getEffectiveChartRange(STATS_RANGES.yearToDate.value, data)).toBe(46);
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('formatQueryDate', () => {
+    it('formats a moment date for queries', () => {
+      expect(formatQueryDate(moment('2023-04-15'))).toBe('2023-04-15');
+    });
+  });
+
+  describe('centsToDollars', () => {
+    it('converts cents to rounded dollars', () => {
+      expect(centsToDollars(0)).toBe(0);
+      expect(centsToDollars(1050)).toBe(11);
+      expect(centsToDollars(123456)).toBe(1235);
+    });
+  });
+
+  describe('getRangeForStartDate', () => {
+    const currentTime = new Date('2026-05-28T09:00:00-04:00');
+    const publishedAt = '2026-05-26T12:00:00-04:00';
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('counts calendar days inclusively before the publish time-of-day has passed', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(currentTime);
+
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const expectedRange =
+        moment(currentTime)
+          .tz(timezone)
+          .startOf('day')
+          .diff(moment(publishedAt).tz(timezone).startOf('day'), 'days') + 1;
+
+      expect(getRangeForStartDate(publishedAt)).toBe(expectedRange);
+    });
+
+    it('produces a date range that includes the publish calendar day', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(currentTime);
+
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const expectedStartDate = moment(publishedAt).tz(timezone).startOf('day');
+
+      const range = getRangeForStartDate(publishedAt);
+      const { startDate } = getRangeDates(range);
+
+      expect(formatQueryDate(startDate)).toBe(formatQueryDate(expectedStartDate));
     });
   });
 });

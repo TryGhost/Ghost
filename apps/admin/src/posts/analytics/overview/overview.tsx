@@ -26,10 +26,11 @@ import { STATS_RANGES } from '@/shared/analytics/constants';
 import {
   centsToDollars,
   formatQueryDate,
+  getEffectiveChartRange,
   getRangeDates,
   getRangeForStartDate,
-} from '@tryghost/shade/app';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+  sanitizeChartData,
+} from '@/shared/analytics/chart-helpers';
 import {
   hasBeenEmailed,
   isPublishedOnly,

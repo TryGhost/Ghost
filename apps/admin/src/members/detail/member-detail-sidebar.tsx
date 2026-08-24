@@ -4,6 +4,7 @@ import { Avatar } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
 import { formatMemberLocation, getMemberReferrerSource } from './member-detail-format';
+import { getMemberInitials } from '@/members/member-format';
 import { isSafeHref } from './is-safe-href';
 
 // Matches the members list (`members-list-item.tsx`), which also renders member
@@ -62,8 +63,8 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
       <div className="flex items-center gap-3 py-4">
         <Avatar
           className="size-12 min-w-12 [&_span]:text-lg"
-          email={email || undefined}
-          name={name || undefined}
+          colorSeed={name || email || undefined}
+          initials={name || email ? getMemberInitials({ name, email }) : undefined}
           src={member?.avatar_image}
         />
         <div className="min-w-0">
