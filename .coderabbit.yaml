@@ -55,9 +55,13 @@ reviews:
         code. Do not report formatting, naming, import ordering, type errors, or
         other findings already owned by configured static tools or failing GitHub
         checks. Do not request speculative abstractions, broad refactors, generic
-        documentation, or tests unrelated to changed behaviour. Treat nearby
-        AGENTS.md files and mapped codebase documentation as authoritative; do not
-        enforce proposals, plans, or historical guidance as current policy.
+        documentation, or tests unrelated to changed behaviour. For a move,
+        rename, TypeScript conversion, or explicitly behaviour-preserving refactor,
+        do not report pre-existing problems unless the diff introduces or worsens
+        them, makes them newly reachable, or prevents the stated transformation
+        from being correct. Treat nearby AGENTS.md files and mapped codebase
+        documentation as authoritative; do not enforce proposals, plans, or
+        historical guidance as current policy.
     - path: '**/*.{ts,tsx,mts,cts}'
       instructions: |
         Review lens: "where does this data become trusted?"
