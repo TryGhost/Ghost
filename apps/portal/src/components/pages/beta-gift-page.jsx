@@ -1341,8 +1341,8 @@ function GiftDurationSwitch({ offeredDurations, activeDuration, setSelectedDurat
 const GIFT_EMAIL_MAX_LENGTH = 191;
 const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_MESSAGE_MAX_LENGTH = 250;
-// Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost/core's gifts constants (the server
-// allows one extra day of clock-skew slack) — change them together.
+// Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost/core's gifts constants — change
+// them together.
 const GIFT_MAX_SCHEDULE_DAYS = 365;
 
 function getTierPriceLabel(product, months) {

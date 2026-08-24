@@ -645,9 +645,9 @@ export default class App extends React.Component {
         : null;
       // Exact send instant in epoch ms; a delivery date without it means
       // the send already happened.
-      const redeemableAtParam = Number(qParams.get('gift_redeemable_at'));
-      const redeemableAt =
-        Number.isFinite(redeemableAtParam) && redeemableAtParam > 0 ? redeemableAtParam : null;
+      const scheduledAtParam = Number(qParams.get('gift_scheduled_at'));
+      const scheduledAt =
+        Number.isFinite(scheduledAtParam) && scheduledAtParam > 0 ? scheduledAtParam : null;
       clearURLParams([
         'stripe',
         'gift_token',
@@ -656,7 +656,7 @@ export default class App extends React.Component {
         'gift_duration',
         'gift_delivery',
         'gift_delivery_date',
-        'gift_redeemable_at',
+        'gift_scheduled_at',
       ]);
       if (token) {
         return {
@@ -669,7 +669,7 @@ export default class App extends React.Component {
             duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
             deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link',
             deliveryDate,
-            redeemableAt,
+            scheduledAt,
           },
         };
       }

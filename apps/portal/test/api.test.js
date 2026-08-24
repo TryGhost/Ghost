@@ -70,7 +70,7 @@ describe('Portal API gift redemption', () => {
     );
   });
 
-  test('preserves scheduled gift availability metadata from the members api', async () => {
+  test('preserves structured gift error metadata from the members api', async () => {
     const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
     vi.spyOn(window, 'fetch').mockResolvedValue(
@@ -78,8 +78,8 @@ describe('Portal API gift redemption', () => {
         JSON.stringify({
           errors: [
             {
-              message: 'This gift is not available yet.',
-              code: 'GIFT_NOT_YET_REDEEMABLE',
+              message: 'Gift unavailable.',
+              code: 'GIFT_UNAVAILABLE',
               context: '2026-12-25',
             },
           ],
@@ -94,8 +94,8 @@ describe('Portal API gift redemption', () => {
     );
 
     await expect(ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' })).rejects.toEqual(
-      new HumanReadableError('This gift is not available yet.', {
-        code: 'GIFT_NOT_YET_REDEEMABLE',
+      new HumanReadableError('Gift unavailable.', {
+        code: 'GIFT_UNAVAILABLE',
         context: '2026-12-25',
       }),
     );

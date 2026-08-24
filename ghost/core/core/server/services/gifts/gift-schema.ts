@@ -36,7 +36,6 @@ export const DbGift = z.object({
   stripe_checkout_session_id: z.string().nullable(),
   stripe_payment_intent_id: z.string().nullable(),
   checkout_started_at: DbDate.nullable().default(null),
-  redeemable_at: DbDate.nullable().default(null),
   consumes_at: DbDate.nullable(),
   expires_at: DbDate.nullable(),
   status: GiftStatusSchema,

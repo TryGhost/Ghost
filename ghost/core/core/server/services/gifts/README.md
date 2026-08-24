@@ -24,8 +24,9 @@ transactions, or Stripe objects.
   lifecycle work. `GiftDeliveryService` owns email-delivery creation,
   post-commit dispatch, cancellation, and processing behind a separate
   interface. Immediate email delivery starts after purchase through an
-  in-process event; scheduled email delivery becomes eligible at the Gift's
-  `redeemableAt` and uses the same processing path. Delivery claims are atomic;
+  in-process event; scheduled email delivery becomes eligible at the
+  GiftDelivery's `scheduledAt` and uses the same processing path. Gift links
+  remain redeemable from purchase. Delivery claims are atomic;
   stale in-progress claims are retried after a crash, so mail-transport
   acceptance is at least once.
 - `GiftDeliveryService.recordOutcome(...)` retains only the newest Mailgun

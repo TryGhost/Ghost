@@ -10,12 +10,11 @@ import type {
   GiftEventPage,
   GiftRepository,
 } from './gift-bookshelf-repository';
-import type { GiftDeliveryService } from './gift-delivery-service';
+import type { GiftDeliveryDispatchResult, GiftDeliveryService } from './gift-delivery-service';
 import type { GiftFlushScheduler } from './gift-flush-scheduler';
 import { GiftCadenceSchema, type GiftCadence } from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {
-  GIFT_EXPIRY_DAYS,
   GIFT_MAX_SCHEDULE_DAYS,
   GIFT_REMINDER_FLOOR_DAYS,
   GIFT_REMINDER_LEAD_DAYS,
@@ -27,7 +26,6 @@ import {
   type GiftCheckoutTier,
   type ResolvedGiftDuration,
 } from './gift-checkout-offer';
-import { getSiteDateValue } from './gift-date';
 
 const DEFAULT_TIMEZONE = 'Etc/UTC';
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -44,7 +42,6 @@ const errorMessages = {
   giftConsumed: 'This gift has already been consumed.',
   giftExpired: 'This gift has expired.',
   giftRefunded: 'This gift has been refunded.',
-  giftNotYetRedeemable: 'This gift is not available yet.',
   paidMember: 'You already have an active subscription.',
   giftInvalidReassignStatus: 'This gift does not have a reassignable status.',
   giftInvalidReassignMember: 'Member already has an active subscription.',
@@ -107,7 +104,7 @@ interface GiftEmailService {
     cadence: GiftCadence;
     duration: number;
     expiresAt: Date;
-    redeemableAt: Date;
+    scheduledAt: Date | null;
     recipientEmail?: string | null;
   }): Promise<void>;
   sendReminder(data: {
@@ -312,23 +309,14 @@ export interface GiftMemberPresentation {
   amount: number;
 }
 
-export type GiftPreview =
-  | {
-      available: true;
-      cadence: GiftCadence;
-      duration: number;
-      tier: {
-        id: string;
-        name: string;
-      };
-    }
-  | {
-      // Before redemption availability a link bearer may see the availability
-      // date but no gift details.
-      available: false;
-      availableOn: string;
-      redeemableAt: Date;
-    };
+export interface GiftPreview {
+  cadence: GiftCadence;
+  duration: number;
+  tier: {
+    id: string;
+    name: string;
+  };
+}
 
 export class GiftService {
   private readonly deps: GiftServiceDeps;
@@ -469,14 +457,14 @@ export class GiftService {
     successUrl.searchParams.set('gift_tier', tierId);
     successUrl.searchParams.set('gift_cadence', cadence);
     successUrl.searchParams.set('gift_delivery', delivery.deliveryMethod);
-    if (scheduledDelivery.date && scheduledDelivery.redeemableAt) {
+    if (scheduledDelivery.date && scheduledDelivery.scheduledAt) {
       successUrl.searchParams.set('gift_delivery_date', scheduledDelivery.date);
       // The exact send instant, so the success page can tell "still
       // scheduled" from "already sent" without re-deriving the send
       // hour client-side.
       successUrl.searchParams.set(
-        'gift_redeemable_at',
-        String(scheduledDelivery.redeemableAt.getTime()),
+        'gift_scheduled_at',
+        String(scheduledDelivery.scheduledAt.getTime()),
       );
     }
     if (totalMonths !== undefined) {
@@ -494,7 +482,8 @@ export class GiftService {
       buyerName: delivery.buyerName,
       recipientName: delivery.recipientName,
       personalMessage: delivery.personalMessage,
-      redeemableAt: scheduledDelivery.redeemableAt,
+      expiryAnchor: scheduledDelivery.scheduledAt,
+      expiryTimeZone: this.siteZone(),
       tierId,
       cadence,
       duration,
@@ -508,6 +497,7 @@ export class GiftService {
           {
             giftId: id,
             recipientEmail: delivery.recipientEmail,
+            scheduledAt: scheduledDelivery.scheduledAt,
           },
           { transacting },
         );
@@ -595,31 +585,22 @@ export class GiftService {
     return zone;
   }
 
-  private getClaimDeadline(redeemableAt: Date): Date {
-    const availability = DateTime.fromJSDate(redeemableAt, { zone: this.siteZone() });
-
-    return availability.plus({ days: GIFT_EXPIRY_DAYS }).endOf('day').toJSDate();
-  }
-
   private resolveDeliveryDate(deliveryDate: string | null): {
     date: string | null;
-    redeemableAt: Date | null;
+    scheduledAt: Date | null;
   } {
     if (!deliveryDate) {
-      return { date: null, redeemableAt: null };
+      return { date: null, scheduledAt: null };
     }
 
     const zone = this.siteZone();
     const today = DateTime.now().setZone(zone).startOf('day');
     const selected = DateTime.fromFormat(deliveryDate, 'yyyy-MM-dd', { zone }).startOf('day');
 
-    // One day of slack over what the picker offers: a buyer whose clock
-    // sits minutes ahead of the server near site-midnight can otherwise
-    // pick a last day the server would reject.
     if (
       !selected.isValid ||
       selected.toMillis() < today.toMillis() ||
-      selected.toMillis() > today.plus({ days: GIFT_MAX_SCHEDULE_DAYS + 1 }).toMillis()
+      selected.toMillis() > today.plus({ days: GIFT_MAX_SCHEDULE_DAYS }).toMillis()
     ) {
       throw new errors.BadRequestError({
         message: 'Bad Request.',
@@ -628,12 +609,12 @@ export class GiftService {
     }
 
     if (selected.hasSame(today, 'day')) {
-      return { date: null, redeemableAt: null };
+      return { date: null, scheduledAt: null };
     }
 
     return {
       date: deliveryDate,
-      redeemableAt: selected.set({ hour: GIFT_SEND_HOUR }).toJSDate(),
+      scheduledAt: selected.set({ hour: GIFT_SEND_HOUR }).toJSDate(),
     };
   }
 
@@ -689,17 +670,13 @@ export class GiftService {
       }
       // The pre-created gift owns the checkout price. Stripe's total may
       // include automatic tax, so completion only adds settlement facts.
-      const redeemableAt =
-        gift.redeemableAt && gift.redeemableAt > purchasedAt ? gift.redeemableAt : purchasedAt;
-      const expiresAt = this.getClaimDeadline(redeemableAt);
       const purchased = gift.completePurchase({
         buyerEmail,
         buyerMemberId: member?.id ?? gift.buyerMemberId,
         stripeCheckoutSessionId: data.stripeCheckoutSessionId,
         stripePaymentIntentId: data.stripePaymentIntentId,
         purchasedAt,
-        redeemableAt,
-        expiresAt,
+        expiryTimeZone: this.siteZone(),
       });
       if (!purchased) {
         return null;
@@ -713,12 +690,9 @@ export class GiftService {
       return false;
     }
 
-    let recipientEmail: string | null = null;
+    let delivery: GiftDeliveryDispatchResult | null = null;
     try {
-      recipientEmail = await this.deps.giftDeliveryService.dispatchForGift({
-        giftId: data.giftId,
-        redeemableAt: completed.redeemableAt ?? null,
-      });
+      delivery = await this.deps.giftDeliveryService.dispatchForGift({ giftId: data.giftId });
     } catch (err) {
       logging.error(
         {
@@ -729,7 +703,7 @@ export class GiftService {
         'Failed to dispatch purchased gift delivery',
       );
     }
-    await this.sendPurchaseNotifications(completed, member, recipientEmail);
+    await this.sendPurchaseNotifications(completed, member, delivery);
     return true;
   }
 
@@ -745,8 +719,6 @@ export class GiftService {
     }
     const data = parsed.data;
     const purchasedAt = new Date();
-    const redeemableAt = purchasedAt;
-    const expiresAt = this.getClaimDeadline(redeemableAt);
 
     if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
       return false;
@@ -768,8 +740,7 @@ export class GiftService {
       stripeCheckoutSessionId: data.stripeCheckoutSessionId,
       stripePaymentIntentId: data.stripePaymentIntentId,
       purchasedAt,
-      redeemableAt,
-      expiresAt,
+      expiryTimeZone: this.siteZone(),
     });
 
     await this.deps.giftRepository.create(gift);
@@ -780,7 +751,7 @@ export class GiftService {
   private async sendPurchaseNotifications(
     gift: Gift,
     member: MemberModel | null,
-    recipientEmail: string | null,
+    delivery: GiftDeliveryDispatchResult | null,
   ): Promise<void> {
     let tier: Tier | null;
     try {
@@ -837,8 +808,8 @@ export class GiftService {
         cadence: gift.cadence,
         duration: gift.duration,
         expiresAt: gift.expiresAt!,
-        redeemableAt: gift.redeemableAt ?? gift.purchasedAt!,
-        recipientEmail,
+        scheduledAt: delivery?.scheduledAt ?? null,
+        recipientEmail: delivery?.recipientEmail ?? null,
       });
     } catch (err) {
       logging.error('Failed to send gift purchase confirmation email', err);
@@ -855,18 +826,6 @@ export class GiftService {
             message: tpl(errorMessages.giftNotFound),
             code: 'GIFT_NOT_FOUND',
           });
-        case 'not-yet-redeemable': {
-          const error = new errors.BadRequestError({
-            message: tpl(errorMessages.giftNotYetRedeemable),
-            code: 'GIFT_NOT_YET_REDEEMABLE',
-          });
-          if (gift.redeemableAt) {
-            Object.assign(error, {
-              publicContext: getSiteDateValue(gift.redeemableAt, this.siteZone()),
-            });
-          }
-          throw error;
-        }
         case 'redeemed':
           throw new errors.BadRequestError({
             message: tpl(errorMessages.giftAlreadyRedeemed),
@@ -1123,21 +1082,6 @@ export class GiftService {
       return null;
     }
 
-    // Only a live, not-yet-redeemable gift gets an availability preview; a
-    // dead gift (e.g. refunded) falls through to the regular one.
-    const redeemableCheck = gift.checkRedeemable(null);
-    if (
-      !redeemableCheck.redeemable &&
-      redeemableCheck.reason === 'not-yet-redeemable' &&
-      gift.redeemableAt
-    ) {
-      return {
-        available: false,
-        availableOn: getSiteDateValue(gift.redeemableAt, this.siteZone()),
-        redeemableAt: gift.redeemableAt,
-      };
-    }
-
     const tier = await this.deps.tiersService.api.read(gift.tierId);
 
     if (!tier) {
@@ -1147,7 +1091,6 @@ export class GiftService {
     const tierJSON = tier.toJSON();
 
     return {
-      available: true,
       cadence: gift.cadence,
       duration: gift.duration,
       tier: {

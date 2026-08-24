@@ -64,7 +64,7 @@ describe('GiftEmailService', function () {
     tierName: 'Gold',
     cadence: 'year',
     duration: 1,
-    redeemableAt: new Date('2026-04-07'),
+    scheduledAt: null,
     expiresAt: new Date('2027-04-07'),
   };
 
@@ -124,11 +124,11 @@ describe('GiftEmailService', function () {
   });
 
   it('tells the buyer when a scheduled gift will be sent', async function () {
-    const redeemableAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await service.sendPurchaseConfirmation({
       ...defaultData,
       recipientEmail: 'recipient@example.com',
-      redeemableAt,
+      scheduledAt,
     });
 
     const message = transactionalMailer.send.firstCall.firstArg;

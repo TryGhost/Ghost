@@ -117,41 +117,45 @@ describe('GiftDeliveryService', function () {
     );
     const service = createService();
 
-    assert.equal(
-      await service.dispatchForGift({ giftId: 'gift_1', redeemableAt: null }),
-      'recipient@example.com',
-    );
+    assert.deepEqual(await service.dispatchForGift({ giftId: 'gift_1' }), {
+      recipientEmail: 'recipient@example.com',
+      scheduledAt: null,
+    });
     assert.deepEqual(dispatchDelivery.firstCall.firstArg.data, { deliveryId: 'delivery_1' });
   });
 
   it('schedules a future delivery instead of dispatching it immediately', async function () {
-    const redeemableAt = new Date(Date.now() + 60_000);
-    giftDeliveryRepository.getByGiftId.resolves(buildGiftDelivery({ id: 'delivery_1' }));
+    const scheduledAt = new Date(Date.now() + 60_000);
+    giftDeliveryRepository.getByGiftId.resolves(
+      buildGiftDelivery({ id: 'delivery_1', scheduledAt }),
+    );
     const service = createService();
 
-    assert.equal(
-      await service.dispatchForGift({ giftId: 'gift_1', redeemableAt }),
-      'recipient@example.com',
-    );
-    sinon.assert.calledOnceWithExactly(giftDeliveryScheduler.scheduleAt, redeemableAt.getTime(), {
+    assert.deepEqual(await service.dispatchForGift({ giftId: 'gift_1' }), {
+      recipientEmail: 'recipient@example.com',
+      scheduledAt,
+    });
+    sinon.assert.calledOnceWithExactly(giftDeliveryScheduler.scheduleAt, scheduledAt.getTime(), {
       deliveryId: 'delivery_1',
     });
     sinon.assert.notCalled(dispatchDelivery);
   });
 
-  it('sends immediately when availability passes while the flush is being armed', async function () {
+  it('sends immediately when the scheduled time passes while the flush is being armed', async function () {
     const clock = sinon.useFakeTimers(new Date('2026-12-25T08:59:59.900Z'));
-    const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
-    giftDeliveryRepository.getByGiftId.resolves(buildGiftDelivery({ id: 'delivery_1' }));
+    const scheduledAt = new Date('2026-12-25T09:00:00.000Z');
+    giftDeliveryRepository.getByGiftId.resolves(
+      buildGiftDelivery({ id: 'delivery_1', scheduledAt }),
+    );
     giftDeliveryScheduler.scheduleAt.callsFake(async () => {
       clock.tick(200);
     });
     const service = createService();
 
-    assert.equal(
-      await service.dispatchForGift({ giftId: 'gift_1', redeemableAt }),
-      'recipient@example.com',
-    );
+    assert.deepEqual(await service.dispatchForGift({ giftId: 'gift_1' }), {
+      recipientEmail: 'recipient@example.com',
+      scheduledAt,
+    });
     assert.deepEqual(dispatchDelivery.firstCall.firstArg.data, { deliveryId: 'delivery_1' });
     clock.restore();
   });
@@ -328,13 +332,18 @@ describe('GiftDeliveryService', function () {
   });
 
   it('sends the buyer confirmation after a scheduled gift is sent', async function () {
+    giftDeliveryRepository.tryStartDelivery.resolves(
+      buildGiftDelivery({
+        status: 'sending',
+        scheduledAt: new Date('2026-01-02T00:00:00.000Z'),
+      }),
+    );
     giftRepository.getById.resolves(
       buildGift({
         buyerName: 'Buyer',
         recipientName: 'Recipient',
         personalMessage: 'Enjoy this gift',
         purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
-        redeemableAt: new Date('2026-01-02T00:00:00.000Z'),
       }),
     );
     const service = createService();
@@ -351,13 +360,18 @@ describe('GiftDeliveryService', function () {
 
   it('keeps a recipient delivery sent when the buyer confirmation fails', async function () {
     giftEmailService.sendGiftSentConfirmation.rejects(new Error('SMTP unavailable'));
+    giftDeliveryRepository.tryStartDelivery.resolves(
+      buildGiftDelivery({
+        status: 'sending',
+        scheduledAt: new Date('2026-01-02T00:00:00.000Z'),
+      }),
+    );
     giftRepository.getById.resolves(
       buildGift({
         buyerName: 'Buyer',
         recipientName: 'Recipient',
         personalMessage: 'Enjoy this gift',
         purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
-        redeemableAt: new Date('2026-01-02T00:00:00.000Z'),
       }),
     );
     const service = createService();

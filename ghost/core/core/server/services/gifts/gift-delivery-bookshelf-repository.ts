@@ -132,9 +132,11 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
       .select('gift_deliveries.*')
       .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
       .where('gifts.status', 'purchased')
-      .whereRaw('COALESCE(gifts.redeemable_at, gifts.purchased_at) <= ?', [toDatabaseDate(now)])
+      .whereRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) <= ?', [
+        toDatabaseDate(now),
+      ])
       .modify(recoverableDeliveries, staleBefore)
-      .orderByRaw('COALESCE(gifts.redeemable_at, gifts.purchased_at) ASC')
+      .orderByRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) ASC')
       .limit(limit);
 
     const deliveries: GiftDeliveryData[] = rows.map((row: unknown) => decodeGiftDeliveryRow(row));
@@ -164,18 +166,18 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     });
   }
 
-  // Distinct times only: the scheduler arms one flush job per availability
+  // Distinct times only: the scheduler arms one flush job per scheduled
   // time, so scheduled gifts clustering on a popular date collapse to a
   // single row instead of one per delivery.
   async findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]> {
     const rows = await this.knex('gift_deliveries')
-      .distinct('gifts.redeemable_at')
+      .distinct('gift_deliveries.scheduled_at')
       .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
       .where('gift_deliveries.status', 'pending')
       .where('gifts.status', 'purchased')
-      .where('gifts.redeemable_at', '>', toDatabaseDate(now));
+      .where('gift_deliveries.scheduled_at', '>', toDatabaseDate(now));
 
-    return rows.map((row) => fromDatabaseDate(row.redeemable_at));
+    return rows.map((row) => fromDatabaseDate(row.scheduled_at));
   }
 
   async tryStartDelivery(
@@ -191,7 +193,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
           .from('gifts')
           .whereRaw('gifts.id = gift_deliveries.gift_id')
           .where('gifts.status', 'purchased')
-          .whereRaw('COALESCE(gifts.redeemable_at, gifts.purchased_at) <= ?', [
+          .whereRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) <= ?', [
             toDatabaseDate(now),
           ]);
       })

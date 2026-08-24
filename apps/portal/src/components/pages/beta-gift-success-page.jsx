@@ -148,7 +148,7 @@ const BetaGiftSuccessPage = () => {
   const duration = pageData?.duration || 1;
   const deliveryMethod = pageData?.deliveryMethod;
   const deliveryDate = pageData?.deliveryDate;
-  const redeemableAt = pageData?.redeemableAt;
+  const scheduledAt = pageData?.scheduledAt;
   const siteUrl = site?.url || '';
   const siteIcon = site?.icon;
   const siteTitle = site?.title || '';
@@ -165,9 +165,9 @@ const BetaGiftSuccessPage = () => {
 
   const isEmailed = deliveryMethod === 'email';
 
-  // A delivery date without a future gift_redeemable_at means the server
+  // A delivery date without a future gift_scheduled_at means the server
   // already sent the gift.
-  const isStillScheduled = isEmailed && deliveryDate && redeemableAt && redeemableAt > Date.now();
+  const isStillScheduled = isEmailed && deliveryDate && scheduledAt && scheduledAt > Date.now();
 
   let titleText = t('Your gift is ready');
   let subtitleText = t("Send the link below to share it with whoever you'd like.");

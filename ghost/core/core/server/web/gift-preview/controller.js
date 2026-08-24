@@ -38,7 +38,7 @@ function escapeHtml(str) {
 }
 
 async function giftPreview(req, res) {
-  const { formatGiftDate, service: giftService } = require('../../services/gifts');
+  const giftService = require('../../services/gifts').service;
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsCache = require('../../../shared/settings-cache');
 
@@ -61,44 +61,21 @@ async function giftPreview(req, res) {
     return res.redirect(302, siteUrl + '/');
   }
 
-  // Before redemption availability the bearer may see the availability date
-  // but no gift details, so the tier and duration stay out of the page and
-  // its unfurl card until the scheduled date arrives.
-  const isAvailable = preview.available;
-  const ogTitle = isAvailable
-    ? getOgTitle({
-        cadence: preview.cadence,
-        duration: preview.duration,
-        tierName: preview.tier.name,
-        siteTitle,
-      })
-    : t(`You've been gifted a membership to {siteTitle}`, {
-        siteTitle,
-        interpolation: { escapeValue: false },
-      });
-  const ogDescription = isAvailable
-    ? t('Open this link to redeem your gift.')
-    : t('Your gift can be opened on {date}.', {
-        date: formatGiftDate(preview.redeemableAt, {
-          locale: settingsCache.get('locale'),
-          timeZone: settingsCache.get('timezone'),
-        }),
-        interpolation: { escapeValue: false },
-      });
+  const ogTitle = getOgTitle({
+    cadence: preview.cadence,
+    duration: preview.duration,
+    tierName: preview.tier.name,
+    siteTitle,
+  });
+  const ogDescription = t('Open this link to redeem your gift.');
   const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
   const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
   const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
 
-  // The generated card image names the tier, so it only exists once the
-  // gift is available; unfurls fall back to a plain summary until then.
-  const imageMeta = isAvailable
-    ? `<meta property="og:image" content="${escapeHtml(ogImage)}">
+  const imageMeta = `<meta property="og:image" content="${escapeHtml(ogImage)}">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">`
-    : '';
-  const twitterImageMeta = isAvailable
-    ? `\n    <meta name="twitter:image" content="${escapeHtml(ogImage)}">`
-    : '';
+    <meta property="og:image:height" content="630">`;
+  const twitterImageMeta = `\n    <meta name="twitter:image" content="${escapeHtml(ogImage)}">`;
 
   const html = `<!DOCTYPE html>
 <html>
@@ -116,7 +93,7 @@ async function giftPreview(req, res) {
     ${imageMeta}
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="${isAvailable ? 'summary_large_image' : 'summary'}">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(ogTitle)}">
     <meta name="twitter:description" content="${escapeHtml(ogDescription)}">${twitterImageMeta}
 
@@ -129,13 +106,7 @@ async function giftPreview(req, res) {
 </body>
 </html>`;
 
-  // A cached pre-availability page must not outlive the availability time,
-  // or the neutral card would linger after the gift becomes redeemable.
-  const maxAge = isAvailable
-    ? 3600
-    : Math.max(1, Math.min(3600, Math.ceil((preview.redeemableAt.getTime() - Date.now()) / 1000)));
-
-  res.set('Cache-Control', `public, max-age=${maxAge}`);
+  res.set('Cache-Control', 'public, max-age=3600');
   res.set('Content-Type', 'text/html; charset=utf-8');
   res.send(html);
 }
@@ -153,10 +124,6 @@ async function giftPreviewImage(req, res) {
 
     if (!preview) {
       throw new errors.NotFoundError({ message: `Gift not found for token` });
-    }
-
-    if (!preview.available) {
-      return res.sendStatus(404);
     }
 
     const png = await generateGiftPreviewImage({

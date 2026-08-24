@@ -74,6 +74,11 @@ export interface GiftDeliveryRecoveryResult {
   failedCount: number;
 }
 
+export interface GiftDeliveryDispatchResult {
+  recipientEmail: string;
+  scheduledAt: Date | null;
+}
+
 export class GiftDeliveryService {
   private readonly deps: GiftDeliveryServiceDeps;
 
@@ -82,7 +87,11 @@ export class GiftDeliveryService {
   }
 
   async createForCheckout(
-    { giftId, recipientEmail }: { giftId: string; recipientEmail: string },
+    {
+      giftId,
+      recipientEmail,
+      scheduledAt,
+    }: { giftId: string; recipientEmail: string; scheduledAt: Date | null },
     options: RepositoryTransactionOptions = {},
   ): Promise<string> {
     const delivery: GiftDeliveryData = {
@@ -90,6 +99,7 @@ export class GiftDeliveryService {
       giftId,
       recipientEmail,
       status: 'pending',
+      scheduledAt,
       startedAt: null,
       emailSentAt: null,
       emailProviderMessageId: null,
@@ -104,30 +114,30 @@ export class GiftDeliveryService {
 
   async dispatchForGift({
     giftId,
-    redeemableAt,
   }: {
     giftId: string;
-    redeemableAt: Date | null;
-  }): Promise<string | null> {
+  }): Promise<GiftDeliveryDispatchResult | null> {
     const delivery = await this.deps.giftDeliveryRepository.getByGiftId(giftId);
     if (!delivery || delivery.status !== 'pending') {
-      return delivery?.recipientEmail ?? null;
+      return delivery
+        ? { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt }
+        : null;
     }
 
-    if (redeemableAt && redeemableAt.getTime() > Date.now()) {
-      await this.deps.giftDeliveryScheduler.scheduleAt(redeemableAt.getTime(), {
+    if (delivery.scheduledAt && delivery.scheduledAt.getTime() > Date.now()) {
+      await this.deps.giftDeliveryScheduler.scheduleAt(delivery.scheduledAt.getTime(), {
         deliveryId: delivery.id,
       });
-      // Availability can pass while the flush was being armed, in which
+      // The scheduled time can pass while the flush is being armed, in which
       // case the armed check skipped the job — fall through and send
       // now rather than leaving the delivery for the daily backstop.
-      if (redeemableAt.getTime() > Date.now()) {
-        return delivery.recipientEmail;
+      if (delivery.scheduledAt.getTime() > Date.now()) {
+        return { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt };
       }
     }
 
     DomainEvents.dispatch(SendGiftDeliveryEvent.create({ deliveryId: delivery.id }));
-    return delivery.recipientEmail;
+    return { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt };
   }
 
   async recoverPending(batchSize = 1000): Promise<GiftDeliveryRecoveryResult> {
@@ -370,9 +380,9 @@ export class GiftDeliveryService {
     }
 
     const wasScheduled =
-      gift.redeemableAt &&
+      delivery.scheduledAt &&
       gift.purchasedAt &&
-      gift.redeemableAt.getTime() > gift.purchasedAt.getTime();
+      delivery.scheduledAt.getTime() > gift.purchasedAt.getTime();
     if (persisted && wasScheduled) {
       // Best effort: buyer confirmations have no durable retry state;
       // recipient delivery is unaffected.

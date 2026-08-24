@@ -2406,7 +2406,6 @@ module.exports = {
     stripe_payment_intent_id: { type: 'string', maxlength: 255, nullable: true, unique: true },
 
     checkout_started_at: { type: 'dateTime', nullable: true },
-    redeemable_at: { type: 'dateTime', nullable: true },
     consumes_at: { type: 'dateTime', nullable: true },
     expires_at: { type: 'dateTime', nullable: true },
 
@@ -2426,7 +2425,6 @@ module.exports = {
     consumes_soon_reminder_sent_at: { type: 'dateTime', nullable: true },
     '@@INDEXES@@': [
       ['status', 'consumes_at'],
-      ['status', 'redeemable_at'],
       ['status', 'expires_at'],
       ['status', 'checkout_started_at'],
     ],
@@ -2456,6 +2454,7 @@ module.exports = {
         isIn: [['pending', 'sending', 'sent', 'failed', 'cancelled']],
       },
     },
+    scheduled_at: { type: 'dateTime', nullable: true },
     started_at: { type: 'dateTime', nullable: true },
     email_sent_at: { type: 'dateTime', nullable: true },
     email_provider_message_id: { type: 'string', maxlength: 1000, nullable: true },
@@ -2472,6 +2471,7 @@ module.exports = {
     outcome_error: { type: 'text', maxlength: 65535, nullable: true },
     '@@INDEXES@@': [
       ['status', 'started_at'],
+      ['status', 'scheduled_at'],
       { columns: ['email_provider_message_id'], length: 31 },
     ],
   },

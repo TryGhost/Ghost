@@ -94,8 +94,8 @@ describe('Members Service Middleware', function () {
     });
 
     it('appends explicitly public error context without exposing regular context', async function () {
-      const err = new Error('This gift is not available yet.');
-      err.code = 'GIFT_NOT_YET_REDEEMABLE';
+      const err = new Error('Gift unavailable.');
+      err.code = 'GIFT_UNAVAILABLE';
       err.context = 'internal detail';
       err.publicContext = '2099-12-25';
       membersService.ssr.exchangeTokenForSession.rejects(err);
@@ -106,7 +106,7 @@ describe('Members Service Middleware', function () {
         .expect(302)
         .expect(
           'Location',
-          '/blah/?action=subscribe&errorCode=GIFT_NOT_YET_REDEEMABLE&errorContext=2099-12-25&success=false',
+          '/blah/?action=subscribe&errorCode=GIFT_UNAVAILABLE&errorContext=2099-12-25&success=false',
         );
     });
 

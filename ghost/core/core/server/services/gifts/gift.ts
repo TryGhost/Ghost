@@ -1,5 +1,6 @@
 import type { GiftCadence, GiftData, GiftDataInput, GiftStatus } from './gift-schema';
-import { GIFT_REMINDER_LEAD_DAYS } from './constants';
+import { DateTime } from 'luxon';
+import { GIFT_EXPIRY_DAYS, GIFT_REMINDER_LEAD_DAYS } from './constants';
 
 export type { GiftCadence, GiftStatus } from './gift-schema';
 
@@ -7,7 +8,6 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type RedeemableCheckFailureReason =
   | 'payment-pending'
-  | 'not-yet-redeemable'
   | 'redeemed'
   | 'consumed'
   | 'expired'
@@ -42,8 +42,7 @@ export type GiftFromPurchaseData = Pick<
   | 'stripePaymentIntentId'
 > & {
   purchasedAt: Date;
-  redeemableAt?: Date;
-  expiresAt: Date;
+  expiryTimeZone: string;
 };
 
 export type GiftFromCheckoutData = Pick<
@@ -59,8 +58,10 @@ export type GiftFromCheckoutData = Pick<
   | 'buyerName'
   | 'recipientName'
   | 'personalMessage'
-  | 'redeemableAt'
->;
+> & {
+  expiryAnchor: Date | null;
+  expiryTimeZone: string;
+};
 
 export interface CompleteGiftPurchaseData {
   buyerEmail: string | null;
@@ -68,8 +69,14 @@ export interface CompleteGiftPurchaseData {
   stripeCheckoutSessionId: string;
   stripePaymentIntentId: string;
   purchasedAt: Date;
-  redeemableAt?: Date;
-  expiresAt: Date;
+  expiryTimeZone: string;
+}
+
+function calculateGiftExpiration(anchor: Date, timeZone: string): Date {
+  return DateTime.fromJSDate(anchor, { zone: timeZone })
+    .plus({ days: GIFT_EXPIRY_DAYS })
+    .endOf('day')
+    .toJSDate();
 }
 
 export class Gift implements GiftData {
@@ -88,7 +95,6 @@ export class Gift implements GiftData {
   stripeCheckoutSessionId: string | null;
   stripePaymentIntentId: string | null;
   checkoutStartedAt: Date | null;
-  redeemableAt: Date | null;
   consumesAt: Date | null;
   expiresAt: Date | null;
   status: GiftStatus;
@@ -115,7 +121,6 @@ export class Gift implements GiftData {
     this.stripeCheckoutSessionId = data.stripeCheckoutSessionId;
     this.stripePaymentIntentId = data.stripePaymentIntentId;
     this.checkoutStartedAt = data.checkoutStartedAt ?? null;
-    this.redeemableAt = data.redeemableAt ?? null;
     this.consumesAt = data.consumesAt;
     this.purchasedAt = data.purchasedAt;
     this.expiresAt = data.expiresAt;
@@ -128,13 +133,14 @@ export class Gift implements GiftData {
   }
 
   static fromPurchase(data: GiftFromPurchaseData) {
+    const { expiryTimeZone, ...giftData } = data;
+
     return new Gift({
-      ...data,
+      ...giftData,
       redeemerMemberId: null,
       consumesAt: null,
       checkoutStartedAt: data.purchasedAt,
-      redeemableAt: data.redeemableAt ?? data.purchasedAt,
-      expiresAt: data.expiresAt,
+      expiresAt: calculateGiftExpiration(data.purchasedAt, expiryTimeZone),
       status: 'purchased',
       purchasedAt: data.purchasedAt,
       redeemedAt: null,
@@ -146,15 +152,16 @@ export class Gift implements GiftData {
   }
 
   static fromCheckout(data: GiftFromCheckoutData) {
+    const { expiryAnchor, expiryTimeZone, ...giftData } = data;
+
     return new Gift({
-      ...data,
+      ...giftData,
       redeemerMemberId: null,
       stripeCheckoutSessionId: null,
       stripePaymentIntentId: null,
       checkoutStartedAt: new Date(),
-      redeemableAt: data.redeemableAt,
       consumesAt: null,
-      expiresAt: null,
+      expiresAt: expiryAnchor ? calculateGiftExpiration(expiryAnchor, expiryTimeZone) : null,
       status: 'payment_pending',
       purchasedAt: null,
       redeemedAt: null,
@@ -170,10 +177,12 @@ export class Gift implements GiftData {
       return null;
     }
 
+    const { expiryTimeZone, ...purchaseData } = data;
+
     return new Gift({
       ...this,
-      ...data,
-      redeemableAt: data.redeemableAt ?? data.purchasedAt,
+      ...purchaseData,
+      expiresAt: this.expiresAt ?? calculateGiftExpiration(data.purchasedAt, expiryTimeZone),
       status: 'purchased',
     });
   }
@@ -227,10 +236,6 @@ export class Gift implements GiftData {
 
     if (this.isRefunded()) {
       return { redeemable: false, reason: 'refunded' };
-    }
-
-    if (this.redeemableAt !== null && now < this.redeemableAt) {
-      return { redeemable: false, reason: 'not-yet-redeemable' };
     }
 
     if (this.isExpired() || this.isPastClaimDeadline(now)) {

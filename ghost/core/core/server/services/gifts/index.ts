@@ -96,7 +96,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     name: 'gift_delivery',
     findScheduledTimes: async () => {
       const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(new Date());
-      return scheduled.map((redeemableAt) => redeemableAt.getTime());
+      return scheduled.map((scheduledAt) => scheduledAt.getTime());
     },
   });
   const giftDeliveryService = new GiftDeliveryService({

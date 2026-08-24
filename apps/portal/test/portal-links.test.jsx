@@ -638,14 +638,14 @@ describe('Portal Data links:', () => {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 60);
       const deliveryDateValue = toDateValue(futureDate);
-      const redeemableAtValue = futureDate.getTime();
+      const scheduledAtValue = futureDate.getTime();
       const formattedDeliveryDate = futureDate.toLocaleDateString('en-GB', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       });
-      window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email&gift_delivery_date=${deliveryDateValue}&gift_redeemable_at=${redeemableAtValue}`;
-      window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email&gift_delivery_date=${deliveryDateValue}&gift_redeemable_at=${redeemableAtValue}`;
+      window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email&gift_delivery_date=${deliveryDateValue}&gift_scheduled_at=${scheduledAtValue}`;
+      window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email&gift_delivery_date=${deliveryDateValue}&gift_scheduled_at=${scheduledAtValue}`;
       window.location.hash = '';
       window.location.pathname = '/';
 

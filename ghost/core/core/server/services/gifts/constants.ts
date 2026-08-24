@@ -5,7 +5,7 @@ export const GIFT_EXPIRY_DAYS = 365;
 export const GIFT_MAX_SCHEDULE_DAYS = 365;
 // Site-local hour a scheduled delivery is sent at. Portal never derives
 // this: the exact send instant travels in the success URL as
-// gift_redeemable_at.
+// gift_scheduled_at.
 export const GIFT_SEND_HOUR = 9;
 export const GIFT_REMINDER_LEAD_DAYS = 7;
 export const GIFT_REMINDER_FLOOR_DAYS = 3;

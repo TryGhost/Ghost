@@ -6,13 +6,13 @@ const {
 
 module.exports = combineNonTransactionalMigrations(
   createAddColumnMigration(
-    'gifts',
-    'redeemable_at',
+    'gift_deliveries',
+    'scheduled_at',
     {
       type: 'dateTime',
       nullable: true,
     },
     { algorithm: 'auto' },
   ),
-  createAddIndexMigration('gifts', ['status', 'redeemable_at']),
+  createAddIndexMigration('gift_deliveries', ['status', 'scheduled_at']),
 );

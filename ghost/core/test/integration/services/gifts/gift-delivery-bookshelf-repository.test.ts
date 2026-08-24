@@ -37,13 +37,13 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
     deliveryStatus = 'pending',
     giftStatus = 'purchased',
     purchasedAt = new Date('2026-01-01T00:00:00.000Z'),
-    redeemableAt = purchasedAt,
+    scheduledAt = null,
   }: {
     startedAt?: Date | null;
     deliveryStatus?: string;
     giftStatus?: string;
     purchasedAt?: Date;
-    redeemableAt?: Date;
+    scheduledAt?: Date | null;
   } = {}) {
     giftSequence += 1;
     const gift = await models.Gift.add({
@@ -62,7 +62,6 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
       stripe_checkout_session_id: `cs_claim_${giftSequence}`,
       stripe_payment_intent_id: `pi_claim_${giftSequence}`,
       checkout_started_at: purchasedAt,
-      redeemable_at: redeemableAt,
       consumes_at: null,
       expires_at: new Date(purchasedAt.getTime() + 365 * 24 * 60 * 60 * 1000),
       status: giftStatus,
@@ -77,6 +76,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
       gift_id: gift.id,
       recipient_email: `recipient-${giftSequence}@example.com`,
       status: deliveryStatus,
+      scheduled_at: scheduledAt,
       started_at: startedAt,
       email_sent_at: null,
       email_provider_message_id: null,
@@ -223,11 +223,11 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
     assert.ok(deliveries.every(({ gift }) => gift.status === 'purchased'));
   });
 
-  it('keeps future deliveries pending until gift redemption availability', async function () {
+  it('keeps future deliveries pending until their scheduled time', async function () {
     const now = new Date('2026-08-18T12:00:00.000Z');
     const future = await createPendingEmailGift({
       purchasedAt: new Date('2026-08-18T10:00:00.000Z'),
-      redeemableAt: new Date('2026-12-25T09:00:00.000Z'),
+      scheduledAt: new Date('2026-12-25T09:00:00.000Z'),
     });
 
     assert.equal(

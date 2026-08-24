@@ -13,13 +13,13 @@ function setup({
   monthlyPrice,
   deliveryMethod = 'link',
   deliveryDate,
-  redeemableAt,
+  scheduledAt,
 }: {
   Page: typeof GiftSuccessPage;
   monthlyPrice: ReturnType<typeof getPriceData> | null;
   deliveryMethod?: 'email' | 'link';
   deliveryDate?: string;
-  redeemableAt?: number;
+  scheduledAt?: number;
 }) {
   const product = {
     ...getProductData({
@@ -44,7 +44,7 @@ function setup({
         duration: 3,
         deliveryMethod,
         deliveryDate,
-        redeemableAt,
+        scheduledAt,
       },
     },
   });
@@ -105,7 +105,7 @@ describe('BetaGiftSuccessPage', () => {
       monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
       deliveryMethod: 'email',
       deliveryDate,
-      redeemableAt: futureDate.getTime(),
+      scheduledAt: futureDate.getTime(),
     });
 
     expect(getByText('Your gift is scheduled')).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('BetaGiftSuccessPage', () => {
       monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
       deliveryMethod: 'email',
       deliveryDate: toDateValue(futureDate),
-      redeemableAt: Date.now() - 60_000,
+      scheduledAt: Date.now() - 60_000,
     });
 
     expect(getByText('Your gift is on its way')).toBeInTheDocument();

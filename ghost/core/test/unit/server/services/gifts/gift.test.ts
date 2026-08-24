@@ -15,7 +15,7 @@ describe('Gift', function () {
     stripeCheckoutSessionId: 'cs_123',
     stripePaymentIntentId: 'pi_456',
     purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-    expiresAt: new Date('2027-08-19T06:59:59.999Z'),
+    expiryTimeZone: 'America/Los_Angeles',
   };
 
   describe('fromPurchase', function () {
@@ -29,7 +29,7 @@ describe('Gift', function () {
       const gift = Gift.fromPurchase(purchaseData);
 
       assert.equal(gift.purchasedAt?.toISOString(), purchaseData.purchasedAt.toISOString());
-      assert.equal(gift.expiresAt?.toISOString(), purchaseData.expiresAt.toISOString());
+      assert.equal(gift.expiresAt?.toISOString(), '2027-08-19T06:59:59.999Z');
     });
 
     it('sets null defaults for redemption fields', function () {
@@ -74,6 +74,8 @@ describe('Gift', function () {
         duration: 1,
         currency: 'usd',
         amount: 5000,
+        expiryAnchor: null,
+        expiryTimeZone: 'America/Los_Angeles',
       });
 
       assert.equal(gift.status, 'payment_pending');
@@ -92,13 +94,44 @@ describe('Gift', function () {
         stripeCheckoutSessionId: 'cs_123',
         stripePaymentIntentId: 'pi_123',
         purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-        expiresAt: new Date('2027-08-19T06:59:59.999Z'),
+        expiryTimeZone: 'America/Los_Angeles',
       });
       assert.equal(purchased?.status, 'purchased');
       assert.equal(purchased?.recipientName, 'Recipient');
       assert.equal(purchased?.currency, 'usd');
       assert.equal(purchased?.amount, 5000);
       assert.ok(purchased?.expiresAt);
+    });
+
+    it('owns the scheduled expiry deadline before purchase completes', function () {
+      const gift = Gift.fromCheckout({
+        token: 'pending-token',
+        buyerEmail: null,
+        buyerMemberId: null,
+        buyerName: 'Buyer',
+        recipientName: 'Recipient',
+        personalMessage: 'Enjoy this gift',
+        tierId: 'tier_1',
+        cadence: 'year',
+        duration: 1,
+        currency: 'usd',
+        amount: 5000,
+        expiryAnchor: new Date('2026-12-25T17:00:00.000Z'),
+        expiryTimeZone: 'America/Los_Angeles',
+      });
+
+      assert.equal(gift.expiresAt?.toISOString(), '2027-12-26T07:59:59.999Z');
+
+      const purchased = gift.completePurchase({
+        buyerEmail: 'buyer@example.com',
+        buyerMemberId: null,
+        stripeCheckoutSessionId: 'cs_123',
+        stripePaymentIntentId: 'pi_123',
+        purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
+        expiryTimeZone: 'America/Los_Angeles',
+      });
+
+      assert.equal(purchased?.expiresAt?.toISOString(), '2027-12-26T07:59:59.999Z');
     });
   });
 
@@ -201,17 +234,6 @@ describe('Gift', function () {
       });
     });
 
-    it('blocks redemption before the gift availability time', function () {
-      const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
-      const gift = buildGift({ redeemableAt });
-
-      assert.deepEqual(gift.checkRedeemable(null, new Date('2026-12-25T08:59:59.999Z')), {
-        redeemable: false,
-        reason: 'not-yet-redeemable',
-      });
-      assert.deepEqual(gift.checkRedeemable(null, redeemableAt), { redeemable: true });
-    });
-
     for (const { name, overrides, memberStatus, reason } of testCases) {
       it(`returns ${reason} error when state is ${name}`, function () {
         const gift = buildGift(overrides);
@@ -305,7 +327,6 @@ describe('Gift', function () {
       const gift = buildGift({
         cadence: 'month',
         duration: 6,
-        redeemableAt: new Date('2026-12-25T09:00:00.000Z'),
       });
       const redeemedAt = new Date('2027-02-10T12:00:00.000Z');
 

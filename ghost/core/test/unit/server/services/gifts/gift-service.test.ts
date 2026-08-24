@@ -279,9 +279,14 @@ describe('GiftService', function () {
         duration: 1,
         currency: 'usd',
         amount: 5000,
+        expiryAnchor: null,
+        expiryTimeZone: 'Etc/UTC',
       }).bindCheckoutSession('cs_pending')!;
       giftRepository.getById.resolves(pending);
-      giftDeliveryService.dispatchForGift.resolves('recipient@example.com');
+      giftDeliveryService.dispatchForGift.resolves({
+        recipientEmail: 'recipient@example.com',
+        scheduledAt: null,
+      });
       const service = createService();
 
       assert.equal(
@@ -322,6 +327,8 @@ describe('GiftService', function () {
         duration: 1,
         currency: 'usd',
         amount: 5000,
+        expiryAnchor: null,
+        expiryTimeZone: 'Etc/UTC',
       }).bindCheckoutSession('cs_pending')!;
     }
 
@@ -443,9 +450,9 @@ describe('GiftService', function () {
       );
     });
 
-    it('anchors the claim window to scheduled redemption availability', async function () {
+    it('preserves the Gift-owned deadline anchored to scheduled delivery', async function () {
       const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
-      const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
+      const scheduledAt = new Date('2026-12-25T09:00:00.000Z');
       const pending = Gift.fromCheckout({
         token: 'pending-token',
         buyerEmail: 'buyer@example.com',
@@ -453,14 +460,19 @@ describe('GiftService', function () {
         buyerName: 'Buyer',
         recipientName: 'Recipient',
         personalMessage: null,
-        redeemableAt,
         tierId: 'tier_1',
         cadence: 'year',
         duration: 1,
         currency: 'usd',
         amount: 5000,
+        expiryAnchor: scheduledAt,
+        expiryTimeZone: 'Etc/UTC',
       }).bindCheckoutSession('cs_pending')!;
       giftRepository.getById.resolves(pending);
+      giftDeliveryService.dispatchForGift.resolves({
+        recipientEmail: 'recipient@example.com',
+        scheduledAt,
+      });
       const service = createService({ timezone: 'Etc/UTC' });
 
       await service.completePurchase({
@@ -474,18 +486,18 @@ describe('GiftService', function () {
       });
 
       const purchased = giftRepository.update.firstCall.firstArg;
-      assert.equal(purchased.redeemableAt.toISOString(), '2026-12-25T09:00:00.000Z');
       assert.equal(purchased.expiresAt.toISOString(), '2027-12-25T23:59:59.999Z');
       sinon.assert.calledWith(
         giftEmailService.sendPurchaseConfirmation,
-        sinon.match({ redeemableAt }),
+        sinon.match({ scheduledAt }),
       );
       clock.restore();
     });
 
-    it('starts availability and the claim window at purchase when scheduled checkout completes late', async function () {
+    it('does not move scheduled expiry when checkout completes after the delivery date', async function () {
       const purchasedAt = new Date('2026-12-26T12:00:00.000Z');
       const clock = sinon.useFakeTimers(purchasedAt);
+      const scheduledAt = new Date('2026-12-25T09:00:00.000Z');
       const pending = Gift.fromCheckout({
         token: 'pending-token',
         buyerEmail: 'buyer@example.com',
@@ -493,14 +505,19 @@ describe('GiftService', function () {
         buyerName: 'Buyer',
         recipientName: 'Recipient',
         personalMessage: null,
-        redeemableAt: new Date('2026-12-25T09:00:00.000Z'),
         tierId: 'tier_1',
         cadence: 'year',
         duration: 1,
         currency: 'usd',
         amount: 5000,
+        expiryAnchor: scheduledAt,
+        expiryTimeZone: 'Etc/UTC',
       }).bindCheckoutSession('cs_pending')!;
       giftRepository.getById.resolves(pending);
+      giftDeliveryService.dispatchForGift.resolves({
+        recipientEmail: 'recipient@example.com',
+        scheduledAt,
+      });
       const service = createService({ timezone: 'Etc/UTC' });
 
       await service.completePurchase({
@@ -514,11 +531,10 @@ describe('GiftService', function () {
       });
 
       const purchased = giftRepository.update.firstCall.firstArg;
-      assert.equal(purchased.redeemableAt.toISOString(), purchasedAt.toISOString());
-      assert.equal(purchased.expiresAt.toISOString(), '2027-12-26T23:59:59.999Z');
+      assert.equal(purchased.expiresAt.toISOString(), '2027-12-25T23:59:59.999Z');
       sinon.assert.calledWith(
         giftEmailService.sendPurchaseConfirmation,
-        sinon.match({ redeemableAt: purchasedAt }),
+        sinon.match({ scheduledAt }),
       );
       clock.restore();
     });
@@ -787,42 +803,22 @@ describe('GiftService', function () {
   });
 
   describe('getPreview', function () {
-    it('returns full gift details once the gift is available', async function () {
-      const gift = buildGift({ redeemableAt: new Date(Date.now() - 60_000) });
+    it('returns full gift details immediately after purchase', async function () {
+      const gift = buildGift();
       giftRepository.getByToken.resolves(gift);
       const service = createService();
 
       const preview = await service.getPreview(gift.token);
 
       assert.ok(preview);
-      assert.equal(preview.available, true);
-      if (preview.available) {
-        assert.equal(preview.tier.name, 'Bronze');
-        assert.equal(preview.duration, gift.duration);
-      }
-    });
-
-    it('hides gift details before scheduled redemption availability', async function () {
-      const gift = buildGift({ redeemableAt: new Date('2099-12-25T17:00:00.000Z') });
-      giftRepository.getByToken.resolves(gift);
-      const service = createService({ timezone: 'America/Los_Angeles' });
-
-      const preview = await service.getPreview(gift.token);
-
-      assert.ok(preview);
-      assert.equal(preview.available, false);
-      if (!preview.available) {
-        assert.equal(preview.availableOn, '2099-12-25');
-        assert.equal(preview.redeemableAt.getTime(), gift.redeemableAt!.getTime());
-      }
-      sinon.assert.notCalled(tiersService.api.read);
+      assert.equal(preview.tier.name, 'Bronze');
+      assert.equal(preview.duration, gift.duration);
     });
 
     it('does not promise an availability date for a refunded scheduled gift', async function () {
       const gift = buildGift({
         status: 'refunded',
         refundedAt: new Date('2026-06-01T00:00:00.000Z'),
-        redeemableAt: new Date('2099-12-25T17:00:00.000Z'),
       });
       giftRepository.getByToken.resolves(gift);
       const service = createService();
@@ -830,7 +826,7 @@ describe('GiftService', function () {
       const preview = await service.getPreview(gift.token);
 
       assert.ok(preview);
-      assert.equal(preview.available, true);
+      assert.equal(preview.tier.name, 'Bronze');
     });
   });
 
@@ -863,24 +859,14 @@ describe('GiftService', function () {
       );
     });
 
-    it('returns a privacy-safe availability date before a scheduled gift is redeemable', async function () {
-      const gift = buildGift({
-        redeemableAt: new Date('2099-12-25T17:00:00.000Z'),
-      });
+    it('allows a purchased gift to be redeemed before scheduled delivery', async function () {
+      const gift = buildGift();
       giftRepository.getByToken.resolves(gift);
 
-      const service = createService({ timezone: 'America/Los_Angeles' });
-      await assert.rejects(
-        () => service.getRedeemable({ token: gift.token, memberStatus: null }),
-        (err: any) => {
-          assert.equal(err.errorType, 'BadRequestError');
-          assert.equal(err.message, 'This gift is not available yet.');
-          assert.equal(err.code, 'GIFT_NOT_YET_REDEEMABLE');
-          assert.equal(err.context, undefined);
-          assert.equal(err.publicContext, '2099-12-25');
-          return true;
-        },
-      );
+      const service = createService();
+      const redemption = await service.getRedeemable({ token: gift.token, memberStatus: null });
+
+      assert.equal(redemption.token, gift.token);
     });
 
     const testCases = [

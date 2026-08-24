@@ -58,7 +58,7 @@ interface PurchaseConfirmationData {
   cadence: GiftCadence;
   duration: number;
   expiresAt: Date;
-  redeemableAt: Date;
+  scheduledAt: Date | null;
   recipientEmail?: string | null;
 }
 
@@ -175,7 +175,7 @@ export class GiftEmailService {
     cadence,
     duration,
     expiresAt,
-    redeemableAt,
+    scheduledAt,
     recipientEmail = null,
   }: PurchaseConfirmationData): Promise<void> {
     const siteDomain = this.siteDomain;
@@ -183,8 +183,8 @@ export class GiftEmailService {
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
     const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
-    const scheduled = Boolean(recipientEmail) && redeemableAt.getTime() > Date.now();
-    const deliveryDate = scheduled ? this.formatDate(redeemableAt) : null;
+    const scheduled = Boolean(recipientEmail) && scheduledAt && scheduledAt.getTime() > Date.now();
+    const deliveryDate = scheduled ? this.formatDate(scheduledAt) : null;
     const { html, text } = await this.renderer.renderPurchaseConfirmation({
       siteTitle,
       siteUrl,

@@ -179,6 +179,7 @@ describe('GiftService interface', function () {
       {
         giftId: 'gift_1',
         recipientEmail: 'recipient@example.com',
+        scheduledAt: null,
       },
       { transacting: 'trx' },
     );
@@ -187,7 +188,7 @@ describe('GiftService interface', function () {
 
   it('stores a scheduled email delivery as 09:00 in the publication timezone', async function () {
     const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
-    const { service, checkoutAdapter, giftRepository } = createService({
+    const { service, checkoutAdapter, giftRepository, giftDeliveryService } = createService({
       customizationEnabled: true,
       timezone: 'America/Los_Angeles',
     });
@@ -210,12 +211,19 @@ describe('GiftService interface', function () {
 
     const gift = giftRepository.create.firstCall.firstArg;
     const successUrl = new URL(checkoutAdapter.createSession.firstCall.firstArg.successUrl);
-    assert.equal(gift.redeemableAt.toISOString(), '2026-12-25T17:00:00.000Z');
-    assert.equal(successUrl.searchParams.get('gift_delivery_date'), '2026-12-25');
-    assert.equal(
-      successUrl.searchParams.get('gift_redeemable_at'),
-      String(gift.redeemableAt.getTime()),
+    const scheduledAt = new Date('2026-12-25T17:00:00.000Z');
+    assert.equal(gift.expiresAt.toISOString(), '2027-12-26T07:59:59.999Z');
+    sinon.assert.calledOnceWithExactly(
+      giftDeliveryService.createForCheckout,
+      {
+        giftId: 'gift_1',
+        recipientEmail: 'recipient@example.com',
+        scheduledAt,
+      },
+      { transacting: 'trx' },
     );
+    assert.equal(successUrl.searchParams.get('gift_delivery_date'), '2026-12-25');
+    assert.equal(successUrl.searchParams.get('gift_scheduled_at'), String(scheduledAt.getTime()));
     clock.restore();
   });
 
@@ -223,15 +231,13 @@ describe('GiftService interface', function () {
     const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
     const { service, checkoutAdapter } = createService({ customizationEnabled: true });
 
-    // The bound carries one day of slack over the picker's 365 to absorb
-    // client-server clock skew, so the first rejected day is today+367
     await assert.rejects(
       () =>
         service.startCheckout({
           tierId: 'tier_1',
           cadence: 'year',
           deliveryMethod: 'email',
-          deliveryDate: '2027-08-20',
+          deliveryDate: '2027-08-19',
           recipientEmail: 'recipient@example.com',
           buyerName: 'Buyer',
           successUrl: 'https://example.com/',
@@ -246,6 +252,30 @@ describe('GiftService interface', function () {
     );
 
     sinon.assert.notCalled(checkoutAdapter.createSession);
+    clock.restore();
+  });
+
+  it('accepts delivery exactly 365 publication-calendar days ahead', async function () {
+    const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+
+    await service.startCheckout({
+      tierId: 'tier_1',
+      cadence: 'year',
+      deliveryMethod: 'email',
+      deliveryDate: '2027-08-18',
+      recipientEmail: 'recipient@example.com',
+      buyerName: 'Buyer',
+      successUrl: 'https://example.com/',
+      buyer: {
+        memberId: null,
+        email: 'buyer@example.com',
+        name: null,
+        isAuthenticated: false,
+      },
+    });
+
+    sinon.assert.calledOnce(checkoutAdapter.createSession);
     clock.restore();
   });
 

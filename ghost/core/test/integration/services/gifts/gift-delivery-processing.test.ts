@@ -35,10 +35,10 @@ describe('Gift delivery processing', function () {
 
   async function createPendingEmailGift({
     purchasedAt,
-    redeemableAt = null,
+    scheduledAt = null,
   }: {
     purchasedAt?: Date;
-    redeemableAt?: Date | null;
+    scheduledAt?: Date | null;
   } = {}) {
     giftSequence += 1;
     const now = new Date();
@@ -62,7 +62,6 @@ describe('Gift delivery processing', function () {
       expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
       status: 'purchased',
       purchased_at: purchasedAt ?? now,
-      redeemable_at: redeemableAt,
       redeemed_at: null,
       consumed_at: null,
       expired_at: null,
@@ -73,6 +72,7 @@ describe('Gift delivery processing', function () {
       gift_id: gift.id,
       recipient_email: `recipient-${giftSequence}@example.com`,
       status: 'pending',
+      scheduled_at: scheduledAt,
       started_at: null,
       email_sent_at: null,
       email_provider_message_id: null,
@@ -137,7 +137,7 @@ describe('Gift delivery processing', function () {
     const now = Date.now();
     const { delivery } = await createPendingEmailGift({
       purchasedAt: new Date(now - 2 * 60 * 60 * 1000),
-      redeemableAt: new Date(now - 60 * 60 * 1000),
+      scheduledAt: new Date(now - 60 * 60 * 1000),
     });
 
     DomainEvents.dispatch(SendGiftDeliveryEvent.create({ deliveryId: delivery.id }));

@@ -44,8 +44,12 @@ _Avoid_: Gift activation
 Communicating a gift subscription's redemption link to its recipient by email. Delivery does not claim the gift or begin gifted access.
 _Avoid_: Gift redemption, gift activation
 
+**Scheduled delivery**:
+A gift delivery whose recipient email is planned for a future delivery date. Scheduling delivery does not delay redemption availability.
+_Avoid_: Scheduled gift, scheduled redemption
+
 **Delivery date**:
-The publication-local calendar date selected for a scheduled emailed gift. At 09:00 in the publication timezone it establishes redemption availability and makes the recipient email due; the current site-calendar date means immediate delivery.
+The publication-local calendar date selected for a scheduled delivery. At 09:00 in the publication timezone it makes the recipient email due; the current site-calendar date means immediate delivery. It does not delay redemption availability.
 _Avoid_: Delivery time, deliver-at date
 
 **Personal message**:
@@ -67,12 +71,16 @@ _Avoid_: Gift sent, delivery state
 ### Time and lifecycle
 
 **Redemption availability**:
-The instant from which a gift subscription may be claimed. It begins at purchase for an immediately available gift and at 09:00 on the delivery date for a scheduled emailed gift; before then, a redemption-link bearer may see the availability date but no gift details.
+The instant from which a gift subscription may be claimed. It begins at purchase for every gift, including one whose recipient email is scheduled for later.
 _Avoid_: Gift activation, delivery time
 
 **Claim window**:
-The 365-site-calendar-day period in which an unredeemed gift subscription may be claimed. It begins at redemption availability.
+The period from gift purchase until gift expiration in which an unredeemed gift subscription may be claimed. It may exceed 365 days when delivery is scheduled for a future date.
 _Avoid_: Gift duration, access period
+
+**Expiry anchor**:
+The publication-local calendar date from which gift expiration is calculated. It is the selected delivery date for a scheduled delivery and the gift purchase date otherwise.
+_Avoid_: Claim-window start, redemption availability
 
 **Gift duration**:
 The total length of gifted access, measured from redemption.
@@ -83,7 +91,7 @@ The monthly or yearly membership price basis used to value a gift subscription. 
 _Avoid_: Gift duration, renewal interval
 
 **Gift expiration**:
-The end of an unredeemed gift subscription's claim window.
+The end of an unredeemed gift subscription's claim window. It falls 365 site-calendar days after the expiry anchor; later email handling does not move it.
 _Avoid_: Gift consumption
 
 **Gift consumption**:
