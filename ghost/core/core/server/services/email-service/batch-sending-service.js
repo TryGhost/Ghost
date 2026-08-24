@@ -322,6 +322,24 @@ class BatchSendingService {
    * @throws {errors.EmailError} If one of the batches fails
    */
   async sendEmail(email) {
+    // Track the whole operation (batch creation + sending) so onShutdown awaits it
+    // before ghost-server schedules process.exit. Covers both creating batches and the
+    // Mailgun POST + EmailBatch status write, so neither is killed mid-flight.
+    const work = this.#sendEmailInner(email);
+    this.#inFlight.add(work);
+    try {
+      return await work;
+    } finally {
+      this.#inFlight.delete(work);
+    }
+  }
+
+  /**
+   * @private
+   * @param {Email} email
+   * @throws {errors.EmailError} If one of the batches fails
+   */
+  async #sendEmailInner(email) {
     logging.info(`Sending email ${email.id}`);
 
     // Load required relations
@@ -349,16 +367,16 @@ class BatchSendingService {
       },
     );
 
-    let batches = await this.retryDb(
+    const existingBatches = await this.retryDb(
       async () => {
         return await this.getBatches(email);
       },
       { ...this.#getBeforeRetryConfig(email), description: `getBatches for email ${email.id}` },
     );
 
-    if (batches.length === 0) {
-      batches = await this.createBatches({ email, newsletter, post });
-    }
+    // Always reconcile: createBatches is idempotent and resumes an interrupted creation
+    // (e.g. a container restart) instead of treating any existing batches as complete.
+    const batches = await this.createBatches({ email, newsletter, post, existingBatches });
     await this.sendBatches({ email, batches, post, newsletter });
   }
 
@@ -378,11 +396,13 @@ class BatchSendingService {
   }
 
   /**
+   * Idempotent: builds only the batches not already present, resuming an interrupted
+   * creation from each segment's watermark. Returns the full set (existing + created).
    * @private
-   * @param {{email: Email, newsletter: Newsletter, post: Post}} data
+   * @param {{email: Email, newsletter: Newsletter, post: Post, existingBatches?: EmailBatch[]}} data
    * @returns {Promise<EmailBatch[]>}
    */
-  async createBatches({ email, post, newsletter }) {
+  async createBatches({ email, post, newsletter, existingBatches = [] }) {
     logging.info(`Creating batches for email ${email.id}`);
 
     // Infinity implies all emails should be sent from the primary domain
@@ -393,10 +413,32 @@ class BatchSendingService {
         : Infinity;
     }
 
+    // What a prior run already built, grouped by segment. We resume from each segment's
+    // watermark rather than rebuilding, which keeps this idempotent.
+    const coverage = await this.retryDb(
+      async () => {
+        return await this.#getExistingCoverage(email.id);
+      },
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `getExistingCoverage for email ${email.id}`,
+      },
+    );
+
     const segments = await this.#emailRenderer.getSegments(post);
-    const batches = [];
+    // Seed with existing batches so the returned set and the domain-warmup accounting
+    // below span existing + newly created.
+    const batches = [...existingBatches];
     const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
     let totalCount = 0;
+    for (const { count } of coverage.values()) {
+      totalCount += count;
+    }
+    if (totalCount > 0) {
+      logging.info(
+        `Resuming batch creation for email ${email.id}: ${totalCount} recipient(s) across ${coverage.size} segment(s) already built`,
+      );
+    }
 
     for (const segment of segments) {
       logging.info(`Creating batches for email ${email.id} segment ${segment}`);
@@ -412,9 +454,22 @@ class BatchSendingService {
 
       // Start with the id of the email, which is an objectId. We'll only fetch members that are created before the email. This is a special property of ObjectIds.
       // Note: we use ID and not created_at, because imported members could set a created_at in the future or past and avoid limit checking.
-      let lastId = email.id;
+      // On a resume, start below this segment's watermark so we only build the un-built
+      // tail (coverage is a contiguous id-descending prefix, so nothing is skipped).
+      const segmentCoverage = coverage.get(segment ?? null);
+      let lastId = segmentCoverage ? segmentCoverage.minMemberId : email.id;
 
       while (!members || lastId) {
+        // Stop claiming new creation work on shutdown. Bailing at a batch boundary
+        // (createBatch is atomic) leaves a consistent partial that resumes next boot;
+        // SHUTDOWN_CODE keeps the email in `submitting` rather than sending it incomplete.
+        if (this.#shuttingDown) {
+          throw new errors.InternalServerError({
+            code: SHUTDOWN_CODE,
+            message: 'Email batch creation stopped because the container is shutting down',
+          });
+        }
+
         logging.info(
           `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`,
         );
@@ -505,6 +560,35 @@ class BatchSendingService {
       await email.save(newEmailUpdate, { patch: true, require: false, autoRefresh: false });
     }
     return batches;
+  }
+
+  /**
+   * Coverage already built for an email, grouped by member segment. Batches are created
+   * atomically in descending member-id order, so MIN(member_id) is the watermark to
+   * resume below.
+   * @private
+   * @param {string} emailId
+   * @returns {Promise<Map<string|null, {count: number, minMemberId: string}>>}
+   */
+  async #getExistingCoverage(emailId) {
+    const rows =
+      (await this.#db
+        .knex('email_recipients as r')
+        .join('email_batches as b', 'r.batch_id', 'b.id')
+        .where('r.email_id', emailId)
+        .groupBy('b.member_segment')
+        .select('b.member_segment as member_segment')
+        .count('r.id as count')
+        .min('r.member_id as min_member_id')) || [];
+
+    const coverage = new Map();
+    for (const row of rows) {
+      coverage.set(row.member_segment ?? null, {
+        count: Number(row.count),
+        minMemberId: row.min_member_id,
+      });
+    }
+    return coverage;
   }
 
   /**
@@ -603,20 +687,6 @@ class BatchSendingService {
   }
 
   async sendBatches({ email, batches, post, newsletter }) {
-    // Track the in-flight call so onShutdown can await it. The cleanup task
-    // must wait for the Mailgun POST + EmailBatch DB write to settle before
-    // ghost-server schedules process.exit, otherwise mid-flight requests get
-    // killed and EmailBatch rows never record what Mailgun actually accepted.
-    const work = this.#sendBatchesInner({ email, batches, post, newsletter });
-    this.#inFlight.add(work);
-    try {
-      return await work;
-    } finally {
-      this.#inFlight.delete(work);
-    }
-  }
-
-  async #sendBatchesInner({ email, batches, post, newsletter }) {
     logging.info(`Sending ${batches.length} batches for email ${email.id}`);
     const deadline = this.getDeliveryDeadline(email);
 
