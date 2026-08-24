@@ -21,6 +21,7 @@ class FakeBackend implements JobsBackendBase {
   enqueued: JobEnvelope[] = [];
   recurring: { envelope: JobEnvelope; schedule: RecurringSchedule }[] = [];
   shutdownCalls: (JobsShutdownOptions | undefined)[] = [];
+  allSettledCalls = 0;
 
   start(options: JobsStartOptions): void {
     this.processor = options.processor;
@@ -36,6 +37,10 @@ class FakeBackend implements JobsBackendBase {
 
   shutdown(options?: JobsShutdownOptions): void {
     this.shutdownCalls.push(options);
+  }
+
+  async allSettled(): Promise<void> {
+    this.allSettledCalls = this.allSettledCalls + 1;
   }
 
   async deliver(index = 0): Promise<void> {
@@ -233,6 +238,14 @@ describe('JobsService', function () {
         /Invalid cron expression/,
       );
       assert.equal(backend.recurring.length, 0);
+    });
+  });
+
+  describe('allSettled', function () {
+    it('delegates to the backend', async function () {
+      const service = makeService();
+      await service.allSettled();
+      assert.equal(backend.allSettledCalls, 1);
     });
   });
 

@@ -30,6 +30,50 @@ describe('InMemoryJobsBackend', function () {
     assert.deepEqual(received, [{ type: 'buffered', payload: '{"n":1}' }]);
   });
 
+  it('allSettled resolves only once queued and in-flight deliveries have settled', async function () {
+    const completed: string[] = [];
+    const release: Array<() => void> = [];
+    const backend = new InMemoryJobsBackend({ concurrency: 1 });
+
+    backend.start({
+      processor: async (env) => {
+        await new Promise<void>((resolve) => {
+          release.push(resolve);
+        });
+        completed.push(env.type);
+      },
+    });
+
+    backend.enqueue({ type: 'first', payload: '{}' });
+    backend.enqueue({ type: 'second', payload: '{}' });
+
+    let settled = false;
+    const allSettled = backend.allSettled().then(() => {
+      settled = true;
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+    assert.equal(settled, false, 'allSettled does not resolve while work is outstanding');
+
+    const releaser = setInterval(() => release.forEach((resolve) => resolve()), 5);
+    await allSettled;
+    clearInterval(releaser);
+
+    assert.deepEqual(completed, ['first', 'second']);
+    await backend.shutdown({ timeoutMs: 1000 });
+  });
+
+  it('allSettled resolves immediately when the queue is idle', async function () {
+    const backend = new InMemoryJobsBackend();
+    backend.start({ processor: async () => {} });
+
+    await backend.allSettled();
+
+    await backend.shutdown({ timeoutMs: 1000 });
+  });
+
   it('caps concurrent deliveries at the default concurrency', async function () {
     let running = 0;
     let maxConcurrent = 0;

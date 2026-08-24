@@ -31,6 +31,7 @@ const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 const mentionsJobsService = require('../../core/server/services/mentions-jobs');
 const jobsService = require('../../core/server/services/jobs');
+const classBasedJobsService = require('../../core/server/services/jobs-service');
 
 const boot = require('../../core/boot');
 const {
@@ -65,6 +66,7 @@ let totalBoots = 0;
 const startGhost = async (options = {}) => {
   await mentionsJobsService.allSettled();
   await jobsService.allSettled();
+  await classBasedJobsService.allSettled();
   await DomainEvents.allSettled();
 
   /**

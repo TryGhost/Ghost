@@ -37,4 +37,14 @@ export abstract class JobsBackendBase {
   ): void | Promise<void>;
 
   abstract shutdown(options?: JobsShutdownOptions): void | Promise<void>;
+
+  /**
+   * Resolve once every already-accepted job has settled. Backends that cannot
+   * observe their own queue depth (a durable/remote queue) may keep this
+   * default no-op; an in-process backend must override it, because the test
+   * harness relies on it to keep a job's work inside the test that enqueued it.
+   */
+  allSettled(): Promise<void> {
+    return Promise.resolve();
+  }
 }

@@ -377,7 +377,18 @@ class ExternalMediaInliner {
 
     await this.inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
 
-    logging.info('Finished inlining external media for posts, tags, and users');
+    logging.info(
+      {
+        system: {
+          event: 'external_media_inliner.completed',
+          posts_count: posts?.length ?? 0,
+          posts_meta_count: postsMetas?.length ?? 0,
+          tags_count: tags?.length ?? 0,
+          users_count: users?.length ?? 0,
+        },
+      },
+      'Finished inlining external media for posts, tags, and users',
+    );
   }
 }
 

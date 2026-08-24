@@ -1,10 +1,10 @@
 module.exports = {
-  async init() {
+  async init({ getJobsService }) {
     const debug = require('@tryghost/debug')('mediaInliner');
     const MediaInliner = require('./external-media-inliner');
+    const ExternalMediaInlinerJob = require('./external-media-inliner-job').default;
     const logging = require('@tryghost/logging');
     const models = require('../../models');
-    const jobsService = require('../jobs');
     const adapterManager = require('../../services/adapter-manager').default;
 
     const mediaStorage = adapterManager.getAdapter('storage:media');
@@ -40,31 +40,8 @@ module.exports = {
 
         debug('[Inliner] Starting media inlining job for domains: ', domains);
 
-        // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
-        //        limited to migrational, so there is no expectations for site's availability etc.
         logging.info('[Background Job] external-media-inliner queued');
-        await jobsService.addJob({
-          name: 'external-media-inliner',
-          job: async (data) => {
-            const startedAt = Date.now();
-            logging.info('[Background Job] external-media-inliner started');
-            try {
-              const result = await this.inliner.inline(data.domains);
-              logging.info(
-                `[Background Job] external-media-inliner completed in ${Date.now() - startedAt}ms`,
-              );
-              return result;
-            } catch (err) {
-              logging.error(
-                err,
-                `[Background Job] external-media-inliner failed after ${Date.now() - startedAt}ms`,
-              );
-              throw err;
-            }
-          },
-          data: { domains },
-          offloaded: false,
-        });
+        await getJobsService().dispatch(new ExternalMediaInlinerJob({ domains }));
 
         return {
           status: 'success',

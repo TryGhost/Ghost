@@ -83,6 +83,10 @@ export class JobsService {
     });
   }
 
+  async allSettled(): Promise<void> {
+    await this.#backend.allSettled();
+  }
+
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
     await this.#backend.shutdown(options);
   }

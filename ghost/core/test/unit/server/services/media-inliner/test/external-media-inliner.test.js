@@ -68,6 +68,38 @@ describe('ExternalMediaInliner', function () {
   });
 
   describe('inline', function () {
+    it('logs a structured completion event counting each resource type it walked', async function () {
+      // Distinct page sizes per resource type, so a miswired count is visible.
+      postModelStub.findAll.resolves([]);
+      const resource = (id) => ({ id, get: () => null });
+      postMetaModelStub.findPage.resolves({ data: [resource('meta-1')] });
+      tagModelStub.findPage.resolves({ data: [resource('tag-1'), resource('tag-2')] });
+      userModelStub.findPage.resolves({
+        data: [resource('user-1'), resource('user-2'), resource('user-3')],
+      });
+      const inliner = new ExternalMediaInliner({
+        PostModel: postModelStub,
+        PostMetaModel: postMetaModelStub,
+        TagModel: tagModelStub,
+        UserModel: userModelStub,
+        getMediaStorage: sinon.stub().returns(null),
+      });
+
+      await inliner.inline(['https://example.com']);
+
+      const completionLog = logging.info
+        .getCalls()
+        .find((call) => call.args[0]?.system?.event === 'external_media_inliner.completed');
+      assert.ok(completionLog, 'inline() logs a structured external_media_inliner.completed event');
+      assert.deepEqual(completionLog.args[0].system, {
+        event: 'external_media_inliner.completed',
+        posts_count: 0,
+        posts_meta_count: 1,
+        tags_count: 2,
+        users_count: 3,
+      });
+    });
+
     it("inlines image in the post's mobiledoc content", async function () {
       const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';
       const requestMock = nock('https://img.stockfresh.com')

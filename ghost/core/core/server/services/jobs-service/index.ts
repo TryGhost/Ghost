@@ -27,6 +27,13 @@ export function getInstance(): JobsService {
   return instance;
 }
 
+export function allSettled(): Promise<void> {
+  if (!instance) {
+    return Promise.resolve();
+  }
+  return instance.allSettled();
+}
+
 export function shutdown(options?: JobsShutdownOptions): Promise<void> {
   if (!instance) {
     return Promise.resolve();

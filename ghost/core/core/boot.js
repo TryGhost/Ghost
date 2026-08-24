@@ -414,7 +414,9 @@ async function initServices({ ghostServer, config, prometheusClient }) {
     linkTracking.init(),
     emailSuppressionList.init(),
     slackNotifications.init(),
-    mediaInliner.init(),
+    mediaInliner.init({
+      getJobsService: require('./server/services/jobs-service').getInstance,
+    }),
     contentImport.init(),
     donationService.init(),
     recommendationsService.init(),

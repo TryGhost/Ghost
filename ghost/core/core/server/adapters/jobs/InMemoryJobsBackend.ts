@@ -118,6 +118,13 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     }
   }
 
+  async allSettled(): Promise<void> {
+    if (this._queue.idle()) {
+      return;
+    }
+    await this._queue.drained();
+  }
+
   async shutdown(options: JobsShutdownOptions = {}): Promise<void> {
     const timeoutMs = options.timeoutMs ?? DEFAULT_SHUTDOWN_TIMEOUT_MS;
     this._stopped = true;

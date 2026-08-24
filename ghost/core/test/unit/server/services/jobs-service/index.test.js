@@ -15,6 +15,10 @@ describe('jobs-service wrapper', function () {
     await assert.doesNotReject(() => jobsService.shutdown());
   });
 
+  it('allSettled before init resolves without constructing a service', async function () {
+    await assert.doesNotReject(() => jobsService.allSettled());
+  });
+
   it('getInstance throws before init', function () {
     assert.throws(() => jobsService.getInstance(), /used before init/);
   });
@@ -26,6 +30,7 @@ describe('jobs-service wrapper', function () {
       enqueue() {},
       scheduleRecurring() {},
       async shutdown() {},
+      async allSettled() {},
     };
     sinon.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(fakeBackend);
 
