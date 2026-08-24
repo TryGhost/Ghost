@@ -94,8 +94,8 @@ export const useLimiter = (): Limiter => {
 
     if (limits.staff) {
       limits.staff.currentCountQuery = () => {
-        // useBrowseUsers will only return the first 100 users by default, but we can assume
-        // that either there's no limit or the limit is <100
+        // Keep the existing first-page behavior for this move. Full pagination is tracked in
+        // PLA-369 because excluded users/invites can push countable staff onto later pages.
         const staffUsers = users.filter(
           (user) =>
             user.status !== 'inactive' && !user.roles.some((role) => role.name === 'Contributor'),
