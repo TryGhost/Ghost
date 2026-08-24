@@ -197,49 +197,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const cleanupStart = Date.now();
     logging.info('[Background Job] clean-gifts started');
 
-    const checkoutStart = Date.now();
-    try {
-      const { deletedCount } = await giftService.processAbandonedCheckouts();
-
-      logging.info(
-        `[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`,
-      );
-    } catch (err) {
-      logging.error(err, '[Background Job] clean-gifts error processing abandoned checkouts');
-    }
-
-    const consumedStart = Date.now();
-    try {
-      const { consumedCount, updatedMemberCount } = await giftService.processConsumed();
-
-      logging.info(
-        `[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`,
-      );
-    } catch (err) {
-      logging.error(err, '[Background Job] clean-gifts error processing consumed gifts');
-    }
-
-    const expiredStart = Date.now();
-    try {
-      const { expiredCount } = await giftService.processExpired();
-
-      logging.info(
-        `[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`,
-      );
-    } catch (err) {
-      logging.error(err, '[Background Job] clean-gifts error processing expired gifts');
-    }
-
-    try {
-      const { sentCount, skippedCount, failedCount } = await giftDeliveryService.recoverPending();
-      if (sentCount + skippedCount + failedCount > 0) {
-        logging.info(
-          `[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
-        );
-      }
-    } catch (err) {
-      logging.error(err, '[Background Job] clean-gifts error processing pending gift deliveries');
-    }
+    await giftService.cleanup();
 
     logging.info(`[Background Job] clean-gifts completed in ${Date.now() - cleanupStart}ms`);
   });
