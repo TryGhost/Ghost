@@ -1,10 +1,9 @@
 import { t } from './i18n';
 
 export class HumanReadableError extends Error {
-  constructor(message, { code, context } = {}) {
+  constructor(message, { code } = {}) {
     super(message);
     this.code = code ?? null;
-    this.context = context ?? null;
   }
 
   /**
@@ -52,7 +51,6 @@ function fromErrorsJSON(json) {
 
   return new HumanReadableError(error.message, {
     code: error.code,
-    context: error.context,
   });
 }
 

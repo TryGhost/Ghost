@@ -16,6 +16,18 @@ const DomainEvents = require('@tryghost/domain-events');
 
 const RECOVERY_CONCURRENCY = 10;
 
+// A delivery counts as scheduled only when its send time was still in the
+// future at purchase: immediate deliveries have no scheduledAt, and a checkout
+// that completes after its scheduled date sends straight away, so the buyer's
+// purchase confirmation already covers the send.
+function wasScheduledDelivery(delivery: GiftDeliveryData, gift: Gift): boolean {
+  return Boolean(
+    delivery.scheduledAt &&
+    gift.purchasedAt &&
+    delivery.scheduledAt.getTime() > gift.purchasedAt.getTime(),
+  );
+}
+
 interface Tier {
   name: string;
   toJSON(): {
@@ -379,11 +391,7 @@ export class GiftDeliveryService {
       }
     }
 
-    const wasScheduled =
-      delivery.scheduledAt &&
-      gift.purchasedAt &&
-      delivery.scheduledAt.getTime() > gift.purchasedAt.getTime();
-    if (persisted && wasScheduled) {
+    if (persisted && wasScheduledDelivery(delivery, gift)) {
       // Best effort: buyer confirmations have no durable retry state;
       // recipient delivery is unaffected.
       try {

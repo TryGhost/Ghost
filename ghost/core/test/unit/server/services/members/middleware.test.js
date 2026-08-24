@@ -93,24 +93,7 @@ describe('Members Service Middleware', function () {
         .expect('Location', '/blah/?action=subscribe&errorCode=GIFT_EXPIRED&success=false');
     });
 
-    it('appends explicitly public error context without exposing regular context', async function () {
-      const err = new Error('Gift unavailable.');
-      err.code = 'GIFT_UNAVAILABLE';
-      err.context = 'internal detail';
-      err.publicContext = '2099-12-25';
-      membersService.ssr.exchangeTokenForSession.rejects(err);
-
-      await request(app)
-        .get('/members')
-        .query({ token: 'test', action: 'subscribe' })
-        .expect(302)
-        .expect(
-          'Location',
-          '/blah/?action=subscribe&errorCode=GIFT_UNAVAILABLE&errorContext=2099-12-25&success=false',
-        );
-    });
-
-    it('does not append regular error context to the redirect', async function () {
+    it('does not append error context to the redirect', async function () {
       const err = new Error('Bad request');
       err.code = 'BAD_REQUEST';
       err.context = 'internal detail';

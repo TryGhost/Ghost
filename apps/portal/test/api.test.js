@@ -70,7 +70,7 @@ describe('Portal API gift redemption', () => {
     );
   });
 
-  test('preserves structured gift error metadata from the members api', async () => {
+  test('preserves the gift error code from the members api', async () => {
     const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
     vi.spyOn(window, 'fetch').mockResolvedValue(
@@ -78,9 +78,8 @@ describe('Portal API gift redemption', () => {
         JSON.stringify({
           errors: [
             {
-              message: 'Gift unavailable.',
-              code: 'GIFT_UNAVAILABLE',
-              context: '2026-12-25',
+              message: 'This gift has expired.',
+              code: 'GIFT_EXPIRED',
             },
           ],
         }),
@@ -94,9 +93,8 @@ describe('Portal API gift redemption', () => {
     );
 
     await expect(ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' })).rejects.toEqual(
-      new HumanReadableError('Gift unavailable.', {
-        code: 'GIFT_UNAVAILABLE',
-        context: '2026-12-25',
+      new HumanReadableError('This gift has expired.', {
+        code: 'GIFT_EXPIRED',
       }),
     );
   });

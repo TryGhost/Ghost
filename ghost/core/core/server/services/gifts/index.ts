@@ -24,8 +24,6 @@ export let service: GiftService | undefined;
 
 export let deliveryService: GiftDeliveryService | undefined;
 
-export { formatGiftDate } from './gift-date';
-
 // Persistent scheduling adapters keep their queue across restarts and opt out
 // of boot-time rebuilds (same contract post scheduling honours in boot.js).
 let rescheduleDeliveriesOnBoot = true;

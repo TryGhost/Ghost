@@ -129,7 +129,6 @@ describe('Notification', () => {
       'success',
       'giftRedemption',
       'errorCode',
-      'errorContext',
     ]);
     expect(doAction).toHaveBeenCalledWith('refreshMemberData');
   });

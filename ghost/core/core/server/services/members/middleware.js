@@ -477,12 +477,6 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
 
     if (err.code && typeof err.code === 'string') {
       searchParams.set('errorCode', err.code);
-
-      // Only explicitly public context may cross the redirect boundary;
-      // regular error context can contain internal detail.
-      if (typeof err.publicContext === 'string' && err.publicContext) {
-        searchParams.set('errorContext', err.publicContext);
-      }
     }
 
     const referrer = req.query.r;

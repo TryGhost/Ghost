@@ -69,6 +69,16 @@ type GiftDeliveryBookshelfModel = {
   ): Promise<BookshelfDocument<GiftDeliveryRow> | null>;
 };
 
+// A null scheduled_at means the delivery was due at purchase time, so it is
+// always due. Kept sargable against the (status, scheduled_at) index.
+function dueDeliveries(query: Knex.QueryBuilder, now: Date): void {
+  query.andWhere((due) => {
+    due
+      .whereNull('gift_deliveries.scheduled_at')
+      .orWhere('gift_deliveries.scheduled_at', '<=', toDatabaseDate(now));
+  });
+}
+
 // Deliveries that still need a send attempt: never started, or claimed by a
 // process that has since died and left the claim stale
 function recoverableDeliveries(query: Knex.QueryBuilder, staleBefore: Date): void {
@@ -132,9 +142,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
       .select('gift_deliveries.*')
       .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
       .where('gifts.status', 'purchased')
-      .whereRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) <= ?', [
-        toDatabaseDate(now),
-      ])
+      .modify(dueDeliveries, now)
       .modify(recoverableDeliveries, staleBefore)
       .orderByRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) ASC')
       .limit(limit);
@@ -187,15 +195,13 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
   ): Promise<GiftDeliveryData | null> {
     const claimed = await this.knex('gift_deliveries')
       .where({ id })
+      .modify(dueDeliveries, now)
       .whereExists((query) => {
         query
           .select('gifts.id')
           .from('gifts')
           .whereRaw('gifts.id = gift_deliveries.gift_id')
-          .where('gifts.status', 'purchased')
-          .whereRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) <= ?', [
-            toDatabaseDate(now),
-          ]);
+          .where('gifts.status', 'purchased');
       })
       .modify(recoverableDeliveries, staleBefore)
       .update({

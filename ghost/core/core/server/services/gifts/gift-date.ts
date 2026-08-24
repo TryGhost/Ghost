@@ -1,5 +1,3 @@
-import { DateTime } from 'luxon';
-
 const DEFAULT_DATE_LOCALE = 'en-gb';
 const DEFAULT_TIMEZONE = 'Etc/UTC';
 
@@ -32,8 +30,4 @@ export function formatGiftDate(
     dateFormatterFor(DEFAULT_DATE_LOCALE, DEFAULT_TIMEZONE)!;
 
   return formatter.format(date);
-}
-
-export function getSiteDateValue(date: Date, timeZone: string): string {
-  return DateTime.fromJSDate(date, { zone: timeZone }).toFormat('yyyy-MM-dd');
 }
