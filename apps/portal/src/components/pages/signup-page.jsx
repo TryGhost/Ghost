@@ -711,9 +711,9 @@ class SignupPage extends React.Component {
     return null;
   }
 
-  renderLoginMessage() {
+  renderLoginMessage({ showGiftPromotion = true } = {}) {
     const { brandColor, doAction, site } = this.context;
-    const showGiftPromotion = canShowSignupGiftPromotion({ site });
+    const canPromoteGift = showGiftPromotion && canShowSignupGiftPromotion({ site });
 
     return (
       <div>
@@ -729,7 +729,7 @@ class SignupPage extends React.Component {
           >
             <span>{t('Sign in')}</span>
           </button>
-          {showGiftPromotion && (
+          {canPromoteGift && (
             <>
               <span aria-hidden="true" className="gh-portal-signup-message-separator">
                 &middot;
@@ -740,7 +740,7 @@ class SignupPage extends React.Component {
                 data-testid="gift-switch"
                 className="gh-portal-btn gh-portal-btn-link"
                 style={{ color: brandColor }}
-                onClick={() => doAction('switchPage', { page: 'gift' })}
+                onClick={() => doAction('switchPage', { page: 'gift', lastPage: 'signup' })}
               >
                 <span>{t('Gift a membership')}</span>
               </button>
@@ -843,7 +843,7 @@ class SignupPage extends React.Component {
           >
             {t('This site only accepts paid members.')}
           </p>
-          {this.renderLoginMessage()}
+          {this.renderLoginMessage({ showGiftPromotion: false })}
         </div>
       </section>
     );
@@ -859,7 +859,7 @@ class SignupPage extends React.Component {
           >
             {t('This site is invite-only, contact the owner for access.')}
           </p>
-          {this.renderLoginMessage()}
+          {this.renderLoginMessage({ showGiftPromotion: false })}
         </div>
       </section>
     );

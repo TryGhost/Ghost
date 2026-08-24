@@ -1,14 +1,8 @@
 import React, { type FocusEventHandler, useEffect, useState } from 'react';
+import GiftPromotionField from './gift-promotion-field';
 import TransistorSettings from './transistor-settings';
 import validator from 'validator';
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Switch,
-} from '@tryghost/shade/components';
+import { Field, FieldError, FieldGroup, FieldLabel, Input } from '@tryghost/shade/components';
 import {
   type Setting,
   type SettingValue,
@@ -28,12 +22,6 @@ const AccountPage: React.FC<{
     'members_support_address',
     'support_email_address',
   ]);
-  const [portalAccountGiftPromotion] = getSettingValues(localSettings, [
-    'portal_account_gift_promotion',
-  ]);
-  const showAccountGiftPromotionSetting =
-    config.labs.giftSubCustomization === true &&
-    localSettings.some((setting) => setting.key === 'portal_account_gift_promotion');
   const calculatedSupportAddress =
     supportEmailAddress?.toString() ||
     fullEmailAddress(membersSupportAddress?.toString() || '', siteData, config);
@@ -65,18 +53,11 @@ const AccountPage: React.FC<{
   return (
     <div className="mt-7">
       <FieldGroup className="mb-10 gap-8">
-        {showAccountGiftPromotionSetting && (
-          <Field orientation="horizontal">
-            <FieldLabel htmlFor="portal-account-gift-promotion">
-              Display option to purchase gift
-            </FieldLabel>
-            <Switch
-              checked={Boolean(portalAccountGiftPromotion)}
-              id="portal-account-gift-promotion"
-              onCheckedChange={(checked) => updateSetting('portal_account_gift_promotion', checked)}
-            />
-          </Field>
-        )}
+        <GiftPromotionField
+          localSettings={localSettings}
+          settingKey="portal_account_gift_promotion"
+          updateSetting={updateSetting}
+        />
 
         <Field data-invalid={Boolean(errors.members_support_address) || undefined}>
           <FieldLabel htmlFor="members-support-address">Support email address</FieldLabel>

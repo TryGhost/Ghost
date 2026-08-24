@@ -29,7 +29,7 @@ interface Product {
 }
 
 // the slice of Portal's site data that gift purchasing reads
-interface Site {
+export interface Site {
   paid_members_enabled?: boolean;
   portal_plans?: PortalPlan[];
   portal_products?: string[];
@@ -124,10 +124,12 @@ export function getAvailableGiftDurations({ site }: { site: Site | null }): Gift
   );
 }
 
+export function isGiftCustomizationEnabled({ site }: { site: Site | null }): boolean {
+  return site?.labs?.giftSubCustomization === true;
+}
+
 function canShowGiftPromotion({ site }: { site: Site | null }): boolean {
-  return (
-    site?.labs?.giftSubCustomization === true && getAvailableGiftDurations({ site }).length > 0
-  );
+  return isGiftCustomizationEnabled({ site }) && getAvailableGiftDurations({ site }).length > 0;
 }
 
 export function canShowSignupGiftPromotion({ site }: { site: Site | null }): boolean {

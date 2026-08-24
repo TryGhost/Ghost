@@ -403,4 +403,18 @@ describe('App', function () {
     expect(data.site.portal_account_gift_promotion).toBe(false);
     expect(data.site.preview_theme).toBe('dark');
   });
+
+  test('ignores invalid gift promotion preview values without dropping other overrides', () => {
+    window.location.hash =
+      '#/portal/preview?button=true&signupGiftPromotion=%7BINVALID&accountGiftPromotion=%22yes%22&previewTheme=dark';
+
+    const app = new App({ siteUrl: 'http://example.com' });
+    const data = app.fetchPreviewData();
+
+    expect(data.showPopup).toBe(true);
+    expect(data.site.portal_button).toBe(true);
+    expect(data.site.portal_signup_gift_promotion).toBeUndefined();
+    expect(data.site.portal_account_gift_promotion).toBeUndefined();
+    expect(data.site.preview_theme).toBe('dark');
+  });
 });

@@ -274,6 +274,37 @@ describe('Settings API', function () {
       emailMockReceiver.assertSentEmailCount(0);
     });
 
+    it('can disable Portal gift promotion settings', async function () {
+      try {
+        await agent
+          .put('settings/')
+          .body({
+            settings: [
+              { key: 'portal_signup_gift_promotion', value: false },
+              { key: 'portal_account_gift_promotion', value: false },
+            ],
+          })
+          .expectStatus(200)
+          .expect(({ body }) => {
+            const signupPromotion = body.settings.find(
+              (setting) => setting.key === 'portal_signup_gift_promotion',
+            );
+            const accountPromotion = body.settings.find(
+              (setting) => setting.key === 'portal_account_gift_promotion',
+            );
+            assert.equal(signupPromotion.value, false);
+            assert.equal(accountPromotion.value, false);
+          });
+
+        assert.equal(settingsCache.get('portal_signup_gift_promotion'), false);
+        assert.equal(settingsCache.get('portal_account_gift_promotion'), false);
+        emailMockReceiver.assertSentEmailCount(0);
+      } finally {
+        await models.Settings.edit({ key: 'portal_signup_gift_promotion', value: true });
+        await models.Settings.edit({ key: 'portal_account_gift_promotion', value: true });
+      }
+    });
+
     it('can disable llms_enabled', async function () {
       try {
         await agent

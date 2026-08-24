@@ -91,7 +91,30 @@ describe('SignupPage', () => {
     fireEvent.click(getByRole('button', { name: 'Gift a membership' }));
 
     expect(getByRole('button', { name: 'Gift a membership' })).toBeInTheDocument();
-    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', { page: 'gift' });
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+      page: 'gift',
+      lastPage: 'signup',
+    });
+  });
+
+  test.each([
+    {
+      label: 'the site is invite-only',
+      membersSignupAccess: 'invite',
+    },
+    {
+      label: 'the free route is unavailable on a paid-only site',
+      membersSignupAccess: 'paid',
+      pageQuery: 'free',
+    },
+  ])('hides the gift promotion when $label', ({ membersSignupAccess, pageQuery }) => {
+    const site = {
+      ...getSiteData({ labs: { giftSubCustomization: true }, membersSignupAccess }),
+      portal_signup_gift_promotion: true,
+    };
+    const { queryByRole } = setup({ site, pageQuery });
+
+    expect(queryByRole('button', { name: 'Gift a membership' })).not.toBeInTheDocument();
   });
 
   test.each([

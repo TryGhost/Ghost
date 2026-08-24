@@ -6,21 +6,30 @@ import {
   getSubscriptionData,
 } from '../../../../../src/utils/fixtures-generator';
 
-const paidSite = (overrides = {}) => ({
+type SiteData = ReturnType<typeof getSiteData> & {
+  portal_account_gift_promotion?: boolean;
+};
+type MemberData = ReturnType<typeof getMemberData> & {
+  status?: string;
+};
+
+const paidSite = (overrides: Partial<SiteData> = {}): SiteData => ({
   ...getSiteData({ labs: { giftSubCustomization: true } }),
   portal_account_gift_promotion: true,
   ...overrides,
 });
 
-const paidMember = (overrides = {}) =>
-  getMemberData({
-    paid: true,
-    status: 'paid',
-    subscriptions: [getSubscriptionData()],
-    ...overrides,
-  });
+const paidMember = (overrides: Partial<MemberData> = {}): MemberData => ({
+  ...getMemberData({ paid: true }),
+  status: 'paid',
+  subscriptions: [getSubscriptionData()],
+  ...overrides,
+});
 
-const setup = ({ site = paidSite(), member = paidMember() } = {}) =>
+const setup = ({
+  site = paidSite(),
+  member = paidMember(),
+}: { site?: SiteData; member?: MemberData } = {}) =>
   render(<GiveGiftCard />, { overrideContext: { site, member } });
 
 describe('GiveGiftCard', () => {
@@ -28,6 +37,17 @@ describe('GiveGiftCard', () => {
     const { getByRole, mockDoActionFn } = setup();
 
     fireEvent.click(getByRole('button', { name: /Gift membership/ }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+      page: 'gift',
+      lastPage: 'accountHome',
+    });
+  });
+
+  test.each(['Enter', ' '])('opens gift checkout with the %j key', (key) => {
+    const { getByRole, mockDoActionFn } = setup();
+
+    fireEvent.keyDown(getByRole('button', { name: /Gift membership/ }), { key });
 
     expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
       page: 'gift',
@@ -53,7 +73,7 @@ describe('GiveGiftCard', () => {
   test.each([
     {
       label: 'the member is free',
-      member: getMemberData({ paid: false, status: 'free' }),
+      member: { ...getMemberData({ paid: false }), status: 'free' },
     },
     {
       label: 'the member is a gift recipient',

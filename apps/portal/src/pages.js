@@ -24,6 +24,7 @@ import BetaGiftRedemptionPage from './components/pages/beta-gift-redemption-page
 import GiftSuccessPage from './components/pages/gift-success-page';
 import BetaGiftSuccessPage from './components/pages/beta-gift-success-page';
 import ShareModal from './components/pages/share/share-modal';
+import { isGiftCustomizationEnabled } from './utils/gift-subscriptions';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -62,7 +63,7 @@ const BetaPages = {
 };
 
 export const getPages = function ({ site } = {}) {
-  return site?.labs?.giftSubCustomization ? BetaPages : Pages;
+  return isGiftCustomizationEnabled({ site }) ? BetaPages : Pages;
 };
 
 /** Return page if valid, fallback to signup */
