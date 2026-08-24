@@ -1,9 +1,9 @@
 import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
-import type { InternalApiKey, InternalKeys } from '../internal-keys';
+import type { InternalApiKey, InternalKeys } from '../../services/internal-keys';
 
 const urlUtils = require('../../../shared/url-utils').default;
-const { getSignedAdminToken } = require('../../adapters/scheduling/utils');
+const { getSignedAdminToken } = require('./utils');
 
 // The default scheduling adapter can ping up to 50ms before the scheduled
 // time, and the flush queries truncate "now" to whole seconds — an exactly
@@ -15,29 +15,35 @@ function normalizeTime(time: number): number {
   return Math.floor(time / 1000) * 1000;
 }
 
-interface GiftFlushSchedulerOptions {
+interface SignedFlushSchedulerOptions {
   apiUrl: string;
   adapter: SchedulerAdapter;
   internalKeys: InternalKeys;
-  endpoint: 'flush_reminders' | 'flush_deliveries';
+  // Admin API path segments of the flush endpoint the armed callback hits
+  // (e.g. ['gifts', 'flush_deliveries']).
+  endpoint: string[];
   // snake_case identifier used to derive log event names and messages.
   name: string;
   // Times (ms since epoch) still needing a flush job, used to rebuild the
   // adapter queue at boot and on key rotation.
   findScheduledTimes(): Promise<number[]>;
+  // Delays used by older versions of this callback. During key rotation,
+  // those stale URL+time pairs are unscheduled alongside the current job.
+  legacyDelaysMs?: number[];
 }
 
 /**
  * Arms one-shot Admin API flush callbacks through the scheduling adapter,
  * deduplicated by fire time.
  */
-export class GiftFlushScheduler {
+export class SignedFlushScheduler {
   readonly #apiUrl: string;
   readonly #adapter: SchedulerAdapter;
   readonly #internalKeys: InternalKeys;
-  readonly #endpoint: GiftFlushSchedulerOptions['endpoint'];
+  readonly #endpoint: SignedFlushSchedulerOptions['endpoint'];
   readonly #name: string;
-  readonly #findScheduledTimes: GiftFlushSchedulerOptions['findScheduledTimes'];
+  readonly #findScheduledTimes: SignedFlushSchedulerOptions['findScheduledTimes'];
+  readonly #legacyDelaysMs: number[];
   readonly #scheduledTimes = new Set<number>();
 
   constructor({
@@ -47,19 +53,21 @@ export class GiftFlushScheduler {
     endpoint,
     name,
     findScheduledTimes,
-  }: GiftFlushSchedulerOptions) {
+    legacyDelaysMs = [],
+  }: SignedFlushSchedulerOptions) {
     this.#apiUrl = apiUrl;
     this.#adapter = adapter;
     this.#internalKeys = internalKeys;
     this.#endpoint = endpoint;
     this.#name = name;
     this.#findScheduledTimes = findScheduledTimes;
+    this.#legacyDelaysMs = legacyDelaysMs;
     this.#adapter.register(this);
   }
 
   /**
    * Arm a flush for the given fire time. Already-due work is left to the
-   * daily recovery jobs.
+   * caller's recovery pass.
    */
   async scheduleAt(time: number, logContext: Record<string, unknown> = {}): Promise<void> {
     time = normalizeTime(time);
@@ -97,8 +105,8 @@ export class GiftFlushScheduler {
       this.#adapter.schedule(job);
     } catch (err) {
       // A synchronous key, job-construction, or adapter failure must not escape
-      // into the completed gift flow. Remove any marker so a later call can
-      // retry; daily recovery handles the work if it does not.
+      // into the caller. Remove any marker so a later call can retry; the
+      // caller's recovery pass handles the work if it does not.
       this.#scheduledTimes.delete(time);
       logging.error(
         {
@@ -137,11 +145,10 @@ export class GiftFlushScheduler {
       const staleJob = previousKey ? this.#buildJob(time, previousKey) : job;
       this.#adapter.unschedule(staleJob, { bootstrap });
 
-      // Before GiftFlushScheduler, reminder jobs were armed without the
-      // one-second flush delay. During the first scheduler-key rotation after
-      // an upgrade, tombstone that legacy URL+time as well.
-      if (previousKey && this.#endpoint === 'flush_reminders') {
-        this.#adapter.unschedule(this.#buildJob(time, previousKey, 0), { bootstrap });
+      if (previousKey) {
+        for (const delayMs of this.#legacyDelaysMs) {
+          this.#adapter.unschedule(this.#buildJob(time, previousKey, delayMs), { bootstrap });
+        }
       }
 
       this.#adapter.schedule(job);
@@ -156,7 +163,7 @@ export class GiftFlushScheduler {
       apiUrl: this.#apiUrl,
       key,
     });
-    const url = new URL(urlUtils.urlJoin(this.#apiUrl, 'gifts', this.#endpoint));
+    const url = new URL(urlUtils.urlJoin(this.#apiUrl, ...this.#endpoint));
     url.searchParams.set('token', signedAdminToken);
     return { time: jobTime, url: url.toString(), extra: { httpMethod: 'PUT' } };
   }

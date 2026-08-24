@@ -4,7 +4,7 @@ import { GiftBookshelfRepository } from './gift-bookshelf-repository';
 import { GiftDeliveryBookshelfRepository } from './gift-delivery-bookshelf-repository';
 import { GiftDeliveryService } from './gift-delivery-service';
 import { GiftService } from './gift-service';
-import { GiftFlushScheduler } from './gift-flush-scheduler';
+import { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
 import { GiftEmailService } from './gift-email-service';
 import { GiftController } from './gift-controller';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
@@ -85,11 +85,11 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     blogIcon,
     t,
   });
-  const giftDeliveryScheduler = new GiftFlushScheduler({
+  const giftDeliveryScheduler = new SignedFlushScheduler({
     apiUrl: options.apiUrl,
     adapter: options.schedulerAdapter,
     internalKeys: options.internalKeys,
-    endpoint: 'flush_deliveries',
+    endpoint: ['gifts', 'flush_deliveries'],
     name: 'gift_delivery',
     findScheduledTimes: async () => {
       const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(new Date());
@@ -107,12 +107,13 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     giftDeliveryScheduler,
   });
 
-  const giftReminderScheduler = new GiftFlushScheduler({
+  const giftReminderScheduler = new SignedFlushScheduler({
     apiUrl: options.apiUrl,
     adapter: options.schedulerAdapter,
     internalKeys: options.internalKeys,
-    endpoint: 'flush_reminders',
+    endpoint: ['gifts', 'flush_reminders'],
     name: 'gift_reminder',
+    legacyDelaysMs: [0],
     findScheduledTimes: async () => {
       const pending = await repository.findUnsentReminders();
       return pending
