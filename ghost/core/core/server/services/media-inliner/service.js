@@ -13,7 +13,7 @@ module.exports = {
 
     const config = require('../../../shared/config');
 
-    const mediaInliner = new MediaInliner({
+    this.inliner = new MediaInliner({
       PostModel: models.Post,
       TagModel: models.Tag,
       UserModel: models.User,
@@ -49,7 +49,7 @@ module.exports = {
             const startedAt = Date.now();
             logging.info('[Background Job] external-media-inliner started');
             try {
-              const result = await mediaInliner.inline(data.domains);
+              const result = await this.inliner.inline(data.domains);
               logging.info(
                 `[Background Job] external-media-inliner completed in ${Date.now() - startedAt}ms`,
               );
