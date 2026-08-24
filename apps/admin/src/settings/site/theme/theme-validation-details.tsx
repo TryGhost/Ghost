@@ -23,11 +23,11 @@ import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
  * only generates utilities it finds literally in the source.
  */
 const CODE_CHIP =
-  '[&_code]:rounded-xs [&_code]:border-0 [&_code]:bg-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:align-baseline [&_code]:font-mono [&_code]:text-sm [&_code]:text-inherit [&_code]:leading-[inherit] [&_code]:whitespace-nowrap';
+  '[&_code]:rounded-md [&_code]:border-0 [&_code]:bg-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:align-baseline [&_code]:font-mono [&_code]:text-sm [&_code]:text-inherit [&_code]:leading-[inherit] [&_code]:whitespace-nowrap';
 
 /** gscan writes `rule` and `details` as HTML, rendered verbatim. */
-const RULE_HTML = `text-base leading-[1.45] font-semibold text-foreground ${CODE_CHIP}`;
-const DETAILS_HTML = `text-base leading-[1.45] text-foreground [&_a]:underline ${CODE_CHIP}`;
+const RULE_HTML = `text-base leading-[1.55] font-semibold text-foreground ${CODE_CHIP}`;
+const DETAILS_HTML = `text-base leading-[1.55] text-foreground [&_a]:underline ${CODE_CHIP}`;
 
 const FAILURE_LIST = `space-y-1 text-base text-muted-foreground ${CODE_CHIP}`;
 
