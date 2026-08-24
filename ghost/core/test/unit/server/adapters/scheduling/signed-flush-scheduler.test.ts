@@ -8,9 +8,7 @@ import type {
   InternalIntegrationSlug,
 } from '../../../../../core/server/services/internal-keys';
 
-// Use real signing and URL helpers; stub only cross-domain collaborators.
-// Test secrets are 64-char hex so getSignedAdminToken (which decodes via
-// Buffer.from(secret, 'hex')) treats them as distinct signing keys.
+// Use distinct 64-character hex secrets because token signing decodes them as hex.
 const HEX_CURRENT = 'aa'.repeat(32);
 const HEX_OLD = '55'.repeat(32);
 

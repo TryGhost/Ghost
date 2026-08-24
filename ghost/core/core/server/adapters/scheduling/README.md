@@ -1,8 +1,7 @@
 # Scheduling
 
-The scheduling adapter arms HTTP callbacks that hit the Admin API at a future
-time, so scheduled work fires even if no request wakes the process. The
-contract lives in `@tryghost/adapter-base-scheduling`
+Scheduling adapters queue future Admin API callbacks, allowing scheduled work
+to wake the process. The contract lives in `@tryghost/adapter-base-scheduling`
 (`packages/adapters/scheduling-base`): adapters implement `run`, `schedule`,
 and `unschedule`, and inherit a registry of reschedulers from
 `SchedulingBase`.
@@ -27,14 +26,15 @@ and `unschedule`, and inherit a registry of reschedulers from
 
 ## Queue rebuilds
 
-Consumers `register()` themselves with the adapter. The adapter calls
-`rescheduleAll({previousKey})` on every registered consumer when the queue
-must be rebuilt — today from `services/auth/reset-authentication.ts` after the
-internal scheduler key rotates, and (without a `previousKey`) from boot when
-the adapter sets `rescheduleOnBoot`. During rotation, consumers unschedule the
-job signed under the previous key and schedule a replacement under the current
-one; on boot there is no distinct stale URL, so unschedules are flagged
-`bootstrap` and the adapter skips writing a tombstone.
+Consumers `register()` themselves so the adapter can rebuild every queue after
+the internal scheduler key rotates. `services/auth/reset-authentication.ts`
+starts this rebuild with the previous key. Post scheduling and
+`SignedFlushScheduler` replace jobs signed under that key; automations starts a
+fresh poll chain and lets the old callback fail authentication.
+
+Boot rebuilds are consumer-specific and only run when the adapter sets
+`rescheduleOnBoot`. Same-key replacements use `bootstrap` unscheduling so the
+default adapter does not tombstone the replacement job.
 
 ## Consumers
 

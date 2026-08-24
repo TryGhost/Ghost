@@ -17,10 +17,6 @@ interface BuildSignedJobOptions {
   getIdempotencyKey?(url: URL): string;
 }
 
-/**
- * Builds a scheduling-adapter job whose callback URL carries an admin token
- * signed for the fire time.
- */
 export function buildSignedJob({
   apiUrl,
   path,
