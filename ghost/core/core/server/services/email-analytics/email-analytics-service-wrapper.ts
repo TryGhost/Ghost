@@ -14,8 +14,6 @@ import type { BatchEventProcessor } from './batch-event-processor';
 import type { Queries } from './lib/queries';
 import { fetchMailgunEvents } from './fetch-mailgun-events';
 
-const jobLogging = require('../jobs/job-logging');
-
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
   #config?: Pick<ConfigInstance, 'get'>;
@@ -157,7 +155,7 @@ export class EmailAnalyticsServiceWrapper {
       `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`,
     ].join(' | ');
 
-    jobLogging.info(logMessage);
+    logging.info(logMessage);
 
     // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
     if (jobType === 'latest-opened') {
@@ -255,7 +253,7 @@ export class EmailAnalyticsServiceWrapper {
       try {
         await this.service.restoreScheduled();
       } catch (e) {
-        jobLogging.error(
+        logging.error(
           e,
           `[Background Job] ${this.#backgroundJobName} failed while restoring scheduled events after ${Date.now() - startedAt}ms`,
         );
@@ -264,7 +262,7 @@ export class EmailAnalyticsServiceWrapper {
     }
 
     if (this.#fetching) {
-      jobLogging.info(
+      logging.info(
         `[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`,
       );
       return;
@@ -301,26 +299,26 @@ export class EmailAnalyticsServiceWrapper {
         return;
       }
 
-      jobLogging.info(
+      logging.info(
         `[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`,
       );
 
       this.#fetching = false;
     } catch (e) {
-      jobLogging.error(
+      logging.error(
         e,
         `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`,
       );
 
       // Log again only the error, otherwise we lose the stack trace
-      jobLogging.error(e);
+      logging.error(e);
     }
     this.#fetching = false;
   }
 
   _restartFetch(reason: string): void {
     this.#fetching = false;
-    jobLogging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
+    logging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
     this.startFetch();
   }
 }

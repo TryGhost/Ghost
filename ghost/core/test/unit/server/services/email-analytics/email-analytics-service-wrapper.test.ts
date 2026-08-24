@@ -114,29 +114,6 @@ describe('EmailAnalyticsServiceWrapper', function () {
     );
   });
 
-  it('does not let completion logging failures interrupt event processing', function () {
-    const wrapper = logLatestOpenedJob('newsletters');
-    sinon.stub(logging, 'info').throws(new Error('Logger unavailable'));
-
-    assert.doesNotThrow(() =>
-      wrapper._logJobCompletion(
-        'latest-opened',
-        {
-          eventCount: 10,
-          apiPollingTimeMs: 500,
-          processingTimeMs: 1000,
-          aggregationTimeMs: 500,
-          emailAggregationTimeMs: 300,
-          memberAggregationTimeMs: 200,
-          result: new EventProcessingResult(),
-        },
-        2000,
-      ),
-    );
-
-    assert.equal(metricStub.callCount, 2);
-  });
-
   it('logs and preserves initial schedule restoration failures', async function () {
     const errorLog = sinon.stub(logging, 'error');
     const wrapper = logLatestOpenedJob('newsletters');
@@ -176,15 +153,6 @@ describe('EmailAnalyticsServiceWrapper', function () {
       completions[0][0] as string,
       /^\[Background Job\] email-analytics-fetch-latest completed in \d+ms with 1 events /,
     );
-  });
-
-  it('does not let failure logging escape the fetch error handler', async function () {
-    const wrapper = logLatestOpenedJob('newsletters');
-    sinon.stub(logging, 'error').throws(new Error('Logger unavailable'));
-    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
-    sinon.stub(wrapper, 'fetchLatestOpenedEvents').rejects(new Error('Fetch failed'));
-
-    await assert.doesNotReject(wrapper.startFetch());
   });
 
   it('skips opened event polling when the cursor seed has no opened column', async function () {

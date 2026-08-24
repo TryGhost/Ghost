@@ -14,7 +14,7 @@ const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/ser
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
-const jobLogging = require('../jobs/job-logging');
+const logging = require('@tryghost/logging');
 const jobsService = require('../mentions-jobs');
 
 // Serializes a post model to the data the URL service needs, loading the
@@ -44,21 +44,18 @@ function getPostUrl(id, postData) {
 function makeLoggingJobService() {
   return {
     async addJob(name, fn) {
-      jobLogging.info(`[Background Job] ${name} queued`);
+      logging.info(`[Background Job] ${name} queued`);
       jobsService.addJob({
         name,
         job: async () => {
           const startedAt = Date.now();
-          jobLogging.info(`[Background Job] ${name} started`);
+          logging.info(`[Background Job] ${name} started`);
           try {
             const result = await fn();
-            jobLogging.info(`[Background Job] ${name} completed in ${Date.now() - startedAt}ms`);
+            logging.info(`[Background Job] ${name} completed in ${Date.now() - startedAt}ms`);
             return result;
           } catch (err) {
-            jobLogging.error(
-              err,
-              `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`,
-            );
+            logging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
             throw err;
           }
         },
