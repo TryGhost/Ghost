@@ -156,7 +156,13 @@ export class Queries {
    */
   async getLastJobRunTimestamp(jobName: EmailAnalyticsJobName): Promise<Date | null> {
     const jobData = await this.getJobData(jobName);
-    return jobData ? jobData.finished_at || jobData.started_at : null;
+    const timestamp = jobData ? jobData.finished_at || jobData.started_at : null;
+    if (!timestamp) {
+      return null;
+    }
+    // SQLite returns datetime columns as strings, so normalise to a Date to match
+    // the declared return type and keep callers using Date methods (e.g. getTime()) safe.
+    return timestamp instanceof Date ? timestamp : new Date(timestamp);
   }
 
   /**

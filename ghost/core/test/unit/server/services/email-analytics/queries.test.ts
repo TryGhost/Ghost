@@ -218,19 +218,19 @@ describe('Email analytics queries', function () {
         finished_at: '2026-08-11T11:00:00.000Z',
       });
 
-      assert.equal(
-        await queries.getLastJobRunTimestamp('email-analytics-scheduled'),
-        '2026-08-11T11:00:00.000Z',
-      );
+      const result = await queries.getLastJobRunTimestamp('email-analytics-scheduled');
+
+      assert(result instanceof Date);
+      assert.equal(result.toISOString(), '2026-08-11T11:00:00.000Z');
     });
 
     it('falls back to started timestamp', async function () {
       await insertJob({ started_at: '2026-08-11T10:00:00.000Z' });
 
-      assert.equal(
-        await queries.getLastJobRunTimestamp('email-analytics-scheduled'),
-        '2026-08-11T10:00:00.000Z',
-      );
+      const result = await queries.getLastJobRunTimestamp('email-analytics-scheduled');
+
+      assert(result instanceof Date);
+      assert.equal(result.toISOString(), '2026-08-11T10:00:00.000Z');
     });
 
     it('returns null when job or timestamps do not exist', async function () {
