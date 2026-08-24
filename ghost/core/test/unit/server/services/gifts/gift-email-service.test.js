@@ -137,6 +137,8 @@ describe('GiftEmailService', function () {
       sinon.assert.match(message[field], sinon.match('Your gift is scheduled'));
       sinon.assert.match(message[field], sinon.match('will be sent to'));
     }
+    sinon.assert.match(message.html, sinon.match('<strong>1-year</strong>'));
+    sinon.assert.match(message.text, sinon.match('1-year'));
   });
 
   it('sends a best-effort buyer confirmation after recipient acceptance', async function () {
@@ -190,7 +192,7 @@ describe('GiftEmailService', function () {
       sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
       sinon.assert.match(msg[field], sinon.match('Gold'));
     }
-    sinon.assert.match(msg.html, sinon.match('<strong>1</strong>-year'));
+    sinon.assert.match(msg.html, sinon.match('<strong>1-year</strong>'));
     sinon.assert.match(msg.text, sinon.match('1-year'));
   });
 
@@ -198,7 +200,7 @@ describe('GiftEmailService', function () {
     await service.sendPurchaseConfirmation({ ...defaultData, cadence: 'month' });
 
     const message = transactionalMailer.send.firstCall.firstArg;
-    sinon.assert.match(message.html, sinon.match('<strong>1</strong>-month'));
+    sinon.assert.match(message.html, sinon.match('<strong>1-month</strong>'));
     sinon.assert.match(message.text, sinon.match('1-month'));
   });
 
@@ -367,11 +369,15 @@ describe('GiftEmailService', function () {
           'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
         ),
       );
-      sinon.assert.match(message.html, sinon.match('Redeem your gift:'));
+      sinon.assert.match(message.html, sinon.match('Redeem your gift</a>'));
+      sinon.assert.match(
+        message.html,
+        sinon.match((value) => !value.includes('Redeem your gift:')),
+      );
       sinon.assert.match(
         message.html,
         sinon.match(
-          '<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site',
+          '<strong>Buyer</strong> has gifted you a <strong>1-year</strong> <strong>Gold</strong> membership to Test Site',
         ),
       );
       sinon.assert.match(
@@ -567,7 +573,7 @@ describe('GiftEmailService', function () {
       );
     });
 
-    it('uses an attributive plural cadence for multi-month gifts', async function () {
+    it.each([3, 6])('uses an attributive cadence for a %s-month gift', async function (duration) {
       await service.sendGiftDelivery({
         recipientEmail: 'recipient@example.com',
         recipientName: null,
@@ -578,20 +584,20 @@ describe('GiftEmailService', function () {
         tierName: 'Gold',
         benefits: [],
         cadence: 'month',
-        duration: 3,
+        duration,
         expiresAt: new Date('2027-04-07'),
       });
 
       const message = bulkMailer.send.firstCall.firstArg;
-      sinon.assert.match(message.plaintext, sinon.match('a 3-month Gold membership'));
-      sinon.assert.match(message.html, sinon.match('<strong>3</strong>-month'));
+      sinon.assert.match(message.plaintext, sinon.match(`a ${duration}-month Gold membership`));
+      sinon.assert.match(message.html, sinon.match(`<strong>${duration}-month</strong>`));
       sinon.assert.match(
         message.html,
-        sinon.match((value) => !value.includes('3 months')),
+        sinon.match((value) => !value.includes(`${duration} months`)),
       );
       sinon.assert.match(
         message.plaintext,
-        sinon.match((value) => !value.includes('3 months')),
+        sinon.match((value) => !value.includes(`${duration} months`)),
       );
     });
 

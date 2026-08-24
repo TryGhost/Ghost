@@ -642,7 +642,7 @@ describe('Portal Data links:', () => {
       const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
       expect(redeemUrl).toBeInTheDocument();
 
-      const duration = within(popupFrame.contentDocument).queryByText('12 months');
+      const duration = within(popupFrame.contentDocument).queryByText('1 year');
       expect(duration).toBeInTheDocument();
     });
 
@@ -687,7 +687,7 @@ describe('Portal Data links:', () => {
       const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
       expect(redeemUrl).toBeInTheDocument();
 
-      const duration = within(popupFrame.contentDocument).queryByText('12 months');
+      const duration = within(popupFrame.contentDocument).queryByText('1 year');
       expect(duration).toBeInTheDocument();
     });
 

@@ -182,7 +182,8 @@ const BetaGiftRedemptionPage = () => {
   const tierName = gift.tier.name;
   const giftDetails = {
     buyerName: <strong>{buyerName}</strong>,
-    duration: <strong>{gift.duration}</strong>,
+    duration: gift.duration,
+    strong: <strong />,
     tierName: <strong>{tierName}</strong>,
     siteTitle,
   };
