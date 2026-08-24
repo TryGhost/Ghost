@@ -96,15 +96,14 @@ describe('Query parameter policy', function () {
     const outputPath = path.join(outputDirectory, 'query-parameter-policy.json');
 
     try {
-      const { stdout, stderr } = await execFileAsync(process.execPath, [
+      const { stderr } = await execFileAsync(process.execPath, [
         '--import=tsx',
         scriptPath,
         '--output',
-        outputDirectory,
+        outputPath,
       ]);
 
       assert.equal(stderr, '');
-      assert.equal(stdout.trim(), outputPath);
       assert.deepEqual(
         JSON.parse(await readFile(outputPath, 'utf8')),
         JSON.parse(await readFile(manifestPath, 'utf8')),

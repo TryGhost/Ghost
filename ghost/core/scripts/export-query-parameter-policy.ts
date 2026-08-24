@@ -6,12 +6,11 @@ import { parseArgs } from 'node:util';
 
 import { validateQueryParameterPolicy } from '../core/server/web/query-parameter-policy/schema';
 
-const POLICY_FILENAME = 'query-parameter-policy.json';
 const POLICY_PATH = path.resolve(
   __dirname,
   '../core/server/web/query-parameter-policy/policy.json',
 );
-const USAGE = 'Usage: pnpm query-parameter-policy:export --output <directory>';
+const USAGE = 'Usage: pnpm query-parameter-policy:export --output <file-path>';
 
 async function main() {
   const { values } = parseArgs({
@@ -26,10 +25,9 @@ async function main() {
 
   const manifest = JSON.parse(await readFile(POLICY_PATH, 'utf8'));
   const policy = validateQueryParameterPolicy(manifest);
-  const outputDirectory = path.resolve(values.output);
-  const outputPath = path.join(outputDirectory, POLICY_FILENAME);
+  const outputPath = path.resolve(values.output);
 
-  await mkdir(outputDirectory, { recursive: true });
+  await mkdir(path.dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(policy, null, 4)}\n`, 'utf8');
 }
 
