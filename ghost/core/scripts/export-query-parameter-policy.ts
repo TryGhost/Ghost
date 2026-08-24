@@ -31,8 +31,6 @@ async function main() {
 
   await mkdir(outputDirectory, { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(policy, null, 4)}\n`, 'utf8');
-
-  process.stdout.write(`${outputPath}\n`);
 }
 
 void main();
