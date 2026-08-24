@@ -1,14 +1,15 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, EmptyIndicator} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario} from '@/automations/proto/shared/mock';
-import {changeSummary} from './change-summary';
+import {type ChangeEntry, changeSummary} from './change-summary';
+import {Inline, Stack} from '@tryghost/shade/primitives';
+import {stepKindIcon} from '@/automations/proto/canvas/flow-utils';
 import {PHASE_SLOT} from './phase-model';
-import {UnpublishedChangesDialog} from './unpublished-changes-dialog';
 import {HeaderBar} from './header-bar';
 import {LeftPanel} from './left-panel';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
@@ -119,7 +120,8 @@ const PublishChangesDialog: React.FC<{
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onConfirm: () => void;
-}> = ({open, onOpenChange, onConfirm}) => (
+    changes: ChangeEntry[];
+}> = ({open, onOpenChange, onConfirm, changes}) => (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -128,6 +130,26 @@ const PublishChangesDialog: React.FC<{
                     This automation is on — these changes will take effect immediately.
                 </AlertDialogDescription>
             </AlertDialogHeader>
+            {/* The diff lives here rather than behind a "Review changes" control of
+                its own. Reviewing matters at exactly one moment — when you're
+                deciding to publish — and a separate review step is the kind of thing
+                people skip. Cancel makes this a safe place to look.
+
+                Each entry carries its step's own icon (stepKindIcon), the same mark
+                the canvas puts on the card it happened to. */}
+            {changes.length > 0 && (
+                <Stack className="max-h-72 overflow-y-auto" gap="sm">
+                    {changes.map((change) => {
+                        const Icon = stepKindIcon[change.kind];
+                        return (
+                            <Inline key={change.id} align="start" className="text-sm" gap="sm">
+                                <Icon className="mt-px size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+                                <span>{change.label}</span>
+                            </Inline>
+                        );
+                    })}
+                </Stack>
+            )}
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button onClick={onConfirm}>Publish</Button>
@@ -164,7 +186,6 @@ const AutomationFloat: React.FC = () => {
 
     const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
     const [liveStatus, setLiveStatus] = useState<LiveStatus>(scenario?.automation.status ?? 'active');
-    const [dirty, setDirty] = useState(false);
     const [saveState, setSaveState] = useState<SaveState>('saved');
     const [stopOpen, setStopOpen] = useState(false);
     const [startOpen, setStartOpen] = useState(false);
@@ -188,24 +209,50 @@ const AutomationFloat: React.FC = () => {
     // The canvas is always editable, so hiding the pane is the user's call.
     const [paneCollapsed, setPaneCollapsed] = useState(false);
 
-    // The same `dirty` flag means different things in the two releases, which is
-    // most of what separates them.
+    // What's running vs what's being edited. Derived up here, before the early
+    // return, because the leave guards below need to know whether anything differs
+    // and hooks can't run conditionally.
+    const publishedAutomation = publishedDraft ?? scenario?.automation;
+    const activeDraft = draft ?? publishedAutomation;
+
+    // The diff is computed, not tracked. This used to be a `dirty` boolean flipped
+    // by the first edit and left true until publish or discard — so typing a
+    // character and deleting it left the screen insisting on changes that no longer
+    // existed, and offering to publish or discard nothing. Comparing the draft
+    // against what's published means an edit that cancels itself out stops
+    // counting, and the controls disappear on their own.
     //
-    // Phase 1: edits are held, not written. Dirty means unsaved work that leaving
-    // would destroy — in either lifecycle state, since a stopped automation's
-    // edits are just as unsaved as a running one's.
-    const hasUnsavedChanges = isPhaseOne && dirty;
-    // Future: edits autosave, so dirty means saved-but-not-live. Only a running
-    // automation has something to diverge FROM — edits to a stopped one aren't
-    // "unpublished", since there's no live version they're failing to reach.
-    const hasUnpublishedChanges = !isPhaseOne && dirty && liveStatus === 'active';
+    // changeSummary is therefore the single definition of "something differs":
+    // whatever becomes editable has to be represented there, or it won't register
+    // as a change anywhere on this screen.
+    const changes = publishedAutomation && activeDraft
+        ? changeSummary({
+            published: publishedAutomation,
+            draft: activeDraft,
+            publishedTrigger: publishedTriggerConfig,
+            draftTrigger: triggerConfig
+        })
+        : [];
+    const hasChanges = changes.length > 0;
+
+    // The same difference means different things in the two releases, which is most
+    // of what separates them.
+    //
+    // Phase 1: edits are held, not written. It's unsaved work that leaving would
+    // destroy — in either lifecycle state, since a stopped automation's edits are
+    // just as unsaved as a running one's.
+    const hasUnsavedChanges = isPhaseOne && hasChanges;
+    // Future: edits autosave, so it's saved-but-not-live. Only a running automation
+    // has something to diverge FROM — edits to a stopped one aren't "unpublished",
+    // since there's no live version they're failing to reach.
+    const hasUnpublishedChanges = !isPhaseOne && hasChanges && liveStatus === 'active';
 
     // Leaving. Phase 1 can genuinely lose work, so the browser prompt fires on any
     // unsaved edit. With autosave the work is safe, so that prompt is reserved for
     // the one window where it isn't — a save still in flight — and the in-app
     // dialog says what's actually at stake instead of threatening data loss it
     // can't cause.
-    useConfirmUnload(isPhaseOne ? dirty : saveState === 'saving');
+    useConfirmUnload(isPhaseOne ? hasChanges : saveState === 'saving');
     const navigationBlocker = useBlocker(({currentLocation, nextLocation}) => (
         (hasUnsavedChanges || hasUnpublishedChanges) && currentLocation.pathname !== nextLocation.pathname
     ));
@@ -222,6 +269,11 @@ const AutomationFloat: React.FC = () => {
     }
 
     const {automation} = scenario;
+    // Same two values as above, narrowed. The versions used for the diff are derived
+    // before the not-found guard (hooks can't run conditionally), so TypeScript
+    // still sees them as possibly-undefined; past the guard they can't be.
+    const publishedFlow = publishedAutomation ?? automation;
+    const draftFlow = activeDraft ?? automation;
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
     // Editing is never gated on stopping the automation — you can edit a live one
     // freely; publishing is where the consequences get decided. There's no edit
@@ -231,14 +283,11 @@ const AutomationFloat: React.FC = () => {
     const showEditCanvas = !selectedRun;
     const paneHidden = paneCollapsed;
     // What's running (read canvas) vs what's being edited (edit canvas).
-    const publishedAutomation = publishedDraft ?? automation;
-    const activeDraft = draft ?? publishedAutomation;
 
-    // Any edit marks the automation dirty. The fake autosave tick only runs in the
-    // release that has autosave — in phase 1 nothing is written until Save or
-    // Publish, which is the whole point of the split.
+    // The fake autosave tick, which only runs in the release that has autosave — in
+    // phase 1 nothing is written until Save or Publish. Nothing here records that an
+    // edit happened: whether anything differs is read from the draft itself.
     const markEdited = () => {
-        setDirty(true);
         if (isPhaseOne) {
             return;
         }
@@ -262,10 +311,9 @@ const AutomationFloat: React.FC = () => {
     // friction lives on Stop and on publishing to something already running.
     // Whatever's in the draft becomes the running version.
     const promoteDraft = () => {
-        setPublishedDraft(activeDraft);
+        setPublishedDraft(draftFlow);
         setPublishedTriggerConfig(triggerConfig);
         setDraft(null);
-        setDirty(false);
     };
 
     const handleStart = () => {
@@ -311,14 +359,12 @@ const AutomationFloat: React.FC = () => {
         const previousTriggerConfig = triggerConfig;
         setDraft(null);
         setTriggerConfig(publishedTriggerConfig);
-        setDirty(false);
         toast('Changes discarded', {
             action: {
                 label: 'Undo',
                 onClick: () => {
                     setDraft(previousDraft);
                     setTriggerConfig(previousTriggerConfig);
-                    setDirty(true);
                 }
             }
         });
@@ -331,15 +377,6 @@ const AutomationFloat: React.FC = () => {
 
     // What's in the draft that isn't live. Future only — phase 1 never shows a
     // diff, since you just made the edits and haven't left the screen.
-    const changes = hasUnpublishedChanges
-        ? changeSummary({
-            published: publishedAutomation,
-            draft: activeDraft,
-            publishedTrigger: publishedTriggerConfig,
-            draftTrigger: triggerConfig
-        })
-        : [];
-
     // The header's actions, which is where the two releases diverge most visibly.
     //
     // Phase 1 mirrors the shipping editor exactly (see automations/components/
@@ -363,38 +400,78 @@ const AutomationFloat: React.FC = () => {
                     {/* Nothing to save until something changes. Publish stays
                         available either way — an unedited draft is still
                         publishable, which is how the shipping editor behaves. */}
-                    <Button disabled={!dirty} variant="outline" onClick={handleSave}>Save</Button>
+                    <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>Save</Button>
                     <Button onClick={() => setStartOpen(true)}>Publish</Button>
                 </>
             ) : (
                 <>
                     <Button variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
-                    <Button disabled={!dirty} onClick={handlePublishClick}>
-                        {dirty ? 'Publish changes' : 'Published'}
+                    <Button disabled={!hasChanges} onClick={handlePublishClick}>
+                        {hasChanges ? 'Publish changes' : 'Published'}
                     </Button>
                 </>
             )}
         </>
     ) : (
         <>
-            {/* One control for the draft, not two. It's the primary, and publishing
-                happens inside it — see unpublished-changes-dialog for why the
-                separate reporter beside it kept failing. Never competes with
-                another primary: unpublished changes only exist while the
-                automation is live, so the lifecycle button here is always the
-                outline "Turn off". */}
+            {/* At most one visible action at a time, which is what four earlier
+                attempts kept failing at. Everything that isn't the moment's decision
+                moves into the ⋯: lifecycle, management, and undoing a draft.
+                Publishing is the only thing that earns the primary slot, and only
+                while there's something to publish.
+
+                Stopped, the primary is Turn on — the one thing you'd do with a
+                stopped automation — and a draft can't exist to compete with it,
+                since edits to something that isn't running have no live version to
+                diverge from. */}
             {hasUnpublishedChanges && (
-                <UnpublishedChangesDialog
-                    changes={changes}
-                    onDiscard={handleDiscard}
-                    onPublish={publishChanges}
-                />
+                <Button onClick={handlePublishClick}>Publish changes</Button>
             )}
-            {liveStatus === 'inactive' ? (
+            {liveStatus === 'inactive' && (
                 <Button onClick={() => setStartOpen(true)}>Turn on</Button>
-            ) : (
-                <Button variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
             )}
+            {/* modal={false} so the canvas underneath stays live — same reason the
+                node menus and the option picker are non-modal. */}
+            <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                    <Button aria-label="Automation actions" size="icon" type="button" variant="ghost">
+                        <LucideIcon.MoreHorizontal strokeWidth={2} />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    {liveStatus === 'active' && (
+                        <DropdownMenuItem onClick={() => setStopOpen(true)}>
+                            <LucideIcon.Power /> Turn off
+                        </DropdownMenuItem>
+                    )}
+                    {/* Prototype stub — duplication has no design decision behind it
+                        yet, so this reports success without creating anything. */}
+                    <DropdownMenuItem onClick={() => toast.success('Automation duplicated')}>
+                        <LucideIcon.Copy /> Duplicate
+                    </DropdownMenuItem>
+                    {/* Dead link for now. A verb like everything else in this menu —
+                        every other row names something you do, and a lone noun read
+                        as a different kind of item. What it opens is where the
+                        automation's own configuration would live, including Delete,
+                        which wants room to warn about members mid-flow rather than a
+                        menu row that fires on click. */}
+                    <DropdownMenuItem>
+                        <LucideIcon.Settings /> Configure
+                    </DropdownMenuItem>
+                    {/* Discard sits last, in its own section. It's the one item here
+                        that destroys work, and a menu opens with the cursor at the
+                        top — leading with it would put the destructive option
+                        directly under the pointer. */}
+                    {hasUnpublishedChanges && (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDiscard}>
+                                <LucideIcon.Undo2 /> Discard changes
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </>
     );
 
@@ -439,7 +516,7 @@ const AutomationFloat: React.FC = () => {
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
                     the active canvas beneath/above it. */}
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
-                    <FlowCanvas automation={publishedAutomation} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
+                    <FlowCanvas automation={publishedFlow} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
                 </div>
                 {/* Reviewing a member: the whole canvas takes an inset frame, stating
                     "you're inside this member's run" once at region scale instead of
@@ -481,7 +558,7 @@ const AutomationFloat: React.FC = () => {
                 )}
 
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
-                    <EditCanvas draft={activeDraft} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
+                    <EditCanvas draft={draftFlow} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
             </div>
@@ -493,7 +570,7 @@ const AutomationFloat: React.FC = () => {
             <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
 
             {/* Publish — a deliberate confirm when the automation is already live. */}
-            <PublishChangesDialog open={publishOpen} onConfirm={publishChanges} onOpenChange={setPublishOpen} />
+            <PublishChangesDialog changes={changes} open={publishOpen} onConfirm={publishChanges} onOpenChange={setPublishOpen} />
 
             {/* Leaving the automation with changes that are saved but not running.
                 Not a data-loss warning — the draft survives — so it offers to leave
