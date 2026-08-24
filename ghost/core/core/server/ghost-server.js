@@ -359,6 +359,18 @@ class GhostServer {
       moment.duration(process.uptime(), 'seconds').humanize(),
     );
   }
+
+  /**
+   * Test-only utilty.
+   */
+  __testOnlyAddress() {
+    const { httpServer } = this;
+    const address = httpServer?.address();
+    if (address && typeof address === 'object') {
+      return address;
+    }
+    return null;
+  }
 }
 
 module.exports = GhostServer;
