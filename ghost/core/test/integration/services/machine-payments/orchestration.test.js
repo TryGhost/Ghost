@@ -3,6 +3,10 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const { createLlmsService } = require('../../../../core/frontend/services/llms/service');
 const {
+  getGatedNotice,
+  renderEntryMarkdown,
+} = require('../../../../core/frontend/services/llms/markdown');
+const {
   MachinePaymentsService,
 } = require('../../../../core/server/services/machine-payments/service');
 const { Pricing } = require('../../../../core/server/services/machine-payments/pricing');
@@ -31,6 +35,61 @@ const {
 describe('Integration: machine-payments orchestration coverage', function () {
   afterEach(function () {
     sinon.restore();
+  });
+
+  describe('gated markdown preview helpers', function () {
+    it('formats notices and renders preview markdown for gated entries', function () {
+      assert.equal(
+        getGatedNotice({ visibility: 'members' }, 'post'),
+        'This post is for subscribers only.',
+      );
+      assert.equal(
+        getGatedNotice({ visibility: 'paid' }, 'page'),
+        'This page is for paying subscribers only.',
+      );
+      assert.equal(
+        getGatedNotice({ visibility: 'tiers', tiers: [{ name: 'Gold' }] }, 'post'),
+        'This post is for subscribers on the Gold tier only.',
+      );
+      assert.equal(
+        getGatedNotice({ visibility: 'tiers', tiers: [{ name: 'Gold' }, { name: 'Silver' }] }),
+        'This post is for subscribers on the Gold and Silver tiers only.',
+      );
+
+      const withPreview = renderEntryMarkdown(
+        {
+          title: 'Gated',
+          url: 'https://example.com/gated/',
+          visibility: 'paid',
+          html: '<p>Free preview</p>',
+          custom_excerpt: 'Teaser',
+        },
+        {
+          llmsIndexUrl: 'https://example.com/llms.txt',
+          notice: getGatedNotice({ visibility: 'paid' }, 'post'),
+          cta: ['Agents can pay', 'Subscribe: https://example.com/#/portal/signup'],
+        },
+      );
+      assert.match(withPreview, /Free preview/);
+      assert.match(withPreview, /_This post is for paying subscribers only\._/);
+      assert.match(withPreview, /Agents can pay/);
+      assert.equal(withPreview.match(/Teaser/g).length, 1);
+
+      const noPreview = renderEntryMarkdown(
+        {
+          title: 'Gated',
+          url: 'https://example.com/gated/',
+          visibility: 'members',
+          html: '',
+        },
+        {
+          llmsIndexUrl: 'https://example.com/llms.txt',
+          notice: getGatedNotice({ visibility: 'members' }, 'post'),
+        },
+      );
+      assert.match(noPreview, /_This post is for subscribers only\._/);
+      assert.doesNotMatch(noPreview, /_No content available\._/);
+    });
   });
 
   describe('llms discoverability', function () {
@@ -101,6 +160,54 @@ describe('Integration: machine-payments orchestration coverage', function () {
       assert.match(llmsTxt, /Public/);
       assert.match(llmsTxt, /Members/);
       assert.match(llmsTxt, /Mixed Tiers/);
+    });
+
+    it('renders free previews and notices for gated posts in llms-full.txt', async function () {
+      const service = createService({
+        posts: [
+          {
+            id: '1',
+            title: 'Members Preview',
+            slug: 'members-preview',
+            visibility: 'members',
+            html: '<p>Above the wall</p>',
+            custom_excerpt: 'Members teaser',
+            type: 'post',
+          },
+          {
+            id: '2',
+            title: 'Paid Excerpt Only',
+            slug: 'paid-excerpt',
+            visibility: 'paid',
+            html: '',
+            custom_excerpt: 'Paid teaser',
+            type: 'post',
+          },
+          {
+            id: '3',
+            title: 'Tiered Post',
+            slug: 'tiered',
+            visibility: 'tiers',
+            html: '',
+            tiers: [{ name: 'Gold' }, { name: 'Silver' }],
+            type: 'post',
+          },
+        ],
+      });
+
+      const llmsFullTxt = await service.getLlmsFullTxt();
+      assert.match(
+        llmsFullTxt,
+        /### Members Preview[\s\S]*Above the wall[\s\S]*This post is for subscribers only\./,
+      );
+      assert.match(
+        llmsFullTxt,
+        /### Paid Excerpt Only[\s\S]*Paid teaser[\s\S]*This post is for paying subscribers only\./,
+      );
+      assert.match(
+        llmsFullTxt,
+        /### Tiered Post[\s\S]*This post is for subscribers on the Gold and Silver tiers only\./,
+      );
     });
 
     it('reads posts and pages through fetchPublicEntry with tiers included', async function () {
@@ -198,6 +305,7 @@ describe('Integration: machine-payments orchestration coverage', function () {
         },
       );
       assert.equal(challenge.status, 402);
+      assert.equal(challenge.headers.get('Content-Type'), 'application/problem+json');
       sinon.assert.notCalled(contentLoader.loadFullEntry);
 
       mppAdapter.canHandle.returns(true);
@@ -228,6 +336,42 @@ describe('Integration: machine-payments orchestration coverage', function () {
         eventRepository.save,
         paymentRecorder.record,
       );
+    });
+
+    it('returns a markdown preview body on 402 when renderPreviewMarkdown is provided', async function () {
+      const service = createService();
+      const renderPreviewMarkdown = sinon
+        .stub()
+        .returns('# Preview\n\n_This post is for paying subscribers only._');
+
+      // Adapter Content-Type must not overwrite the preview body type.
+      mppAdapter.challenge.resolves(
+        new Response('', {
+          status: 402,
+          headers: {
+            'WWW-Authenticate': 'Payment realm="mpp"',
+            'Content-Type': 'text/plain',
+          },
+        }),
+      );
+
+      const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md'), {
+        entryId: 'post1',
+        resourceType: 'posts',
+        description: 'Paid',
+        contentLocation: '/paid.md',
+        renderMarkdown: () => '# full',
+        renderPreviewMarkdown,
+      });
+
+      assert.equal(response.status, 402);
+      assert.equal(response.headers.get('WWW-Authenticate'), 'Payment realm="mpp"');
+      assert.equal(response.headers.get('Content-Type'), 'text/markdown; charset=utf-8');
+      assert.equal(response.headers.get('Content-Location'), '/paid.md');
+      assert.equal(response.headers.get('Cache-Control'), 'no-store');
+      assert.match(await response.text(), /# Preview/);
+      sinon.assert.calledOnce(renderPreviewMarkdown);
+      sinon.assert.notCalled(contentLoader.loadFullEntry);
     });
 
     it('is purchasable only when enabled and the entry is paid', function () {
