@@ -881,6 +881,9 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../configs/eslint-react

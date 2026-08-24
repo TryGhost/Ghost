@@ -1,6 +1,18 @@
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths';
 import * as tseslint from 'typescript-eslint';
 import { reactAppConfig } from '@internal/cfg-eslint-react';
+import { shadeLayeredImportsRule } from '@internal/cfg-eslint';
+
+// The factory's shade restriction and this file's boundary bans share the
+// `no-restricted-imports` rule slot, so the boundary blocks must re-include it.
+const shadeRestrictedPaths = shadeLayeredImportsRule['no-restricted-imports'][1].paths;
+
+const emberBridgeImportPatterns = [
+  {
+    group: ['@/ember-bridge/ember-bridge', '**/ember-bridge/ember-bridge'],
+    message: 'Import bridge helpers from the @/ember-bridge barrel, not the implementation module.',
+  },
+];
 
 const noHardcodedGhostPaths = {
   meta: {
@@ -91,6 +103,88 @@ export default tseslint.config(
     plugins: { 'no-relative-import-paths': noRelativeImportPaths },
     rules: {
       'no-relative-import-paths/no-relative-import-paths': ['error', { allowSameFolder: true }],
+    },
+  },
+  // Boundary guardrails. Product code must reach react-router, the Ember
+  // bridge, and the Admin API through their owning layers.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.*', 'src/ember-bridge/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            ...shadeRestrictedPaths,
+            {
+              name: 'react-router',
+              message:
+                'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
+            },
+          ],
+          patterns: emberBridgeImportPatterns,
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "MemberExpression[property.name='EmberBridge']",
+          message:
+            'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
+        },
+        {
+          selector: "MemberExpression[property.value='EmberBridge']",
+          message:
+            'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
+        },
+        {
+          selector: "CallExpression[callee.name='fetch']",
+          message:
+            'Admin API requests belong in the @tryghost/admin-x-framework API layer. For non-Ghost URLs (external services, front-end previews), disable this rule for the line with a reason.',
+        },
+        {
+          selector: "CallExpression[callee.object.name='window'][callee.property.name='fetch']",
+          message:
+            'Admin API requests belong in the @tryghost/admin-x-framework API layer. For non-Ghost URLs (external services, front-end previews), disable this rule for the line with a reason.',
+        },
+        {
+          selector: "CallExpression[callee.object.name='globalThis'][callee.property.name='fetch']",
+          message:
+            'Admin API requests belong in the @tryghost/admin-x-framework API layer. For non-Ghost URLs (external services, front-end previews), disable this rule for the line with a reason.',
+        },
+      ],
+    },
+  },
+  // Test files keep react-router scaffolding (MemoryRouter, createMemoryRouter)
+  // and window.EmberBridge stubs, but must still import the bridge barrel.
+  {
+    files: ['src/**/*.test.*'],
+    ignores: ['src/ember-bridge/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { paths: [...shadeRestrictedPaths], patterns: emberBridgeImportPatterns },
+      ],
+    },
+  },
+  // Advisory only — warnings do not fail CI (`eslint .` without --max-warnings).
+  // Steers new code to the shade utilities without forcing a bulk conversion.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.*'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'warn',
+        {
+          paths: [
+            { name: 'clsx', message: 'Use cn from @tryghost/shade/utils.' },
+            {
+              name: 'lucide-react',
+              message: 'Use the LucideIcon namespace from @tryghost/shade/utils.',
+            },
+          ],
+        },
+      ],
     },
   },
 );

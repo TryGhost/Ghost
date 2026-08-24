@@ -66,6 +66,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-eslint-react": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/jest-dom": "catalog:",

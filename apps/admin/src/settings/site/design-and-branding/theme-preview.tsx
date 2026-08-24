@@ -4,7 +4,6 @@ import {
   type CustomThemeSetting,
   hiddenCustomThemeSettingValue,
 } from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import { fetchFrontendPreview } from '@/settings/utils/fetch-frontend-preview';
 import { isCustomThemeSettingVisible } from '@/settings/utils/is-custom-theme-settings-visible';
 
 type GlobalSettings = {
@@ -81,33 +80,49 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url }) => {
         return;
       }
 
-      void fetchFrontendPreview(url, previewData).then((data) => {
-        // inject extra CSS to disable navigation and prevent clicks
-        const injectedCss = `html { pointer-events: none; }`;
+      // Fetch theme preview HTML (suppress admin toolbar in preview)
+      const previewUrl = new URL(url);
+      previewUrl.searchParams.set('admin_toolbar', '0');
 
-        const domParser = new DOMParser();
-        const htmlDoc = domParser.parseFromString(data, 'text/html');
+      // eslint-disable-next-line no-restricted-syntax -- posts preview data to the site front-end, not the Admin API
+      void fetch(previewUrl.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/html;charset=utf-8',
+          'x-ghost-preview': previewData,
+          Accept: 'text/html',
+        },
+        mode: 'cors',
+        credentials: 'include',
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          // inject extra CSS to disable navigation and prevent clicks
+          const injectedCss = `html { pointer-events: none; }`;
 
-        const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
-        const originalCSS = stylesheet?.innerHTML;
-        if (originalCSS) {
-          stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
-        } else {
-          htmlDoc.head.innerHTML += `<style>${injectedCss}</style>`;
-        }
+          const domParser = new DOMParser();
+          const htmlDoc = domParser.parseFromString(data, 'text/html');
 
-        // replace the iframe contents with the doctored preview html
-        const doctype = htmlDoc.doctype
-          ? new XMLSerializer().serializeToString(htmlDoc.doctype)
-          : '';
-        const finalDoc = doctype + htmlDoc.documentElement.outerHTML;
+          const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
+          const originalCSS = stylesheet?.innerHTML;
+          if (originalCSS) {
+            stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+          } else {
+            htmlDoc.head.innerHTML += `<style>${injectedCss}</style>`;
+          }
 
-        // Send the data to the iframe's window using postMessage
-        // Inject the received content into the iframe
-        iframe.contentDocument?.open();
-        iframe.contentDocument?.write(finalDoc);
-        iframe.contentDocument?.close();
-      });
+          // replace the iframe contents with the doctored preview html
+          const doctype = htmlDoc.doctype
+            ? new XMLSerializer().serializeToString(htmlDoc.doctype)
+            : '';
+          const finalDoc = doctype + htmlDoc.documentElement.outerHTML;
+
+          // Send the data to the iframe's window using postMessage
+          // Inject the received content into the iframe
+          iframe.contentDocument?.open();
+          iframe.contentDocument?.write(finalDoc);
+          iframe.contentDocument?.close();
+        });
     },
     [previewData, url],
   );

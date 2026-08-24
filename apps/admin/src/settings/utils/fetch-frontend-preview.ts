@@ -5,6 +5,7 @@ export function fetchFrontendPreview(url: string, previewData: string): Promise<
   const previewUrl = new URL(url);
   previewUrl.searchParams.set('admin_toolbar', '0');
 
+  // eslint-disable-next-line no-restricted-syntax -- targets the site front-end, not the Admin API
   return fetch(previewUrl.toString(), {
     method: 'POST',
     headers: {
