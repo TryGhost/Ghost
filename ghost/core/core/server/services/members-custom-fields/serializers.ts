@@ -21,3 +21,16 @@ export const toCustomFieldsResponse = z
     members_custom_fields: fields.map((field) => snakeKeys(field)),
   }))
   .pipe(CustomFieldsResponse);
+
+// The cross-namespace read's shape. Carries `namespace`, because a key identifies a field
+// only inside one and every surface that reads this addresses a field by both. The
+// publisher's own endpoint deliberately does not: there, every field is theirs.
+const FieldResource = CustomFieldResource.extend({ namespace: z.string() });
+const FieldsResponse = z.object({ members_fields: z.array(FieldResource) });
+
+export const toFieldsResponse = z
+  .array(CustomField)
+  .transform((fields): z.input<typeof FieldsResponse> => ({
+    members_fields: fields.map((field) => snakeKeys(field)),
+  }))
+  .pipe(FieldsResponse);

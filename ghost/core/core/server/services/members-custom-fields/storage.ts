@@ -21,8 +21,15 @@ export interface Leaf {
 
 export interface StoredLeaf extends Leaf {
   member_id: string;
+  namespace: string;
   key: string;
 }
+
+/**
+ * A member's values, by the namespace that owns the field and then by its key. A key
+ * identifies a field only inside its namespace, so both are needed to address one.
+ */
+export type NamespacedValues = Record<string, Record<string, unknown>>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -101,25 +108,37 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
   return value;
 }
 
-/** Every member's values, keyed by member and then field key; a member with no rows is absent. */
-export function valuesFromLeaves(
-  leaves: readonly StoredLeaf[],
-): Map<string, Record<string, unknown>> {
-  const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
+/**
+ * Every member's values, by member, then by the namespace that owns the field, then by
+ * its key; a member with no rows is absent, as is a namespace they hold nothing in.
+ */
+export function valuesFromLeaves(leaves: readonly StoredLeaf[]): Map<string, NamespacedValues> {
+  // Grouped by the address a value has — its namespace and key — because a key alone
+  // names a different field in each namespace.
+  const byMemberAndField = new Map<string, Map<string, Map<string, Leaf[]>>>();
 
-  for (const { member_id: memberId, key, path, value_text: valueText } of leaves) {
-    const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
+  for (const { member_id: memberId, namespace, key, path, value_text: valueText } of leaves) {
+    const namespaces = byMemberAndField.get(memberId) ?? new Map<string, Map<string, Leaf[]>>();
+    const fields = namespaces.get(namespace) ?? new Map<string, Leaf[]>();
     const forField = fields.get(key) ?? [];
     forField.push({ path, value_text: valueText });
     fields.set(key, forField);
-    byMemberAndField.set(memberId, fields);
+    namespaces.set(namespace, fields);
+    byMemberAndField.set(memberId, namespaces);
   }
 
-  const byMember = new Map<string, Record<string, unknown>>();
-  for (const [memberId, fields] of byMemberAndField) {
+  const byMember = new Map<string, NamespacedValues>();
+  for (const [memberId, namespaces] of byMemberAndField) {
     byMember.set(
       memberId,
-      Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromLeaves(forField)])),
+      Object.fromEntries(
+        [...namespaces].map(([namespace, fields]) => [
+          namespace,
+          Object.fromEntries(
+            [...fields].map(([key, forField]) => [key, valueFromLeaves(forField)]),
+          ),
+        ]),
+      ),
     );
   }
 

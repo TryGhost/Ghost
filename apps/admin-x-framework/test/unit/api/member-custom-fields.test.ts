@@ -54,6 +54,56 @@ const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
 });
 
 describe('member custom fields api helpers', () => {
+  // A column can be mapped onto any field a member has, whichever namespace declared it,
+  // so the targets an import offers are addressed the same way a filter is.
+  describe('memberCustomFieldCsvColumns across namespaces', () => {
+    it('names a target by the namespace that declared the field', () => {
+      expect(
+        memberCustomFieldCsvColumns([
+          { ...field({ key: 'address', name: 'Address' }), namespace: 'shipping' },
+        ]),
+      ).toEqual([
+        {
+          value: 'shipping.address',
+          fieldName: 'Address',
+          label: 'Address',
+          type: 'short_text',
+        },
+      ]);
+    });
+
+    // The part is what an import maps onto, so a composite Ghost declared has to offer
+    // one target per part exactly as the publisher's own composites do.
+    it('offers a target per part of a composite in another namespace', () => {
+      const targets = memberCustomFieldCsvColumns([
+        { ...field({ key: 'address', name: 'Delivery address', type: 'address' }), namespace: 'shipping' },
+      ]);
+
+      expect(targets.map((target) => target.value)).toEqual([
+        'shipping.address.line1',
+        'shipping.address.line2',
+        'shipping.address.city',
+        'shipping.address.state',
+        'shipping.address.postal_code',
+        'shipping.address.country',
+      ]);
+      expect(targets[0].label).toBe('Delivery address (Address line 1)');
+    });
+
+    // The same key in two namespaces is two fields, so an import can address either.
+    it('keeps a key held in two namespaces as two targets', () => {
+      const targets = memberCustomFieldCsvColumns([
+        field({ key: 'address', name: 'Theirs' }),
+        { ...field({ key: 'address', name: 'Ours' }), namespace: 'shipping' },
+      ]);
+
+      expect(targets.map((target) => target.value)).toEqual([
+        'custom_fields.address',
+        'shipping.address',
+      ]);
+    });
+  });
+
   describe('memberCustomFieldCsvColumns', () => {
     it('gives a scalar field one target labelled by its name', () => {
       expect(memberCustomFieldCsvColumns([field({ key: 'nickname', name: 'Nickname' })])).toEqual([

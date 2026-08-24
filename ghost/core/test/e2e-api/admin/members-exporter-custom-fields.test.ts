@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import ObjectID from 'bson-objectid';
 
 const Papa = require('papaparse');
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
@@ -119,6 +120,57 @@ describe('Members API — exportCSV with custom fields', function () {
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
       .del();
+  });
+
+  // A field declared by something other than the publisher. Nothing provisions one yet,
+  // so this inserts it directly; what is pinned is that the export is the publisher's
+  // fields and nothing else, now that a key identifies a field only inside a namespace.
+  describe('a field in another namespace', function () {
+    async function declareForeignField(key: string, name: string): Promise<string> {
+      const id = new ObjectID().toHexString();
+      await models.Base.knex('members_custom_fields').insert({
+        id,
+        namespace: 'shipping',
+        key,
+        name,
+        type: 'short_text',
+        sort_order: 0,
+        created_at: new Date(),
+      });
+      return id;
+    }
+
+    it('adds a column under the namespace that declared it', async function () {
+      await createField('Nickname', 'short_text');
+      await declareForeignField('address', 'Address');
+      await createMember();
+
+      const { columns } = await exportCSV();
+
+      assert.ok(columns.includes('custom_fields.nickname'));
+      assert.ok(columns.includes('shipping.address'));
+    });
+
+    it('keeps a key held in two namespaces in two columns', async function () {
+      const foreignId = await declareForeignField('address', 'Address');
+      const publisherField = await createField('Address', 'short_text');
+      const member = await createMember({ [publisherField.key]: 'Theirs' });
+
+      await models.Base.knex('members_custom_field_values').insert({
+        id: new ObjectID().toHexString(),
+        field_id: foreignId,
+        member_id: member.id,
+        path: '',
+        value_text: 'Ours',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      const { rowFor } = await exportCSV();
+
+      assert.equal(rowFor(member.id)['custom_fields.address'], 'Theirs');
+      assert.equal(rowFor(member.id)['shipping.address'], 'Ours');
+    });
   });
 
   it('adds a column per active field, expanding an address into its sub-fields', async function () {

@@ -1,6 +1,6 @@
 import { serialize } from '../csv';
 import renderImportEmail, { headingFor, type ImportEmailSummary } from './email-template';
-import { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
+import { isAnyFieldColumn } from '@tryghost/custom-field-types/csv';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 
 // The finished import as the email reads it: how many imported and which rows
@@ -23,6 +23,8 @@ interface ImportEmailInput {
   recipient: string;
   labelName: string;
   links: EmailLinks;
+  /** The namespaces a field column in this file could name. Empty when nothing failed. */
+  fieldNamespaces?: readonly string[];
 }
 
 interface EmailPayload {
@@ -87,10 +89,13 @@ function stringifyLabels(labels: Array<string | Label>): string {
   return labels.map((label) => (typeof label === 'string' ? label : label.name)).join(',');
 }
 
-// The custom_fields.* cells a submitted row carried, echoed untouched so a manager can
-// fix a failed row and re-upload the values they mapped.
-function customFieldCells(row: ImportErrorRow): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(row).filter(([column]) => isCustomFieldColumn(column)));
+// The field cells a submitted row carried, echoed untouched so a manager can fix a failed
+// row and re-upload the values they mapped. Takes the namespaces rather than assuming the
+// publisher's, because a file can carry a column for any namespace a field is declared in.
+function fieldCells(row: ImportErrorRow, namespaces: readonly string[]): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(row).filter(([column]) => isAnyFieldColumn(column, namespaces)),
+  );
 }
 
 // Shape a failed import row into its fixed error-report cells, with the raw ORM message
@@ -119,13 +124,15 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
 // shaping -- the export writes db members, this echoes submitted rows. Member columns come from the shaper's keys (so the type
 // stays the single source); the custom_fields.* columns across the rows are threaded in
 // before the last error column, and each row's custom cells merged on.
-function buildErrorReport(errors: ImportErrorRow[]): string {
+function buildErrorReport(errors: ImportErrorRow[], namespaces: readonly string[]): string {
   const memberColumns = Object.keys(toErrorReportRow(errors[0])).filter(
     (column) => column !== 'error',
   );
-  const customColumns = [...new Set(errors.flatMap((row) => Object.keys(customFieldCells(row))))];
+  const customColumns = [
+    ...new Set(errors.flatMap((row) => Object.keys(fieldCells(row, namespaces)))),
+  ];
   const columns = [...memberColumns, ...customColumns, 'error'];
-  const rows = errors.map((row) => ({ ...toErrorReportRow(row), ...customFieldCells(row) }));
+  const rows = errors.map((row) => ({ ...toErrorReportRow(row), ...fieldCells(row, namespaces) }));
   return serialize(rows, { columns });
 }
 
@@ -138,6 +145,7 @@ export default function buildImportEmail({
   recipient,
   labelName,
   links,
+  fieldNamespaces = [],
 }: ImportEmailInput): EmailPayload {
   const summary: ImportEmailSummary = !result
     ? 'did-not-run'
@@ -161,7 +169,7 @@ export default function buildImportEmail({
       ? [
           {
             filename: `${labelName} - Errors.csv`,
-            content: buildErrorReport(result.errors),
+            content: buildErrorReport(result.errors, fieldNamespaces),
             contentType: 'text/csv',
             contentDisposition: 'attachment',
           },

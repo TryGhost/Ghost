@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const { PUBLISHER_NAMESPACE } = require('@tryghost/custom-field-types/csv');
 
 const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
@@ -113,6 +114,27 @@ module.exports = class MemberBREADService {
    * @param {string[]} memberIds
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
+  /**
+   * Attach a member's field values, a property per namespace that declared them.
+   *
+   * A namespace is addressed the same way everywhere: `custom_fields.nickname` is the
+   * CSV column, the filter and this property, and a namespace Ghost declares reads the
+   * same. The publisher's is always present once the feature is on, so a member with no
+   * values still carries the key rather than the property appearing and disappearing.
+   *
+   * A namespace never overwrites a property the member already has: they are declared in
+   * code and none collides today, and quietly replacing `email` would be worse than
+   * dropping a value nobody can address anyway.
+   * @private
+   * @param {object} member
+   * @param {Record<string, Record<string, unknown>>} values
+   */
+  attachCustomFieldValues(member, values) {
+    // The publisher's namespace is always present once the feature is on, so a member
+    // with no values still carries the key rather than the property coming and going.
+    member.field_values = { [PUBLISHER_NAMESPACE]: {}, ...values };
+  }
+
   async fetchCustomFieldValues(memberIds) {
     if (!this.labsService.isSet('membersCustomFields')) {
       return null;
@@ -455,7 +477,7 @@ module.exports = class MemberBREADService {
 
     const customFields = await this.fetchCustomFieldValues([member.id]);
     if (customFields) {
-      member.custom_fields = customFields.get(member.id) ?? {};
+      this.attachCustomFieldValues(member, customFields.get(member.id) ?? {});
     }
 
     return member;
@@ -815,7 +837,7 @@ module.exports = class MemberBREADService {
         delete member.products;
       }
       if (customFieldsByMember) {
-        member.custom_fields = customFieldsByMember.get(model.id) ?? {};
+        this.attachCustomFieldValues(member, customFieldsByMember.get(model.id) ?? {});
       }
       member.email_suppression = {
         suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),

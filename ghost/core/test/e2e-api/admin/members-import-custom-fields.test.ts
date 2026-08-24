@@ -2,6 +2,7 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import ObjectID from 'bson-objectid';
 
 const supertest = require('supertest');
 const localUtils = require('./utils');
@@ -345,6 +346,74 @@ describe('Members import — custom fields', function () {
       ],
       'only the named part moved',
     );
+  });
+
+  // A field declared by something other than the publisher. Nothing provisions one yet,
+  // so this inserts it directly; what is pinned is that a namespaced column reaches the
+  // publisher's field, now that a key identifies a field only inside a namespace.
+  describe('a field in another namespace', function () {
+    async function declareForeignField(key: string, name: string): Promise<string> {
+      const id = new ObjectID().toHexString();
+      await models.Base.knex('members_custom_fields').insert({
+        id,
+        namespace: 'shipping',
+        key,
+        name,
+        type: 'short_text',
+        sort_order: 0,
+        created_at: new Date(),
+      });
+      return id;
+    }
+
+    it('takes the publisher field when a key exists in both', async function () {
+      const foreignId = await declareForeignField('address', 'Address');
+      const key = await createField('Address', 'short_text');
+      const email = 'cf-namespaced@example.com';
+
+      const res = await importCSV(`email,custom_fields.${key}\n${email},1 High Street\n`);
+      assert.equal(res.status, 201);
+      assert.equal(res.body.meta.stats.imported, 1);
+
+      const rows = await models.Base.knex('members_custom_field_values').select(
+        'field_id',
+        'value_text',
+      );
+      assert.equal(rows.length, 1, 'one value was written');
+      assert.notEqual(rows[0].field_id, foreignId, 'and not against the field Ghost declared');
+      assert.equal(rows[0].value_text, '1 High Street');
+    });
+
+    // Every namespace addresses its fields the same way, so a column naming one reaches
+    // the field it names.
+    it('reads a column into the namespace that owns it', async function () {
+      const foreignId = await declareForeignField('address', 'Address');
+      const email = 'cf-foreign-column@example.com';
+
+      const res = await importCSV(`email,shipping.address\n${email},1 High Street\n`);
+      assert.equal(res.status, 201);
+      assert.equal(res.body.meta.stats.imported, 1);
+
+      const rows = await models.Base.knex('members_custom_field_values').select(
+        'field_id',
+        'value_text',
+      );
+      assert.deepEqual(rows, [{ field_id: foreignId, value_text: '1 High Street' }]);
+    });
+
+    it('drops a column naming a namespace nothing is declared in', async function () {
+      const email = 'cf-unknown-namespace@example.com';
+
+      const res = await importCSV(`email,nowhere.address\n${email},1 High Street\n`);
+      assert.equal(res.status, 201);
+      assert.equal(res.body.meta.stats.imported, 1, 'the member still imports');
+
+      assert.deepEqual(
+        await models.Base.knex('members_custom_field_values').select('id'),
+        [],
+        'nothing was written for a column naming no field',
+      );
+    });
   });
 
   // A composite can still be invalid, and when it is the whole row fails like any other.

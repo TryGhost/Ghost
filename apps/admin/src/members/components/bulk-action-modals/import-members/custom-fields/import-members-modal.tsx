@@ -52,7 +52,7 @@ import {
 } from '@tryghost/admin-x-framework/api/members';
 import {
   memberCustomFieldCsvColumns,
-  useBrowseMemberCustomFields,
+  useBrowseMemberFields,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { parseCSV } from '@/members/components/bulk-action-modals/import-members/csv';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
@@ -80,12 +80,14 @@ export function ImportMembersModal({
   // Defined custom fields become mapping targets. Browse returns active fields only, which
   // are the ones the importer writes to. No flag check anywhere in this file: the gate does
   // not render it unless membersCustomFields is on.
-  const { data: customFieldsData, isError: customFieldsFailed } = useBrowseMemberCustomFields();
+  // Every declared field, whichever namespace declared it: a column can be mapped onto
+  // any field a member has, and only managing one is the publisher's own business.
+  const { data: customFieldsData, isError: customFieldsFailed } = useBrowseMemberFields();
   // A field created from the mapping step is in here the moment it is created: the create
   // mutation puts it into the cached list, so there is no window where a row points at a
   // column the picker cannot name yet.
   const customFieldColumns = useMemo(
-    () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
+    () => memberCustomFieldCsvColumns(customFieldsData?.members_fields ?? []),
     [customFieldsData],
   );
   // The file-reader effect waits for this before its first parse: the custom field

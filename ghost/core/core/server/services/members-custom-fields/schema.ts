@@ -1,7 +1,15 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { PUBLISHER_NAMESPACE } from '@tryghost/custom-field-types/csv';
 import { DbDate } from '../../lib/db-date';
+
+/**
+ * The namespace a publisher's own fields are declared in. It is not a special case in
+ * the model: a namespace Ghost declares is stored, addressed and read the same way, and
+ * only the rule about who may manage a field tells them apart.
+ */
+export { PUBLISHER_NAMESPACE };
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -14,6 +22,7 @@ export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archi
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
 export const DbCustomField = z.object({
   id: z.string(),
+  namespace: z.string(),
   key: z.string(),
   name: z.string(),
   type: FieldTypeSchema,
@@ -31,7 +40,7 @@ type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
   id: z.string(),
-  custom_field_key: z.string(),
+  field_id: z.string(),
   member_id: z.string(),
   path: z.string(),
   // Nullable like the column, though nothing here writes a null: a part with no value
@@ -50,6 +59,7 @@ type CustomFieldValueRow = z.infer<typeof DbCustomFieldValue>;
 // is what drops it.
 export const DbCustomFieldLeaf = z.object({
   member_id: z.string(),
+  namespace: z.string(),
   key: z.string(),
   type: FieldTypeSchema,
   path: z.string(),
@@ -61,7 +71,9 @@ declare module 'knex/types/tables' {
     members_custom_fields: Knex.CompositeTableType<
       CustomFieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
-      // rank is required: letting it default would land a new field at the top.
+      // rank is required: letting it default would land a new field at the top, and the
+      // namespace for the same reason — a write that omits it would silently declare a
+      // publisher field.
       Omit<z.input<typeof DbCustomField>, 'updated_at' | 'status'> & CustomFieldRank,
       Partial<CustomFieldRow>
     >;

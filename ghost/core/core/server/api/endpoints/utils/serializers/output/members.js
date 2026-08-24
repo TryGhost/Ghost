@@ -131,10 +131,19 @@ function serializeMember(member, options) {
     serialized.tiers = json.products;
   }
 
-  // Present on a read whenever the flag is on; absent otherwise, and absent on
-  // browse. An empty object is a member with no values set.
-  if (json.custom_fields) {
-    serialized.custom_fields = json.custom_fields;
+  // A property per namespace that declared a field, so `custom_fields.nickname` is the
+  // CSV column, the members filter and this property alike, and a namespace Ghost
+  // declares reads the same way. Present on a read whenever the flag is on; absent
+  // otherwise, and absent on browse unless asked for. An empty object is a member with
+  // no values set in that namespace.
+  //
+  // A namespace never displaces a property already serialized: which namespaces exist is
+  // a fact about the database, and quietly replacing `email` would be worse than dropping
+  // a value nobody can address anyway.
+  for (const [namespace, values] of Object.entries(json.field_values ?? {})) {
+    if (!(namespace in serialized)) {
+      serialized[namespace] = values;
+    }
   }
 
   serialized.current_subscription = json.current_subscription || null;

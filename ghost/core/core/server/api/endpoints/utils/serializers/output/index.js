@@ -80,6 +80,10 @@ module.exports = {
     return require('./member-custom-fields');
   },
 
+  get members_fields() {
+    return require('./member-fields');
+  },
+
   get tiers() {
     return require('./tiers');
   },

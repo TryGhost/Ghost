@@ -6,8 +6,9 @@ const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const {
-  CUSTOM_FIELDS_RELATION,
   createCustomFieldsFilterTransformer,
+  fieldNamespacesInFilter,
+  fieldsRelation,
 } = require('../services/members-custom-fields/filter');
 
 const DEEP_OFFSET_THRESHOLD = 1000;
@@ -198,26 +199,23 @@ const Member = ghostBookshelf.Model.extend(
     // wiring it. Runs only behind the flag and only when the filter names the relation; the
     // transformer maps the public `key`/`value` grammar onto the leaf-row columns.
     applyDefaultAndCustomFilters(options) {
-      if (
-        labs.isSet('membersCustomFields') &&
-        options.filter &&
-        options.filter.includes(`${CUSTOM_FIELDS_RELATION.tableNameAs}.`)
-      ) {
-        const transformer = createCustomFieldsFilterTransformer();
-        options.mongoTransformer = options.mongoTransformer
-          ? chainTransformers(options.mongoTransformer, transformer)
-          : transformer;
+      if (labs.isSet('membersCustomFields') && options.filter) {
+        // The same namespaces filterRelations resolved, each with its own transformer:
+        // a clause names a field by namespace and key, and only the transformer for that
+        // namespace knows which of its clauses describe one leaf row.
+        const taken = Object.keys(this.filterRelations({}));
+        for (const namespace of fieldNamespacesInFilter(options.filter, taken)) {
+          const transformer = createCustomFieldsFilterTransformer(namespace);
+          options.mongoTransformer = options.mongoTransformer
+            ? chainTransformers(options.mongoTransformer, transformer)
+            : transformer;
+        }
       }
       return ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters.call(this, options);
     },
 
-    filterRelations() {
-      return {
-        // Custom field values are filterable only behind the feature flag. Gating the
-        // relation here (rather than the whole model) means a `custom_fields.*` filter
-        // is simply an unknown relation when the flag is off, and the filter is
-        // rejected — nothing to special-case downstream.
-        ...(labs.isSet('membersCustomFields') ? { custom_fields: CUSTOM_FIELDS_RELATION } : {}),
+    filterRelations(options) {
+      const relations = {
         labels: {
           tableName: 'labels',
           type: 'manyToMany',
@@ -308,6 +306,23 @@ const Member = ghostBookshelf.Model.extend(
           },
         },
       };
+
+      // A namespace exists because a field was declared in it, which is a fact about the
+      // database rather than something stated in code. So the namespaces come from the
+      // filter: one relation per namespace it names, and a namespace holding no field
+      // matches nothing, exactly as a key naming no field already does.
+      //
+      // Behind the flag, so a field filter is an unknown relation when the feature is
+      // off and the filter is rejected rather than quietly matching nothing.
+      if (!labs.isSet('membersCustomFields')) {
+        return relations;
+      }
+
+      for (const namespace of fieldNamespacesInFilter(options?.filter, Object.keys(relations))) {
+        relations[namespace] = fieldsRelation(namespace);
+      }
+
+      return relations;
     },
 
     relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters'],

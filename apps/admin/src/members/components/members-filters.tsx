@@ -9,17 +9,17 @@ import {
   toOfferFilterDisplayValues,
   useMemberFilterFields,
 } from '@/members/use-member-filter-fields';
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
+import { fieldFilterKey } from '@/members/member-fields';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
-  useBrowseMemberCustomFields,
-  useBrowseMemberCustomFieldsIncludingArchived,
+  useBrowseMemberFields,
+  useBrowseMemberFieldsIncludingArchived,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { MemberField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   useEmailPostValueSource,
   useLabelValueSource,
@@ -39,7 +39,7 @@ interface MembersFiltersProps {
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
-const EMPTY_CUSTOM_FIELDS: MemberCustomField[] = [];
+const EMPTY_CUSTOM_FIELDS: MemberField[] = [];
 
 function mapOfferRedemptionFilters(filters: Filter[], mapValues: (values: string[]) => string[]) {
   return filters.map((filter) => {
@@ -116,31 +116,33 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const labelValueSource = useLabelValueSource();
   const { valueSource: tierValueSource, hasMultipleTiers } = useTierValueSource();
   const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-  // The picker lists active fields — the endpoint the members page has always used.
-  const { data: customFieldsData } = useBrowseMemberCustomFields({ enabled: customFieldsEnabled });
-  const customFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
+  // The picker lists every declared field, whichever namespace declared it: offering a
+  // field to filter on is not the same as managing it, and only the publisher's own are
+  // manageable. A field carries the namespace that declared it, so the picker can group
+  // them and address each one by both.
+  const { data: customFieldsData } = useBrowseMemberFields({ enabled: customFieldsEnabled });
+  const customFields = customFieldsData?.members_fields ?? EMPTY_CUSTOM_FIELDS;
+  // Addressed the same way the dropdown keys them, so a filter is matched to its field
+  // without assuming which namespace it came from.
   const referencedCustomFieldKeys = useMemo(
-    () =>
-      new Set(
-        filters
-          .map((filter) => filter.field)
-          .filter((field) => field.startsWith(CUSTOM_FIELDS_PREFIX))
-          .map((field) => field.slice(CUSTOM_FIELDS_PREFIX.length))
-          .filter(Boolean),
-      ),
+    () => new Set(filters.map((filter) => filter.field).filter(Boolean)),
     [filters],
   );
   // Only when the current filter references a custom field do we also pull the archived
   // ones, so a saved segment on a since-archived field still renders its read-only pill.
   // Skipped otherwise, so the common members view makes no extra request.
-  const { data: archivedCustomFieldsData } = useBrowseMemberCustomFieldsIncludingArchived({
+  const { data: archivedCustomFieldsData } = useBrowseMemberFieldsIncludingArchived({
     enabled: customFieldsEnabled && referencedCustomFieldKeys.size > 0,
   });
   const archivedCustomFields = useMemo(
     () =>
-      (archivedCustomFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS)
-        .filter((field) => field.status === 'archived' && referencedCustomFieldKeys.has(field.key))
-        .map((field) => ({ key: field.key, name: field.name })),
+      (archivedCustomFieldsData?.members_fields ?? EMPTY_CUSTOM_FIELDS)
+        .filter(
+          (field) =>
+            field.status === 'archived' &&
+            referencedCustomFieldKeys.has(fieldFilterKey(field.namespace, field.key)),
+        )
+        .map((field) => ({ namespace: field.namespace, key: field.key, name: field.name })),
     [archivedCustomFieldsData, referencedCustomFieldKeys],
   );
 

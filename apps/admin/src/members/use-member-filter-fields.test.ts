@@ -263,8 +263,8 @@ describe('useMemberFilterFields', () => {
       useMemberFilterFields({
         customFieldsEnabled: true,
         customFields: [
-          { key: 'shipping_address', name: 'Shipping address', type: 'address' },
-          { key: 'job_title', name: 'Job title', type: 'short_text' },
+          { namespace: 'custom_fields', key: 'shipping_address', name: 'Shipping address', type: 'address' },
+          { namespace: 'custom_fields', key: 'job_title', name: 'Job title', type: 'short_text' },
         ],
         siteTimezone: 'UTC',
       }),
@@ -295,7 +295,7 @@ describe('useMemberFilterFields', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
         customFieldsEnabled: false,
-        customFields: [{ key: 'job_title', name: 'Job title', type: 'short_text' }],
+        customFields: [{ namespace: 'custom_fields', key: 'job_title', name: 'Job title', type: 'short_text' }],
         siteTimezone: 'UTC',
       }),
     );

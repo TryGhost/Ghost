@@ -1,5 +1,5 @@
+import { isFieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
-  isCustomFieldColumn,
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -196,11 +196,21 @@ export function detectFieldTypes(
   // Match column headers against supported types using all headers from the
   // original data. sampleData only keeps keys with non-empty values, so
   // entirely-empty columns (e.g. an empty "note" column) would be missed if
-  // we only checked sampled entries. A custom field column auto-maps to itself here;
-  // isCustomFieldColumn holds it apart from the fuzzy core-field heuristics below.
+  // we only checked sampled entries. A field column auto-maps to itself here, and is
+  // held apart from the fuzzy core-field heuristics below by being one of the offered
+  // targets rather than by the shape of its name — a namespace Ghost declares can hold
+  // a field called `name`, and guessing from the name alone would map it to the
+  // member's.
+  const fieldColumns = new Set((options.customFieldColumns ?? []).map((column) => column.value));
+  // The publisher's namespace is recognised by shape, since that one is always the same;
+  // any other is recognised by being offered as a target, which is the only thing that
+  // says it exists.
+  const isFieldColumnKey = (key: string) =>
+    fieldColumns.has(key) || isFieldColumn(key, 'custom_fields');
+
   if (data.length > 0) {
     for (const key of columnsOf(data)) {
-      if (!mapping.name && /name/i.test(key) && !isCustomFieldColumn(key)) {
+      if (!mapping.name && /name/i.test(key) && !isFieldColumnKey(key)) {
         mapping.name = key;
         continue;
       }
@@ -220,7 +230,7 @@ export function detectFieldTypes(
 
     const entry = sampledData[i];
     for (const [key, value] of Object.entries(entry)) {
-      if (!mapping.email && value && EMAIL_REGEX.test(value) && !isCustomFieldColumn(key)) {
+      if (!mapping.email && value && EMAIL_REGEX.test(value) && !isFieldColumnKey(key)) {
         mapping.email = key;
       }
     }

@@ -18,7 +18,7 @@ import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import { LabelFilterRenderer } from '@/members/label-picker';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD } from './multiple-active-subscriptions';
-import { CUSTOM_FIELDS_PREFIX, getMemberFields } from './member-fields';
+import { fieldFilterKey, getMemberFields, isFieldFilterKey } from './member-fields';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Offer } from '@tryghost/admin-x-framework/api/offers';
 
@@ -38,11 +38,16 @@ interface UseMemberFilterFieldsOptions {
   emailTrackOpens?: boolean;
   emailTrackClicks?: boolean;
   customFieldsEnabled?: boolean;
-  customFields?: Array<{ key: string; name: string; type: MemberCustomField['type'] }>;
+  customFields?: Array<{
+    namespace: string;
+    key: string;
+    name: string;
+    type: MemberCustomField['type'];
+  }>;
   // Archived fields still referenced by the current filter. Rendered as disabled,
   // removable-only pills so a saved segment stays visible and undoable even though
   // the field is no longer offered in the picker.
-  archivedCustomFields?: Array<{ key: string; name: string }>;
+  archivedCustomFields?: Array<{ namespace: string; key: string; name: string }>;
   siteTimezone?: string;
 }
 
@@ -269,6 +274,19 @@ function renderOfferFilterValues(
   return 'Select...';
 }
 
+const NAMESPACE_GROUP_LABELS: Record<string, string> = {
+  custom_fields: 'Custom fields',
+};
+
+function groupLabelFor(namespace: string): string {
+  const known = NAMESPACE_GROUP_LABELS[namespace];
+  if (known) {
+    return known;
+  }
+  const words = namespace.replace(/_/g, ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 export function useMemberFilterFields({
   labelValueSource,
   tierValueSource,
@@ -291,6 +309,12 @@ export function useMemberFilterFields({
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
   return useMemo(() => {
     const fields = getMemberFields();
+    // The namespaces this site has fields in, taken from the fields themselves. A key
+    // identifies a field only inside one, so resolving a dropdown key needs to know
+    // which prefixes are namespaces rather than assuming the publisher's.
+    const fieldNamespaces = [
+      ...new Set([...customFields, ...archivedCustomFields].map((field) => field.namespace)),
+    ];
     type MemberFieldKey = keyof typeof fields;
 
     function createFieldConfig(
@@ -301,8 +325,8 @@ export function useMemberFilterFields({
       let field;
       if (key.startsWith('newsletters.')) {
         field = fields['newsletters.:slug'];
-      } else if (key.startsWith(CUSTOM_FIELDS_PREFIX)) {
-        field = fields['custom_fields.:key'];
+      } else if (isFieldFilterKey(key, fieldNamespaces)) {
+        field = fields[':namespace.:key'];
       } else {
         field = fields[key as MemberFieldKey];
       }
@@ -391,13 +415,13 @@ export function useMemberFilterFields({
 
     groups.push({ group: 'Basic', fields: basicFields });
 
-    // Each defined custom field is its own named entry, so a publisher can search
-    // for "Shipping address" directly rather than reaching it through a generic
+    // Each defined field is its own named entry, so a publisher can search for
+    // "Shipping address" directly rather than reaching it through a generic
     // "Custom field" door. A simple field filters on its value; a composite field's
     // renderer opens its parts (plus "Any") in the pill.
     if (customFieldsEnabled) {
       const customFieldFields = customFields.map((field) =>
-        createFieldConfig(`custom_fields.${field.key}`, {
+        createFieldConfig(fieldFilterKey(field.namespace, field.key), {
           label: field.name,
           // The dropdown entry and the added filter show the field type's own icon
           // rather than a generic custom-field mark.
@@ -421,7 +445,7 @@ export function useMemberFilterFields({
       // so the picker's own de-dup keeps it out of the add-list — it only ever
       // renders as an existing pill.
       const archivedFieldFields = archivedCustomFields.map((field) =>
-        createFieldConfig(`custom_fields.${field.key}`, {
+        createFieldConfig(fieldFilterKey(field.namespace, field.key), {
           label: field.name,
           icon: React.createElement(LucideIcon.Archive, { className: 'size-4' }),
           // Read-only: the operator and value stay visible so the segment reads
@@ -437,16 +461,27 @@ export function useMemberFilterFields({
         }),
       );
 
-      const allCustomFieldFields = [...customFieldFields, ...archivedFieldFields];
+      // A group per namespace that declared a field, in the order the fields came
+      // back, so the publisher's own sit under "Custom fields" as they always have and
+      // a namespace Ghost declared reads under its own name. Which namespaces exist is
+      // a fact about the site, so nothing here lists them.
+      const byNamespace = new Map<string, FilterFieldConfig[]>();
+      for (const [index, field] of [...customFields, ...archivedCustomFields].entries()) {
+        const forNamespace = byNamespace.get(field.namespace) ?? [];
+        forNamespace.push([...customFieldFields, ...archivedFieldFields][index]);
+        byNamespace.set(field.namespace, forNamespace);
+      }
 
-      // Nothing defined yet means nothing to filter on, so the group stays out of
-      // the picker entirely rather than showing a section that can't be used.
-      if (allCustomFieldFields.length > 0) {
-        groups.push({
-          group: 'Custom fields',
-          fields: allCustomFieldFields,
-          previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT,
-        });
+      // Nothing defined yet means nothing to filter on, so a group stays out of the
+      // picker entirely rather than showing a section that can't be used.
+      for (const [namespace, fieldsInNamespace] of byNamespace) {
+        if (fieldsInNamespace.length > 0) {
+          groups.push({
+            group: groupLabelFor(namespace),
+            fields: fieldsInNamespace,
+            previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT,
+          });
+        }
       }
     }
 

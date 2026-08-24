@@ -177,6 +177,18 @@ export const CUSTOM_FIELD_OPERATORS: readonly string[] = [
  */
 export const CUSTOM_FIELDS_PREFIX = 'custom_fields.';
 
+/** A field's dropdown key: the namespace that declared it, then its own key. */
+export const fieldFilterKey = (namespace: string, key: string) => `${namespace}.${key}`;
+
+/**
+ * Whether a filter key names a member field, given the namespaces that declared one.
+ *
+ * Which namespaces exist is a fact about the site, so the caller passes them rather than
+ * this assuming the publisher's.
+ */
+export const isFieldFilterKey = (key: string, namespaces: readonly string[]) =>
+  namespaces.some((namespace) => key.startsWith(`${namespace}.`));
+
 // NQL operator symbol for each value operator. The field is named in the value
 // position (`custom_fields.key:'…'`) so its key can carry hyphens; the value is
 // matched on `custom_fields.value` (scalar) or `custom_fields.value.<subfield>`
@@ -202,26 +214,27 @@ const customFieldsCodec: FilterCodec = {
   // with subfield '' for a scalar field or the "Any" (whole-field set/unset) case.
   serialize(predicate, ctx) {
     const fieldKey = ctx.params.key;
+    const namespace = ctx.params.namespace;
     const [subfield, value] = predicate.values as [string, string];
 
-    if (!fieldKey) {
+    if (!fieldKey || !namespace) {
       return null;
     }
 
-    const keyClause = `custom_fields.key:${escapeNqlString(fieldKey)}`;
+    const keyClause = `${namespace}.key:${escapeNqlString(fieldKey)}`;
 
     // set / not-set target a part's presence when a part is chosen (`path`), or the
     // whole field otherwise (the bare key / its negation).
     if (predicate.operator === 'is-set') {
       return subfield
-        ? [`(${keyClause}+custom_fields.path:${escapeNqlString(subfield)})`]
+        ? [`(${keyClause}+${namespace}.path:${escapeNqlString(subfield)})`]
         : [keyClause];
     }
 
     if (predicate.operator === 'is-not-set') {
       return subfield
-        ? [`(${keyClause}+custom_fields.path:-${escapeNqlString(subfield)})`]
-        : [`custom_fields.key:-${escapeNqlString(fieldKey)}`];
+        ? [`(${keyClause}+${namespace}.path:-${escapeNqlString(subfield)})`]
+        : [`${namespace}.key:-${escapeNqlString(fieldKey)}`];
     }
 
     const symbol = CUSTOM_FIELD_VALUE_SYMBOLS[predicate.operator];
@@ -230,7 +243,7 @@ const customFieldsCodec: FilterCodec = {
       return null;
     }
 
-    const valueKey = subfield ? `custom_fields.value.${subfield}` : 'custom_fields.value';
+    const valueKey = subfield ? `${namespace}.value.${subfield}` : `${namespace}.value`;
 
     return [`(${keyClause}+${valueKey}:${symbol}${escapeNqlString(String(value))})`];
   },
@@ -557,10 +570,12 @@ const baseMemberFields = defineFields({
     ],
     codec: multipleActiveSubscriptionsCodec,
   },
-  // Each defined custom field is its own filter, named directly in the dropdown
-  // (`custom_fields.<key>`), so this template supplies the shared operators and codec;
-  // use-member-filter-fields builds one entry per field from the definitions.
-  'custom_fields.:key': {
+  // Each defined field is its own filter, named directly in the dropdown by the
+  // namespace that declared it and its key (`custom_fields.<key>`, `shipping.<key>`), so
+  // this template supplies the shared operators and codec; use-member-filter-fields
+  // builds one entry per field. Last, so a pattern naming its segments outright — a
+  // newsletter's slug — is matched before this general one.
+  ':namespace.:key': {
     operators: CUSTOM_FIELD_OPERATORS,
     ui: {
       label: 'Custom field',
@@ -573,7 +588,7 @@ const baseMemberFields = defineFields({
       // it is shown whatever the operator, the way Label is. No name resolved means
       // no such field for this site (or the flag is off), so no column either.
       activeColumn: ({ params, label }) =>
-        label ? { key: `${CUSTOM_FIELDS_PREFIX}${params.key}`, label } : null,
+        label ? { key: fieldFilterKey(params.namespace, params.key), label } : null,
       // Asked for as soon as a custom field is filtered on, without waiting for the
       // names: the values are what the column will hold, and they travel on the same
       // request the filter already sends. The API takes this include whether or not

@@ -1035,8 +1035,23 @@ module.exports = {
   },
   members_custom_fields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    key: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Who declared the field. Publisher-defined fields sit in `custom_fields`, which is
+    // the namespace their values are already addressed under in CSV columns, the members
+    // filter and the Admin API; a namespace Ghost declares carries fields a publisher may
+    // fill in but not rename, archive or delete.
+    //
+    // Keys stay unique across every namespace rather than within one. A released
+    // migration recreates the values table with a foreign key to this column, so
+    // narrowing the constraint leaves that reference invalid whenever migrations are
+    // replayed. A namespace Ghost declares therefore states itself in the key it mints.
+    namespace: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      defaultTo: 'custom_fields',
+    },
+    key: { type: 'string', maxlength: 191, nullable: false },
+    name: { type: 'string', maxlength: 191, nullable: false },
     type: {
       type: 'string',
       maxlength: 50,
@@ -1063,18 +1078,31 @@ module.exports = {
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+    // Named, and distinctly from what knex derives for a single-column unique, so
+    // dropping one can never be mistaken for dropping the other.
+    '@@UNIQUE_CONSTRAINTS@@': [
+      {
+        columns: ['namespace', 'key'],
+        indexName: 'members_custom_fields_namespace_key_unique',
+      },
+      {
+        columns: ['namespace', 'name'],
+        indexName: 'members_custom_fields_namespace_name_unique',
+      },
+    ],
   },
   members_custom_field_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    // The field's stable key, not its id: a value is addressed by key everywhere it
-    // matters (the write names it, a filter names it, the key is immutable), so the row
-    // carries it directly and the read and filter paths skip an id-to-key join. Matches
-    // the referenced column's 191, as a foreign key must.
-    custom_field_key: {
+    // The field's id, and nothing about which field that is. A key identifies a field
+    // only inside its namespace, so a reference to one would have to name both columns
+    // and this schema states a reference as one. What a filter needs — the namespace and
+    // the key — is resolved by the `members_custom_field_leaves` view rather than copied
+    // onto every row.
+    field_id: {
       type: 'string',
-      maxlength: 191,
+      maxlength: 24,
       nullable: false,
-      references: 'members_custom_fields.key',
+      references: 'members_custom_fields.id',
       cascadeDelete: true,
     },
     member_id: {
@@ -1104,7 +1132,7 @@ module.exports = {
     // column spends what headroom that bought.
     '@@UNIQUE_CONSTRAINTS@@': [
       {
-        columns: ['member_id', 'custom_field_key', 'path'],
+        columns: ['member_id', 'field_id', 'path'],
         indexName: 'members_custom_field_values_leaf_unique',
       },
     ],
@@ -1113,7 +1141,7 @@ module.exports = {
     // TEXT, so MySQL would need a prefix length, and the schema's index builder
     // applies one length to every column in a composite index rather than to a
     // single chosen one.
-    '@@INDEXES@@': [['custom_field_key', 'path']],
+    '@@INDEXES@@': [['field_id', 'path']],
   },
   members_stripe_customers: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

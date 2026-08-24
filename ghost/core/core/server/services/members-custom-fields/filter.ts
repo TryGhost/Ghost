@@ -21,13 +21,47 @@
 // matches no leaf; the admin never offers an archived or deleted field in the filter UI,
 // though the API leaves them queryable.
 import errors from '@tryghost/errors';
+import { PUBLISHER_NAMESPACE } from './schema';
 
-const RELATION = 'custom_fields';
-const PREFIX = `${RELATION}.`;
-const KEY_ATTRIBUTE = `${PREFIX}key`;
-const VALUE_ATTRIBUTE = `${PREFIX}value`;
-const PATH_ATTRIBUTE = `${PREFIX}path`;
 const ROOT_PATH = '';
+
+/** The attribute names a namespace's clauses are written with. */
+function attributesFor(namespace: string) {
+  const prefix = `${namespace}.`;
+  return {
+    relation: namespace,
+    prefix,
+    key: `${prefix}key`,
+    value: `${prefix}value`,
+    path: `${prefix}path`,
+  };
+}
+
+/**
+ * The namespaces a filter addresses, taken from the filter itself rather than from a list
+ * kept in code. A namespace exists because a field was declared in it, which is a fact
+ * about the database; nothing here is in a position to ask, and a namespace holding no
+ * field simply matches nothing, exactly as a key naming no field already does.
+ *
+ * Only a prefix used with this grammar counts, so a filter naming an unknown relation any
+ * other way is still rejected rather than quietly matching nothing. Prefixes already
+ * spoken for by another relation are left alone.
+ */
+export function fieldNamespacesInFilter(filter: unknown, taken: readonly string[]): string[] {
+  if (typeof filter !== 'string') {
+    return [];
+  }
+
+  const named = new Set<string>();
+  for (const [, namespace] of filter.matchAll(
+    /([a-z][a-z0-9_]*)\.(?:key|value|path)\b/g,
+  )) {
+    if (!taken.includes(namespace)) {
+      named.add(namespace);
+    }
+  }
+  return [...named];
+}
 
 type QueryNode = Record<string, unknown>;
 
@@ -42,48 +76,51 @@ function isPlainObject(value: unknown): value is QueryNode {
   );
 }
 
-// A single-clause object whose one key targets the custom_fields relation.
-function isCustomFieldClause(node: unknown): node is QueryNode {
-  if (!isPlainObject(node)) {
-    return false;
-  }
-  const keys = Object.keys(node);
-  return keys.length === 1 && keys[0].startsWith(PREFIX);
-}
-
-// A grouped compound: an $and whose clauses all target the relation and name exactly one
-// `key`. Its clauses describe one leaf row.
-//
-// Exactly one, not at least one: two whole-field filters ANDed together arrive as a flat
-// `key:'a'+key:'b'`, since a bare key clause needs no group of its own. That is two
-// filters — a member with a value for both — not one leaf that is somehow both fields, so
-// it has to fall through and be transformed a clause at a time.
-function isCustomFieldCompound(clauses: unknown): clauses is QueryNode[] {
-  if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isCustomFieldClause)) {
-    return false;
-  }
-  return clauses.filter((clause) => Object.keys(clause)[0] === KEY_ATTRIBUTE).length === 1;
-}
-
-// `custom_fields.value` addresses the scalar (root) leaf; `custom_fields.value.<part>`
-// a composite's part. Returns the row `path` the attribute selects, or null if the
-// attribute isn't a value clause.
-function pathForValueAttribute(attribute: string): string | null {
-  if (attribute === VALUE_ATTRIBUTE) {
-    return ROOT_PATH;
-  }
-  if (attribute.startsWith(`${VALUE_ATTRIBUTE}.`)) {
-    return attribute.slice(`${VALUE_ATTRIBUTE}.`.length);
-  }
-  return null;
-}
 
 // The single `{$ne}` shape all negations arrive as (is-not-set on a key or part).
 function negatedString(value: unknown): string | null {
   return isPlainObject(value) && typeof value.$ne === 'string' ? value.$ne : null;
 }
 
-export function createCustomFieldsFilterTransformer() {
+export function createCustomFieldsFilterTransformer(namespace: string = PUBLISHER_NAMESPACE) {
+  const { relation: RELATION, prefix: PREFIX, key: KEY_ATTRIBUTE, value: VALUE_ATTRIBUTE, path: PATH_ATTRIBUTE } =
+    attributesFor(namespace);
+
+  // A single-clause object whose one key targets the custom_fields relation.
+  function isCustomFieldClause(node: unknown): node is QueryNode {
+    if (!isPlainObject(node)) {
+      return false;
+    }
+    const keys = Object.keys(node);
+    return keys.length === 1 && keys[0].startsWith(PREFIX);
+  }
+
+  // A grouped compound: an $and whose clauses all target the relation and name exactly one
+  // `key`. Its clauses describe one leaf row.
+  //
+  // Exactly one, not at least one: two whole-field filters ANDed together arrive as a flat
+  // `key:'a'+key:'b'`, since a bare key clause needs no group of its own. That is two
+  // filters — a member with a value for both — not one leaf that is somehow both fields, so
+  // it has to fall through and be transformed a clause at a time.
+  function isCustomFieldCompound(clauses: unknown): clauses is QueryNode[] {
+    if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isCustomFieldClause)) {
+      return false;
+    }
+    return clauses.filter((clause) => Object.keys(clause)[0] === KEY_ATTRIBUTE).length === 1;
+  }
+
+  // `custom_fields.value` addresses the scalar (root) leaf; `custom_fields.value.<part>`
+  // a composite's part. Returns the row `path` the attribute selects, or null if the
+  // attribute isn't a value clause.
+  function pathForValueAttribute(attribute: string): string | null {
+    if (attribute === VALUE_ATTRIBUTE) {
+      return ROOT_PATH;
+    }
+    if (attribute.startsWith(`${VALUE_ATTRIBUTE}.`)) {
+      return attribute.slice(`${VALUE_ATTRIBUTE}.`.length);
+    }
+    return null;
+  }
   // The grammar carries the field key in the clause value; take it as a string,
   // defaulting to one no field can hold so a malformed clause matches nothing.
   const keyOf = (value: unknown): string => (typeof value === 'string' ? value : '');
@@ -91,7 +128,9 @@ export function createCustomFieldsFilterTransformer() {
   // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
   // by these matches", `$not` is "no leaf does".
   function buildElemMatch(fieldKey: string, conditions: QueryNode, negate: boolean): QueryNode {
-    const match = { custom_field_key: fieldKey, ...conditions };
+    // The namespace as well as the key: a key identifies a field only inside one, so
+    // without it a publisher's filter would also match a field Ghost declared.
+    const match = { namespace, key: fieldKey, ...conditions };
     if (negate) {
       return { [RELATION]: { $not: { $elemMatch: match } } };
     }
@@ -203,9 +242,11 @@ export function createCustomFieldsFilterTransformer() {
  * it as a correlated `members.id IN (…)` subquery — composing with every other member
  * filter. Registered only behind the `membersCustomFields` flag.
  */
-export const CUSTOM_FIELDS_RELATION = {
-  tableName: 'members_custom_field_values',
-  tableNameAs: RELATION,
-  type: 'oneToOne',
-  joinFrom: 'member_id',
-} as const;
+export function fieldsRelation(namespace: string) {
+  return {
+    tableName: 'members_custom_field_leaves',
+    tableNameAs: namespace,
+    type: 'oneToOne',
+    joinFrom: 'member_id',
+  } as const;
+}

@@ -113,7 +113,7 @@ type CustomFieldPlan = unknown;
 // them, touching only the parts the row named, both on the row's transaction.
 export interface CustomFieldsImport {
   activeFields(): Promise<CsvField[]>;
-  planWrite(values: Record<string, unknown>): Promise<CustomFieldPlan[]>;
+  planWrite(values: Record<string, unknown>, namespace: string): Promise<CustomFieldPlan[]>;
   applyWrite(memberId: string, plan: CustomFieldPlan[], executor: Knex): Promise<void>;
 }
 
@@ -342,6 +342,13 @@ class MembersCSVImporter {
 
     // Whatever became of it, the publisher hears exactly once. If this is what fails,
     // there is nobody left to tell but us.
+    // Only for a report that will list rows: the error report echoes back the field
+    // columns a failed row carried, and which columns those are depends on the
+    // namespaces a field can be declared in.
+    const fieldNamespaces = result?.errors?.length
+      ? [...new Set((await this._customFields.activeFields()).map((field) => field.namespace))]
+      : [];
+
     await this.settle(() =>
       this._email.send(
         buildImportEmail({
@@ -349,6 +356,7 @@ class MembersCSVImporter {
           recipient: emailRecipient,
           labelName,
           links: this._email.links,
+          fieldNamespaces,
         }),
       ),
     );
@@ -444,13 +452,23 @@ class MembersCSVImporter {
         // planWrite only reads, and it throws on an invalid value to fail the row
         // before any member write -- so there is no reason to hold a transaction
         // across it, and doing so would deadlock the single-connection SQLite pool.
+        // A plan per namespace the row named, concatenated: a key identifies a field
+        // only inside one, so each namespace resolves its own keys.
         const customFieldPlan =
           activeCustomFields.length > 0
-            ? await namingTheColumn(() =>
-                this._customFields.planWrite(
-                  fieldValuesFromCsvRow(activeCustomFields, row, stripFormulaGuard),
-                ),
-              )
+            ? await namingTheColumn(async () => {
+                const byNamespace = fieldValuesFromCsvRow(
+                  activeCustomFields,
+                  row,
+                  stripFormulaGuard,
+                );
+                const plans = await Promise.all(
+                  Object.entries(byNamespace).map(([namespace, values]) =>
+                    this._customFields.planWrite(values, namespace),
+                  ),
+                );
+                return plans.flat();
+              })
             : [];
 
         trx = await this._knex.transaction(undefined, { doNotRejectOnRollback: false });

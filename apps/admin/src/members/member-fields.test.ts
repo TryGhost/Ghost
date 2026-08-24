@@ -43,7 +43,7 @@ describe('memberFields', () => {
       'newsletter_feedback',
       'offer_redemptions',
       'count.active_stripe_customers',
-      'custom_fields.:key',
+      ':namespace.:key',
     ]);
   });
 

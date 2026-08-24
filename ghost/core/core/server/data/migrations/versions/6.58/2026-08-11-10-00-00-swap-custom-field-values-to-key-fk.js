@@ -72,20 +72,34 @@ const ID_SHAPE = {
 // rather than an ALTER. Existing rows are discarded either way: the feature is behind the
 // `membersCustomFields` flag with no released data, so a wipe is cheaper than a backfill.
 // Re-running after a mid-migration crash is safe — the table is dropped first if present.
-async function rebuild(knex, shape) {
-  if (await knex.schema.hasTable(TABLE)) {
-    await commands.deleteTable(TABLE, knex);
+async function rebuild(knex, shape, from) {
+  // A crash between the drop and the create leaves no table to convert; recreate it as
+  // whichever shape this direction wanted.
+  if (!(await knex.schema.hasTable(TABLE))) {
+    await commands.createTable(TABLE, knex, shape);
+    return;
   }
+
+  // Only when the table is still the shape this converts from. Migrations are replayed
+  // against whatever schema is current, and rebuilding from a fixed shape then would
+  // undo a later migration's work — including pointing a foreign key at a constraint
+  // that migration had narrowed, which nothing can then write through.
+  if (!(await knex.schema.hasColumn(TABLE, from))) {
+    logging.info(`${TABLE} is not keyed by ${from}, leaving it alone`);
+    return;
+  }
+
+  await commands.deleteTable(TABLE, knex);
   await commands.createTable(TABLE, knex, shape);
 }
 
 module.exports = createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Keying members_custom_field_values by custom_field_key');
-    await rebuild(knex, KEY_SHAPE);
+    await rebuild(knex, KEY_SHAPE, 'custom_field_id');
   },
   async function down(knex) {
     logging.info('Reverting members_custom_field_values to custom_field_id');
-    await rebuild(knex, ID_SHAPE);
+    await rebuild(knex, ID_SHAPE, 'custom_field_key');
   },
 );

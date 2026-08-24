@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import ObjectID from 'bson-objectid';
 
 const {
   agentProvider,
@@ -1030,6 +1031,230 @@ describe('Member Custom Fields Admin API', function () {
         actions.map((action: { context: string | null }) => JSON.parse(action.context ?? '{}').key),
         ['company'],
       );
+    });
+  });
+
+  // A field declared by something other than the publisher. Nothing provisions one yet,
+  // so these insert it directly; every assertion is still made through the API, because
+  // what is pinned is what the publisher's API does with a field it does not own.
+  describe('A field in another namespace', function () {
+    const SHIPPING = 'shipping';
+
+    async function declareShippingField(key: string, name: string): Promise<string> {
+      const id = new ObjectID().toHexString();
+      await models.Base.knex('members_custom_fields').insert({
+        id,
+        namespace: SHIPPING,
+        key,
+        name,
+        type: 'short_text',
+        sort_order: 0,
+        created_at: new Date(),
+      });
+      return id;
+    }
+
+    async function storeShippingValue(fieldId: string, memberId: string, value: string) {
+      await models.Base.knex('members_custom_field_values').insert({
+        id: new ObjectID().toHexString(),
+        field_id: fieldId,
+        member_id: memberId,
+        path: '',
+        value_text: value,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+    }
+
+    it('is not listed among the publisher fields', async function () {
+      await createField({ name: 'Nickname' });
+      await declareShippingField('address', 'Address');
+
+      const { body } = await agent.get('members/custom_fields/').expectStatus(200);
+
+      assert.deepEqual(
+        body.members_custom_fields.map((field: { key: string }) => field.key),
+        ['nickname'],
+      );
+    });
+
+    // The point of the namespace: the publisher keeps every name and key they would
+    // have had, whatever Ghost has declared for itself.
+    it('does not stop the publisher minting the same key', async function () {
+      await declareShippingField('address', 'Address');
+
+      const field = await createField({ name: 'Address' });
+
+      assert.equal(field.key, 'address', 'the publisher got the key they asked for');
+    });
+
+    it('cannot be renamed, archived or deleted through the publisher API', async function () {
+      await declareShippingField('address', 'Address');
+
+      await agent
+        .put('members/custom_fields/address/')
+        .body({ members_custom_fields: [{ name: 'Delivery address' }] })
+        .expectStatus(404);
+
+      await agent
+        .put('members/custom_fields/address/')
+        .body({ members_custom_fields: [{ status: 'archived' }] })
+        .expectStatus(404);
+
+      await agent.delete('members/custom_fields/address/').expectStatus(404);
+    });
+
+    // A member's values are keyed by the field's key, which identifies a field only
+    // inside its namespace, so the object has to carry the publisher's field and not
+    // whatever else happens to share the key.
+    it('does not leak into a member custom fields', async function () {
+      const shippingId = await declareShippingField('address', 'Address');
+      const publisherField = await createField({ name: 'Address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [publisherField.key]: 'Theirs' });
+      await storeShippingValue(shippingId, memberId, 'Ours');
+
+      assert.deepEqual(await readValues(memberId), { address: 'Theirs' });
+    });
+
+    it('is not matched by a filter naming the same key in another namespace', async function () {
+      const shippingId = await declareShippingField('address', 'Address');
+      const memberId = await createMember();
+      await storeShippingValue(shippingId, memberId, 'Ours');
+
+      const filter = encodeURIComponent("custom_fields.key:'address'+custom_fields.value:'Ours'");
+      const { body } = await agent.get(`members/?filter=${filter}`).expectStatus(200);
+
+      assert.deepEqual(body.members, []);
+    });
+
+    // Every namespace is addressed the same way, and which ones exist is a fact about the
+    // database, so a filter naming one resolves without anything having declared it here.
+    it('is matched by a filter naming its own namespace', async function () {
+      const shippingId = await declareShippingField('address', 'Address');
+      const memberId = await createMember();
+      await storeShippingValue(shippingId, memberId, 'Ours');
+
+      const filter = encodeURIComponent("shipping.key:'address'+shipping.value:'Ours'");
+      const { body } = await agent.get(`members/?filter=${filter}`).expectStatus(200);
+
+      assert.deepEqual(
+        body.members.map((member: { id: string }) => member.id),
+        [memberId],
+      );
+    });
+
+    it('is not matched when another namespace holds the value', async function () {
+      const shippingId = await declareShippingField('address', 'Address');
+      const publisherField = await createField({ name: 'Address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [publisherField.key]: 'Theirs' });
+      await storeShippingValue(shippingId, memberId, 'Ours');
+
+      const filter = encodeURIComponent("shipping.key:'address'+shipping.value:'Theirs'");
+      const { body } = await agent.get(`members/?filter=${filter}`).expectStatus(200);
+
+      assert.deepEqual(body.members, [], 'the publisher value did not answer for shipping');
+    });
+
+    // A member's values are every namespace's, each under the one that declared it.
+    it('reads back under its own namespace, beside the publisher fields', async function () {
+      const shippingId = await declareShippingField('address', 'Address');
+      const publisherField = await createField({ name: 'Address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [publisherField.key]: 'Theirs' });
+      await storeShippingValue(shippingId, memberId, 'Ours');
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+
+      assert.deepEqual(body.members[0].custom_fields, { address: 'Theirs' });
+      assert.deepEqual(body.members[0].shipping, { address: 'Ours' });
+    });
+  });
+
+  // What a surface reads to know a field exists, as opposed to what the publisher may
+  // manage. Both namespaces are in it, and each field says which one declared it.
+  describe('Every declared field', function () {
+    async function declareForeignField(key: string, name: string): Promise<string> {
+      const id = new ObjectID().toHexString();
+      await models.Base.knex('members_custom_fields').insert({
+        id,
+        namespace: 'shipping',
+        key,
+        name,
+        type: 'short_text',
+        sort_order: 0,
+        created_at: new Date(),
+      });
+      return id;
+    }
+
+    it('lists a field from every namespace, saying which declared it', async function () {
+      await createField({ name: 'Nickname' });
+      await declareForeignField('address', 'Address');
+
+      const { body } = await agent.get('members/fields/').expectStatus(200);
+
+      assert.deepEqual(
+        body.members_fields.map((field: { namespace: string; key: string }) => ({
+          namespace: field.namespace,
+          key: field.key,
+        })),
+        [
+          { namespace: 'custom_fields', key: 'nickname' },
+          { namespace: 'shipping', key: 'address' },
+        ],
+      );
+    });
+
+    // The same key in two namespaces is two fields, and this is the read that has to
+    // keep them apart for a filter picker to offer both.
+    it('lists the same key once per namespace holding it', async function () {
+      await declareForeignField('address', 'Address');
+      await createField({ name: 'Address' });
+
+      const { body } = await agent.get('members/fields/').expectStatus(200);
+
+      assert.deepEqual(
+        body.members_fields.map((field: { namespace: string }) => field.namespace).sort(),
+        ['custom_fields', 'shipping'],
+      );
+    });
+
+    it('hides archived fields unless asked for them', async function () {
+      const field = await createField({ name: 'Nickname' });
+      await setStatus(field.key, 'archived');
+
+      const { body: hidden } = await agent.get('members/fields/').expectStatus(200);
+      assert.deepEqual(hidden.members_fields, []);
+
+      const { body: shown } = await agent
+        .get('members/fields/?filter=status:[active,archived]')
+        .expectStatus(200);
+      assert.deepEqual(
+        shown.members_fields.map((one: { key: string }) => one.key),
+        [field.key],
+      );
+    });
+
+    // Read-only: declaring a field outside the publisher's namespace is the owner's
+    // business, not something the API offers. Only the create is asserted — a PUT on
+    // this path is captured by the member edit route as an id, so what it answers says
+    // nothing about this endpoint.
+    it('offers no way to create through it', async function () {
+      await agent
+        .post('members/fields/')
+        .body({ members_fields: [{ name: 'Nope', type: 'short_text' }] })
+        .expectStatus(404);
+    });
+
+    it('is refused without permission', async function () {
+      await agent.loginAsEditor();
+      await agent.get('members/fields/').expectStatus(403);
+      await agent.loginAsOwner();
     });
   });
 

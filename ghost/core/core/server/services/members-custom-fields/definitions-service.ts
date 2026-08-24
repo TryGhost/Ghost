@@ -5,8 +5,13 @@ import { z } from 'zod';
 import { CustomField } from './models';
 import { FieldTypeSchema } from '@tryghost/custom-field-types';
 import { customFieldCodec } from './codec';
-import { FIELD_STATUS, FieldStatusSchema } from './schema';
-import { activeFields, inFieldOrder } from './queries';
+import { FIELD_STATUS, FieldStatusSchema, PUBLISHER_NAMESPACE } from './schema';
+import {
+  activeFields,
+  activeFieldsInEveryNamespace,
+  inFieldOrder,
+  publisherFields,
+} from './queries';
 import { mintableKey } from './key';
 import { type RecordCustomFieldAction, type RequestContext } from './actions';
 
@@ -125,9 +130,33 @@ export class CustomFieldDefinitionsService {
     // Whichever set comes back, it comes back in the publisher's order: filtering
     // narrows the list, it never reorders it.
     const query = options.filter
-      ? applyFilter(this.knex(TABLE), options.filter)
+      ? applyFilter(publisherFields(this.knex), options.filter)
       : activeFields(this.knex);
     return this.list(query);
+  }
+
+  /**
+   * Every declared field, whichever namespace declared it, in the publisher's order.
+   *
+   * What a surface needs to know a field exists — the filter picker, the import mapping
+   * targets, a column — as opposed to what the publisher may manage, which is `browse`.
+   * A field Ghost declared is offered to filter on and never offered to rename.
+   */
+  async browseEveryNamespace(options: { filter?: string } = {}): Promise<CustomField[]> {
+    const query = options.filter
+      ? applyFilter(this.knex(TABLE), options.filter)
+      : activeFieldsInEveryNamespace(this.knex);
+    return this.list(query);
+  }
+
+  /**
+   * Every active field, whichever namespace declared it, in the publisher's order.
+   *
+   * The read for paths that address a field by namespace and key: CSV columns, and a
+   * member's values. `browse` stays the publisher's own list.
+   */
+  async activeInEveryNamespace(): Promise<CustomField[]> {
+    return this.list(activeFieldsInEveryNamespace(this.knex));
   }
 
   /**
@@ -142,7 +171,7 @@ export class CustomFieldDefinitionsService {
   }
 
   async read(key: string): Promise<CustomField> {
-    const row = await this.knex(TABLE).where('key', key).first();
+    const row = await publisherFields(this.knex).where('key', key).first();
     if (!row) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
@@ -203,6 +232,7 @@ export class CustomFieldDefinitionsService {
           const key = await this.mintKey(trx, bases[index]);
           await trx(TABLE).insert({
             id: new ObjectID().toHexString(),
+            namespace: PUBLISHER_NAMESPACE,
             key,
             name: field.name,
             type: field.type,
@@ -258,7 +288,7 @@ export class CustomFieldDefinitionsService {
   private async assertWithinLimit(db: Knex, addedCount: number): Promise<void> {
     const max = this.getMaxDefinitions();
 
-    const row = await db(TABLE).count({ count: '*' }).first();
+    const row = await publisherFields(db).count({ count: '*' }).first();
     const total = Number(row?.count ?? 0);
     if (total + addedCount <= max) {
       return;
@@ -309,12 +339,12 @@ export class CustomFieldDefinitionsService {
       // change, the list around them did.
       const ranks = new Map(keys.map((key, rank) => [key, rank]));
       for (const key of [...keys].sort()) {
-        await trx(TABLE)
+        await publisherFields(trx)
           .where('key', key)
           .update({ sort_order: ranks.get(key)! });
       }
 
-      return this.list(trx(TABLE));
+      return this.list(publisherFields(trx));
     });
 
     await this.recordAction({
@@ -333,7 +363,7 @@ export class CustomFieldDefinitionsService {
    */
   private async assertNamesEveryField(db: Knex, keys: string[]): Promise<void> {
     const named = new Set(keys);
-    const existing = new Set(await db(TABLE).pluck<string[]>('key'));
+    const existing = new Set(await publisherFields(db).pluck<string[]>('key'));
 
     const matches =
       named.size === keys.length &&
@@ -350,7 +380,7 @@ export class CustomFieldDefinitionsService {
 
   /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
   private async nextSortOrder(db: Knex): Promise<number> {
-    const row = await db(TABLE).max({ highest: 'sort_order' }).first();
+    const row = await publisherFields(db).max({ highest: 'sort_order' }).first();
     const highest = row?.highest;
     // No fields yet, so this one starts the order.
     if (highest === null || highest === undefined) {
@@ -361,7 +391,7 @@ export class CustomFieldDefinitionsService {
 
   /** Read back a batch in the order its keys were created, not the table's order. */
   private async readMany(db: Knex, keys: string[]): Promise<CustomField[]> {
-    const rows = await db(TABLE).whereIn('key', keys).select('*');
+    const rows = await publisherFields(db).whereIn('key', keys).select('*');
     const byKey = new Map(rows.map((row) => [row.key, row]));
     return keys.map((key) => z.decode(customFieldCodec, byKey.get(key)!));
   }
@@ -378,7 +408,7 @@ export class CustomFieldDefinitionsService {
     const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
     const taken = new Set([
       ...RESERVED_KEYS,
-      ...(await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')),
+      ...(await publisherFields(db).where('key', 'like', `${safeBase}%`).pluck('key')),
     ]);
     if (!taken.has(safeBase)) {
       return safeBase;
@@ -408,7 +438,7 @@ export class CustomFieldDefinitionsService {
    * own name on an unrelated edit.
    */
   private async assertNameAvailable(db: Knex, name: string, exceptKey?: string): Promise<void> {
-    const query = db(TABLE).whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
+    const query = publisherFields(db).whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
     if (exceptKey) {
       query.whereNot('key', exceptKey);
     }
@@ -454,7 +484,7 @@ export class CustomFieldDefinitionsService {
     if (patch.name !== undefined && patch.name !== existing.name) {
       await this.assertNameAvailable(this.knex, patch.name, key);
       try {
-        await this.knex(TABLE)
+        await publisherFields(this.knex)
           .where('key', key)
           .update({ name: patch.name, updated_at: new Date() });
       } catch (err) {
@@ -476,7 +506,7 @@ export class CustomFieldDefinitionsService {
     // A status change is the archive/restore transition. Only write (and log)
     // when it actually flips, so re-sending the current status is a no-op.
     if (patch.status !== undefined && patch.status !== existing.status) {
-      await this.knex(TABLE)
+      await publisherFields(this.knex)
         .where('key', key)
         .update({ status: patch.status, updated_at: new Date() });
       const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
@@ -499,7 +529,7 @@ export class CustomFieldDefinitionsService {
    * reversible soft state (see `edit` with a status change).
    */
   async destroy(context: RequestContext, key: string): Promise<void> {
-    const field = await this.knex(TABLE).where('key', key).first();
+    const field = await publisherFields(this.knex).where('key', key).first();
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
@@ -508,7 +538,7 @@ export class CustomFieldDefinitionsService {
         message: 'Only archived custom fields can be deleted. Archive the field first.',
       });
     }
-    await this.knex(TABLE).where('key', key).del();
+    await publisherFields(this.knex).where('key', key).del();
     await this.recordAction({
       context,
       verb: 'delete',

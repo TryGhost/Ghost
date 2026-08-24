@@ -4,8 +4,8 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/custom-field-types';
-import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS } from './schema';
-import { activeFields } from './queries';
+import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, PUBLISHER_NAMESPACE } from './schema';
+import { activeFieldsInEveryNamespace } from './queries';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
 
 const FIELDS_TABLE = 'members_custom_fields';
@@ -37,6 +37,7 @@ const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
 
 interface ActiveField {
   id: string;
+  namespace: string;
   key: string;
   name: string;
   type: FieldType;
@@ -63,13 +64,19 @@ export class CustomFieldValuesService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
-  private async activeFieldsByKey(keys: string[]): Promise<Map<string, ActiveField>> {
+  // Within one namespace, because a key names a different field in each and a write
+  // always knows which one it is writing into.
+  private async activeFieldsByKey(
+    keys: string[],
+    namespace: string,
+  ): Promise<Map<string, ActiveField>> {
     if (keys.length === 0) {
       return new Map();
     }
-    const fields = await activeFields(this.knex)
+    const fields = await activeFieldsInEveryNamespace(this.knex)
+      .where('namespace', namespace)
       .whereIn('key', keys)
-      .select('id', 'key', 'name', 'type');
+      .select('id', 'namespace', 'key', 'name', 'type');
     return new Map(fields.map((field) => [field.key, field]));
   }
 
@@ -85,16 +92,19 @@ export class CustomFieldValuesService {
       return new Map();
     }
 
-    // Not ordered by field: these rows become an object keyed by field, and an object
-    // cannot carry an order. `path` is ordered so composite parts assemble the same
-    // way every time.
-    const rows = await this.knex(VALUES_TABLE)
-      .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_key`, `${FIELDS_TABLE}.key`)
-      .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
+    // Every namespace, not just the publisher's: a member's values are all of them, and
+    // the namespace each row carries is what keeps them apart once assembled.
+    //
+    // Not ordered by field: an object cannot carry an order. `path` is ordered so
+    // composite parts assemble the same way every time.
+    const rows = await this.knex(FIELDS_TABLE)
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
+      .join(VALUES_TABLE, `${VALUES_TABLE}.field_id`, `${FIELDS_TABLE}.id`)
+      .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
       .select(
         `${VALUES_TABLE}.member_id`,
+        `${FIELDS_TABLE}.namespace`,
         `${FIELDS_TABLE}.key`,
         `${FIELDS_TABLE}.type`,
         `${VALUES_TABLE}.path`,
@@ -145,7 +155,10 @@ export class CustomFieldValuesService {
    * validate before opening a transaction it would otherwise have to unwind, then apply
    * the same plan without re-resolving it.
    */
-  async planWrite(input: unknown): Promise<PlannedWrite[]> {
+  async planWrite(
+    input: unknown,
+    namespace: string = PUBLISHER_NAMESPACE,
+  ): Promise<PlannedWrite[]> {
     const values = this.parseValues(input);
     const keys = Object.keys(values);
 
@@ -159,7 +172,7 @@ export class CustomFieldValuesService {
       });
     }
 
-    const byKey = await this.activeFieldsByKey(keys);
+    const byKey = await this.activeFieldsByKey(keys, namespace);
     const writes: PlannedWrite[] = [];
 
     for (const [key, raw] of Object.entries(values)) {
@@ -225,26 +238,26 @@ export class CustomFieldValuesService {
       // than one per part, under one timestamp, because a write happened once
       // however many rows record it.
       const now = new Date();
-      const clearedKeys: string[] = [];
-      const clearedPaths: Array<{ fieldKey: string; paths: string[] }> = [];
+      const clearedFieldIds: string[] = [];
+      const clearedPaths: Array<{ fieldId: string; paths: string[] }> = [];
       const rows: DbLeafRow[] = [];
 
       for (const { field, value } of writes) {
         if (value === undefined) {
-          clearedKeys.push(field.key);
+          clearedFieldIds.push(field.id);
           continue;
         }
 
         const { set, cleared } = leavesToWrite(value);
         if (cleared.length > 0) {
-          clearedPaths.push({ fieldKey: field.key, paths: cleared });
+          clearedPaths.push({ fieldId: field.id, paths: cleared });
         }
 
         rows.push(
           ...set.map((leaf) => ({
             id: new ObjectID().toHexString(),
             member_id: memberId,
-            custom_field_key: field.key,
+            field_id: field.id,
             path: leaf.path,
             value_text: leaf.value_text,
             created_at: now,
@@ -253,10 +266,10 @@ export class CustomFieldValuesService {
         );
       }
 
-      if (clearedKeys.length > 0) {
+      if (clearedFieldIds.length > 0) {
         await trx(VALUES_TABLE)
           .where('member_id', memberId)
-          .whereIn('custom_field_key', clearedKeys)
+          .whereIn('field_id', clearedFieldIds)
           .del();
       }
 
@@ -265,10 +278,8 @@ export class CustomFieldValuesService {
         await trx(VALUES_TABLE)
           .where('member_id', memberId)
           .where((builder) => {
-            for (const { fieldKey, paths } of clearedPaths) {
-              builder.orWhere((pair) =>
-                pair.where('custom_field_key', fieldKey).whereIn('path', paths),
-              );
+            for (const { fieldId, paths } of clearedPaths) {
+              builder.orWhere((pair) => pair.where('field_id', fieldId).whereIn('path', paths));
             }
           })
           .del();
@@ -282,7 +293,7 @@ export class CustomFieldValuesService {
           .insert(rows.slice(from, from + UPSERT_CHUNK))
           // Naming the columns rather than giving values takes each from the row
           // that lost the conflict, so every part updates to its own value.
-          .onConflict(['member_id', 'custom_field_key', 'path'])
+          .onConflict(['member_id', 'field_id', 'path'])
           .merge(['value_text', 'updated_at']);
       }
     };

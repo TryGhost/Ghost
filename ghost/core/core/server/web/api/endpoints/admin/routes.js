@@ -176,6 +176,16 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
+  // Every declared member field, whichever namespace declared it: what a surface reads
+  // to offer a field to filter on, map an import onto, or show as a column. Read-only —
+  // managing a field is the publisher's own endpoint below, and only their namespace.
+  router.get(
+    '/members/fields',
+    mw.authAdminApi,
+    labs.enabledMiddleware('membersCustomFields'),
+    http(api.membersFields.browse),
+  );
+
   // Member custom field definitions — gated by the members_custom_fields flag.
   // Registered before /members/:id so the literal path isn't captured by :id.
   router.get(

@@ -4,12 +4,13 @@ import {
   type FieldType,
   type PartsOf,
 } from '@tryghost/custom-field-types';
-import { csvColumnsForField } from '@tryghost/custom-field-types/csv';
+import { PUBLISHER_NAMESPACE, csvColumnsForField } from '@tryghost/custom-field-types/csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 
-// Re-exported so the import mapping can recognise a custom_fields.* column (same reason
-// as the re-exports below).
-export { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
+// Re-exported so the import mapping can recognise a field column (same reason as the
+// re-exports below). Takes the namespaces, because which ones exist is a fact about the
+// site rather than something stated here.
+export { isAnyFieldColumn, isFieldColumn } from '@tryghost/custom-field-types/csv';
 
 // Re-exported so admin apps can type address values and validate against the
 // same schemas the server enforces, without a direct dependency on the shared
@@ -140,11 +141,15 @@ export type MemberCustomFieldCsvColumn = {
  * round-tripping column rather than one hand-kept in sync.
  */
 export const memberCustomFieldCsvColumns = (
-  fields: MemberCustomField[],
+  fields: Array<MemberCustomField & { namespace?: string }>,
 ): MemberCustomFieldCsvColumn[] => {
   return fields.flatMap((field) => {
     const labels = partLabelsFor(field.type);
-    return csvColumnsForField({ key: field.key, type: field.type }).map(({ column, subField }) => {
+    // A field from the publisher's own endpoint carries no namespace, because there
+    // every field is theirs; one from the cross-namespace read says which declared it.
+    const namespace = field.namespace ?? PUBLISHER_NAMESPACE;
+    return csvColumnsForField({ namespace, key: field.key, type: field.type }).map(
+      ({ column, subField }) => {
       const partLabel = subField === null ? undefined : labels[subField];
       return {
         value: column,
@@ -377,3 +382,35 @@ export const useDeleteMemberCustomField = createMutation<void, string>({
   path: (key) => `/members/custom_fields/${key}/`,
   invalidateQueries: { dataType },
 });
+
+/**
+ * A member field as every surface that offers one sees it: the namespace that declared it
+ * as well as its key, because a key identifies a field only inside its namespace.
+ */
+export interface MemberField extends MemberCustomField {
+  namespace: string;
+}
+
+export interface MemberFieldsResponseType {
+  meta?: Meta;
+  members_fields: MemberField[];
+}
+
+/**
+ * Every declared field, whichever namespace declared it.
+ *
+ * What a picker reads to offer a field to filter on, map an import onto, or show as a
+ * column. Managing one is `useBrowseMemberCustomFields`, which is the publisher's own
+ * namespace and nothing else: a field Ghost declared is offered here and never offered to
+ * rename.
+ */
+export const useBrowseMemberFields = createQuery<MemberFieldsResponseType>({
+  dataType: 'MemberFieldsResponseType',
+  path: '/members/fields/',
+});
+
+// A filter picker keeps offering a field somebody already filtered on, so it asks for
+// archived fields too rather than dropping a saved filter's field out of the list.
+export const useBrowseMemberFieldsIncludingArchived = (
+  options?: Parameters<typeof useBrowseMemberFields>[0],
+) => useBrowseMemberFields({ ...options, searchParams: { filter: 'status:[active,archived]' } });

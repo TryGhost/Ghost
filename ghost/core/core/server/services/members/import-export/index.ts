@@ -46,9 +46,9 @@ interface ImporterServices {
   productRepository: unknown;
   // The custom fields services the members service hands the import composition root.
   customFields: {
-    definitions: { browse(): Promise<CsvField[]> };
+    definitions: { activeInEveryNamespace(): Promise<CsvField[]> };
     values: {
-      planWrite(values: Record<string, unknown>): Promise<unknown[]>;
+      planWrite(values: Record<string, unknown>, namespace: string): Promise<unknown[]>;
       applyWrite(memberId: string, plan: unknown[], options?: { executor?: Knex }): Promise<void>;
     };
   };
@@ -56,7 +56,7 @@ interface ImporterServices {
 
 // The custom fields services the members service hands the export composition root.
 interface CustomFieldsServices {
-  definitions: { browse(): Promise<CustomFieldDefinition[]> };
+  definitions: { activeInEveryNamespace(): Promise<CustomFieldDefinition[]> };
   values: {
     getValuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
   };
@@ -116,8 +116,10 @@ export function makeImporter(deps: ImporterServices) {
   // is dropped.
   const customFields: CustomFieldsImport = {
     activeFields: async () =>
-      labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : [],
-    planWrite: (values) => deps.customFields.values.planWrite(values),
+      labs.isSet('membersCustomFields')
+        ? deps.customFields.definitions.activeInEveryNamespace()
+        : [],
+    planWrite: (values, namespace) => deps.customFields.values.planWrite(values, namespace),
     applyWrite: (memberId, plan, executor) =>
       deps.customFields.values.applyWrite(memberId, plan, { executor }),
   };
@@ -190,7 +192,7 @@ export function makeExporter({
       // are always present -- no not-initialised state to guard. The flag decides
       // whether their columns are included at all.
       activeDefinitions: async (): Promise<CustomFieldDefinition[]> =>
-        labs.isSet('membersCustomFields') ? definitions.browse() : [],
+        labs.isSet('membersCustomFields') ? definitions.activeInEveryNamespace() : [],
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds),
     },
   });

@@ -10,7 +10,10 @@ const MAX_ACTIVE_COLUMNS = 2;
 export type { ActiveColumn };
 
 /** All a column needs of a custom field: the name to head it with, and the type to read its value as. */
-export type MemberColumnCustomField = Pick<MemberCustomField, 'key' | 'name' | 'type'>;
+export type MemberColumnCustomField = Pick<MemberCustomField, 'key' | 'name' | 'type'> & {
+  /** Absent from the publisher's own endpoint, where every field is theirs. */
+  namespace?: string;
+};
 
 /**
  * Runtime data the static field schema cannot hold. Custom fields are defined by the
@@ -230,8 +233,12 @@ const patternColumnHydrators: Record<
     ) => { label: string; getValue: ColumnValueReader } | null)
   | undefined
 > = {
-  'custom_fields.:key': ({ key }, { customFields }) => {
-    const field = customFields?.find((candidate) => candidate.key === key);
+  // Matched on both segments, because a key identifies a field only inside the namespace
+  // that declared it, and a member carries each namespace's values under its own name.
+  ':namespace.:key': ({ namespace, key }, { customFields }) => {
+    const field = customFields?.find(
+      (candidate) => candidate.key === key && (candidate.namespace ?? 'custom_fields') === namespace,
+    );
 
     if (!field) {
       return null;
@@ -242,7 +249,10 @@ const patternColumnHydrators: Record<
       // The catalog turns whatever type the field is into one line, so this reads a
       // composite the same way the member detail screen does.
       getValue: (member) => {
-        const text = formatMemberCustomFieldValue(field.type, member.custom_fields?.[field.key]);
+        const values = (member as Record<string, unknown>)[namespace] as
+          | Record<string, unknown>
+          | undefined;
+        const text = formatMemberCustomFieldValue(field.type, values?.[field.key]);
         return text ? { text } : null;
       },
     };

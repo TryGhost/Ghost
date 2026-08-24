@@ -41,6 +41,11 @@
 // source of truth for both filtering and display — see the
 // `current_subscription` reads in apps/admin/src/members/member-query-params.ts.
 module.exports = {
+  members_custom_field_leaves: `
+        SELECT v.member_id, f.namespace, f.key, v.path, v.value_text
+        FROM members_custom_field_values v
+        JOIN members_custom_fields f ON f.id = v.field_id
+    `,
   members_resolved_subscription: `
         SELECT member_id, subscription_id
         FROM (

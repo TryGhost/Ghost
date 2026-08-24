@@ -116,19 +116,37 @@ describe('custom field value storage', function () {
   describe('rows become every member’s values', function () {
     it('gathers each value from every row belonging to it', function () {
       const values = valuesFromLeaves([
-        { member_id: 'm1', key: 'home_address', path: 'city', value_text: 'London' },
-        { member_id: 'm1', key: 'nickname', path: ROOT_PATH, value_text: 'Bex' },
-        { member_id: 'm2', key: 'home_address', path: 'country', value_text: 'IE' },
-        { member_id: 'm1', key: 'home_address', path: 'line1', value_text: '1 High St' },
+        { member_id: 'm1', namespace: 'custom_fields', key: 'home_address', path: 'city', value_text: 'London' },
+        { member_id: 'm1', namespace: 'custom_fields', key: 'nickname', path: ROOT_PATH, value_text: 'Bex' },
+        { member_id: 'm2', namespace: 'custom_fields', key: 'home_address', path: 'country', value_text: 'IE' },
+        { member_id: 'm1', namespace: 'custom_fields', key: 'home_address', path: 'line1', value_text: '1 High St' },
       ]);
 
       // m1's address arrives split by two unrelated rows; nothing depends on the
       // rows for one value being next to each other.
       assert.deepEqual(values.get('m1'), {
-        home_address: { city: 'London', line1: '1 High St' },
-        nickname: 'Bex',
+        custom_fields: {
+          home_address: { city: 'London', line1: '1 High St' },
+          nickname: 'Bex',
+        },
       });
-      assert.deepEqual(values.get('m2'), { home_address: { country: 'IE' } });
+      assert.deepEqual(values.get('m2'), {
+        custom_fields: { home_address: { country: 'IE' } },
+      });
+    });
+
+    // A key names a different field in each namespace, so the same key from two of them
+    // has to land as two values rather than one overwriting the other.
+    it('keeps the same key apart when two namespaces hold it', function () {
+      const values = valuesFromLeaves([
+        { member_id: 'm1', namespace: 'custom_fields', key: 'address', path: ROOT_PATH, value_text: 'Theirs' },
+        { member_id: 'm1', namespace: 'shipping', key: 'address', path: ROOT_PATH, value_text: 'Ours' },
+      ]);
+
+      assert.deepEqual(values.get('m1'), {
+        custom_fields: { address: 'Theirs' },
+        shipping: { address: 'Ours' },
+      });
     });
 
     it('leaves a member with no rows out entirely', function () {

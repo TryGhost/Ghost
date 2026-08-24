@@ -25,12 +25,31 @@ const SEPARATOR = '.';
  * `custom_fields` is the same path the Admin API already uses to address these
  * values, so a column reads like the field it came from.
  */
-const NAMESPACE = 'custom_fields';
+/**
+ * The namespace publisher-defined fields live in, and the path their values are
+ * addressed under everywhere: this column prefix, the members filter, and the Admin
+ * API. Exported because the server stores it on each field row now that Ghost can
+ * declare fields of its own, and the two must agree on the spelling.
+ */
+export const PUBLISHER_NAMESPACE = 'custom_fields';
 
 /** A field definition reduced to what CSV needs to know about it. */
 export interface CsvField {
+  namespace: string;
   key: string;
   type: FieldType;
+}
+
+/**
+ * A member's values, by the namespace that owns the field and then by its key. The two
+ * together address a field: a key identifies one only inside its namespace, so the same
+ * key can name a different field in each.
+ */
+export type NamespacedValues = Record<string, Record<string, unknown>>;
+
+/** Where a field's value sits: `<namespace>.<key>`, and a part of it one level deeper. */
+function columnFor(field: CsvField): string {
+  return `${field.namespace}${SEPARATOR}${field.key}`;
 }
 
 function toCell(value: unknown): string {
@@ -55,15 +74,25 @@ export interface CsvFieldColumn {
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+  const column = columnFor(field);
   const subFields = subFieldsOf(field.type);
   return subFields
     ? subFields.map((sub) => ({ column: `${column}${SEPARATOR}${sub}`, subField: sub }))
     : [{ column, subField: null }];
 }
 
-export function isCustomFieldColumn(column: string): boolean {
-  return column === NAMESPACE || column.startsWith(`${NAMESPACE}${SEPARATOR}`);
+/**
+ * Whether a column names a field in the given namespace. Takes the namespace rather than
+ * assuming the publisher's, because every namespace addresses its fields the same way and
+ * only the caller knows which ones it cares about.
+ */
+export function isFieldColumn(column: string, namespace: string): boolean {
+  return column === namespace || column.startsWith(`${namespace}${SEPARATOR}`);
+}
+
+/** Whether a column names a field in any of the namespaces given. */
+export function isAnyFieldColumn(column: string, namespaces: readonly string[]): boolean {
+  return namespaces.some((namespace) => isFieldColumn(column, namespace));
 }
 
 /**
@@ -75,14 +104,14 @@ export function isCustomFieldColumn(column: string): boolean {
  */
 export function csvCellsForFields(
   fields: readonly CsvField[],
-  values: Record<string, unknown>,
+  values: NamespacedValues,
 ): Record<string, string> {
   const cells: Record<string, string> = {};
 
   for (const field of fields) {
-    const value = values[field.key];
+    const value = values[field.namespace]?.[field.key];
     const subFields = subFieldsOf(field.type);
-    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+    const column = columnFor(field);
 
     if (!subFields) {
       cells[column] = toCell(value);
@@ -122,13 +151,16 @@ export function fieldValuesFromCsvRow(
   fields: readonly CsvField[],
   row: Record<string, unknown>,
   decodeCell: (cell: string) => string = (cell) => cell,
-): Record<string, unknown> {
-  const values: Record<string, unknown> = {};
+): NamespacedValues {
+  const values: NamespacedValues = {};
+  const set = (field: CsvField, value: unknown) => {
+    values[field.namespace] = { ...values[field.namespace], [field.key]: value };
+  };
 
   // The parser only ever sets a string cell for these columns, so a non-string is an
   // absent column, read as untouched.
   for (const field of fields) {
-    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+    const column = columnFor(field);
     const subFields = subFieldsOf(field.type);
 
     if (!subFields) {
@@ -136,7 +168,7 @@ export function fieldValuesFromCsvRow(
       if (typeof cell === 'string') {
         const decoded = decodeCell(cell);
         if (!isBlank(decoded)) {
-          values[field.key] = decoded;
+          set(field, decoded);
         }
       }
       continue;
@@ -157,7 +189,7 @@ export function fieldValuesFromCsvRow(
     }
 
     if (anyColumnPresent && Object.keys(composite).length > 0) {
-      values[field.key] = composite;
+      set(field, composite);
     }
   }
 

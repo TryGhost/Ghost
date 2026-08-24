@@ -2,7 +2,7 @@ import {
   FIELD_MAPPINGS,
   IMPORT_TIER_FIELD_MAPPING,
 } from '@/members/components/bulk-action-modals/import-members/mapping';
-import { isCustomFieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { isFieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 /**
  * What this modal adds to the shipped mapping vocabulary, and nothing it already says.
@@ -45,7 +45,9 @@ export function suggestedFieldName(column: string): string {
   // being suggested is the field's, so the part is dropped: `custom_fields.home-address.city`
   // names a field called "Home address" whose City part this column holds, and the part is
   // asked for separately. A bare `custom_fields` column has no key, so it suggests the namespace itself.
-  const segments = isCustomFieldColumn(column) ? column.split('.').slice(1, 2) : [column];
+  const segments = isFieldColumn(column, 'custom_fields')
+    ? column.split('.').slice(1, 2)
+    : [column];
   const words = (segments[0] ?? column).replace(/[._-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
