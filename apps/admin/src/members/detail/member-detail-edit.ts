@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import validator from 'validator';
 import {
   MEMBER_CUSTOM_FIELD_TYPES,
   memberCustomFieldParts,
@@ -45,9 +46,6 @@ interface MemberFieldSource {
   labels?: Array<{ name: string; slug: string }> | null;
   newsletters?: Array<{ id: string }> | null;
 }
-
-// Same shape as the import-members validator already used in this app.
-const MEMBER_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
 // allows 2000). The counter may go negative, matching the Ember behaviour.
@@ -143,9 +141,19 @@ export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: st
   return [...subscribedIds, newsletterId].sort();
 }
 
-/** Client-side email sanity check for the save gate; the server remains authoritative. */
-export function isValidMemberEmail(email: string): boolean {
-  return MEMBER_EMAIL_REGEX.test(email.trim());
+/**
+ * Client-side email sanity check for the save gate; the server remains
+ * authoritative. Mirrors the server's update semantics: an email is validated
+ * only when it differs from the stored one, because the server deliberately
+ * grandfathers stored emails that predate stricter validation
+ * (member-repository.js validates the email only when it changed).
+ */
+export function isValidMemberEmail(email: string, storedEmail?: string): boolean {
+  const trimmed = email.trim();
+  if (storedEmail !== undefined && trimmed === storedEmail.trim()) {
+    return true;
+  }
+  return validator.isEmail(trimmed);
 }
 
 /**
@@ -155,14 +163,18 @@ export function isValidMemberEmail(email: string): boolean {
  * validator runs on save-attempt for the same reason
  * (`ghost/admin/app/validators/member.js:15`).
  */
-export function getEmailErrorMessage(email: string, touched: boolean): string | null {
+export function getEmailErrorMessage(
+  email: string,
+  touched: boolean,
+  storedEmail?: string,
+): string | null {
   if (!touched) {
     return null;
   }
   if (email.trim() === '') {
     return 'Email is required.';
   }
-  if (!isValidMemberEmail(email)) {
+  if (!isValidMemberEmail(email, storedEmail)) {
     return 'Invalid email.';
   }
   return null;

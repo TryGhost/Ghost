@@ -297,6 +297,18 @@ describe('isValidMemberEmail', () => {
     expect(isValidMemberEmail('a@b.')).toBe(false);
     expect(isValidMemberEmail('a b@example.com')).toBe(false);
   });
+
+  it('grandfathers a stored email that no longer passes validation when unchanged', () => {
+    expect(isValidMemberEmail('legacy@mail_host.com', 'legacy@mail_host.com')).toBe(true);
+    // Trim-insensitive: the draft field may carry surrounding whitespace
+    expect(isValidMemberEmail(' legacy@mail_host.com ', 'legacy@mail_host.com')).toBe(true);
+    // Changing away from the stored value re-applies strict validation
+    expect(isValidMemberEmail('other@mail_host.com', 'legacy@mail_host.com')).toBe(false);
+    // A stored email is no excuse for a different invalid value
+    expect(isValidMemberEmail('nope', 'legacy@mail_host.com')).toBe(false);
+    // Create mode (no stored email) stays strict
+    expect(isValidMemberEmail('legacy@mail_host.com')).toBe(false);
+  });
 });
 
 describe('getDefaultNewsletterIdsForNewMember', () => {

@@ -119,7 +119,7 @@ interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
 }
 function UserMenu(props: UserMenuProps) {
   const currentUser = useCurrentUser();
-  const { data: whatsNewData } = useWhatsNew();
+  const { hasNew } = useWhatsNew();
   const { showUpgradeBanner } = useUpgradeStatus();
 
   return (
@@ -132,7 +132,7 @@ function UserMenu(props: UserMenuProps) {
         >
           <div className="relative">
             <UserMenuAvatar />
-            {whatsNewData?.hasNew && (
+            {hasNew && (
               <span className="absolute -top-0.5 -right-0.5">
                 <Indicator
                   data-testid="whats-new-avatar-badge"
@@ -173,7 +173,7 @@ function UserMenu(props: UserMenuProps) {
         >
           <LucideIcon.Sparkles />
           <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
-          {whatsNewData?.hasNew && (
+          {hasNew && (
             <div className="flex flex-1 justify-end">
               <Indicator
                 data-testid="whats-new-menu-badge"

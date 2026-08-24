@@ -201,7 +201,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     when: hasUnsavedChanges,
     confirmUnloadWhen: activeMutation.isPending || hasUnsavedChanges,
   });
-  const emailValid = !!draft && isValidMemberEmail(draft.email);
+  const emailValid = !!draft && isValidMemberEmail(draft.email, member?.email ?? undefined);
   // `touched` is set on the email field's first blur. That keeps the New
   // member screen from painting an "Email is required." error before the
   // user has done anything, matching Ember's save-time-only validator
@@ -211,7 +211,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   React.useEffect(() => {
     setEmailTouched(false);
   }, [member?.id, isCreating]);
-  const emailError = draft ? getEmailErrorMessage(draft.email, emailTouched) : null;
+  const emailError = draft
+    ? getEmailErrorMessage(draft.email, emailTouched, member?.email ?? undefined)
+    : null;
 
   // The sidebar's identity block (avatar + heading) reads from a "committed"
   // copy of name/email that only advances on blur, not per keystroke.
