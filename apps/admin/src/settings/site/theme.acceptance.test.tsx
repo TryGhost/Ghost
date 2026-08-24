@@ -327,7 +327,7 @@ describe('Theme settings', () => {
     expect(getComputedStyle(chevron()).transform).toBe('none');
   });
 
-  it("renders gscan's inline code plainly under the legacy code rule", async () => {
+  it("chips gscan's inline code without letting the legacy code rule through", async () => {
     fakeThemeWorld();
     fakeAdminEndpoint('POST', '/themes/upload/', {
       themes: [
@@ -355,32 +355,36 @@ describe('Theme settings', () => {
     await row.click();
     await expect.element(settingsScreen.confirmationModal().getByText(/deprecated/)).toBeVisible();
 
-    // gscan's own markup: mono, inheriting the line it sits on, no chip.
+    // gscan's own markup: a grey chip, sized and coloured by the line it sits
+    // on rather than by the legacy rule, and never broken across two lines.
     for (const text of ['{{@blog.url}}', '{{@blog.title}}']) {
       const code = codeSpan(text);
       const surrounding = getComputedStyle(code.parentElement!);
       const style = getComputedStyle(code);
       expect(style.fontFamily).toContain('mono');
       expect(style.color).toBe(surrounding.color);
-      expect(style.fontSize).toBe(surrounding.fontSize);
+      // A step down, since mono reads larger than the text it sits in.
+      expect(parseFloat(style.fontSize)).toBeLessThan(parseFloat(surrounding.fontSize));
       // The legacy `line-height: 1em` computes to exactly the font size.
       expect(style.lineHeight).not.toBe(style.fontSize);
       expect(lineRatio(style)).toBeCloseTo(lineRatio(surrounding), 2);
-      expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+      expect(parseFloat(style.borderTopLeftRadius)).toBeGreaterThan(0);
+      expect(parseFloat(style.paddingLeft)).toBeGreaterThan(0);
+      expect(style.whiteSpace).toBe('nowrap');
+      // The legacy rule's border and pink must still lose.
       expect(style.borderTopWidth).toBe('0px');
-      expect(style.borderTopLeftRadius).toBe('0px');
-      expect(style.paddingLeft).toBe('0px');
       expect(style.verticalAlign).toBe('baseline');
     }
 
-    // An affected file is inline mono too, with no chip left behind.
+    // An affected file gets the same chip as the mono in the details above it.
     const filenameCode = codeSpan('default.hbs');
     const filename = getComputedStyle(filenameCode);
     const detailsCode = getComputedStyle(codeSpan('{{@blog.title}}'));
-    expect(filename.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(filename.backgroundColor).toBe(detailsCode.backgroundColor);
+    expect(filename.borderTopLeftRadius).toBe(detailsCode.borderTopLeftRadius);
+    expect(filename.paddingLeft).toBe(detailsCode.paddingLeft);
     expect(filename.borderTopWidth).toBe('0px');
-    expect(filename.borderTopLeftRadius).toBe('0px');
-    expect(filename.paddingLeft).toBe('0px');
     expect(filename.verticalAlign).toBe('baseline');
     expect(filename.fontSize).toBe(detailsCode.fontSize);
     expect(filename.fontFamily).toBe(detailsCode.fontFamily);

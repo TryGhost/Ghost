@@ -18,28 +18,18 @@ import { type ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 
 /**
- * Answers every property of Ghost's legacy unlayered `code, tt` rule, which
- * would otherwise chip each `<code>` in Admin. Tokens are spelled out in full
- * because Tailwind only generates utilities it finds literally in the source.
+ * A grey inline-code chip that also answers every property of Ghost's legacy
+ * unlayered `code, tt` rule. Tokens are spelled out in full because Tailwind
+ * only generates utilities it finds literally in the source.
  */
-const CODE_RESET =
-  '[&_code]:rounded-none [&_code]:border-0 [&_code]:bg-transparent [&_code]:p-0 [&_code]:align-baseline [&_code]:font-mono [&_code]:text-inherit [&_code]:leading-[inherit]';
-
-/** `font-mono` alone drops to the browser default, a size smaller. */
-const CODE_SIZE = {
-  base: '[&_code]:text-base',
-  sm: '[&_code]:text-sm',
-} as const;
-
-function codeStyles(size: keyof typeof CODE_SIZE): string {
-  return `${CODE_RESET} ${CODE_SIZE[size]}`;
-}
+const CODE_CHIP =
+  '[&_code]:rounded-xs [&_code]:border-0 [&_code]:bg-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:align-baseline [&_code]:font-mono [&_code]:text-sm [&_code]:text-inherit [&_code]:leading-[inherit] [&_code]:whitespace-nowrap';
 
 /** gscan writes `rule` and `details` as HTML, rendered verbatim. */
-const RULE_HTML = `text-base leading-[1.45] font-semibold text-foreground ${codeStyles('base')}`;
-const DETAILS_HTML = `text-sm leading-[1.45] text-foreground [&_a]:underline ${codeStyles('sm')}`;
+const RULE_HTML = `text-base leading-[1.45] font-semibold text-foreground ${CODE_CHIP}`;
+const DETAILS_HTML = `text-base leading-[1.45] text-foreground [&_a]:underline ${CODE_CHIP}`;
 
-const FAILURE_LIST = `space-y-1 text-sm text-muted-foreground ${codeStyles('sm')}`;
+const FAILURE_LIST = `space-y-1 text-base text-muted-foreground ${CODE_CHIP}`;
 
 function countBySeverity(problems: ThemeProblem[]) {
   return SEVERITY_ORDER.map((severity) => ({
