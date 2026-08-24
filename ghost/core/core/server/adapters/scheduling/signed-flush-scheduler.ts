@@ -1,9 +1,7 @@
 import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../../services/internal-keys';
-
-const urlUtils = require('../../../shared/url-utils').default;
-const { getSignedAdminToken } = require('./utils');
+import { buildSignedJob } from './build-signed-job';
 
 // The default scheduling adapter can ping up to 50ms before the scheduled
 // time, and the flush queries truncate "now" to whole seconds — an exactly
@@ -157,14 +155,11 @@ export class SignedFlushScheduler {
   }
 
   #buildJob(time: number, key: InternalApiKey, delayMs = FLUSH_DELAY_MS): SchedulerJob {
-    const jobTime = time + delayMs;
-    const signedAdminToken = getSignedAdminToken({
-      publishedAt: new Date(jobTime).toISOString(),
+    return buildSignedJob({
       apiUrl: this.#apiUrl,
+      path: this.#endpoint,
+      time: time + delayMs,
       key,
     });
-    const url = new URL(urlUtils.urlJoin(this.#apiUrl, ...this.#endpoint));
-    url.searchParams.set('token', signedAdminToken);
-    return { time: jobTime, url: url.toString(), extra: { httpMethod: 'PUT' } };
   }
 }

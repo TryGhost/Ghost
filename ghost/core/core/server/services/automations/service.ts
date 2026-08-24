@@ -7,6 +7,7 @@ import { oneAtATime } from '../../../shared/one-at-a-time';
 import { poll } from './poll';
 import * as automationsApi from './automations-api';
 import { getSchedulerIdempotencyKey } from './get-scheduler-idempotency-key';
+import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import { SoonestTimer } from '../../lib/soonest-timer';
 import { getSchedulerPollTime } from './scheduler-poll-time';
@@ -14,9 +15,7 @@ import { getSchedulerPollTime } from './scheduler-poll-time';
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
-const urlUtils = require('../../../shared/url-utils').default;
 const logging = require('@tryghost/logging');
-const { getSignedAdminToken } = require('../../adapters/scheduling/utils');
 const { welcomeEmailAutomationPoll } = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
@@ -81,21 +80,15 @@ export class AutomationsService {
       try {
         const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
         const key = await internalKeys.get('ghost-scheduler');
-        const signedAdminToken = getSignedAdminToken({
-          publishedAt: schedulerPollTime.toISOString(),
-          apiUrl,
-          key,
-        });
-        const url = new URL(urlUtils.urlJoin(apiUrl, 'automations', 'poll'));
-        url.searchParams.set('token', signedAdminToken);
-        schedulerAdapter.schedule({
-          time: schedulerPollTime.getTime(),
-          url: url.toString(),
-          extra: {
-            httpMethod: 'PUT',
-            idempotencyKey: getSchedulerIdempotencyKey(date, url),
-          },
-        });
+        schedulerAdapter.schedule(
+          buildSignedJob({
+            apiUrl,
+            path: ['automations', 'poll'],
+            time: schedulerPollTime.getTime(),
+            key,
+            getIdempotencyKey: (url) => getSchedulerIdempotencyKey(date, url),
+          }),
+        );
       } catch (err) {
         logging.error(
           { event: { name: 'automations.enqueue-poll.error' }, err, at: date.toISOString() },
