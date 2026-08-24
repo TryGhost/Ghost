@@ -1,6 +1,10 @@
 // Framework
 export type { StatsConfig, TopLevelFrameworkProps } from './providers/framework-provider';
-export { FrameworkProvider, useFramework } from './providers/framework-provider';
+export {
+  FrameworkProvider,
+  defaultUnsplashConfig,
+  useFramework,
+} from './providers/framework-provider';
 
 // App Context
 export type { AppSettings, AppContextType } from './providers/app-provider';

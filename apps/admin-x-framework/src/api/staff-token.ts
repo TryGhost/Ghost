@@ -20,12 +20,12 @@ export interface StaffTokenResponseType {
 
 const dataType = 'StaffTokenResponseType';
 
-export const getStaffToken = createQuery<StaffTokenResponseType>({
+export const useStaffToken = createQuery<StaffTokenResponseType>({
   dataType,
   path: '/users/me/token/',
 });
 
-export const genStaffToken = createMutation<StaffTokenResponseType, []>({
+export const useGenerateStaffToken = createMutation<StaffTokenResponseType, []>({
   path: () => '/users/me/token/',
   method: 'PUT',
 });

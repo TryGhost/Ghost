@@ -56,6 +56,15 @@ export type TopLevelFrameworkProps = Omit<FrameworkProviderProps, 'children'>;
 
 export type FrameworkContextType = Omit<FrameworkProviderProps, 'children'>;
 
+// Ghost's registered Unsplash application; the Client-ID is a public API key
+export const defaultUnsplashConfig: FrameworkProviderProps['unsplashConfig'] = {
+  Authorization: 'Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980',
+  'Accept-Version': 'v1',
+  'Content-Type': 'application/json',
+  'App-Pragma': 'no-cache',
+  'X-Unsplash-Cache': true,
+};
+
 const FrameworkContext = createContext<FrameworkContextType>({
   ghostVersion: '',
   externalNavigate: () => {},

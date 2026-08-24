@@ -4,7 +4,7 @@ import {
   useNewsletterBasicStats,
   useNewsletterClickStats,
 } from '@tryghost/admin-x-framework/api/stats';
-import { type Post, getPost } from '@tryghost/admin-x-framework/api/posts';
+import { type Post, usePost } from '@tryghost/admin-x-framework/api/posts';
 import { processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
 import { useMemo } from 'react';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
@@ -18,10 +18,10 @@ type PostWithNewsletter = Post & {
 
 export const usePostNewsletterStats = (postId: string) => {
   // Fetch the post with main stats (email, clicks)
-  const { data: postResponse, isLoading: isPostLoading } = getPost(postId);
+  const { data: postResponse, isLoading: isPostLoading } = usePost(postId);
 
   // Fetch the post with feedback count relations
-  const { data: feedbackPostResponse, isLoading: isFeedbackPostLoading } = getPost(postId, {
+  const { data: feedbackPostResponse, isLoading: isFeedbackPostLoading } = usePost(postId, {
     searchParams: {
       include: 'count.positive_feedback,count.negative_feedback',
     },
