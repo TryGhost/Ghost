@@ -11,7 +11,7 @@ import type {
   GiftRepository,
 } from './gift-bookshelf-repository';
 import type { GiftDeliveryService } from './gift-delivery-service';
-import type { GiftReminderScheduler } from './gift-reminder-scheduler';
+import type { GiftFlushScheduler } from './gift-flush-scheduler';
 import { GiftCadenceSchema, type GiftCadence } from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {
@@ -183,7 +183,7 @@ interface GiftServiceDeps {
   tiersService: TiersService;
   giftEmailService: GiftEmailService;
   staffServiceEmails: StaffServiceEmails;
-  giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+  giftReminderScheduler: Pick<GiftFlushScheduler, 'scheduleAt'>;
   checkoutAdapter: {
     getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
     createSession(data: GiftCheckoutSession): Promise<{ id: string; url: string }>;
@@ -961,7 +961,12 @@ export class GiftService {
         logging.error('Failed to notify staff of gift redemption', err);
       }
 
-      await this.deps.giftReminderScheduler.scheduleFor(redeemed);
+      const reminderDueAt = redeemed.reminderDueAt();
+      if (reminderDueAt) {
+        await this.deps.giftReminderScheduler.scheduleAt(reminderDueAt.getTime(), {
+          giftToken: redeemed.token,
+        });
+      }
     };
 
     if (input.transacting) {

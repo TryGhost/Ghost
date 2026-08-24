@@ -90,6 +90,10 @@ _Avoid_: Gift consumption
 The end of a redeemed gift subscription's role in providing access, either when its duration finishes or a paid subscription takes over.
 _Avoid_: Gift expiration, cancellation
 
+**Consumption reminder**:
+The email sent to a redeemer, at most once per gift, when gift consumption is seven days away, so gift continuation can be arranged before gifted access ends.
+_Avoid_: Expiry reminder, expiration reminder
+
 **Gift continuation**:
 Starting a paid subscription from gifted access while carrying the remaining gifted time forward before billing begins.
 _Avoid_: Gift renewal

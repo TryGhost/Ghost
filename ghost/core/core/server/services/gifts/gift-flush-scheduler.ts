@@ -16,8 +16,9 @@ interface GiftFlushSchedulerOptions {
   adapter: SchedulerAdapter;
   internalKeys: InternalKeys;
   endpoint: 'flush_reminders' | 'flush_deliveries';
-  logEvent: string;
-  logMessage: string;
+  // Snake_case name of the scheduled work (e.g. 'gift_delivery'), used to
+  // build log events and messages.
+  name: string;
   // Times (ms since epoch) still needing a flush job, used to rebuild the
   // adapter queue at boot and on key rotation.
   findScheduledTimes(): Promise<number[]>;
@@ -32,8 +33,7 @@ export class GiftFlushScheduler {
   readonly #adapter: SchedulerAdapter;
   readonly #internalKeys: InternalKeys;
   readonly #endpoint: GiftFlushSchedulerOptions['endpoint'];
-  readonly #logEvent: string;
-  readonly #logMessage: string;
+  readonly #name: string;
   readonly #findScheduledTimes: GiftFlushSchedulerOptions['findScheduledTimes'];
   readonly #scheduledTimes = new Set<number>();
 
@@ -42,16 +42,14 @@ export class GiftFlushScheduler {
     adapter,
     internalKeys,
     endpoint,
-    logEvent,
-    logMessage,
+    name,
     findScheduledTimes,
   }: GiftFlushSchedulerOptions) {
     this.#apiUrl = apiUrl;
     this.#adapter = adapter;
     this.#internalKeys = internalKeys;
     this.#endpoint = endpoint;
-    this.#logEvent = logEvent;
-    this.#logMessage = logMessage;
+    this.#name = name;
     this.#findScheduledTimes = findScheduledTimes;
     this.#adapter.register(this);
   }
@@ -87,11 +85,11 @@ export class GiftFlushScheduler {
       // gift-cleanup job's recovery pass recovers the work regardless.
       logging.error(
         {
-          event: { name: this.#logEvent },
+          event: { name: `${this.#name}_scheduler.schedule.failed` },
           err,
           ...logContext,
         },
-        this.#logMessage,
+        `Failed to schedule ${this.#name.replaceAll('_', ' ')}`,
       );
       return;
     }

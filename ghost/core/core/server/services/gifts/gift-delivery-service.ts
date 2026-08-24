@@ -7,6 +7,7 @@ import type {
 } from './gift-delivery-bookshelf-repository';
 import type { GiftDeliveryData } from './gift-delivery-schema';
 import type { GiftCadence } from './gift-schema';
+import type { GiftFlushScheduler } from './gift-flush-scheduler';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 import { GIFT_DELIVERY_STALE_AFTER_MS } from './constants';
 
@@ -61,10 +62,7 @@ interface GiftDeliveryServiceDeps {
   giftEmailAnalytics: {
     schedule(): Promise<void>;
   };
-  giftDeliveryScheduler: {
-    scheduleFor(deliveryId: string, redeemableAt: Date): Promise<void>;
-    rescheduleAll(): Promise<void>;
-  };
+  giftDeliveryScheduler: Pick<GiftFlushScheduler, 'scheduleAt' | 'rescheduleAll'>;
 }
 
 export interface GiftDeliveryRecoveryResult {
@@ -114,7 +112,9 @@ export class GiftDeliveryService {
     }
 
     if (redeemableAt && redeemableAt.getTime() > Date.now()) {
-      await this.deps.giftDeliveryScheduler.scheduleFor(delivery.id, redeemableAt);
+      await this.deps.giftDeliveryScheduler.scheduleAt(redeemableAt.getTime(), {
+        deliveryId: delivery.id,
+      });
       // Availability can pass while the flush was being armed, in which
       // case the armed check skipped the job — fall through and send
       // now rather than leaving the delivery for the daily backstop.

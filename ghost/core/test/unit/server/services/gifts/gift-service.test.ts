@@ -225,7 +225,7 @@ describe('GiftService', function () {
     sinon.restore();
   });
 
-  let giftReminderScheduler: { scheduleFor: sinon.SinonStub };
+  let giftReminderScheduler: { scheduleAt: sinon.SinonStub };
   let checkoutAdapter: {
     getCustomerId: sinon.SinonStub;
     createSession: sinon.SinonStub;
@@ -233,12 +233,12 @@ describe('GiftService', function () {
 
   function createService(
     overrides: {
-      giftReminderScheduler?: { scheduleFor: sinon.SinonStub };
+      giftReminderScheduler?: { scheduleAt: sinon.SinonStub };
       timezone?: string;
     } = {},
   ) {
     giftReminderScheduler = overrides.giftReminderScheduler ?? {
-      scheduleFor: sinon.stub().resolves(),
+      scheduleAt: sinon.stub().resolves(),
     };
     checkoutAdapter = {
       getCustomerId: sinon.stub().resolves(null),
@@ -1609,7 +1609,7 @@ describe('GiftService', function () {
 
       assert.equal(transactionRejected, true);
       sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
-      sinon.assert.notCalled(giftReminderScheduler.scheduleFor);
+      sinon.assert.notCalled(giftReminderScheduler.scheduleAt);
     });
 
     it('does not fail redemption when staff notification email throws', async function () {
@@ -1866,7 +1866,7 @@ describe('GiftService', function () {
       memberRepository.get.resolves({ id: 'member_1', get: memberGet });
     }
 
-    it('calls giftReminderScheduler.scheduleFor with the redeemed gift after commit', async function () {
+    it('arms a reminder flush at the redeemed gift reminder time after commit', async function () {
       stubRedeemer();
       giftRepository.getByToken.resolves(buildGift());
 
@@ -1874,7 +1874,11 @@ describe('GiftService', function () {
       await service.redeem({ token: 'gift-token', memberId: 'member_1' });
       const redeemed = giftRepository.update.firstCall.firstArg;
 
-      sinon.assert.calledOnceWithExactly(giftReminderScheduler.scheduleFor, redeemed);
+      sinon.assert.calledOnceWithExactly(
+        giftReminderScheduler.scheduleAt,
+        redeemed.reminderDueAt()!.getTime(),
+        { giftToken: redeemed.token },
+      );
     });
 
     it('schedules even when staff notification fails', async function () {
@@ -1885,7 +1889,7 @@ describe('GiftService', function () {
       const service = createService();
       await service.redeem({ token: 'gift-token', memberId: 'member_1' });
 
-      sinon.assert.calledOnce(giftReminderScheduler.scheduleFor);
+      sinon.assert.calledOnce(giftReminderScheduler.scheduleAt);
     });
 
     it('schedules after an external transaction commits', async function () {
@@ -1901,7 +1905,7 @@ describe('GiftService', function () {
         setImmediate(resolve);
       });
 
-      sinon.assert.calledOnce(giftReminderScheduler.scheduleFor);
+      sinon.assert.calledOnce(giftReminderScheduler.scheduleAt);
     });
 
     it('does NOT schedule when an external transaction rolls back', async function () {
@@ -1918,7 +1922,7 @@ describe('GiftService', function () {
         setImmediate(resolve);
       });
 
-      sinon.assert.notCalled(giftReminderScheduler.scheduleFor);
+      sinon.assert.notCalled(giftReminderScheduler.scheduleAt);
     });
   });
 

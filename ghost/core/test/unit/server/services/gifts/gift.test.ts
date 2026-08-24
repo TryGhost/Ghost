@@ -485,6 +485,25 @@ describe('Gift', function () {
     });
   });
 
+  describe('reminderDueAt', function () {
+    it('is 7 days before the gifted access ends', function () {
+      const gift = buildGift({
+        status: 'redeemed',
+        redeemerMemberId: 'member_2',
+        redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+        consumesAt: new Date('2027-04-11T12:00:00.000Z'),
+      });
+
+      assert.deepEqual(gift.reminderDueAt(), new Date('2027-04-04T12:00:00.000Z'));
+    });
+
+    it('is null before the gift is redeemed', function () {
+      const gift = buildGift({ consumesAt: null });
+
+      assert.equal(gift.reminderDueAt(), null);
+    });
+  });
+
   describe('checkReassignable', function () {
     // An orphaned gift is one that was redeemed but whose redeemer member was later
     // deleted (the FK is SET NULL on delete). These should be reassignable on re-import.

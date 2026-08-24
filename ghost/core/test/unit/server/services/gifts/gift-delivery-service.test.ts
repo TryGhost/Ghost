@@ -27,7 +27,7 @@ describe('GiftDeliveryService', function () {
     schedule: sinon.SinonStub;
   };
   let giftDeliveryScheduler: {
-    scheduleFor: sinon.SinonStub;
+    scheduleAt: sinon.SinonStub;
     rescheduleAll: sinon.SinonStub;
   };
   let dispatchDelivery: sinon.SinonStub;
@@ -71,7 +71,7 @@ describe('GiftDeliveryService', function () {
       schedule: sinon.stub().resolves(undefined),
     };
     giftDeliveryScheduler = {
-      scheduleFor: sinon.stub().resolves(undefined),
+      scheduleAt: sinon.stub().resolves(undefined),
       rescheduleAll: sinon.stub().resolves(undefined),
     };
     dispatchDelivery = sinon.stub(DomainEvents, 'dispatch');
@@ -122,11 +122,9 @@ describe('GiftDeliveryService', function () {
       await service.dispatchForGift({ giftId: 'gift_1', redeemableAt }),
       'recipient@example.com',
     );
-    sinon.assert.calledOnceWithExactly(
-      giftDeliveryScheduler.scheduleFor,
-      'delivery_1',
-      redeemableAt,
-    );
+    sinon.assert.calledOnceWithExactly(giftDeliveryScheduler.scheduleAt, redeemableAt.getTime(), {
+      deliveryId: 'delivery_1',
+    });
     sinon.assert.notCalled(dispatchDelivery);
   });
 
@@ -134,7 +132,7 @@ describe('GiftDeliveryService', function () {
     const clock = sinon.useFakeTimers(new Date('2026-12-25T08:59:59.900Z'));
     const redeemableAt = new Date('2026-12-25T09:00:00.000Z');
     giftDeliveryRepository.getByGiftId.resolves(buildGiftDelivery({ id: 'delivery_1' }));
-    giftDeliveryScheduler.scheduleFor.callsFake(async () => {
+    giftDeliveryScheduler.scheduleAt.callsFake(async () => {
       clock.tick(200);
     });
     const service = createService();

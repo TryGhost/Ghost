@@ -1,6 +1,9 @@
 import type { GiftCadence, GiftData, GiftDataInput, GiftStatus } from './gift-schema';
+import { GIFT_REMINDER_LEAD_DAYS } from './constants';
 
 export type { GiftCadence, GiftStatus } from './gift-schema';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type RedeemableCheckFailureReason =
   | 'payment-pending'
@@ -328,6 +331,15 @@ export class Gift implements GiftData {
       status: 'expired',
       expiredAt: new Date(),
     });
+  }
+
+  // When the consumes-soon reminder is due: GIFT_REMINDER_LEAD_DAYS before
+  // the gifted access ends. Null until the gift is redeemed (no consumesAt).
+  reminderDueAt(): Date | null {
+    if (!this.consumesAt) {
+      return null;
+    }
+    return new Date(this.consumesAt.getTime() - GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY);
   }
 
   remind(): Gift | null {

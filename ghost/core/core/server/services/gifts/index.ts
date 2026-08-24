@@ -4,8 +4,7 @@ import { GiftBookshelfRepository } from './gift-bookshelf-repository';
 import { GiftDeliveryBookshelfRepository } from './gift-delivery-bookshelf-repository';
 import { GiftDeliveryService } from './gift-delivery-service';
 import { GiftService } from './gift-service';
-import { GiftReminderScheduler } from './gift-reminder-scheduler';
-import { GiftDeliveryScheduler } from './gift-delivery-scheduler';
+import { GiftFlushScheduler } from './gift-flush-scheduler';
 import { GiftEmailService } from './gift-email-service';
 import { GiftController } from './gift-controller';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
@@ -87,11 +86,16 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     blogIcon,
     t,
   });
-  const giftDeliveryScheduler = new GiftDeliveryScheduler({
+  const giftDeliveryScheduler = new GiftFlushScheduler({
     apiUrl: options.apiUrl,
     adapter: options.schedulerAdapter,
     internalKeys: options.internalKeys,
-    findScheduled: () => deliveryRepository.findScheduledTimesForPurchasedGifts(new Date()),
+    endpoint: 'flush_deliveries',
+    name: 'gift_delivery',
+    findScheduledTimes: async () => {
+      const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(new Date());
+      return scheduled.map((redeemableAt) => redeemableAt.getTime());
+    },
   });
   const giftDeliveryService = new GiftDeliveryService({
     giftRepository: repository,
@@ -104,11 +108,18 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     giftDeliveryScheduler,
   });
 
-  const giftReminderScheduler = new GiftReminderScheduler({
+  const giftReminderScheduler = new GiftFlushScheduler({
     apiUrl: options.apiUrl,
     adapter: options.schedulerAdapter,
     internalKeys: options.internalKeys,
-    findUnsentReminders: () => repository.findUnsentReminders(),
+    endpoint: 'flush_reminders',
+    name: 'gift_reminder',
+    findScheduledTimes: async () => {
+      const pending = await repository.findUnsentReminders();
+      return pending
+        .map((gift) => gift.reminderDueAt()?.getTime())
+        .filter((time): time is number => time !== undefined);
+    },
   });
   const giftService = new GiftService({
     giftRepository: repository,
