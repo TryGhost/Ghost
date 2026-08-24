@@ -16,13 +16,15 @@ export type StateBridgeEventMap = {
   featureFlagsChange: undefined;
 };
 
+export type AdminThemeMode = 'light' | 'dark' | 'system';
+
 export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
-  applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
+  applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -96,10 +98,8 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
   user: 'UsersResponseType',
   post: 'PostsResponseType',
   member: 'MembersResponseType',
-  comment: 'CommentsResponseType',
   tag: 'TagsResponseType',
   label: 'LabelsResponseType',
-  webhook: 'WebhooksResponseType',
 };
 
 /**
@@ -260,6 +260,59 @@ export function subscribeOpenGiftLinkModal(
 ): () => void {
   return onEmberStateBridgeEvent('openGiftLinkModal', handler);
 }
+
+/**
+ * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
+ * `dark` class and the dark stylesheet, and installs its own
+ * prefers-color-scheme listener, so React must not apply the theme itself.
+ *
+ * Deliberately a synchronous snapshot (no waitForStateBridge): theme effects
+ * need the answer at effect time and fall back to applying the theme
+ * themselves while the bridge is absent.
+ */
+export function isEmberThemeManaged(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
+}
+
+/**
+ * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
+ * a flash. Resolves immediately when no bridge (or an older Ember without the
+ * method) is present.
+ */
+export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
+  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
+}
+
+/**
+ * Asks Ember to apply an admin theme preference. Returns false when no bridge
+ * (or an older Ember without the method) is present, so the caller can fall
+ * back to applying the theme itself.
+ */
+export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.applyAdminThemePreference) {
+    return false;
+  }
+  void stateBridge.applyAdminThemePreference(mode);
+  return true;
+}
+
+/**
+ * React -> Ember mutation sync handlers for the FrameworkProvider. Each
+ * forwards a successful React mutation to Ember's store sync and no-ops when
+ * the bridge is absent (standalone React).
+ */
+export const emberMutationHandlers = {
+  onUpdate: (dataType: string, response: unknown): void => {
+    window.EmberBridge?.state.onUpdate(dataType, response);
+  },
+  onInvalidate: (dataType: string): void => {
+    window.EmberBridge?.state.onInvalidate(dataType);
+  },
+  onDelete: (dataType: string, id: string): void => {
+    window.EmberBridge?.state.onDelete(dataType, id);
+  },
+};
 
 // External store for sidebar visibility state
 function subscribeSidebarVisibility(callback: () => void): () => void {
