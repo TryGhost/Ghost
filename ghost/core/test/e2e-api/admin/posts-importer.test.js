@@ -13,6 +13,7 @@ const { cacheInvalidateHeaderNotSet } = assertions;
 const path = require('path');
 const models = require('../../../core/server/models');
 const jobsService = require('../../../core/server/services/jobs');
+const { compress } = require('@tryghost/zip');
 
 const csvPath = path.join(__dirname, '../../utils/fixtures/csv/valid-posts-import.csv');
 
@@ -23,6 +24,19 @@ const csvFile = async (name, content) => {
   const filePath = path.join(tmpDir, name);
   await fs.writeFile(filePath, content);
   return filePath;
+};
+
+const zipFile = async (name, files) => {
+  const source = path.join(tmpDir, `${name}-contents`);
+  await fs.mkdir(source, { recursive: true });
+  for (const [fileName, content] of Object.entries(files)) {
+    const filePath = path.join(source, fileName);
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, content);
+  }
+  const zipPath = path.join(tmpDir, name);
+  await compress(source, zipPath);
+  return zipPath;
 };
 
 describe('Posts Importer API', function () {
@@ -69,6 +83,81 @@ describe('Posts Importer API', function () {
       .attach('postsfile', csvPath)
       .expectStatus(202)
       .expect(cacheInvalidateHeaderNotSet());
+  });
+
+  it('Imports the single mapped CSV inside a ZIP', async function () {
+    await agent.loginAsOwner();
+
+    const zipPath = await zipFile('mapped-posts.zip', {
+      'export/posts.CSV': 'Headline,Body\nZIP mapping post,<p>Mapped from ZIP</p>\n',
+      'export/content/files/attachment.csv': 'download,only\n',
+    });
+    const form = new FormData();
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[Body]', 'html');
+    form.append('postsfile', await fs.readFile(zipPath), {
+      filename: path.basename(zipPath),
+      contentType: 'application/zip',
+    });
+
+    const { body } = await agent.post('posts/upload/').body(form).expectStatus(202);
+    assert.equal(body.meta.total, 1);
+
+    await jobsService.allSettled();
+    const post = await models.Post.findOne({ title: 'ZIP mapping post', status: 'all' });
+    assert.ok(post);
+    assert.match(post.get('html'), /Mapped from ZIP/);
+  });
+
+  it('Rejects ZIPs with no data CSV, multiple data CSVs, or mixed data formats', async function () {
+    await agent.loginAsOwner();
+
+    const cases = [
+      {
+        name: 'no-data-csv.zip',
+        files: {
+          'ghost-import.json': '{}',
+          'content/files/attachment.csv': 'download,only\n',
+        },
+        reason: /must contain one CSV file/,
+      },
+      {
+        name: 'multiple-data-csv.zip',
+        files: {
+          'one.csv': 'title\nOne\n',
+          'two.csv': 'title\nTwo\n',
+        },
+        reason: /only one CSV file/,
+      },
+      {
+        name: 'mixed-data.zip',
+        files: {
+          'posts.csv': 'title\nMixed\n',
+          'posts.json': '{}',
+        },
+        reason: /cannot contain CSV, JSON, or Markdown import files together/,
+      },
+    ];
+
+    for (const testCase of cases) {
+      const zipPath = await zipFile(testCase.name, testCase.files);
+      const { body } = await agent
+        .post('posts/upload/')
+        .attach('postsfile', zipPath)
+        .expectStatus(422);
+      assert.match(body.errors[0].message, testCase.reason);
+    }
+  });
+
+  it('Rejects a corrupt ZIP before scheduling an import', async function () {
+    await agent.loginAsOwner();
+
+    const { body } = await agent
+      .post('posts/upload/')
+      .attach('postsfile', path.join(__dirname, '../../utils/fixtures/import/zips/empty.zip'))
+      .expectStatus(415);
+
+    assert.match(body.errors[0].message, /uploaded zip could not be read/i);
   });
 
   it('Cannot upload a posts CSV as Editor', async function () {

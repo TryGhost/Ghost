@@ -77,7 +77,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
 
   // The scheduled job is invoked directly rather than through the job manager.
   const run = async () => {
-    const accepted = await importer.importCSV({ filePath: '/tmp/posts.csv' });
+    const accepted = await importer.importCSV({
+      filePath: '/tmp/posts.csv',
+      fileName: 'posts.csv',
+    });
     for (const job of jobs) {
       await job.job();
     }
@@ -129,7 +132,10 @@ describe('ContentCSVImporter', function () {
   it('accepts the upload with the row count and defers the writes to one inline job', async function () {
     const h = harness();
 
-    const accepted = await h.importer.importCSV({ filePath: '/tmp/posts.csv' });
+    const accepted = await h.importer.importCSV({
+      filePath: '/tmp/posts.csv',
+      fileName: 'posts.csv',
+    });
 
     assert.deepEqual(accepted, { importId: 'run_test', total: 2 });
     assert.equal(h.jobs.length, 1);
@@ -180,9 +186,34 @@ describe('ContentCSVImporter', function () {
       },
     });
 
-    await importer.importCSV({ filePath: '/tmp/posts.csv', mapping: { Headline: 'title' } });
+    await importer.importCSV({
+      filePath: '/tmp/posts.csv',
+      fileName: 'posts.csv',
+      mapping: { Headline: 'title' },
+    });
 
     assert.deepEqual(receivedMapping, { Headline: 'title' });
+  });
+
+  it('reads a prepared archive source and cleans it after the job', async function () {
+    const h = harness();
+    const cleanup = sinon.stub().resolves();
+    let receivedPath: string | undefined;
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => ({ filePath: '/tmp/extracted/posts.csv', cleanup }),
+      readRows: async (filePath) => {
+        receivedPath = filePath;
+        return [row('Prepared')];
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/upload', fileName: 'posts.zip' });
+
+    assert.equal(receivedPath, '/tmp/extracted/posts.csv');
+    sinon.assert.notCalled(cleanup);
+    await h.jobs[0].job();
+    sinon.assert.calledOnce(cleanup);
   });
 
   it('writes one post per row, in order, under the importing options', async function () {
@@ -215,15 +246,18 @@ describe('ContentCSVImporter', function () {
 
   it('rejects a file that cannot be parsed as CSV without scheduling any work', async function () {
     const h = harness();
+    const cleanupError = new Error('cleanup failed');
+    const cleanup = sinon.stub().rejects(cleanupError);
     const importer = new ContentCSVImporter({
       ...h.deps,
+      prepareSource: async () => ({ filePath: '/tmp/extracted/posts.csv', cleanup }),
       readRows: async () => {
         throw new Error('bad bytes');
       },
     });
 
     await assert.rejects(
-      importer.importCSV({ filePath: '/tmp/posts.csv' }),
+      importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
       (error: { errorType?: string; message?: string }) => {
         assert.equal(error.errorType, 'ValidationError');
         assert.match(error.message ?? '', /could not be parsed as a CSV/);
@@ -232,6 +266,8 @@ describe('ContentCSVImporter', function () {
     );
 
     assert.equal(h.jobs.length, 0, 'no job was scheduled');
+    sinon.assert.calledOnce(cleanup);
+    assert.equal(h.reported.at(-1), cleanupError);
   });
 
   it('resolves the html converter once per run, not per row', async function () {
@@ -260,9 +296,14 @@ describe('ContentCSVImporter', function () {
 
   it('rejects a file over the cap without scheduling any work', async function () {
     const h = harness(Array.from({ length: 101 }, (_, i) => row(`Post ${i + 1}`)));
+    const cleanup = sinon.stub().resolves();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => ({ filePath: '/tmp/extracted/posts.csv', cleanup }),
+    });
 
     await assert.rejects(
-      h.importer.importCSV({ filePath: '/tmp/posts.csv' }),
+      importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' }),
       (error: { errorType?: string; message?: string }) => {
         assert.equal(error.errorType, 'ValidationError');
         assert.match(error.message ?? '', /more than 100 posts/);
@@ -273,12 +314,56 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.jobs.length, 0, 'no job was scheduled');
     assert.equal(h.created.length, 0, 'nothing was written');
     assert.equal(h.store.get('run_test'), undefined, 'no run was registered');
+    sinon.assert.calledOnce(cleanup);
+  });
+
+  it('cleans a prepared source if scheduling throws', async function () {
+    const h = harness();
+    const cleanup = sinon.stub().resolves();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => ({ filePath: '/tmp/extracted/posts.csv', cleanup }),
+      addJob: () => {
+        throw new Error('queue unavailable');
+      },
+    });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' }),
+      /queue unavailable/,
+    );
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.equal(h.store.get('run_test')?.failureReason, 'queue unavailable');
+    sinon.assert.calledOnce(cleanup);
+  });
+
+  it('reports cleanup failures without rejecting the completed job', async function () {
+    const h = harness();
+    const cleanupError = new Error('cleanup failed');
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => ({
+        filePath: '/tmp/extracted/posts.csv',
+        cleanup: async () => {
+          throw cleanupError;
+        },
+      }),
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
+    await h.jobs[0].job();
+
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.equal(h.reported.at(-1), cleanupError);
   });
 
   it('accepts a file exactly at the cap', async function () {
     const h = harness(Array.from({ length: 100 }, (_, i) => row(`Post ${i + 1}`)));
 
-    const accepted = await h.importer.importCSV({ filePath: '/tmp/posts.csv' });
+    const accepted = await h.importer.importCSV({
+      filePath: '/tmp/posts.csv',
+      fileName: 'posts.csv',
+    });
 
     assert.deepEqual(accepted, { importId: 'run_test', total: 100 });
     assert.equal(h.jobs.length, 1);
