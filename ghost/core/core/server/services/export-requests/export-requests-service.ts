@@ -1,24 +1,17 @@
-import crypto from 'crypto';
+import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
+import { ASYNC_EXPORT_COMPONENTS } from '../exports/export-components';
+
+type AsyncExportComponents = Record<(typeof ASYNC_EXPORT_COMPONENTS)[number], boolean>;
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const ghostVersion = require('@tryghost/version');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
-
-export type ExportComponents = {
-  content: boolean;
-  members: boolean;
-  analytics: boolean;
-  themes: boolean;
-  routes: boolean;
-  media: boolean;
-};
 
 type ExportRequestBody = {
   type: 'export';
   siteId: string;
   requestedBy: string;
-  components: ExportComponents;
+  components: AsyncExportComponents;
 };
 
 type ExportRequestsServiceDependencies = {
@@ -32,8 +25,6 @@ type ExportRequestsServiceDependencies = {
   };
   request: (url: string, options: unknown) => Promise<unknown>;
 };
-
-const REQUEST_TIMEOUT_MS = 30_000;
 
 export class ExportRequestsService {
   #config: ExportRequestsServiceDependencies['config'];
@@ -54,19 +45,6 @@ export class ExportRequestsService {
     };
   }
 
-  #computeSignature(timestamp: string, body: string, secret: string): string {
-    const baseString = `${timestamp}:${body}`;
-    return crypto.createHmac('sha256', secret).update(baseString).digest('base64');
-  }
-
-  #sanitizeUrl(url: string): string {
-    try {
-      return new URL(url).origin;
-    } catch {
-      return '[invalid archive url]';
-    }
-  }
-
   /**
    * Requests an async export archive from the configured host service.
    * The host service generates the archive in the background and emails a
@@ -80,7 +58,7 @@ export class ExportRequestsService {
     components,
     requestedBy,
   }: {
-    components: ExportComponents;
+    components: AsyncExportComponents;
     requestedBy: string;
   }): Promise<void> {
     const { webhookUrl, webhookSecret, siteId } = this.#readExportRequestConfig();
@@ -119,32 +97,15 @@ export class ExportRequestsService {
       components,
     };
 
-    const requestBody = JSON.stringify(payload);
-    const timestamp = Date.now().toString();
-
-    const headers: Record<string, string | number> = {
-      'Content-Length': Buffer.byteLength(requestBody),
-      'Content-Type': 'application/json',
-      'Content-Version': `v${ghostVersion.safe}`,
-      'X-Ghost-Request-Timestamp': timestamp,
-      'X-Ghost-Signature': this.#computeSignature(timestamp, requestBody, webhookSecret),
-    };
-
-    const requestOptions = {
-      method: 'POST',
-      body: requestBody,
-      headers,
-      timeout: {
-        request: REQUEST_TIMEOUT_MS,
-      },
+    const requestOptions = buildSignedWebhookRequest({
+      payload,
+      secret: webhookSecret,
       // No retries: the request is not idempotent (each delivery can
       // schedule an archive)
-      retry: {
-        limit: 0,
-      },
-    };
+      retryLimit: 0,
+    });
 
-    const sanitizedUrl = this.#sanitizeUrl(webhookUrl);
+    const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);
     this.#logging.info(`Requesting export archive generation from "${sanitizedUrl}"`);
 
     try {

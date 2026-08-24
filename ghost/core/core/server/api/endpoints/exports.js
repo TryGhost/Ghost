@@ -12,7 +12,11 @@ const customRedirects = require('../../services/custom-redirects');
 const { serializeToYaml } = require('../../services/custom-redirects/redirect-config-parser');
 const themeService = require('../../services/themes');
 const themeList = require('../../services/themes/list');
-const { SiteExporter, EXPORT_COMPONENTS } = require('../../services/exports/site-exporter');
+const { SiteExporter } = require('../../services/exports/site-exporter');
+const {
+  SYNC_EXPORT_COMPONENTS,
+  ASYNC_EXPORT_COMPONENTS,
+} = require('../../services/exports/export-components');
 const { getExportFileName } = require('./utils/csv-export-filename');
 const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 const {
@@ -30,8 +34,6 @@ const postsService = getPostServiceInstance();
 const messages = {
   noComponentsSelected: 'No export components selected',
 };
-
-const ALLOWED_REQUEST_COMPONENTS = ['content', 'members', 'analytics', 'themes', 'routes', 'media'];
 
 /**
  * Pipes export rows through their CSV transform. `pipeline` (rather than
@@ -138,7 +140,7 @@ const controller = {
     validation: {
       options: {
         components: {
-          values: [...EXPORT_COMPONENTS],
+          values: [...SYNC_EXPORT_COMPONENTS],
         },
       },
     },
@@ -148,7 +150,7 @@ const controller = {
     },
     query(frame) {
       // Absent means everything; explicitly empty means nothing selected
-      const components = frame.options.components ?? [...EXPORT_COMPONENTS];
+      const components = frame.options.components ?? [...SYNC_EXPORT_COMPONENTS];
 
       if (components.length === 0) {
         throw new errors.ValidationError({
@@ -178,7 +180,7 @@ const controller = {
       }
 
       const keys = Object.keys(components);
-      const unknownKeys = keys.filter((key) => !ALLOWED_REQUEST_COMPONENTS.includes(key));
+      const unknownKeys = keys.filter((key) => !ASYNC_EXPORT_COMPONENTS.includes(key));
 
       if (unknownKeys.length > 0) {
         throw new errors.BadRequestError({
@@ -204,7 +206,7 @@ const controller = {
     },
     async query(frame) {
       const components = {};
-      for (const key of ALLOWED_REQUEST_COMPONENTS) {
+      for (const key of ASYNC_EXPORT_COMPONENTS) {
         components[key] = frame.data.components[key] === true;
       }
 

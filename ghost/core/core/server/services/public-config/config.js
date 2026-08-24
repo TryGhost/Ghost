@@ -10,11 +10,11 @@ const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version'
 const tinybirdLocalStatsPayloadProperties = ['enabled', 'endpoint', 'datasource'];
 
 const sanitizeHostSettings = (hostSettings) => {
-  if (!isPlainObject(hostSettings) || !isPlainObject(hostSettings.export)) {
+  if (!isPlainObject(hostSettings)) {
     return hostSettings;
   }
 
-  return { ...hostSettings, export: omit(hostSettings.export, 'webhookSecret') };
+  return omit(hostSettings, ['export.webhookSecret', 'emailVerification.webhookSecret']);
 };
 
 const copyPayloadProperties = (target, source, properties) => {
