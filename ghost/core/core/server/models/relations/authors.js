@@ -427,14 +427,12 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         if (isContributor && isEdit) {
           hasUserPermission = !isChangingAuthors() && isCoAuthor();
-        } else if (isContributor && isAdd) {
+        } else if ((isContributor || isAuthor) && isAdd) {
           hasUserPermission = isOwner();
-        } else if (isContributor && isDestroy) {
-          hasUserPermission = isPrimaryAuthor();
+        } else if ((isContributor || isAuthor) && isDestroy) {
+          hasUserPermission = Boolean(postModel) && isPrimaryAuthor();
         } else if (isAuthor && isEdit) {
           hasUserPermission = isCoAuthor() && !isChangingAuthors();
-        } else if (isAuthor && isAdd) {
-          hasUserPermission = isOwner();
         } else if (postModel) {
           hasUserPermission = hasUserPermission || isPrimaryAuthor();
         }
