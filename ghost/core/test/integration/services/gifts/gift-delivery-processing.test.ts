@@ -5,7 +5,7 @@ import { SendGiftDeliveryEvent } from '../../../../core/server/services/gifts/ev
 const DomainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
 const models = require('../../../../core/server/models');
-const { agentProvider, fixtureManager } = require('../../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
 
 describe('Gift delivery processing', function () {
   let paidTierId: string;
@@ -29,10 +29,17 @@ describe('Gift delivery processing', function () {
     await DomainEvents.allSettled();
     await models.GiftDelivery.query().del();
     await models.Gift.query().del();
+    mockManager.restore();
     sinon.restore();
   });
 
-  async function createPendingEmailGift() {
+  async function createPendingEmailGift({
+    purchasedAt,
+    redeemableAt = null,
+  }: {
+    purchasedAt?: Date;
+    redeemableAt?: Date | null;
+  } = {}) {
     giftSequence += 1;
     const now = new Date();
 
@@ -54,7 +61,8 @@ describe('Gift delivery processing', function () {
       consumes_at: null,
       expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
       status: 'purchased',
-      purchased_at: now,
+      purchased_at: purchasedAt ?? now,
+      redeemable_at: redeemableAt,
       redeemed_at: null,
       consumed_at: null,
       expired_at: null,
@@ -122,5 +130,21 @@ describe('Gift delivery processing', function () {
     assert.equal(reloaded.get('status'), 'cancelled');
     assert.equal(reloaded.get('email_provider_message_id'), 'provider-123');
     assert.ok(reloaded.get('email_sent_at'));
+  });
+
+  it('confirms to the buyer after a scheduled gift is sent', async function () {
+    const emailMockReceiver = mockManager.mockMail();
+    const now = Date.now();
+    const { delivery } = await createPendingEmailGift({
+      purchasedAt: new Date(now - 2 * 60 * 60 * 1000),
+      redeemableAt: new Date(now - 60 * 60 * 1000),
+    });
+
+    DomainEvents.dispatch(SendGiftDeliveryEvent.create({ deliveryId: delivery.id }));
+    await DomainEvents.allSettled();
+
+    sinon.assert.calledOnce(deliverySend);
+    emailMockReceiver.assertSentEmailCount(1);
+    assert.equal(emailMockReceiver.getSentEmail(0).subject, 'Your gift has been sent');
   });
 });
