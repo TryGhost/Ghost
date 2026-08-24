@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { render } from 'vitest-browser-react';
 import { configResponse, settingsResponse } from '@tryghost/test-data';
-import type { TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
+import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
 
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
@@ -91,13 +91,8 @@ export async function renderAdminApp(
     externalNavigate: (link) => {
       document.body.dataset.externalNavigate = JSON.stringify(link);
     },
-    unsplashConfig: {
-      Authorization: '',
-      'Accept-Version': 'v1',
-      'Content-Type': 'application/json',
-      'App-Pragma': 'no-cache',
-      'X-Unsplash-Cache': true,
-    },
+    // Production shape, but without the real API key so tests never hit Unsplash
+    unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
     sentryDSN: null,
     onUpdate: () => {},
     onInvalidate: () => {},
