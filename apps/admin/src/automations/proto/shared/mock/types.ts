@@ -14,6 +14,25 @@ export type RunStatus = 'in_progress' | 'completed' | 'exited_early';
 
 export type RunStepState = 'done' | 'current' | 'skipped' | 'upcoming';
 
+/**
+ * Why a run ended before finishing the flow. An identifier rather than the
+ * display string it used to be — these are counted and filtered on, and a real
+ * API would send an enum for exactly that reason.
+ *
+ * Three are the member's doing and one isn't:
+ *   failed              a send broke. The publisher's to fix, and the only exit
+ *                       the UI is allowed to escalate.
+ *   unsubscribed        deliberately one value for now. There are arguably two
+ *                       behaviours here (member deleted vs. unsubscribed from
+ *                       automation emails) and the team hasn't settled whether
+ *                       they read differently — one reason until they do.
+ *   upgraded            met an exit criterion by starting a paid subscription.
+ *   ended_by_publisher  the automation was turned off underneath them. Seeded as
+ *                       a fixture but never generated: turning an automation off
+ *                       in the proto doesn't retire its in-flight runs.
+ */
+export type ExitReason = 'failed' | 'unsubscribed' | 'upgraded' | 'ended_by_publisher';
+
 /** One action's outcome for a single member. `action_id` → AutomationAction.id. */
 export type RunStep = {
     action_id: string;
@@ -46,7 +65,7 @@ export type AutomationRun = {
     enrolled_at: string;
     completed_at: string | null;
     current_action_id: string | null; // → AutomationAction.id, when in_progress
-    exit_reason: string | null; // e.g. "Unsubscribed", "Upgraded", when exited_early
+    exit_reason: ExitReason | null; // set when status is exited_early
     steps: RunStep[];
 };
 

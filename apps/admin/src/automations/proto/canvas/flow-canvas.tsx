@@ -11,6 +11,7 @@ import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
 import {EmailPreview} from './email-preview';
 import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
+import {exitReasonLabel} from '@/automations/proto/shared/member-runs';
 
 // Height the email preview (subject + body sheet) adds to a read/run email node, on
 // top of the header. Footer (stats or run detail) is added separately. Estimated —
@@ -273,9 +274,13 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
                 const failedExit = Boolean(step?.failed);
                 descriptors.push({id: '__exit__', data: {
                     kind: 'event',
+                    // A failed send names what actually broke ("Member inbox is
+                    // full") when the step knows; otherwise the run's own reason,
+                    // read through the shared label map so it reads the same here as
+                    // everywhere else.
                     title: failedExit
-                        ? (step?.detail ?? 'Delivery failed')
-                        : (selectedRun.exit_reason ?? 'Exited early'),
+                        ? (step?.detail ?? exitReasonLabel('failed'))
+                        : (selectedRun.exit_reason ? exitReasonLabel(selectedRun.exit_reason) : 'Exited early'),
                     subtitle: '',
                     focused,
                     // 'done' so the edge INTO this card reads as path travelled.

@@ -1,5 +1,5 @@
 import type {BadgeProps} from '@tryghost/shade/components';
-import type {AutomationRun, RunStatus} from './mock';
+import type {AutomationRun, ExitReason, RunStatus} from './mock';
 
 // Shared member-run presentation data, so everything describing a run's status +
 // progress says it identically. Deliberately a pure, non-component module (the
@@ -22,13 +22,36 @@ export const runStatusMeta: Record<RunStatus, {label: string; variant: BadgeProp
     exited_early: {label: 'Exited early', variant: 'warning', className: 'text-yellow-800 dark:text-yellow-600'}
 };
 
+// How each exit reason reads. Kept beside the status labels so a run's outcome is
+// described identically wherever it surfaces, and separate from the identifiers
+// so the wording can change without touching the data.
+//
+// EXIT_REASONS is the ordered list — used for the filter options, so the order
+// here is the order they're offered in.
+export const EXIT_REASONS: {id: ExitReason; label: string}[] = [
+    {id: 'failed', label: 'Delivery failed'},
+    {id: 'unsubscribed', label: 'Unsubscribed'},
+    {id: 'upgraded', label: 'Upgraded to paid'},
+    {id: 'ended_by_publisher', label: 'Ended by publisher'}
+];
+
+export const exitReasonLabel = (reason: ExitReason): string => (
+    EXIT_REASONS.find(entry => entry.id === reason)?.label ?? 'Exited early'
+);
+
+// A run the system ended, rather than the member. The only exit the UI escalates,
+// because it's the one a publisher can act on. Read from the run's own reason
+// rather than from its steps: a step's `failed` flag says WHICH send broke, but
+// the run-level reason is what decides how the run reads.
+export const runFailed = (run: AutomationRun): boolean => run.exit_reason === 'failed';
+
 // e.g. "45% complete", or "25% complete - Unsubscribed" when exited early.
 export const runProgress = (run: AutomationRun): string => {
     const total = run.steps.length;
     const done = run.steps.filter(step => step.state === 'done').length;
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
     if (run.status === 'exited_early' && run.exit_reason) {
-        return `${pct}% complete - ${run.exit_reason}`;
+        return `${pct}% complete - ${exitReasonLabel(run.exit_reason)}`;
     }
     return `${pct}% complete`;
 };

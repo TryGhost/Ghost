@@ -64,9 +64,8 @@ function shiftIso(iso: string | null, days: number): string | null {
 // synthetic members retracing the same journey is the point — but a delivery
 // failure is meant to be the rare one you have to go looking for, and cloning the
 // template that carries it turned every exited run in the scenario into a broken
-// send. The step flag alone isn't enough: the run-level exit_reason rides along
-// too, so a de-failed clone also gets an ordinary member-driven exit, or every
-// clone still *says* "Delivery failed" while its steps claim otherwise.
+// send. So a clone of a failed template gets an ordinary member-driven exit
+// instead, and its step loses the flag that marks which send broke.
 function cloneStep(step: RunStep, days: number): RunStep {
     const next: RunStep = {...step, occurred_at: shiftIso(step.occurred_at, days), detail: step.failed ? 'Unsubscribed' : step.detail};
     delete next.failed;
@@ -83,7 +82,7 @@ function cloneRunForMember(template: AutomationRun, automationId: string, index:
         id: `run_${automationId}_${index}`,
         automation_id: automationId,
         member: buildSyntheticMember(automationId, index),
-        exit_reason: failedTemplate ? 'Unsubscribed' : template.exit_reason,
+        exit_reason: failedTemplate ? 'unsubscribed' : template.exit_reason,
         enrolled_at: shiftIso(template.enrolled_at, days)!,
         completed_at: shiftIso(template.completed_at, days),
         steps: template.steps.map(step => cloneStep(step, days))
@@ -145,10 +144,26 @@ const welcomeRunsBase: AutomationRun[] = [
         id: 'run_priya', automation_id: welcomeSeries.id,
         member: {id: 'mem_priya', name: 'Priya Nair', email: 'priya.nair@example.com'},
         status: 'exited_early', enrolled_at: '2026-07-10T11:47:00Z', completed_at: null,
-        current_action_id: null, exit_reason: 'Unsubscribed',
+        current_action_id: null, exit_reason: 'unsubscribed',
         steps: [
             {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-10T11:47:00Z', detail: 'Unsubscribed'},
             {action_id: 'act_wait_3d', state: 'skipped', occurred_at: null, detail: null},
+            {action_id: 'act_tips_email', state: 'skipped', occurred_at: null, detail: null},
+            {action_id: 'act_week1_email', state: 'skipped', occurred_at: null, detail: null}
+        ]
+    },
+    {
+        // The publisher turned the automation off while this member was partway
+        // through. Seeded rather than generated — turning an automation off in the
+        // proto doesn't retire its in-flight runs — so the state is reviewable
+        // without the behaviour existing.
+        id: 'run_dara', automation_id: welcomeSeries.id,
+        member: {id: 'mem_dara', name: 'Dara Whitfield', email: 'dara.whitfield@example.com'},
+        status: 'exited_early', enrolled_at: '2026-07-09T16:02:00Z', completed_at: null,
+        current_action_id: null, exit_reason: 'ended_by_publisher',
+        steps: [
+            {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-09T16:02:00Z', detail: 'Opened'},
+            {action_id: 'act_wait_3d', state: 'done', occurred_at: '2026-07-09T16:03:00Z', detail: 'Waited 3 days'},
             {action_id: 'act_tips_email', state: 'skipped', occurred_at: null, detail: null},
             {action_id: 'act_week1_email', state: 'skipped', occurred_at: null, detail: null}
         ]
@@ -213,7 +228,7 @@ const winbackRunsBase: AutomationRun[] = [
         // ended without the member doing anything. Still exited_early — they're out
         // of the flow — with an exit_reason that names the system, not them.
         status: 'exited_early', enrolled_at: '2026-07-14T09:00:00Z', completed_at: null,
-        current_action_id: null, exit_reason: 'Delivery failed',
+        current_action_id: null, exit_reason: 'failed',
         steps: [
             {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-14T09:00:00Z', detail: 'Member inbox is full', failed: true},
             {action_id: 'act_wb_wait', state: 'skipped', occurred_at: null, detail: null},
@@ -285,7 +300,7 @@ const upgradeRunsBase: AutomationRun[] = [
         id: 'run_ben', automation_id: paidUpgradeNudge.id,
         member: {id: 'mem_ben', name: 'Ben Ortiz', email: 'ben.ortiz@example.com'},
         status: 'exited_early', enrolled_at: '2026-07-16T14:20:00Z', completed_at: null,
-        current_action_id: null, exit_reason: 'Upgraded to paid',
+        current_action_id: null, exit_reason: 'upgraded',
         steps: [
             {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-16T14:20:00Z', detail: 'Opened (upgraded)'},
             {action_id: 'act_up_wait', state: 'skipped', occurred_at: null, detail: null},

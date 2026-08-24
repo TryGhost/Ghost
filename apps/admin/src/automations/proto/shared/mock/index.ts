@@ -12,6 +12,7 @@ export type {
     AutomationRunMetrics,
     AutomationScenario,
     EnrollmentPoint,
+    ExitReason,
     MetricKey,
     RunMember,
     RunStatus,

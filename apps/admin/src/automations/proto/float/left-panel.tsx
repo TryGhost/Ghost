@@ -1,13 +1,13 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {FilterBar, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
-import type {AutomationRun} from '@/automations/proto/shared/mock';
+import type {AutomationRun, ExitReason} from '@/automations/proto/shared/mock';
 import type {LeftPanelProps} from './left-panel-types';
 import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
 import {SortHead, type SortState} from '@/automations/proto/float/sort-head';
-import {startedLabel} from '@/automations/proto/shared/member-runs';
+import {EXIT_REASONS, exitReasonLabel, runFailed, startedLabel} from '@/automations/proto/shared/member-runs';
 import {toAreaData} from '@/automations/proto/shared/chart';
 import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 
@@ -52,18 +52,18 @@ const STATUS_FACETS: {key: StatusKey; color: string; glyph: React.ReactNode}[] =
 const facetColor = (status: StatusKey): string => STATUS_FACETS.find(facet => facet.key === status)?.color ?? '';
 const facetGlyph = (status: StatusKey): React.ReactNode => STATUS_FACETS.find(facet => facet.key === status)?.glyph ?? null;
 
-// A run that ended on a system fault (a failed delivery) escalates its row icon
-// to a red alert — the one list state that's the publisher's to fix, so the one
-// allowed to call attention. It still counts and filters as Exited early; the
-// facet cards stay aggregate, only the member's own row raises its hand.
-const runFailed = (run: AutomationRun): boolean => run.steps.some(step => step.failed);
-
-const rowGlyph = (status: StatusKey, run: AutomationRun): React.ReactNode => (
-    runFailed(run) ? <LucideIcon.CircleAlert className="size-4 shrink-0" strokeWidth={2} /> : facetGlyph(status)
-);
-
-const rowColor = (status: StatusKey, run: AutomationRun): string => (
-    runFailed(run) ? 'text-red-600 dark:text-red' : facetColor(status)
+// A run that ended on a system fault keeps the Exited early glyph and takes a red
+// dot in its corner. Swapping the glyph outright was wrong: failure is a REASON
+// for exiting, not a different status, and a row whose icon disagreed with the
+// column it sits in reads as a fourth state that can't be counted or filtered.
+// The dot marks the one list state that's the publisher's to fix without
+// claiming the row is something other than Exited early.
+//
+// A corner badge rather than a dot beside the glyph, because every row's icon
+// then stays on the same centre line — an inline dot would nudge only the failed
+// rows off-centre in a column where the rest line up.
+const FailureDot: React.FC = () => (
+    <span className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger" />
 );
 
 const RANGE_OPTIONS: {value: string; label: string}[] = [
@@ -84,11 +84,23 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
     // control the eye has to skip.
     const [searchOpen, setSearchOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
+    // Why someone left, filtered separately from the status. Deliberately not a
+    // fourth status card: the three statuses are mutually exclusive outcomes, and
+    // a failure is a REASON for exiting rather than a different kind of exit.
+    // Selecting one implies Exited early, so it doesn't need the card as well.
+    const [exitFilter, setExitFilter] = useState<ExitReason | null>(null);
     // Opening search takes over the top strip, so the screen needs to know to get
     // the automation title out of the way.
     const toggleSearch = (open: boolean) => {
         setSearchOpen(open);
     };
+    // The summary (Total entries + chart) answers "how many are entering, over
+    // time", and only the timeframe changes that. Searching or filtering by exit
+    // reason narrows the list beneath it and leaves it untouched — so while either
+    // is active it would sit there contradicting the controls above it. It rolls
+    // away instead, and comes back the moment they clear.
+    const summaryHidden = Boolean(exitFilter) || query.trim().length > 0;
+
     // Newest first: the question this table answers is "who's in here now".
     const [sort, setSort] = useState<SortState<SortKey>>({key: 'entered', direction: 'desc'});
     const {scrollRef, sentinelRef, stickyBlockRef, stickyBarRef, stuck} = useStickyList();
@@ -121,18 +133,24 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
             .map(run => ({run, status: statusOf(run)}));
     }, [runs, query]);
 
-    // Counts follow the search but NOT the active status, so every card keeps
-    // showing what it would select.
+    // Counts follow the search and the exit-reason filter, but NOT the active
+    // status — so every card keeps showing exactly what selecting IT would give.
+    // Skipping the status is what lets the cards stay comparable; honouring the
+    // exit reason is what keeps a card's number from promising rows the filter
+    // would then hide.
     const counts = useMemo(() => {
         const tally: Record<string, number> = {};
-        searched.forEach(({status}) => {
-            tally[status] = (tally[status] ?? 0) + 1;
-        });
+        searched
+            .filter(({run}) => !exitFilter || run.exit_reason === exitFilter)
+            .forEach(({status}) => {
+                tally[status] = (tally[status] ?? 0) + 1;
+            });
         return tally;
-    }, [searched]);
+    }, [searched, exitFilter]);
 
     const sorted = useMemo(() => {
-        const rows = statusFilter ? searched.filter(row => row.status === statusFilter) : [...searched];
+        const byStatus = statusFilter ? searched.filter(row => row.status === statusFilter) : [...searched];
+        const rows = exitFilter ? byStatus.filter(row => row.run.exit_reason === exitFilter) : byStatus;
         const order: StatusKey[] = ['In progress', 'Completed', 'Exited early'];
         rows.sort((a, b) => {
             // enrolled_at is ISO 8601, so a lexical compare is chronological.
@@ -144,7 +162,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
             return sort.direction === 'asc' ? cmp : -cmp;
         });
         return rows;
-    }, [searched, statusFilter, sort]);
+    }, [searched, statusFilter, exitFilter, sort]);
 
     // If a filter or the search hides the selected member, de-select them — the
     // canvas shouldn't keep highlighting someone who's no longer in the list.
@@ -243,6 +261,19 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                                     <LucideIcon.Check className={cn('ms-auto text-primary', range === option.value ? 'opacity-100' : 'opacity-0')} />
                                 </DropdownMenuItem>
                             ))}
+                            {/* Exit reason lives here rather than as a fourth status
+                                card. The cards are lifecycle outcomes and stay three;
+                                this asks a different question — why someone left —
+                                and only of the ones who did. Selecting a reason is
+                                what "show me failures" means. */}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
+                            {EXIT_REASONS.map(reason => (
+                                <DropdownMenuItem key={reason.id} onSelect={() => setExitFilter(exitFilter === reason.id ? null : reason.id)}>
+                                    {reason.label}
+                                    <LucideIcon.Check className={cn('ms-auto text-primary', exitFilter === reason.id ? 'opacity-100' : 'opacity-0')} />
+                                </DropdownMenuItem>
+                            ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                     {/* Last in the row, past the filter. It hides this pane, so it lives
@@ -261,12 +292,37 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                 members page does it — so what's narrowing the list is always visible
                 rather than hidden inside the button that set it. "All time" is the
                 default, so it isn't a filter and doesn't earn a row. */}
-            {range !== 'all' && (
+            {(range !== 'all' || exitFilter) && (
                 <FilterBar className="shrink-0 px-6 pb-3">
-                    <Button size="sm" type="button" variant="outline" onClick={() => setRange('all')}>
-                        Entered: {rangeLabel}
-                        <LucideIcon.X className="size-3.5" strokeWidth={2} />
-                    </Button>
+                    {/* One child, not one per chip: FilterBar justifies between its
+                        children so it can hold filters at the left and controls like
+                        "Save view" at the right, and handing it two peer chips pushed
+                        them to opposite ends. Grouped, they append to each other and
+                        the right-hand slot stays free. */}
+                    <Inline align="center" gap="sm" wrap>
+                        {/* Value only. The field name was carrying its weight when
+                            the chip read "Entered: Last 30 days", but every value
+                            here already names its own field — a timeframe reads as a
+                            timeframe, "Unsubscribed" reads as a reason — so the
+                            prefix was repeating what the words underneath it said. */}
+                        {/* Default size, not sm: Shade's own Filters pattern renders
+                            its chips at md — h-(--control-height), px-2.5, size-4
+                            icon — so these now match the chips on members and
+                            comments rather than sitting a size below them. The X
+                            takes Button's base svg size for the same reason. */}
+                        {range !== 'all' && (
+                            <Button type="button" variant="outline" onClick={() => setRange('all')}>
+                                {rangeLabel}
+                                <LucideIcon.X strokeWidth={2} />
+                            </Button>
+                        )}
+                        {exitFilter && (
+                            <Button type="button" variant="outline" onClick={() => setExitFilter(null)}>
+                                {exitReasonLabel(exitFilter)}
+                                <LucideIcon.X strokeWidth={2} />
+                            </Button>
+                        )}
+                    </Inline>
                 </FilterBar>
             )}
 
@@ -278,13 +334,25 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                 sticks, so there's no chrome left in between to separate them. */}
             {/* pt-0: the strip above already ends in pb-3, and its own top padding
                 on top of that held the chart too far off the Performance label. */}
-            <div className="flex flex-col gap-4 px-6 pt-0 pb-4">
-                <Box className="rounded-lg border border-border-default px-4 py-3">
+            <div className="flex flex-col px-6 pt-0 pb-4">
+                {/* Collapses on a grid-rows 0fr→1fr, the same technique the sticky
+                    bar below uses to roll its chips in — one idiom for "this region
+                    folds away" rather than two. The mb-4 rides inside the collapsing
+                    element on purpose: as a gap on the flex parent it would survive
+                    the collapse and leave 16px of nothing above the cards. */}
+                <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', summaryHidden ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100')}>
+                    <div className="overflow-hidden">
+                <Box className="mb-4 rounded-lg border border-border-default px-4 py-3">
                     <Stack gap="sm">
                         <MetricValue
                             label={(
                                 <>
-                                    <LucideIcon.Zap size={16} strokeWidth={1.5} />
+                                    {/* Matches the shipping KPI for a member count
+                                        (posts/analytics/growth labels "Free members"
+                                        with the same icon and weight). Zap was the
+                                        trigger's icon, not this metric's — what's
+                                        counted here is people, not firings. */}
+                                    <LucideIcon.User size={16} strokeWidth={1.5} />
                                     Total entries
                                 </>
                             )}
@@ -301,6 +369,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                         />
                     </Stack>
                 </Box>
+                    </div>
+                </div>
 
                 {/* Three counts in a row. They both report and filter, and sit above
                     the sticky bar so they scroll away as it sticks — the table then
@@ -434,9 +504,19 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                                             <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                         </TableCell>
                                         <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
-                                            {/* Icon only — the cards above name each state. */}
-                                            <div className={cn('flex justify-center', rowColor(status, run))} title={status}>
-                                                {rowGlyph(status, run)}
+                                            {/* Icon only — the cards above name each state.
+                                                The title is the one place the exit reason
+                                                surfaces in the table, and only for failures,
+                                                where the dot has raised a question the row
+                                                otherwise can't answer. */}
+                                            <div
+                                                className={cn('flex justify-center', facetColor(status))}
+                                                title={runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status}
+                                            >
+                                                <span className="relative flex">
+                                                    {facetGlyph(status)}
+                                                    {runFailed(run) && <FailureDot />}
+                                                </span>
                                             </div>
                                         </TableCell>
                                     </TableRow>
