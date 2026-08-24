@@ -6,8 +6,6 @@
 //
 // Allows each app to declare its own default caching rules
 
-const isString = require('lodash/isString');
-
 /**
  * @param {'public'|'private'|'noCache'} profile Use "private" if you do not want caching
  * @param {object} [options]
@@ -21,11 +19,7 @@ const cacheControl = (profile, options = { maxAge: 0 }) => {
     private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
   };
 
-  let output;
-
-  if (isString(profile) && Object.prototype.hasOwnProperty.call(profiles, profile)) {
-    output = profiles[profile];
-  }
+  const output = profiles[profile];
 
   /**
    * @param {import('express').Request} req
@@ -35,9 +29,7 @@ const cacheControl = (profile, options = { maxAge: 0 }) => {
    * @returns {void}
    */
   return function cacheControlHeaders(req, res, next) {
-    if (output) {
-      res.set({ 'Cache-Control': output });
-    }
+    res.set({ 'Cache-Control': output });
     next();
   };
 };

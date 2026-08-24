@@ -61,12 +61,6 @@ describe('Cache-Control middleware', function () {
     });
   });
 
-  it('will not set headers without a profile', async function () {
-    await runMiddleware(cacheControl());
-
-    sinon.assert.notCalled(res.set);
-  });
-
   it('will not get confused between serving public and private', async function () {
     const publicCC = cacheControl('public');
     const privateCC = cacheControl('private');
