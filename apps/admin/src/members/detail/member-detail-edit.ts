@@ -141,9 +141,19 @@ export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: st
   return [...subscribedIds, newsletterId].sort();
 }
 
-/** Client-side email sanity check for the save gate; the server remains authoritative. */
-export function isValidMemberEmail(email: string): boolean {
-  return validator.isEmail(email.trim());
+/**
+ * Client-side email sanity check for the save gate; the server remains
+ * authoritative. Mirrors the server's update semantics: an email is validated
+ * only when it differs from the stored one, because the server deliberately
+ * grandfathers stored emails that predate stricter validation
+ * (member-repository.js validates the email only when it changed).
+ */
+export function isValidMemberEmail(email: string, storedEmail?: string): boolean {
+  const trimmed = email.trim();
+  if (storedEmail !== undefined && trimmed === storedEmail.trim()) {
+    return true;
+  }
+  return validator.isEmail(trimmed);
 }
 
 /**
@@ -153,14 +163,18 @@ export function isValidMemberEmail(email: string): boolean {
  * validator runs on save-attempt for the same reason
  * (`ghost/admin/app/validators/member.js:15`).
  */
-export function getEmailErrorMessage(email: string, touched: boolean): string | null {
+export function getEmailErrorMessage(
+  email: string,
+  touched: boolean,
+  storedEmail?: string,
+): string | null {
   if (!touched) {
     return null;
   }
   if (email.trim() === '') {
     return 'Email is required.';
   }
-  if (!isValidMemberEmail(email)) {
+  if (!isValidMemberEmail(email, storedEmail)) {
     return 'Invalid email.';
   }
   return null;
