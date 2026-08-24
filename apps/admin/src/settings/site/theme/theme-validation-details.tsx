@@ -63,7 +63,7 @@ function SeverityBadge({ children, variant }: { children: string; variant: Displ
 
 function ProblemDetails({ problem }: { problem: ThemeProblem }) {
   return (
-    <div className="space-y-3">
+    <div className="mt-3 space-y-3">
       <div dangerouslySetInnerHTML={{ __html: problem.details }} className={DETAILS_HTML} />
       {problem.failures?.length > 0 && (
         <div>
