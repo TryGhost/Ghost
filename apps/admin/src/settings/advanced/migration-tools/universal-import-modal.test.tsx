@@ -2,6 +2,7 @@ import { useState } from 'react';
 import UniversalImportModal from '@/settings/advanced/migration-tools/universal-import-modal';
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import JSZip from 'jszip';
 
 const { mockImportContent, mockImportContentCSV, mockUseFeatureFlag, mockHandleError } = vi.hoisted(
   () => ({
@@ -75,6 +76,13 @@ describe('UniversalImportModal', () => {
       fireEvent.change(input, { target: { files: [file] } });
       await Promise.resolve();
     });
+  };
+
+  const zipFile = async (build: (archive: JSZip) => void) => {
+    const archive = new JSZip();
+    build(archive);
+    const bytes = await archive.generateAsync({ type: 'arraybuffer' });
+    return new File([bytes], 'import.zip', { type: 'application/zip' });
   };
 
   it('reads the csvContentImporter flag', async () => {
@@ -202,6 +210,60 @@ describe('UniversalImportModal', () => {
 
     await waitFor(() => expect(mockImportContent).toHaveBeenCalledWith(file));
     expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
+
+  it('still sends JSON ZIP files to the db import when csvContentImporter is enabled', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    const file = await zipFile((archive) => archive.file('ghost-import.json', '{}'));
+    await dropFile(file);
+
+    await waitFor(() => expect(mockImportContent).toHaveBeenCalledWith(file));
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
+
+  it('maps the single CSV in a ZIP and uploads the original archive', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    const file = await zipFile((archive) => {
+      archive.file('export/posts.csv', 'title,html\nFrom ZIP,<p>Body</p>');
+      archive.file('export/content/files/attachment.csv', 'download,only');
+    });
+    await dropFile(file);
+
+    expect(await screen.findByText('Map CSV fields')).toBeInTheDocument();
+    expect(screen.getByText('From ZIP')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        file,
+        mapping: { title: 'title', html: 'html' },
+      }),
+    );
+    expect(mockImportContent).not.toHaveBeenCalled();
+  });
+
+  it('rejects multiple data CSVs before uploading the ZIP', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    const file = await zipFile((archive) => {
+      archive.file('one.csv', 'title\nOne');
+      archive.file('two.csv', 'title\nTwo');
+    });
+    await dropFile(file);
+
+    await waitFor(() => expect(mockHandleError).toHaveBeenCalledWith(expect.any(Error)));
+    expect(mockHandleError.mock.calls[0][0]).toHaveProperty(
+      'message',
+      expect.stringContaining('only one CSV file'),
+    );
+    expect(mockImportContent).not.toHaveBeenCalled();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+    expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
   });
 
   it('surfaces an error and keeps the modal open when the import fails', async () => {

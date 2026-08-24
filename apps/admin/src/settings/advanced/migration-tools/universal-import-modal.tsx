@@ -9,7 +9,8 @@ import { useImportContent } from '@tryghost/admin-x-framework/api/db';
 import { useImportContentCSV } from '@tryghost/admin-x-framework/api/posts';
 import { ContentFieldMapping } from './content-import/mapping';
 import { MappingStep } from './content-import/mapping-step';
-import { columnsOf, readCSV } from './content-import/csv';
+import { columnsOf, parseCSV, readCSV } from './content-import/csv';
+import { inspectImportArchive } from './content-import/archive';
 
 interface CSVImportState {
   file: File;
@@ -49,10 +50,28 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
   const importFile = async (file: File) => {
     const isCSV = csvContentImporter && file.name.toLowerCase().endsWith('.csv');
-    if (isCSV) {
+    const isZIP = csvContentImporter && file.name.toLowerCase().endsWith('.zip');
+    if (isCSV || isZIP) {
       setReading(true);
       try {
-        const rows = await readCSV(file);
+        let rows: Record<string, string>[];
+        if (isZIP) {
+          const contents = await inspectImportArchive(file);
+          if (contents.type === 'legacy') {
+            setReading(false);
+            setUploading(true);
+            try {
+              await importContent(file);
+              finishImport(false);
+            } finally {
+              setUploading(false);
+            }
+            return;
+          }
+          rows = parseCSV(contents.csv);
+        } else {
+          rows = await readCSV(file);
+        }
         if (rows.length === 0) {
           throw new Error('File is empty, nothing to import. Please select a different file.');
         }
@@ -174,7 +193,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
               {uploading ? (
                 'Uploading...'
               ) : reading ? (
-                'Reading CSV...'
+                'Reading import file...'
               ) : (
                 <>
                   Select any {csvContentImporter ? 'JSON, zip or CSV' : 'JSON or zip'} file that

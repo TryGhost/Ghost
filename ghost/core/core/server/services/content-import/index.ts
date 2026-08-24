@@ -7,6 +7,7 @@ import ContentCSVImporter, {
 import readPostRows from './import/reader';
 import { EDITORIAL_POST_FIELDS } from './import/row';
 import { ImportRunStore } from './import/store';
+import { prepareImportSource } from './import/source';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
@@ -31,6 +32,7 @@ const mappingSchema = z.record(z.string(), z.string()).superRefine((mapping, ctx
 });
 const importRequestSchema = z.object({
   filePath: z.string().min(1),
+  fileName: z.string().min(1),
   mapping: mappingSchema.optional(),
 });
 // A junk timezone setting falls back to UTC rather than mis-stamping the batch tag.
@@ -68,6 +70,7 @@ function makeImporter(): ContentCSVImporter {
 
   return new ContentCSVImporter({
     readRows: readPostRows,
+    prepareSource: prepareImportSource,
     posts: {
       create: (data, options) => models.Post.add(data, options),
     },
