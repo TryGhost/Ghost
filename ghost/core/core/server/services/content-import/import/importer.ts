@@ -161,7 +161,7 @@ class ContentCSVImporter {
     logLifecycle('queued');
     try {
       this._addJob({
-        job: () => this.runImportJob(runId, importTagNames, rows, source.cleanup),
+        job: () => this.runImportJob(runId, importTagNames, rows, source),
         offloaded: false,
         name: 'content-import',
       });
@@ -180,7 +180,7 @@ class ContentCSVImporter {
     runId: string,
     importTagNames: string[],
     rows: PostImportRow[],
-    cleanup: () => Promise<void>,
+    source: PreparedImportSource,
   ): Promise<void> {
     const startedAt = Date.now();
     logLifecycle('started');
@@ -189,6 +189,11 @@ class ContentCSVImporter {
     let failed = false;
 
     try {
+      if (source.assets) {
+        await source.assets.store();
+        source.assets.rewriteRows(rows);
+      }
+
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
@@ -284,7 +289,7 @@ class ContentCSVImporter {
       this._report(error);
       this._store.fail(runId, messageOf(error));
     } finally {
-      await this.cleanupSource(cleanup);
+      await this.cleanupSource(source.cleanup);
       const outcome = failed ? 'failed after' : 'completed in';
       logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
     }

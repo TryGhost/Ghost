@@ -6,23 +6,16 @@ const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const ImageHandler = require('./handlers/image');
-const ImporterContentFileHandler = require('./handlers/importer-content-file-handler');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
-const ContentFileImporter = require('./importers/content-file-importer');
 const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils').default;
 const { GhostMailer } = require('../../services/mail');
 const jobManager = require('../../services/jobs');
-const adapterManager = require('../../services/adapter-manager').default;
 const ImportArchive = require('./import-archive');
-
-const mediaStorage = adapterManager.getAdapter('storage:media');
-const imageStorage = adapterManager.getAdapter('storage:images');
-const fileStorage = adapterManager.getAdapter('storage:files');
+const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
 
 const { emailTemplate } = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -44,68 +37,18 @@ let defaults = {
 
 class ImportManager {
   constructor() {
-    const mediaHandler = new ImporterContentFileHandler({
-      type: 'media',
-      // @NOTE: making the second parameter strict folder "content/media" brakes the glob pattern
-      //        in the importer, so we need to keep it as general "content" unless
-      //        it becomes a strict requirement
-      directories: ['media', 'content'],
-      ignoreRootFolderFiles: true,
-      extensions: config.get('uploads').media.extensions,
-      contentTypes: config.get('uploads').media.contentTypes,
-      urlUtils: urlUtils,
-      storage: mediaStorage,
-    });
-
-    const filesHandler = new ImporterContentFileHandler({
-      type: 'files',
-      // @NOTE: making the second parameter strict folder "content/files" brakes the glob pattern
-      //        in the importer, so we need to keep it as general "content" unless
-      //        it becomes a strict requirement
-      directories: ['files', 'content'],
-      ignoreRootFolderFiles: true,
-      extensions: config.get('uploads').files.extensions,
-      contentTypes: config.get('uploads').files.contentTypes,
-      urlUtils: urlUtils,
-      storage: fileStorage,
-    });
-
-    const imageImporter = new ContentFileImporter({
-      type: 'images',
-      store: imageStorage,
-    });
-    const mediaImporter = new ContentFileImporter({
-      type: 'media',
-      store: mediaStorage,
-    });
-
-    const contentFilesImporter = new ContentFileImporter({
-      type: 'files',
-      store: fileStorage,
-    });
+    const contentFileHandlers = createContentFileHandlers();
+    const contentFileImporters = createContentFileImporters();
 
     /**
      * @type {Importer[]} importers
      */
-    this.importers = [
-      imageImporter,
-      mediaImporter,
-      contentFilesImporter,
-      RevueImporter,
-      DataImporter,
-    ];
+    this.importers = [...contentFileImporters, RevueImporter, DataImporter];
 
     /**
      * @type {Handler[]}
      */
-    this.handlers = [
-      ImageHandler,
-      mediaHandler,
-      filesHandler,
-      RevueHandler,
-      JSONHandler,
-      MarkdownHandler,
-    ];
+    this.handlers = [...contentFileHandlers, RevueHandler, JSONHandler, MarkdownHandler];
 
     this.archive = new ImportArchive({
       extensions: this.getExtensions(),
