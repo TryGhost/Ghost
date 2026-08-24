@@ -1,5 +1,5 @@
 import { test as baseTest, afterEach, describe, expect } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { render, renderHook, screen, waitFor, act } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import { HttpResponse, http } from 'msw';
@@ -61,6 +61,88 @@ afterEach(() => {
 });
 
 describe('ThemeProvider', () => {
+  themeContextTest(
+    'shares one optimistic theme state across separate consumers mid-save',
+    async ({ server, wrapper: Wrapper }) => {
+      mockPreferences(server, 'light');
+
+      // Hold the persistence PUT open so the optimistic window is observable.
+      let releasePut: () => void = () => {};
+      const putGate = new Promise<void>((resolve) => {
+        releasePut = resolve;
+      });
+      server.use(
+        http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
+          USER_UPDATE_API_URL,
+          async ({ request }) => {
+            const body = await request.json();
+            await putGate;
+            return HttpResponse.json({
+              users: [
+                {
+                  ...mockUser,
+                  accessibility: body.users[0]?.accessibility ?? '',
+                },
+              ],
+            });
+          },
+        ),
+      );
+
+      // Two SEPARATE components: `Shell` mirrors ThemedAdminApp, `Menu`
+      // mirrors the appearance menu. The pre-provider architecture gave each
+      // its own useTheme instance with independent optimistic state; this
+      // asserts they now share one.
+      function Shell() {
+        const { resolvedTheme } = useThemeContext();
+        return <div data-testid="shell-theme">{resolvedTheme}</div>;
+      }
+      let setThemeFromMenu: (mode: 'dark' | 'light' | 'system') => Promise<void> = async () => {};
+      function Menu() {
+        const { setTheme, isSettingTheme } = useThemeContext();
+        setThemeFromMenu = setTheme;
+        return <div data-testid="menu-saving">{String(isSettingTheme)}</div>;
+      }
+
+      render(
+        <Wrapper>
+          <ThemeProvider>
+            <Shell />
+            <Menu />
+          </ThemeProvider>
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('shell-theme').textContent).toBe('light');
+      });
+
+      let pendingSet: Promise<void>;
+      act(() => {
+        pendingSet = setThemeFromMenu('dark');
+      });
+
+      // Mid-flight (PUT still held open): the shell consumer already shows the
+      // menu's optimistic selection, and the shared saving flag is visible to
+      // the menu. The old two-instance architecture fails here: the shell's
+      // instance knew nothing about the menu's pendingTheme.
+      await waitFor(() => {
+        expect(screen.getByTestId('shell-theme').textContent).toBe('dark');
+      });
+      expect(screen.getByTestId('menu-saving').textContent).toBe('true');
+
+      releasePut();
+      await act(async () => {
+        await pendingSet;
+      });
+
+      expect(screen.getByTestId('shell-theme').textContent).toBe('dark');
+      await waitFor(() => {
+        expect(screen.getByTestId('menu-saving').textContent).toBe('false');
+      });
+    },
+  );
+
   themeContextTest(
     'shares one theme state: a menu setTheme flips every consumer',
     async ({ server, wrapper: Wrapper }) => {
