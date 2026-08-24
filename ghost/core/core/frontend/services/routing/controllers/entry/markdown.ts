@@ -11,11 +11,6 @@ const {
   renderEntryMarkdown,
 } = require('../../../llms/markdown');
 
-/**
- * Stub kept only for the access===true guard on gated posts. Member `.md`
- * unlock is out of scope; serving the (full) entry.html at 200 would be
- * cached as public and leak paid content to the CDN.
- */
 const MEMBERS_ONLY_MARKDOWN =
   '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n';
 
