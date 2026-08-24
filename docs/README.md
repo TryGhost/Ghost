@@ -76,6 +76,7 @@ adding translatable product copy, see the
 
 Codebase guides explain how the main systems fit together:
 
+- [Runtime architecture](codebase/runtime-architecture.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)
