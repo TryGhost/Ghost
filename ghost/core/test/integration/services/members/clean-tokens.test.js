@@ -57,11 +57,19 @@ describe('Job: Clean tokens', function () {
     const secondTokenExists = await models.SingleUseToken.findOne({ id: secondToken.id });
     assert.ok(secondTokenExists, 'Second token (younger than 24h) should still exist');
 
-    const completionLog = loggingInfoSpy.getCalls().find((call) => {
+    const taskLog = loggingInfoSpy.getCalls().find((call) => {
       return call.args[0]?.system?.event === 'clean_tokens.completed';
     });
-    assert.ok(completionLog, 'The handler logs a structured clean_tokens.completed event');
-    assert.equal(typeof completionLog.args[0].system.deleted_count, 'number');
-    assert.equal(typeof completionLog.args[0].system.duration_ms, 'number');
+    assert.ok(taskLog, 'The task logs a structured clean_tokens.completed event');
+    assert.equal(typeof taskLog.args[0].system.deleted_count, 'number');
+
+    const lifecycleLog = loggingInfoSpy.getCalls().find((call) => {
+      return (
+        call.args[0]?.system?.event === 'job.completed' &&
+        call.args[0]?.system?.job_type === 'clean-tokens'
+      );
+    });
+    assert.ok(lifecycleLog, 'The jobs service logs a structured job.completed lifecycle event');
+    assert.equal(typeof lifecycleLog.args[0].system.duration_ms, 'number');
   });
 });

@@ -77,7 +77,10 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
     { enabled: boolean; error?: string } | undefined
   >();
   const [isUploading, setUploading] = useState(false);
-  const [uploadErrors, setUploadErrors] = useState<FatalErrors | null>(null);
+  const [uploadErrors, setUploadErrors] = useState<{
+    themeName: string;
+    fatalErrors: FatalErrors;
+  } | null>(null);
   const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
 
   useEffect(() => {
@@ -179,48 +182,17 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
     }
 
     if (fatalErrors && !data) {
-      setUploadErrors(fatalErrors);
+      setUploadErrors({ themeName: file.name.replace(/\.zip$/, ''), fatalErrors });
     }
 
     if (!data) {
       return;
     }
 
-    const uploadedTheme = data.themes[0];
-
-    let title = 'Upload successful';
-    let prompt = (
-      <>
-        <strong>{uploadedTheme.name}</strong> uploaded
-      </>
-    );
-
-    if (!uploadedTheme.active) {
-      prompt = <>{prompt} Do you want to activate it now?</>;
-    }
-
-    if (uploadedTheme?.errors?.length || uploadedTheme.warnings?.length) {
-      title = 'Upload successful';
-      prompt = (
-        <>
-          The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed successfully.
-        </>
-      );
-
-      if (!uploadedTheme.active) {
-        prompt = (
-          <>
-            {prompt}
-            You can activate it when you&apos;re ready.
-          </>
-        );
-      }
-    }
-
     setInstalledModal({
-      title,
-      prompt,
-      installedTheme: uploadedTheme,
+      title: 'Upload successful',
+      action: 'uploaded',
+      installedTheme: data.themes[0],
       onActivate,
     });
   };
@@ -304,13 +276,10 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
       </div>
       {uploadErrors && (
         <InvalidThemeModal
-          fatalErrors={uploadErrors}
-          prompt={
-            <>
-              This theme couldn&apos;t be uploaded because Ghost found a blocking validation error.
-              Fix the issue below and upload the theme again.
-            </>
-          }
+          action="uploaded"
+          fatalErrors={uploadErrors.fatalErrors}
+          okLabel="Re-upload"
+          themeName={uploadErrors.themeName}
           title="Theme not uploaded"
           onClose={() => setUploadErrors(null)}
           onRetry={() => {
@@ -519,16 +488,16 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
     };
 
     const performInstallation = async () => {
-      let title = 'Success';
-      let prompt = <></>;
+      let title = 'Installed successfully';
+      let statusMessage: React.ReactNode;
 
       // default theme can't be installed, only activated
       if (isDefaultOrLegacyTheme(selectedTheme)) {
         title = 'Activate theme';
-        prompt = (
+        statusMessage = (
           <>
-            By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated
-            as the theme for your site.
+            Do you want to activate <strong>{selectedTheme.name}</strong> as the theme for your
+            site?
           </>
         );
       } else {
@@ -546,44 +515,13 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
           return;
         }
 
-        const newlyInstalledTheme = data.themes[0];
-
-        title = 'Success';
-        prompt = (
-          <>
-            <strong>{newlyInstalledTheme.name}</strong> has been successfully installed.
-          </>
-        );
-
-        if (!newlyInstalledTheme.active) {
-          prompt = <>{prompt} Do you want to activate it now?</>;
-        }
-
-        if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
-          title = 'Installed successfully';
-          prompt = (
-            <>
-              The theme <strong>&quot;{newlyInstalledTheme.name}&quot;</strong> was installed
-              successfully.
-            </>
-          );
-
-          if (!newlyInstalledTheme.active) {
-            prompt = (
-              <>
-                {prompt}
-                You can activate it when you&apos;re ready.
-              </>
-            );
-          }
-        }
-
-        installedTheme = newlyInstalledTheme;
+        installedTheme = data.themes[0];
       }
 
       setInstalledModal({
         title,
-        prompt,
+        action: 'installed',
+        statusMessage,
         installedTheme: installedTheme!,
         onActivate: () => {
           updateRoute('');

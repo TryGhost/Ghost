@@ -189,13 +189,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
       </DropdownMenu>
       {activationErrors && (
         <InvalidThemeModal
+          action="activated"
           fatalErrors={activationErrors}
-          prompt={
-            <>
-              This theme couldn&apos;t be activated because Ghost found a blocking validation error.
-              Fix the issue below and try again.
-            </>
-          }
+          themeName={theme.package?.name || theme.name}
           title="Theme not activated"
           onClose={() => setActivationErrors(null)}
           onRetry={() => {
