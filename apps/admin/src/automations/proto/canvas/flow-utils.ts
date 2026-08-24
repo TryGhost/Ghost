@@ -35,7 +35,18 @@ export const HIDDEN_HANDLE_STYLE: CSSProperties = {
 // Exported because three things need the same fill and would each be a seam if
 // they drifted: the ReactFlow surface, the region behind it, and the dashed
 // insert buttons that cut out of it.
-export const CANVAS_SURFACE = 'bg-grey-50 dark:bg-background';
+//
+// One semantic token, which flips on its own — this was 'bg-grey-50
+// dark:bg-background', a fixed palette value propped up by a dark: variant. The
+// palette scale doesn't flip, so the light value was doing all the work and the
+// variant had to carry dark on its own; the buttons stayed light when it didn't
+// land. --background is white in light and the same oklch(0.178) in dark that
+// the flow already paints itself, so the fill matches by definition now.
+//
+// Not bg-surface-page (what the shipping editor's own insert buttons use): that
+// token is pure BLACK in dark, darker than the canvas it sits on, so the buttons
+// rendered as holes rather than as empty slots.
+export const CANVAS_SURFACE = 'bg-background';
 
 // Dots + edges from the shipping canvas (this replaced a hardcoded #ffffff1a the
 // proto had picked up for dark), with one deliberate divergence: light-mode edges

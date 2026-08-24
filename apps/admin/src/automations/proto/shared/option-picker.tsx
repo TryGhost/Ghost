@@ -45,7 +45,7 @@ const PickerRow = <Value extends string>({option, selected, onSelect}: {
         >
             {/* Identical to the node header's chip — same fill, same glyph size —
                 so the icon you pick here is the icon you get on the card. */}
-            <span className="flex shrink-0 items-center justify-center rounded-md bg-secondary p-2.5 text-foreground">
+            <span className="flex shrink-0 items-center justify-center rounded-md bg-muted p-2.5 text-foreground">
                 <Icon className="size-4" />
             </span>
             <div className="flex min-w-0 flex-col">

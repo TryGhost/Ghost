@@ -1,23 +1,23 @@
 import React, {useState} from 'react';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {ChangeEntry} from './change-summary';
 import {stepKindIcon} from '@/automations/proto/canvas/flow-utils';
 
-// The unpublished-changes state for the 'banner' header variant (see
-// header-model.ts), as a control beside the header's Publish rather than
-// anything on the canvas.
+// The unpublished-changes state for the future release, as the header's own
+// primary action rather than anything on the canvas.
 //
-// The earlier attempts each failed in their own way: a button labelled
-// "Unpublished changes" announced a status where an action belongs, and a banner
-// floating on the canvas took space from the thing being edited to say one
-// sentence. This keeps the state in the header — where the actions that resolve
-// it already are — and puts everything it has to say behind one click.
+// Every earlier attempt failed the same way: each put a *reporter* of the state
+// next to the *resolver* of it — a button labelled "Unpublished changes", a
+// banner floating on the canvas, then a warning icon carrying a change count
+// beside a Publish button. Two controls for one situation, and the reporting one
+// always read as an action you hadn't taken yet.
 //
-// The button is an action: it opens the review. The warning icon carries the
-// state, which is what an icon is for; the button itself still names something
-// you do.
+// So there is one control now, and it names the only thing you'd sensibly do
+// first: Review changes. Publishing is a decision, and this is the screen that
+// lets you make it — what's in the draft, what members are seeing meanwhile, and
+// then publish or discard. The state doesn't need announcing beside the button,
+// because the button only exists while the state does.
 //
 // The dialog answers the question the state actually raises — "is what I'm
 // looking at what members are getting?" — before listing the diff, because
@@ -44,28 +44,11 @@ export const UnpublishedChangesDialog: React.FC<{
 
     return (
         <>
-            {/* Borderless: it sits beside a primary and an outline button, and a
-                third bordered control in that row made the cluster read as three
-                equal choices rather than one action with a note next to it.
-
-                The count is the point of putting a number here at all — "something
-                changed" is what the icon already says, while "4" is the first thing
-                that tells you whether this is a typo fix or a rewrite. Icon alone
-                when the diff can't be enumerated, rather than a misleading 0. */}
-            <Button
-                aria-label={count === 1 ? 'Review 1 unpublished change' : 'Review unpublished changes'}
-                type="button"
-                variant="ghost"
-                onClick={() => setOpen(true)}
-            >
-                {/* Not text-state-warning: that token is yellow-500, which goes faint
-                    against a light header. Matched to the sibling popover's icon
-                    instead — one stop darker in light, plain yellow in dark. A dark:
-                    variant only because no semantic token sits between state-warning
-                    and its black foreground. */}
-                <LucideIcon.TriangleAlert className="text-yellow-600 dark:text-yellow" strokeWidth={2} />
-                {count > 0 && formatNumber(count)}
-            </Button>
+            {/* Primary, and the only draft control in the row — publishing happens
+                inside, once you've seen what you'd be publishing. No warning icon
+                and no count: both were reporting a state that the button's own
+                presence already reports. */}
+            <Button type="button" onClick={() => setOpen(true)}>Review changes</Button>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>

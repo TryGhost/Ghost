@@ -58,12 +58,16 @@ interface StepNodeHeaderProps {
 // without one it shows just the action label in that same bold style. The chip is a
 // filled 36x36 box (size-4 icon + p-2.5) so it matches the size-9 action slot on the
 // header's far right; a filled box instead of a hairline border so it reads as a
-// deliberate container at this size. bg-secondary, not bg-muted: muted is gray-100,
-// L~97% — invisible on a white card no matter the alpha (40 vs 60 made no visible
-// difference). Secondary is the next real stop (gray-200 light, same gray-900 dark).
+// deliberate container at this size.
+//
+// bg-muted (gray-100 light) rather than bg-secondary (gray-200) — secondary read
+// as a heavy grey block against the card's white. Dark mode is unaffected: both
+// tokens resolve to gray-900 there, so this is a light-mode-only lightening with
+// no dark: variant needed. (An earlier note here rejected muted as invisible,
+// but that was muted at 40-60% alpha; at full opacity it holds.)
 export const StepNodeHeader: React.FC<StepNodeHeaderProps> = ({icon: Icon, title, subtitle, chipClassName}) => (
     <div className="flex min-w-0 items-center gap-3">
-        <span className={cn('flex shrink-0 items-center justify-center rounded-md p-2.5', chipClassName ?? 'bg-secondary text-foreground')}>
+        <span className={cn('flex shrink-0 items-center justify-center rounded-md p-2.5', chipClassName ?? 'bg-muted text-foreground')}>
             <Icon className="size-4" />
         </span>
         {subtitle ? (

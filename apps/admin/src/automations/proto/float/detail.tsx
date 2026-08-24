@@ -377,19 +377,18 @@ const AutomationFloat: React.FC = () => {
         </>
     ) : (
         <>
-            {/* The alert opens the review; Publish is the action the state calls
-                for. Primary without competing: unpublished changes only exist while
-                the automation is live, so the lifecycle button beside them is
-                always the outline "Turn off". */}
+            {/* One control for the draft, not two. It's the primary, and publishing
+                happens inside it — see unpublished-changes-dialog for why the
+                separate reporter beside it kept failing. Never competes with
+                another primary: unpublished changes only exist while the
+                automation is live, so the lifecycle button here is always the
+                outline "Turn off". */}
             {hasUnpublishedChanges && (
-                <>
-                    <UnpublishedChangesDialog
-                        changes={changes}
-                        onDiscard={handleDiscard}
-                        onPublish={publishChanges}
-                    />
-                    <Button onClick={handlePublishClick}>Publish changes</Button>
-                </>
+                <UnpublishedChangesDialog
+                    changes={changes}
+                    onDiscard={handleDiscard}
+                    onPublish={publishChanges}
+                />
             )}
             {liveStatus === 'inactive' ? (
                 <Button onClick={() => setStartOpen(true)}>Turn on</Button>

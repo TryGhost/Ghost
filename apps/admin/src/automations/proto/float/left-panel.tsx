@@ -191,12 +191,12 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                         />
                     </InputGroup>
                 )}
-                {/* The icon buttons sit flush against each other — each already carries
-                    its own padding, so a gap on top of that spaced them twice and the
-                    row read as three unrelated controls instead of one toolbar. The
-                    outer gap still holds, which is what keeps them off the search
-                    field's border when it's open. */}
-                <Inline align="center" className="shrink-0" gap="none">
+                {/* Same 8px the header bar puts between its own buttons, so every
+                    button row on the screen is spaced alike. (These sat flush for a
+                    while, on the reasoning that each button's own padding was already
+                    separating them and a gap spaced them twice — matching the header
+                    won out.) */}
+                <Inline align="center" className="shrink-0" gap="sm">
                     {searchOpen ? (
                         <Button
                             aria-label="Close search"
@@ -219,12 +219,16 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                         timeframe is one of several things we'll want to filter on, and this
                         is the affordance the rest of Ghost already uses — the funnel from
                         the members page filter bar, not a generic sliders icon, so the same
-                        action reads the same way everywhere it appears. FunnelPlus once a
-                        filter's applied is the members page's own convention too. */}
+                        action reads the same way everywhere it appears.
+
+                        One funnel, no active state: the icon names the action and
+                        nothing more. An applied filter is already stated — and made
+                        removable — by its chip in the row below, so tinting the button
+                        as well said the same thing twice in a place you can't act on. */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button aria-label="Filter" className={cn(range !== 'all' && 'bg-muted')} size="icon" type="button" variant="ghost">
-                                {range !== 'all' ? <LucideIcon.FunnelPlus strokeWidth={2} /> : <LucideIcon.Funnel strokeWidth={2} />}
+                            <Button aria-label="Filter" size="icon" type="button" variant="ghost">
+                                <LucideIcon.Funnel strokeWidth={2} />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -310,7 +314,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                                 aria-pressed={active}
                                 className={cn(
                                     'rounded-lg border px-4 py-3 text-left transition-colors',
-                                    active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
+                                    active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-interactive-hover'
                                 )}
                                 type="button"
                                 onClick={() => setStatusFilter(active ? null : facet.key)}
@@ -362,7 +366,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                                                 // to md, so filter-shaped controls share one
                                                 // radius everywhere.
                                                 'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border px-3 text-sm transition-colors',
-                                                active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
+                                                active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-interactive-hover'
                                             )}
                                             title={facet.key}
                                             type="button"
@@ -407,12 +411,19 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                                     <TableRow
                                         key={run.id}
                                         aria-selected={isSelected}
-                                        // Plain grey selection. A rounded blue ring was tried via a
+                                        // Selection is Shade's own: TableRow ships
+                                        // data-[state=selected]:bg-muted, so the state goes through
+                                        // data-state and the fill comes from the component rather
+                                        // than from a class here. Hover matches the interactive
+                                        // controls above it.
+                                        //
+                                        // Plain grey either way. A rounded blue ring was tried via a
                                         // tr::before overlay (radius doesn't work on collapsed table
                                         // rows directly) and broke row layout — positioned table rows
                                         // aren't dependable. The canvas's blue review ring carries the
                                         // "you're in this member's run" signal on its own.
-                                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-muted-foreground/10' : 'hover:bg-muted-foreground/5'}`}
+                                        className="cursor-pointer transition-colors hover:bg-interactive-hover"
+                                        data-state={isSelected ? 'selected' : undefined}
                                         // Toggle: clicking the selected row again de-selects it.
                                         onClick={() => onSelectMember(isSelected ? null : run.id)}
                                     >
