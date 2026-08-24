@@ -1021,8 +1021,18 @@ function CardIntervalToggle({ product }) {
 function ProductCard({ product, products, selectedInterval, handleChooseSignup, error }) {
   const { selectedProduct, setSelectedProduct, perCardMode, getCardInterval } =
     useContext(ProductsContext);
-  const { action } = useContext(AppContext);
-  const trialDays = product.trial_days;
+  const { action, site, member } = useContext(AppContext);
+
+  // Checkout replaces a tier's free trial with the coupon whenever a
+  // discount offer applies (payments-service), so the CTA must not promise
+  // a trial the member won't get
+  const cardInterval = perCardMode && getCardInterval ? getCardInterval(product) : selectedInterval;
+  const memberCanRedeemSignupOffers =
+    !member || (!member.paid && !isComplimentaryMember({ member }));
+  const cardFeaturedOffer = memberCanRedeemSignupOffers
+    ? getFeaturedOffer({ site, product, interval: cardInterval })
+    : null;
+  const trialDays = cardFeaturedOffer ? 0 : product.trial_days;
 
   const cardClass =
     selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';

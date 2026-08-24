@@ -129,6 +129,7 @@ type SidebarProps = {
   errors: ErrorMessages;
   handleTrialAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleFeaturedChange: (featured: boolean) => void;
+  selectedTierHasTrial: boolean;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -153,6 +154,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   testId,
   handleTrialAmountInput,
   handleFeaturedChange,
+  selectedTierHasTrial,
   amountOptions,
 }) => {
   // const handleError = useHandleError();
@@ -451,6 +453,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onCheckedChange={handleFeaturedChange}
                 />
               </Field>
+            )}
+            {overrides.type !== 'trial' && overrides.featured && selectedTierHasTrial && (
+              <FieldDescription data-testid="featured-replaces-trial-note">
+                This tier has a free trial. Members who sign up through this offer get the discount
+                instead of the trial.
+              </FieldDescription>
             )}
           </div>
         </section>
@@ -813,6 +821,9 @@ const AddOfferModal = () => {
       handleTypeChange={handleTypeChange}
       overrides={formState}
       selectedTier={selectedTier.tier}
+      selectedTierHasTrial={Boolean(
+        activeTiers.find((tier) => tier.id === formState.tierId)?.trial_days,
+      )}
       testId="add-offer-sidebar"
       tierOptions={tierCadenceOptions}
       typeOptions={typeOptions}
