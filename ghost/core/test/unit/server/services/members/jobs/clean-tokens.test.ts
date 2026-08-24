@@ -1,10 +1,17 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { describe, it, afterEach } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'vitest';
+import logging from '@tryghost/logging';
 import cleanTokens from '../../../../../../core/server/services/members/jobs/clean-tokens-task';
 import CleanTokensJob from '../../../../../../core/server/services/members/jobs/clean-tokens-job';
 
 describe('clean-tokens job', function () {
+  let loggingInfoStub: sinon.SinonStub;
+
+  beforeEach(function () {
+    loggingInfoStub = sinon.stub(logging, 'info');
+  });
+
   afterEach(function () {
     sinon.restore();
   });
@@ -29,6 +36,20 @@ describe('clean-tokens job', function () {
       assert.equal(capturedWhere[1], '<');
       assert.match(capturedWhere[2]!, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
       assert.equal(deleted, 3);
+    });
+
+    it('logs a structured clean_tokens.completed event with the deleted count', async function () {
+      const knex = sinon.stub().returns({
+        where: () => ({ delete: sinon.stub().resolves(3) }),
+      });
+
+      await cleanTokens({ db: { knex: knex as never } });
+
+      const completionLog = loggingInfoStub
+        .getCalls()
+        .find((call) => call.args[0]?.system?.event === 'clean_tokens.completed');
+      assert.ok(completionLog, 'the task logs a structured clean_tokens.completed event');
+      assert.equal(completionLog!.args[0].system.deleted_count, 3);
     });
   });
 

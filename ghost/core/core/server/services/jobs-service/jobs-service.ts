@@ -106,17 +106,49 @@ export class JobsService {
   async #process(envelope: JobEnvelope): Promise<void> {
     const deliver = this.#registry.get(envelope.type);
     if (!deliver) {
-      this.#logging.error(
+      this.#log(
+        'error',
         `No handler registered for job type "${envelope.type}"; dropping delivery.`,
       );
       return;
     }
 
+    const startedAt = Date.now();
+    this.#log('info', `[Background Job] ${envelope.type} started`);
+
     try {
       await deliver(envelope.payload);
     } catch (err) {
+      this.#log(
+        'error',
+        err,
+        `[Background Job] ${envelope.type} failed after ${Date.now() - startedAt}ms`,
+      );
       this.#sentry?.captureException(err, { tags: { job_type: envelope.type } });
       throw err;
+    }
+
+    const durationMs = Date.now() - startedAt;
+    this.#log(
+      'info',
+      {
+        system: {
+          event: 'job.completed',
+          job_type: envelope.type,
+          duration_ms: durationMs,
+        },
+      },
+      `[Background Job] ${envelope.type} completed in ${durationMs}ms`,
+    );
+  }
+
+  // Observability must never decide whether a job runs, so logger failures
+  // are swallowed.
+  #log(method: 'info' | 'error', ...args: unknown[]): void {
+    try {
+      this.#logging[method](...args);
+    } catch {
+      // intentionally ignored
     }
   }
 }
