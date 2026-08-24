@@ -1,11 +1,7 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
-const os = require('os');
-const { globSync } = require('glob');
-const crypto = require('crypto');
 const config = require('../../../shared/config');
-const { extract } = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
@@ -22,6 +18,7 @@ const urlUtils = require('../../../shared/url-utils').default;
 const { GhostMailer } = require('../../services/mail');
 const jobManager = require('../../services/jobs');
 const adapterManager = require('../../services/adapter-manager').default;
+const ImportArchive = require('./import-archive');
 
 const mediaStorage = adapterManager.getAdapter('storage:media');
 const imageStorage = adapterManager.getAdapter('storage:images');
@@ -36,21 +33,9 @@ const messages = {
     context: 'Your site will continue to work as expected',
   },
   noContentToImport: 'Zip did not include any content to import.',
-  invalidZipStructure: 'Invalid zip file structure.',
-  invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
   zipContainsMultipleDataFormats:
     'Zip file contains multiple data formats. Please split up and import separately.',
-  invalidZipFileNameEncoding: 'The uploaded zip could not be read',
-  invalidZipFileNameEncodingContext: 'The filename was too long or contained invalid characters',
-  invalidZipFileNameEncodingHelp:
-    'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility',
 };
-
-// Glob levels
-const ROOT_ONLY = 0;
-
-const ROOT_OR_SINGLE_DIR = 1;
-const ALL_DIRS = 2;
 let defaults = {
   extensions: ['.zip'],
   contentTypes: ['application/zip', 'application/x-zip-compressed'],
@@ -122,6 +107,11 @@ class ImportManager {
       MarkdownHandler,
     ];
 
+    this.archive = new ImportArchive({
+      extensions: this.getExtensions(),
+      directories: this.getDirectories(),
+    });
+
     // Keep track of file to cleanup at the end
     /**
      * @type {?string}
@@ -159,17 +149,7 @@ class ImportManager {
    * @returns {string}
    */
   getGlobPattern(items) {
-    return (
-      '+(' +
-      _.reduce(
-        items,
-        function (memo, ext) {
-          return memo !== '' ? memo + '|' + ext : ext;
-        },
-        '',
-      ) +
-      ')'
-    );
+    return this.archive.getGlobPattern(items);
   }
 
   /**
@@ -178,9 +158,7 @@ class ImportManager {
    * @returns {string}
    */
   getExtensionGlob(extensions, level) {
-    const prefix = level === ALL_DIRS ? '**/*' : level === ROOT_OR_SINGLE_DIR ? '{*/*,*}' : '*';
-
-    return prefix + this.getGlobPattern(extensions);
+    return this.archive.getExtensionGlob(extensions, level);
   }
 
   /**
@@ -190,9 +168,7 @@ class ImportManager {
    * @returns {string}
    */
   getDirectoryGlob(directories, level) {
-    const prefix = level === ALL_DIRS ? '**/' : level === ROOT_OR_SINGLE_DIR ? '{*/,}' : '';
-
-    return prefix + this.getGlobPattern(directories);
+    return this.archive.getDirectoryGlob(directories, level);
   }
 
   /**
@@ -212,31 +188,7 @@ class ImportManager {
    * @returns {boolean}
    */
   isValidZip(directory) {
-    // Globs match content in the root or inside a single directory
-    const extMatchesBase = globSync(
-      this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR),
-      { cwd: directory, nocase: true },
-    );
-
-    const extMatchesAll = globSync(this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {
-      cwd: directory,
-      nocase: true,
-    });
-
-    const dirMatches = globSync(this.getDirectoryGlob(this.getDirectories(), ROOT_OR_SINGLE_DIR), {
-      cwd: directory,
-    });
-
-    // If this folder contains importable files or a content or images directory
-    if (extMatchesBase.length > 0 || (dirMatches.length > 0 && extMatchesAll.length > 0)) {
-      return true;
-    }
-
-    if (extMatchesAll.length < 1) {
-      throw new errors.UnsupportedMediaTypeError({ message: tpl(messages.noContentToImport) });
-    }
-
-    throw new errors.UnsupportedMediaTypeError({ message: tpl(messages.invalidZipStructure) });
+    return this.archive.isValid(directory);
   }
 
   /**
@@ -245,37 +197,8 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = path.join(os.tmpdir(), crypto.randomUUID());
+    const tmpDir = await this.archive.extract(filePath);
     this.fileToDelete = tmpDir;
-
-    try {
-      await extract(filePath, tmpDir);
-
-      // Set permissions for all extracted files
-      const files = globSync('**/*', { cwd: tmpDir, nodir: true });
-      await Promise.all(files.map((file) => fs.chmod(path.join(tmpDir, file), 0o644)));
-    } catch (err) {
-      if (err.message.startsWith('ENAMETOOLONG:')) {
-        // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.
-        // This causes ENAMETOOLONG error on Linux, because the resulting filename length is too long when decoded using the default string encoder.
-        throw new errors.UnsupportedMediaTypeError({
-          message: tpl(messages.invalidZipFileNameEncoding),
-          context: tpl(messages.invalidZipFileNameEncodingContext),
-          help: tpl(messages.invalidZipFileNameEncodingHelp),
-          code: 'INVALID_ZIP_FILE_NAME_ENCODING',
-        });
-      } else if (
-        err.message.includes('end of central directory record signature not found') ||
-        err.message.includes('invalid comment length')
-      ) {
-        // This comes from Yauzl when the zip is invalid
-        throw new errors.UnsupportedMediaTypeError({
-          message: tpl(messages.invalidZipFileNameEncoding),
-          code: 'INVALID_ZIP_FILE',
-        });
-      }
-      throw err;
-    }
     return tmpDir;
   }
 
@@ -287,10 +210,7 @@ class ImportManager {
    * @returns {File[]} Files
    */
   getFilesFromZip(handler, directory) {
-    const globPattern = this.getExtensionGlob(handler.extensions, ALL_DIRS);
-    return _.map(globSync(globPattern, { cwd: directory, nocase: true }), function (file) {
-      return { name: file, path: path.join(directory, file) };
-    });
+    return this.archive.getFiles(directory, handler.extensions);
   }
 
   /**
@@ -299,32 +219,7 @@ class ImportManager {
    * @returns {string}
    */
   getBaseDirectory(directory) {
-    // Globs match root level only
-    const extMatches = globSync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {
-      cwd: directory,
-      nocase: true,
-    });
-
-    const dirMatches = globSync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {
-      cwd: directory,
-      nocase: true,
-    });
-    let extMatchesAll;
-
-    // There is no base directory
-    if (extMatches.length > 0 || dirMatches.length > 0) {
-      return;
-    }
-    // There is a base directory, grab it from any ext match
-    extMatchesAll = globSync(this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {
-      cwd: directory,
-      nocase: true,
-    });
-    if (extMatchesAll.length < 1 || extMatchesAll[0].split('/').length < 1) {
-      throw new errors.ValidationError({ message: tpl(messages.invalidZipFileBaseDirectory) });
-    }
-
-    return extMatchesAll[0].split('/')[0];
+    return this.archive.getBaseDirectory(directory);
   }
 
   /**
