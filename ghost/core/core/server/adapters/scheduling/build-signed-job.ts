@@ -1,8 +1,7 @@
 import type { SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey } from '../../services/internal-keys';
-
-const urlUtils = require('../../../shared/url-utils').default;
-const { getSignedAdminToken } = require('./utils');
+import urlUtils from '../../../shared/url-utils';
+import { getSignedAdminToken } from './utils';
 
 interface BuildSignedJobOptions {
   apiUrl: string;
@@ -15,7 +14,7 @@ interface BuildSignedJobOptions {
   extra?: Omit<SchedulerJob['extra'], 'httpMethod' | 'idempotencyKey'>;
   // Derives an idempotency key from the final callback URL, which carries
   // the signed token and so can't be known before the job is built.
-  getIdempotencyKey?(url: URL): string;
+  getIdempotencyKey?(url: Readonly<URL>): string;
 }
 
 export function buildSignedJob({

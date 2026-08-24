@@ -1,7 +1,7 @@
 # Scheduling
 
-Scheduling adapters queue future Admin API callbacks, allowing scheduled work
-to wake the process. The contract lives in `@tryghost/adapter-base-scheduling`
+Scheduling adapters queue and trigger future Admin API callbacks. The contract
+lives in `@tryghost/adapter-base-scheduling`
 (`packages/adapters/scheduling-base`): adapters implement `run`, `schedule`,
 and `unschedule`, and inherit a registry of reschedulers from
 `SchedulingBase`.
