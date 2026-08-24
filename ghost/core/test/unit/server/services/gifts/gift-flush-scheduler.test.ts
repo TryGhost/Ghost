@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import { GiftFlushScheduler } from '../../../../../core/server/services/gifts/gift-flush-scheduler';
 import { AutoFillingMap } from '../../../../../core/server/lib/auto-filling-map';
@@ -64,7 +65,7 @@ describe('GiftFlushScheduler', function () {
 
       sinon.assert.calledOnce(deps.adapter.schedule);
       const [job] = deps.adapter.schedule.getCall(0).args;
-      assert.equal(job.time, time + 1000);
+      assert.equal(job.time, Math.floor(time / 1000) * 1000 + 1000);
       assert.equal(job.extra.httpMethod, 'PUT');
       assert.ok(
         job.url.startsWith(`${deps.apiUrl}/gifts/flush_deliveries?token=`),
@@ -100,6 +101,42 @@ describe('GiftFlushScheduler', function () {
       await scheduler.scheduleAt(time, { deliveryId: 'delivery_2' });
 
       sinon.assert.calledOnce(deps.adapter.schedule);
+    });
+
+    it('deduplicates times within the same persisted database second', async function () {
+      const deps = buildDeps();
+      const scheduler = new GiftFlushScheduler(deps);
+      const second = Math.floor((Date.now() + 60_000) / 1000) * 1000;
+
+      await scheduler.scheduleAt(second + 123);
+      await scheduler.scheduleAt(second + 987);
+
+      sinon.assert.calledOnce(deps.adapter.schedule);
+      assert.equal(deps.adapter.schedule.firstCall.firstArg.time, second + 1000);
+    });
+
+    it('does not let synchronous job construction failures escape', async function () {
+      const deps = { ...buildDeps(), apiUrl: 'not a url' };
+      const scheduler = new GiftFlushScheduler(deps);
+      const logError = sinon.stub(logging, 'error');
+
+      await scheduler.scheduleAt(Date.now() + 60_000);
+
+      sinon.assert.notCalled(deps.adapter.schedule);
+      sinon.assert.calledOnce(logError);
+    });
+
+    it('retries after a synchronous adapter failure', async function () {
+      const deps = buildDeps();
+      deps.adapter.schedule.onFirstCall().throws(new Error('adapter failed'));
+      const scheduler = new GiftFlushScheduler(deps);
+      sinon.stub(logging, 'error');
+      const time = Date.now() + 60_000;
+
+      await scheduler.scheduleAt(time);
+      await scheduler.scheduleAt(time);
+
+      sinon.assert.calledTwice(deps.adapter.schedule);
     });
 
     it('retries scheduling a time whose earlier attempt failed to fetch a key', async function () {
@@ -155,6 +192,22 @@ describe('GiftFlushScheduler', function () {
 
       sinon.assert.calledOnce(deps.adapter.unschedule);
       assert.equal(deps.adapter.unschedule.getCall(0).args[1].bootstrap, false);
+    });
+
+    it('also unschedules pre-upgrade reminder jobs during key rotation', async function () {
+      const time = Math.floor((Date.now() + 30_000) / 1000) * 1000;
+      const deps = {
+        ...buildDeps({ pending: [time] }),
+        endpoint: 'flush_reminders' as const,
+      };
+      const scheduler = new GiftFlushScheduler(deps);
+
+      await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
+
+      sinon.assert.calledTwice(deps.adapter.unschedule);
+      assert.equal(deps.adapter.unschedule.firstCall.firstArg.time, time + 1000);
+      assert.equal(deps.adapter.unschedule.secondCall.firstArg.time, time);
+      sinon.assert.calledOnce(deps.adapter.schedule);
     });
 
     it('does not tombstone the replacement during boot rebuilds', async function () {

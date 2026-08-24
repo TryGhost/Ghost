@@ -217,9 +217,10 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
     );
 
     assert.deepEqual(
-      new Set(deliveries.map((delivery) => delivery.id)),
+      new Set(deliveries.map(({ delivery }) => delivery.id)),
       new Set([purchased.delivery.id, stale.delivery.id]),
     );
+    assert.ok(deliveries.every(({ gift }) => gift.status === 'purchased'));
   });
 
   it('keeps future deliveries pending until gift redemption availability', async function () {

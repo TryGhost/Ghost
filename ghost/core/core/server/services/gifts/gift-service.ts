@@ -27,6 +27,7 @@ import {
   type GiftCheckoutTier,
   type ResolvedGiftDuration,
 } from './gift-checkout-offer';
+import { getSiteDateValue } from './gift-date';
 
 const DEFAULT_TIMEZONE = 'Etc/UTC';
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -600,10 +601,6 @@ export class GiftService {
     return availability.plus({ days: GIFT_EXPIRY_DAYS }).endOf('day').toJSDate();
   }
 
-  private getSiteDateValue(date: Date): string {
-    return DateTime.fromJSDate(date, { zone: this.siteZone() }).toFormat('yyyy-MM-dd');
-  }
-
   private resolveDeliveryDate(deliveryDate: string | null): {
     date: string | null;
     redeemableAt: Date | null;
@@ -858,12 +855,18 @@ export class GiftService {
             message: tpl(errorMessages.giftNotFound),
             code: 'GIFT_NOT_FOUND',
           });
-        case 'not-yet-redeemable':
-          throw new errors.BadRequestError({
+        case 'not-yet-redeemable': {
+          const error = new errors.BadRequestError({
             message: tpl(errorMessages.giftNotYetRedeemable),
-            context: gift.redeemableAt ? this.getSiteDateValue(gift.redeemableAt) : undefined,
             code: 'GIFT_NOT_YET_REDEEMABLE',
           });
+          if (gift.redeemableAt) {
+            Object.assign(error, {
+              publicContext: getSiteDateValue(gift.redeemableAt, this.siteZone()),
+            });
+          }
+          throw error;
+        }
         case 'redeemed':
           throw new errors.BadRequestError({
             message: tpl(errorMessages.giftAlreadyRedeemed),
@@ -1130,7 +1133,7 @@ export class GiftService {
     ) {
       return {
         available: false,
-        availableOn: this.getSiteDateValue(gift.redeemableAt),
+        availableOn: getSiteDateValue(gift.redeemableAt, this.siteZone()),
         redeemableAt: gift.redeemableAt,
       };
     }

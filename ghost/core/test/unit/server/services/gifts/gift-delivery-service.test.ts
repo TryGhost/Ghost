@@ -96,6 +96,17 @@ describe('GiftDeliveryService', function () {
     });
   }
 
+  function buildRecoverableDelivery(id: string) {
+    return {
+      delivery: buildGiftDelivery({ id }),
+      gift: buildGift({
+        buyerName: 'Buyer',
+        recipientName: 'Recipient',
+        personalMessage: 'Enjoy this gift',
+      }),
+    };
+  }
+
   afterEach(function () {
     sinon.restore();
   });
@@ -145,11 +156,11 @@ describe('GiftDeliveryService', function () {
     clock.restore();
   });
 
-  it('recovers pending deliveries for purchased gifts one at a time', async function () {
+  it('recovers pending deliveries for purchased gifts concurrently', async function () {
     giftDeliveryRepository.findRecoverableForPurchasedGifts.resolves([
-      buildGiftDelivery({ id: 'delivery_1' }),
-      buildGiftDelivery({ id: 'delivery_2' }),
-      buildGiftDelivery({ id: 'delivery_3' }),
+      buildRecoverableDelivery('delivery_1'),
+      buildRecoverableDelivery('delivery_2'),
+      buildRecoverableDelivery('delivery_3'),
     ]);
     giftDeliveryRepository.tryStartDelivery
       .withArgs('delivery_1')
@@ -184,17 +195,47 @@ describe('GiftDeliveryService', function () {
     );
     sinon.assert.notCalled(dispatchDelivery);
     sinon.assert.calledTwice(giftEmailService.sendGiftDelivery);
-    assert.equal(maxInFlight, 1);
+    assert.equal(maxInFlight, 2);
+    sinon.assert.notCalled(giftRepository.getById);
     sinon.assert.calledWith(giftDeliveryRepository.markSent, 'delivery_1');
     sinon.assert.calledWith(giftDeliveryRepository.markSent, 'delivery_2');
+  });
+
+  it('bounds recovery concurrency at ten deliveries', async function () {
+    const deliveries = Array.from({ length: 12 }, (_, index) =>
+      buildRecoverableDelivery(`delivery_${index + 1}`),
+    );
+    giftDeliveryRepository.findRecoverableForPurchasedGifts.resolves(deliveries);
+    giftDeliveryRepository.tryStartDelivery.callsFake(async (id) =>
+      buildGiftDelivery({ id, status: 'sending' }),
+    );
+    let inFlight = 0;
+    let maxInFlight = 0;
+    giftEmailService.sendGiftDelivery.callsFake(async () => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      inFlight -= 1;
+      return { providerMessageId: 'provider-123' };
+    });
+    const service = createService();
+
+    assert.deepEqual(await service.recoverPending(), {
+      sentCount: 12,
+      skippedCount: 0,
+      failedCount: 0,
+    });
+    assert.equal(maxInFlight, 10);
   });
 
   it('drains recovery in batches until nothing recoverable remains', async function () {
     giftDeliveryRepository.findRecoverableForPurchasedGifts
       .onFirstCall()
-      .resolves([buildGiftDelivery({ id: 'delivery_1' }), buildGiftDelivery({ id: 'delivery_2' })])
+      .resolves([buildRecoverableDelivery('delivery_1'), buildRecoverableDelivery('delivery_2')])
       .onSecondCall()
-      .resolves([buildGiftDelivery({ id: 'delivery_3' })]);
+      .resolves([buildRecoverableDelivery('delivery_3')]);
     giftDeliveryRepository.tryStartDelivery
       .withArgs('delivery_1')
       .resolves(buildGiftDelivery({ id: 'delivery_1', status: 'sending' }))
@@ -229,8 +270,8 @@ describe('GiftDeliveryService', function () {
   it('keeps recovering remaining deliveries when one send throws', async function () {
     sinon.stub(logging, 'error');
     giftDeliveryRepository.findRecoverableForPurchasedGifts.resolves([
-      buildGiftDelivery({ id: 'delivery_1' }),
-      buildGiftDelivery({ id: 'delivery_2' }),
+      buildRecoverableDelivery('delivery_1'),
+      buildRecoverableDelivery('delivery_2'),
     ]);
     giftDeliveryRepository.tryStartDelivery
       .withArgs('delivery_1')

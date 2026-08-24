@@ -4,6 +4,7 @@ const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const { formatGiftDate } = require('../../../../../core/server/services/gifts/gift-date');
 
 // Initialise i18n before requiring the controller so its destructured `t`
 // import resolves to the live i18next instance. The init helper falls back
@@ -31,7 +32,7 @@ describe('Gift Preview Controller', function () {
     originalModuleLoad = Module._load;
     Module._load = function (request, parent, isMain) {
       if (parent && Module._resolveFilename(request, parent, isMain) === giftsModulePath) {
-        return { service: giftService };
+        return { formatGiftDate, service: giftService };
       }
 
       return originalModuleLoad.call(this, request, parent, isMain);
@@ -165,6 +166,21 @@ describe('Gift Preview Controller', function () {
       assert.ok(
         html.includes('content="0;url=https://example.com/#/portal/gift/redeem/test-token-123"'),
       );
+    });
+
+    it('formats availability with the shared publication locale and timezone', async function () {
+      settingsCache.get.withArgs('locale').returns('en-GB');
+      settingsCache.get.withArgs('timezone').returns('America/Los_Angeles');
+      giftService.getPreview.resolves({
+        available: false,
+        availableOn: '2026-12-24',
+        redeemableAt: new Date('2026-12-25T01:00:00.000Z'),
+      });
+
+      await controller.giftPreview(req, res);
+
+      const html = res.send.firstCall.args[0];
+      assert.ok(html.includes('Your gift can be opened on 24 Dec 2026.'));
     });
 
     it('caps pre-availability caching at the availability time', async function () {

@@ -37,24 +37,8 @@ function escapeHtml(str) {
     .replaceAll('>', '&gt;');
 }
 
-// "2026-12-25" as a localized human date, in the same day/short-month/year
-// shape the gift emails use for this date. The locale setting is stored
-// unvalidated, so fall back to English rather than fail the preview.
-const AVAILABLE_ON_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' };
-
-function formatAvailableOn(availableOn, locale) {
-  const { DateTime } = require('luxon');
-  const date = DateTime.fromFormat(availableOn, 'yyyy-MM-dd', { zone: 'utc' });
-
-  try {
-    return date.setLocale(locale || 'en').toLocaleString(AVAILABLE_ON_FORMAT);
-  } catch (err) {
-    return date.setLocale('en').toLocaleString(AVAILABLE_ON_FORMAT);
-  }
-}
-
 async function giftPreview(req, res) {
-  const giftService = require('../../services/gifts').service;
+  const { formatGiftDate, service: giftService } = require('../../services/gifts');
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsCache = require('../../../shared/settings-cache');
 
@@ -95,7 +79,10 @@ async function giftPreview(req, res) {
   const ogDescription = isAvailable
     ? t('Open this link to redeem your gift.')
     : t('Your gift can be opened on {date}.', {
-        date: formatAvailableOn(preview.availableOn, settingsCache.get('locale')),
+        date: formatGiftDate(preview.redeemableAt, {
+          locale: settingsCache.get('locale'),
+          timeZone: settingsCache.get('timezone'),
+        }),
         interpolation: { escapeValue: false },
       });
   const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;

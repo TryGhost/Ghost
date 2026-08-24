@@ -1,6 +1,9 @@
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-date';
+import { decodeGiftRow } from './gift-codec';
 import { decodeGiftDeliveryRow, encodeGiftDelivery } from './gift-delivery-codec';
+import type { Gift } from './gift';
 import type {
   GiftDeliveryData,
   GiftDeliveryOutcome,
@@ -9,6 +12,11 @@ import type {
 import type { RepositoryTransactionOptions } from './gift-bookshelf-repository';
 
 export type GiftDeliveryOutcomeRecordResult = 'recorded' | 'stale' | 'not_found';
+
+export interface RecoverableGiftDelivery {
+  delivery: GiftDeliveryData;
+  gift: Gift;
+}
 
 export interface GiftDeliveryRepository {
   getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
@@ -21,7 +29,7 @@ export interface GiftDeliveryRepository {
     now: Date,
     staleBefore: Date,
     limit: number,
-  ): Promise<GiftDeliveryData[]>;
+  ): Promise<RecoverableGiftDelivery[]>;
   findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]>;
   tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
   markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
@@ -119,7 +127,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     now: Date,
     staleBefore: Date,
     limit: number,
-  ): Promise<GiftDeliveryData[]> {
+  ): Promise<RecoverableGiftDelivery[]> {
     const rows = await this.knex('gift_deliveries')
       .select('gift_deliveries.*')
       .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
@@ -129,7 +137,31 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
       .orderByRaw('COALESCE(gifts.redeemable_at, gifts.purchased_at) ASC')
       .limit(limit);
 
-    return rows.map(decodeGiftDeliveryRow);
+    const deliveries: GiftDeliveryData[] = rows.map((row: unknown) => decodeGiftDeliveryRow(row));
+    if (deliveries.length === 0) {
+      return [];
+    }
+
+    const giftRows = await this.knex('gifts')
+      .select('*')
+      .whereIn(
+        'id',
+        deliveries.map((delivery) => delivery.giftId),
+      );
+    const giftsById = new Map<string, Gift>(
+      giftRows.map((row: Record<string, unknown>) => [String(row.id), decodeGiftRow(row)]),
+    );
+
+    return deliveries.map((delivery) => {
+      const gift = giftsById.get(delivery.giftId);
+      if (!gift) {
+        throw new errors.InternalServerError({
+          message: `Gift not found for recoverable delivery ${delivery.id}`,
+        });
+      }
+
+      return { delivery, gift };
+    });
   }
 
   // Distinct times only: the scheduler arms one flush job per availability

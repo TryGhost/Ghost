@@ -5,9 +5,8 @@ import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
 import { getMailgunMessageId } from '../lib/mailgun-message-id';
 import { GIFT_DELIVERY_EMAIL_TAG } from './constants';
+import { formatGiftDate } from './gift-date';
 
-const DEFAULT_DATE_LOCALE = 'en-gb';
-const DEFAULT_TIMEZONE = 'Etc/UTC';
 const DEFAULT_ACCENT_COLOR = '#15212A';
 
 interface TransactionalMailer {
@@ -162,38 +161,11 @@ export class GiftEmailService {
     return this.mixAccentColor('#15212A', 0.72, '#738A94');
   }
 
-  private dateFormatterFor(locale: string, timeZone: string): Intl.DateTimeFormat | null {
-    try {
-      return new Intl.DateTimeFormat(locale, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        timeZone,
-      });
-    } catch (err) {
-      return null;
-    }
-  }
-
   private formatDate(date: Date): string {
-    const locale = this.settingsCache.get('locale') || DEFAULT_DATE_LOCALE;
-    const timeZone = this.settingsCache.get('timezone') || DEFAULT_TIMEZONE;
-
-    // A publication's locale is stored unvalidated, so a tag Intl rejects
-    // ("en_US") would otherwise throw a RangeError that the mail callers
-    // swallow, silently dropping every gift email. Drop the publication's
-    // settings one at a time instead.
-    const formatter =
-      this.dateFormatterFor(locale, timeZone) ||
-      this.dateFormatterFor(DEFAULT_DATE_LOCALE, timeZone) ||
-      new Intl.DateTimeFormat(DEFAULT_DATE_LOCALE, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        timeZone: DEFAULT_TIMEZONE,
-      });
-
-    return formatter.format(date);
+    return formatGiftDate(date, {
+      locale: this.settingsCache.get('locale'),
+      timeZone: this.settingsCache.get('timezone'),
+    });
   }
 
   async sendPurchaseConfirmation({

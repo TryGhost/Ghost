@@ -8,10 +8,13 @@ import type {
 import type { GiftDeliveryData } from './gift-delivery-schema';
 import type { GiftCadence } from './gift-schema';
 import type { GiftFlushScheduler } from './gift-flush-scheduler';
+import type { Gift } from './gift';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 import { GIFT_DELIVERY_STALE_AFTER_MS } from './constants';
 
 const DomainEvents = require('@tryghost/domain-events');
+
+const RECOVERY_CONCURRENCY = 10;
 
 interface Tier {
   name: string;
@@ -147,23 +150,31 @@ export class GiftDeliveryService {
         batchSize,
       );
 
-      // Sequential to avoid opening many mail transport calls at once
-      for (const delivery of deliveries) {
-        try {
-          const deliveryResult = await this.send(delivery.id);
-          result[`${deliveryResult}Count`] += 1;
-        } catch (err) {
-          result.failedCount += 1;
-          logging.error(
-            {
-              event: { name: 'gift_delivery.recovery_failed' },
-              err,
-              deliveryId: delivery.id,
-            },
-            'Failed to recover gift delivery',
-          );
+      let nextIndex = 0;
+      const recoverNext = async () => {
+        while (nextIndex < deliveries.length) {
+          const { delivery, gift } = deliveries[nextIndex];
+          nextIndex += 1;
+          try {
+            const deliveryResult = await this.send(delivery.id, gift);
+            result[`${deliveryResult}Count`] += 1;
+          } catch (err) {
+            result.failedCount += 1;
+            logging.error(
+              {
+                event: { name: 'gift_delivery.recovery_failed' },
+                err,
+                deliveryId: delivery.id,
+              },
+              'Failed to recover gift delivery',
+            );
+          }
         }
-      }
+      };
+
+      await Promise.all(
+        Array.from({ length: Math.min(RECOVERY_CONCURRENCY, deliveries.length) }, recoverNext),
+      );
 
       if (deliveries.length < batchSize) {
         break;
@@ -184,7 +195,7 @@ export class GiftDeliveryService {
     return this.deps.giftDeliveryRepository.cancelPendingForGift(token, options);
   }
 
-  async send(id: string): Promise<'sent' | 'skipped' | 'failed'> {
+  async send(id: string, giftSnapshot?: Gift): Promise<'sent' | 'skipped' | 'failed'> {
     const now = new Date();
     const staleBefore = new Date(now.getTime() - GIFT_DELIVERY_STALE_AFTER_MS);
     const delivery = await this.deps.giftDeliveryRepository.tryStartDelivery(id, now, staleBefore);
@@ -193,7 +204,7 @@ export class GiftDeliveryService {
       return 'skipped';
     }
 
-    const gift = await this.deps.giftRepository.getById(delivery.giftId);
+    const gift = giftSnapshot ?? (await this.deps.giftRepository.getById(delivery.giftId));
     if (!gift) {
       logging.error(
         {

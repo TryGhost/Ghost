@@ -11,6 +11,10 @@ const { getSignedAdminToken } = require('../../adapters/scheduling/utils');
 // anything. Arming each job just past its second avoids that.
 const FLUSH_DELAY_MS = 1000;
 
+function normalizeTime(time: number): number {
+  return Math.floor(time / 1000) * 1000;
+}
+
 interface GiftFlushSchedulerOptions {
   apiUrl: string;
   adapter: SchedulerAdapter;
@@ -58,6 +62,7 @@ export class GiftFlushScheduler {
    * daily recovery jobs.
    */
   async scheduleAt(time: number, logContext: Record<string, unknown> = {}): Promise<void> {
+    time = normalizeTime(time);
     const now = Date.now();
     if (time <= now) {
       return;
@@ -75,12 +80,26 @@ export class GiftFlushScheduler {
       return;
     }
 
-    let key: InternalApiKey;
     try {
-      key = await this.#internalKeys.get('ghost-scheduler');
+      const key = await this.#internalKeys.get('ghost-scheduler');
+
+      // A concurrent call may have armed this time during the key fetch.
+      if (this.#scheduledTimes.has(time)) {
+        return;
+      }
+
+      const job = this.#buildJob(time, key);
+      this.#scheduledTimes.add(time);
+
+      // schedule() captures asynchronous failures instead of throwing, so a
+      // silent failure leaves the time marked armed; the daily recovery pass
+      // sends the work at most a day late.
+      this.#adapter.schedule(job);
     } catch (err) {
-      // No job or deduplication marker was created, so a later call can retry.
-      // Daily recovery handles the work if it does not.
+      // A synchronous key, job-construction, or adapter failure must not escape
+      // into the completed gift flow. Remove any marker so a later call can
+      // retry; daily recovery handles the work if it does not.
+      this.#scheduledTimes.delete(time);
       logging.error(
         {
           event: { name: `${this.#name}_scheduler.schedule.failed` },
@@ -89,19 +108,7 @@ export class GiftFlushScheduler {
         },
         `Failed to schedule ${this.#name.replaceAll('_', ' ')}`,
       );
-      return;
     }
-
-    // A concurrent call may have armed this time during the key fetch.
-    if (this.#scheduledTimes.has(time)) {
-      return;
-    }
-    this.#scheduledTimes.add(time);
-
-    // schedule() captures failures instead of throwing, so a silent
-    // failure leaves the time marked armed; the daily recovery pass sends
-    // the work at most a day late.
-    this.#adapter.schedule(this.#buildJob(time, key));
   }
 
   /**
@@ -116,7 +123,7 @@ export class GiftFlushScheduler {
     // rebuilt job; only key rotation has a distinct stale URL to
     // unschedule.
     const bootstrap = !previousKey;
-    const scheduledTimes = new Set(pending);
+    const scheduledTimes = new Set(pending.map(normalizeTime));
 
     this.#scheduledTimes.clear();
 
@@ -129,13 +136,21 @@ export class GiftFlushScheduler {
       // signing being deterministic.
       const staleJob = previousKey ? this.#buildJob(time, previousKey) : job;
       this.#adapter.unschedule(staleJob, { bootstrap });
+
+      // Before GiftFlushScheduler, reminder jobs were armed without the
+      // one-second flush delay. During the first scheduler-key rotation after
+      // an upgrade, tombstone that legacy URL+time as well.
+      if (previousKey && this.#endpoint === 'flush_reminders') {
+        this.#adapter.unschedule(this.#buildJob(time, previousKey, 0), { bootstrap });
+      }
+
       this.#adapter.schedule(job);
       this.#scheduledTimes.add(time);
     }
   }
 
-  #buildJob(time: number, key: InternalApiKey): SchedulerJob {
-    const jobTime = time + FLUSH_DELAY_MS;
+  #buildJob(time: number, key: InternalApiKey, delayMs = FLUSH_DELAY_MS): SchedulerJob {
+    const jobTime = time + delayMs;
     const signedAdminToken = getSignedAdminToken({
       publishedAt: new Date(jobTime).toISOString(),
       apiUrl: this.#apiUrl,

@@ -876,7 +876,8 @@ describe('GiftService', function () {
           assert.equal(err.errorType, 'BadRequestError');
           assert.equal(err.message, 'This gift is not available yet.');
           assert.equal(err.code, 'GIFT_NOT_YET_REDEEMABLE');
-          assert.equal(err.context, '2099-12-25');
+          assert.equal(err.context, undefined);
+          assert.equal(err.publicContext, '2099-12-25');
           return true;
         },
       );

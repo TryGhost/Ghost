@@ -17,13 +17,8 @@ export type Translate = (key: string, options?: Record<string, unknown>) => stri
 export class GiftEmailRenderer {
   private readonly handlebars: typeof Handlebars;
   private readonly t: Translate;
-
-  private purchaseConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
-  private deliveryFailureTemplate: HandlebarsTemplateDelegate | null = null;
-  private reminderTemplate: HandlebarsTemplateDelegate | null = null;
-  private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
-  private sentConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
-  private buyerNoticeLayoutRegistered = false;
+  private readonly templates = new Map<string, Promise<HandlebarsTemplateDelegate>>();
+  private readonly partials = new Map<string, Promise<void>>();
 
   constructor({ t }: { t: Translate }) {
     this.t = t;
@@ -34,77 +29,68 @@ export class GiftEmailRenderer {
   async renderPurchaseConfirmation(
     data: GiftPurchaseConfirmationData,
   ): Promise<{ html: string; text: string }> {
-    if (!this.purchaseConfirmationTemplate) {
-      const source = await fs.readFile(
-        path.join(__dirname, './email-templates/gift-purchase-confirmation.hbs'),
-        'utf8',
-      );
-
-      this.purchaseConfirmationTemplate = this.handlebars.compile(source);
-    }
+    const template = await this.getTemplate('gift-purchase-confirmation.hbs');
 
     return {
-      html: this.purchaseConfirmationTemplate(data),
+      html: template(data),
       text: renderPurchaseConfirmationText(data, this.t),
     };
   }
 
-  private async ensureBuyerNoticeLayout(): Promise<void> {
-    if (!this.buyerNoticeLayoutRegistered) {
-      const source = await fs.readFile(
-        path.join(__dirname, './email-templates/gift-buyer-notice-layout.hbs'),
-        'utf8',
-      );
-      this.handlebars.registerPartial('giftBuyerNoticeLayout', source);
-      this.buyerNoticeLayoutRegistered = true;
+  private async getTemplate(filename: string): Promise<HandlebarsTemplateDelegate> {
+    let template = this.templates.get(filename);
+    if (!template) {
+      template = (async () => {
+        await this.ensurePartial('giftBuyerNoticeLayout', 'gift-buyer-notice-layout.hbs');
+        const source = await fs.readFile(
+          path.join(__dirname, './email-templates', filename),
+          'utf8',
+        );
+        return this.handlebars.compile(source);
+      })();
+      this.templates.set(filename, template);
     }
+
+    return template;
+  }
+
+  private async ensurePartial(name: string, filename: string): Promise<void> {
+    let registration = this.partials.get(name);
+    if (!registration) {
+      registration = fs
+        .readFile(path.join(__dirname, './email-templates', filename), 'utf8')
+        .then((source) => this.handlebars.registerPartial(name, source));
+      this.partials.set(name, registration);
+    }
+
+    await registration;
   }
 
   async renderDeliveryFailure(
     data: GiftDeliveryFailureData,
   ): Promise<{ html: string; text: string }> {
-    await this.ensureBuyerNoticeLayout();
-    if (!this.deliveryFailureTemplate) {
-      const source = await fs.readFile(
-        path.join(__dirname, './email-templates/gift-delivery-failure.hbs'),
-        'utf8',
-      );
-      this.deliveryFailureTemplate = this.handlebars.compile(source);
-    }
+    const template = await this.getTemplate('gift-delivery-failure.hbs');
 
     return {
-      html: this.deliveryFailureTemplate(data),
+      html: template(data),
       text: renderDeliveryFailureText(data, this.t),
     };
   }
 
   async renderReminder(data: GiftReminderData): Promise<{ html: string; text: string }> {
-    if (!this.reminderTemplate) {
-      const source = await fs.readFile(
-        path.join(__dirname, './email-templates/gift-reminder.hbs'),
-        'utf8',
-      );
-
-      this.reminderTemplate = this.handlebars.compile(source);
-    }
+    const template = await this.getTemplate('gift-reminder.hbs');
 
     return {
-      html: this.reminderTemplate(data),
+      html: template(data),
       text: renderReminderText(data, this.t),
     };
   }
 
   async renderDelivery(data: GiftDeliveryEmailData): Promise<{ html: string; text: string }> {
-    if (!this.deliveryTemplate) {
-      const source = await fs.readFile(
-        path.join(__dirname, './email-templates/gift-delivery.hbs'),
-        'utf8',
-      );
-      this.deliveryTemplate = this.handlebars.compile(source);
-    }
+    const template = await this.getTemplate('gift-delivery.hbs');
 
     return {
-      html: this.deliveryTemplate(data),
+      html: template(data),
       text: renderDeliveryText(data, this.t),
     };
   }
@@ -112,17 +98,10 @@ export class GiftEmailRenderer {
   async renderSentConfirmation(
     data: GiftSentConfirmationData,
   ): Promise<{ html: string; text: string }> {
-    await this.ensureBuyerNoticeLayout();
-    if (!this.sentConfirmationTemplate) {
-      const source = await fs.readFile(
-        path.join(__dirname, './email-templates/gift-sent-confirmation.hbs'),
-        'utf8',
-      );
-      this.sentConfirmationTemplate = this.handlebars.compile(source);
-    }
+    const template = await this.getTemplate('gift-sent-confirmation.hbs');
 
     return {
-      html: this.sentConfirmationTemplate(data),
+      html: template(data),
       text: renderSentConfirmationText(data, this.t),
     };
   }

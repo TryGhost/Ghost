@@ -478,15 +478,10 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     if (err.code && typeof err.code === 'string') {
       searchParams.set('errorCode', err.code);
 
-      // The availability date travels as error context so Portal can
-      // say when the gift opens. Gated on the code: generic contexts
-      // can carry internal detail that must stay out of URLs.
-      if (
-        err.code === 'GIFT_NOT_YET_REDEEMABLE' &&
-        typeof err.context === 'string' &&
-        err.context
-      ) {
-        searchParams.set('errorContext', err.context);
+      // Only explicitly public context may cross the redirect boundary;
+      // regular error context can contain internal detail.
+      if (typeof err.publicContext === 'string' && err.publicContext) {
+        searchParams.set('errorContext', err.publicContext);
       }
     }
 
