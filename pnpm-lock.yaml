@@ -796,9 +796,6 @@ importers:
       '@tryghost/koenig-lexical':
         specifier: workspace:*
         version: link:../../koenig/koenig-lexical
-      '@tryghost/limit-service':
-        specifier: 'catalog:'
-        version: 1.5.6
       '@tryghost/nql':
         specifier: 0.13.4
         version: 0.13.4(supports-color@10.2.2)
@@ -1011,6 +1008,9 @@ importers:
       '@tryghost/custom-field-types':
         specifier: workspace:*
         version: link:../../packages/custom-field-types
+      '@tryghost/limit-service':
+        specifier: 'catalog:'
+        version: 1.5.6
       '@tryghost/nql-string':
         specifier: workspace:*
         version: link:../../packages/nql-string

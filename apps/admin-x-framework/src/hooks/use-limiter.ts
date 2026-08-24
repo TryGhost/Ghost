@@ -1,39 +1,18 @@
-import useStaffUsers from './use-staff-users';
-import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
-import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useEffect, useMemo, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useBrowseConfig } from '../api/config';
+import { useBrowseInvites } from '../api/invites';
+import { useBrowseMembers } from '../api/members';
+import { useBrowseNewsletters } from '../api/newsletters';
+import { useBrowseRoles } from '../api/roles';
+import { useBrowseUsers } from '../api/users';
+import { HostLimitError } from '../utils/errors';
 
 const limitServiceImport = import('@tryghost/limit-service');
 
-export class LimitError extends Error {
-  public readonly errorType: string;
-  public readonly errorDetails: string;
-
-  constructor({
-    errorType,
-    errorDetails,
-    message,
-  }: {
-    errorType: string;
-    errorDetails: string;
-    message: string;
-  }) {
+// limit-service constructs its misconfiguration error with a single options object
+class IncorrectUsageError extends Error {
+  constructor({ message }: { message: string }) {
     super(message);
-    this.errorType = errorType;
-    this.errorDetails = errorDetails;
-  }
-}
-
-export class IncorrectUsageError extends LimitError {
-  constructor(options: { errorDetails: string; message: string }) {
-    super(Object.assign({ errorType: 'IncorrectUsageError' }, options));
-  }
-}
-
-export class HostLimitError extends LimitError {
-  constructor(options: { errorDetails: string; message: string }) {
-    super(Object.assign({ errorType: 'HostLimitError' }, options));
   }
 }
 
@@ -55,8 +34,17 @@ interface LimiterLimits {
   };
 }
 
-export const useLimiter = () => {
-  const { config } = useGlobalData();
+export interface Limiter {
+  isLimited: (limitName: string) => boolean;
+  isDisabled: (limitName: string) => boolean;
+  checkWouldGoOverLimit: (limitName: string) => Promise<boolean>;
+  errorIfWouldGoOverLimit: (limitName: string, metadata?: Record<string, unknown>) => Promise<void>;
+  errorIfIsOverLimit: (limitName: string) => Promise<void>;
+}
+
+export const useLimiter = (): Limiter => {
+  const { data: configData } = useBrowseConfig({ refetchOnMount: false });
+  const config = configData?.config;
   const [LimitService, setLimitService] = useState<
     typeof import('@tryghost/limit-service').default | null
   >(null);
@@ -65,7 +53,10 @@ export const useLimiter = () => {
     void limitServiceImport.then((exports) => setLimitService(() => exports.default));
   }, []);
 
-  const { users, contributorUsers, invites, isLoading } = useStaffUsers();
+  const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers();
+  const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites();
+  const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles();
+  const isStaffLoading = usersLoading || invitesLoading || rolesLoading;
   const { refetch: fetchMembers } = useBrowseMembers({
     searchParams: { limit: '1' },
     enabled: false,
@@ -76,12 +67,12 @@ export const useLimiter = () => {
   });
 
   const helpLink = useMemo(() => {
-    if (config.hostSettings?.billing?.enabled === true && config.hostSettings?.billing?.url) {
+    if (config?.hostSettings?.billing?.enabled === true && config.hostSettings.billing.url) {
       return config.hostSettings.billing.url;
     } else {
       return 'https://ghost.org/help/';
     }
-  }, [config.hostSettings?.billing]);
+  }, [config?.hostSettings?.billing]);
 
   return useMemo(() => {
     // Return a stable no-op API when the limiter isn't ready
@@ -94,7 +85,7 @@ export const useLimiter = () => {
       errorIfIsOverLimit: (): Promise<void> => Promise.resolve(),
     };
 
-    if (!LimitService || !config.hostSettings?.limits || isLoading) {
+    if (!LimitService || !config?.hostSettings?.limits || isStaffLoading) {
       return noOpLimiter;
     }
 
@@ -103,12 +94,16 @@ export const useLimiter = () => {
 
     if (limits.staff) {
       limits.staff.currentCountQuery = () => {
-        // useStaffUsers will only return the first 100 users by default, but we can assume
-        // that either there's no limit or the limit is <100
+        // Keep the existing first-page behavior for this move. Full pagination is tracked in
+        // PLA-369 because excluded users/invites can push countable staff onto later pages.
         const staffUsers = users.filter(
-          (u) => u.status !== 'inactive' && !contributorUsers.includes(u),
+          (user) =>
+            user.status !== 'inactive' && !user.roles.some((role) => role.name === 'Contributor'),
         );
-        const staffInvites = invites.filter((i) => i.role !== 'Contributor');
+        const staffInvites = invites.filter((invite) => {
+          const role = roles?.find(({ id }) => id === invite.role_id);
+          return role?.name !== 'Contributor';
+        });
 
         return Promise.resolve(staffUsers.length + staffInvites.length);
       };
@@ -152,12 +147,12 @@ export const useLimiter = () => {
   }, [
     LimitService,
     config,
-    contributorUsers,
     fetchMembers,
     fetchNewsletters,
     helpLink,
     invites,
-    isLoading,
+    isStaffLoading,
+    roles,
     users,
   ]);
 };

@@ -25,7 +25,7 @@ import { useAppContext } from '@tryghost/admin-x-framework';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
-import { useLimiter } from '@/analytics/hooks/use-limiter';
+import { useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useNavigate } from '@tryghost/admin-x-framework';
 
 interface OverviewKPICardProps {
@@ -173,9 +173,9 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { appSettings } = useAppContext();
-  const limiter = useLimiter();
+  const hostLimits = useHostLimits();
   const { config } = useAnalyticsData();
-  const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
+  const isWebAnalyticsLimited = hostLimits?.limitAnalytics?.disabled === true;
 
   const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:cursor-pointer!';
 

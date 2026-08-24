@@ -39,8 +39,9 @@ import {
   useFeatureFlag,
   useForm,
   useHandleError,
+  useLimiter,
 } from '@tryghost/admin-x-framework/hooks';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
