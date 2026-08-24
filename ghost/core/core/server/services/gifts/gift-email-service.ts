@@ -1,12 +1,12 @@
 import { GiftEmailRenderer, Translate } from './gift-email-renderer';
+import type { GiftRecipientNoticeData } from './email-templates/gift-buyer-notice';
 import type { GiftCadence } from './gift-schema';
 import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
 import { getMailgunMessageId } from '../lib/mailgun-message-id';
 import { GIFT_DELIVERY_EMAIL_TAG } from './constants';
+import { formatGiftDate } from './gift-date';
 
-const DEFAULT_DATE_LOCALE = 'en-gb';
-const DEFAULT_TIMEZONE = 'Etc/UTC';
 const DEFAULT_ACCENT_COLOR = '#15212A';
 
 interface TransactionalMailer {
@@ -58,6 +58,7 @@ interface PurchaseConfirmationData {
   cadence: GiftCadence;
   duration: number;
   expiresAt: Date;
+  scheduledAt: Date | null;
   recipientEmail?: string | null;
 }
 
@@ -82,12 +83,17 @@ interface GiftDeliverySendData {
   expiresAt: Date;
 }
 
-interface GiftDeliveryFailureNotificationData {
+// Buyer notices about a delivery share one payload today; the neutral name
+// keeps either email free to grow fields without silently widening the other.
+interface GiftDeliveryNoticeData {
   buyerEmail: string;
   recipientEmail: string;
   token: string;
   expiresAt: Date;
 }
+
+type GiftDeliveryFailureNotificationData = GiftDeliveryNoticeData;
+type GiftSentConfirmationData = GiftDeliveryNoticeData;
 
 export class GiftEmailService {
   private readonly transactionalMailer: TransactionalMailer;
@@ -155,38 +161,11 @@ export class GiftEmailService {
     return this.mixAccentColor('#15212A', 0.72, '#738A94');
   }
 
-  private dateFormatterFor(locale: string, timeZone: string): Intl.DateTimeFormat | null {
-    try {
-      return new Intl.DateTimeFormat(locale, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        timeZone,
-      });
-    } catch (err) {
-      return null;
-    }
-  }
-
   private formatDate(date: Date): string {
-    const locale = this.settingsCache.get('locale') || DEFAULT_DATE_LOCALE;
-    const timeZone = this.settingsCache.get('timezone') || DEFAULT_TIMEZONE;
-
-    // A publication's locale is stored unvalidated, so a tag Intl rejects
-    // ("en_US") would otherwise throw a RangeError that the mail callers
-    // swallow, silently dropping every gift email. Drop the publication's
-    // settings one at a time instead.
-    const formatter =
-      this.dateFormatterFor(locale, timeZone) ||
-      this.dateFormatterFor(DEFAULT_DATE_LOCALE, timeZone) ||
-      new Intl.DateTimeFormat(DEFAULT_DATE_LOCALE, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        timeZone: DEFAULT_TIMEZONE,
-      });
-
-    return formatter.format(date);
+    return formatGiftDate(date, {
+      locale: this.settingsCache.get('locale'),
+      timeZone: this.settingsCache.get('timezone'),
+    });
   }
 
   async sendPurchaseConfirmation({
@@ -196,6 +175,7 @@ export class GiftEmailService {
     cadence,
     duration,
     expiresAt,
+    scheduledAt,
     recipientEmail = null,
   }: PurchaseConfirmationData): Promise<void> {
     const siteDomain = this.siteDomain;
@@ -203,6 +183,8 @@ export class GiftEmailService {
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
     const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+    const scheduled = Boolean(recipientEmail) && scheduledAt && scheduledAt.getTime() > Date.now();
+    const deliveryDate = scheduled ? this.formatDate(scheduledAt) : null;
     const { html, text } = await this.renderer.renderPurchaseConfirmation({
       siteTitle,
       siteUrl,
@@ -217,12 +199,20 @@ export class GiftEmailService {
         link: giftLink,
         expiresAt: this.formatDate(expiresAt),
         recipientEmail,
+        deliveryDate,
       },
     });
 
     await this.transactionalMailer.send({
       to: buyerEmail,
-      subject: recipientEmail ? this.t('Your gift is on its way') : this.t('Your gift is ready'),
+      subject: scheduled
+        ? this.t('Your gift will be sent on {deliveryDate}', {
+            deliveryDate,
+            interpolation: { escapeValue: false },
+          })
+        : recipientEmail
+          ? this.t('Your gift is on its way')
+          : this.t('Your gift is ready'),
       html,
       text,
       from: this.getFromAddress(),
@@ -231,17 +221,35 @@ export class GiftEmailService {
     });
   }
 
-  async sendDeliveryFailureNotification({
-    buyerEmail,
-    recipientEmail,
-    token,
-    expiresAt,
-  }: GiftDeliveryFailureNotificationData): Promise<void> {
+  async sendGiftSentConfirmation(data: GiftSentConfirmationData): Promise<void> {
+    await this.sendBuyerNotice(data, {
+      subject: this.t('Your gift has been sent'),
+      render: (payload) => this.renderer.renderSentConfirmation(payload),
+    });
+  }
+
+  async sendDeliveryFailureNotification(data: GiftDeliveryFailureNotificationData): Promise<void> {
+    await this.sendBuyerNotice(data, {
+      subject: this.t("We couldn't deliver your gift"),
+      render: (payload) => this.renderer.renderDeliveryFailure(payload),
+    });
+  }
+
+  private async sendBuyerNotice(
+    { buyerEmail, recipientEmail, token, expiresAt }: GiftDeliveryNoticeData,
+    {
+      subject,
+      render,
+    }: {
+      subject: string;
+      render: (_payload: GiftRecipientNoticeData) => Promise<{ html: string; text: string }>;
+    },
+  ): Promise<void> {
     const siteDomain = this.siteDomain;
     const siteUrl = this.urlUtils.getSiteUrl();
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
     const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
-    const { html, text } = await this.renderer.renderDeliveryFailure({
+    const { html, text } = await render({
       siteTitle,
       siteUrl,
       siteIconUrl: this.blogIcon.getIconUrl({ absolute: true, fallbackToDefault: false }),
@@ -256,7 +264,7 @@ export class GiftEmailService {
 
     await this.transactionalMailer.send({
       to: buyerEmail,
-      subject: this.t("We couldn't deliver your gift"),
+      subject,
       html,
       text,
       from: this.getFromAddress(),

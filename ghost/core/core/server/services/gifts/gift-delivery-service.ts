@@ -7,10 +7,26 @@ import type {
 } from './gift-delivery-bookshelf-repository';
 import type { GiftDeliveryData } from './gift-delivery-schema';
 import type { GiftCadence } from './gift-schema';
+import type { GiftFlushScheduler } from './gift-flush-scheduler';
+import type { Gift } from './gift';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 import { GIFT_DELIVERY_STALE_AFTER_MS } from './constants';
 
 const DomainEvents = require('@tryghost/domain-events');
+
+const RECOVERY_CONCURRENCY = 10;
+
+// A delivery counts as scheduled only when its send time was still in the
+// future at purchase: immediate deliveries have no scheduledAt, and a checkout
+// that completes after its scheduled date sends straight away, so the buyer's
+// purchase confirmation already covers the send.
+function wasScheduledDelivery(delivery: GiftDeliveryData, gift: Gift): boolean {
+  return Boolean(
+    delivery.scheduledAt &&
+    gift.purchasedAt &&
+    delivery.scheduledAt.getTime() > gift.purchasedAt.getTime(),
+  );
+}
 
 interface Tier {
   name: string;
@@ -45,6 +61,12 @@ interface GiftEmailService {
     token: string;
     expiresAt: Date;
   }): Promise<void>;
+  sendGiftSentConfirmation(data: {
+    buyerEmail: string;
+    recipientEmail: string;
+    token: string;
+    expiresAt: Date;
+  }): Promise<void>;
 }
 
 interface GiftDeliveryServiceDeps {
@@ -55,12 +77,18 @@ interface GiftDeliveryServiceDeps {
   giftEmailAnalytics: {
     schedule(): Promise<void>;
   };
+  giftDeliveryScheduler: Pick<GiftFlushScheduler, 'scheduleAt' | 'rescheduleAll'>;
 }
 
 export interface GiftDeliveryRecoveryResult {
   sentCount: number;
   skippedCount: number;
   failedCount: number;
+}
+
+export interface GiftDeliveryDispatchResult {
+  recipientEmail: string;
+  scheduledAt: Date | null;
 }
 
 export class GiftDeliveryService {
@@ -71,7 +99,11 @@ export class GiftDeliveryService {
   }
 
   async createForCheckout(
-    { giftId, recipientEmail }: { giftId: string; recipientEmail: string },
+    {
+      giftId,
+      recipientEmail,
+      scheduledAt,
+    }: { giftId: string; recipientEmail: string; scheduledAt: Date | null },
     options: RepositoryTransactionOptions = {},
   ): Promise<string> {
     const delivery: GiftDeliveryData = {
@@ -79,6 +111,7 @@ export class GiftDeliveryService {
       giftId,
       recipientEmail,
       status: 'pending',
+      scheduledAt,
       startedAt: null,
       emailSentAt: null,
       emailProviderMessageId: null,
@@ -91,49 +124,90 @@ export class GiftDeliveryService {
     return delivery.id;
   }
 
-  async dispatchForGift(giftId: string): Promise<string | null> {
+  async dispatchForGift({
+    giftId,
+  }: {
+    giftId: string;
+  }): Promise<GiftDeliveryDispatchResult | null> {
     const delivery = await this.deps.giftDeliveryRepository.getByGiftId(giftId);
     if (!delivery || delivery.status !== 'pending') {
-      return delivery?.recipientEmail ?? null;
+      return delivery
+        ? { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt }
+        : null;
+    }
+
+    if (delivery.scheduledAt && delivery.scheduledAt.getTime() > Date.now()) {
+      await this.deps.giftDeliveryScheduler.scheduleAt(delivery.scheduledAt.getTime(), {
+        deliveryId: delivery.id,
+      });
+      // The scheduled time can pass while the flush is being armed, in which
+      // case the armed check skipped the job — fall through and send
+      // now rather than leaving the delivery for the daily backstop.
+      if (delivery.scheduledAt.getTime() > Date.now()) {
+        return { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt };
+      }
     }
 
     DomainEvents.dispatch(SendGiftDeliveryEvent.create({ deliveryId: delivery.id }));
-    return delivery.recipientEmail;
+    return { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt };
   }
 
-  async recoverPending(limit = 1000): Promise<GiftDeliveryRecoveryResult> {
-    const staleBefore = new Date(Date.now() - GIFT_DELIVERY_STALE_AFTER_MS);
-    const deliveries = await this.deps.giftDeliveryRepository.findRecoverableForPurchasedGifts(
-      staleBefore,
-      limit,
-    );
+  async recoverPending(batchSize = 1000): Promise<GiftDeliveryRecoveryResult> {
     const result: GiftDeliveryRecoveryResult = {
       sentCount: 0,
       skippedCount: 0,
       failedCount: 0,
     };
 
-    // Sequential on purpose: recovery can find many deliveries at once and each
-    // send holds a mail transport call, so fanning out through events would open
-    // them all concurrently
-    for (const delivery of deliveries) {
-      try {
-        const deliveryResult = await this.send(delivery.id);
-        result[`${deliveryResult}Count`] += 1;
-      } catch (err) {
-        result.failedCount += 1;
-        logging.error(
-          {
-            event: { name: 'gift_delivery.recovery_failed' },
-            err,
-            deliveryId: delivery.id,
-          },
-          'Failed to recover gift delivery',
-        );
+    // A scheduled flush fires once, so drain until nothing recoverable
+    // remains; the batch cap only bounds a pathological send that leaves
+    // rows in the recoverable set.
+    const maxBatches = 100;
+    for (let batch = 0; batch < maxBatches; batch++) {
+      const now = new Date();
+      const staleBefore = new Date(now.getTime() - GIFT_DELIVERY_STALE_AFTER_MS);
+      const deliveries = await this.deps.giftDeliveryRepository.findRecoverableForPurchasedGifts(
+        now,
+        staleBefore,
+        batchSize,
+      );
+
+      let nextIndex = 0;
+      const recoverNext = async () => {
+        while (nextIndex < deliveries.length) {
+          const { delivery, gift } = deliveries[nextIndex];
+          nextIndex += 1;
+          try {
+            const deliveryResult = await this.send(delivery.id, gift);
+            result[`${deliveryResult}Count`] += 1;
+          } catch (err) {
+            result.failedCount += 1;
+            logging.error(
+              {
+                event: { name: 'gift_delivery.recovery_failed' },
+                err,
+                deliveryId: delivery.id,
+              },
+              'Failed to recover gift delivery',
+            );
+          }
+        }
+      };
+
+      await Promise.all(
+        Array.from({ length: Math.min(RECOVERY_CONCURRENCY, deliveries.length) }, recoverNext),
+      );
+
+      if (deliveries.length < batchSize) {
+        break;
       }
     }
 
     return result;
+  }
+
+  async reschedulePending(): Promise<void> {
+    await this.deps.giftDeliveryScheduler.rescheduleAll();
   }
 
   async cancelPendingForGift(
@@ -143,7 +217,7 @@ export class GiftDeliveryService {
     return this.deps.giftDeliveryRepository.cancelPendingForGift(token, options);
   }
 
-  async send(id: string): Promise<'sent' | 'skipped' | 'failed'> {
+  async send(id: string, giftSnapshot?: Gift): Promise<'sent' | 'skipped' | 'failed'> {
     const now = new Date();
     const staleBefore = new Date(now.getTime() - GIFT_DELIVERY_STALE_AFTER_MS);
     const delivery = await this.deps.giftDeliveryRepository.tryStartDelivery(id, now, staleBefore);
@@ -152,7 +226,7 @@ export class GiftDeliveryService {
       return 'skipped';
     }
 
-    const gift = await this.deps.giftRepository.getById(delivery.giftId);
+    const gift = giftSnapshot ?? (await this.deps.giftRepository.getById(delivery.giftId));
     if (!gift) {
       logging.error(
         {
@@ -314,6 +388,29 @@ export class GiftDeliveryService {
         await this.deps.giftEmailAnalytics.schedule();
       } catch (err) {
         logging.error('Failed to schedule gift delivery analytics', err);
+      }
+    }
+
+    if (persisted && wasScheduledDelivery(delivery, gift)) {
+      // Best effort: buyer confirmations have no durable retry state;
+      // recipient delivery is unaffected.
+      try {
+        await this.deps.giftEmailService.sendGiftSentConfirmation({
+          buyerEmail: gift.buyerEmail,
+          recipientEmail: delivery.recipientEmail,
+          token: gift.token,
+          expiresAt: gift.expiresAt!,
+        });
+      } catch (err) {
+        logging.error(
+          {
+            event: { name: 'gift_delivery.sent_confirmation.failed' },
+            err,
+            deliveryId: delivery.id,
+            giftId: delivery.giftId,
+          },
+          'Failed to send gift sent confirmation to buyer',
+        );
       }
     }
 

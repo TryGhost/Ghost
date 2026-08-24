@@ -773,6 +773,33 @@ describe('checkoutGift action', () => {
     });
   });
 
+  test('passes a scheduled delivery date through to api.member.checkoutGift', async () => {
+    const mockApi = {
+      member: {
+        checkoutGift: vi.fn(() => Promise.resolve()),
+      },
+    };
+
+    await ActionHandler({
+      action: 'checkoutGift',
+      data: {
+        tierId: 'tier_123',
+        duration: 3,
+        deliveryMethod: 'email',
+        recipientEmail: 'recipient@example.com',
+        deliveryDate: '2026-12-25',
+      },
+      state: {},
+      api: mockApi,
+    });
+
+    expect(mockApi.member.checkoutGift).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deliveryDate: '2026-12-25',
+      }),
+    );
+  });
+
   test('returns failed action with notification on error', async () => {
     const mockApi = {
       member: {

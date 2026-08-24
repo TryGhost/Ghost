@@ -64,6 +64,7 @@ describe('GiftEmailService', function () {
     tierName: 'Gold',
     cadence: 'year',
     duration: 1,
+    scheduledAt: null,
     expiresAt: new Date('2027-04-07'),
   };
 
@@ -119,6 +120,42 @@ describe('GiftEmailService', function () {
         sinon.match((value) => !value.includes('has been sent to')),
       );
       sinon.assert.match(message[field], sinon.match('You can also share the link below yourself'));
+    }
+  });
+
+  it('tells the buyer when a scheduled gift will be sent', async function () {
+    const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await service.sendPurchaseConfirmation({
+      ...defaultData,
+      recipientEmail: 'recipient@example.com',
+      scheduledAt,
+    });
+
+    const message = transactionalMailer.send.firstCall.firstArg;
+    assert.match(message.subject, /^Your gift will be sent on /);
+    for (const field of ['html', 'text']) {
+      sinon.assert.match(message[field], sinon.match('Your gift is scheduled'));
+      sinon.assert.match(message[field], sinon.match('will be sent to'));
+    }
+  });
+
+  it('sends a best-effort buyer confirmation after recipient acceptance', async function () {
+    await service.sendGiftSentConfirmation({
+      buyerEmail: 'buyer@example.com',
+      recipientEmail: 'recipient@example.com',
+      token: 'abc-123',
+      expiresAt: new Date('2027-04-07'),
+    });
+
+    const message = transactionalMailer.send.firstCall.firstArg;
+    sinon.assert.match(message, {
+      to: 'buyer@example.com',
+      subject: 'Your gift has been sent',
+      disableTracking: true,
+    });
+    for (const field of ['html', 'text']) {
+      sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+      sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
     }
   });
 

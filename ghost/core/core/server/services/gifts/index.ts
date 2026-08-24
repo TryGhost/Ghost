@@ -4,14 +4,14 @@ import { GiftBookshelfRepository } from './gift-bookshelf-repository';
 import { GiftDeliveryBookshelfRepository } from './gift-delivery-bookshelf-repository';
 import { GiftDeliveryService } from './gift-delivery-service';
 import { GiftService } from './gift-service';
-import { GiftReminderScheduler } from './gift-reminder-scheduler';
+import { GiftFlushScheduler } from './gift-flush-scheduler';
 import { GiftEmailService } from './gift-email-service';
 import { GiftController } from './gift-controller';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 
 export interface GiftServiceInitOptions {
   apiUrl: string;
-  schedulerAdapter: SchedulerAdapter;
+  schedulerAdapter: SchedulerAdapter & { rescheduleOnBoot?: boolean };
   internalKeys: InternalKeys;
 }
 
@@ -23,6 +23,10 @@ export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
 
 export let deliveryService: GiftDeliveryService | undefined;
+
+// Persistent scheduling adapters keep their queue across restarts and opt out
+// of boot-time rebuilds (same contract post scheduling honours in boot.js).
+let rescheduleDeliveriesOnBoot = true;
 
 export async function init(options: GiftServiceInitOptions): Promise<void> {
   if (service) {
@@ -43,6 +47,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
   const logging = require('@tryghost/logging');
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
   const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
+  const { StartGiftDeliveryFlushEvent } = require('./events/start-gift-delivery-flush-event');
   const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
   const jobs = require('./jobs');
   const emailAnalyticsJobs = require('../email-analytics/jobs');
@@ -80,6 +85,17 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     blogIcon,
     t,
   });
+  const giftDeliveryScheduler = new GiftFlushScheduler({
+    apiUrl: options.apiUrl,
+    adapter: options.schedulerAdapter,
+    internalKeys: options.internalKeys,
+    endpoint: 'flush_deliveries',
+    name: 'gift_delivery',
+    findScheduledTimes: async () => {
+      const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(new Date());
+      return scheduled.map((scheduledAt) => scheduledAt.getTime());
+    },
+  });
   const giftDeliveryService = new GiftDeliveryService({
     giftRepository: repository,
     giftDeliveryRepository: deliveryRepository,
@@ -88,13 +104,21 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     giftEmailAnalytics: {
       schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true),
     },
+    giftDeliveryScheduler,
   });
 
-  const giftReminderScheduler = new GiftReminderScheduler({
+  const giftReminderScheduler = new GiftFlushScheduler({
     apiUrl: options.apiUrl,
     adapter: options.schedulerAdapter,
     internalKeys: options.internalKeys,
-    findUnsentReminders: () => repository.findUnsentReminders(),
+    endpoint: 'flush_reminders',
+    name: 'gift_reminder',
+    findScheduledTimes: async () => {
+      const pending = await repository.findUnsentReminders();
+      return pending
+        .map((gift) => gift.reminderDueAt()?.getTime())
+        .filter((time): time is number => time !== undefined);
+    },
   });
   const giftService = new GiftService({
     giftRepository: repository,
@@ -115,6 +139,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
   service = giftService;
   deliveryService = giftDeliveryService;
+  rescheduleDeliveriesOnBoot = Boolean(options.schedulerAdapter.rescheduleOnBoot);
   controller = new GiftController({ service: giftService });
 
   DomainEvents.subscribe(
@@ -142,6 +167,18 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         err,
         `[Background Job] send-gift-reminders failed after ${Date.now() - start}ms`,
       );
+    }
+  });
+
+  DomainEvents.subscribe(StartGiftDeliveryFlushEvent, async () => {
+    const start = Date.now();
+    try {
+      const { sentCount, skippedCount, failedCount } = await giftDeliveryService.recoverPending();
+      logging.info(
+        `Processed ${sentCount} due gift deliveries, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`,
+      );
+    } catch (err) {
+      logging.error(err, 'Failed to process due gift deliveries');
     }
   });
 
@@ -210,15 +247,23 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
   jobs.scheduleGiftReminderJob();
 }
 
-// Retries deliveries interrupted by a previous shutdown. Sending needs the tiers
-// and members services, which boot alongside this one, so this must run once
-// every service has finished initialising rather than from init().
+// Re-arms future deliveries and retries sends interrupted by a previous
+// shutdown. Runs after all services initialise because recovery sends need
+// tiers and members.
 export async function recoverPendingDeliveries(): Promise<void> {
   if (!deliveryService) {
     return;
   }
 
   const logging = require('@tryghost/logging');
+
+  if (rescheduleDeliveriesOnBoot) {
+    try {
+      await deliveryService.reschedulePending();
+    } catch (err) {
+      logging.error(err, 'Failed to reschedule pending gift deliveries');
+    }
+  }
 
   try {
     const { sentCount, skippedCount, failedCount } = await deliveryService.recoverPending();

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.70.0",
+  "version": "2.71.0",
   "description": "Drop-in membership interface for Ghost sites",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -48,6 +48,7 @@
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "react": "catalog:react17",
+    "react-day-picker": "catalog:",
     "react-dom": "catalog:react17",
     "typescript": "catalog:",
     "vite": "catalog:",
