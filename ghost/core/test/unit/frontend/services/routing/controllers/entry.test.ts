@@ -290,8 +290,37 @@ describe('Unit - services/routing/controllers/entry', function () {
       sinon.assert.calledWith(res.redirect, 302, '/does-exist/');
     });
 
-    it('returns 403 for non-public posts when the llms feature is enabled', async function () {
+    it('serves free-preview markdown for gated posts when access is false', async function () {
+      post.url = 'http://127.0.0.1:2369/does-exist/';
       post.visibility = 'members';
+      post.access = false;
+      post.title = 'Members Post';
+      post.html = '<p>Free preview</p>';
+      post.custom_excerpt = 'A teaser';
+      llmsService.isEnabled.returns(true);
+
+      entryLookUpStub.withArgs(req.path, res.routerOptions).resolves({ entry: post });
+
+      await controllers.entry(req, res, sinon.stub());
+
+      sinon.assert.calledWith(res.type, 'text/markdown');
+      sinon.assert.calledOnce(res.send);
+      sinon.assert.notCalled(res.status);
+      const body = res.send.firstCall.args[0];
+      assert.match(body, /# Members Post/);
+      assert.match(body, /Free preview/);
+      assert.match(body, /This post is for subscribers only\./);
+      assert.match(body, /Subscribe:/);
+      sinon.assert.neverCalledWith(res.set, 'Cache-Control', sinon.match.any);
+      sinon.assert.notCalled(res.redirect);
+    });
+
+    it('returns 403 for gated posts when the member already has access', async function () {
+      // access===true means entry.html is the full post; serving it at 200
+      // with public cache headers would leak paid content to the CDN.
+      post.visibility = 'members';
+      post.access = true;
+      post.html = '<p>Full members body</p>';
       llmsService.isEnabled.returns(true);
 
       entryLookUpStub.withArgs(req.path, res.routerOptions).resolves({ entry: post });
@@ -301,7 +330,26 @@ describe('Unit - services/routing/controllers/entry', function () {
       sinon.assert.calledWith(res.status, 403);
       sinon.assert.calledWith(res.type, 'text/markdown');
       sinon.assert.calledOnce(res.send);
+      assert.doesNotMatch(res.send.firstCall.args[0], /Full members body/);
       sinon.assert.notCalled(res.redirect);
+    });
+
+    it('returns 403 for paid posts with access when machine payments are not purchasable', async function () {
+      post.url = 'http://127.0.0.1:2369/does-exist/';
+      post.visibility = 'paid';
+      post.access = true;
+      post.html = '<p>Full paid body</p>';
+      llmsService.isEnabled.returns(true);
+      req.app.get.withArgs('machinePaymentsService').returns({
+        isPurchasable: sinon.stub().returns(false),
+      });
+
+      entryLookUpStub.withArgs(req.path, res.routerOptions).resolves({ entry: post });
+
+      await controllers.entry(req, res, sinon.stub());
+
+      sinon.assert.calledWith(res.status, 403);
+      assert.doesNotMatch(res.send.firstCall.args[0], /Full paid body/);
     });
 
     it('serves markdown for public posts when the llms feature is enabled', async function () {
@@ -315,6 +363,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
       sinon.assert.calledWith(res.type, 'text/markdown');
       sinon.assert.calledOnce(res.send);
+      sinon.assert.neverCalledWith(res.set, 'Cache-Control', sinon.match.any);
       sinon.assert.notCalled(res.redirect);
     });
   });

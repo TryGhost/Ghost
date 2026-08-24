@@ -2,10 +2,10 @@ import type { Request, Response } from 'express';
 import type { Entry, EntryResponse } from '../entry';
 import buildCanonicalUrl from './canonical-url';
 
-const config = require('../../../../../shared/config');
 const urlUtils = require('../../../../../shared/url-utils').default;
 const {
   getAcceptedMarkdownContentType,
+  getGatedNotice,
   getMarkdownPath,
   renderEntryMarkdown,
 } = require('../../../llms/markdown');
@@ -52,7 +52,7 @@ async function copyFetchResponse(fetchResponse: globalThis.Response, res: Respon
 
 /**
  * Only public entries ever render as markdown without payment; gated entries
- * stay html (or 403 / 402 on an explicit `.md` URL).
+ * stay html (or preview / 402 on an explicit `.md` URL).
  */
 export function isPublic(entry: Entry): boolean {
   return entry.visibility === 'public';
@@ -60,31 +60,74 @@ export function isPublic(entry: Entry): boolean {
 
 function serveMarkdown(res: Response, entry: Entry) {
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
-  res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
   res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
   res.type('text/markdown');
   return res.send(renderEntryMarkdown(entry, { llmsIndexUrl }));
+}
+
+/**
+ * The content API does not serialize `type`, so the notice wording has to come
+ * from the route rather than the entry.
+ */
+function getResourceKind(res: EntryResponse): 'page' | 'post' {
+  return res.routerOptions.resourceType === 'pages' || res.routerOptions.context?.includes('page')
+    ? 'page'
+    : 'post';
+}
+
+/**
+ * Public free-preview for gated entries (access === false). Same truncated
+ * html the web renderer shows, plus a subscription notice and Portal CTA.
+ */
+function servePreviewMarkdown(res: EntryResponse, entry: Entry) {
+  const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
+  const subscribeUrl = urlUtils.urlFor({ relativeUrl: '/#/portal/signup' }, true);
+
+  res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
+  res.type('text/markdown');
+  return res.send(
+    renderEntryMarkdown(entry, {
+      llmsIndexUrl,
+      notice: getGatedNotice(entry, getResourceKind(res)),
+      cta: `Subscribe: ${subscribeUrl}`,
+    }),
+  );
 }
 
 function refuseMembersOnlyMarkdown(res: Response) {
   return res.status(403).type('text/markdown').send(MEMBERS_ONLY_MARKDOWN);
 }
 
+function formatPaymentAmount(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  } catch {
+    return `${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
+  }
+}
+
 /**
  * Challenge-before-render paid markdown path. Full HTML is loaded only after
- * the machine-payments orchestrator verifies payment.
+ * the machine-payments orchestrator verifies payment. Unpaid challenges carry
+ * the free preview + an agent upsell CTA in a text/markdown body.
  */
 async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry) {
   const machinePaymentsService = getMachinePaymentsService(req);
 
   if (!machinePaymentsService?.isPurchasable(entry)) {
-    return refuseMembersOnlyMarkdown(res);
+    // access===true means entry.html is the full post — never cache that
+    // publicly. Fall back to the 403 stub for members who already have access.
+    if (entry.access === true) {
+      return refuseMembersOnlyMarkdown(res);
+    }
+    return servePreviewMarkdown(res, entry);
   }
 
-  const resourceType =
-    res.routerOptions.resourceType === 'pages' || res.routerOptions.context?.includes('page')
-      ? 'pages'
-      : 'posts';
+  const resourceKind = getResourceKind(res);
+  const resourceType = resourceKind === 'page' ? 'pages' : 'posts';
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
   const contentLocation = getMarkdownPath(new URL(entry.url).pathname);
   const fetchRequest = toFetchRequest(req);
@@ -95,6 +138,23 @@ async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry)
     description: typeof entry.title === 'string' ? entry.title : undefined,
     contentLocation,
     renderMarkdown: (paidEntry: Entry) => renderEntryMarkdown(paidEntry, { llmsIndexUrl }),
+    // Only attach a preview when the entry is already gated (access !== true).
+    // When access===true, entry.html is the full post and must not appear on 402.
+    ...(entry.access !== true
+      ? {
+          renderPreviewMarkdown: (terms: { amount: number; currency: string }) => {
+            const price = formatPaymentAmount(terms.amount, terms.currency);
+            return renderEntryMarkdown(entry, {
+              llmsIndexUrl,
+              notice: getGatedNotice(entry, resourceKind),
+              cta: [
+                `Agents can purchase one-shot access to the full markdown for ${price} per request via MPP or x402 — see the WWW-Authenticate response header for payment terms.`,
+                `Subscribe: ${urlUtils.urlFor({ relativeUrl: '/#/portal/signup' }, true)}`,
+              ],
+            });
+          },
+        }
+      : {}),
   });
 
   return await copyFetchResponse(response, res);
@@ -109,8 +169,8 @@ export function isMdRequest(res: EntryResponse): boolean {
 
 /**
  * Serve a `.md` URL as markdown for LLM consumption. When the feature is
- * disabled we redirect to the canonical (html) url; members-only content is
- * refused or challenged via machine payments when enabled.
+ * disabled we redirect to the canonical (html) url; gated content shows the
+ * free preview (or a machine-payments challenge when enabled).
  */
 export async function serveMdRequest(req: Request, res: EntryResponse, entry: Entry) {
   if (!llmsEnabled(req)) {
@@ -118,11 +178,22 @@ export async function serveMdRequest(req: Request, res: EntryResponse, entry: En
   }
 
   if (!isPublic(entry)) {
+    // Member with access still holds full html on the entry. Serving it at
+    // 200 with public cache headers would leak paid content to the CDN.
+    // Member `.md` unlock is out of scope — keep today's 403 / payment path.
+    if (entry.access === true) {
+      if (entry.visibility === 'paid' || entry.visibility === 'tiers') {
+        return await servePaidMarkdown(req, res, entry);
+      }
+
+      return refuseMembersOnlyMarkdown(res);
+    }
+
     if (entry.visibility === 'paid' || entry.visibility === 'tiers') {
       return await servePaidMarkdown(req, res, entry);
     }
 
-    return refuseMembersOnlyMarkdown(res);
+    return servePreviewMarkdown(res, entry);
   }
 
   return serveMarkdown(res, entry);
