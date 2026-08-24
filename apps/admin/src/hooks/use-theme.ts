@@ -47,6 +47,8 @@ function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
   }
 }
 
+// App code must consume this via ThemeProvider/useThemeContext (src/providers):
+// each extra instance forks the optimistic state and re-runs the DOM effects.
 export function useTheme() {
   const { data: preferences } = useUserPreferences();
   const { mutateAsync: editPreferences, isPending: isEditingPreferences } =

@@ -3,6 +3,7 @@ import { Toaster } from '../components/ui/sonner';
 import { createPortal } from 'react-dom';
 import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { SHADE_APP_NAMESPACES } from '@/shade-app';
 
 export type FetchKoenigLexical = () => Promise<unknown>;
@@ -91,8 +92,12 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
       value={{ isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode }}
     >
       <GlobalDirtyStateProvider>
-        {children}
-        <ToasterPortal />
+        {/* Default Radix tooltip timing for any Tooltip without a nearer
+            provider; inner providers still win via nearest-provider scoping. */}
+        <TooltipProvider>
+          {children}
+          <ToasterPortal />
+        </TooltipProvider>
       </GlobalDirtyStateProvider>
     </ShadeContext.Provider>
   );
