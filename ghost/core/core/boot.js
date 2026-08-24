@@ -644,7 +644,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     debug('Begin: Register job handlers');
     const jobsService = require('./server/services/jobs-service');
     const service = jobsService.init();
-    require('./server/services/jobs-service/register-job-handlers').default();
+    require('./server/services/jobs-service/register-job-handlers').default(service);
     await service.start();
     debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
