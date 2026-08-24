@@ -79,4 +79,35 @@ describe('useLimiter', () => {
 
     warn.mockRestore();
   });
+
+  // A limit built on a date the period resolver can't read registers but never fires,
+  // which is worse than not registering it at all
+  it.each([
+    ['a non-ISO date string', 'Fri Aug 21 2026 04:16:53 GMT+0000 (Coordinated Universal Time)'],
+    ['a value that is not a date', 'whenever'],
+    ['an empty string', ''],
+    // Date.parse rolls these forward instead of rejecting them, but luxon reads neither
+    ['a day the month does not have', '2026-04-31'],
+    ['a leap day outside a leap year', '2026-02-29'],
+    ['a time outside the clock', '2026-08-21T25:00:00Z'],
+  ])('skips a periodic limit anchored on %s', async (_label, start) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const limiter = await renderLimiter({ limits, subscription: { start } });
+
+    expect(limiter.isLimited('emails')).toBe(false);
+
+    warn.mockRestore();
+  });
+
+  it.each([
+    ['a date and time in UTC', '2026-08-21T04:16:53.000Z'],
+    ['a date and time with an offset', '2026-08-21T04:16:53+02:00'],
+    ['a date and time with no offset', '2026-08-21T04:16:53'],
+    ['a date on its own', '2026-08-21'],
+  ])('anchors a periodic limit on %s', async (_label, start) => {
+    const limiter = await renderLimiter({ limits, subscription: { start } });
+
+    expect(limiter.isLimited('emails')).toBe(true);
+  });
 });
