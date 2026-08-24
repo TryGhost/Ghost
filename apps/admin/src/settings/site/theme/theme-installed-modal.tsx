@@ -88,6 +88,7 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
   return (
     <ConfirmationModalContent
       cancelLabel="Close"
+      contentClassName={problems.length > 0 ? 'max-w-[600px]' : undefined}
       okLabel={okLabel}
       okRunningLabel="Activating..."
       okVariant="default"

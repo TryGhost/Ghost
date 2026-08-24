@@ -27,6 +27,8 @@ export interface ConfirmationModalProps {
   customFooter?: React.ReactNode;
   formSheet?: boolean;
   stickyFooter?: boolean;
+  /** Widens the dialog past its default `max-w-lg` for content that needs it. */
+  contentClassName?: string;
   testId?: string;
 }
 
@@ -49,6 +51,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
   customFooter,
   formSheet = true,
   stickyFooter = false,
+  contentClassName,
   testId = 'confirmation-modal',
 }) => {
   const [taskState, setTaskState] = useState<'running' | ''>('');
@@ -122,6 +125,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps & Confirm
           // A sticky element never sticks inside a grid item, so the footer
           // needs a flex column to stick within.
           stickyFooter && 'flex flex-col gap-0 pb-0',
+          contentClassName,
         )}
         data-testid={testId}
         overlayClassName={cn(

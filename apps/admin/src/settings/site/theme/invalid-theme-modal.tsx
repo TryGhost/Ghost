@@ -38,6 +38,11 @@ const InvalidThemeModal: React.FC<InvalidThemeModalProps & { onClose: () => void
   return (
     <ConfirmationModalContent
       cancelLabel={cancelLabel}
+      contentClassName={
+        blockingProblems.length + stringErrors.length + secondaryProblems.length > 0
+          ? 'max-w-[600px]'
+          : undefined
+      }
       okLabel={okLabel ?? (onRetry ? 'Try again' : '')}
       okVariant="default"
       prompt={
