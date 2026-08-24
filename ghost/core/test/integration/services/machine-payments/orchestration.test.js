@@ -81,7 +81,7 @@ describe('Integration: machine-payments orchestration coverage', function () {
       });
     }
 
-    it('excludes members-only and non-purchasable tiers posts from llms.txt', async function () {
+    it('lists members-only and tiers posts in llms.txt once free previews are public', async function () {
       const service = createService({
         posts: [
           { id: '1', title: 'Public', slug: 'public', visibility: 'public', type: 'post' },
@@ -95,13 +95,12 @@ describe('Integration: machine-payments orchestration coverage', function () {
             type: 'post',
           },
         ],
-        machinePaymentsService: { isEnabled: () => true },
       });
 
       const llmsTxt = await service.getLlmsTxt();
       assert.match(llmsTxt, /Public/);
-      assert.doesNotMatch(llmsTxt, /Members/);
-      assert.doesNotMatch(llmsTxt, /Mixed Tiers/);
+      assert.match(llmsTxt, /Members/);
+      assert.match(llmsTxt, /Mixed Tiers/);
     });
 
     it('reads posts and pages through fetchPublicEntry with tiers included', async function () {

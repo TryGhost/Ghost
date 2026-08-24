@@ -127,7 +127,60 @@ function renderEntryMarkdownBody(entry) {
   return collapseWhitespace(htmlToPlaintext.excerpt(entry.html || ''));
 }
 
-function renderEntryMarkdown(entry, { llmsIndexUrl }) {
+/**
+ * Visibility-appropriate notice matching content-cta.hbs wording.
+ * For gated entries the notice carries the meaning — never emit
+ * "_No content available._" when this is used.
+ *
+ * `resourceKind` must be passed by callers that know it: the content API
+ * does not serialize `type`, so `entry.type` is undefined for both posts
+ * and pages.
+ */
+function getGatedNotice(entry, resourceKind) {
+  const resource = (resourceKind || entry.type) === 'page' ? 'page' : 'post';
+  const visibility = entry.visibility;
+
+  if (visibility === 'paid') {
+    return `This ${resource} is for paying subscribers only.`;
+  }
+
+  if (visibility === 'tiers') {
+    const tierNames = (Array.isArray(entry.tiers) ? entry.tiers : [])
+      .map((tier) => tier?.name)
+      .filter(Boolean);
+
+    if (tierNames.length === 1) {
+      return `This ${resource} is for subscribers on the ${tierNames[0]} tier only.`;
+    }
+
+    if (tierNames.length > 1) {
+      const firsts = tierNames.slice(0, -1).join(', ');
+      const last = tierNames[tierNames.length - 1];
+      return `This ${resource} is for subscribers on the ${firsts} and ${last} tiers only.`;
+    }
+
+    return `This ${resource} is for paying subscribers only.`;
+  }
+
+  return `This ${resource} is for subscribers only.`;
+}
+
+/**
+ * Body for a gated (access: false) entry: paywall preview HTML first,
+ * then custom_excerpt. Never falls back to "_No content available._" —
+ * the notice carries that meaning.
+ */
+function renderGatedEntryMarkdownBody(entry) {
+  const preview = renderEntryMarkdownBody(entry);
+  if (preview) {
+    return preview;
+  }
+
+  return collapseWhitespace(entry.custom_excerpt) || null;
+}
+
+function renderEntryMarkdown(entry, options = {}) {
+  const { llmsIndexUrl, notice, cta } = options;
   const tags = getTagNames(entry);
   const metadata = [
     entry.url ? `- URL: ${entry.url}` : null,
@@ -141,7 +194,14 @@ function renderEntryMarkdown(entry, { llmsIndexUrl }) {
     tags.length ? `- Tags: ${tags.join(', ')}` : null,
   ].filter(Boolean);
 
-  const body = renderEntryMarkdownBody(entry) || '_No content available._';
+  // Gated entries render only the paywall preview. custom_excerpt is already
+  // carried by the `- Description:` metadata line above, so falling back to it
+  // here would just repeat it.
+  const isGated = Boolean(notice);
+  const body = isGated
+    ? renderEntryMarkdownBody(entry) || null
+    : renderEntryMarkdownBody(entry) || '_No content available._';
+
   const lines = [
     '> ## Content Index',
     `> Fetch the complete content index at: ${llmsIndexUrl}`,
@@ -156,7 +216,23 @@ function renderEntryMarkdown(entry, { llmsIndexUrl }) {
     lines.push('');
   }
 
-  lines.push(body);
+  if (body) {
+    lines.push(body);
+  }
+
+  if (notice) {
+    if (body) {
+      lines.push('', '---', '');
+    }
+    lines.push(`_${notice}_`);
+
+    const ctaLines = Array.isArray(cta) ? cta : cta ? [cta] : [];
+    for (const line of ctaLines) {
+      if (line) {
+        lines.push('', line);
+      }
+    }
+  }
 
   return lines.join('\n');
 }
@@ -166,6 +242,7 @@ module.exports = {
   collapseWhitespace,
   formatIsoDate,
   getAcceptedMarkdownContentType,
+  getGatedNotice,
   getMarkdownPath,
   getMarkdownUrl,
   getPrimaryAuthorName,
@@ -174,5 +251,6 @@ module.exports = {
   markdownFromHtml,
   renderEntryMarkdown,
   renderEntryMarkdownBody,
+  renderGatedEntryMarkdownBody,
   truncateDescription,
 };

@@ -25,6 +25,7 @@ export interface Entry {
   id: string;
   url: string;
   visibility: string;
+  access?: boolean;
   [key: string]: unknown;
 }
 

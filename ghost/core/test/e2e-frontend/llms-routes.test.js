@@ -114,8 +114,8 @@ describe('llms.txt routing', function () {
         lexical: testUtils.DataGenerator.markdownToLexical('secret'),
       });
       const membersOnly = testUtils.DataGenerator.forKnex.createPost({
-        slug: 'llms-members-hidden',
-        title: 'Members Hidden Post',
+        slug: 'llms-members-preview',
+        title: 'Members Preview Post',
         visibility: 'members',
         status: 'published',
         custom_excerpt: 'Members teaser',
@@ -128,7 +128,7 @@ describe('llms.txt routing', function () {
       sinon.restore();
     });
 
-    it('includes purchasable paid posts in llms.txt', async function () {
+    it('includes paid and members posts in llms.txt', async function () {
       const res = await request
         .get('/llms.txt')
         .expect('Content-Type', /text\/plain/)
@@ -136,13 +136,17 @@ describe('llms.txt routing', function () {
 
       assert.ok(
         res.text.includes(`[Paid Discoverable Post](${siteUrl}/llms-paid-discoverable.md)`),
-        'expected paid post .md link when machine payments are enabled',
+        'expected paid post .md link',
       );
       assert.match(res.text, /Agent teaser/);
-      assert.doesNotMatch(res.text, /Members Hidden Post/);
+      assert.ok(
+        res.text.includes(`[Members Preview Post](${siteUrl}/llms-members-preview.md)`),
+        'expected members post .md link with free preview discoverability',
+      );
+      assert.match(res.text, /Members teaser/);
     });
 
-    it('lists paid posts with notices in llms-full.txt', async function () {
+    it('lists gated posts with notices in llms-full.txt', async function () {
       const res = await request
         .get('/llms-full.txt')
         .expect('Content-Type', /text\/plain/)
@@ -150,7 +154,8 @@ describe('llms.txt routing', function () {
 
       assert.match(res.text, /### Paid Discoverable Post/);
       assert.match(res.text, /paying subscribers only/i);
-      assert.doesNotMatch(res.text, /### Members Hidden Post/);
+      assert.match(res.text, /### Members Preview Post/);
+      assert.match(res.text, /This post is for subscribers only\./);
     });
   });
 });
