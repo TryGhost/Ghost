@@ -44,6 +44,10 @@
         "trial_days": {
           "type": ["number", "null"]
         },
+        "available_cadences": {
+          "type": "string",
+          "enum": ["all", "month", "year"]
+        },
         "benefits": {
           "type": ["array", "null"],
           "items": {

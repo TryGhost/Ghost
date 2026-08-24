@@ -16,6 +16,7 @@ export interface Tier {
   currency?: string;
   monthly_price?: number;
   yearly_price?: number;
+  available_cadences?: 'all' | 'month' | 'year';
   benefits: string[];
   created_at: string;
   updated_at: string;
@@ -38,6 +39,7 @@ export const tier = createBuilder<Tier>(() => {
     currency: 'usd',
     monthly_price: 500,
     yearly_price: 5000,
+    available_cadences: 'all',
     benefits: [],
     created_at: now,
     updated_at: now,

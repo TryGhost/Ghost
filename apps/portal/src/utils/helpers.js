@@ -376,12 +376,7 @@ export function getAvailableProducts({ site }) {
       return product.type !== 'paid';
     })
     .filter((product) => {
-      return !!(product.monthlyPrice && product.yearlyPrice);
-    })
-    .filter((product) => {
-      return !!(
-        Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0
-      );
+      return productHasUsablePrice(product);
     })
     .filter((product) => {
       if (portalProducts) {
@@ -390,18 +385,10 @@ export function getAvailableProducts({ site }) {
       return true;
     })
     .sort((productA, productB) => {
-      return productA?.monthlyPrice?.amount - productB?.monthlyPrice?.amount;
+      return getProductMonthlyEquivalent(productA) - getProductMonthlyEquivalent(productB);
     })
     .map((product) => {
-      product.monthlyPrice = {
-        ...product.monthlyPrice,
-        currency_symbol: getCurrencySymbol(product.monthlyPrice.currency),
-      };
-      product.yearlyPrice = {
-        ...product.yearlyPrice,
-        currency_symbol: getCurrencySymbol(product.yearlyPrice.currency),
-      };
-      return product;
+      return attachCurrencySymbols(product);
     });
 }
 
@@ -420,27 +407,103 @@ export function getAllProductsForSite({ site }) {
   return products
     .filter((product) => !!product)
     .filter((product) => {
-      return !!(product.monthlyPrice && product.yearlyPrice);
-    })
-    .filter((product) => {
-      return !!(
-        Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0
-      );
+      return productHasUsablePrice(product);
     })
     .sort((productA, productB) => {
-      return productA?.monthlyPrice?.amount - productB?.monthlyPrice?.amount;
+      return getProductMonthlyEquivalent(productA) - getProductMonthlyEquivalent(productB);
     })
     .map((product) => {
-      product.monthlyPrice = {
-        ...product.monthlyPrice,
-        currency_symbol: getCurrencySymbol(product.monthlyPrice.currency),
-      };
-      product.yearlyPrice = {
-        ...product.yearlyPrice,
-        currency_symbol: getCurrencySymbol(product.yearlyPrice.currency),
-      };
-      return product;
+      return attachCurrencySymbols(product);
     });
+}
+
+function isUsablePrice(price) {
+  return !!(price && Object.keys(price).length > 0);
+}
+
+function productHasUsablePrice(product) {
+  return isUsablePrice(product.monthlyPrice) || isUsablePrice(product.yearlyPrice);
+}
+
+// For sorting tiers with mixed cadence availability on one axis
+function getProductMonthlyEquivalent(product) {
+  if (isUsablePrice(product?.monthlyPrice)) {
+    return product.monthlyPrice.amount;
+  }
+  if (isUsablePrice(product?.yearlyPrice)) {
+    return product.yearlyPrice.amount / 12;
+  }
+  return 0;
+}
+
+function attachCurrencySymbols(product) {
+  if (isUsablePrice(product.monthlyPrice)) {
+    product.monthlyPrice = {
+      ...product.monthlyPrice,
+      currency_symbol: getCurrencySymbol(product.monthlyPrice.currency),
+    };
+  }
+  if (isUsablePrice(product.yearlyPrice)) {
+    product.yearlyPrice = {
+      ...product.yearlyPrice,
+      currency_symbol: getCurrencySymbol(product.yearlyPrice.currency),
+    };
+  }
+  return product;
+}
+
+/**
+ * Which cadences a tier offers: 'all', 'month' or 'year'. Derived from the
+ * prices left after transformApiTiersData applies available_cadences, so it
+ * also behaves for tiers that only ever had one price configured.
+ */
+export function getProductCadences(product) {
+  const hasMonthly = isUsablePrice(product?.monthlyPrice);
+  const hasYearly = isUsablePrice(product?.yearlyPrice);
+  if (hasMonthly && hasYearly) {
+    return 'all';
+  }
+  if (hasYearly) {
+    return 'year';
+  }
+  if (hasMonthly) {
+    return 'month';
+  }
+  return 'all';
+}
+
+export function productHasCadence(product, interval) {
+  const cadences = getProductCadences(product);
+  return cadences === 'all' || cadences === interval;
+}
+
+/**
+ * The price a tier actually sells for a selected interval: the interval's own
+ * price when offered, otherwise the tier's single available price.
+ */
+export function getProductPriceForInterval(product, interval) {
+  const preferred = interval === 'year' ? product?.yearlyPrice : product?.monthlyPrice;
+  if (isUsablePrice(preferred)) {
+    return preferred;
+  }
+  return isUsablePrice(product?.yearlyPrice) ? product.yearlyPrice : product.monthlyPrice;
+}
+
+/**
+ * The active featured signup offer for a tier + interval, if any.
+ */
+export function getFeaturedOffer({ site, product, interval }) {
+  const featuredOffers = site?.featured_offers || [];
+  return (
+    featuredOffers.find((offer) => {
+      return (
+        offer?.tier?.id === product?.id &&
+        offer?.cadence === interval &&
+        offer?.status === 'active' &&
+        offer?.type !== 'trial'
+      );
+    }) || null
+  );
 }
 
 export function getSiteProducts({ site, pageQuery }) {
@@ -513,8 +576,10 @@ export function getPricesFromProducts({ site = null, products = null }) {
 
   const availableProducts = products || getAvailableProducts({ site });
   const prices = availableProducts.reduce((accumPrices, product) => {
-    if (product.monthlyPrice && product.yearlyPrice) {
+    if (product.monthlyPrice) {
       accumPrices.push(product.monthlyPrice);
+    }
+    if (product.yearlyPrice) {
       accumPrices.push(product.yearlyPrice);
     }
     return accumPrices;
@@ -984,6 +1049,15 @@ export const transformApiTiersData = ({ tiers }) => {
 
     let yearlyPrice = createYearlyPrice({ tier, priceId });
     priceId += 1;
+
+    // A restricted cadence is hidden from sale: drop its price here so every
+    // downstream availability check treats the tier as single-cadence
+    const availableCadences = tier?.available_cadences || 'all';
+    if (availableCadences === 'year') {
+      monthlyPrice = null;
+    } else if (availableCadences === 'month') {
+      yearlyPrice = null;
+    }
 
     let benefits = createBenefits({ tier });
     return {

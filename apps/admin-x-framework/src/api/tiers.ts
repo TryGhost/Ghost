@@ -20,6 +20,7 @@ export type Tier = {
   monthly_price?: number;
   yearly_price?: number;
   trial_days: number;
+  available_cadences?: 'all' | 'month' | 'year';
 };
 
 export interface TiersResponseType {

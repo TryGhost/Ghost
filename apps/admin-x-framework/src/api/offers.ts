@@ -18,6 +18,7 @@ export type Offer = {
   status: string;
   redemption_count: number;
   redemption_type: 'signup' | 'retention';
+  featured?: boolean;
   tier: {
     id: string;
     name?: string;

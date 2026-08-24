@@ -9,15 +9,22 @@ export const getTiersCadences = (tiers: Tier[]): TierCadenceOption[] => {
   const cadences: TierCadenceOption[] = [];
 
   tiers.forEach((tier: Tier) => {
-    cadences.push({
-      label: `${tier.name} - Monthly`,
-      value: `${tier.id}-month-${tier.currency}`,
-    });
+    // Offers only target cadences the tier actually sells
+    const availableCadences = tier.available_cadences || 'all';
 
-    cadences.push({
-      label: `${tier.name} - Yearly`,
-      value: `${tier.id}-year-${tier.currency}`,
-    });
+    if (availableCadences !== 'year') {
+      cadences.push({
+        label: `${tier.name} - Monthly`,
+        value: `${tier.id}-month-${tier.currency}`,
+      });
+    }
+
+    if (availableCadences !== 'month') {
+      cadences.push({
+        label: `${tier.name} - Yearly`,
+        value: `${tier.id}-year-${tier.currency}`,
+      });
+    }
   });
 
   return cadences;

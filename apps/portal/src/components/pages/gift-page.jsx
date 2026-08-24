@@ -15,6 +15,7 @@ import {
   getStripeAmount,
   isCookiesDisabled,
   getActiveInterval,
+  productHasCadence,
 } from '../../utils/helpers';
 import { getGiftDurationLabel } from '../../utils/gift-redemption-notification';
 import { ValidateInputForm } from '../../utils/form';
@@ -758,7 +759,10 @@ const GiftPage = () => {
 
   const { portal_plans: portalPlans, portal_default_plan: portalDefaultPlan } = site;
   const activeInterval = getActiveInterval({ portalPlans, portalDefaultPlan, selectedInterval });
-  const products = getAvailableProducts({ site }).filter((p) => p.type === 'paid');
+  // Gifting is not a side door: only tiers that sell the active cadence
+  const products = getAvailableProducts({ site }).filter(
+    (p) => p.type === 'paid' && productHasCadence(p, activeInterval),
+  );
 
   const siteIcon = site.icon;
   const siteTitle = site.title || '';

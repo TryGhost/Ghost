@@ -18,6 +18,7 @@ export type OfferDTO = {
   status: 'active' | 'archived';
   redemption_count: number;
   redemption_type: 'signup' | 'retention';
+  featured: boolean;
   tier: { id?: string; name?: string } | null;
   created_at: string;
   last_redeemed: string | null;
@@ -35,6 +36,7 @@ export type PublicOfferDTO = {
   currency: string | null;
   status: 'active' | 'archived';
   redemption_type: 'signup' | 'retention';
+  featured: boolean;
   tier: { id: string } | null;
 };
 
@@ -64,6 +66,7 @@ export class OfferMapper {
       status: offer.status.value,
       redemption_count: offer.redemptionCount,
       redemption_type: offer.redemptionType.value,
+      featured: offer.featured === true,
       tier: offer.tier ? { id: offer.tier.id, name: offer.tier.name } : null,
       created_at: offer.createdAt,
       last_redeemed: offer.lastRedeemed,
@@ -85,6 +88,7 @@ export class OfferMapper {
       currency: getCurrency(offer),
       status: offer.status.value,
       redemption_type: offer.redemptionType.value,
+      featured: offer.featured === true,
       tier: offer.tier ? { id: offer.tier.id } : null,
     };
   }

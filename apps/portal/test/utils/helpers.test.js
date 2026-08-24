@@ -165,6 +165,14 @@ describe('Helpers - ', () => {
             currency_symbol: '$',
           },
         },
+        // Tiers with a single cadence are real products now, not invalid data
+        {
+          monthlyPrice: {
+            amount: 100,
+            currency: 'usd',
+            currency_symbol: '$',
+          },
+        },
       ]);
     });
   });

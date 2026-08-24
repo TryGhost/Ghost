@@ -19,6 +19,7 @@ export interface Offer {
   status: 'active' | 'archived';
   redemption_count: number;
   redemption_type: 'signup' | 'retention';
+  featured?: boolean;
   tier: { id: string; name?: string } | null;
   created_at?: string;
   last_redeemed?: string;
@@ -48,6 +49,7 @@ export const offer = createBuilder<Offer>(() => {
     status: 'active',
     redemption_count: 0,
     redemption_type: 'signup',
+    featured: false,
     tier: null,
     created_at: new Date().toISOString(),
   };

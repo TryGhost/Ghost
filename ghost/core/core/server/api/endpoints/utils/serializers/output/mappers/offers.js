@@ -19,6 +19,7 @@ module.exports = (model, frame) => {
       currency: jsonModel.currency,
       status: jsonModel.status,
       redemption_type: jsonModel.redemption_type,
+      featured: jsonModel.featured,
       tier: jsonModel.tier,
     };
 

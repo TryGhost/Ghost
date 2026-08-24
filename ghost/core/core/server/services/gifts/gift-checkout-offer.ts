@@ -10,6 +10,7 @@ export interface GiftCheckoutTier {
   currency: string | null;
   monthlyPrice: number | null;
   yearlyPrice: number | null;
+  availableCadences?: 'all' | 'month' | 'year';
 }
 
 interface GiftDurationDefinition {
@@ -135,6 +136,28 @@ export function validateGiftCheckoutOffer({
 }): GiftCheckoutPlan {
   if (tier.status !== 'active' || tier.visibility !== 'public' || tier.type !== 'paid') {
     throw invalidGiftOffer('The requested tier is not available for gift purchases');
+  }
+
+  // Gifting is not a side door around per-tier cadence restriction: a short
+  // gift of a yearly-only tier would reconstruct the monthly product the
+  // publisher removed, so gift durations derive only from offered cadences.
+  const availableCadences = tier.availableCadences ?? 'all';
+
+  if (availableCadences === 'year' && offer.cadence !== 'year') {
+    throw invalidGiftOffer('This tier only offers yearly gifts');
+  }
+
+  if (availableCadences === 'month' && offer.cadence === 'year') {
+    // A 12-month gift of a monthly-only tier stays sellable, but it bills
+    // from the monthly rate (12 × monthly) — no invented yearly discount
+    offer = {
+      ...offer,
+      cadence: 'month',
+      billingDuration: 12,
+      portalPlan: 'monthly',
+      priceProperty: 'monthlyPrice',
+      multiplier: 12,
+    };
   }
 
   // legacy cadence-only requests predate the Portal plan gate, keep them working

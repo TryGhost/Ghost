@@ -413,6 +413,19 @@ export class GiftService {
       });
     }
 
+    // Legacy cadence-only purchases must also respect per-tier cadence
+    // availability (duration-based requests are validated in
+    // validateGiftCheckoutOffer, which may remap rather than reject)
+    if (
+      !resolvedDuration &&
+      typeof tier.offersCadence === 'function' &&
+      !tier.offersCadence(cadence)
+    ) {
+      throw new errors.NoPermissionError({
+        message: 'This tier is not available on this billing period.',
+      });
+    }
+
     let duration = 1;
     let totalMonths: number | undefined;
     let amount = tier.getPrice(cadence);
@@ -984,9 +997,18 @@ export class GiftService {
 
     const remainingDays = this.getRemainingActiveDays(gift);
 
+    // Continuation only offers cadences the tier still sells. A gift bought
+    // before a cadence was restricted stays redeemable, but the paid
+    // subscription it turns into must land on an available cadence.
+    let cadence = gift.cadence;
+    const tier = await this.deps.tiersService.api.read(gift.tierId);
+    if (tier && typeof tier.offersCadence === 'function' && !tier.offersCadence(cadence)) {
+      cadence = cadence === 'month' ? 'year' : 'month';
+    }
+
     return {
       tierId: gift.tierId,
-      cadence: gift.cadence,
+      cadence,
       trialDays: remainingDays > 0 ? Math.min(remainingDays, 730) : null,
     };
   }

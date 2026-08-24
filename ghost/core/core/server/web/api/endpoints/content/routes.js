@@ -39,6 +39,7 @@ module.exports = function apiRoutes() {
   // ## Members
   router.get('/newsletters', mw.authenticatePublic, http(api.newslettersPublic.browse));
   router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
+  router.get('/offers', mw.authenticatePublic, http(api.offersPublic.browse));
   router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
 
   // ## Recommendations

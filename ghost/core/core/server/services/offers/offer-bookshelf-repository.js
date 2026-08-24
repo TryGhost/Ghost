@@ -22,9 +22,26 @@ const statusTransformer = mapKeyValues({
   ],
 });
 
+const featuredTransformer = mapKeyValues({
+  key: {
+    from: 'featured',
+    to: 'featured',
+  },
+  values: [
+    {
+      from: 'true',
+      to: true,
+    },
+    {
+      from: 'false',
+      to: false,
+    },
+  ],
+});
+
 const rejectInvalidTransformer = (input) =>
   mapQuery(input, function (value, key) {
-    if (key !== 'status' && key !== 'redemption_type') {
+    if (key !== 'status' && key !== 'redemption_type' && key !== 'featured') {
       return;
     }
 
@@ -33,7 +50,11 @@ const rejectInvalidTransformer = (input) =>
     };
   });
 
-const mongoTransformer = flowRight(statusTransformer, rejectInvalidTransformer);
+const mongoTransformer = flowRight(
+  statusTransformer,
+  featuredTransformer,
+  rejectInvalidTransformer,
+);
 
 /**
  * @typedef {object} BaseOptions
@@ -139,6 +160,7 @@ class OfferBookshelfRepository {
           stripe_coupon_id: json.stripe_coupon_id,
           redemptionCount: count,
           redemption_type: json.redemption_type,
+          featured: json.featured === true,
           status: json.active ? 'active' : 'archived',
           tier:
             json.product && json.product.id
@@ -278,6 +300,7 @@ class OfferBookshelfRepository {
       currency: offer.currency ? offer.currency.value : null,
       active: offer.status.value === 'active',
       redemption_type: offer.redemptionType.value,
+      featured: offer.featured === true,
     };
 
     if (offer.stripeCouponId !== undefined) {

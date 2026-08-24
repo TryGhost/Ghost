@@ -28,6 +28,7 @@ const messages = {
   offerArchived: 'This offer is archived.',
   tierNotFound: 'This tier does not exist.',
   tierArchived: 'This tier is archived.',
+  tierCadenceNotAvailable: 'This tier is not available on this billing period.',
   existingSubscription: 'A subscription exists for this Member.',
   unableToCheckout: 'Unable to initiate checkout session',
   inviteOnly: 'This site is invite-only, contact the owner for access.',
@@ -522,6 +523,15 @@ module.exports = class RouterController {
     if (tier.status === 'archived') {
       throw new NoPermissionError({
         message: tpl(messages.tierArchived),
+      });
+    }
+
+    // Server-side guardrail: checkout enforces what signup displays. This
+    // also covers the offer branch, where cadence comes from the offer —
+    // an offer can't resurrect a cadence its tier no longer sells.
+    if (cadence && typeof tier.offersCadence === 'function' && !tier.offersCadence(cadence)) {
+      throw new NoPermissionError({
+        message: tpl(messages.tierCadenceNotAvailable),
       });
     }
 

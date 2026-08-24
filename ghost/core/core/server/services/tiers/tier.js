@@ -115,6 +115,22 @@ module.exports = class Tier {
     this.#currency = validateCurrency(value, this.#type);
   }
 
+  /** @type {'all'|'month'|'year'} */
+  #availableCadences;
+  get availableCadences() {
+    return this.#availableCadences;
+  }
+  set availableCadences(value) {
+    this.#availableCadences = validateAvailableCadences(value, this.#type);
+  }
+
+  /**
+   * @param {'month'|'year'} cadence
+   */
+  offersCadence(cadence) {
+    return this.#availableCadences === 'all' || this.#availableCadences === cadence;
+  }
+
   /**
    * @param {'month'|'year'} cadence
    */
@@ -204,6 +220,7 @@ module.exports = class Tier {
       currency: this.#currency,
       monthlyPrice: this.#monthlyPrice,
       yearlyPrice: this.#yearlyPrice,
+      availableCadences: this.#availableCadences,
       createdAt: this.#createdAt,
       updatedAt: this.#updatedAt,
       benefits: this.#benefits,
@@ -226,6 +243,7 @@ module.exports = class Tier {
     this.#currency = data.currency;
     this.#monthlyPrice = data.monthly_price;
     this.#yearlyPrice = data.yearly_price;
+    this.#availableCadences = data.available_cadences;
     this.#createdAt = data.created_at;
     this.#updatedAt = data.updated_at;
     this.#benefits = data.benefits;
@@ -263,6 +281,7 @@ module.exports = class Tier {
     let trialDays = validateTrialDays(data.trialDays || 0, type);
     let monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
     let yearlyPrice = validateYearlyPrice(data.yearlyPrice || null, type);
+    let availableCadences = validateAvailableCadences(data.availableCadences || 'all', type);
     let createdAt = validateCreatedAt(data.createdAt);
     let updatedAt = validateUpdatedAt(data.updatedAt);
     let benefits = validateBenefits(data.benefits);
@@ -280,6 +299,7 @@ module.exports = class Tier {
       currency,
       monthly_price: monthlyPrice,
       yearly_price: yearlyPrice,
+      available_cadences: availableCadences,
       created_at: createdAt,
       updated_at: updatedAt,
       benefits,
@@ -369,6 +389,22 @@ function validateType(value) {
   if (value !== 'paid' && value !== 'free') {
     throw new ValidationError({
       message: 'Tier type must be either "paid" or "free"',
+    });
+  }
+  return value;
+}
+
+function validateAvailableCadences(value, type) {
+  if (type === 'free') {
+    // Free tiers have no billing, so the restriction is meaningless — always 'all'
+    return 'all';
+  }
+  if (value === undefined || value === null) {
+    return 'all';
+  }
+  if (value !== 'all' && value !== 'month' && value !== 'year') {
+    throw new ValidationError({
+      message: 'Tier available_cadences must be one of "all", "month" or "year"',
     });
   }
   return value;

@@ -19,6 +19,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
   Textarea,
 } from '@tryghost/shade/components';
 import { type ErrorMessages, useForm } from '@tryghost/admin-x-framework/hooks';
@@ -78,6 +79,7 @@ type formStateTypes = {
   currency: string;
   status: string;
   tierId: string;
+  featured: boolean;
   fixedAmount?: number;
   trialAmount?: number;
   percentAmount?: number;
@@ -126,6 +128,7 @@ type SidebarProps = {
   testId: string;
   errors: ErrorMessages;
   handleTrialAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFeaturedChange: (featured: boolean) => void;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -149,6 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   errors,
   testId,
   handleTrialAmountInput,
+  handleFeaturedChange,
   amountOptions,
 }) => {
   // const handleError = useHandleError();
@@ -436,6 +440,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                 )
               )}
             </Field>
+
+            {overrides.type !== 'trial' && (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="offer-featured">Show on signup page</FieldLabel>
+                <Switch
+                  checked={overrides.featured}
+                  data-testid="offer-featured-toggle"
+                  id="offer-featured"
+                  onCheckedChange={handleFeaturedChange}
+                />
+              </Field>
+            )}
           </div>
         </section>
       </FieldGroup>
@@ -505,6 +521,7 @@ const AddOfferModal = () => {
         currency: selectedTier?.dataset?.currency || 'USD',
         status: 'active',
         tierId: selectedTier?.dataset?.id || '',
+        featured: false,
         trialAmount: 7,
         fixedAmount: 0,
         percentAmount: 0,
@@ -528,6 +545,7 @@ const AddOfferModal = () => {
           },
           type: formState.type,
           currency_restriction: false,
+          featured: formState.type === 'trial' ? false : formState.featured,
         };
 
         const response = await addOffer(dataset);
@@ -718,6 +736,13 @@ const AddOfferModal = () => {
     }));
   };
 
+  const handleFeaturedChange = (featured: boolean) => {
+    updateForm((state) => ({
+      ...state,
+      featured,
+    }));
+  };
+
   const handleDurationChange = (duration: string) => {
     updateForm((state) => ({
       ...state,
@@ -780,6 +805,7 @@ const AddOfferModal = () => {
       handleDisplayTitleInput={handleDisplayTitleInput}
       handleDurationChange={handleDurationChange}
       handleDurationInMonthsInput={handleDurationInMonthsInput}
+      handleFeaturedChange={handleFeaturedChange}
       handleNameInput={handleNameInput}
       handleTextAreaInput={handleTextAreaInput}
       handleTierChange={handleTierChange}

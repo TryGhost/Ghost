@@ -713,6 +713,15 @@ module.exports = {
     currency: { type: 'string', maxlength: 50, nullable: true },
     monthly_price: { type: 'integer', unsigned: true, nullable: true },
     yearly_price: { type: 'integer', unsigned: true, nullable: true },
+    // Which cadences are offered at signup; restricting hides a price from
+    // sale but never deletes it (existing subscriptions still reference it)
+    available_cadences: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      defaultTo: 'all',
+      validations: { isIn: [['all', 'month', 'year']] },
+    },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
     // To be removed in future
@@ -757,6 +766,10 @@ module.exports = {
       defaultTo: 'signup',
       validations: { isIn: [['signup', 'retention']] },
     },
+    // Featured signup offers render on Portal's signup page; link-only stays
+    // the default. Max one active featured offer per tier + cadence
+    // (enforced in the offers service)
+    featured: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },

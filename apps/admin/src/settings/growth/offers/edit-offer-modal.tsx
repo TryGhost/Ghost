@@ -12,6 +12,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
+  Switch,
   Textarea,
 } from '@tryghost/shade/components';
 import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -250,6 +251,17 @@ const Sidebar: React.FC<{
                 onChange={(e) => updateOffer({ display_description: e.target.value })}
               />
             </Field>
+            {offer?.redemption_type === 'signup' && offer?.type !== 'trial' && (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="offer-featured">Show on signup page</FieldLabel>
+                <Switch
+                  checked={offer?.featured ?? false}
+                  data-testid="offer-featured-toggle"
+                  id="offer-featured"
+                  onCheckedChange={(checked) => updateOffer({ featured: checked })}
+                />
+              </Field>
+            )}
           </div>
         </section>
       </FieldGroup>

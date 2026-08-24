@@ -58,11 +58,13 @@ describe.each([
     expect(getByTestId('gift-card-value')).toHaveTextContent('$15');
   });
 
-  test('renders without card details when the tier no longer has a monthly price', () => {
+  test('renders without a card value when the tier no longer has a monthly price', () => {
     const { getByTestId, queryByTestId } = setup({ Page, monthlyPrice: null });
 
     expect(getByTestId('gift-redeem-link')).toHaveTextContent('/gift/abc123');
-    expect(queryByTestId('gift-card-duration')).not.toBeInTheDocument();
+    // A yearly-only tier is still a real product, so the duration renders —
+    // only the monthly-derived value is unavailable
+    expect(getByTestId('gift-card-duration')).toHaveTextContent('3 months');
     expect(queryByTestId('gift-card-value')).not.toBeInTheDocument();
   });
 });

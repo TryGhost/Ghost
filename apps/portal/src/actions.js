@@ -12,6 +12,7 @@ import {
   getProductCadenceFromPrice,
   removePortalLinkFromUrl,
   getRefDomain,
+  getFeaturedOffer,
 } from './utils/helpers';
 import { t } from './utils/i18n';
 
@@ -223,6 +224,19 @@ async function signup({ data, state, api }) {
       const metadata = state.member ? { checkoutType: 'upgrade' } : undefined;
       if (!tierId || !cadence) {
         ({ tierId, cadence } = getProductCadenceFromPrice({ site: state?.site, priceId: plan }));
+      }
+      // Checkout applies the same featured offer the signup page displayed.
+      // Paid/comped members can't redeem signup offers, so they check out at
+      // list price — matching what they were shown.
+      if (!offerId && !state.member?.paid && tierId && cadence) {
+        const featuredOffer = getFeaturedOffer({
+          site: state?.site,
+          product: { id: tierId },
+          interval: cadence,
+        });
+        if (featuredOffer) {
+          offerId = featuredOffer.id;
+        }
       }
       await api.member.checkoutPlan({
         plan,

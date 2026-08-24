@@ -10,6 +10,22 @@ const messages = {
 const controller = {
   docName: 'offers',
 
+  browse: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    async query() {
+      // Only active featured signup offers are browsable publicly —
+      // everything else stays reachable solely via its private offer URL
+      const offers = await offersService.api.listFeaturedOffers();
+
+      return {
+        data: offers,
+      };
+    },
+  },
+
   read: {
     headers: {
       cacheInvalidate: false,

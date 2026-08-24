@@ -207,7 +207,18 @@ const SignupOfferRow: React.FC<{
           onClick={onClick}
         >
           <Stack gap="none">
-            <span className="font-semibold">{offer.name}</span>
+            <Inline gap="sm">
+              <span className="font-semibold">{offer.name}</span>
+              {offer.featured && (
+                <Badge
+                  className="rounded-full uppercase"
+                  data-testid="offer-featured-badge"
+                  variant="success"
+                >
+                  Featured
+                </Badge>
+              )}
+            </Inline>
             <span className="text-muted-foreground">
               {tier.name} {getOfferCadence(offer.cadence)}
             </span>

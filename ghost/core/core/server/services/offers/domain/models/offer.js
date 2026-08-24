@@ -34,6 +34,7 @@ const StripeCoupon = require('./stripe-coupon');
  * @prop {OfferTier|null} tier
  * @prop {number} redemptionCount
  * @prop {OfferRedemptionType} redemptionType
+ * @prop {boolean} featured
  * @prop {string} createdAt
  * @prop {string|null} lastRedeemed
  */
@@ -55,6 +56,7 @@ const StripeCoupon = require('./stripe-coupon');
  * @prop {string} [stripe_coupon_id]
  * @prop {number} [redemptionCount]
  * @prop {string} [redemption_type]
+ * @prop {boolean} [featured]
  * @prop {TierProps|OfferTier|null} tier
  * @prop {Date} [created_at]
  * @prop {Date} [last_redeemed]
@@ -140,6 +142,24 @@ class Offer {
 
   set status(value) {
     this.props.status = value;
+  }
+
+  get featured() {
+    return this.props.featured;
+  }
+
+  set featured(value) {
+    if (typeof value !== 'boolean') {
+      throw new errors.InvalidOfferFeatured({
+        message: 'Offer `featured` must be a boolean',
+      });
+    }
+    if (value === true && this.props.redemptionType.value !== 'signup') {
+      throw new errors.InvalidOfferFeatured({
+        message: 'Only signup offers can be featured',
+      });
+    }
+    this.props.featured = value;
   }
 
   get redemptionCount() {
@@ -373,6 +393,14 @@ class Offer {
       });
     }
 
+    const featured = data.featured === true;
+
+    if (featured && redemptionType.value !== 'signup') {
+      throw new errors.InvalidOfferFeatured({
+        message: 'Only signup offers can be featured',
+      });
+    }
+
     return new Offer(
       {
         id,
@@ -389,6 +417,7 @@ class Offer {
         stripeCouponId,
         redemptionCount,
         redemptionType,
+        featured,
         status,
         createdAt,
         lastRedeemed,
@@ -454,6 +483,8 @@ class Offer {
       },
       stripe_coupon_id: coupon.id,
       redemption_type: 'signup',
+      // Imported coupons arrive archived and are never featured
+      featured: false,
     };
 
     return this.create(data, uniqueChecker);

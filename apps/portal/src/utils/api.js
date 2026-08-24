@@ -110,6 +110,25 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
     },
 
+    featuredOffers() {
+      // Active featured signup offers for the signup page. Feature-detected:
+      // older backends have no /offers/ browse and the caller falls back to []
+      const url = contentEndpointFor({ resource: 'offers' });
+      return makeRequest({
+        url,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then(function (res) {
+        if (res.ok) {
+          return res.json();
+        } else {
+          throw new Error('Failed to fetch featured offers');
+        }
+      });
+    },
+
     offer({ offerId }) {
       const url = contentEndpointFor({ resource: `offers/${offerId}` });
       return makeRequest({
@@ -1010,15 +1029,20 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     let offers = [];
 
     try {
-      [{ settings }, { tiers }, { newsletters }] = await Promise.all([
-        api.site.settings(),
-        api.site.tiers(),
-        api.site.newsletters(),
-      ]);
+      let featuredOffers = [];
+      [{ settings }, { tiers }, { newsletters }, { offers: featuredOffers = [] }] =
+        await Promise.all([
+          api.site.settings(),
+          api.site.tiers(),
+          api.site.newsletters(),
+          // Backends without the browse endpoint just mean no featured offers
+          api.site.featuredOffers().catch(() => ({ offers: [] })),
+        ]);
       site = {
         ...settings,
         newsletters,
         tiers: transformApiTiersData({ tiers }),
+        featured_offers: featuredOffers,
       };
     } catch (e) {
       // Ignore

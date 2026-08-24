@@ -64,6 +64,7 @@ function serializeTier(tier, options) {
     monthly_price: json.monthlyPrice,
     yearly_price: json.yearlyPrice,
     trial_days: json.trialDays,
+    available_cadences: json.availableCadences,
   };
 
   if (!Array.isArray(serialized.benefits)) {
@@ -74,6 +75,7 @@ function serializeTier(tier, options) {
     delete serialized.currency;
     delete serialized.monthly_price;
     delete serialized.yearly_price;
+    delete serialized.available_cadences;
   }
 
   return serialized;
@@ -114,6 +116,7 @@ function createSerializer(debugString, serialize) {
  * @prop {string} currency
  * @prop {number} monthly_price
  * @prop {number} yearly_price
+ * @prop {'all'|'month'|'year'} available_cadences
  */
 
 /**

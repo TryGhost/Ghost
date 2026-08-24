@@ -146,6 +146,14 @@ module.exports = class MemberController {
 
       if (tierId && cadence) {
         const tier = await this._tiersService.api.read(tierId);
+
+        // Change-plan must land on a cadence the tier still sells
+        if (typeof tier.offersCadence === 'function' && !tier.offersCadence(cadence)) {
+          throw new errors.NoPermissionError({
+            message: 'This tier is not available on this billing period.',
+          });
+        }
+
         const stripePrice = await this._paymentsService.getPriceForTierCadence(tier, cadence);
 
         await this._memberRepository.updateSubscription({

@@ -6,6 +6,7 @@ const OfferDescription = require('../domain/models/offer-description');
 const OfferStatus = require('../domain/models/offer-status');
 const { OfferMapper } = require('./offer-mapper');
 const UniqueChecker = require('./unique-checker');
+const { InvalidOfferFeatured } = require('../domain/errors');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -52,6 +53,61 @@ class OffersAPI {
   }
 
   /**
+   * At most one active featured offer may exist per tier + cadence, so the
+   * signup page never has to choose between competing discounts. Rejects
+   * (rather than silently unfeaturing the other offer) so the publisher
+   * stays in control of which offer is featured.
+   * @param {import('../domain/models/offer')} offer
+   * @param {Object} [options]
+   */
+  async assertNoOtherFeaturedOffer(offer, options = {}) {
+    const activeSignupOffers = await this.repository.getAll(
+      {
+        transacting: options.transacting,
+        filter: 'status:active+redemption_type:signup',
+      },
+      { withRedemptionStats: false },
+    );
+
+    const conflict = activeSignupOffers.find((other) => {
+      return (
+        other.id !== offer.id &&
+        other.featured === true &&
+        other.tier &&
+        offer.tier &&
+        other.tier.id === offer.tier.id &&
+        other.cadence.value === offer.cadence.value
+      );
+    });
+
+    if (conflict) {
+      throw new InvalidOfferFeatured({
+        message: `Another offer ("${conflict.name.value}") is already featured for this tier and cadence. Unfeature it first.`,
+      });
+    }
+  }
+
+  /**
+   * All active featured signup offers, as public DTOs (no name/code), for
+   * Portal's signup page via the Content API.
+   *
+   * @returns {Promise<PublicOfferDTO[]>}
+   */
+  async listFeaturedOffers() {
+    return this.repository.createTransaction(async (transaction) => {
+      const offers = await this.repository.getAll(
+        {
+          transacting: transaction,
+          filter: 'status:active+redemption_type:signup+featured:true',
+        },
+        { withRedemptionStats: false },
+      );
+
+      return offers.filter((offer) => offer !== null).map(OfferMapper.toPublicDTO);
+    });
+  }
+
+  /**
    * @param {object} data
    * @param {string} data.id
    * @param {Object} [options]
@@ -88,6 +144,10 @@ class OffersAPI {
       const uniqueChecker = new UniqueChecker(this.repository, transaction);
       const offer = await Offer.create(data, uniqueChecker);
 
+      if (offer.featured && offer.status.value === 'active') {
+        await this.assertNoOtherFeaturedOffer(offer, saveOptions);
+      }
+
       await this.repository.save(offer, saveOptions);
 
       if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
@@ -106,6 +166,7 @@ class OffersAPI {
    * @param {string} [data.display_description]
    * @param {string} [data.code]
    * @param {string} [data.status]
+   * @param {boolean} [data.featured]
    * @param {Object} [options]
    *
    * @returns {Promise<OfferDTO>}
@@ -144,6 +205,14 @@ class OffersAPI {
       if (Reflect.has(data, 'status')) {
         const status = OfferStatus.create(data.status);
         offer.status = status;
+      }
+
+      if (Reflect.has(data, 'featured')) {
+        offer.featured = data.featured;
+      }
+
+      if (offer.featured && offer.status.value === 'active') {
+        await this.assertNoOtherFeaturedOffer(offer, updateOptions);
       }
 
       await this.repository.save(offer, updateOptions);

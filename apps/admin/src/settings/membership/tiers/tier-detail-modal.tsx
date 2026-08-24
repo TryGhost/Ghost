@@ -23,6 +23,11 @@ import {
   InputGroupInput,
   InputGroupText,
   MultiSelectCombobox,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   SortableList,
   Switch,
 } from '@tryghost/shade/components';
@@ -75,13 +80,13 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
   const validators: { [key in keyof Tier]?: () => string | undefined } = {
     name: () => (formState.name ? undefined : 'Enter a name for the tier'),
     monthly_price: () =>
-      formState.type !== 'free'
+      formState.type !== 'free' && formState.available_cadences !== 'year'
         ? validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {
             allowZero: false,
           })
         : undefined,
     yearly_price: () =>
-      formState.type !== 'free'
+      formState.type !== 'free' && formState.available_cadences !== 'month'
         ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {
             allowZero: false,
           })
@@ -94,6 +99,7 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
         ...(tier || {}),
         trial_days: tier?.trial_days?.toString() || '',
         currency: tier?.currency || currencies[0].isoCode,
+        available_cadences: tier?.available_cadences || 'all',
         visibility: tier?.visibility || 'none',
         welcome_page_url: tier?.welcome_page_url || null,
       },
@@ -394,6 +400,7 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                           <InputGroup data-invalid={Boolean(errors.monthly_price) || undefined}>
                             <InputGroupInput
                               aria-invalid={Boolean(errors.monthly_price) || undefined}
+                              disabled={formState.available_cadences === 'year'}
                               id="tier-monthly-price"
                               inputMode="decimal"
                               placeholder="5"
@@ -420,6 +427,7 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                           <InputGroup data-invalid={Boolean(errors.yearly_price) || undefined}>
                             <InputGroupInput
                               aria-invalid={Boolean(errors.yearly_price) || undefined}
+                              disabled={formState.available_cadences === 'month'}
                               id="tier-yearly-price"
                               inputMode="decimal"
                               placeholder="50"
@@ -438,6 +446,46 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                             </InputGroupAddon>
                           </InputGroup>
                           {errors.yearly_price && <FieldError>{errors.yearly_price}</FieldError>}
+                        </Field>
+                        {/* Escape valve: both cadences stay the default and the
+                            standard flow never has to touch this control */}
+                        <Field>
+                          <FieldLabel htmlFor="tier-billing-options">Billing options</FieldLabel>
+                          <Select
+                            value={formState.available_cadences || 'all'}
+                            onValueChange={(value) => {
+                              updateForm((state) => ({
+                                ...state,
+                                available_cadences: value as Tier['available_cadences'],
+                              }));
+                              clearError('monthly_price');
+                              clearError('yearly_price');
+                            }}
+                          >
+                            <SelectTrigger
+                              data-testid="tier-billing-options"
+                              id="tier-billing-options"
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Monthly and yearly</SelectItem>
+                              <SelectItem value="month">Monthly only</SelectItem>
+                              <SelectItem value="year">Yearly only</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {formState.available_cadences === 'year' && (
+                            <FieldDescription>
+                              The monthly price is hidden from signup. Existing monthly
+                              subscriptions are unaffected.
+                            </FieldDescription>
+                          )}
+                          {formState.available_cadences === 'month' && (
+                            <FieldDescription>
+                              The yearly price is hidden from signup. Existing yearly subscriptions
+                              are unaffected.
+                            </FieldDescription>
+                          )}
                         </Field>
                       </div>
                     </div>

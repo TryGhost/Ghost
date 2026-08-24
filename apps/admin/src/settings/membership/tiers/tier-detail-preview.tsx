@@ -79,7 +79,16 @@ const DiscountLabel: React.FC<{ discount: number }> = ({ discount }) => {
 };
 
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier }) => {
-  const [showingYearly, setShowingYearly] = useState(false);
+  const [showingYearlyState, setShowingYearly] = useState(false);
+
+  // A single-cadence tier previews its one real cadence, with no toggle
+  const availableCadences = isFreeTier ? 'all' : tier?.available_cadences || 'all';
+  const showingYearly =
+    availableCadences === 'year'
+      ? true
+      : availableCadences === 'month'
+        ? false
+        : showingYearlyState;
 
   const name = tier?.name || '';
   const description = tier?.description || '';
@@ -93,7 +102,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
   const monthlyPrice = currencyToDecimal(tier?.monthly_price ?? defaultMonthlyPrice);
   const yearlyPrice = currencyToDecimal(tier?.yearly_price ?? defaultYearlyPrice);
   const yearlyDiscount =
-    tier?.monthly_price && tier?.yearly_price
+    availableCadences === 'all' && tier?.monthly_price && tier?.yearly_price
       ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
       : 0;
 
@@ -103,7 +112,12 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
         <Text as="h6" className="pb-2 text-base leading-snug" weight="medium">
           {isFreeTier ? 'Free membership preview' : 'Tier preview'}
         </Text>
-        {!isFreeTier && (
+        {!isFreeTier && availableCadences !== 'all' && (
+          <span className="text-sm text-muted-foreground" data-testid="tier-preview-cadence-label">
+            {availableCadences === 'year' ? 'Yearly only' : 'Monthly only'}
+          </span>
+        )}
+        {!isFreeTier && availableCadences === 'all' && (
           <div className="flex gap-1">
             <Button
               className={

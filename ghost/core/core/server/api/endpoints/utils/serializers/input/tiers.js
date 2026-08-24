@@ -52,6 +52,11 @@ function convertTierInput(input) {
     delete converted.yearly_price;
   }
 
+  if (Reflect.has(converted, 'available_cadences')) {
+    converted.availableCadences = converted.available_cadences;
+    delete converted.available_cadences;
+  }
+
   return converted;
 }
 

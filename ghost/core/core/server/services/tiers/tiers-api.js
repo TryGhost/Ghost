@@ -115,6 +115,7 @@ module.exports = class TiersAPI {
       'status',
       'trialDays',
       'welcomePageURL',
+      'availableCadences',
     ];
 
     for (const editableProperty of editableProperties) {
@@ -159,6 +160,7 @@ module.exports = class TiersAPI {
       yearlyPrice: data.yearlyPrice,
       currency: data.currency,
       trialDays: data.trialDays,
+      availableCadences: data.availableCadences,
     });
 
     await this.#repository.save(tier);

@@ -19,6 +19,11 @@ import {
   hasFreeTrialTier,
   isComplimentaryMember,
   getActiveInterval,
+  getProductCadences,
+  getProductPriceForInterval,
+  getFeaturedOffer,
+  getUpdatedOfferPrice,
+  getOfferOffAmount,
 } from '../../utils/helpers';
 import AppContext from '../../app-context';
 import calculateDiscount from '../../utils/discount';
@@ -300,6 +305,62 @@ export const ProductsSectionStyles = () => {
             display: none;
         }
 
+        .gh-portal-single-cadence-label {
+            font-size: 1.25rem;
+            line-height: 1.6em;
+            color: var(--grey6);
+            letter-spacing: 0.3px;
+        }
+
+        .gh-portal-card-pricetoggle {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            background: #F3F3F3;
+            border-radius: 999px;
+            padding: 3px;
+            margin: 6px 0 12px;
+        }
+
+        .gh-portal-card-pricetoggle button {
+            display: inline-flex;
+            align-items: center;
+            border: 0;
+            background: transparent;
+            font-size: 1.25rem;
+            font-weight: 500;
+            line-height: 1;
+            height: 26px;
+            padding: 0 12px;
+            border-radius: 999px;
+            color: var(--grey5);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .gh-portal-card-pricetoggle button.active {
+            background: var(--white);
+            color: var(--grey0);
+            box-shadow: 0px 1px 3px rgba(var(--blackrgb), 0.08);
+        }
+
+        .gh-portal-card-save {
+            margin-inline-start: 5px;
+            font-weight: 600;
+            color: var(--brandcolor);
+        }
+
+        .gh-portal-featured-offer-original {
+            align-self: flex-end;
+            margin-inline-end: 6px;
+            margin-bottom: 3px;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--grey8);
+            text-decoration: line-through;
+        }
+
         .after-trial-amount {
             display: block;
             font-size: 1.5rem;
@@ -553,6 +614,12 @@ const ProductsContext = React.createContext({
   selectedProduct: 'free',
   selectedPlan: null,
   setSelectedProduct: null,
+  // Mixed catalogs (some tiers single-cadence) drop the global toggle and
+  // let each dual-cadence card carry its own — uniform-dual catalogs keep
+  // the classic global toggle untouched
+  perCardMode: false,
+  getCardInterval: null,
+  setCardInterval: null,
 });
 
 function ProductBenefits({ product }) {
@@ -609,7 +676,9 @@ function ProductCardTrialDays({ trialDays, discount, selectedInterval }) {
     }
   }
 
-  if (selectedInterval === 'year') {
+  // One discount claim per price: the derived pill only renders when there is
+  // a real (effective) yearly saving and no featured offer took its place
+  if (selectedInterval === 'year' && discount > 0) {
     return (
       <span className="gh-portal-discount-label">{t('{discount}% discount', { discount })}</span>
     );
@@ -618,48 +687,151 @@ function ProductCardTrialDays({ trialDays, discount, selectedInterval }) {
   return null;
 }
 
+// A discounted price with cents must keep both decimals ($71.20, not $71.2)
+function formatDiscountedAmount(amount) {
+  if (Number.isInteger(amount)) {
+    return formatNumber(amount);
+  }
+  return amount.toFixed(2);
+}
+
+// Effective (post-featured-offer) amount in cents for derived comparisons,
+// so Portal never advertises a saving an offer has made false
+function getEffectiveAmountCents({ site, product, interval }) {
+  const price = interval === 'year' ? product?.yearlyPrice : product?.monthlyPrice;
+  if (!price) {
+    return null;
+  }
+  const offer = getFeaturedOffer({ site, product, interval });
+  if (!offer) {
+    return price.amount;
+  }
+  return Math.round(getUpdatedOfferPrice({ offer, price }) * 100);
+}
+
+function getEffectiveYearlyDiscount({ site, product }) {
+  if (getProductCadences(product) !== 'all') {
+    // A single-cadence tier has nothing to compare
+    return 0;
+  }
+  return calculateDiscount(
+    getEffectiveAmountCents({ site, product, interval: 'month' }),
+    getEffectiveAmountCents({ site, product, interval: 'year' }),
+  );
+}
+
 function ProductCardPrice({ product }) {
-  const { selectedInterval } = useContext(ProductsContext);
-  const { site } = useContext(AppContext);
+  const { selectedInterval, perCardMode, getCardInterval } = useContext(ProductsContext);
+  const { site, member } = useContext(AppContext);
   const monthlyPrice = product.monthlyPrice;
   const yearlyPrice = product.yearlyPrice;
   const trialDays = product.trial_days;
-  const activePrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
-  const alternatePrice = selectedInterval === 'month' ? yearlyPrice : monthlyPrice;
-  const interval = activePrice.interval === 'year' ? t('year') : t('month');
-  if (!monthlyPrice || !yearlyPrice) {
+  // In per-card mode the card's own toggle decides; otherwise single-cadence
+  // tiers stay visible on both global toggle positions with their real price
+  const resolvedInterval =
+    perCardMode && getCardInterval ? getCardInterval(product) : selectedInterval;
+  const activePrice = getProductPriceForInterval(product, resolvedInterval);
+  if (!activePrice) {
     return null;
   }
+  const shownInterval = activePrice.interval;
+  const singleCadence = getProductCadences(product) !== 'all';
+  const alternatePrice = singleCadence
+    ? null
+    : shownInterval === 'month'
+      ? yearlyPrice
+      : monthlyPrice;
+  const interval = shownInterval === 'year' ? t('year') : t('month');
 
-  const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
+  // Featured offers are a signup-side feature: paid/comped members changing
+  // plans can't redeem signup offers, so they never see the discounted price
+  const memberCanRedeemSignupOffers =
+    !member || (!member.paid && !isComplimentaryMember({ member }));
+  const featuredOffer = memberCanRedeemSignupOffers
+    ? getFeaturedOffer({ site, product, interval: shownInterval })
+    : null;
+  // One discount claim per price: a featured offer replaces the derived
+  // yearly pill, any pill that still renders uses effective amounts, and in
+  // per-card mode the save claim lives on the card's own toggle instead
+  const yearlyDiscount =
+    featuredOffer || perCardMode ? 0 : getEffectiveYearlyDiscount({ site, product });
   const currencySymbol = getCurrencySymbol(activePrice.currency);
+
+  const priceBlock = featuredOffer ? (
+    <div className="gh-portal-product-price">
+      <span className="gh-portal-featured-offer-original" data-testid="featured-offer-original">
+        {currencySymbol}
+        {formatNumber(getStripeAmount(activePrice.amount))}
+      </span>
+      <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>
+        {currencySymbol}
+      </span>
+      <span className="amount" data-testid="product-amount">
+        {formatDiscountedAmount(getUpdatedOfferPrice({ offer: featuredOffer, price: activePrice }))}
+      </span>
+      <span className="billing-period">/{interval}</span>
+    </div>
+  ) : (
+    <div className="gh-portal-product-price">
+      <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>
+        {currencySymbol}
+      </span>
+      <span className="amount" data-testid="product-amount">
+        {formatNumber(getStripeAmount(activePrice.amount))}
+      </span>
+      <span className="billing-period">/{interval}</span>
+    </div>
+  );
+
+  // The chip is a derived statement of the discount terms — never the
+  // offer's display_title, which is the publisher's headline for the offer
+  // page and can say anything
+  const featuredOfferLabel = featuredOffer ? (
+    <span className="gh-portal-discount-label" data-testid="featured-offer-label">
+      {t('{amount} off', { amount: getOfferOffAmount({ offer: featuredOffer }) })}
+    </span>
+  ) : null;
+
+  // In per-card mode a single-cadence card states its terms plainly; in
+  // global mode the note only earns its place when the surrounding page
+  // offers the other cadence — on a uniformly single-cadence site it's noise
+  const otherPlanAvailable = (site?.portal_plans || []).includes(
+    shownInterval === 'year' ? 'monthly' : 'yearly',
+  );
+  const alternateSlot = singleCadence ? (
+    perCardMode ? (
+      <div className="gh-portal-single-cadence-label" data-testid="single-cadence-label">
+        {shownInterval === 'year' ? t('Billed yearly') : t('Billed monthly')}
+      </div>
+    ) : otherPlanAvailable ? (
+      <div className="gh-portal-single-cadence-label" data-testid="single-cadence-label">
+        {shownInterval === 'year' ? t('Yearly only') : t('Monthly only')}
+      </div>
+    ) : null
+  ) : (
+    <ProductCardAlternatePrice price={alternatePrice} />
+  );
 
   if (hasFreeTrialTier({ site })) {
     return (
       <>
         <div className="gh-portal-product-card-pricecontainer">
           <div className="gh-portal-product-card-price-trial">
-            <div className="gh-portal-product-price">
-              <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>
-                {currencySymbol}
-              </span>
-              <span className="amount" data-testid="product-amount">
-                {formatNumber(getStripeAmount(activePrice.amount))}
-              </span>
-              <span className="billing-period">/{interval}</span>
-            </div>
-            <ProductCardTrialDays
-              trialDays={trialDays}
-              discount={yearlyDiscount}
-              selectedInterval={selectedInterval}
-            />
+            {priceBlock}
+            {featuredOfferLabel || (
+              <ProductCardTrialDays
+                trialDays={trialDays}
+                discount={yearlyDiscount}
+                selectedInterval={shownInterval}
+              />
+            )}
           </div>
-          {selectedInterval === 'year' ? (
+          {shownInterval === 'year' && !featuredOffer ? (
             <YearlyDiscount discount={yearlyDiscount} trialDays={trialDays} />
           ) : (
             ''
           )}
-          <ProductCardAlternatePrice price={alternatePrice} />
+          {alternateSlot}
         </div>
         {/* <span className="after-trial-amount">Then {currencySymbol}{formatNumber(getStripeAmount(activePrice.amount))}/{activePrice.interval}</span> */}
       </>
@@ -669,18 +841,15 @@ function ProductCardPrice({ product }) {
   return (
     <div className="gh-portal-product-card-pricecontainer">
       <div className="gh-portal-product-card-price-trial">
-        <div className="gh-portal-product-price">
-          <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>
-            {currencySymbol}
-          </span>
-          <span className="amount" data-testid="product-amount">
-            {formatNumber(getStripeAmount(activePrice.amount))}
-          </span>
-          <span className="billing-period">/{interval}</span>
-        </div>
-        {selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : ''}
+        {priceBlock}
+        {featuredOfferLabel}
+        {shownInterval === 'year' && !featuredOffer ? (
+          <YearlyDiscount discount={yearlyDiscount} />
+        ) : (
+          ''
+        )}
       </div>
-      <ProductCardAlternatePrice price={alternatePrice} />
+      {alternateSlot}
     </div>
   );
 }
@@ -704,10 +873,9 @@ function FreeProductCard({ products, handleChooseSignup, error }) {
 
   // @TODO: doublecheck this!
   let currencySymbol = '$';
-  if (products && products[1]) {
-    currencySymbol = getCurrencySymbol(products[1].monthlyPrice.currency);
-  } else {
-    currencySymbol = '$';
+  const currencyPrice = products?.[1] ? products[1].monthlyPrice || products[1].yearlyPrice : null;
+  if (currencyPrice) {
+    currencySymbol = getCurrencySymbol(currencyPrice.currency);
   }
 
   const hasOnlyFree = hasOnlyFreeProduct({ site });
@@ -810,8 +978,49 @@ function ProductCardButton({ selectedProduct, product, disabled, noOfProducts, t
   return noOfProducts > 1 ? t('Choose') : t('Continue');
 }
 
+// The per-card cadence toggle for mixed catalogs: it only renders on cards
+// that actually have a choice, and its save claim is scoped to this card,
+// computed from effective (post-featured-offer) prices
+function CardIntervalToggle({ product }) {
+  const { site } = useContext(AppContext);
+  const { getCardInterval, setCardInterval, setSelectedProduct } = useContext(ProductsContext);
+  const interval = getCardInterval(product);
+  const discount = getEffectiveYearlyDiscount({ site, product });
+
+  const choose = (e, value) => {
+    e.stopPropagation();
+    setCardInterval(product.id, value);
+    setSelectedProduct(product.id);
+  };
+
+  return (
+    <div className="gh-portal-card-pricetoggle" data-testid={`card-interval-toggle-${product.id}`}>
+      <button
+        className={interval === 'month' ? 'active' : ''}
+        data-test-button="card-switch-monthly"
+        type="button"
+        onClick={(e) => choose(e, 'month')}
+      >
+        {t('Monthly')}
+      </button>
+      <button
+        className={interval === 'year' ? 'active' : ''}
+        data-test-button="card-switch-yearly"
+        type="button"
+        onClick={(e) => choose(e, 'year')}
+      >
+        {t('Yearly')}
+        {discount > 0 && (
+          <span className="gh-portal-card-save">{t('Save {discount}%', { discount })}</span>
+        )}
+      </button>
+    </div>
+  );
+}
+
 function ProductCard({ product, products, selectedInterval, handleChooseSignup, error }) {
-  const { selectedProduct, setSelectedProduct } = useContext(ProductsContext);
+  const { selectedProduct, setSelectedProduct, perCardMode, getCardInterval } =
+    useContext(ProductsContext);
   const { action } = useContext(AppContext);
   const trialDays = product.trial_days;
 
@@ -845,6 +1054,9 @@ function ProductCard({ product, products, selectedInterval, handleChooseSignup, 
       >
         <div className="gh-portal-product-card-header">
           <h4 className="gh-portal-product-name">{product.name}</h4>
+          {perCardMode && getProductCadences(product) === 'all' && (
+            <CardIntervalToggle product={product} />
+          )}
           <ProductCardPrice product={product} />
         </div>
         <div className="gh-portal-product-card-details">
@@ -862,7 +1074,8 @@ function ProductCard({ product, products, selectedInterval, handleChooseSignup, 
               onClick={(e) => {
                 const selectedPrice = getSelectedPrice({
                   products,
-                  selectedInterval,
+                  selectedInterval:
+                    perCardMode && getCardInterval ? getCardInterval(product) : selectedInterval,
                   selectedProduct: product.id,
                 });
                 handleChooseSignup(e, selectedPrice.id);
@@ -948,13 +1161,13 @@ function ProductPriceSwitch({ selectedInterval, setSelectedInterval, products })
   const { portal_plans: portalPlans } = site;
   const paidProducts = products.filter((product) => product.type !== 'free');
 
-  // Extract discounts from products
-  const prices = paidProducts.map((product) =>
-    calculateDiscount(product.monthlyPrice?.amount, product.yearlyPrice?.amount),
-  );
+  // The "(save X%)" claim is derived, so it only counts tiers that offer both
+  // cadences and it compares effective (post-featured-offer) amounts
+  const prices = paidProducts
+    .filter((product) => getProductCadences(product) === 'all')
+    .map((product) => getEffectiveYearlyDiscount({ site, product }));
 
-  // Find the highest price using Math.max
-  const highestYearlyDiscount = Math.max(...prices);
+  const highestYearlyDiscount = prices.length > 0 ? Math.max(...prices) : 0;
 
   if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
     return null;
@@ -1004,7 +1217,9 @@ function getSelectedPrice({ products, selectedProduct, selectedInterval }) {
     if (!product) {
       product = products.find((p) => p.type === 'paid');
     }
-    selectedPrice = selectedInterval === 'month' ? product?.monthlyPrice : product?.yearlyPrice;
+    // Falls back to a single-cadence tier's one available price, so choosing
+    // a yearly-only tier from the monthly toggle checks out yearly
+    selectedPrice = product ? getProductPriceForInterval(product, selectedInterval) : null;
   }
   return selectedPrice;
 }
@@ -1017,9 +1232,40 @@ function ProductsSection({ onPlanSelect, products, type = null, handleChooseSign
   // Note: by default we set it to null, so that it changes reactively in the preview version of Portal
   const [selectedInterval, setSelectedInterval] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
+  const [cardIntervals, setCardIntervals] = useState({});
 
-  const selectedPrice = getSelectedPrice({ products, selectedInterval, selectedProduct });
   const activeInterval = getActiveInterval({ portalPlans, portalDefaultPlan, selectedInterval });
+
+  // Uniform-dual catalogs keep the classic global toggle; a catalog with any
+  // single-cadence tier switches to per-card billing controls
+  const paidProducts = products.filter((p) => p && p.type === 'paid');
+  const perCardMode =
+    paidProducts.length > 0 && !paidProducts.every((p) => getProductCadences(p) === 'all');
+
+  const getCardInterval = (product) => {
+    if (!product || product.type !== 'paid') {
+      return activeInterval;
+    }
+    const cadences = getProductCadences(product);
+    if (cadences !== 'all') {
+      return cadences;
+    }
+    return cardIntervals[product.id] || activeInterval;
+  };
+
+  const setCardInterval = (productId, interval) => {
+    setCardIntervals((state) => ({ ...state, [productId]: interval }));
+  };
+
+  const selectedProductObject = products.find((p) => p && p.id === selectedProduct);
+  const selectedPrice = getSelectedPrice({
+    products,
+    selectedProduct,
+    selectedInterval:
+      perCardMode && selectedProductObject
+        ? getCardInterval(selectedProductObject)
+        : selectedInterval,
+  });
 
   const isComplimentary = isComplimentaryMember({ member });
   const hasOnlyFree = hasOnlyFreeProduct({ site });
@@ -1061,10 +1307,13 @@ function ProductsSection({ onPlanSelect, products, type = null, handleChooseSign
         selectedInterval: activeInterval,
         selectedProduct: finalProduct,
         setSelectedProduct,
+        perCardMode,
+        getCardInterval,
+        setCardInterval,
       }}
     >
       <section className={className}>
-        {!hasOnlyFree ? (
+        {!hasOnlyFree && !perCardMode ? (
           <ProductPriceSwitch
             products={products}
             selectedInterval={activeInterval}
@@ -1172,11 +1421,13 @@ function ChangeProductCard({ product, onPlanSelect }) {
   const { selectedProduct, setSelectedProduct, selectedInterval } = useContext(ProductsContext);
   const cardClass =
     selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
-  const monthlyPrice = product.monthlyPrice;
-  const yearlyPrice = product.yearlyPrice;
   const memberActivePrice = getMemberActivePrice({ member });
 
-  const selectedPrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
+  const selectedPrice = getProductPriceForInterval(product, selectedInterval);
+
+  if (!selectedPrice) {
+    return null;
+  }
 
   const currentPlan = isMemberActivePrice({ member, site, priceId: selectedPrice.id });
 

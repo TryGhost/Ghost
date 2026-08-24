@@ -130,6 +130,7 @@ describe('OffersAPI', function () {
         'display_title',
         'duration',
         'duration_in_months',
+        'featured',
         'id',
         'redemption_type',
         'status',

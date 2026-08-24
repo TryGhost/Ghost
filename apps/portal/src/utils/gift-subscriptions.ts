@@ -69,6 +69,16 @@ export function getGiftPrice(product: Product, duration: GiftDuration): ValidPri
   const price = getPriceForDuration(product, duration);
 
   if (!hasValidPrice(price)) {
+    // A monthly-only tier still sells a 12-month gift, billed from the
+    // monthly rate (12 × monthly) with no invented yearly discount —
+    // mirrors validateGiftCheckoutOffer on the server
+    if (duration === 12 && hasValidPrice(product.monthlyPrice ?? null)) {
+      const monthly = product.monthlyPrice as ValidPrice;
+      return {
+        ...monthly,
+        amount: monthly.amount * 12,
+      };
+    }
     return null;
   }
 

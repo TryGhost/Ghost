@@ -8,6 +8,7 @@ const Offer = ghostBookshelf.Model.extend({
 
   defaults: {
     redemption_type: 'signup',
+    featured: false,
   },
 
   product() {
