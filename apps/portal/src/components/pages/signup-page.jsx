@@ -112,9 +112,30 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
     margin: 4px 0 0;
 }
 
-.gh-portal-signup-message-separator {
-    margin: 0 8px;
-    color: var(--grey9);
+.gh-portal-signup-message-stack {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.gh-portal-signup-message-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+}
+
+.gh-portal-signup-message-gift {
+    display: flex;
+    align-items: center;
+}
+
+.gh-portal-signup-message-icon {
+    width: 16px;
+    height: 16px;
+    margin-inline-end: 4px;
+    stroke-width: 2;
 }
 
 .gh-portal-signup-message,
@@ -717,18 +738,22 @@ class SignupPage extends React.Component {
     return (
       <div>
         {this.renderFreeTrialMessage()}
-        <div className="gh-portal-signup-message">
-          <div>{t('Already a member?')}</div>
-          <button
-            data-test-button="signin-switch"
-            data-testid="signin-switch"
-            className="gh-portal-btn gh-portal-btn-link"
-            style={{ color: brandColor }}
-            onClick={() => doAction('switchPage', { page: 'signin' })}
-          >
-            <span>{t('Sign in')}</span>
-          </button>
-          {showGiftPromotion && <SignupGiftPromotion lastPage="signup" showSeparator={true} />}
+        <div className="gh-portal-signup-message gh-portal-signup-message-stack">
+          <div className="gh-portal-signup-message-row">
+            <div>{t('Already a member?')}</div>
+            <button
+              data-test-button="signin-switch"
+              data-testid="signin-switch"
+              className="gh-portal-btn gh-portal-btn-link"
+              style={{ color: brandColor }}
+              onClick={() => doAction('switchPage', { page: 'signin' })}
+            >
+              <span>{t('Sign in')}</span>
+            </button>
+          </div>
+          {showGiftPromotion && (
+            <SignupGiftPromotion className="gh-portal-signup-message-row" lastPage="signup" />
+          )}
         </div>
       </div>
     );

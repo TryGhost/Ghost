@@ -1,4 +1,5 @@
 import AppContext from '../../../../app-context';
+import GiftIcon from '../../../../images/icons/gift.svg?react';
 import { type KeyboardEvent, useContext } from 'react';
 import { isGiftMember, isPaidMember } from '../../../../utils/helpers';
 import { type Site, canShowAccountGiftPromotion } from '../../../../utils/gift-subscriptions';
@@ -65,6 +66,7 @@ function GiveGiftCard() {
           className="gh-portal-list-action"
           data-test-button="give-gift-subscription"
         >
+          <GiftIcon className="gh-portal-gift-card-icon" />
           {t('Buy')}
         </span>
       </section>
