@@ -113,7 +113,7 @@
     "color": "5.0.3",
     "country-flag-icons": "catalog:",
     "lucide-react": "catalog:",
-    "moment-timezone": "^0.5.48",
+    "moment-timezone": "0.5.48",
     "react": "catalog:",
     "react-day-picker": "9.14.0",
     "react-dom": "catalog:",
