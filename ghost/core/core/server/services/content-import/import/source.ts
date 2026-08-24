@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { globSync } from 'glob';
+import { prepareAssetBatch, type ImportAssetBatch } from './assets';
 
 const errors = require('@tryghost/errors');
 const ImportArchive = require('../../../data/importer/import-archive');
@@ -14,6 +15,7 @@ export interface ImportSourceRequest {
 
 export interface PreparedImportSource {
   filePath: string;
+  assets?: ImportAssetBatch;
   cleanup(): Promise<void>;
 }
 
@@ -80,6 +82,7 @@ export async function prepareImportSource(
 
     return {
       filePath: path.join(directory, csvFiles[0]),
+      assets: await prepareAssetBatch(archive, directory, baseDirectory),
       cleanup,
     };
   } catch (error) {

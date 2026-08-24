@@ -216,6 +216,73 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledOnce(cleanup);
   });
 
+  it('stores and rewrites every asset before resolving content converters', async function () {
+    const h = harness([row('Prepared', '<img src="/content/images/original.jpg">')]);
+    const events: string[] = [];
+    const cleanup = sinon.stub().resolves();
+    const assets = {
+      files: [],
+      store: async () => {
+        events.push('store');
+      },
+      rewriteRows: (rows: PostImportRow[]) => {
+        events.push('rewrite');
+        rows[0].html = '<img src="/content/images/unique.jpg">';
+      },
+    };
+    h.setHtmlToLexicalFactory(() => {
+      events.push('convert');
+      return (html: string) => ({ converted: html });
+    });
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => ({
+        filePath: '/tmp/extracted/posts.csv',
+        assets,
+        cleanup,
+      }),
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
+    await h.jobs[0].job();
+
+    assert.deepEqual(events.slice(0, 3), ['store', 'rewrite', 'convert']);
+    assert.match(h.created[0].data.lexical ?? '', /unique\.jpg/);
+    sinon.assert.calledOnce(cleanup);
+  });
+
+  it('fails the run without converting or creating posts when asset storage fails', async function () {
+    const h = harness();
+    const failure = new Error('storage unavailable');
+    const cleanup = sinon.stub().resolves();
+    const rewriteRows = sinon.stub();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => ({
+        filePath: '/tmp/extracted/posts.csv',
+        assets: {
+          files: [],
+          store: async () => {
+            throw failure;
+          },
+          rewriteRows,
+        },
+        cleanup,
+      }),
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
+    await h.jobs[0].job();
+
+    assert.equal(h.converterResolutions(), 0);
+    assert.equal(h.created.length, 0);
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.equal(h.store.get('run_test')?.failureReason, 'storage unavailable');
+    assert.equal(h.reported.at(-1), failure);
+    sinon.assert.notCalled(rewriteRows);
+    sinon.assert.calledOnce(cleanup);
+  });
+
   it('writes one post per row, in order, under the importing options', async function () {
     const h = harness();
 
@@ -297,9 +364,18 @@ describe('ContentCSVImporter', function () {
   it('rejects a file over the cap without scheduling any work', async function () {
     const h = harness(Array.from({ length: 101 }, (_, i) => row(`Post ${i + 1}`)));
     const cleanup = sinon.stub().resolves();
+    const storeAssets = sinon.stub().resolves();
     const importer = new ContentCSVImporter({
       ...h.deps,
-      prepareSource: async () => ({ filePath: '/tmp/extracted/posts.csv', cleanup }),
+      prepareSource: async () => ({
+        filePath: '/tmp/extracted/posts.csv',
+        assets: {
+          files: [],
+          store: storeAssets,
+          rewriteRows: sinon.stub(),
+        },
+        cleanup,
+      }),
     });
 
     await assert.rejects(
@@ -314,6 +390,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.jobs.length, 0, 'no job was scheduled');
     assert.equal(h.created.length, 0, 'nothing was written');
     assert.equal(h.store.get('run_test'), undefined, 'no run was registered');
+    sinon.assert.notCalled(storeAssets);
     sinon.assert.calledOnce(cleanup);
   });
 

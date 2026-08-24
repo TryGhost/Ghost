@@ -53,9 +53,11 @@ describe('content import source', function () {
     assert.equal(await fs.pathExists(extractedDirectory), false, 'cleanup is idempotent');
   });
 
-  it('extracts a CSV inside one wrapper and ignores CSV file assets', async function () {
+  it('extracts a wrapped CSV and prepares wrapped image, media, and file assets', async function () {
     const zipPath = await archive({
       'export/posts.csv': 'title\nWrapped',
+      'export/content/images/photo.jpg': 'image',
+      'export/content/media/movie.mp4': 'media',
       'export/content/files/attachment.csv': 'download,only',
       '.DS_Store': 'metadata',
     });
@@ -63,6 +65,39 @@ describe('content import source', function () {
     const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' });
 
     assert.equal(await fs.readFile(source.filePath, 'utf8'), 'title\nWrapped');
+    assert.deepEqual(source.assets?.files.map((file) => file.originalPath).sort(), [
+      'content/files/attachment.csv',
+      'content/images/photo.jpg',
+      'content/media/movie.mp4',
+    ]);
+    assert.deepEqual(source.assets?.files.map((file) => file.newPath).sort(), [
+      '/content/files/attachment.csv',
+      '/content/images/photo.jpg',
+      '/content/media/movie.mp4',
+    ]);
+    await source.cleanup();
+  });
+
+  it('prepares assets from the existing top-level directory form', async function () {
+    const zipPath = await archive({
+      'posts.csv': 'title\nTop level',
+      'images/photo.jpg': 'image',
+      'media/movie.mp4': 'media',
+      'files/guide.pdf': 'file',
+    });
+
+    const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' });
+
+    assert.deepEqual(source.assets?.files.map((file) => file.originalPath).sort(), [
+      'files/guide.pdf',
+      'images/photo.jpg',
+      'media/movie.mp4',
+    ]);
+    assert.deepEqual(source.assets?.files.map((file) => file.newPath).sort(), [
+      '/content/files/guide.pdf',
+      '/content/images/photo.jpg',
+      '/content/media/movie.mp4',
+    ]);
     await source.cleanup();
   });
 

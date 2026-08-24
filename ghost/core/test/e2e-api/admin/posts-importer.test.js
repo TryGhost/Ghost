@@ -13,12 +13,23 @@ const { cacheInvalidateHeaderNotSet } = assertions;
 const path = require('path');
 const models = require('../../../core/server/models');
 const jobsService = require('../../../core/server/services/jobs');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const { compress } = require('@tryghost/zip');
+const sinon = require('sinon');
 
 const csvPath = path.join(__dirname, '../../utils/fixtures/csv/valid-posts-import.csv');
 
 // Test CSVs are written inline to a temp dir rather than committed as fixtures.
 let tmpDir;
+const getImportedAssetPaths = () => [
+  path.join(adapterManager.getAdapter('storage:images').storagePath, 'csv-zip-photo.jpg'),
+  path.join(adapterManager.getAdapter('storage:media').storagePath, 'csv-zip-movie.mp4'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'csv-zip-guide.pdf'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'attachment.csv'),
+  path.join(adapterManager.getAdapter('storage:images').storagePath, 'canonical-image.jpg'),
+  path.join(adapterManager.getAdapter('storage:media').storagePath, 'canonical-media.mp4'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'canonical-file.pdf'),
+];
 
 const csvFile = async (name, content) => {
   const filePath = path.join(tmpDir, name);
@@ -56,13 +67,16 @@ describe('Posts Importer API', function () {
     // Each test logs in as a different role — reset the login rate limiter
     // so the repeated logins don't trip spam prevention
     await resetRateLimits();
+    await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
   });
 
   afterEach(async function () {
     // Every accepted upload schedules a background import — drain it so a job
     // doesn't run on into another test (or another file on this fork's DB)
     await jobsService.allSettled();
+    await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
     mockManager.restore();
+    sinon.restore();
   });
 
   it('Can upload a posts CSV as Owner', async function () {
@@ -107,6 +121,125 @@ describe('Posts Importer API', function () {
     const post = await models.Post.findOne({ title: 'ZIP mapping post', status: 'all' });
     assert.ok(post);
     assert.match(post.get('html'), /Mapped from ZIP/);
+  });
+
+  it('Stores and rewrites wrapped image, media, and file assets before importing posts', async function () {
+    await agent.loginAsOwner();
+
+    const csv =
+      'title,html,markdown,feature_image,og_image,twitter_image\n' +
+      'ZIP HTML assets,"<p><img src=""/content/images/csv-zip-photo.jpg""></p><a href=""/content/media/csv-zip-movie.mp4"">Media</a><a href=""/content/files/csv-zip-guide.pdf"">File</a>",,/content/images/csv-zip-photo.jpg,/content/images/csv-zip-photo.jpg,/content/images/csv-zip-photo.jpg\n' +
+      'ZIP Markdown assets,,"![Image](/content/images/csv-zip-photo.jpg)\n\n[Media](/content/media/csv-zip-movie.mp4)\n\n[File](/content/files/csv-zip-guide.pdf)",,,\n';
+    const zipPath = await zipFile('posts-with-assets.zip', {
+      'export/posts.csv': csv,
+      'export/content/images/csv-zip-photo.jpg': 'image bytes',
+      'export/content/media/csv-zip-movie.mp4': 'media bytes',
+      'export/content/files/csv-zip-guide.pdf': 'file bytes',
+    });
+
+    const { body } = await agent
+      .post('posts/upload/')
+      .attach('postsfile', zipPath)
+      .expectStatus(202);
+    assert.equal(body.meta.total, 2);
+    await jobsService.allSettled();
+
+    for (const filePath of getImportedAssetPaths().slice(0, 3)) {
+      assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);
+    }
+    const htmlPost = await models.Post.findOne(
+      { title: 'ZIP HTML assets', status: 'all' },
+      { withRelated: ['posts_meta'] },
+    );
+    const markdownPost = await models.Post.findOne({
+      title: 'ZIP Markdown assets',
+      status: 'all',
+    });
+    assert.ok(htmlPost);
+    assert.ok(markdownPost);
+    for (const assetPath of [
+      '/content/images/csv-zip-photo.jpg',
+      '/content/media/csv-zip-movie.mp4',
+      '/content/files/csv-zip-guide.pdf',
+    ]) {
+      assert.match(htmlPost.get('html'), new RegExp(assetPath));
+      assert.match(markdownPost.get('html'), new RegExp(assetPath));
+    }
+    assert.ok(htmlPost.get('feature_image').endsWith('/content/images/csv-zip-photo.jpg'));
+    assert.ok(
+      htmlPost.related('posts_meta').get('og_image').endsWith('/content/images/csv-zip-photo.jpg'),
+    );
+    assert.ok(
+      htmlPost
+        .related('posts_meta')
+        .get('twitter_image')
+        .endsWith('/content/images/csv-zip-photo.jpg'),
+    );
+  });
+
+  it('Rewrites canonical asset URLs for top-level ZIP asset directories', async function () {
+    await agent.loginAsOwner();
+
+    const csv =
+      'title,html,feature_image,og_image,twitter_image\n' +
+      'Canonical ZIP assets,"<p><img src=""__GHOST_URL__/content/images/canonical-image.jpg""></p><a href=""__GHOST_URL__/content/media/canonical-media.mp4"">Media</a><a href=""__GHOST_URL__/content/files/canonical-file.pdf"">File</a>",__GHOST_URL__/content/images/canonical-image.jpg,__GHOST_URL__/content/images/canonical-image.jpg,__GHOST_URL__/content/images/canonical-image.jpg\n';
+    const zipPath = await zipFile('posts-with-canonical-assets.zip', {
+      'posts.csv': csv,
+      'images/canonical-image.jpg': 'image bytes',
+      'media/canonical-media.mp4': 'media bytes',
+      'files/canonical-file.pdf': 'file bytes',
+    });
+
+    const { body } = await agent
+      .post('posts/upload/')
+      .attach('postsfile', zipPath)
+      .expectStatus(202);
+    assert.equal(body.meta.total, 1);
+    await jobsService.allSettled();
+
+    for (const filePath of getImportedAssetPaths().slice(4)) {
+      assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);
+    }
+    const post = await models.Post.findOne(
+      { title: 'Canonical ZIP assets', status: 'all' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    for (const assetPath of [
+      '/content/images/canonical-image.jpg',
+      '/content/media/canonical-media.mp4',
+      '/content/files/canonical-file.pdf',
+    ]) {
+      assert.match(post.get('html'), new RegExp(assetPath));
+    }
+    assert.doesNotMatch(post.get('html'), /\/content\/content\//);
+    assert.ok(post.get('feature_image').endsWith('/content/images/canonical-image.jpg'));
+    assert.ok(
+      post.related('posts_meta').get('og_image').endsWith('/content/images/canonical-image.jpg'),
+    );
+    assert.ok(
+      post
+        .related('posts_meta')
+        .get('twitter_image')
+        .endsWith('/content/images/canonical-image.jpg'),
+    );
+  });
+
+  it('Creates no posts when ZIP asset storage fails', async function () {
+    await agent.loginAsOwner();
+    sinon
+      .stub(adapterManager.getAdapter('storage:files'), 'save')
+      .rejects(new Error('storage unavailable'));
+    const zipPath = await zipFile('posts-with-failed-assets.zip', {
+      'posts.csv': 'title,html\nZIP failed assets,<p>Must not import</p>\n',
+      'content/files/csv-zip-guide.pdf': 'file bytes',
+    });
+
+    await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'ZIP failed assets', status: 'all' });
+    assert.equal(post, null);
   });
 
   it('Rejects ZIPs with no data CSV, multiple data CSVs, or mixed data formats', async function () {
