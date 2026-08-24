@@ -76,7 +76,7 @@ export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & { 
   },
 });
 
-export const getPost = createQueryWithId<PostsResponseType>({
+export const usePost = createQueryWithId<PostsResponseType>({
   dataType,
   path: (id) => `/posts/${id}/`,
 });

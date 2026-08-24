@@ -37,7 +37,7 @@ import {
 import { dequal } from 'dequal';
 import { deriveMemberDetailBackPath } from './member-detail-nav';
 import { formatMemberName } from '@tryghost/shade/app';
-import { getMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
+import { useMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -74,7 +74,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const customFieldsEnabled = useFeatureFlag('membersCustomFields');
 
   // `include=tiers` mirrors the Ember route so complimentary tiers arrive with the member.
-  const { data, isLoading, error, refetch } = getMember(memberId, {
+  const { data, isLoading, error, refetch } = useMember(memberId, {
     enabled: !!memberId && !isCreating,
     searchParams: { include: customFieldsEnabled ? 'tiers,custom_fields' : 'tiers' },
     defaultErrorHandler: false,

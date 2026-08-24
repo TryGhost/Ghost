@@ -1,5 +1,5 @@
 import { type Deferred, deferred } from '../utils/deferred';
-import { getFeaturebaseToken } from '../api/featurebase';
+import { useFeaturebaseToken } from '../api/featurebase';
 import { useBrowseConfig } from '../api/config';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -126,7 +126,7 @@ export function useFeaturebase(): Featurebase {
   const { organization, enabled } = config?.config.featurebase ?? {};
   const isAvailable = !!enabled;
 
-  const { data: tokenData } = getFeaturebaseToken({
+  const { data: tokenData } = useFeaturebaseToken({
     enabled: isAvailable && shouldLoad,
   });
   const token = tokenData?.featurebase?.token;
