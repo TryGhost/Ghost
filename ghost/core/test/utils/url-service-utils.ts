@@ -1,15 +1,18 @@
-const urlService = require('../../core/server/services/url');
+import type { JsonObject } from 'type-fest';
+// @ts-expect-error This module lacks type definnitions.
+import urlService from '../../core/server/services/url';
+import { type UrlOptions } from '../../core/server/services/url/lazy-url-service';
 
 // Bounded on purpose: readiness is router registration, so a regression there
 // would otherwise hang the whole run instead of failing one suite with a
 // usable message.
 const READY_TIMEOUT_MS = 15000;
 
-module.exports.isFinished = async ({ timeout = READY_TIMEOUT_MS } = {}) => {
-  let retryTimer;
+export const isFinished = async ({ timeout = READY_TIMEOUT_MS } = {}) => {
+  let retryTimer: ReturnType<typeof setTimeout>;
   const start = Date.now();
 
-  return new Promise(function (resolve, reject) {
+  await new Promise<void>((resolve, reject) => {
     (function retry() {
       clearTimeout(retryTimer);
 
@@ -31,7 +34,7 @@ module.exports.isFinished = async ({ timeout = READY_TIMEOUT_MS } = {}) => {
   });
 };
 
-module.exports.urlFor = (model, type, options) => {
+export const urlFor = (model: { toJSON: () => JsonObject }, type: string, options: UrlOptions) => {
   return urlService.getUrlForResource({ ...model.toJSON(), type }, options);
 };
 
@@ -41,6 +44,6 @@ module.exports.urlFor = (model, type, options) => {
 // answering /404/, for the rest of that boot. There is no data-only reset to
 // pair with it: the service caches nothing from the database, only the router
 // configs read from routes.yaml.
-module.exports.resetRouters = () => {
+export const resetRouters = () => {
   urlService.reset();
 };
