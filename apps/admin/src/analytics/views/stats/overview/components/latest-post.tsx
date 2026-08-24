@@ -21,7 +21,13 @@ import {
 import { type Post, getPostMetricsToDisplay } from '@tryghost/admin-x-framework';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { trackEvent, useAppContext, useNavigate } from '@tryghost/admin-x-framework';
+import { trackEvent, useNavigate } from '@tryghost/admin-x-framework';
+import {
+  useEmailTrackClicks,
+  useEmailTrackOpens,
+  useMembersTrackSources,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useIsEmberOwnedRoute } from '@/routes';
 
@@ -47,13 +53,10 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
   const navigate = useNavigate();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const { site, settings } = useAnalyticsData();
-  const { appSettings } = useAppContext();
-  const {
-    emailTrackClicks: emailTrackClicksEnabled,
-    emailTrackOpens: emailTrackOpensEnabled,
-    webAnalytics = false,
-    membersTrackSources = false,
-  } = appSettings?.analytics || {};
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
+  const webAnalytics = useWebAnalyticsEnabled();
+  const membersTrackSources = useMembersTrackSources() ?? false;
 
   // The stats-overview share modal never offers gift links today.
   useEffect(() => {

@@ -1,5 +1,8 @@
 import { type StatsConfig, useTinybirdQuery } from '@tryghost/admin-x-framework';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import {
+  useBrowseSettings,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useMemo } from 'react';
 
@@ -44,9 +47,8 @@ export const useGiftLinkUsage = ({
   const { data: configData, isLoading: configLoading } = useBrowseConfig();
   const statsConfig = configData?.config?.stats as StatsConfig | undefined;
 
-  const { data: settingsData, isLoading: settingsLoading } = useBrowseSettings();
-  const webAnalyticsEnabled =
-    getSettingValue<boolean>(settingsData?.settings ?? null, 'web_analytics_enabled') ?? false;
+  const { isLoading: settingsLoading } = useBrowseSettings();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
 
   const params = useMemo(
     () => ({

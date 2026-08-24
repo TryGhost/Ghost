@@ -7,7 +7,6 @@ import {
   getEditableCustomFieldValues,
   getEmailErrorMessage,
   getMemberEditableSlice,
-  getMemberNewslettersUiEnabled,
   getMemberSuppressionInfo,
   getNoteCharactersLeft,
   isDraftInSyncWithServer,
@@ -243,23 +242,6 @@ describe('getMemberSuppressionInfo', () => {
         info: { reason: 'other', timestamp: '2026-03-01T12:00:00.000Z' },
       }),
     ).toEqual({ reason: 'other', label: 'Email disabled on 1 Mar 2026' });
-  });
-});
-
-describe('getMemberNewslettersUiEnabled', () => {
-  it('hides the section only when explicitly disabled', () => {
-    expect(getMemberNewslettersUiEnabled('disabled')).toBe(false);
-  });
-
-  it('shows the section for every other setting value', () => {
-    expect(getMemberNewslettersUiEnabled('all')).toBe(true);
-    expect(getMemberNewslettersUiEnabled('paid')).toBe(true);
-    expect(getMemberNewslettersUiEnabled('filter')).toBe(true);
-  });
-
-  it('shows the section while the setting is still loading (prevents a flash-out)', () => {
-    expect(getMemberNewslettersUiEnabled(undefined)).toBe(true);
-    expect(getMemberNewslettersUiEnabled(null)).toBe(true);
   });
 });
 

@@ -21,7 +21,10 @@ import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
 import { centsToDollars } from '@tryghost/shade/app';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  usePaidMembersEnabled,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
@@ -172,7 +175,8 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
-  const { appSettings } = useAppContext();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
+  const paidMembersEnabled = usePaidMembersEnabled();
   const hostLimits = useHostLimits();
   const { config } = useAnalyticsData();
   const isWebAnalyticsLimited = hostLimits?.limitAnalytics?.disabled === true;
@@ -188,10 +192,10 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   }
 
   // Calculate number of cards being displayed
-  const showWebAnalytics = appSettings?.analytics.webAnalytics;
+  const showWebAnalytics = webAnalyticsEnabled;
   const showUpgradeCTA = isWebAnalyticsLimited && !showWebAnalytics;
   const showMembers = true; // Always shown
-  const showMRR = appSettings?.paidMembersEnabled;
+  const showMRR = paidMembersEnabled;
 
   // Determine number of columns to display, 1, 2, or 3
   const cardCount = [showWebAnalytics, showUpgradeCTA, showMembers, showMRR].filter(Boolean).length;
