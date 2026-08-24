@@ -7,12 +7,7 @@ import type {
   InternalIntegrationSlug,
 } from '../../../../../core/server/services/internal-keys';
 
-/**
- * Build an in-memory pretend of the cross-domain deps the scheduler takes.
- * Tests assert on the queued jobs (the observable outcome) and on which
- * pending times were consulted; same-domain primitives (getSignedAdminToken,
- * urlUtils) are real imports inside the class.
- */
+// Use real signing and URL helpers; stub only cross-domain collaborators.
 // Test secrets are 64-char hex so getSignedAdminToken (which decodes via
 // Buffer.from(secret, 'hex')) treats them as distinct signing keys.
 const HEX_CURRENT = 'aa'.repeat(32);
@@ -69,9 +64,6 @@ describe('GiftFlushScheduler', function () {
 
       sinon.assert.calledOnce(deps.adapter.schedule);
       const [job] = deps.adapter.schedule.getCall(0).args;
-      // Armed a second past the given time: the adapter can ping up to
-      // 50ms early and the flush query truncates "now" to whole seconds,
-      // so an exactly on-time job could find nothing due.
       assert.equal(job.time, time + 1000);
       assert.equal(job.extra.httpMethod, 'PUT');
       assert.ok(
@@ -142,9 +134,7 @@ describe('GiftFlushScheduler', function () {
       sinon.assert.calledTwice(deps.adapter.unschedule);
       sinon.assert.calledTwice(deps.adapter.schedule);
 
-      // The schedule URLs are signed under the current key; the unschedule
-      // URLs are signed under the previous key. Their tokens must differ
-      // for the adapter to find the queued entries.
+      // The stale job must be addressed with a token signed by the previous key.
       const unscheduleUrls = deps.adapter.unschedule.getCalls().map((c) => c.args[0].url);
       const scheduleUrls = deps.adapter.schedule.getCalls().map((c) => c.args[0].url);
       for (let i = 0; i < pending.length; i++) {
@@ -156,12 +146,8 @@ describe('GiftFlushScheduler', function () {
       }
     });
 
-    it('rotation tells the adapter to actually delete the stale queued job', async function () {
-      // Outcome: rotation requests a real (non-bootstrap) unschedule so
-      // the adapter writes a tombstone and the stale callback is
-      // suppressed at execution time. SchedulingDefault's own tests
-      // cover the tombstone semantics; here we verify GiftFlushScheduler
-      // honours the contract.
+    it('unschedules stale old-key jobs during rotation', async function () {
+      // Non-bootstrap unscheduling tombstones the stale callback.
       const deps = buildDeps({ pending: [Date.now() + 30_000] });
       const scheduler = new GiftFlushScheduler(deps);
 
@@ -171,11 +157,8 @@ describe('GiftFlushScheduler', function () {
       assert.equal(deps.adapter.unschedule.getCall(0).args[1].bootstrap, false);
     });
 
-    it('same-key rebuild marks unschedule as bootstrap so the new job survives', async function () {
-      // Outcome: when no previousKey is supplied (boot), unschedule and
-      // schedule use the same URL. GiftFlushScheduler must mark the
-      // unschedule as bootstrap so the adapter skips the tombstone and
-      // the about-to-be-scheduled job stays pingable.
+    it('does not tombstone the replacement during boot rebuilds', async function () {
+      // Boot reuses the current-key URL, so unscheduling must use bootstrap mode.
       const deps = buildDeps({ pending: [Date.now() + 30_000] });
       const scheduler = new GiftFlushScheduler(deps);
 

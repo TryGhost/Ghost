@@ -333,8 +333,7 @@ export class Gift implements GiftData {
     });
   }
 
-  // When the consumes-soon reminder is due: GIFT_REMINDER_LEAD_DAYS before
-  // the gifted access ends. Null until the gift is redeemed (no consumesAt).
+  /** Returns the reminder time, or null when the gift has no consumption date. */
   reminderDueAt(): Date | null {
     if (!this.consumesAt) {
       return null;

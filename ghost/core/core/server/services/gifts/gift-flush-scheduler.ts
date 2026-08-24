@@ -16,8 +16,7 @@ interface GiftFlushSchedulerOptions {
   adapter: SchedulerAdapter;
   internalKeys: InternalKeys;
   endpoint: 'flush_reminders' | 'flush_deliveries';
-  // Snake_case name of the scheduled work (e.g. 'gift_delivery'), used to
-  // build log events and messages.
+  // snake_case identifier used to derive log event names and messages.
   name: string;
   // Times (ms since epoch) still needing a flush job, used to rebuild the
   // adapter queue at boot and on key rotation.
@@ -55,8 +54,8 @@ export class GiftFlushScheduler {
   }
 
   /**
-   * Arm a flush for the given fire time. Already-due times are skipped —
-   * the daily gift-cleanup job's recovery pass picks their work up.
+   * Arm a flush for the given fire time. Already-due work is left to the
+   * daily recovery jobs.
    */
   async scheduleAt(time: number, logContext: Record<string, unknown> = {}): Promise<void> {
     const now = Date.now();
@@ -80,9 +79,8 @@ export class GiftFlushScheduler {
     try {
       key = await this.#internalKeys.get('ghost-scheduler');
     } catch (err) {
-      // Nothing was armed and the time was never marked as scheduled,
-      // so a later schedule for the same time retries; the daily
-      // gift-cleanup job's recovery pass recovers the work regardless.
+      // No job or deduplication marker was created, so a later call can retry.
+      // Daily recovery handles the work if it does not.
       logging.error(
         {
           event: { name: `${this.#name}_scheduler.schedule.failed` },

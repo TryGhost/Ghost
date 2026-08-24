@@ -91,7 +91,7 @@ The end of a redeemed gift subscription's role in providing access, either when 
 _Avoid_: Gift expiration, cancellation
 
 **Consumption reminder**:
-The email sent to a redeemer, at most once per gift, when gift consumption is seven days away, so gift continuation can be arranged before gifted access ends.
+The email sent to a redeemer, at most once per gift and up to seven days before gift consumption, so gift continuation can be arranged before gifted access ends.
 _Avoid_: Expiry reminder, expiration reminder
 
 **Gift continuation**:
