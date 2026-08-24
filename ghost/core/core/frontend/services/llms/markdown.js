@@ -165,20 +165,6 @@ function getGatedNotice(entry, resourceKind) {
   return `This ${resource} is for subscribers only.`;
 }
 
-/**
- * Body for a gated (access: false) entry: paywall preview HTML first,
- * then custom_excerpt. Never falls back to "_No content available._" —
- * the notice carries that meaning.
- */
-function renderGatedEntryMarkdownBody(entry) {
-  const preview = renderEntryMarkdownBody(entry);
-  if (preview) {
-    return preview;
-  }
-
-  return collapseWhitespace(entry.custom_excerpt) || null;
-}
-
 function renderEntryMarkdown(entry, options = {}) {
   const { llmsIndexUrl, notice, cta } = options;
   const tags = getTagNames(entry);
@@ -251,6 +237,5 @@ module.exports = {
   markdownFromHtml,
   renderEntryMarkdown,
   renderEntryMarkdownBody,
-  renderGatedEntryMarkdownBody,
   truncateDescription,
 };
