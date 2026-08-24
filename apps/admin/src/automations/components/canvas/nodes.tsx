@@ -1,4 +1,3 @@
-import '@xyflow/react/dist/style.css';
 import React, { useRef, useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
 import { useEmailTrackingSettings } from '@/automations/hooks/use-email-tracking-settings';

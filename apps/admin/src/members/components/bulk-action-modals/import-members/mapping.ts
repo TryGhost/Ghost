@@ -1,3 +1,4 @@
+import validator from 'validator';
 import {
   isCustomFieldColumn,
   type MemberCustomFieldCsvColumn,
@@ -59,8 +60,6 @@ export function getFieldMappings({
 }
 
 const AUTO_DETECTED_TYPES = ['email'];
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class MembersFieldMapping {
   private _mapping: Record<string, string | null>;
@@ -220,7 +219,7 @@ export function detectFieldTypes(
 
     const entry = sampledData[i];
     for (const [key, value] of Object.entries(entry)) {
-      if (!mapping.email && value && EMAIL_REGEX.test(value) && !isCustomFieldColumn(key)) {
+      if (!mapping.email && value && validator.isEmail(value) && !isCustomFieldColumn(key)) {
         mapping.email = key;
       }
     }

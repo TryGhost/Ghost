@@ -1,5 +1,6 @@
 import IframeBuffering from '@/settings/utils/iframe-buffering';
 import React, { useCallback, useMemo } from 'react';
+import { fetchFrontendPreview } from '@/settings/utils/fetch-frontend-preview';
 
 const getPreviewData = (
   announcementBackgroundColor?: string,
@@ -37,24 +38,10 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({
         return;
       }
 
-      const previewUrl = new URL(url);
-      previewUrl.searchParams.set('admin_toolbar', '0');
-
-      fetch(previewUrl.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/html;charset=utf-8',
-          'x-ghost-preview': getPreviewData(
-            announcementBackgroundColor,
-            announcementContent,
-            visibilityMemo,
-          ),
-          Accept: 'text/html',
-        },
-        mode: 'cors',
-        credentials: 'include',
-      })
-        .then((response) => response.text())
+      fetchFrontendPreview(
+        url,
+        getPreviewData(announcementBackgroundColor, announcementContent, visibilityMemo),
+      )
         .then((data) => {
           // inject extra CSS to disable navigation and prevent clicks
           const injectedCss = `html { pointer-events: none; }`;

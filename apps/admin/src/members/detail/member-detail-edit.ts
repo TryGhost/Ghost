@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import validator from 'validator';
 import {
   MEMBER_CUSTOM_FIELD_TYPES,
   memberCustomFieldParts,
@@ -45,9 +46,6 @@ interface MemberFieldSource {
   labels?: Array<{ name: string; slug: string }> | null;
   newsletters?: Array<{ id: string }> | null;
 }
-
-// Same shape as the import-members validator already used in this app.
-const MEMBER_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
 // allows 2000). The counter may go negative, matching the Ember behaviour.
@@ -145,7 +143,7 @@ export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: st
 
 /** Client-side email sanity check for the save gate; the server remains authoritative. */
 export function isValidMemberEmail(email: string): boolean {
-  return MEMBER_EMAIL_REGEX.test(email.trim());
+  return validator.isEmail(email.trim());
 }
 
 /**
