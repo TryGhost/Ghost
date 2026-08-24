@@ -8,7 +8,11 @@ import {
 } from '@tanstack/react-query';
 import { z } from 'zod';
 import { useQueryClient } from '@tryghost/admin-x-framework';
-import { currentUserQueryKey, useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import {
+  currentUserQueryKey,
+  useCurrentUser,
+  useFetchCurrentUser,
+} from '@tryghost/admin-x-framework/api/current-user';
 import {
   useEditUser,
   type User,
@@ -77,7 +81,24 @@ export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
 const userPreferencesQueryKey = (user: User | undefined) =>
   ['userPreferences', user?.id, user?.accessibility] as const;
 
-function parsePreferences(user: User): Preferences {
+// The write below depends on a user read straight from the API, so validate the
+// fields it uses before trusting them. A payload that does not parse is handled
+// like a read that failed.
+const CurrentUserResponseSchema = z.looseObject({
+  users: z
+    .array(
+      z.looseObject({
+        id: z.string(),
+        accessibility: z.string().nullish(),
+      }),
+    )
+    .min(1),
+});
+
+/** What a preferences write reads off the user, whoever supplied it. */
+type PreferenceUser = z.infer<typeof CurrentUserResponseSchema>['users'][number];
+
+function parsePreferences(user: Pick<PreferenceUser, 'accessibility'>): Preferences {
   const raw = user.accessibility || '{}';
   const parsedRaw: unknown = JSON.parse(raw);
   const parsed: Record<string, unknown> =
@@ -133,6 +154,7 @@ export const useEditUserPreferences = (): UseMutationResult<
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const { mutateAsync: editUser } = useEditUser();
+  const fetchCurrentUser = useFetchCurrentUser();
 
   return useMutation({
     // Preference edits write the whole accessibility blob from a merge of
@@ -140,10 +162,27 @@ export const useEditUserPreferences = (): UseMutationResult<
     // the later one merges on top of the earlier write instead of racing.
     scope: { id: 'user-preferences' },
     mutationFn: async (updatedPreferences: DeepPartial<Preferences>) => {
-      // Read the user at run time (not from the render closure): a
-      // serialized mutation must merge on top of the previous write.
-      const latestUser =
-        queryClient.getQueryData<UsersResponseType>(currentUserQueryKey)?.users[0] ?? user;
+      // Merge over the server's blob, not the cached one. Ember's feature
+      // and onboarding services write this same field, as does Admin in
+      // another tab, and the cached user is not refetched on mount or on
+      // window focus, so a merge over the cache silently reverts whatever
+      // those writers stored. Read around the cache: writing the pre-write
+      // user into it would flip the UI back until this write lands.
+      //
+      // A read that fails falls through to the cache, which is what this
+      // merged over before. Dropping the user's change is worse than a
+      // merge that might be stale, and every caller here floats the
+      // promise, so a dropped write is silent.
+      const serverUser = await fetchCurrentUser()
+        .then((response) => CurrentUserResponseSchema.parse(response).users[0])
+        .catch(() => undefined);
+
+      // The cache carries the previous write of a serialized mutation;
+      // the render closure is the last resort.
+      const latestUser: PreferenceUser | undefined =
+        serverUser ??
+        queryClient.getQueryData<UsersResponseType>(currentUserQueryKey)?.users[0] ??
+        user;
 
       if (!latestUser) {
         throw new Error('User is not loaded');
@@ -153,8 +192,10 @@ export const useEditUserPreferences = (): UseMutationResult<
 
       const encodedForStorage = PreferencesSchema.encode(newPreferences);
 
+      // Send the blob alone: a whole-user payload built from a read taken
+      // moments ago would revert a name or a role changed in between.
       await editUser({
-        ...latestUser,
+        id: latestUser.id,
         accessibility: JSON.stringify(encodedForStorage),
       });
     },

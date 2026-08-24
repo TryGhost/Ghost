@@ -548,4 +548,92 @@ describe('useEditUserPreferences', () => {
       },
     );
   });
+
+  describe('concurrent writers', () => {
+    editTest(
+      "merges over the server's preferences, not a stale cached copy",
+      async ({ server, wrapper }) => {
+        let storedAccessibility = JSON.stringify({ nightShift: 'light' });
+        const writtenAccessibility: string[] = [];
+
+        server.use(
+          http.get(USERS_API_URL, () => {
+            return HttpResponse.json({
+              users: [{ ...mockUser, accessibility: storedAccessibility }],
+            });
+          }),
+          http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
+            USER_UPDATE_API_URL,
+            async ({ request }) => {
+              const body = await request.json();
+              storedAccessibility = body.users[0]?.accessibility ?? '';
+              writtenAccessibility.push(storedAccessibility);
+              return HttpResponse.json({
+                users: [{ ...mockUser, accessibility: storedAccessibility }],
+              });
+            },
+          ),
+        );
+
+        const queryResult = renderHook(() => useUserPreferences(), { wrapper });
+        await waitForQuerySettled(queryResult.result);
+
+        const mutationResult = renderHook(() => useEditUserPreferences(), { wrapper });
+
+        // Another writer (a second tab, or Ember's feature service) stores a
+        // preference this client has never read.
+        storedAccessibility = JSON.stringify({ nightShift: 'dark' });
+
+        await act(async () => {
+          await mutationResult.result.current.mutateAsync({
+            navigation: { menu: { visible: false } },
+          });
+        });
+
+        expect(writtenAccessibility).toHaveLength(1);
+        expect(JSON.parse(writtenAccessibility[0])).toMatchObject({
+          nightShift: 'dark',
+          navigation: { menu: { visible: false } },
+        });
+      },
+    );
+
+    editTest(
+      "falls back to the cached user when the server's reply does not parse",
+      async ({ server, setup }) => {
+        const { mutation } = await setup({
+          accessibility: JSON.stringify({ nightShift: 'dark' }),
+        });
+
+        const writtenAccessibility: string[] = [];
+
+        // Everything is settled; from here the read this write depends on
+        // answers with a payload that cannot be trusted.
+        server.use(
+          http.get(USERS_API_URL, () => HttpResponse.json({ users: [{ id: 42 }] })),
+          http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
+            USER_UPDATE_API_URL,
+            async ({ request }) => {
+              const body = await request.json();
+              writtenAccessibility.push(body.users[0]?.accessibility ?? '');
+              return HttpResponse.json({ users: [{ ...mockUser }] });
+            },
+          ),
+        );
+
+        await act(async () => {
+          await mutation.current.mutateAsync({
+            navigation: { menu: { visible: false } },
+          });
+        });
+
+        // The write still lands, merged over what the cache holds.
+        expect(writtenAccessibility).toHaveLength(1);
+        expect(JSON.parse(writtenAccessibility[0])).toMatchObject({
+          nightShift: 'dark',
+          navigation: { menu: { visible: false } },
+        });
+      },
+    );
+  });
 });

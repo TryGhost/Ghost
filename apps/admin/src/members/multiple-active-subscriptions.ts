@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { User } from '@tryghost/admin-x-framework/api/users';
+import type { EditUserPayload, User } from '@tryghost/admin-x-framework/api/users';
 
 export const MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD = 'count.active_stripe_customers';
 export const MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER = `${MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD}:>1`;
@@ -64,13 +64,17 @@ export function buildDismissedMultipleActiveSubscriptionsPreference(
   });
 }
 
+/**
+ * Carries the preference alone: a whole-user payload would revert a name or a
+ * role that changed since this user was read.
+ */
 export function buildUserWithDismissedMultipleActiveSubscriptionsBanner(
   user: User,
   dismissedCount: number,
   dismissedAt: string,
-): User {
+): EditUserPayload {
   return {
-    ...user,
+    id: user.id,
     accessibility: buildDismissedMultipleActiveSubscriptionsPreference(
       user.accessibility,
       dismissedCount,

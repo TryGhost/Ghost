@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   currentRoute,
   currentUserResponse,
-  fakeAdminEndpoint,
   fakeMembers,
+  fakePreferenceEdits,
   renderAdminApp,
   type CurrentUserResponse,
   type EndpointCapture,
@@ -29,10 +29,6 @@ function onboardingUser(
     },
   });
   return response;
-}
-
-function fakePreferenceEdits(): EndpointCapture {
-  return fakeAdminEndpoint('PUT', /^\/users\/\w+\/\?include=roles/, ({ body }) => body);
 }
 
 function sentOnboardingPreferences(capture: EndpointCapture): Record<string, unknown> | undefined {

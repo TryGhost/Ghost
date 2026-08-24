@@ -1,4 +1,4 @@
-import { WhatsNewBanner } from '@/admin-pages';
+import { SidebarPage, WhatsNewBanner } from '@/admin-pages';
 import { expect, test } from '@/helpers/playwright/fixture';
 import type { Page } from '@playwright/test';
 
@@ -71,6 +71,29 @@ test.describe("Ghost Admin - What's New Banner", () => {
 
         await banner.clickLinkAndClosePopup();
 
+        await expect(banner.container).toBeHidden();
+      });
+
+      test('stays dismissed after a reload', async ({ page }) => {
+        await mockChangelog(page, [createEntry(daysFromNow(1))]);
+
+        const banner = new WhatsNewBanner(page);
+        await banner.goto();
+        await banner.waitForBanner();
+
+        // Dismissing stores the entry's date; wait for that write so the
+        // reload below measures what Admin reads back.
+        await Promise.all([
+          page.waitForResponse(
+            (response) => response.request().method() === 'PUT' && /\/users\//.test(response.url()),
+          ),
+          banner.dismiss(),
+        ]);
+
+        await page.reload({ waitUntil: 'load' });
+
+        // Prove absence only once the page has settled.
+        await expect(new SidebarPage(page).postsToggle).toBeVisible();
         await expect(banner.container).toBeHidden();
       });
     });
