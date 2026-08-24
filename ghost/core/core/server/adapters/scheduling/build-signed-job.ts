@@ -12,6 +12,7 @@ interface BuildSignedJobOptions {
   // Fire time (ms since epoch); the admin token is signed for this time.
   time: number;
   key: InternalApiKey;
+  extra?: Omit<SchedulerJob['extra'], 'httpMethod' | 'idempotencyKey'>;
   // Derives an idempotency key from the final callback URL, which carries
   // the signed token and so can't be known before the job is built.
   getIdempotencyKey?(url: URL): string;
@@ -22,6 +23,7 @@ export function buildSignedJob({
   path,
   time,
   key,
+  extra,
   getIdempotencyKey,
 }: BuildSignedJobOptions): SchedulerJob {
   const signedAdminToken = getSignedAdminToken({
@@ -32,10 +34,10 @@ export function buildSignedJob({
   const url = new URL(urlUtils.urlJoin(apiUrl, ...path));
   url.searchParams.set('token', signedAdminToken);
 
-  const extra: SchedulerJob['extra'] = { httpMethod: 'PUT' };
+  const jobExtra: SchedulerJob['extra'] = { httpMethod: 'PUT', ...extra };
   if (getIdempotencyKey) {
-    extra.idempotencyKey = getIdempotencyKey(url);
+    jobExtra.idempotencyKey = getIdempotencyKey(url);
   }
 
-  return { time, url: url.toString(), extra };
+  return { time, url: url.toString(), extra: jobExtra };
 }
