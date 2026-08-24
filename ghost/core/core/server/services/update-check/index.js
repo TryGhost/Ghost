@@ -1,6 +1,6 @@
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
-const jobLogging = require('../jobs/job-logging');
+const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const jobsService = require('../jobs');
 
@@ -73,7 +73,7 @@ module.exports.scheduleRecurringJobs = () => {
   const h = Math.floor(Math.random() * 24); // 0-23
 
   const at = `${s} ${m} ${h} * * *`;
-  jobLogging.info(`[Background Job] update-check scheduled at ${at}`);
+  logging.info(`[Background Job] update-check scheduled at ${at}`);
   jobsService.addJob({
     at, // Every day
     job: require('path').resolve(__dirname, 'run-update-check.js'),
@@ -82,7 +82,7 @@ module.exports.scheduleRecurringJobs = () => {
 };
 
 module.exports.scheduleBootJob = () => {
-  jobLogging.info('[Background Job] update-check-boot queued');
+  logging.info('[Background Job] update-check-boot queued');
   jobsService.addJob({
     job: require('path').resolve(__dirname, 'run-update-check.js'),
     name: 'update-check-boot',

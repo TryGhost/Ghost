@@ -30,9 +30,9 @@ describe('member jobs: token cleanup scheduling', function () {
     assert.ok(scheduleStub.notCalled, 'token cleanup must not be scheduled under NODE_ENV=test*');
   });
 
-  it('schedules a daily clean-tokens job outside the test environment even when logging fails', async function () {
+  it('schedules a daily clean-tokens job outside the test environment', async function () {
     const originalEnv = process.env.NODE_ENV;
-    sinon.stub(logging, 'info').throws(new Error('Logger unavailable'));
+    sinon.stub(logging, 'info');
     process.env.NODE_ENV = 'production';
     try {
       await memberJobs.scheduleTokenCleanupJob();

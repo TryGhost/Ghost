@@ -8,7 +8,7 @@ import type { RowSpool, SpooledRows } from './spool';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
-const jobLogging = require('../../../jobs/job-logging');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 // The members CSV importer, sliced into one concern per method. Two entry points by
@@ -305,7 +305,7 @@ class MembersCSVImporter {
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
     const spooled = await this._spool.write(rows);
 
-    jobLogging.info('[Background Job] members-import queued');
+    logging.info('[Background Job] members-import queued');
     this._addJob({
       job: () =>
         this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
@@ -326,7 +326,7 @@ class MembersCSVImporter {
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {
     const startedAt = Date.now();
-    jobLogging.info('[Background Job] members-import started');
+    logging.info('[Background Job] members-import started');
     // Null until the import produces one: parsing and mapping already happened inside
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
@@ -354,11 +354,11 @@ class MembersCSVImporter {
     );
 
     if (result) {
-      jobLogging.info(
+      logging.info(
         `[Background Job] members-import completed in ${Date.now() - startedAt}ms: imported ${result.imported}, ${result.errors.length} row(s) rejected`,
       );
     } else {
-      jobLogging.info(`[Background Job] members-import failed after ${Date.now() - startedAt}ms`);
+      logging.info(`[Background Job] members-import failed after ${Date.now() - startedAt}ms`);
     }
   }
 
