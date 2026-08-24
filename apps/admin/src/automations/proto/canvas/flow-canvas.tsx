@@ -2,23 +2,36 @@ import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
 import {Background, BackgroundVariant, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {Button} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatDisplayDate, formatDisplayTime} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerLabel, triggerReviewLabel, triggerSummary} from '@/automations/proto/shared/trigger-config';
+import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
 import {EmailPreview} from './email-preview';
 import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
-import {exitReasonLabel} from '@/automations/proto/shared/member-runs';
+import {exitReasonLabel, toRealClock} from '@/automations/proto/shared/member-runs';
 
 // Height the email preview (subject + body sheet) adds to a read/run email node, on
 // top of the header. Footer (stats or run detail) is added separately. Estimated —
 // mirrors the edit canvas's EMAIL_FORM_HEIGHT so Y-layout stays clear of overlap.
 const EMAIL_PREVIEW_HEIGHT = 260;
 
-const fmtDateTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
+// Shade's own date + time formatters, in the site's timezone — the same pairing
+// the post analytics header uses ("12 Jun 2025 at 7:09pm"). This was a raw
+// toLocaleString with hand-picked options, which is how a screen ends up
+// formatting dates differently from the rest of Ghost.
+//
+// toRealClock first: fixtures are authored against a fixed clock, and the runs
+// list already shifts them, so the canvas has to agree or the same run reads
+// "2 hr ago" in the table and shows last month's date here.
+const fmtDateTime = (iso: string, timezone: string): string => (
+    `${formatDisplayDate(toRealClock(iso), timezone)}, ${formatDisplayTime(toRealClock(iso), timezone)}`
+);
 
 type NodeKind = StepKind | 'terminal' | 'event';
 
@@ -144,6 +157,23 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     return (
         <NodeCard border={border} muted={muted}>
                 <NodeHeader
+                    action={!d.focused && d.stats ? (
+                        // Matches the edit canvas: analytics open from a named control
+                        // in the header, not from a hover state over the numbers.
+                        <Button
+                            aria-label="View email analytics"
+                            className="nodrag nopan"
+                            size="icon"
+                            type="button"
+                            variant="ghost"
+                            onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                d.onOpenAnalytics?.();
+                            }}
+                        >
+                            <LucideIcon.ChartNoAxesColumn />
+                        </Button>
+                    ) : undefined}
                     chipClassName={chip?.className}
                     icon={chip?.glyph ?? stepKindIcon[d.kind]}
                     meta={meta}
@@ -153,19 +183,9 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
                     <div className={NODE_BODY_PADDING}>
                         <EmailPreview subject={d.subtitle || 'Untitled'} />
                         {!d.focused && d.stats && (
-                            // Clicking the summary opens the deeper read in the
-                            // right-hand analytics sheet.
-                            <button
-                                aria-label="View email analytics"
-                                className="nodrag nopan -mx-3 mt-3 -mb-3 w-[calc(100%+1.5rem)] rounded-lg p-3 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    d.onOpenAnalytics?.();
-                                }}
-                            >
+                            <div className="mt-3">
                                 <EmailStatsFooter divider={false} stats={d.stats} />
-                            </button>
+                            </div>
                         )}
                     </div>
                 )}
@@ -198,6 +218,10 @@ interface FlowCanvasProps {
 
 export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, leftInset = 0, triggerConfig = DEFAULT_TRIGGER_CONFIG}) => {
     const {canvasRef, onInit, size} = useCenteredColumn(leftInset);
+    // Same source the shipping analytics header reads; falls back to Etc/UTC when
+    // the setting isn't loaded.
+    const {data: settingsData} = useBrowseSettings();
+    const siteTimezone = getSiteTimezone(settingsData?.settings ?? []);
     const focused = Boolean(selectedRun);
     // Which email the right-hand analytics sheet is reporting on.
     const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
@@ -230,7 +254,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
             focused,
             state: focused ? 'done' : undefined,
             stateDetail: null,
-            stateAt: selectedRun ? fmtDateTime(selectedRun.enrolled_at) : null
+            stateAt: selectedRun ? fmtDateTime(selectedRun.enrolled_at, siteTimezone) : null
         }});
 
         ordered.forEach((action) => {
@@ -246,7 +270,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
                 // it started put two dates on one line for the reader to work out
                 // which was which.
                 if (step?.state === 'done' && step.occurred_at) {
-                    stateAt = fmtDateTime(step.occurred_at);
+                    stateAt = fmtDateTime(step.occurred_at, siteTimezone);
                 }
             }
             descriptors.push({id: action.id, data: {
@@ -286,7 +310,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
                     // 'done' so the edge INTO this card reads as path travelled.
                     state: 'done',
                     eventVariant: failedExit ? 'failed' : 'exited',
-                    stateAt: step?.occurred_at ? fmtDateTime(step.occurred_at) : null
+                    stateAt: step?.occurred_at ? fmtDateTime(step.occurred_at, siteTimezone) : null
                 }});
             }
         });

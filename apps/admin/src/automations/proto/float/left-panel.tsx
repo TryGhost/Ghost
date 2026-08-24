@@ -190,7 +190,18 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                 {/* The pane is a region of its own under the header bar, so it says
                     what it is. */}
                 {!searchOpen && (
-                    <Text size="lg" weight="semibold">Performance</Text>
+                    <Inline align="center" className="min-w-0" gap="sm">
+                        {/* The collapse control leads the title it collapses, so the
+                            pane's name and the way to dismiss it are one gesture apart.
+                            Same PanelLeft that reopens it from the canvas, so the
+                            glyph means "this panel" in both directions. */}
+                        {onCollapse && (
+                            <Button aria-label="Hide performance" className="-ml-2" size="icon" type="button" variant="ghost" onClick={onCollapse}>
+                                <LucideIcon.PanelLeft strokeWidth={2} />
+                            </Button>
+                        )}
+                        <Text size="lg" weight="semibold">Performance</Text>
+                    </Inline>
                 )}
                 {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
                     strip, overflows it once the gap and buttons are counted, and flex
@@ -276,15 +287,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    {/* Last in the row, past the filter. It hides this pane, so it lives
-                        in it — a control on the thing it acts on. X, not a panel glyph:
-                        open, the button's job is dismissal, and the chart icon it
-                        reopens with already names what comes back. */}
-                    {onCollapse && (
-                        <Button aria-label="Hide performance" size="icon" type="button" variant="ghost" onClick={onCollapse}>
-                            <LucideIcon.X strokeWidth={2} />
-                        </Button>
-                    )}
                 </Inline>
             </Inline>
 
@@ -465,7 +467,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                         <TableHeader className="border-b-0">
                             <TableRow className="border-b-0 hover:bg-transparent">
                                 <SortHead label="Member" sort={sort} sortKey="member" onSort={onSort} />
-                                <SortHead className="w-24" label="Entered" sort={sort} sortKey="entered" onSort={onSort} />
+                                <SortHead className="w-28" label="Entered" sort={sort} sortKey="entered" onSort={onSort} />
                                 <SortHead className="w-20" label="Status" sort={sort} sortKey="status" onSort={onSort} />
                             </TableRow>
                         </TableHeader>
@@ -500,7 +502,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                                         <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
                                             <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                         </TableCell>
-                                        <TableCell className="w-24 p-4 align-middle group-hover:bg-transparent">
+                                        <TableCell className="w-28 p-4 align-middle group-hover:bg-transparent">
                                             <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                         </TableCell>
                                         <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">

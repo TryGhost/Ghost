@@ -38,7 +38,10 @@ const NODE_BORDER: Record<NodeBorder, string> = {
 // The card skeleton: shell + border state + the two flow handles. Body content
 // (header, fields, preview, stats) is composed by each canvas as children.
 export const NodeCard: React.FC<{border?: NodeBorder; muted?: boolean; children: React.ReactNode}> = ({border = 'default', muted = false, children}) => (
-    <div className={cn('transition-colors', NODE_CARD_SHELL, NODE_BORDER[border], muted && 'opacity-60')}>
+    // group/node so controls that only earn their place on hover — the subject's
+    // pencil, the performance chevron — can key off the whole card rather than the
+    // element they sit next to.
+    <div className={cn('group/node transition-colors', NODE_CARD_SHELL, NODE_BORDER[border], muted && 'opacity-60')}>
         <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
         {children}
         <Handle position={Position.Bottom} style={HIDDEN_HANDLE_STYLE} type="source" />
@@ -95,7 +98,10 @@ export const NodeHeader: React.FC<StepNodeHeaderProps & {action?: React.ReactNod
             content, unlike the square action slot. */}
         {meta && <span className="shrink-0 text-sm text-muted-foreground">{meta}</span>}
         {action && (
-            <div className="nodrag nopan flex size-9 shrink-0 items-center justify-center" onClick={e => e.stopPropagation()}>
+            // h-9 rather than size-9: the slot holds one control on most cards and
+            // two on an email (metrics + overflow), so it sizes to its contents
+            // while keeping every card's controls on the same baseline.
+            <div className="nodrag nopan flex h-9 shrink-0 items-center gap-1" onClick={e => e.stopPropagation()}>
                 {action}
             </div>
         )}

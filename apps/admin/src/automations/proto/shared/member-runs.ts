@@ -1,4 +1,5 @@
 import type {BadgeProps} from '@tryghost/shade/components';
+import {formatTimestamp} from '@tryghost/shade/utils';
 import type {AutomationRun, ExitReason, RunStatus} from './mock';
 
 // Shared member-run presentation data, so everything describing a run's status +
@@ -106,25 +107,26 @@ export const latestActivity = (run: AutomationRun, actions: ReadonlyArray<{id: s
 // Deterministic "now" so the relative "started" times stay stable across
 // reviews — same fixed clock the shared automations list uses.
 const NOW_MS = new Date('2026-07-21T09:12:00Z').getTime();
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 
 // Compact "started" label: 2m / 2h / 2d ago, then "Jul 2" once it's a week out.
-export const startedLabel = (iso: string): string => {
-    const then = new Date(iso);
-    const mins = Math.round((NOW_MS - then.getTime()) / 60_000);
-    if (mins < 1) {
-        return 'Just now';
-    }
-    if (mins < 60) {
-        return `${mins}m ago`;
-    }
-    const hours = Math.round(mins / 60);
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-    const days = Math.round(hours / 24);
-    if (days < 7) {
-        return `${days}d ago`;
-    }
-    return `${MONTHS[then.getUTCMonth()]} ${then.getUTCDate()}`;
-};
+// Shade's formatTimestamp does the wording — "5 min ago", "Yesterday", "3 days
+// ago", then a short date — so runs read the way timestamps read everywhere else
+// in Ghost. This used to be a hand-rolled ladder with its own vocabulary ("5m
+// ago", "3d ago") and its own month names.
+//
+// The shift is what lets the two coexist. Fixtures are authored against a fixed
+// clock so a scenario reads identically on any day, but formatTimestamp measures
+// against the real one — so each timestamp is moved by the distance between the
+// two before being handed over. A run authored two hours before the fixed clock
+// still reads "2 hr ago" today, and still will next month.
+const CLOCK_OFFSET_MS = Date.now() - NOW_MS;
+
+// Exported because anything else showing a fixture time has to apply the same
+// shift, or the same run reads "2 hr ago" in the list and shows last month's date
+// when you open it.
+export const toRealClock = (iso: string): string => (
+    new Date(new Date(iso).getTime() + CLOCK_OFFSET_MS).toISOString()
+);
+
+export const startedLabel = (iso: string): string => formatTimestamp(toRealClock(iso));

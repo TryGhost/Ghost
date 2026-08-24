@@ -1,6 +1,6 @@
 import React from 'react';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
-import {type ChartConfig, ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Button, type ChartConfig, ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon, Recharts, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {type ProtoActionLink, actionLinks} from '@/automations/proto/shared/email-links';
@@ -49,6 +49,102 @@ export const EmailStatsFooter: React.FC<StatsProps & {divider?: boolean}> = ({st
         <FooterMetric label="Clicked" tracked={clicksTracked}>{formatRate(stats.clicked_rate)}</FooterMetric>
     </div>
 );
+
+// --- Inline node analytics (future concept) ---------------------------------
+
+// One stacked bar of the sent audience, plus a legend, in place of the sheet's
+// nested rings. The rings never said anything the numbers didn't, and a 400px card
+// has width to spare and no height to waste.
+//
+// The segments are a breakdown of one population rather than three separate
+// measures: everyone sent to, split into those who never opened, those who opened,
+// and those who clicked. That's why it's one track — the widths are parts of a
+// whole, which is exactly what a stacked bar is for and what three separate bars
+// would have obscured.
+const RATE_LEGEND = [
+    {key: 'sent', label: 'Sent', color: 'var(--chart-gray)'},
+    {key: 'opened', label: 'Opened', color: 'var(--chart-2)'},
+    {key: 'clicked', label: 'Clicked', color: 'var(--chart-1)'}
+] as const;
+
+const pct = (rate: number): number => Math.round(Math.min(Math.max(rate, 0), 1) * 100);
+
+export const EmailStatsInline: React.FC<StatsProps & {
+    actionId: string;
+    linksOpen: boolean;
+    onToggleLinks: () => void;
+}> = ({stats, opensTracked = true, clicksTracked = true, actionId, linksOpen, onToggleLinks}) => {
+    const openRate = (stats.opened_rate ?? 0) / 100;
+    const clickRate = (stats.clicked_rate ?? 0) / 100;
+    const openedPct = opensTracked ? pct(openRate) : 0;
+    const clickedPct = clicksTracked ? pct(clickRate) : 0;
+    // Clicked is a subset of opened, so its width comes out of the opened segment
+    // rather than being added beside it — otherwise the bar would overrun 100%.
+    const openedOnlyPct = Math.max(openedPct - clickedPct, 0);
+    const links = actionLinks(actionId, stats.email_clicked_count);
+    return (
+        <Stack className="mt-4" gap="sm">
+            {/* The chevron only appears on card hover: at rest the numbers are the
+                point, and a collapse control sitting there permanently competed with
+                them. Focus-visible keeps it reachable by keyboard. */}
+            <Inline align="center" justify="between">
+                {/* Same size and weight as the bare subject above it, so the card
+                    reads as two sections of equal standing rather than a heading
+                    with a caption under it. */}
+                <Text size="md" weight="semibold">Performance</Text>
+                {clicksTracked && (
+                    <Button
+                        aria-expanded={linksOpen}
+                        aria-label={linksOpen ? 'Hide top clicked links' : 'Show top clicked links'}
+                        className="-my-2 opacity-0 transition-opacity group-hover/node:opacity-100 focus-visible:opacity-100"
+                        size="icon"
+                        variant="ghost"
+                        onClick={onToggleLinks}
+                    >
+                        <LucideIcon.ChevronDown className={cn('transition-transform', linksOpen && 'rotate-180')} />
+                    </Button>
+                )}
+            </Inline>
+            <div className="flex h-2 w-full overflow-hidden rounded-full" style={{backgroundColor: 'var(--chart-gray)'}}>
+                <div style={{width: `${openedOnlyPct}%`, backgroundColor: 'var(--chart-2)'}} />
+                <div style={{width: `${clickedPct}%`, backgroundColor: 'var(--chart-1)'}} />
+            </div>
+            {/* Value rides with its label — "Opened 44%" reads as one fact, where a
+                separate column would make the eye pair them up. */}
+            <Inline align="center" className="flex-wrap" gap="md">
+                {RATE_LEGEND.map((entry) => {
+                    const tracked = entry.key === 'opened' ? opensTracked : entry.key === 'clicked' ? clicksTracked : true;
+                    return (
+                        <Inline key={entry.key} align="center" gap="xs">
+                            <span className="size-2 shrink-0 rounded-full" style={{backgroundColor: entry.color}} />
+                            <Text size="sm" tone="secondary">{entry.label}</Text>
+                            {tracked
+                                ? <Text size="sm" weight="medium">{entry.key === 'sent' ? formatNumber(stats.email_sent_count) : formatPercentage(entry.key === 'opened' ? openRate : clickRate)}</Text>
+                                : <OffValue className="text-sm" />}
+                        </Inline>
+                    );
+                })}
+            </Inline>
+            {/* Titled rather than ruled off. The heading is what separates it from
+                the bar above — a divider as well would be two devices doing one
+                job. Weight sits below Performance's: this is a section within it,
+                not a peer of it. */}
+            {linksOpen && clicksTracked && (
+                <Stack className="mt-2" gap="sm">
+                    <Inline align="center" justify="between">
+                        <Text size="sm" tone="secondary" weight="medium">Top clicked links</Text>
+                        <Text size="sm" tone="tertiary" weight="medium">Members</Text>
+                    </Inline>
+                    <TopClickedLinksContent
+                        clickedCount={stats.email_clicked_count}
+                        links={links}
+                        sentCount={stats.email_sent_count}
+                    />
+                </Stack>
+            )}
+        </Stack>
+    );
+};
 
 // --- Sidebar performance section -------------------------------------------
 
@@ -158,7 +254,7 @@ const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '');
 // part that actually distinguishes one long link from another.
 const MIDDLE_TRUNCATE_TAIL = 14;
 
-const TopClickedLinksContent: React.FC<{
+export const TopClickedLinksContent: React.FC<{
     clickedCount: number;
     links: ProtoActionLink[];
     sentCount: number;
@@ -188,10 +284,16 @@ const TopClickedLinksContent: React.FC<{
                                         <TooltipTrigger asChild>
                                             <a className="block min-w-0 hover:underline" href={link.url} rel="noreferrer" target="_blank">
                                                 <Inline as="span" className="min-w-0" gap="sm">
-                                                    <LucideIcon.Link className="shrink-0 text-muted-foreground" size={16} strokeWidth={1.5} />
+                                                    {/* Plain spans, so they inherit the
+                                                        text-sm font-medium DataListItemContent
+                                                        already sets — the same way the shipping
+                                                        analytics rows do it. Shade's Text would
+                                                        override that with its own md default,
+                                                        which is what made these read larger than
+                                                        the equivalent list on analytics. */}
                                                     <span className="flex min-w-0">
-                                                        <Text as="span" className="font-medium" truncate>{head}</Text>
-                                                        <Text as="span" className="shrink-0 font-medium whitespace-nowrap">{tail}</Text>
+                                                        <span className="truncate">{head}</span>
+                                                        <span className="shrink-0 whitespace-nowrap">{tail}</span>
                                                     </span>
                                                 </Inline>
                                             </a>

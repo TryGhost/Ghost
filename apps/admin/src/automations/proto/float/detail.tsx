@@ -6,9 +6,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario} from '@/automations/proto/shared/mock';
-import {type ChangeEntry, changeSummary} from './change-summary';
-import {Inline, Stack} from '@tryghost/shade/primitives';
-import {stepKindIcon} from '@/automations/proto/canvas/flow-utils';
+import {changeSummary} from './change-summary';
 import {PHASE_SLOT} from './phase-model';
 import {HeaderBar} from './header-bar';
 import {LeftPanel} from './left-panel';
@@ -120,8 +118,7 @@ const PublishChangesDialog: React.FC<{
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onConfirm: () => void;
-    changes: ChangeEntry[];
-}> = ({open, onOpenChange, onConfirm, changes}) => (
+}> = ({open, onOpenChange, onConfirm}) => (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -130,26 +127,6 @@ const PublishChangesDialog: React.FC<{
                     This automation is on — these changes will take effect immediately.
                 </AlertDialogDescription>
             </AlertDialogHeader>
-            {/* The diff lives here rather than behind a "Review changes" control of
-                its own. Reviewing matters at exactly one moment — when you're
-                deciding to publish — and a separate review step is the kind of thing
-                people skip. Cancel makes this a safe place to look.
-
-                Each entry carries its step's own icon (stepKindIcon), the same mark
-                the canvas puts on the card it happened to. */}
-            {changes.length > 0 && (
-                <Stack className="max-h-72 overflow-y-auto" gap="sm">
-                    {changes.map((change) => {
-                        const Icon = stepKindIcon[change.kind];
-                        return (
-                            <Inline key={change.id} align="start" className="text-sm" gap="sm">
-                                <Icon className="mt-px size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
-                                <span>{change.label}</span>
-                            </Inline>
-                        );
-                    })}
-                </Stack>
-            )}
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button onClick={onConfirm}>Publish</Button>
@@ -424,12 +401,9 @@ const AutomationFloat: React.FC = () => {
                 stopped automation — and a draft can't exist to compete with it,
                 since edits to something that isn't running have no live version to
                 diverge from. */}
-            {hasUnpublishedChanges && (
-                <Button onClick={handlePublishClick}>Publish changes</Button>
-            )}
-            {liveStatus === 'inactive' && (
-                <Button onClick={() => setStartOpen(true)}>Turn on</Button>
-            )}
+            {/* The ⋯ leads, the primary trails. Overflow menus sit to the LEFT of
+                the action they qualify everywhere else in the app, so a primary
+                appearing to the menu's left made this row read backwards. */}
             {/* modal={false} so the canvas underneath stays live — same reason the
                 node menus and the option picker are non-modal. */}
             <DropdownMenu modal={false}>
@@ -472,6 +446,12 @@ const AutomationFloat: React.FC = () => {
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
+            {hasUnpublishedChanges && (
+                <Button onClick={handlePublishClick}>Publish changes</Button>
+            )}
+            {liveStatus === 'inactive' && (
+                <Button onClick={() => setStartOpen(true)}>Turn on</Button>
+            )}
         </>
     );
 
@@ -479,13 +459,16 @@ const AutomationFloat: React.FC = () => {
         // flex-col in both variants: the docked header is a row above the pane and
         // canvas, and with no header the same column collapses to just that row.
         <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background" data-testid="float-detail">
+            {/* onTogglePane is phase 1 only: future moves that control onto the pane
+                itself, leading the Performance title, and floats it over the canvas
+                once the pane is away. */}
             <HeaderBar
                 actions={chromeActions}
                 paneCollapsed={paneCollapsed}
                 status={liveStatus}
                 title={automation.name}
                 onBack={goBack}
-                onTogglePane={() => setPaneCollapsed(!paneCollapsed)}
+                onTogglePane={isPhaseOne ? () => setPaneCollapsed(!paneCollapsed) : undefined}
             />
             <div className="relative flex min-h-0 flex-1 overflow-hidden">
             {/* Left pane docked flush to the edge. On entering edit it slides off the
@@ -499,9 +482,13 @@ const AutomationFloat: React.FC = () => {
                 ladder. This was on the --sidebar-* family, which is for the app's
                 global nav — it happened to match in dark and diverged in light. */}
             <aside className={cn('relative flex w-[480px] shrink-0 flex-col overflow-hidden border-r border-border-default bg-surface-elevated transition-[margin] duration-150 ease-out', paneHidden ? '-ml-[480px]' : 'ml-0')}>
+                {/* onCollapse is future only — that release puts the toggle on the
+                    pane, beside its title. Phase 1 drives the same state from the
+                    header bar, so its pane doesn't carry a control of its own. */}
                 <LeftPanel
                     scenario={scenario}
                     selectedMemberId={selectedMemberId}
+                    onCollapse={isPhaseOne ? undefined : () => setPaneCollapsed(true)}
                     onSelectMember={setSelectedMemberId}
                 />
             </aside>
@@ -532,6 +519,24 @@ const AutomationFloat: React.FC = () => {
                     <div className="pointer-events-none absolute inset-0 z-10 border-2 border-grey-800" />
                 )}
 
+                {/* Future: the pane's own toggle collapses with it, so the way back
+                    floats on the canvas where the pane used to start. Phase 1 keeps a
+                    permanent toggle in the header bar and never needs this. */}
+                {!isPhaseOne && paneCollapsed && (
+                    <div className="absolute top-4 left-4 z-20">
+                        <Button
+                            aria-label="Show performance"
+                            className="bg-surface-elevated shadow-sm"
+                            size="icon"
+                            type="button"
+                            variant="outline"
+                            onClick={() => setPaneCollapsed(false)}
+                        >
+                            <LucideIcon.PanelLeft strokeWidth={2} />
+                        </Button>
+                    </div>
+                )}
+
                 {/* Reviewing a member: their profile chip floats over the canvas, with
                     the way out built in. Selection was previously only reversible from
                     the list (click the row again) — nothing on the canvas said whose
@@ -558,7 +563,7 @@ const AutomationFloat: React.FC = () => {
                 )}
 
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
-                    <EditCanvas draft={draftFlow} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
+                    <EditCanvas draft={draftFlow} inlineAnalytics={!isPhaseOne} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
             </div>
@@ -570,7 +575,7 @@ const AutomationFloat: React.FC = () => {
             <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
 
             {/* Publish — a deliberate confirm when the automation is already live. */}
-            <PublishChangesDialog changes={changes} open={publishOpen} onConfirm={publishChanges} onOpenChange={setPublishOpen} />
+            <PublishChangesDialog open={publishOpen} onConfirm={publishChanges} onOpenChange={setPublishOpen} />
 
             {/* Leaving the automation with changes that are saved but not running.
                 Not a data-loss warning — the draft survives — so it offers to leave

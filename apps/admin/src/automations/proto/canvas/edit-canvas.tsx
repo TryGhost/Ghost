@@ -10,7 +10,7 @@ import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
 import {CANVAS_SURFACE, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
-import {EmailStatsFooter} from './email-analytics';
+import {EmailStatsFooter, EmailStatsInline} from './email-analytics';
 import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
 import {EmailPreview} from './email-preview';
 import {TriggerFieldsForm} from './trigger-config-form';
@@ -29,6 +29,11 @@ const waitToHours = (amount: number, unit: 'days' | 'hours'): number => (unit ==
 // rendered form since node Y-positions are laid out manually). No Delete here — that
 // moved to the hover overflow menu. Email: subject + edit-content; wait: duration row.
 const EMAIL_FORM_HEIGHT = 330;
+// The future concept's inline analytics: bars take more room than the three-column
+// number strip they replace, and the top-links list adds its own block when opened.
+// Estimated the same way every height in this file is — tune against the render.
+const INLINE_ANALYTICS_EXTRA = 76;
+const INLINE_LINKS_HEIGHT = 190;
 const WAIT_FORM_HEIGHT = 112;
 
 // The trigger card is the trigger select (same single-row shape as the wait form)
@@ -96,6 +101,13 @@ type StepNodeData = {
     onTriggerConfigChange?: (next: TriggerConfig) => void;
     // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
     triggerLocked?: boolean;
+    // Which action this card is, so the email's link fixtures can be looked up.
+    actionId?: string;
+    // Future concept: an email's numbers live on the card as bars, with the top
+    // links revealed in place, instead of behind the right-hand sheet.
+    inlineAnalytics?: boolean;
+    linksOpen?: boolean;
+    onToggleLinks?: () => void;
     // Always-visible inline edit form (non-trigger nodes).
     subject?: string;
     stats?: AutomationEmailStats;
@@ -138,9 +150,17 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             </PopoverContent>
         </Popover>
     ) : undefined;
+    // Email cards raise their analytics from the header, beside the overflow, so
+    // the way in is a control that names itself rather than a hover state buried
+    // in the metrics.
+    const analyticsAction = isEmail && d.stats && !d.inlineAnalytics ? (
+        <Button aria-label="View email analytics" size="icon" type="button" variant="ghost" onClick={d.onOpenAnalytics}>
+            <LucideIcon.ChartNoAxesColumn />
+        </Button>
+    ) : null;
     // Header action slot: overflow menu for editable steps. The trigger has no
     // action unless locked — its fields are in the card.
-    const action = clickable ? (
+    const overflowAction = clickable ? (
         // modal={false} — the default wraps the menu in RemoveScroll and kills
         // outside pointer events, which freezes the canvas underneath it. The
         // menu is a small aside on one card, not something worth trapping the
@@ -161,6 +181,12 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             </DropdownMenuContent>
         </DropdownMenu>
     ) : lockAction;
+    const action = (analyticsAction || overflowAction) ? (
+        <>
+            {analyticsAction}
+            {overflowAction}
+        </>
+    ) : undefined;
     return (
         <NodeCard border={d.selected ? 'selected' : 'default'}>
             <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={d.title} />
@@ -184,19 +210,24 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                             // Shared email preview (editable: inline subject + floating edit button),
                             // with metrics below.
                             <div>
-                                <EmailPreview subject={d.subject ?? ''} editable onEditContent={d.onEditContent} onSubjectChange={d.onSubjectChange} />
-                                {d.stats && (
-                                    // The summary IS the analytics affordance — clicking it opens
-                                    // the deeper read in the right-hand sheet.
-                                    <button
-                                        aria-label="View email analytics"
-                                        className="-mx-3 mt-3 -mb-3 w-[calc(100%+1.5rem)] rounded-lg p-3 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
-                                        type="button"
-                                        onClick={d.onOpenAnalytics}
-                                    >
+                                <EmailPreview bare={d.inlineAnalytics} subject={d.subject ?? ''} editable onEditContent={d.onEditContent} onSubjectChange={d.onSubjectChange} />
+                                {/* Read-only now. Making the whole summary the button
+                                    put the affordance somewhere nothing announced it —
+                                    a hover state on a block of numbers isn't
+                                    discoverable. Opening analytics is a labelled
+                                    control in the header instead. */}
+                                {d.stats && (d.inlineAnalytics ? (
+                                    <EmailStatsInline
+                                        actionId={d.actionId ?? ''}
+                                        linksOpen={Boolean(d.linksOpen)}
+                                        stats={d.stats}
+                                        onToggleLinks={() => d.onToggleLinks?.()}
+                                    />
+                                ) : (
+                                    <div className="mt-3">
                                         <EmailStatsFooter divider={false} stats={d.stats} />
-                                    </button>
-                                )}
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             // No field label — the node header ("Wait") already names this. Both
@@ -303,13 +334,19 @@ interface EditCanvasProps {
     triggerConfig?: TriggerConfig;
     onTriggerConfigChange?: (next: TriggerConfig) => void;
     triggerLocked?: boolean;
+    inlineAnalytics?: boolean;
 }
 
-export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange, triggerLocked = false}) => {
+export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange, triggerLocked = false, inlineAnalytics = false}) => {
     const {canvasRef, onInit, size} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
     // Which email the right-hand analytics sheet is reporting on.
     const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
+    // Which email has its top-links list open. Held here rather than in the node so
+    // the layout can account for the height it adds — node y-positions are derived
+    // from measured heights, and a card that grows without the canvas knowing would
+    // overlap the one below it.
+    const [linksOpenId, setLinksOpenId] = useState<string | null>(null);
     // Email-content dialog, opened from a card's inline "Edit email content" button.
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
@@ -331,7 +368,13 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
         const heights = [REGULAR_NODE_HEIGHT + (onTriggerConfigChange ? triggerFormHeight(triggerConfig ?? DEFAULT_TRIGGER_CONFIG, triggerLocked) : TRIGGER_SUMMARY_HEIGHT)];
         ordered.forEach((action) => {
             // Every editable node shows its inline form, so all carry the form height.
-            heights.push(REGULAR_NODE_HEIGHT + (action.type === 'send_email' ? EMAIL_FORM_HEIGHT : WAIT_FORM_HEIGHT));
+            if (action.type !== 'send_email') {
+                heights.push(REGULAR_NODE_HEIGHT + WAIT_FORM_HEIGHT);
+                return;
+            }
+            const inlineExtra = inlineAnalytics && action.stats ? INLINE_ANALYTICS_EXTRA : 0;
+            const linksExtra = inlineAnalytics && linksOpenId === action.id ? INLINE_LINKS_HEIGHT : 0;
+            heights.push(REGULAR_NODE_HEIGHT + EMAIL_FORM_HEIGHT + inlineExtra + linksExtra);
         });
         heights.push(TAIL_NODE_HEIGHT);
         const ys = stackNodeY(heights);
@@ -378,7 +421,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
                         setSelectedId(null);
                     },
                     onEditContent: () => setEmailDialogOpen(true),
-                    onOpenAnalytics: () => setAnalyticsActionId(action.id)
+                    onOpenAnalytics: () => setAnalyticsActionId(action.id),
+                    actionId: action.id,
+                    inlineAnalytics,
+                    linksOpen: linksOpenId === action.id,
+                    onToggleLinks: () => setLinksOpenId(linksOpenId === action.id ? null : action.id)
                 },
                 draggable: false,
                 connectable: false,
@@ -420,7 +467,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
         const bottom = ys.length ? ys[ys.length - 1] + heights[heights.length - 1] : 0;
 
         return {nodes: built, edges: builtEdges, contentBottom: bottom};
-    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange, triggerLocked]);
+    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange, triggerLocked, inlineAnalytics, linksOpenId]);
 
     const translateExtent = useMemo(
         () => panTranslateExtent(contentBottom, size),

@@ -8,6 +8,18 @@ const EMAIL_BODY_PREVIEW = 'Hey there,\n\nThanks for joining — here’s what t
 
 interface EmailPreviewProps {
     subject: string;
+    /**
+     * Future concept: drop the form chrome. The subject becomes the card's own
+     * heading and the body a muted excerpt beneath it, so an email card reads as an
+     * email rather than as a two-field form — which is what lets the performance
+     * block below it sit at a lower weight without disappearing.
+     *
+     * Still editable, and with no mode to enter: the subject is a borderless input
+     * that looks like text until you focus it. The body can't be edited in place,
+     * so it keeps a pencil — revealed on card hover rather than parked on the card
+     * permanently, since at rest it's the email you're meant to be reading.
+     */
+    bare?: boolean;
     // editable (edit canvas): subject is an inline input + the body sheet carries a
     // floating edit-content button. Read (run/read canvas): subject is shown read-only
     // and the body sheet is display-only — same layout, so all states look identical.
@@ -19,7 +31,32 @@ interface EmailPreviewProps {
 // Subject line (with a discreet leading "Subject" label) above an email body excerpt
 // sheet. Shared by both canvases so the email node reads the same across edit / read /
 // run. Metrics and any run-detail line are appended by the caller.
-export const EmailPreview: React.FC<EmailPreviewProps> = ({subject, editable = false, onSubjectChange, onEditContent}) => (
+export const EmailPreview: React.FC<EmailPreviewProps> = ({subject, editable = false, bare = false, onSubjectChange, onEditContent}) => (bare ? (
+    <div>
+        <div className="flex items-start gap-2">
+            <input
+                aria-label="Subject line"
+                className="min-w-0 flex-1 truncate bg-transparent text-md font-semibold text-foreground outline-none placeholder:text-muted-foreground read-only:cursor-default"
+                placeholder="Subject line"
+                readOnly={!editable}
+                value={subject}
+                onChange={editable ? (e => onSubjectChange?.(e.target.value)) : undefined}
+            />
+            {editable && (
+                <Button
+                    aria-label="Edit email content"
+                    className="-mt-1 shrink-0 opacity-0 transition-opacity group-hover/node:opacity-100 focus-visible:opacity-100"
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onEditContent?.()}
+                >
+                    <LucideIcon.SquarePen />
+                </Button>
+            )}
+        </div>
+        <p className="mt-1 line-clamp-2 text-control text-muted-foreground">{EMAIL_BODY_PREVIEW}</p>
+    </div>
+) : (
     <div>
         <InputGroup className="mb-3">
             <InputGroupAddon align="inline-start">
@@ -54,4 +91,4 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({subject, editable = f
             )}
         </div>
     </div>
-);
+));
