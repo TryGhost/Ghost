@@ -84,3 +84,60 @@ export function parseFatalErrors(data: unknown): FatalErrors | null {
 export function getIssuesFromInstalledTheme(installedTheme: InstalledTheme): ThemeProblem[] {
   return [...(installedTheme.errors || []), ...(installedTheme.warnings || [])];
 }
+
+export type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
+
+/** The Shade `Badge` variants a severity is allowed to take. */
+export type DisplayVariant = 'destructive' | 'warning' | 'secondary';
+
+/** Most to least severe — drives both the list order and the summary order. */
+export const SEVERITY_ORDER: DisplaySeverity[] = ['Error', 'Warning', 'Recommendation'];
+
+/** Name and colour in one row per level, so a badge can never mix the two. */
+const SEVERITY_DISPLAY: Record<
+  ThemeProblem['level'],
+  { severity: DisplaySeverity; variant: DisplayVariant }
+> = {
+  error: { severity: 'Error', variant: 'destructive' },
+  warning: { severity: 'Warning', variant: 'warning' },
+  recommendation: { severity: 'Recommendation', variant: 'secondary' },
+};
+
+function displayFor(problem: ThemeProblem) {
+  return SEVERITY_DISPLAY[problem.level] ?? SEVERITY_DISPLAY.error;
+}
+
+export function getDisplaySeverity(problem: ThemeProblem): DisplaySeverity {
+  return displayFor(problem).severity;
+}
+
+export function getDisplayVariant(problem: ThemeProblem): DisplayVariant {
+  return displayFor(problem).variant;
+}
+
+export function sortBySeverity(problems: ThemeProblem[]): ThemeProblem[] {
+  return [...problems].sort(
+    (a, b) =>
+      SEVERITY_ORDER.indexOf(getDisplaySeverity(a)) - SEVERITY_ORDER.indexOf(getDisplaySeverity(b)),
+  );
+}
+
+export function hasErrorProblem(problems: ThemeProblem[]): boolean {
+  return problems.some((problem) => getDisplaySeverity(problem) === 'Error');
+}
+
+/** Past tense of what Ghost did, or refused to do, with a theme. */
+export type ThemeAction = 'uploaded' | 'installed' | 'activated' | 'saved';
+
+/**
+ * Completes "<theme> was ...". `errors` and `warnings` arrive merged, so the
+ * noun reads the severities present rather than the count — a set containing
+ * errors called "warnings" contradicts the list rendered beside it.
+ */
+export function describeThemeOutcome(action: ThemeAction, problems: ThemeProblem[]): string {
+  if (!problems.length) {
+    return `${action} successfully`;
+  }
+
+  return `${action}, but it has some ${hasErrorProblem(problems) ? 'issues' : 'warnings'}`;
+}
