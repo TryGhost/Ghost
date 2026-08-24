@@ -1402,6 +1402,7 @@ module.exports = {
     },
     amount: { type: 'integer', nullable: false },
     currency: { type: 'string', maxlength: 50, nullable: false },
+    stripe_checkout_session_id: { type: 'string', maxlength: 255, nullable: true, unique: true },
     // attribution values from ghost-history (member attribution tracking script)
     attribution_id: { type: 'string', maxlength: 24, nullable: true },
     attribution_type: {

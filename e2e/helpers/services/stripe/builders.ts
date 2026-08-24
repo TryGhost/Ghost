@@ -408,6 +408,7 @@ export function buildDonationCheckoutCompletedEvent(opts: {
   donationMessage?: string | null;
   metadata?: Record<string, string>;
   name: string;
+  sessionId: string;
 }): StripeEvent {
   return {
     id: generateId('evt'),
@@ -415,8 +416,10 @@ export function buildDonationCheckoutCompletedEvent(opts: {
     type: 'checkout.session.completed',
     data: {
       object: {
+        id: opts.sessionId,
         object: 'checkout.session',
         mode: 'payment',
+        payment_status: 'paid',
         amount_total: opts.amount,
         currency: opts.currency,
         customer: opts.customerId ?? null,
