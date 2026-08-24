@@ -1363,9 +1363,21 @@ export class GiftService {
   }
 
   async cleanup(): Promise<void> {
+    const startedAt = Date.now();
+    // null, not 0: a phase that throws is caught and skipped, and a zero count
+    // would be indistinguishable from that phase having had nothing to do.
+    let deletedCheckoutCount: number | null = null;
+    let consumedGiftCount: number | null = null;
+    let updatedMemberCount: number | null = null;
+    let expiredGiftCount: number | null = null;
+    let deliverySentCount: number | null = null;
+    let deliverySkippedCount: number | null = null;
+    let deliveryFailedCount: number | null = null;
+
     const checkoutStart = Date.now();
     try {
       const { deletedCount } = await this.processAbandonedCheckouts();
+      deletedCheckoutCount = deletedCount;
 
       logging.info(
         `[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`,
@@ -1376,10 +1388,12 @@ export class GiftService {
 
     const consumedStart = Date.now();
     try {
-      const { consumedCount, updatedMemberCount } = await this.processConsumed();
+      const { consumedCount, updatedMemberCount: memberCount } = await this.processConsumed();
+      consumedGiftCount = consumedCount;
+      updatedMemberCount = memberCount;
 
       logging.info(
-        `[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`,
+        `[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${memberCount} members in ${Date.now() - consumedStart}ms`,
       );
     } catch (err) {
       logging.error(err, '[Background Job] clean-gifts error processing consumed gifts');
@@ -1388,6 +1402,7 @@ export class GiftService {
     const expiredStart = Date.now();
     try {
       const { expiredCount } = await this.processExpired();
+      expiredGiftCount = expiredCount;
 
       logging.info(
         `[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`,
@@ -1399,6 +1414,10 @@ export class GiftService {
     try {
       const { sentCount, skippedCount, failedCount } =
         await this.deps.giftDeliveryService.recoverPending();
+      deliverySentCount = sentCount;
+      deliverySkippedCount = skippedCount;
+      deliveryFailedCount = failedCount;
+
       if (sentCount + skippedCount + failedCount > 0) {
         logging.info(
           `[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
@@ -1407,6 +1426,23 @@ export class GiftService {
     } catch (err) {
       logging.error(err, '[Background Job] clean-gifts error processing pending gift deliveries');
     }
+
+    logging.info(
+      {
+        system: {
+          event: 'clean_gifts.completed',
+          deleted_checkout_count: deletedCheckoutCount,
+          consumed_count: consumedGiftCount,
+          updated_member_count: updatedMemberCount,
+          expired_count: expiredGiftCount,
+          delivery_sent_count: deliverySentCount,
+          delivery_skipped_count: deliverySkippedCount,
+          delivery_failed_count: deliveryFailedCount,
+          duration_ms: Date.now() - startedAt,
+        },
+      },
+      '[Background Job] clean-gifts finished its cleanup phases',
+    );
   }
 
   async processReminders(): Promise<{

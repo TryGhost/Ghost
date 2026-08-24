@@ -1282,6 +1282,49 @@ describe('GiftService', function () {
       );
     });
 
+    it('logs a structured clean_gifts.completed event carrying every phase count', async function () {
+      const infoLog = sinon.stub(logging, 'info');
+      const service = createService();
+      const phases = stubPhases(service);
+      phases.processAbandonedCheckouts.resolves({ deletedCount: 2 });
+      phases.processConsumed.resolves({ consumedCount: 3, updatedMemberCount: 1 });
+      phases.processExpired.resolves({ expiredCount: 4 });
+      phases.recoverPending.resolves({ sentCount: 5, skippedCount: 6, failedCount: 7 });
+
+      await service.cleanup();
+
+      const completionLog = infoLog
+        .getCalls()
+        .find((call) => (call.args[0] as any)?.system?.event === 'clean_gifts.completed');
+      assert.ok(completionLog, 'the cleanup logs a structured clean_gifts.completed event');
+      const { system } = completionLog!.args[0] as any;
+      assert.equal(system.deleted_checkout_count, 2);
+      assert.equal(system.consumed_count, 3);
+      assert.equal(system.updated_member_count, 1);
+      assert.equal(system.expired_count, 4);
+      assert.equal(system.delivery_sent_count, 5);
+      assert.equal(system.delivery_skipped_count, 6);
+      assert.equal(system.delivery_failed_count, 7);
+      assert.equal(typeof system.duration_ms, 'number');
+    });
+
+    it('reports null, not zero, for the phases that failed', async function () {
+      const infoLog = sinon.stub(logging, 'info');
+      sinon.stub(logging, 'error');
+      const service = createService();
+      const phases = stubPhases(service);
+      phases.processAbandonedCheckouts.rejects(new Error('nope'));
+      phases.processExpired.resolves({ expiredCount: 4 });
+
+      await service.cleanup();
+
+      const completionLog = infoLog
+        .getCalls()
+        .find((call) => (call.args[0] as any)?.system?.event === 'clean_gifts.completed');
+      assert.equal((completionLog!.args[0] as any).system.deleted_checkout_count, null);
+      assert.equal((completionLog!.args[0] as any).system.expired_count, 4);
+    });
+
     it('does not log a delivery recovery summary when nothing was pending', async function () {
       const infoLog = sinon.stub(logging, 'info');
       const service = createService();
