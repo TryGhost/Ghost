@@ -5,11 +5,34 @@ import ContentCSVImporter, {
   type FailureReporter,
 } from './import/importer';
 import readPostRows from './import/reader';
+import { EDITORIAL_POST_FIELDS } from './import/row';
 import { ImportRunStore } from './import/store';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
-const importRequestSchema = z.object({ filePath: z.string().min(1) });
+const importableFields = new Set<string>(EDITORIAL_POST_FIELDS);
+const mappingSchema = z.record(z.string(), z.string()).superRefine((mapping, ctx) => {
+  const targets = new Set<string>();
+  for (const [header, target] of Object.entries(mapping)) {
+    if (!header || header in Object.prototype) {
+      ctx.addIssue({ code: 'custom', message: `Invalid CSV header mapping: "${header}"` });
+    }
+    if (target && !importableFields.has(target)) {
+      ctx.addIssue({ code: 'custom', message: `Unknown post field mapping: "${target}"` });
+    }
+    if (target && targets.has(target)) {
+      ctx.addIssue({ code: 'custom', message: `Post field is mapped more than once: "${target}"` });
+    }
+    targets.add(target);
+  }
+  if (!targets.has('title')) {
+    ctx.addIssue({ code: 'custom', message: 'Post field mapping must include "title"' });
+  }
+});
+const importRequestSchema = z.object({
+  filePath: z.string().min(1),
+  mapping: mappingSchema.optional(),
+});
 // A junk timezone setting falls back to UTC rather than mis-stamping the batch tag.
 const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 
@@ -49,6 +72,8 @@ function makeImporter(): ContentCSVImporter {
       create: (data, options) => models.Post.add(data, options),
     },
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
+    getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
+    getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),
@@ -71,5 +96,15 @@ export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
   if (!importer) {
     throw new errors.InternalServerError({ message: 'Content import service used before init' });
   }
-  return importer.importCSV(importRequestSchema.parse(request));
+
+  const parsedRequest = importRequestSchema.safeParse(request);
+
+  if (!parsedRequest.success) {
+    throw new errors.ValidationError({
+      message: parsedRequest.error.issues[0]?.message ?? 'Invalid content import request',
+      err: parsedRequest.error,
+    });
+  }
+
+  return importer.importCSV(parsedRequest.data);
 }

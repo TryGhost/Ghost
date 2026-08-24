@@ -1,5 +1,11 @@
 import moment from 'moment-timezone';
-import buildPostData, { RowSkipped, type HtmlToLexical, type PostData } from './post-data';
+import buildPostData, {
+  RowSkipped,
+  type CleanHTML,
+  type HtmlToLexical,
+  type MarkdownToHtml,
+  type PostData,
+} from './post-data';
 import type { PostImportRow } from './row';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 
@@ -13,6 +19,7 @@ const tpl = require('@tryghost/tpl');
 
 export interface ImportRequest {
   filePath: string;
+  mapping?: Record<string, string>;
 }
 
 // The id is what a completion report will be looked up by.
@@ -33,7 +40,7 @@ export interface PostsRepository {
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
 
-type ReadRows = (path: string) => Promise<PostImportRow[]>;
+type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PostImportRow[]>;
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
@@ -58,6 +65,8 @@ interface ImporterDeps {
   posts: PostsRepository;
   // A getter so the heavy html->lexical require resolves once per run
   getHtmlToLexical: () => HtmlToLexical;
+  getMarkdownToHtml: () => MarkdownToHtml;
+  getCleanHTML: () => CleanHTML;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -78,6 +87,8 @@ class ContentCSVImporter {
   private _readRows: ReadRows;
   private _posts: PostsRepository;
   private _getHtmlToLexical: () => HtmlToLexical;
+  private _getMarkdownToHtml: () => MarkdownToHtml;
+  private _getCleanHTML: () => CleanHTML;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -90,6 +101,8 @@ class ContentCSVImporter {
     readRows,
     posts,
     getHtmlToLexical,
+    getMarkdownToHtml,
+    getCleanHTML,
     addJob,
     report,
     store,
@@ -101,6 +114,8 @@ class ContentCSVImporter {
     this._readRows = readRows;
     this._posts = posts;
     this._getHtmlToLexical = getHtmlToLexical;
+    this._getMarkdownToHtml = getMarkdownToHtml;
+    this._getCleanHTML = getCleanHTML;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -113,7 +128,7 @@ class ContentCSVImporter {
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     let rows: PostImportRow[];
     try {
-      rows = await this._readRows(request.filePath);
+      rows = await this._readRows(request.filePath, request.mapping);
     } catch (error) {
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),
@@ -158,6 +173,8 @@ class ContentCSVImporter {
 
     try {
       const htmlToLexical = this._getHtmlToLexical();
+      const markdownToHtml = this._getMarkdownToHtml();
+      const cleanHTML = this._getCleanHTML();
       let attemptedWrites = 0;
       let successfulWrites = 0;
       let failedWrites = 0;
@@ -168,7 +185,7 @@ class ContentCSVImporter {
         let data: PostData;
 
         try {
-          data = buildPostData(row, htmlToLexical, importTagNames);
+          data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml, cleanHTML);
         } catch (error) {
           if (error instanceof RowSkipped) {
             this._store.record(runId, {

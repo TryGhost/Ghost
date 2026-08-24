@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
+const FormData = require('form-data');
 const os = require('node:os');
 const {
   agentProvider,
@@ -104,6 +105,62 @@ describe('Posts Importer API', function () {
     await agent.post('posts/upload/').attach('postsfile', csvPath).expectStatus(403);
   });
 
+  it('Rejects an explicit mapping without a title target', async function () {
+    await agent.loginAsOwner();
+
+    const bodyOnlyCsvPath = await csvFile(
+      'posts-import-body-only-mapping.csv',
+      'Body\n<p>This mapping has no title target</p>\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Body]', 'html');
+    form.append('postsfile', await fs.readFile(bodyOnlyCsvPath), {
+      filename: path.basename(bodyOnlyCsvPath),
+      contentType: 'text/csv',
+    });
+
+    const { body } = await agent.post('posts/upload/').body(form).expectStatus(422);
+
+    assert.match(body.errors[0].message, /mapping must include "title"/);
+  });
+
+  it('Rejects unsafe, unknown, and duplicate field mappings', async function () {
+    await agent.loginAsOwner();
+
+    const mappedCsvPath = await csvFile(
+      'posts-import-invalid-mappings.csv',
+      'First,Second\nOne,Two\n',
+    );
+    const cases = [
+      {
+        mapping: { constructor: 'title' },
+        reason: /Invalid CSV header mapping: "constructor"/,
+      },
+      {
+        mapping: { First: 'title', Second: 'authors' },
+        reason: /Unknown post field mapping: "authors"/,
+      },
+      {
+        mapping: { First: 'title', Second: 'title' },
+        reason: /Post field is mapped more than once: "title"/,
+      },
+    ];
+
+    for (const { mapping, reason } of cases) {
+      const form = new FormData();
+      for (const [header, field] of Object.entries(mapping)) {
+        form.append(`mapping[${header}]`, field);
+      }
+      form.append('postsfile', await fs.readFile(mappedCsvPath), {
+        filename: path.basename(mappedCsvPath),
+        contentType: 'text/csv',
+      });
+
+      const { body } = await agent.post('posts/upload/').body(form).expectStatus(422);
+      assert.match(body.errors[0].message, reason);
+    }
+  });
+
   it('Imports each CSV row as a post with its content and publish date', async function () {
     await agent.loginAsOwner();
 
@@ -205,16 +262,121 @@ describe('Posts Importer API', function () {
     assert.equal(post.get('visibility'), 'public');
   });
 
+  it('Imports arbitrarily headed CSV fields across every editorial category', async function () {
+    await agent.loginAsOwner();
+
+    const fullCsvPath = await csvFile(
+      'posts-import-full-fields.csv',
+      'Headline,Body,Address,Kind,State,Audience,Hero,Show title,Search title,Social copy,Template,Created,Published\n' +
+        'Mapped field post,"<p>Mapped body</p>",Custom Address,page,draft,members,1,0,Mapped SEO title,Mapped social description,wide,2024-01-02T00:00:00.000Z,2024-02-03T00:00:00.000Z\n',
+    );
+
+    const form = new FormData();
+    for (const [header, field] of Object.entries({
+      Headline: 'title',
+      Body: 'html',
+      Address: 'slug',
+      Kind: 'type',
+      State: 'status',
+      Audience: 'visibility',
+      Hero: 'featured',
+      'Show title': 'show_title_and_feature_image',
+      'Search title': 'meta_title',
+      'Social copy': 'twitter_description',
+      Template: 'custom_template',
+      Created: 'created_at',
+      Published: 'published_at',
+    })) {
+      form.append(`mapping[${header}]`, field);
+    }
+    form.append('postsfile', await fs.readFile(fullCsvPath), {
+      filename: path.basename(fullCsvPath),
+      contentType: 'text/csv',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'Mapped field post', status: 'all' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    assert.equal(post.get('slug'), 'custom-address');
+    assert.equal(post.get('type'), 'page');
+    assert.equal(post.get('status'), 'draft');
+    assert.equal(post.get('visibility'), 'members');
+    assert.equal(post.get('featured'), true);
+    assert.equal(post.get('show_title_and_feature_image'), false);
+    assert.equal(post.get('custom_template'), 'wide');
+    assert.equal(post.get('created_at').toISOString(), '2024-01-02T00:00:00.000Z');
+    assert.equal(post.get('published_at').toISOString(), '2024-02-03T00:00:00.000Z');
+    assert.equal(post.get('updated_at').toISOString(), '2024-02-03T00:00:00.000Z');
+    assert.equal(post.related('posts_meta').get('meta_title'), 'Mapped SEO title');
+    assert.equal(
+      post.related('posts_meta').get('twitter_description'),
+      'Mapped social description',
+    );
+    assert.match(post.get('html'), /Mapped body/);
+  });
+
+  it('Renders a mapped Markdown column through the post content converter', async function () {
+    await agent.loginAsOwner();
+
+    const markdownCsvPath = await csvFile(
+      'posts-import-markdown.csv',
+      'Headline,Source\n' + 'Markdown field post,"## Imported heading with **strong text**"\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[Source]', 'markdown');
+    form.append('postsfile', await fs.readFile(markdownCsvPath), {
+      filename: path.basename(markdownCsvPath),
+      contentType: 'text/csv',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'Markdown field post', status: 'all' });
+    assert.ok(post);
+    assert.match(post.get('html'), /<h2[^>]*>Imported heading with strong text<\/h2>/);
+  });
+
+  it('Cleans supplied HTML before converting it to post content', async function () {
+    await agent.loginAsOwner();
+
+    const cleanupCsvPath = await csvFile(
+      'posts-import-clean-html.csv',
+      'title,html\n' +
+        'Clean HTML post,"<p style=""text-align: center; color: red; background: blue""><span style=""font-weight: bold"">Clean me</span></p>"\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', cleanupCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'Clean HTML post', status: 'all' });
+    assert.ok(post);
+    assert.match(post.get('html'), /<p><strong>Clean me<\/strong><\/p>/);
+    assert.doesNotMatch(post.get('html'), /style=/);
+  });
+
   it('Skips a malformed row on its own and imports the rest', async function () {
     await agent.loginAsOwner();
 
     const badRowsCsvPath = await csvFile(
       'posts-import-with-bad-rows.csv',
-      'title,html,published_at\n' +
-        'Bad rows check one,<p>Before the bad row</p>,2024-03-01T00:00:00.000Z\n' +
-        ',<p>This row has no title</p>,2024-03-02T00:00:00.000Z\n' +
-        'Bad rows check date,<p>This row has a bad date</p>,not-a-date\n' +
-        'Bad rows check two,<p>After the bad rows</p>,2024-03-04T00:00:00.000Z\n',
+      'title,html,markdown,published_at,status,featured\n' +
+        'Bad rows check one,<p>Before the bad row</p>,,2024-03-01T00:00:00.000Z,published,false\n' +
+        ',<p>This row has no title</p>,,2024-03-02T00:00:00.000Z,published,false\n' +
+        'Bad rows check date,<p>This row has a bad date</p>,,not-a-date,published,false\n' +
+        'Bad rows check calendar,<p>This row has a rolled-over date</p>,,2025-02-30T00:00:00.000Z,published,false\n' +
+        `${'x'.repeat(256)},<p>This title is too long</p>,,2024-03-02T00:00:00.000Z,published,false\n` +
+        'Bad rows check status,<p>This row has a bad status</p>,,2024-03-02T00:00:00.000Z,scheduled,false\n' +
+        'Bad rows check featured,<p>This row has a bad featured value</p>,,2024-03-02T00:00:00.000Z,published,yes\n' +
+        'Bad rows check content,<p>This row has HTML</p>,This row also has Markdown,2024-03-02T00:00:00.000Z,published,false\n' +
+        'Bad rows check two,<p>After the bad rows</p>,,2024-03-04T00:00:00.000Z,published,false\n' +
+        'Bad rows check three,<p>A loose date format</p>,,01 May 2024 00:00:00 GMT,published,false\n',
     );
 
     await agent.post('posts/upload/').attach('postsfile', badRowsCsvPath).expectStatus(202);
@@ -229,7 +391,7 @@ describe('Posts Importer API', function () {
 
     assert.deepEqual(
       posts.map((post) => post.get('title')).sort(),
-      ['Bad rows check one', 'Bad rows check two'],
+      ['Bad rows check one', 'Bad rows check three', 'Bad rows check two'],
       'the good rows imported; the malformed ones did not',
     );
   });

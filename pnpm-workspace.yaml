@@ -88,6 +88,7 @@ catalog:
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 5.4.0
+  '@tryghost/mg-clean-html': 0.12.6
   '@tryghost/metrics': 3.5.0
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
