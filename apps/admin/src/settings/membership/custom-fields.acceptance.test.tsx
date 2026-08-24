@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import {
   configResponse,
   fakeAdminEndpoint,
+  fakeMemberCustomFields,
   fakeSettingsScreens,
   renderAdminApp,
   settingsResponse,
@@ -38,12 +39,8 @@ function customFieldsBoot() {
 
 type CustomField = typeof companyField;
 
-// Settings opts into archived fields (`?filter=status:[active,archived]`),
-// so the fakes match the path with any query.
-const customFieldsBrowsePath = new RegExp('^/members/custom_fields/\\?');
-
 function fakeCustomFields(fields: CustomField[] = [companyField]) {
-  return fakeAdminEndpoint('GET', customFieldsBrowsePath, { members_custom_fields: fields });
+  return fakeMemberCustomFields(fields);
 }
 
 /**
@@ -56,7 +53,7 @@ function fakeCustomFields(fields: CustomField[] = [companyField]) {
  */
 function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField) {
   let fields = initial;
-  fakeAdminEndpoint('GET', customFieldsBrowsePath, () => ({ members_custom_fields: fields }));
+  fakeMemberCustomFields(() => fields);
   return fakeAdminEndpoint('POST', '/members/custom_fields/', () => {
     fields = [...fields, created];
     return { members_custom_fields: [created] };
@@ -283,9 +280,7 @@ describe('Custom fields', () => {
     const shirtField = { ...companyField, key: 'shirt_size', name: 'Shirt size' };
     const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
     let currentFields = [companyField, shirtField, nicknameField];
-    const browseApi = fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/\\?'), () => ({
-      members_custom_fields: currentFields,
-    }));
+    const browseApi = fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/custom_fields/', (request) => {
       const order = (request.body as { members_custom_fields: { key: string }[] })
         .members_custom_fields;
@@ -329,9 +324,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
     let currentFields = [companyField, nicknameField];
-    fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/\\?'), () => ({
-      members_custom_fields: currentFields,
-    }));
+    fakeMemberCustomFields(() => currentFields);
 
     // The PUT is held open so the assertion below lands while the request is still
     // outstanding. Without the local move, the list would revert to the server's
@@ -376,12 +369,10 @@ describe('Custom fields', () => {
       { ...companyField, key: 'added_elsewhere', name: 'Added elsewhere' },
     ];
     let browses = 0;
-    fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/\\?'), () => {
+    fakeMemberCustomFields(() => {
       browses += 1;
       // The first load predates the colleague's field; a refetch sees it.
-      return {
-        members_custom_fields: browses === 1 ? [companyField, nicknameField] : serverFields,
-      };
+      return browses === 1 ? [companyField, nicknameField] : serverFields;
     });
     fakeAdminEndpoint(
       'PUT',
@@ -420,9 +411,7 @@ describe('Custom fields', () => {
     // Archived between the two active fields, which is the arrangement that catches a
     // move applied to the visible tab instead of the whole list.
     let currentFields = [companyField, archivedField, shirtField];
-    fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/\\?'), () => ({
-      members_custom_fields: currentFields,
-    }));
+    fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/custom_fields/', (request) => {
       const order = (request.body as { members_custom_fields: { key: string }[] })
         .members_custom_fields;
@@ -455,9 +444,7 @@ describe('Custom fields', () => {
       key: `field_${index}`,
       name: `Field ${index}`,
     }));
-    fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/\\?'), () => ({
-      members_custom_fields: currentFields,
-    }));
+    fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/custom_fields/', (request) => {
       const order = (request.body as { members_custom_fields: { key: string }[] })
         .members_custom_fields;

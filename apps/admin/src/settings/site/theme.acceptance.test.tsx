@@ -9,11 +9,11 @@ import {
   fakeEditSettings,
   fakeSettingsScreens,
   fakeThemes,
+  fakeThemeUpload,
   renderAdminApp,
   theme,
   type Theme,
 } from '@test-utils/acceptance';
-import * as sel from '@tryghost/test-data/selectors/settings';
 import { STICKY_FOOTER_TESTID } from '@/settings/components/confirmation-modal';
 import { THEME_PROBLEM_LIST_TESTID } from '@/settings/site/theme/theme-validation-details';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -94,10 +94,7 @@ function themeProblem(overrides: {
 }
 
 function installedTheme(name: string) {
-  return settingsScreen
-    .themeModal()
-    .getByTestId(sel.themeListItem)
-    .filter({ hasText: new RegExp(name, 'i') });
+  return settingsScreen.themeListItems().filter({ hasText: new RegExp(name, 'i') });
 }
 
 async function uploadThemeFile(file: File): Promise<void> {
@@ -187,7 +184,7 @@ describe('Theme settings', () => {
 
     const modal = settingsScreen.themeModal();
     await modal.getByRole('tab', { name: 'Installed' }).click();
-    await expect(modal.getByTestId(sel.themeListItem)).toHaveCount(2);
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
     await installedTheme('casper').getByRole('button', { name: 'Activate' }).click();
     await expect.element(installedTheme('casper')).toHaveTextContent(/Active/);
     expect(activateApi.requests).toHaveLength(1);
@@ -201,7 +198,7 @@ describe('Theme settings', () => {
     await installedTheme('edition').getByRole('button', { name: 'Menu' }).click();
     await settingsScreen.menuItem('Delete').click();
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Delete' }).click();
-    await expect(modal.getByTestId(sel.themeListItem)).toHaveCount(1);
+    await expect(settingsScreen.themeListItems()).toHaveCount(1);
     expect(deleteApi.requests).toHaveLength(1);
   });
 
@@ -224,7 +221,7 @@ describe('Theme settings', () => {
   it('uploads a theme archive', async () => {
     fakeThemeWorld();
     const uploaded = theme({ name: 'mytheme' });
-    const uploadApi = fakeAdminEndpoint('POST', '/themes/upload/', { themes: [uploaded] });
+    const uploadApi = fakeThemeUpload([uploaded]);
     const buffer = await archiveBuffer();
     await renderAdminApp('/settings/design/change-theme');
 
@@ -253,7 +250,7 @@ describe('Theme settings', () => {
         themeProblem({ code: 'GS002-DISQUS-ID', rule: 'Disqus id should be present' }),
       ],
     });
-    fakeAdminEndpoint('POST', '/themes/upload/', { themes: [uploaded] });
+    fakeThemeUpload([uploaded]);
     const buffer = await archiveBuffer();
     await renderAdminApp('/settings/design/change-theme');
 
@@ -301,9 +298,9 @@ describe('Theme settings', () => {
 
   it("flips an expanding issue row's chevron a single half turn", async () => {
     fakeThemeWorld();
-    fakeAdminEndpoint('POST', '/themes/upload/', {
-      themes: [theme({ name: 'mytheme', warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })] })],
-    });
+    fakeThemeUpload([
+      theme({ name: 'mytheme', warnings: [themeProblem({ code: 'GS001-DEPR-PURL' })] }),
+    ]);
     const buffer = await archiveBuffer();
     await renderAdminApp('/settings/design/change-theme');
 
@@ -329,20 +326,18 @@ describe('Theme settings', () => {
 
   it("chips gscan's inline code without letting the legacy code rule through", async () => {
     fakeThemeWorld();
-    fakeAdminEndpoint('POST', '/themes/upload/', {
-      themes: [
-        theme({
-          name: 'mytheme',
-          warnings: [
-            themeProblem({
-              code: 'GS001-DEPR-PURL',
-              rule: 'Replace <code>{{@blog.url}}</code> with <code>{{@site.url}}</code>',
-              details: 'The <code>{{@blog.title}}</code> helper is deprecated.',
-            }),
-          ],
-        }),
-      ],
-    });
+    fakeThemeUpload([
+      theme({
+        name: 'mytheme',
+        warnings: [
+          themeProblem({
+            code: 'GS001-DEPR-PURL',
+            rule: 'Replace <code>{{@blog.url}}</code> with <code>{{@site.url}}</code>',
+            details: 'The <code>{{@blog.title}}</code> helper is deprecated.',
+          }),
+        ],
+      }),
+    ]);
     const buffer = await archiveBuffer();
     await renderAdminApp('/settings/design/change-theme');
 
@@ -396,7 +391,7 @@ describe('Theme settings', () => {
   it('keeps the installed-theme dialog open when activation fails', async () => {
     fakeThemeWorld();
     const uploaded = theme({ name: 'mytheme' });
-    fakeAdminEndpoint('POST', '/themes/upload/', { themes: [uploaded] });
+    fakeThemeUpload([uploaded]);
     const activateApi = fakeAdminEndpoint(
       'PUT',
       '/themes/mytheme/activate/',
@@ -422,25 +417,23 @@ describe('Theme settings', () => {
 
   it('seats the sticky footer flush against the issue list, with no empty band and no shadow rule', async () => {
     fakeThemeWorld();
-    fakeAdminEndpoint('POST', '/themes/upload/', {
-      themes: [
-        theme({
-          name: 'mytheme',
-          errors: [
-            themeProblem({
-              code: 'GS005-TPL-ERR',
-              level: 'error',
-              rule: 'Templates must contain valid Handlebars',
-            }),
-          ],
-          // Enough rows that the dialog scrolls, so the footer both
-          // floats mid-scroll and lands in flow at the bottom.
-          warnings: Array.from({ length: 8 }, (_, index) =>
-            themeProblem({ code: `GS10${index}-DEPR-PURL` }),
-          ),
-        }),
-      ],
-    });
+    fakeThemeUpload([
+      theme({
+        name: 'mytheme',
+        errors: [
+          themeProblem({
+            code: 'GS005-TPL-ERR',
+            level: 'error',
+            rule: 'Templates must contain valid Handlebars',
+          }),
+        ],
+        // Enough rows that the dialog scrolls, so the footer both
+        // floats mid-scroll and lands in flow at the bottom.
+        warnings: Array.from({ length: 8 }, (_, index) =>
+          themeProblem({ code: `GS10${index}-DEPR-PURL` }),
+        ),
+      }),
+    ]);
     const buffer = await archiveBuffer();
     await renderAdminApp('/settings/design/change-theme');
 
@@ -619,9 +612,7 @@ describe('Theme settings', () => {
 
   it('prevents uploading an archive over a built-in theme', async () => {
     fakeThemeWorld();
-    const uploadApi = fakeAdminEndpoint('POST', '/themes/upload/', {
-      themes: [theme({ name: 'source' })],
-    });
+    const uploadApi = fakeThemeUpload([theme({ name: 'source' })]);
     const buffer = await archiveBuffer();
     await renderAdminApp('/settings/design/change-theme');
 
@@ -638,9 +629,7 @@ describe('Theme settings', () => {
   it('loads the code editor and saves a changed theme', async () => {
     fakeThemeWorld();
     await fakeThemeDownload('edition');
-    const uploadApi = fakeAdminEndpoint('POST', '/themes/upload/', {
-      themes: [theme({ name: 'edition', active: true })],
-    });
+    const uploadApi = fakeThemeUpload([theme({ name: 'edition', active: true })]);
     await renderAdminApp('/settings/theme/edit/edition');
 
     const modal = settingsScreen.themeCodeEditorModal();
@@ -665,9 +654,7 @@ describe('Theme settings', () => {
     // keep that pre-existing request in the declared world (follow-up).
     fakeEditSettings();
     await fakeThemeDownload('edition');
-    const uploadApi = fakeAdminEndpoint('POST', '/themes/upload/', {
-      themes: [theme({ name: 'edition', active: true })],
-    });
+    const uploadApi = fakeThemeUpload([theme({ name: 'edition', active: true })]);
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
