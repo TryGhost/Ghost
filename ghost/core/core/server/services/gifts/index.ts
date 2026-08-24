@@ -48,7 +48,6 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
   const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
   const { StartGiftDeliveryFlushEvent } = require('./events/start-gift-delivery-flush-event');
-  const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
   const jobs = require('./jobs');
   const emailAnalyticsJobs = require('../email-analytics/jobs');
 
@@ -192,16 +191,6 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     }
   });
 
-  DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
-    const cleanupStart = Date.now();
-    logging.info('[Background Job] clean-gifts started');
-
-    await giftService.cleanup();
-
-    logging.info(`[Background Job] clean-gifts completed in ${Date.now() - cleanupStart}ms`);
-  });
-
-  jobs.scheduleGiftCleanupJob();
   jobs.scheduleGiftReminderJob();
 }
 
