@@ -483,3 +483,65 @@ describe('useEmberRouting', () => {
     });
   });
 });
+
+describe('theme bridge helpers', () => {
+  test('isEmberThemeManaged reflects bridge presence', async () => {
+    const { isEmberThemeManaged } = await import('./ember-bridge');
+    expect(isEmberThemeManaged()).toBe(false);
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(isEmberThemeManaged()).toBe(true);
+  });
+
+  test('applyEmberAdminThemePreference calls Ember when the method exists and reports it', async () => {
+    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    const apply = vi.fn();
+    mock.stateBridge.applyAdminThemePreference = apply;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    expect(applyEmberAdminThemePreference('dark')).toBe(true);
+    expect(apply).toHaveBeenCalledWith('dark');
+  });
+
+  test('applyEmberAdminThemePreference returns false without a bridge or method', async () => {
+    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+
+    // Bridge present but from an older Ember without the method
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+  });
+
+  test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
+    const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
+    await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
+
+    const mock = createMockStateBridge();
+    const preload = vi.fn().mockResolvedValue(undefined);
+    mock.stateBridge.preloadAdminThemeStylesheet = preload;
+    window.EmberBridge = { state: mock.stateBridge };
+    await preloadEmberAdminThemeStylesheet();
+    expect(preload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('emberMutationHandlers', () => {
+  test('resolves the bridge at call time, not import time', async () => {
+    // Import first, install the bridge after: forwarding must still work.
+    const { emberMutationHandlers } = await import('./ember-bridge');
+    expect(() => emberMutationHandlers.onUpdate('SettingsResponseType', {})).not.toThrow();
+
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    emberMutationHandlers.onUpdate('SettingsResponseType', { settings: [] });
+    emberMutationHandlers.onInvalidate('TagsResponseType');
+    emberMutationHandlers.onDelete('UsersResponseType', 'user-1');
+
+    expect(mock.stateBridge.onUpdate).toHaveBeenCalledWith('SettingsResponseType', {
+      settings: [],
+    });
+    expect(mock.stateBridge.onInvalidate).toHaveBeenCalledWith('TagsResponseType');
+    expect(mock.stateBridge.onDelete).toHaveBeenCalledWith('UsersResponseType', 'user-1');
+  });
+});
