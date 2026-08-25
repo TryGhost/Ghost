@@ -4,6 +4,39 @@ const find = require('lodash/find');
 const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/posts-importer');
 
 describe('PostsImporter', function () {
+  describe('#addNestedRelations', function () {
+    it('indexes posts before attaching their relations', function () {
+      const postCount = 100;
+      let postIdReads = 0;
+      const posts = Array.from({ length: postCount }, (_, index) => {
+        const post = {};
+        Object.defineProperty(post, 'id', {
+          enumerable: true,
+          get() {
+            postIdReads += 1;
+            return `post-${index}`;
+          },
+        });
+        return post;
+      });
+      const postsTags = Array.from({ length: postCount }, (_, index) => ({
+        post_id: `post-${index}`,
+        tag_id: `tag-${index}`,
+        sort_order: 0,
+      }));
+      const importer = new PostsImporter({ posts: [] });
+      importer.dataToImport = posts;
+      importer.requiredFromFile.posts_tags = postsTags;
+      importer.requiredFromFile.posts_authors = [];
+      importer.requiredFromFile.posts_products = [];
+
+      importer.addNestedRelations();
+
+      assert.equal(postIdReads, postCount);
+      assert.deepEqual(posts[99].tags, [{ id: 'tag-99' }]);
+    });
+  });
+
   describe('#beforeImport', function () {
     it('converts post.page to post.type', function () {
       const fakePosts = [

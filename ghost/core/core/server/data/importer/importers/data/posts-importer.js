@@ -73,9 +73,11 @@ class PostsImporter extends BaseImporter {
   }
 
   /**
-   * Naive function to attach related tags, authors, and products.
+   * Attaches related tags, authors, and products.
    */
   addNestedRelations() {
+    const postsById = new Map(this.dataToImport.map((post) => [post.id, post]));
+
     this.requiredFromFile.posts_tags = _.orderBy(
       this.requiredFromFile.posts_tags,
       ['post_id', 'sort_order'],
@@ -103,7 +105,7 @@ class PostsImporter extends BaseImporter {
           return;
         }
 
-        let postToImport = _.find(this.dataToImport, { id: relation.post_id });
+        const postToImport = postsById.get(relation.post_id);
 
         // CASE: we won't import a relation when the target post does not exist
         if (!postToImport) {
