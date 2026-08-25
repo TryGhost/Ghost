@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const events = require('../../../../core/server/lib/common/events');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import events from '../../../../core/server/lib/common/events';
 
 describe('Events', function () {
   describe('Has registered listener', function () {
