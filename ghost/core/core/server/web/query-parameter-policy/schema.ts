@@ -31,14 +31,13 @@ const QueryParameterListSchema = z
     }
   });
 
-export const QueryParameterPolicySchema = z.object({
+const QueryParameterPolicySchema = z.object({
   schemaVersion: z.literal(1, { error: 'Unsupported schema version; expected 1.' }),
   public: QueryParameterListSchema,
   contentApi: QueryParameterListSchema,
 });
 
-export type QueryParameterPolicy = z.infer<typeof QueryParameterPolicySchema>;
-export type QueryParameterPolicyEntry = z.infer<typeof QueryParameterPolicyEntrySchema>;
+type QueryParameterPolicy = z.infer<typeof QueryParameterPolicySchema>;
 
 export function validateQueryParameterPolicy(value: unknown): QueryParameterPolicy {
   return QueryParameterPolicySchema.parse(value);
