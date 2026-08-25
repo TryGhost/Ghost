@@ -1,11 +1,3 @@
-// # CacheControl Middleware
-// Usage: cacheControl(profile), where profile is one of 'public' or 'private'
-// After: checkIsPrivate
-// Before: routes
-// App: Admin|Site|API
-//
-// Allows each app to declare its own default caching rules
-
 /**
  * @param {'public'|'private'|'noCache'} profile Use "private" if you do not want caching
  * @param {object} [options]
