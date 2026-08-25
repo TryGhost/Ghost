@@ -1,8 +1,9 @@
-const urlUtils = require('../../../../shared/url-utils').default;
-const localUtils = require('../utils');
+import type { NextFunction, Request, Response } from 'express';
+import urlUtils from '../../../../shared/url-utils';
+import { removeOpenRedirectFromUrl } from '../utils';
 
 /**
- * redirectAmpUrls middleware
+ * Redirects AMP URLs to their non-AMP equivalent.
  *
  * 1. Detect requests whose path ends with `/amp/` (case-insensitive) or `/amp` before a query-string
  * 2. Issue a 301 redirect to the same URL without that suffix, preserving the query string.
@@ -13,13 +14,8 @@ const localUtils = require('../utils');
  * Example:
  *   /welcome/amp/      -> /welcome/
  *   /welcome/amp/?q=1  -> /welcome/?q=1
- *
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @param {import('express').NextFunction} next - Express next function
- * @returns {void}
  */
-function redirectAmpUrls(req, res, next) {
+export function redirectAmpUrls(req: Request, res: Response, next: NextFunction) {
   const ampPattern = /\/amp\/?$/i;
   const url = new URL(req.url, 'http://example.com');
 
@@ -28,9 +24,7 @@ function redirectAmpUrls(req, res, next) {
   }
 
   const sanitizedPath = url.pathname.replace(ampPattern, '/') + url.search;
-  const redirectPath = localUtils.removeOpenRedirectFromUrl(sanitizedPath);
+  const redirectPath = removeOpenRedirectFromUrl(sanitizedPath);
 
   return urlUtils.redirect301(res, redirectPath);
 }
-
-exports.redirectAmpUrls = redirectAmpUrls;
