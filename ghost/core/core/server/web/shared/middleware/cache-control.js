@@ -34,4 +34,4 @@ const cacheControl = (profile, options = { maxAge: 0 }) => {
   };
 };
 
-module.exports = cacheControl;
+exports.cacheControl = cacheControl;
