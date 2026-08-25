@@ -95,6 +95,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Codebase documentation](contributing/documentation.md)
 - [Email testing](contributing/testing-email.md)
 - [Error handling](practices/error-handling.md)
+- [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
