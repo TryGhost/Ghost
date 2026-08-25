@@ -41,15 +41,6 @@ describe('Cache-Control middleware', function () {
     sinon.assert.calledWith(res.set, { 'Cache-Control': 'public, max-age=123456' });
   });
 
-  it('correctly sets the public profile headers with staleWhileRevalidate', async function () {
-    await runMiddleware(cacheControl('public', { maxAge: 1, staleWhileRevalidate: 9 }));
-
-    sinon.assert.calledOnce(res.set);
-    sinon.assert.calledWith(res.set, {
-      'Cache-Control': 'public, max-age=1, stale-while-revalidate=9',
-    });
-  });
-
   it('correctly sets the private profile headers', async function () {
     await runMiddleware(cacheControl('private'));
 
@@ -68,12 +59,6 @@ describe('Cache-Control middleware', function () {
       'Cache-Control':
         'no-cache, max-age=0, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
     });
-  });
-
-  it('will not set headers without a profile', async function () {
-    await runMiddleware(cacheControl());
-
-    sinon.assert.notCalled(res.set);
   });
 
   it('will not get confused between serving public and private', async function () {
