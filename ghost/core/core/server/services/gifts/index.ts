@@ -81,6 +81,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     settingsCache,
     urlUtils,
     getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
+    getReplyToAddress: () => settingsHelpers.getMembersSupportAddress(),
     blogIcon,
     t,
   });

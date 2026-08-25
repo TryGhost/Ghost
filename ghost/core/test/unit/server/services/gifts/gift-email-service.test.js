@@ -27,6 +27,7 @@ describe('GiftEmailService', function () {
   };
 
   const getFromAddress = () => 'Test Site <noreply@example.com>';
+  const getReplyToAddress = () => 'support@example.com';
 
   const blogIcon = {
     getIconUrl: () => 'https://example.com/icon.png',
@@ -80,6 +81,7 @@ describe('GiftEmailService', function () {
       settingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -99,6 +101,7 @@ describe('GiftEmailService', function () {
         to: 'buyer@example.com',
         subject: 'Your gift is ready',
         from: 'Test Site <noreply@example.com>',
+        replyTo: 'support@example.com',
         disableTracking: true,
       }),
     );
@@ -151,6 +154,7 @@ describe('GiftEmailService', function () {
     sinon.assert.match(message, {
       to: 'buyer@example.com',
       subject: 'Your gift has been sent',
+      replyTo: 'support@example.com',
       disableTracking: true,
     });
     for (const field of ['html', 'text']) {
@@ -171,6 +175,7 @@ describe('GiftEmailService', function () {
     sinon.assert.match(message, {
       to: 'buyer@example.com',
       subject: "We couldn't deliver your gift",
+      replyTo: 'support@example.com',
       disableTracking: true,
     });
     assert.equal(message.tags, undefined);
@@ -224,6 +229,7 @@ describe('GiftEmailService', function () {
       settingsCache: localizedSettingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -262,6 +268,7 @@ describe('GiftEmailService', function () {
       settingsCache: noTitleSettingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -292,6 +299,7 @@ describe('GiftEmailService', function () {
       settingsCache: hostileSettingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -343,6 +351,7 @@ describe('GiftEmailService', function () {
       const message = bulkMailer.send.firstCall.firstArg;
       sinon.assert.match(message, {
         subject: 'Buyer sent you a gift',
+        replyTo: 'support@example.com',
         tags: ['gift-delivery'],
         disable_tracking: true,
       });
@@ -389,6 +398,7 @@ describe('GiftEmailService', function () {
         settingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon: { getIconUrl: () => null },
         t: translate(),
       });
@@ -436,6 +446,7 @@ describe('GiftEmailService', function () {
         settingsCache: siteSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -477,6 +488,7 @@ describe('GiftEmailService', function () {
         settingsCache: invalidLocaleSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -510,6 +522,7 @@ describe('GiftEmailService', function () {
         settingsCache: invalidColorSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -558,6 +571,7 @@ describe('GiftEmailService', function () {
           to: 'recipient@example.com',
           subject: 'Buyer sent you a gift',
           from: 'Test Site <noreply@example.com>',
+          replyTo: 'support@example.com',
           tags: ['gift-delivery'],
           disableTracking: true,
           forceTextContent: true,
@@ -635,6 +649,7 @@ describe('GiftEmailService', function () {
         settingsCache: literalSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -728,6 +743,7 @@ describe('GiftEmailService', function () {
           to: 'member@example.com',
           subject: 'Your gift subscription is ending soon',
           from: 'Test Site <noreply@example.com>',
+          replyTo: 'support@example.com',
         }),
       );
     });
@@ -800,6 +816,7 @@ describe('GiftEmailService', function () {
         settingsCache: localizedSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
