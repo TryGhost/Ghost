@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-
-const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/offer-code');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import OfferCode from '../../../../../../../core/server/services/offers/domain/models/offer-code';
 
 describe('OfferCode', function () {
   describe('OfferCode.create factory', function () {
