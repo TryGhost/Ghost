@@ -1,5 +1,5 @@
 import { type Filter } from '@tryghost/shade/patterns';
-import { getMemberFields } from '@/members/member-fields';
+import { buildMemberFields, canReadMemberFilter } from '@/members/member-filter-catalog';
 import {
   hasTimezoneSensitiveMemberFilter,
   isPredicateEnabled,
@@ -8,7 +8,9 @@ import {
 } from '@/members/member-filter-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from '@tryghost/admin-x-framework';
-import type { MemberFields } from '@/members/member-fields';
+import type { CustomFieldDefinition } from '@/members/custom-fields/filter-fields';
+import type { MemberFields } from '@/members/member-filter-catalog';
+import type { NewsletterDefinition } from '@/members/newsletter-filter-fields';
 
 interface SetFiltersOptions {
   replace?: boolean;
@@ -33,24 +35,46 @@ interface ToSearchParamsOptions {
   fields: MemberFields;
 }
 
+/** What a filter may depend on before it can be read for what it says. */
+export interface MemberFilterPrerequisites {
+  /** Settings carry the site timezone, which is what a date in a filter is relative to. */
+  hasResolvedSettings: boolean;
+  isLoadingSettings?: boolean;
+  /** The site's own newsletters and custom fields. Undefined until they arrive. */
+  newsletters?: readonly NewsletterDefinition[];
+  customFields?: readonly CustomFieldDefinition[];
+}
+
 /**
- * Should the page hold off parsing the URL filter until more data is in?
+ * Whether the page should wait before touching the filter at all.
  *
- * Parsing a date-sensitive filter needs the timezone from settings. If we parse
- * before it resolves, the writeback effect can round-trip the date in UTC
- * instead of site time.
+ * A filter can only be read for what it says once everything it leans on has arrived. The site's
+ * timezone decides which day a date means; the site's own definitions decide that a custom field
+ * holds dates rather than text. Read one early and the parts that cannot be understood yet are
+ * simply not there, so the page answers a wider question than was asked — and, on the next write,
+ * replaces what the publisher wrote with that wider version.
+ *
+ * The page therefore waits, rather than each place that reads or writes a filter remembering to
+ * check. Waiting is only ever for what this particular filter names: one that mentions no
+ * newsletter does not wait for newsletters, and one with no date does not wait for the timezone.
  */
-export function shouldDelayMembersDateFilterHydration(
+export function shouldDelayMembersFilterHydration(
   filterParam: string | undefined,
-  hasResolvedDependencies: boolean,
-  isLoadingDependencies: boolean = !hasResolvedDependencies,
+  {
+    hasResolvedSettings,
+    isLoadingSettings = !hasResolvedSettings,
+    newsletters,
+    customFields,
+  }: MemberFilterPrerequisites,
 ): boolean {
-  return (
-    Boolean(filterParam) &&
-    isLoadingDependencies &&
-    !hasResolvedDependencies &&
-    hasTimezoneSensitiveMemberFilter(filterParam)
-  );
+  if (!filterParam) {
+    return false;
+  }
+
+  const waitingForTimezone =
+    isLoadingSettings && !hasResolvedSettings && hasTimezoneSensitiveMemberFilter(filterParam);
+
+  return waitingForTimezone || !canReadMemberFilter(filterParam, { newsletters, customFields });
 }
 
 function getEnabledFilters(filters: Filter[], fields: MemberFields): Filter[] {
@@ -65,7 +89,7 @@ function toSearchParams({
   fields,
 }: ToSearchParamsOptions): URLSearchParams {
   const params = new URLSearchParams(baseSearchParams);
-  const filter = serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
+  const filter = serializeMemberFilters(getEnabledFilters(filters, fields), timezone, fields);
 
   params.delete('filter');
   params.delete('search');
@@ -81,15 +105,22 @@ function toSearchParams({
   return params;
 }
 
-export function useMembersFilterState(timezone: string): UseMembersFilterStateReturn {
-  const fields = useMemo(() => getMemberFields(), []);
+export function useMembersFilterState(
+  timezone: string,
+  newsletters?: readonly NewsletterDefinition[],
+  customFields?: readonly CustomFieldDefinition[],
+): UseMembersFilterStateReturn {
+  const fields = useMemo(
+    () => buildMemberFields({ newsletters, customFields }),
+    [newsletters, customFields],
+  );
   const [searchParams, setSearchParams] = useSearchParams();
   const lastWrittenQueryRef = useRef<string | null>(null);
   const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
   const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
 
   const parsedFilters = useMemo(() => {
-    return getEnabledFilters(parseMemberFilter(filterParam, timezone), fields);
+    return getEnabledFilters(parseMemberFilter(filterParam, timezone, fields), fields);
   }, [filterParam, timezone, fields]);
   const [filters, setDraftFilters] = useState<Filter[]>(parsedFilters);
 
@@ -98,7 +129,7 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
   }, [searchParams]);
 
   const nql = useMemo(() => {
-    return serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
+    return serializeMemberFilters(getEnabledFilters(filters, fields), timezone, fields);
   }, [filters, timezone, fields]);
 
   useEffect(() => {

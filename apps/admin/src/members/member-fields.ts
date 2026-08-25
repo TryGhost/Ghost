@@ -1,28 +1,17 @@
+import { CUSTOM_FIELD_SET_OPERATORS, customFieldAddressing } from './custom-fields/addressing';
 import {
-  DATE_FILTER_OPERATORS,
-  DEFAULT_DATE_OPERATOR,
-  type FilterCodec,
-  dateCodec,
-  defineFields,
-  extractComparator,
-  numberCodec,
-  scalarCodec,
-  setCodec,
-  textCodec,
-  withFutureRelativeOperator,
-  withPastRelativeOperator,
+  FUTURE_TIMESTAMP_OPERATORS,
+  PAST_TIMESTAMP_OPERATORS,
+  FILTER_TYPES,
+  type FieldDescriptor,
+  buildCatalog,
+  domainField,
+  columnAddressing,
 } from '@/shared/filters';
-import { escapeNqlString } from '@tryghost/nql-string';
-import {
-  MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD,
-  MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER,
-  NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER,
-} from './multiple-active-subscriptions';
+import { NEWSLETTER_FIELD } from './newsletter-filter-fields';
+import { feedbackSemantics, subscriptionSemantics } from './member-value-semantics';
+import { MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD } from './multiple-active-subscriptions';
 
-const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
-const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
-const SCALAR_OPERATORS = ['is', 'is-not'] as const;
-const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
 const SUBSCRIPTION_STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'active', label: 'Active' },
   { value: 'trialing', label: 'Trialing' },
@@ -33,137 +22,255 @@ const SUBSCRIPTION_STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'incomplete_expired', label: 'Incomplete - Expired' },
 ];
 
-const subscribedCodec: FilterCodec = {
-  parse() {
-    return null;
+const MEMBER_FIELDS = [
+  {
+    key: 'name',
+    icon: 'person',
+    type: 'text',
+    ui: { label: 'Name', placeholder: 'Enter name...', className: 'w-48' },
   },
-  serialize(predicate) {
-    const value = predicate.values[0];
-
-    if (predicate.operator !== 'is' && predicate.operator !== 'is-not') {
-      return null;
-    }
-
-    if (value === 'email-disabled') {
-      return predicate.operator === 'is' ? ['(email_disabled:1)'] : ['(email_disabled:0)'];
-    }
-
-    if (value === 'subscribed') {
-      return predicate.operator === 'is'
-        ? ['(subscribed:true+email_disabled:0)']
-        : ['(subscribed:false,email_disabled:1)'];
-    }
-
-    if (value === 'unsubscribed') {
-      return predicate.operator === 'is'
-        ? ['(subscribed:false+email_disabled:0)']
-        : ['(subscribed:true,email_disabled:1)'];
-    }
-
-    return null;
+  {
+    key: 'email',
+    icon: 'mail',
+    type: 'text',
+    ui: { label: 'Email', placeholder: 'Enter email...', className: 'w-48' },
   },
-};
-
-const newsletterCodec: FilterCodec = {
-  parse() {
-    return null;
+  {
+    key: 'label',
+    icon: 'tag',
+    type: 'set',
+    ui: { label: 'Label', searchable: true, className: 'w-64' },
+    metadata: { activeColumn: { key: 'labels', label: 'Labels' }, columnInclude: 'labels' },
   },
-  serialize(predicate, ctx) {
-    const slug = ctx.params.slug;
-    const value = predicate.values[0];
-
-    if (!slug || predicate.operator !== 'is') {
-      return null;
-    }
-
-    if (value === 'subscribed') {
-      return [`(newsletters.slug:${slug}+email_disabled:0)`];
-    }
-
-    if (value === 'unsubscribed') {
-      return [`(newsletters.slug:-${slug},email_disabled:1)`];
-    }
-
-    return null;
+  domainField({
+    key: 'subscribed',
+    icon: 'mail',
+    semantics: subscriptionSemantics(),
+    operators: FILTER_TYPES.scalar.operators,
+    ui: { label: 'Newsletter subscription', type: 'select', searchable: false },
+    options: [
+      { value: 'subscribed', label: 'Subscribed' },
+      { value: 'unsubscribed', label: 'Unsubscribed' },
+      { value: 'email-disabled', label: 'Email disabled' },
+    ],
+  }),
+  {
+    key: 'last_seen_at',
+    icon: 'eye',
+    type: 'timestamp',
+    operators: PAST_TIMESTAMP_OPERATORS,
+    ui: { label: 'Last seen' },
   },
-};
-
-const feedbackCodec: FilterCodec = {
-  parse() {
-    return null;
+  {
+    key: 'created_at',
+    icon: 'calendar',
+    type: 'timestamp',
+    operators: PAST_TIMESTAMP_OPERATORS,
+    ui: { label: 'Created' },
   },
-  serialize(predicate) {
-    const postId = predicate.values[0];
-
-    if (
-      typeof postId !== 'string' ||
-      !postId ||
-      (predicate.operator !== '1' && predicate.operator !== '0')
-    ) {
-      return null;
-    }
-
-    return [`(feedback.post_id:${escapeNqlString(postId)}+feedback.score:${predicate.operator})`];
+  {
+    key: 'signup',
+    icon: 'person-plus',
+    type: 'scalar',
+    valueConfig: { quoteStrings: true },
+    ui: {
+      label: 'Signed up on post/page',
+      searchable: true,
+      placeholder: 'Select a post or page...',
+      className: 'w-64',
+    },
   },
-};
-
-const multipleActiveSubscriptionsCodec: FilterCodec = {
-  parse(node, ctx) {
-    const comparator = extractComparator(node as Record<string, unknown>);
-
-    if (!comparator || comparator.field !== ctx.key) {
-      return null;
-    }
-
-    if (comparator.operator === '$gt' && comparator.value === 1) {
-      return {
-        field: ctx.key,
-        operator: 'is',
-        values: ['true'],
-      };
-    }
-
-    if (comparator.operator === '$lt' && comparator.value === 2) {
-      return {
-        field: ctx.key,
-        operator: 'is',
-        values: ['false'],
-      };
-    }
-
-    return null;
+  {
+    key: 'tier_id',
+    icon: 'card',
+    type: 'set',
+    ui: { label: 'Membership tier', searchable: true, className: 'w-64' },
+    metadata: { activeColumn: { key: 'tiers', label: 'Tiers' }, columnInclude: 'tiers' },
   },
-  serialize(predicate) {
-    const value = predicate.values[0];
-
-    if (predicate.operator !== 'is') {
-      return null;
-    }
-
-    if (value === 'true') {
-      return [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
-    }
-
-    if (value === 'false') {
-      return [NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
-    }
-
-    return null;
+  {
+    key: 'status',
+    icon: 'person-circle',
+    type: 'scalar',
+    ui: { label: 'Member status', searchable: false },
+    options: [
+      { value: 'paid', label: 'Paid' },
+      { value: 'free', label: 'Free' },
+      { value: 'comped', label: 'Complimentary' },
+    ],
   },
-};
+  {
+    key: 'subscriptions.plan_interval',
+    icon: 'calendar-clock',
+    type: 'scalar',
+    ui: { label: 'Billing period', searchable: false },
+    options: [
+      { value: 'month', label: 'Monthly' },
+      { value: 'year', label: 'Yearly' },
+    ],
+    metadata: {
+      activeColumn: { key: 'subscriptions.plan_interval', label: 'Billing period' },
+      columnInclude: 'subscriptions',
+    },
+  },
+  {
+    key: 'subscriptions.status',
+    icon: 'card',
+    type: 'scalar',
+    ui: { label: 'Stripe subscription status', searchable: false },
+    options: SUBSCRIPTION_STATUS_OPTIONS,
+    metadata: {
+      activeColumn: { key: 'subscriptions.status', label: 'Subscription status' },
+      columnInclude: 'subscriptions',
+    },
+  },
+  {
+    key: 'subscriptions.start_date',
+    icon: 'calendar-start',
+    type: 'timestamp',
+    operators: PAST_TIMESTAMP_OPERATORS,
+    ui: { label: 'Paid start date' },
+    metadata: {
+      activeColumn: { key: 'subscriptions.start_date', label: 'Paid start date' },
+      columnInclude: 'subscriptions',
+    },
+  },
+  {
+    key: 'subscriptions.current_period_end',
+    icon: 'calendar-end',
+    type: 'timestamp',
+    operators: FUTURE_TIMESTAMP_OPERATORS,
+    ui: { label: 'Next billing date' },
+    metadata: {
+      activeColumn: { key: 'subscriptions.current_period_end', label: 'Next billing date' },
+      columnInclude: 'subscriptions',
+    },
+  },
+  {
+    key: 'conversion',
+    icon: 'arrows',
+    type: 'scalar',
+    valueConfig: { quoteStrings: true },
+    ui: {
+      label: 'Subscription started on post/page',
+      searchable: true,
+      placeholder: 'Select a post or page...',
+      className: 'w-64',
+    },
+  },
+  {
+    key: 'email_count',
+    icon: 'send',
+    type: 'number',
+    ui: {
+      label: 'Emails sent (all time)',
+      defaultOperator: 'is-greater',
+      min: 0,
+      className: 'w-24',
+    },
+  },
+  {
+    key: 'email_opened_count',
+    icon: 'mail-open',
+    type: 'number',
+    ui: {
+      label: 'Emails opened (all time)',
+      defaultOperator: 'is-greater',
+      min: 0,
+      className: 'w-24',
+    },
+  },
+  {
+    key: 'email_open_rate',
+    icon: 'percent',
+    type: 'number',
+    ui: {
+      label: 'Open rate (all time)',
+      defaultOperator: 'is-greater',
+      min: 0,
+      max: 100,
+      suffix: '%',
+      className: 'w-24',
+    },
+  },
+  {
+    key: 'emails.post_id',
+    icon: 'send',
+    type: 'scalar',
+    valueConfig: { quoteStrings: true },
+    ui: {
+      label: 'Sent email',
+      searchable: true,
+      placeholder: 'Select an email...',
+      className: 'w-64',
+    },
+  },
+  {
+    key: 'opened_emails.post_id',
+    icon: 'mail-open',
+    type: 'scalar',
+    valueConfig: { quoteStrings: true },
+    ui: {
+      label: 'Opened email',
+      searchable: true,
+      placeholder: 'Select an email...',
+      className: 'w-64',
+    },
+  },
+  {
+    key: 'clicked_links.post_id',
+    icon: 'click',
+    type: 'scalar',
+    valueConfig: { quoteStrings: true },
+    ui: {
+      label: 'Clicked email',
+      searchable: true,
+      placeholder: 'Select an email...',
+      className: 'w-64',
+    },
+  },
+  domainField({
+    key: 'newsletter_feedback',
+    icon: 'message',
+    semantics: feedbackSemantics(),
+    addressing: columnAddressing({ field: 'feedback.post_id' }),
+    operators: ['1', '0'],
+    ui: {
+      label: 'Responded with feedback',
+      type: 'select',
+      searchable: true,
+      placeholder: 'Select an email...',
+      className: 'w-64',
+      defaultOperator: '1',
+    },
+  }),
+  {
+    key: 'offer_redemptions',
+    icon: 'ticket',
+    type: 'set',
+    valueConfig: { quoteStrings: true, serializeSingletonAsScalar: true },
+    ui: { label: 'Offer', searchable: true, className: 'w-64' },
+    metadata: { activeColumn: { key: 'offer_redemptions', label: 'Offer' } },
+  },
+  {
+    key: MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD,
+    icon: 'layers',
+    type: 'count',
+    valueConfig: { threshold: 1, absentForm: 'below' },
+    ui: {
+      label: 'Multiple active subscriptions',
+      type: 'select',
+      searchable: false,
+      hideOperatorSelect: true,
+    },
+    options: [
+      { value: 'true', label: 'Yes' },
+      { value: 'false', label: 'No' },
+    ],
+  },
+] as const satisfies readonly FieldDescriptor[];
 
-// Presence operators: the extra an optional, per-member field has that a table column does
-// not — a column is always set, so no built-in field offers these.
-export const CUSTOM_FIELD_SET_OPERATORS: readonly string[] = ['is-set', 'is-not-set'];
-
-// A custom text field's operators, composed from the shared groups so the members filter
-// keeps one vocabulary: the equality pair (is / is-not) the scalar fields use, then the
-// text matching operators (contains, starts-with, …) with their duplicate `is` dropped,
-// then presence. Labels come from the shared createOperatorOptions default (dash to space),
-// which reads every one of these correctly, so no label map is needed.
-export const CUSTOM_FIELD_OPERATORS: readonly string[] = [
-  ...SCALAR_OPERATORS,
-  ...TEXT_OPERATORS.filter((op) => !(SCALAR_OPERATORS as readonly string[]).includes(op)),
+export const CUSTOM_FIELD_OPERATORS = [
+  ...FILTER_TYPES.text.operators,
   ...CUSTOM_FIELD_SET_OPERATORS,
 ];
 
@@ -177,424 +284,40 @@ export const CUSTOM_FIELD_OPERATORS: readonly string[] = [
  */
 export const CUSTOM_FIELDS_PREFIX = 'custom_fields.';
 
-// NQL operator symbol for each value operator. The field is named in the value
-// position (`custom_fields.key:'…'`) so its key can carry hyphens; the value is
-// matched on `custom_fields.value` (scalar) or `custom_fields.value.<subfield>`
-// (address), which the members filter relation maps onto the real columns.
-const CUSTOM_FIELD_VALUE_SYMBOLS: Record<string, string> = {
-  is: '',
-  'is-not': '-',
-  contains: '~',
-  'does-not-contain': '-~',
-  'starts-with': '~^',
-  'ends-with': '~$',
-};
-
-const customFieldsCodec: FilterCodec = {
-  // Parsing a grouped custom-field expression back to a predicate is bespoke —
-  // its field and part are spread across a `(key + value)` pair — so it's handled
-  // by a compound matcher in member-filter-query.ts, not here.
-  parse() {
-    return null;
+const CUSTOM_FIELD: FieldDescriptor = {
+  key: 'custom_fields.:key',
+  icon: 'text',
+  type: 'text',
+  addressing: customFieldAddressing(),
+  operators: CUSTOM_FIELD_OPERATORS,
+  ui: {
+    label: 'Custom field',
+    type: 'custom',
   },
-  // The field's stable key comes from the dropdown entry (`custom_fields.<key>`,
-  // resolved into `ctx.params.key`); the predicate carries only [subfield, value],
-  // with subfield '' for a scalar field or the "Any" (whole-field set/unset) case.
-  serialize(predicate, ctx) {
-    const fieldKey = ctx.params.key;
-    const [subfield, value] = predicate.values as [string, string];
-
-    if (!fieldKey) {
-      return null;
-    }
-
-    const keyClause = `custom_fields.key:${escapeNqlString(fieldKey)}`;
-
-    // set / not-set target a part's presence when a part is chosen (`path`), or the
-    // whole field otherwise (the bare key / its negation).
-    if (predicate.operator === 'is-set') {
-      return subfield
-        ? [`(${keyClause}+custom_fields.path:${escapeNqlString(subfield)})`]
-        : [keyClause];
-    }
-
-    if (predicate.operator === 'is-not-set') {
-      return subfield
-        ? [`(${keyClause}+custom_fields.path:-${escapeNqlString(subfield)})`]
-        : [`custom_fields.key:-${escapeNqlString(fieldKey)}`];
-    }
-
-    const symbol = CUSTOM_FIELD_VALUE_SYMBOLS[predicate.operator];
-
-    if (symbol === undefined || value === undefined || value === null || value === '') {
-      return null;
-    }
-
-    const valueKey = subfield ? `custom_fields.value.${subfield}` : 'custom_fields.value';
-
-    return [`(${keyClause}+${valueKey}:${symbol}${escapeNqlString(String(value))})`];
+  metadata: {
+    // One column per field filtered on, named after the field itself. A value a
+    // publisher collected varies member to member, which is what earns a column;
+    // it is shown whatever the operator, the way Label is. No name resolved means
+    // no such field for this site (or the flag is off), so no column either.
+    activeColumn: ({ params, label }) =>
+      label ? { key: `${CUSTOM_FIELDS_PREFIX}${params.key}`, label } : null,
+    // Asked for as soon as a custom field is filtered on, without waiting for the
+    // names: the values are what the column will hold, and they travel on the same
+    // request the filter already sends. The API takes this include whether or not
+    // the flag is on, and returns values only when it is.
+    columnInclude: 'custom_fields',
   },
 };
 
-const baseMemberFields = defineFields({
-  name: {
-    operators: TEXT_OPERATORS,
-    ui: {
-      label: 'Name',
-      type: 'text',
-      placeholder: 'Enter name...',
-      defaultOperator: 'contains',
-      className: 'w-48',
-    },
-    codec: textCodec(),
-  },
-  email: {
-    operators: TEXT_OPERATORS,
-    ui: {
-      label: 'Email',
-      type: 'text',
-      placeholder: 'Enter email...',
-      defaultOperator: 'contains',
-      className: 'w-48',
-    },
-    codec: textCodec(),
-  },
-  label: {
-    operators: SET_OPERATORS,
-    ui: {
-      label: 'Label',
-      type: 'multiselect',
-      searchable: true,
-      className: 'w-64',
-      defaultOperator: 'is-any',
-    },
-    metadata: {
-      activeColumn: {
-        key: 'labels',
-        label: 'Labels',
-      },
-      columnInclude: 'labels',
-    },
-    codec: setCodec(),
-  },
-  subscribed: {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Newsletter subscription',
-      type: 'select',
-      searchable: false,
-    },
-    options: [
-      { value: 'subscribed', label: 'Subscribed' },
-      { value: 'unsubscribed', label: 'Unsubscribed' },
-      { value: 'email-disabled', label: 'Email disabled' },
-    ],
-    codec: subscribedCodec,
-  },
-  last_seen_at: {
-    operators: DATE_FILTER_OPERATORS,
-    ui: {
-      label: 'Last seen',
-      type: 'date',
-      defaultOperator: DEFAULT_DATE_OPERATOR,
-    },
-    codec: dateCodec(),
-  },
-  created_at: {
-    operators: DATE_FILTER_OPERATORS,
-    ui: {
-      label: 'Created',
-      type: 'date',
-      defaultOperator: DEFAULT_DATE_OPERATOR,
-    },
-    codec: dateCodec(),
-  },
-  signup: {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Signed up on post/page',
-      type: 'select',
-      searchable: true,
-      placeholder: 'Select a post or page...',
-      className: 'w-64',
-    },
-    codec: scalarCodec({ quoteStrings: true }),
-  },
-  'newsletters.:slug': {
-    operators: ['is'],
-    ui: {
-      label: 'Newsletter',
-      type: 'select',
-      searchable: false,
-      hideOperatorSelect: true,
-    },
-    options: [
-      { value: 'subscribed', label: 'Subscribed' },
-      { value: 'unsubscribed', label: 'Unsubscribed' },
-    ],
-    codec: newsletterCodec,
-  },
-  tier_id: {
-    operators: SET_OPERATORS,
-    ui: {
-      label: 'Membership tier',
-      type: 'multiselect',
-      searchable: true,
-      className: 'w-64',
-      defaultOperator: 'is-any',
-    },
-    metadata: {
-      activeColumn: {
-        key: 'tiers',
-        label: 'Tiers',
-      },
-      columnInclude: 'tiers',
-    },
-    codec: setCodec(),
-  },
-  status: {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Member status',
-      type: 'select',
-      searchable: false,
-    },
-    options: [
-      { value: 'paid', label: 'Paid' },
-      { value: 'free', label: 'Free' },
-      { value: 'comped', label: 'Complimentary' },
-    ],
-    codec: scalarCodec(),
-  },
-  'subscriptions.plan_interval': {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Billing period',
-      type: 'select',
-      searchable: false,
-    },
-    options: [
-      { value: 'month', label: 'Monthly' },
-      { value: 'year', label: 'Yearly' },
-    ],
-    metadata: {
-      activeColumn: {
-        key: 'subscriptions.plan_interval',
-        label: 'Billing period',
-      },
-      columnInclude: 'subscriptions',
-    },
-    codec: scalarCodec(),
-  },
-  'subscriptions.status': {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Stripe subscription status',
-      type: 'select',
-      searchable: false,
-    },
-    options: SUBSCRIPTION_STATUS_OPTIONS,
-    metadata: {
-      activeColumn: {
-        key: 'subscriptions.status',
-        label: 'Subscription status',
-      },
-      columnInclude: 'subscriptions',
-    },
-    codec: scalarCodec(),
-  },
-  'subscriptions.start_date': {
-    operators: DATE_FILTER_OPERATORS,
-    ui: {
-      label: 'Paid start date',
-      type: 'date',
-      defaultOperator: DEFAULT_DATE_OPERATOR,
-    },
-    metadata: {
-      activeColumn: {
-        key: 'subscriptions.start_date',
-        label: 'Paid start date',
-      },
-      columnInclude: 'subscriptions',
-    },
-    codec: dateCodec(),
-  },
-  'subscriptions.current_period_end': {
-    operators: DATE_FILTER_OPERATORS,
-    ui: {
-      label: 'Next billing date',
-      type: 'date',
-      defaultOperator: DEFAULT_DATE_OPERATOR,
-    },
-    metadata: {
-      activeColumn: {
-        key: 'subscriptions.current_period_end',
-        label: 'Next billing date',
-      },
-      columnInclude: 'subscriptions',
-    },
-    codec: dateCodec(),
-  },
-  conversion: {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Subscription started on post/page',
-      type: 'select',
-      searchable: true,
-      placeholder: 'Select a post or page...',
-      className: 'w-64',
-    },
-    codec: scalarCodec({ quoteStrings: true }),
-  },
-  email_count: {
-    operators: NUMBER_OPERATORS,
-    ui: {
-      label: 'Emails sent (all time)',
-      type: 'number',
-      defaultOperator: 'is-greater',
-      min: 0,
-      className: 'w-24',
-    },
-    codec: numberCodec(),
-  },
-  email_opened_count: {
-    operators: NUMBER_OPERATORS,
-    ui: {
-      label: 'Emails opened (all time)',
-      type: 'number',
-      defaultOperator: 'is-greater',
-      min: 0,
-      className: 'w-24',
-    },
-    codec: numberCodec(),
-  },
-  email_open_rate: {
-    operators: NUMBER_OPERATORS,
-    ui: {
-      label: 'Open rate (all time)',
-      type: 'number',
-      defaultOperator: 'is-greater',
-      min: 0,
-      max: 100,
-      suffix: '%',
-      className: 'w-24',
-    },
-    codec: numberCodec(),
-  },
-  'emails.post_id': {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Sent email',
-      type: 'select',
-      searchable: true,
-      placeholder: 'Select an email...',
-      className: 'w-64',
-    },
-    codec: scalarCodec({ quoteStrings: true }),
-  },
-  'opened_emails.post_id': {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Opened email',
-      type: 'select',
-      searchable: true,
-      placeholder: 'Select an email...',
-      className: 'w-64',
-    },
-    codec: scalarCodec({ quoteStrings: true }),
-  },
-  'clicked_links.post_id': {
-    operators: SCALAR_OPERATORS,
-    ui: {
-      label: 'Clicked email',
-      type: 'select',
-      searchable: true,
-      placeholder: 'Select an email...',
-      className: 'w-64',
-    },
-    codec: scalarCodec({ quoteStrings: true }),
-  },
-  newsletter_feedback: {
-    operators: ['1', '0'],
-    ui: {
-      label: 'Responded with feedback',
-      type: 'select',
-      searchable: true,
-      placeholder: 'Select an email...',
-      className: 'w-64',
-      defaultOperator: '1',
-    },
-    codec: feedbackCodec,
-  },
-  offer_redemptions: {
-    operators: SET_OPERATORS,
-    ui: {
-      label: 'Offer',
-      type: 'multiselect',
-      searchable: true,
-      className: 'w-64',
-      defaultOperator: 'is-any',
-    },
-    metadata: {
-      activeColumn: {
-        key: 'offer_redemptions',
-        label: 'Offer',
-      },
-    },
-    codec: setCodec({ quoteStrings: true, serializeSingletonAsScalar: true }),
-  },
-  [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD]: {
-    operators: ['is'],
-    ui: {
-      label: 'Multiple active subscriptions',
-      type: 'select',
-      searchable: false,
-      hideOperatorSelect: true,
-    },
-    options: [
-      { value: 'true', label: 'Yes' },
-      { value: 'false', label: 'No' },
-    ],
-    codec: multipleActiveSubscriptionsCodec,
-  },
-  // Each defined custom field is its own filter, named directly in the dropdown
-  // (`custom_fields.<key>`), so this template supplies the shared operators and codec;
-  // use-member-filter-fields builds one entry per field from the definitions.
-  'custom_fields.:key': {
-    operators: CUSTOM_FIELD_OPERATORS,
-    ui: {
-      label: 'Custom field',
-      type: 'custom',
-      component: 'custom-field',
-    },
-    metadata: {
-      // One column per field filtered on, named after the field itself. A value a
-      // publisher collected varies member to member, which is what earns a column;
-      // it is shown whatever the operator, the way Label is. No name resolved means
-      // no such field for this site (or the flag is off), so no column either.
-      activeColumn: ({ params, label }) =>
-        label ? { key: `${CUSTOM_FIELDS_PREFIX}${params.key}`, label } : null,
-      // Asked for as soon as a custom field is filtered on, without waiting for the
-      // names: the values are what the column will hold, and they travel on the same
-      // request the filter already sends. The API takes this include whether or not
-      // the flag is on, and returns values only when it is.
-      columnInclude: 'custom_fields',
-    },
-    codec: customFieldsCodec,
-  },
-});
+export type StaticMemberFieldKey = (typeof MEMBER_FIELDS)[number]['key'];
 
-export const memberFields = defineFields({
-  ...baseMemberFields,
-  last_seen_at: withPastRelativeOperator(baseMemberFields.last_seen_at),
-  created_at: withPastRelativeOperator(baseMemberFields.created_at),
-  'subscriptions.start_date': withPastRelativeOperator(
-    baseMemberFields['subscriptions.start_date'],
-  ),
-  'subscriptions.current_period_end': withFutureRelativeOperator(
-    baseMemberFields['subscriptions.current_period_end'],
-  ),
-});
+export const MEMBER_FIELD_DESCRIPTORS: FieldDescriptor[] = [
+  ...MEMBER_FIELDS,
+  NEWSLETTER_FIELD,
+  CUSTOM_FIELD,
+];
+
+export const memberFields = buildCatalog(MEMBER_FIELD_DESCRIPTORS);
 
 export type MemberFields = typeof memberFields;
 

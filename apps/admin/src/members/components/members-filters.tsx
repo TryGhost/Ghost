@@ -1,3 +1,5 @@
+import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
+import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@tryghost/shade/components';
@@ -9,7 +11,6 @@ import {
   toOfferFilterDisplayValues,
   useMemberFilterFields,
 } from '@/members/use-member-filter-fields';
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
 import {
   useBrowseSettings,
   useEmailTrackClicks,
@@ -22,10 +23,7 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import {
-  useBrowseMemberCustomFields,
-  useBrowseMemberCustomFieldsIncludingArchived,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   useEmailPostValueSource,
@@ -47,6 +45,31 @@ interface MembersFiltersProps {
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
 const EMPTY_CUSTOM_FIELDS: MemberCustomField[] = [];
+const EMPTY_NEWSLETTERS: NonNullable<
+  ReturnType<typeof useBrowseNewsletters>['data']
+>['newsletters'] = [];
+const NO_KEYS: string[] = [];
+
+// The keys a set of filters names under a given prefix.
+//
+// Keyed on the keys themselves rather than on the filters holding them, because these feed the
+// field catalog, and rebuilding that means rebuilding every field's codec. Editing a filter
+// almost never changes which newsletters or custom fields are named, and when it doesn't, this
+// hands back the identical array and the catalog is left alone.
+function useReferencedKeys(filters: Filter[], prefix: string): string[] {
+  const signature = [
+    ...new Set(
+      filters
+        .map((filter) => filter.field)
+        .map((field) => keyBelow(field, prefix))
+        .filter((name) => name !== null),
+    ),
+  ]
+    .sort()
+    .join('\n');
+
+  return useMemo(() => (signature ? signature.split('\n') : NO_KEYS), [signature]);
+}
 
 function mapOfferRedemptionFilters(filters: Filter[], mapValues: (values: string[]) => string[]) {
   return filters.map((filter) => {
@@ -83,23 +106,13 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const emailTrackClicks = useEmailTrackClicks() === true;
   const siteTimezone = getSiteTimezone(settings);
 
-  const newsletters = newslettersData?.newsletters || [];
+  const newsletters = newslettersData?.newsletters ?? EMPTY_NEWSLETTERS;
   const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
 
   const offersOptions = useMemo(() => {
     return buildOfferOptions(offers);
   }, [offers]);
-  const hydratedNewsletterSlugs = useMemo(() => {
-    return [
-      ...new Set(
-        filters
-          .map((filter) => filter.field)
-          .filter((field) => field.startsWith('newsletters.'))
-          .map((field) => field.slice('newsletters.'.length))
-          .filter(Boolean),
-      ),
-    ];
-  }, [filters]);
+  const hydratedNewsletterSlugs = useReferencedKeys(filters, 'newsletters.');
 
   const displayFilters = useMemo(() => {
     return mapOfferRedemptionFilters(filters, (values) =>
@@ -123,32 +136,33 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const labelValueSource = useLabelValueSource();
   const { valueSource: tierValueSource, hasMultipleTiers } = useTierValueSource();
   const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-  // The picker lists active fields — the endpoint the members page has always used.
-  const { data: customFieldsData } = useBrowseMemberCustomFields({ enabled: customFieldsEnabled });
-  const customFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
-  const referencedCustomFieldKeys = useMemo(
-    () =>
-      new Set(
-        filters
-          .map((filter) => filter.field)
-          .filter((field) => field.startsWith(CUSTOM_FIELDS_PREFIX))
-          .map((field) => field.slice(CUSTOM_FIELDS_PREFIX.length))
-          .filter(Boolean),
-      ),
-    [filters],
-  );
-  // Only when the current filter references a custom field do we also pull the archived
-  // ones, so a saved segment on a since-archived field still renders its read-only pill.
-  // Skipped otherwise, so the common members view makes no extra request.
-  const { data: archivedCustomFieldsData } = useBrowseMemberCustomFieldsIncludingArchived({
-    enabled: customFieldsEnabled && referencedCustomFieldKeys.size > 0,
+  // The archived-inclusive browse, fetched eagerly: this is the query the hydration gate
+  // in Members waits on once a filter names a custom field, and a pill reaches the URL on
+  // the first keystroke — if the gate finds this cache cold it unmounts the whole page to
+  // a spinner mid-interaction. A field can only be picked after this has answered, so
+  // fetching it here is what keeps that wait confined to fresh page loads. Archived
+  // fields ride along so a saved segment on a since-archived field still renders its
+  // read-only pill.
+  const { data: customFieldsData } = useBrowseMemberCustomFieldsIncludingArchived({
+    enabled: customFieldsEnabled,
   });
+  const catalogCustomFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
+  // The picker offers active fields only.
+  const customFields = useMemo(
+    () => catalogCustomFields.filter((field) => field.status === 'active'),
+    [catalogCustomFields],
+  );
+  const referencedCustomFieldNames = useReferencedKeys(filters, CUSTOM_FIELDS_PREFIX);
+  const referencedCustomFieldKeys = useMemo(
+    () => new Set(referencedCustomFieldNames),
+    [referencedCustomFieldNames],
+  );
   const archivedCustomFields = useMemo(
     () =>
-      (archivedCustomFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS)
+      catalogCustomFields
         .filter((field) => field.status === 'archived' && referencedCustomFieldKeys.has(field.key))
         .map((field) => ({ key: field.key, name: field.name })),
-    [archivedCustomFieldsData, referencedCustomFieldKeys],
+    [catalogCustomFields, referencedCustomFieldKeys],
   );
 
   const filterFields = useMemberFilterFields({
