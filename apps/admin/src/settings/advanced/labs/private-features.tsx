@@ -107,11 +107,6 @@ const features: Feature[] = [
     flag: 'selfServeArchives',
   },
   {
-    title: 'Help chat',
-    description: 'Adds a help chat to Admin (powered by DocsBot.ai)',
-    flag: 'helpChat',
-  },
-  {
     title: 'Machine payments',
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',

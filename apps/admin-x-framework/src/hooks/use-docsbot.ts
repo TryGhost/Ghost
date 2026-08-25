@@ -1,6 +1,5 @@
 import { useBrowseConfig } from '../api/config';
 import { useCurrentUser } from '../api/current-user';
-import { useFeatureFlag } from './use-feature-flag';
 import { useCallback, useRef } from 'react';
 
 interface DocsBotIdentify {
@@ -107,12 +106,11 @@ interface DocsBot {
 export function useDocsBot(): DocsBot {
   const { data: config } = useBrowseConfig();
   const { data: currentUser } = useCurrentUser();
-  const flagEnabled = useFeatureFlag('helpChat');
 
   const { enabled, id } = config?.config.docsbot ?? {};
   // The /config/ response isn't runtime-validated, so guard against a
   // misconfigured host config supplying a non-string id.
-  const isAvailable = flagEnabled && !!enabled && typeof id === 'string' && id !== '';
+  const isAvailable = !!enabled && typeof id === 'string' && id !== '';
 
   // Identity is read through a ref so the callbacks stay referentially stable
   // across user refetches — a changed identity would remount the widget.
