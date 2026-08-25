@@ -149,9 +149,11 @@ describe('BetaGiftRedemptionPage', () => {
 
     expect(getByLabelText(/your name/i)).toHaveValue('Taylor');
     expect(getByLabelText(/your email/i)).toHaveFocus();
-    expect(container.querySelector('.gh-portal-gift-checkout-subtitle')).toHaveTextContent(
+    const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
+    expect(subtitle).toHaveTextContent(
       'Jamie has gifted you a 1-year Premium membership to The Blueprint',
     );
+    expect(subtitle).toContainHTML('<strong>1-year</strong>');
     expect(getByTestId('gift-message')).toHaveTextContent('Enjoy this!');
     expect(getByTestId('gift-message')).toHaveTextContent('Jamie');
     expect(getByText(/This gift can only be redeemed once and expires on/i)).toBeInTheDocument();

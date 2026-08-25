@@ -38,6 +38,24 @@ function setup(site: SiteData, overrideContext: Record<string, unknown> = {}) {
 }
 
 describe('BetaGiftPage', () => {
+  test.each([
+    { pickerLabel: '1 month', durationLabel: '1-month' },
+    { pickerLabel: '3 months', durationLabel: '3-month' },
+    { pickerLabel: '6 months', durationLabel: '6-month' },
+    { pickerLabel: '1 year', durationLabel: '1-year' },
+  ])('bolds the complete $durationLabel gift duration', ({ pickerLabel, durationLabel }) => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { container, getByLabelText, getByRole } = setup(site);
+
+    fireEvent.click(getByRole('radio', { name: pickerLabel }));
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+
+    expect(container.querySelector('.gh-portal-gift-email-lede')).toContainHTML(
+      `<strong>${durationLabel}</strong>`,
+    );
+  });
+
   test('offers the full fixed-duration catalogue and updates the price and request', () => {
     const site = buildSite({
       labs: {
@@ -49,7 +67,7 @@ describe('BetaGiftPage', () => {
     expect(getByRole('radio', { name: '1 month' })).toHaveAttribute('aria-checked', 'true');
     expect(getByRole('radio', { name: '3 months' })).toHaveAttribute('aria-checked', 'false');
     expect(getByRole('radio', { name: '6 months' })).toBeInTheDocument();
-    expect(getByRole('radio', { name: '12 months' })).toBeInTheDocument();
+    expect(getByRole('radio', { name: '1 year' })).toBeInTheDocument();
     expect(getAllByText('$5').length).toBeGreaterThan(0);
 
     fireEvent.click(getByRole('radio', { name: '3 months' }));
@@ -81,7 +99,7 @@ describe('BetaGiftPage', () => {
     });
   });
 
-  test('defaults to 12 months for a yearly Portal default', () => {
+  test('defaults to a year for a yearly Portal default', () => {
     const site = buildSite({
       labs: {
         giftSubCustomization: true,
@@ -90,7 +108,7 @@ describe('BetaGiftPage', () => {
     });
     const { container, getByRole } = setup(site);
 
-    expect(getByRole('radio', { name: '12 months' })).toHaveAttribute('aria-checked', 'true');
+    expect(getByRole('radio', { name: '1 year' })).toHaveAttribute('aria-checked', 'true');
 
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
     expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent(
@@ -211,7 +229,7 @@ describe('BetaGiftPage', () => {
     expect(getByRole('radio', { name: '1 month' })).toHaveAttribute('aria-checked', 'true');
     expect(getByRole('radio', { name: '3 months' })).toBeInTheDocument();
     expect(getByRole('radio', { name: '6 months' })).toBeInTheDocument();
-    expect(queryByRole('radio', { name: '12 months' })).not.toBeInTheDocument();
+    expect(queryByRole('radio', { name: '1 year' })).not.toBeInTheDocument();
   });
 
   test('keeps email details locally but omits them from link delivery', () => {

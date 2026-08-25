@@ -57,7 +57,8 @@ const GiftEmailPreview = ({
 
   const giftDetails = {
     buyerName: <strong>{fromName}</strong>,
-    duration: <strong>{duration}</strong>,
+    duration,
+    strong: <strong />,
     tierName: <strong>{tierName}</strong>,
     siteTitle,
   };

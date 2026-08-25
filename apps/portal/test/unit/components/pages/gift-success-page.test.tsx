@@ -12,12 +12,14 @@ function setup({
   Page,
   monthlyPrice,
   deliveryMethod = 'link',
+  duration = 3,
   deliveryDate,
   scheduledAt,
 }: {
   Page: typeof GiftSuccessPage;
   monthlyPrice: ReturnType<typeof getPriceData> | null;
   deliveryMethod?: 'email' | 'link';
+  duration?: number;
   deliveryDate?: string;
   scheduledAt?: number;
 }) {
@@ -41,7 +43,7 @@ function setup({
         token: 'abc123',
         tierId: 'tier_123',
         cadence: 'month',
-        duration: 3,
+        duration,
         deliveryMethod,
         deliveryDate,
         scheduledAt,
@@ -71,6 +73,16 @@ describe.each([
     expect(getByTestId('gift-redeem-link')).toHaveTextContent('/gift/abc123');
     expect(queryByTestId('gift-card-duration')).not.toBeInTheDocument();
     expect(queryByTestId('gift-card-value')).not.toBeInTheDocument();
+  });
+
+  test('shows a twelve-month gift as one year', () => {
+    const { getByTestId } = setup({
+      Page,
+      monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
+      duration: 12,
+    });
+
+    expect(getByTestId('gift-card-duration')).toHaveTextContent('1 year');
   });
 });
 
