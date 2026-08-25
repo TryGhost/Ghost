@@ -590,7 +590,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const rootApp = require('./app')();
 
     if (server) {
-      const GhostServer = require('./server/ghost-server');
+      const { GhostServer } = require('./server/ghost-server');
       ghostServer = new GhostServer({
         url: config.getSiteUrl(),
         env: config.get('env'),

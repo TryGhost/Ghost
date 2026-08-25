@@ -5,8 +5,7 @@ import logging from '@tryghost/logging';
 import express from 'express';
 import { once } from 'node:events';
 import { promisify } from 'node:util';
-// @ts-expect-error This module lacks type definitions.
-import GhostServer from '../../../core/server/ghost-server';
+import { GhostServer } from '../../../core/server/ghost-server';
 
 describe('GhostServer', function () {
   beforeEach(function () {

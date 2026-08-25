@@ -1,14 +1,30 @@
 // # Ghost Server
 // Handles the creation of an HTTP Server for Ghost
-const debug = require('@tryghost/debug')('server');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
-const notify = require('./notify');
-const { flushLogs } = require('../shared/flush-logs');
-const moment = require('moment');
-const stoppable = require('stoppable');
+import createDebug from '@tryghost/debug';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import logging from '@tryghost/logging';
+import metrics from '@tryghost/metrics';
+// @ts-expect-error This module lacks type definitions.
+import notify from './notify';
+import { flushLogs } from '../shared/flush-logs';
+import moment from 'moment';
+import stoppable from 'stoppable';
+import type { Promisable } from 'type-fest';
+import type * as express from 'express';
+import type * as http from 'node:http';
+import { promisify } from 'node:util';
+
+type ServerConfig = {
+  host: string;
+  port: number;
+  shutdownTimeout: number;
+  testmode: boolean;
+};
+
+type StoppableHttpServer = http.Server & stoppable.WithStop;
+
+const debug = createDebug('server');
 
 const messages = {
   cantTouchThis: "Can't touch this",
@@ -34,34 +50,45 @@ const messages = {
   },
 };
 
+const errify = (value: unknown) => {
+  if (value instanceof Error) {
+    return value;
+  }
+  // This result is passed into a Ghost error, so let's not wrap it in another one.
+  // eslint-disable-next-line ghost/ghost-custom/no-native-error
+  return new Error(String(value));
+};
+
 /**
  * ## GhostServer
  */
-class GhostServer {
-  /**
-   *
-   * @param {Object}  options
-   * @param {string}  options.url
-   * @param {string}  options.env development|production|testing
-   * @param {Object}  options.serverConfig
-   * @param {string}  options.serverConfig.host
-   * @param {number}  options.serverConfig.port
-   * @param {number}  options.serverConfig.shutdownTimeout
-   * @param {boolean} options.serverConfig.testmode
-   */
-  constructor({ url, env, serverConfig }) {
+export class GhostServer {
+  private url: string;
+  private env: string;
+  private serverConfig: ServerConfig;
+
+  rootApp: null | express.Application = null;
+  private httpServer: null | StoppableHttpServer = null;
+  private isShuttingDown = false;
+
+  /** Tasks that should run before the server exits. */
+  private cleanupTasks: Array<{ task: () => Promisable<unknown>; label: string }> = [];
+
+  /** Tasks that should run at the very start of shutdown. */
+  private preStopTasks: Array<{ task: () => void; label: string }> = [];
+
+  constructor({
+    url,
+    env,
+    serverConfig,
+  }: Readonly<{
+    url: string;
+    env: string;
+    serverConfig: ServerConfig;
+  }>) {
     this.url = url;
     this.env = env;
     this.serverConfig = serverConfig;
-
-    this.rootApp = null;
-    this.httpServer = null;
-
-    // Tasks that should be run before the server exits
-    this.cleanupTasks = [];
-
-    // Tasks that should be run at the very start of shutdown
-    this.preStopTasks = [];
   }
 
   /**
@@ -71,23 +98,22 @@ class GhostServer {
    * Starts the ghost server listening on the configured port.
    * Requires an express app to be passed in
    *
-   * @param  {import('express').Application} rootApp - Required express app instance.
-   * @return {Promise} Resolves once Ghost has started
+   * @param rootApp Required express app instance.
+   * @return Resolves once Ghost has started
    */
-  start(rootApp) {
+  start(rootApp: express.Application): Promise<this> {
     debug('Starting...');
     this.rootApp = rootApp;
 
     const { host, port, testmode, shutdownTimeout } = this.serverConfig;
-    const self = this;
 
-    return new Promise(function (resolve, reject) {
-      self.httpServer = rootApp.listen(port, host);
+    return new Promise((resolve, reject) => {
+      const httpServer = rootApp.listen(port, host);
 
-      self.httpServer.on('error', function (error) {
+      httpServer.on('error', (error) => {
         let ghostError;
 
-        if (error.code === 'EADDRINUSE') {
+        if ('code' in error && error.code === 'EADDRINUSE') {
           ghostError = new errors.InternalServerError({
             message: tpl(messages.addressInUse.error),
             context: tpl(messages.addressInUse.context, { port }),
@@ -95,7 +121,9 @@ class GhostServer {
           });
         } else {
           ghostError = new errors.InternalServerError({
-            message: tpl(messages.otherError.error, { errorNumber: error.errno }),
+            message: tpl(messages.otherError.error, {
+              errorNumber: 'errno' in error ? error.errno : 'unknown',
+            }),
             context: tpl(messages.otherError.context),
             help: tpl(messages.otherError.help),
           });
@@ -107,29 +135,29 @@ class GhostServer {
         });
       });
 
-      self.httpServer.on('listening', function () {
+      httpServer.on('listening', () => {
         debug('...Started');
-        self._logStartMessages();
+        this._logStartMessages();
 
         // Debug logs output in testmode only
         if (testmode) {
-          self._startTestMode();
+          this._startTestMode();
         }
 
         debug('Notifying server ready (success)');
         return notify.notifyServerStarted().finally(() => {
-          resolve(self);
+          resolve(this);
         });
       });
 
-      stoppable(self.httpServer, shutdownTimeout);
+      this.httpServer = stoppable(httpServer, shutdownTimeout);
 
       // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
       process
         .removeAllListeners('SIGINT')
-        .on('SIGINT', () => self.shutdown())
+        .on('SIGINT', () => this.shutdown())
         .removeAllListeners('SIGTERM')
-        .on('SIGTERM', () => self.shutdown());
+        .on('SIGTERM', () => this.shutdown());
     });
   }
 
@@ -163,9 +191,9 @@ class GhostServer {
    * Stops the server & handles cleanup, but does not exit the process
    * Used in tests for quick start/stop actions
    * Called by shutdown to handle server stop and cleanup before exiting
-   * @returns {Promise<any>} Resolves once Ghost has stopped
+   * @returns Resolves once Ghost has stopped
    */
-  async stop() {
+  async stop(): Promise<void> {
     try {
       // Signal "stop taking new work" before the HTTP server drain, so background
       // workers aren't still claiming tasks during it
@@ -203,10 +231,8 @@ class GhostServer {
 
   /**
    * Add a task that should be called on shutdown
-   * @param {() => Promise<any>} task
-   * @param {string} [label] - name used in shutdown timing logs
    */
-  registerCleanupTask(task, label) {
+  registerCleanupTask(task: () => Promise<unknown>, label?: string) {
     this.cleanupTasks.push({
       task,
       label: label || `cleanup task #${this.cleanupTasks.length + 1}`,
@@ -217,10 +243,8 @@ class GhostServer {
    * Add a task that runs at the very start of shutdown, before the HTTP server drain.
    * Synchronous on purpose: this is the shutdown critical path, so it's for cheap "stop
    * claiming new work" signals only. Draining belongs in a cleanup task.
-   * @param {() => void} task
-   * @param {string} [label] - name used in shutdown timing logs
    */
-  registerPreStopTask(task, label) {
+  registerPreStopTask(task: () => void, label?: string) {
     this.preStopTasks.push({
       task,
       label: label || `pre-stop task #${this.preStopTasks.length + 1}`,
@@ -238,10 +262,11 @@ class GhostServer {
    * If server.shutdownTimeout is reached, requests are terminated in-flight
    */
   async _stopServer() {
-    const util = require('util');
+    const { httpServer } = this;
+    assert(httpServer, 'httpServer must be set before stopping server');
     const startTime = Date.now();
     try {
-      return await util.promisify(this.httpServer.stop)();
+      return await promisify(httpServer.stop.bind(httpServer))();
     } finally {
       logging.info(`Shutdown: stopped HTTP server in ${Date.now() - startTime}ms`);
     }
@@ -258,7 +283,7 @@ class GhostServer {
       } catch (error) {
         logging.error(
           new errors.InternalServerError({
-            err: error,
+            err: errify(error),
             message: `Shutdown: ${label} failed`,
           }),
         );
@@ -272,7 +297,7 @@ class GhostServer {
    * map would exit the process mid-drain and orphan email batches in `submitting`.
    */
   async _cleanup() {
-    const failed = [];
+    const failed: string[] = [];
 
     await Promise.all(
       this.cleanupTasks.map(async ({ task, label }) => {
@@ -283,7 +308,7 @@ class GhostServer {
           failed.push(label);
           logging.error(
             new errors.InternalServerError({
-              err: error,
+              err: errify(error),
               message: `Shutdown: ${label} failed`,
             }),
           );
@@ -308,14 +333,16 @@ class GhostServer {
     // Output how many connections are open every 5 seconds
     const connectionInterval = setInterval(
       () =>
-        this.httpServer.getConnections((err, connections) =>
+        this.httpServer?.getConnections((_err, connections) =>
           logging.warn(`${connections} connections currently open`),
         ),
       5000,
     );
 
     // Output a notice when the server closes
-    this.httpServer.on('close', function () {
+    const { httpServer } = this;
+    assert(httpServer, 'httpServer must be set before starting test mode');
+    httpServer.on('close', function () {
       clearInterval(connectionInterval);
       logging.warn('Server has fully closed');
     });
@@ -372,5 +399,3 @@ class GhostServer {
     return null;
   }
 }
-
-module.exports = GhostServer;
