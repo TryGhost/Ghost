@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const getAuthorFacebookUrl = require('../../../../core/frontend/meta/author-fb-url');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import getAuthorFacebookUrl from '../../../../core/frontend/meta/author-fb-url';
 
 describe('getAuthorFacebookUrl', function () {
   it('should return author facebook url if post and has url', function () {
