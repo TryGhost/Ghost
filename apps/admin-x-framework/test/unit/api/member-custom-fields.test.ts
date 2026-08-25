@@ -1,4 +1,5 @@
 import {
+  type CompositePartRuns,
   type FieldTypePresentation,
   type MemberCustomField,
   formatMemberCustomFieldValue,
@@ -41,7 +42,27 @@ const scalarWithParts: FieldTypePresentation<'short_text'> = {
   subFields: { line1: 'a' },
 };
 
-export { labelled, missingPart, unknownPart, unlabelled, scalarWithParts };
+// A run is how the one-line form is told which parts read together. It names parts rather
+// than listing them all, so a part *added* upstream needs no entry — but a part renamed or
+// removed upstream has to be caught, or the run would silently stop fusing anything.
+const fusedRun: CompositePartRuns = { address: [['state', 'postal_code']] };
+
+// @ts-expect-error a run naming a part its value schema does not declare
+const unknownFusedPart: CompositePartRuns = { address: [['state', 'postcode']] };
+
+// @ts-expect-error a scalar type has no parts to run together
+const scalarWithRun: CompositePartRuns = { short_text: [['line1']] };
+
+export {
+  labelled,
+  missingPart,
+  unknownPart,
+  unlabelled,
+  scalarWithParts,
+  fusedRun,
+  unknownFusedPart,
+  scalarWithRun,
+};
 
 const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
   key: 'nickname',
@@ -122,7 +143,9 @@ describe('member custom fields api helpers', () => {
         field({ key: 'address_home', name: 'Address (Home)', type: 'address' }),
       ]);
 
-      expect(columns[2]).toEqual({
+      // Found rather than indexed: what this is about is the label, not the position
+      // of a part in the address.
+      expect(columns.find((column) => column.partLabel === 'City')).toEqual({
         label: 'Address (Home) (City)',
         fieldName: 'Address (Home)',
         partLabel: 'City',
@@ -192,6 +215,24 @@ describe('member custom fields api helpers', () => {
           country: 'US',
         }),
       ).toBe('1 Main St, 12 apt B, New York, NY 00001, US');
+    });
+
+    // The property this is built for. A part added to a type upstream has to appear in
+    // the line on its own, because the alternative is a value that is collected, stored,
+    // exported and filtered on while being invisible in every summary. Asserted through
+    // the catalog rather than against a hardcoded list, so it keeps holding as the
+    // catalog grows.
+    it('includes every part a type declares, in the order it declares them', () => {
+      const parts = memberCustomFieldParts('address')!;
+      const value = Object.fromEntries(parts.map(({ key }) => [key, key]));
+
+      const line = formatMemberCustomFieldValue('address', value);
+
+      for (const { key } of parts) {
+        expect(line, `${key} is missing from the line`).toContain(key);
+      }
+      // Separators aside, the parts read in the order the value schema declares them.
+      expect(line.split(/,\s|\s/)).toEqual(parts.map(({ key }) => key));
     });
 
     it('pairs state and postal code, and drops missing parts cleanly', () => {
