@@ -127,6 +127,10 @@ export type Config = {
     enabled?: boolean;
     organization?: string;
   };
+  docsbot?: {
+    enabled?: boolean;
+    id?: string;
+  };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;
 };
