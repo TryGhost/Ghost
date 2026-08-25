@@ -21,7 +21,7 @@ const cacheControl = (profile, options = { maxAge: 0 }) => {
    * @returns {void}
    */
   return function cacheControlHeaders(req, res, next) {
-    res.set({ 'Cache-Control': output });
+    res.setHeader('Cache-Control', output);
     next();
   };
 };
