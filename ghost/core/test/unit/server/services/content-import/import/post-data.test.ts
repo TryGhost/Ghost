@@ -327,6 +327,13 @@ describe('buildPostData', function () {
     );
   });
 
+  it('skips a row whose explicit updated_at is not a date', function () {
+    skipsWith(
+      { title: 'T', updated_at: 'not-an-update-date' },
+      'updated_at is not a valid date: "not-an-update-date"',
+    );
+  });
+
   it('skips a row whose published_at is a rolled-over calendar date', function () {
     // new Date() would normalize this to March 2 and quietly mis-date the post
     skipsWith(

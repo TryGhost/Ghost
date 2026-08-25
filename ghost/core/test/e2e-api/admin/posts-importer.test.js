@@ -688,6 +688,55 @@ describe('Posts Importer API', function () {
     assert.equal(distinct.get('comment_id'), 'm5-source-id-distinct');
   });
 
+  it('Updates matching posts only when the CSV has a newer explicit updated_at', async function () {
+    await agent.loginAsOwner();
+
+    const originalCsvPath = await csvFile(
+      'posts-import-update-originals.csv',
+      'title,slug,comment_id,updated_at\n' +
+        'CSV update original,csv-update-original,m5-update-source,2025-01-01T00:00:00.000Z\n' +
+        'CSV update slug original,csv-update-by-slug,,2025-01-01T00:00:00.000Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', originalCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const updatesCsvPath = await csvFile(
+      'posts-import-update-comparisons.csv',
+      'title,slug,comment_id,updated_at\n' +
+        'CSV update newer,csv-update-newer,m5-update-source,2025-02-01T00:00:00.000Z\n' +
+        'CSV update equal,csv-update-equal,m5-update-source,2025-02-01T01:00:00.000+01:00\n' +
+        'CSV update older,csv-update-older,m5-update-source,2025-01-31T23:59:59.999Z\n' +
+        'CSV update by slug,csv-update-by-slug,,2025-03-01T00:00:00.000Z\n' +
+        'CSV update invalid date,csv-update-invalid-date,,not-a-date\n' +
+        'CSV update after invalid,csv-update-after-invalid,,2025-04-01T00:00:00.000Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', updatesCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const newer = await models.Post.findOne({
+      comment_id: 'm5-update-source',
+      status: 'all',
+    });
+    const updatedBySlug = await models.Post.findOne({
+      slug: 'csv-update-by-slug',
+      status: 'all',
+    });
+    const invalid = await models.Post.findOne({ slug: 'csv-update-invalid-date', status: 'all' });
+    const afterInvalid = await models.Post.findOne({
+      slug: 'csv-update-after-invalid',
+      status: 'all',
+    });
+
+    assert.ok(newer);
+    assert.equal(newer.get('updated_at').toISOString(), '2025-02-01T00:00:00.000Z');
+    assert.equal(newer.get('title'), 'CSV update newer');
+    assert.ok(updatedBySlug);
+    assert.equal(updatedBySlug.get('title'), 'CSV update by slug');
+    assert.equal(updatedBySlug.get('updated_at').toISOString(), '2025-03-01T00:00:00.000Z');
+    assert.equal(invalid, null, 'an invalid updated_at skips only its row');
+    assert.ok(afterInvalid, 'a valid row after the invalid date is still imported');
+  });
+
   it('Imports public posts even when the site default visibility is paid', async function () {
     mockManager.mockSetting('default_content_visibility', 'paid');
     await agent.loginAsOwner();

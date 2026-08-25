@@ -5,6 +5,7 @@ import ContentCSVImporter from '../../../../../../core/server/services/content-i
 import { ImportRunStore } from '../../../../../../core/server/services/content-import/import/store';
 import type { PostImportRow } from '../../../../../../core/server/services/content-import/import/row';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
+import type { PostWriteMetadata } from '../../../../../../core/server/services/content-import/import/post-repository';
 
 const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
   title,
@@ -15,11 +16,12 @@ const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
 
 // Collaborators are handed back as `deps` so a test can repoint the seam it is breaking.
 function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
-  const created: Array<{ data: PostData; options: object }> = [];
+  const created: Array<{ data: PostData; options: object; metadata?: PostWriteMetadata }> = [];
   const reported: unknown[] = [];
   const jobs: Array<{ name: string; offloaded: boolean; job: () => Promise<void> }> = [];
   const createFailures = new Map<string, unknown>();
   const duplicateSlugs = new Set<string>();
+  const updatedTitles = new Set<string>();
   const urlFailures = new Map<string, unknown>();
   const store = new ImportRunStore();
   let converterResolutions = 0;
@@ -42,7 +44,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const deps = {
     readRows: async () => rows,
     posts: {
-      write: async (data: PostData, options: object) => {
+      write: async (data: PostData, options: object, metadata?: PostWriteMetadata) => {
         const failure = createFailures.get(data.title);
         if (failure) {
           throw failure;
@@ -53,10 +55,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
             reason: `A post with the slug "${data.slug}" already exists.`,
           };
         }
-        created.push({ data, options });
+        created.push({ data, options, metadata });
         const id = `post_${created.length}`;
         return {
-          status: 'created' as const,
+          status: updatedTitles.has(data.title) ? ('updated' as const) : ('created' as const),
           post: { id, toJSON: () => ({ id, slug: `slug-${created.length}` }) },
         };
       },
@@ -118,6 +120,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     jobs,
     createFailures,
     duplicateSlugs,
+    updatedTitles,
     urlFailures,
     store,
     setHtmlToLexicalFactory,
@@ -317,6 +320,7 @@ describe('ContentCSVImporter', function () {
     );
     for (const call of h.created) {
       assert.deepEqual(call.options, { importing: true, context: { internal: true } });
+      assert.deepEqual(call.metadata, { sourceUpdatedAt: undefined });
     }
   });
 
@@ -520,6 +524,47 @@ describe('ContentCSVImporter', function () {
     ]);
   });
 
+  it('records an updated post and forwards only its explicit source timestamp', async function () {
+    const updatedRow = { ...row('Updated'), updated_at: '2025-02-01T00:00:00.000Z' };
+    const h = harness([updatedRow]);
+    h.updatedTitles.add('Updated');
+
+    await h.run();
+
+    assert.deepEqual(h.created[0].metadata, {
+      sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
+    });
+    assert.deepEqual(h.store.get('run_test')?.rows, [
+      {
+        line: 2,
+        title: 'Updated',
+        status: 'updated',
+        postId: 'post_1',
+        url: 'https://example.com/post_1/',
+      },
+    ]);
+  });
+
+  it('records a failed update against its row and continues importing', async function () {
+    const h = harness([row('Update failure'), row('Created')]);
+    h.updatedTitles.add('Update failure');
+    h.createFailures.set('Update failure', new Error('update failed'));
+
+    await h.run();
+
+    assert.deepEqual(h.store.get('run_test')?.rows[0], {
+      line: 2,
+      title: 'Update failure',
+      status: 'failed',
+      reason: 'update failed',
+    });
+    assert.deepEqual(
+      h.created.map((call) => call.data.title),
+      ['Created'],
+    );
+    assert.deepEqual(h.reported, []);
+  });
+
   it('completes without reporting when every row is an existing slug', async function () {
     const h = harness([row('First'), row('Second')]);
     h.duplicateSlugs.add('first');
@@ -712,15 +757,16 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.failureReason, 'Unknown error');
   });
 
-  it('keeps a successfully written post created when its URL cannot be resolved', async function () {
+  it('keeps a successfully written post when its URL cannot be resolved', async function () {
     const h = harness();
+    h.updatedTitles.add('First');
     h.urlFailures.set('post_1', new Error('URL service unavailable'));
 
     await h.run();
 
     assert.equal(h.created.length, 2);
     assert.deepEqual(h.store.get('run_test')?.rows, [
-      { line: 2, title: 'First', status: 'created', postId: 'post_1' },
+      { line: 2, title: 'First', status: 'updated', postId: 'post_1' },
       {
         line: 3,
         title: 'Second',
@@ -732,7 +778,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.reported.length, 1);
     assert.equal(
       (h.reported[0] as Error).message,
-      'Content import could not resolve a URL for 1 created post.',
+      'Content import could not resolve a URL for 1 imported post.',
     );
     assert.match((h.reported[0] as Error).stack ?? '', /URL service unavailable/);
   });
@@ -751,7 +797,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.reported.length, 1);
     assert.equal(
       (h.reported[0] as Error).message,
-      'Content import could not resolve a URL for 2 created posts.',
+      'Content import could not resolve a URL for 2 imported posts.',
     );
     assert.match(
       (h.reported[0] as Error).stack ?? '',

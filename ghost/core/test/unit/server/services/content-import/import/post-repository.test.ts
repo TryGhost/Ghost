@@ -14,17 +14,22 @@ const data: PostData = {
 
 function harness() {
   const transacting = { transaction: true };
-  const existing = { id: 'existing', toJSON: () => ({ id: 'existing' }) };
+  const existing = {
+    id: 'existing',
+    toJSON: sinon.stub().returns({ id: 'existing', updated_at: new Date('2025-01-01T00:00:00Z') }),
+  };
   const created = { id: 'created', toJSON: () => ({ id: 'created' }) };
+  const updated = { id: 'existing', toJSON: () => ({ id: 'existing' }) };
   const findOne = sinon.stub().resolves(null);
   const add = sinon.stub().resolves(created);
+  const edit = sinon.stub().resolves(updated);
   const transaction = sinon.stub().callsFake(async (callback) => callback(transacting));
   const repository = new BookshelfPostsRepository({
     Base: { transaction },
-    Post: { findOne, add },
+    Post: { findOne, add, edit },
   });
 
-  return { repository, transaction, transacting, findOne, add, existing, created };
+  return { repository, transaction, transacting, findOne, add, edit, existing, created, updated };
 }
 
 describe('BookshelfPostsRepository', function () {
@@ -63,6 +68,7 @@ describe('BookshelfPostsRepository', function () {
       reason: 'A post with the slug "imported-post" already exists.',
     });
     sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
   });
 
   it('matches an explicit source ID before considering the slug', async function () {
@@ -84,6 +90,7 @@ describe('BookshelfPostsRepository', function () {
       status: 'all',
     });
     sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
   });
 
   it('falls back to the slug when an explicit source ID does not match', async function () {
@@ -109,6 +116,7 @@ describe('BookshelfPostsRepository', function () {
       status: 'all',
     });
     sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
   });
 
   it('creates with an explicit source ID when neither source ID nor slug matches', async function () {
@@ -127,6 +135,101 @@ describe('BookshelfPostsRepository', function () {
       sourceData,
       sinon.match({ importing: true, transacting: h.transacting }),
     );
+    sinon.assert.notCalled(h.edit);
+  });
+
+  it('updates a matching post when the explicit incoming timestamp is newer', async function () {
+    const h = harness();
+    const options = { importing: true, context: { internal: true } };
+    const updatedData = { ...data, updated_at: '2025-02-01T00:00:00.000Z' };
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(updatedData, options, {
+      sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
+    });
+
+    assert.deepEqual(result, { status: 'updated', post: h.updated });
+    sinon.assert.calledTwice(h.edit);
+    sinon.assert.calledWithExactly(
+      h.edit.firstCall,
+      { ...updatedData, updated_at: new Date('2025-01-01T00:00:00Z') },
+      {
+        ...options,
+        transacting: h.transacting,
+        id: 'existing',
+      },
+    );
+    sinon.assert.calledWithExactly(
+      h.edit.secondCall,
+      { updated_at: '2025-02-01T00:00:00.000Z' },
+      {
+        ...options,
+        transacting: h.transacting,
+        id: 'existing',
+      },
+    );
+    sinon.assert.notCalled(h.add);
+  });
+
+  it('compares equal timestamps as instants and skips the update', async function () {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(
+      data,
+      {},
+      {
+        sourceUpdatedAt: '2025-01-01T01:00:00+01:00',
+      },
+    );
+
+    assert.deepEqual(result, {
+      status: 'skipped',
+      reason: 'The existing post is newer than or as recent as the imported row.',
+    });
+    sinon.assert.notCalled(h.edit);
+  });
+
+  it('skips an older incoming timestamp', async function () {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(
+      data,
+      {},
+      {
+        sourceUpdatedAt: '2024-12-31T23:59:59.999Z',
+      },
+    );
+
+    assert.deepEqual(result.status, 'skipped');
+    sinon.assert.notCalled(h.edit);
+  });
+
+  it('treats a missing stored timestamp as older', async function () {
+    const h = harness();
+    h.existing.toJSON.returns({ id: 'existing', updated_at: null });
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(
+      { ...data, updated_at: '2025-01-01T00:00:00.000Z' },
+      { importing: true },
+      { sourceUpdatedAt: '2025-01-01T00:00:00.000Z' },
+    );
+
+    assert.deepEqual(result, { status: 'updated', post: h.updated });
+    sinon.assert.calledTwice(h.edit);
+    assert.equal('updated_at' in h.edit.firstCall.args[0], false);
+  });
+
+  it('does not update for an invalid incoming timestamp', async function () {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(data, {}, { sourceUpdatedAt: 'not-a-date' });
+
+    assert.deepEqual(result.status, 'skipped');
+    sinon.assert.notCalled(h.edit);
   });
 
   it('propagates lookup failures and never attempts the insert', async function () {
@@ -168,6 +271,44 @@ describe('BookshelfPostsRepository', function () {
       h.repository.write(data, { importing: true, context: { internal: true } }),
       failure,
     );
+  });
+
+  it('propagates update failures through the transaction', async function () {
+    const h = harness();
+    const failure = new Error('update failed');
+    h.findOne.resolves(h.existing);
+    h.edit.rejects(failure);
+
+    await assert.rejects(
+      h.repository.write(
+        { ...data, updated_at: '2025-02-01T00:00:00.000Z' },
+        { importing: true },
+        { sourceUpdatedAt: '2025-02-01T00:00:00.000Z' },
+      ),
+      failure,
+    );
+
+    sinon.assert.notCalled(h.add);
+  });
+
+  it('rolls back when persisting the incoming update timestamp fails', async function () {
+    const h = harness();
+    const failure = new Error('timestamp update failed');
+    h.findOne.resolves(h.existing);
+    h.edit.onFirstCall().resolves(h.updated);
+    h.edit.onSecondCall().rejects(failure);
+
+    await assert.rejects(
+      h.repository.write(
+        { ...data, updated_at: '2025-02-01T00:00:00.000Z' },
+        { importing: true },
+        { sourceUpdatedAt: '2025-02-01T00:00:00.000Z' },
+      ),
+      failure,
+    );
+
+    sinon.assert.calledTwice(h.edit);
+    sinon.assert.notCalled(h.add);
   });
 
   it('propagates a failure to open the transaction without querying posts', async function () {

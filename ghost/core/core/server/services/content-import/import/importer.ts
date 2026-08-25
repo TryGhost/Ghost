@@ -7,7 +7,7 @@ import buildPostData, {
   type PostData,
 } from './post-data';
 import type { PostImportRow } from './row';
-import type { CreatedPost, PostsRepository } from './post-repository';
+import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
@@ -39,7 +39,7 @@ const messages = {
   tooManyPosts:
     'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.',
   allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
-  urlResolutionFailed: 'Content import could not resolve a URL for {count} created {postNoun}.',
+  urlResolutionFailed: 'Content import could not resolve a URL for {count} imported {postNoun}.',
 };
 
 function logLifecycle(message: string): void {
@@ -63,7 +63,7 @@ interface ImporterDeps {
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
-  urlForPost: (post: CreatedPost) => string;
+  urlForPost: (post: WrittenPost) => string;
   newRunId: () => string;
   getTimezone: () => string;
   now?: Clock;
@@ -86,7 +86,7 @@ class ContentCSVImporter {
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
-  private _urlForPost: (post: CreatedPost) => string;
+  private _urlForPost: (post: WrittenPost) => string;
   private _newRunId: () => string;
   private _getTimezone: () => string;
   private _now: Clock;
@@ -212,7 +212,8 @@ class ContentCSVImporter {
           throw error;
         }
 
-        let post: CreatedPost;
+        let post: WrittenPost;
+        let writeStatus: 'created' | 'updated';
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:
           // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
@@ -220,10 +221,14 @@ class ContentCSVImporter {
           // it, one reason status is never 'scheduled'). Pinned by
           // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
           // model layer mutates it.
-          const result = await this._posts.write(data, {
-            importing: true,
-            context: { internal: true },
-          });
+          const result = await this._posts.write(
+            data,
+            {
+              importing: true,
+              context: { internal: true },
+            },
+            { sourceUpdatedAt: row.updated_at },
+          );
 
           if (result.status === 'skipped') {
             this._store.record(runId, {
@@ -236,6 +241,7 @@ class ContentCSVImporter {
           }
 
           post = result.post;
+          writeStatus = result.status;
           successfulWrites += 1;
         } catch (error) {
           if (failedWrites === 0) {
@@ -254,7 +260,7 @@ class ContentCSVImporter {
         const outcome: RowOutcome = {
           line,
           title: row.title,
-          status: 'created',
+          status: writeStatus,
           postId: post.id,
         };
         try {
