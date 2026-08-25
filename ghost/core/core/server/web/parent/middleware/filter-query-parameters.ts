@@ -49,10 +49,9 @@ const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: Reado
 const filterRequestTarget = (requestTarget: string): FilterResult => {
   const { pathname, searchParams } = new URL(requestTarget, REQUEST_URL_BASE);
   const contentApiRequest = CONTENT_API_PATH_PATTERN.test(pathname);
-  const bypass = searchParams.get('force_params') === 'true';
   const exemptPath = EXEMPT_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
 
-  if (!contentApiRequest && (bypass || exemptPath)) {
+  if (!contentApiRequest && exemptPath) {
     return {
       requestTarget,
       removedUnknownParameters: [],

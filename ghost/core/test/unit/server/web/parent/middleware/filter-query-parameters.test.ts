@@ -49,17 +49,6 @@ describe('Middleware: filterQueryParameters', function () {
       });
     });
 
-    it('allows arbitrary parameters when force_params=true', async function () {
-      const requestTarget = '/welcome/?unknown=value&force_params=true';
-      const state = await getRequestState(requestTarget);
-
-      assert.equal(state.originalUrl, requestTarget);
-      assert.deepEqual(state.query, {
-        unknown: 'value',
-        force_params: 'true',
-      });
-    });
-
     it('applies the Content API allowlist', async function () {
       const state = await getRequestState(
         '/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id',
@@ -69,17 +58,6 @@ describe('Middleware: filterQueryParameters', function () {
       assert.deepEqual(state.query, {
         key: 'content-key',
         include: 'authors',
-      });
-    });
-
-    it('does not allow force_params to bypass Content API filtering', async function () {
-      const state = await getRequestState(
-        '/ghost/api/canary/content/posts/?key=content-key&force_params=true&unknown=value',
-      );
-
-      assert.equal(state.originalUrl, '/ghost/api/canary/content/posts/?key=content-key');
-      assert.deepEqual(state.query, {
-        key: 'content-key',
       });
     });
 
