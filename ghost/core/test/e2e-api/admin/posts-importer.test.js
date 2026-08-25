@@ -638,6 +638,56 @@ describe('Posts Importer API', function () {
     assert.match(posts[0].get('html'), /Only one copy/);
   });
 
+  it('Matches explicit CSV source IDs before falling back to slugs', async function () {
+    await agent.loginAsOwner();
+
+    const originalCsvPath = await csvFile(
+      'posts-import-source-id-original.csv',
+      'title,slug,comment_id\n' +
+        'CSV source ID original,csv-source-id-original,m5-source-id-primary\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', originalCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const comparisonCsvPath = await csvFile(
+      'posts-import-source-id-comparisons.csv',
+      'Headline,Address,Source\n' +
+        'CSV source ID duplicate,csv-source-id-different,m5-source-id-primary\n' +
+        'CSV source ID slug fallback,csv-source-id-original,m5-source-id-unmatched\n' +
+        `CSV source ID too long,csv-source-id-too-long,${'x'.repeat(51)}\n` +
+        'CSV source ID distinct,csv-source-id-distinct,m5-source-id-distinct\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[Address]', 'slug');
+    form.append('mapping[Source]', 'comment_id');
+    form.append('postsfile', await fs.readFile(comparisonCsvPath), {
+      filename: path.basename(comparisonCsvPath),
+      contentType: 'text/csv',
+    });
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const original = await models.Post.findOne({ slug: 'csv-source-id-original', status: 'all' });
+    const sourceDuplicate = await models.Post.findOne({
+      slug: 'csv-source-id-different',
+      status: 'all',
+    });
+    const tooLong = await models.Post.findOne({
+      slug: 'csv-source-id-too-long',
+      status: 'all',
+    });
+    const distinct = await models.Post.findOne({ slug: 'csv-source-id-distinct', status: 'all' });
+
+    assert.ok(original);
+    assert.equal(original.get('title'), 'CSV source ID original');
+    assert.equal(original.get('comment_id'), 'm5-source-id-primary');
+    assert.equal(sourceDuplicate, null, 'the source ID match takes precedence over its new slug');
+    assert.equal(tooLong, null, 'an invalid source ID skips only its row');
+    assert.ok(distinct, 'a valid row after the invalid source ID is still imported');
+    assert.equal(distinct.get('comment_id'), 'm5-source-id-distinct');
+  });
+
   it('Imports public posts even when the site default visibility is paid', async function () {
     mockManager.mockSetting('default_content_visibility', 'paid');
     await agent.loginAsOwner();

@@ -67,6 +67,7 @@ export const CONTENT_FIELD_GROUPS: readonly ContentFieldGroup[] = [
   {
     label: 'Advanced',
     fields: [
+      { label: 'Source ID', value: 'comment_id', required: false },
       { label: 'Custom template', value: 'custom_template', required: false },
       { label: 'Code injection head', value: 'codeinjection_head', required: false },
       { label: 'Code injection foot', value: 'codeinjection_foot', required: false },

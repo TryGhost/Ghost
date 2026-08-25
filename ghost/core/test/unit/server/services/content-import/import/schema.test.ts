@@ -21,6 +21,7 @@ describe('content import schema', function () {
         mapping: {
           Headline: 'title',
           Body: 'html',
+          Source: 'comment_id',
           Notes: '',
         },
       }),
@@ -30,6 +31,7 @@ describe('content import schema', function () {
         mapping: {
           Headline: 'title',
           Body: 'html',
+          Source: 'comment_id',
           Notes: '',
         },
       },

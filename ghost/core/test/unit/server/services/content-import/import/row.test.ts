@@ -39,12 +39,15 @@ describe('post import row schema', function () {
       feature_image: 'undefined',
       meta_title: '',
       frontmatter: '',
+      comment_id: '',
     });
 
     assert.equal(parsed.slug, undefined);
     assert.equal(parsed.feature_image, undefined);
     assert.equal(parsed.meta_title, undefined);
     assert.equal(parsed.frontmatter, undefined);
+    assert.equal(parsed.comment_id, undefined);
+    assert.equal(postImportRowSchema.parse({ comment_id: 'undefined' }).comment_id, undefined);
   });
 
   it('passes unknown columns through for later milestones to consume', function () {

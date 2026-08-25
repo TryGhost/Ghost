@@ -36,6 +36,7 @@ export interface PostsMetaData {
 export interface PostData {
   title: string;
   slug: string;
+  comment_id?: string;
   lexical?: string;
   custom_excerpt?: string;
   feature_image?: string;
@@ -56,6 +57,7 @@ export interface PostData {
 }
 
 const DIRECT_OPTIONAL_FIELDS = [
+  'comment_id',
   'custom_excerpt',
   'feature_image',
   'canonical_url',

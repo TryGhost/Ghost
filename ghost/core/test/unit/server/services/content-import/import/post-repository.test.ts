@@ -65,6 +65,70 @@ describe('BookshelfPostsRepository', function () {
     sinon.assert.notCalled(h.add);
   });
 
+  it('matches an explicit source ID before considering the slug', async function () {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(
+      { ...data, comment_id: 'source-123', slug: 'a-different-slug' },
+      { importing: true, context: { internal: true } },
+    );
+
+    assert.deepEqual(result, {
+      status: 'skipped',
+      reason: 'A post with the source ID "source-123" already exists.',
+    });
+    sinon.assert.calledOnce(h.findOne);
+    sinon.assert.calledWithMatch(h.findOne, {
+      comment_id: 'source-123',
+      status: 'all',
+    });
+    sinon.assert.notCalled(h.add);
+  });
+
+  it('falls back to the slug when an explicit source ID does not match', async function () {
+    const h = harness();
+    h.findOne.onFirstCall().resolves(null);
+    h.findOne.onSecondCall().resolves(h.existing);
+
+    const result = await h.repository.write(
+      { ...data, comment_id: 'new-source' },
+      { importing: true, context: { internal: true } },
+    );
+
+    assert.deepEqual(result, {
+      status: 'skipped',
+      reason: 'A post with the slug "imported-post" already exists.',
+    });
+    assert.deepEqual(h.findOne.firstCall.args[0], {
+      comment_id: 'new-source',
+      status: 'all',
+    });
+    assert.deepEqual(h.findOne.secondCall.args[0], {
+      slug: 'imported-post',
+      status: 'all',
+    });
+    sinon.assert.notCalled(h.add);
+  });
+
+  it('creates with an explicit source ID when neither source ID nor slug matches', async function () {
+    const h = harness();
+    const sourceData = { ...data, comment_id: 'new-source' };
+
+    const result = await h.repository.write(sourceData, {
+      importing: true,
+      context: { internal: true },
+    });
+
+    assert.deepEqual(result, { status: 'created', post: h.created });
+    sinon.assert.calledTwice(h.findOne);
+    sinon.assert.calledWithExactly(
+      h.add,
+      sourceData,
+      sinon.match({ importing: true, transacting: h.transacting }),
+    );
+  });
+
   it('propagates lookup failures and never attempts the insert', async function () {
     const h = harness();
     const failure = new Error('lookup failed');
@@ -75,6 +139,23 @@ describe('BookshelfPostsRepository', function () {
       failure,
     );
 
+    sinon.assert.notCalled(h.add);
+  });
+
+  it('propagates source ID lookup failures without falling back to the slug', async function () {
+    const h = harness();
+    const failure = new Error('source lookup failed');
+    h.findOne.rejects(failure);
+
+    await assert.rejects(
+      h.repository.write(
+        { ...data, comment_id: 'source-123' },
+        { importing: true, context: { internal: true } },
+      ),
+      failure,
+    );
+
+    sinon.assert.calledOnce(h.findOne);
     sinon.assert.notCalled(h.add);
   });
 

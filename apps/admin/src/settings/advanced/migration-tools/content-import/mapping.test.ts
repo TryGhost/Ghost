@@ -15,12 +15,21 @@ describe('ContentFieldMapping', () => {
     expect(mapping.toJSON()).toEqual({ 'First title': '', 'Second title': 'title' });
   });
 
+  it('reads and clears individual mappings', () => {
+    const mapping = ContentFieldMapping.detect(['title', 'Other']);
+
+    expect(mapping.get('title')).toBe('title');
+    expect(mapping.get('Other')).toBeNull();
+    expect(mapping.update('title', null).get('title')).toBeNull();
+  });
+
   it('detects exact field-name headers', () => {
     const mapping = ContentFieldMapping.detect([
       'title',
       'html',
       'markdown',
       'published_at',
+      'comment_id',
       'Something else',
     ]);
 
@@ -29,6 +38,7 @@ describe('ContentFieldMapping', () => {
       html: 'html',
       markdown: 'markdown',
       published_at: 'published_at',
+      comment_id: 'comment_id',
       'Something else': '',
     });
   });
@@ -82,6 +92,7 @@ describe('ContentFieldMapping', () => {
       'twitter_image',
       'twitter_title',
       'twitter_description',
+      'comment_id',
       'custom_template',
       'codeinjection_head',
       'codeinjection_foot',
@@ -91,7 +102,6 @@ describe('ContentFieldMapping', () => {
       expect.arrayContaining([
         'authors',
         'tags',
-        'comment_id',
         'newsletter_id',
         'email',
         'tiers',

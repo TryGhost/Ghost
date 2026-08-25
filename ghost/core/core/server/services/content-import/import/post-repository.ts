@@ -33,12 +33,28 @@ export class BookshelfPostsRepository implements PostsRepository {
   write(data: PostData, options: object): Promise<PostWriteResult> {
     return this._models.Base.transaction(async (transacting) => {
       const writeOptions = { ...options, transacting };
-      const existing = await this._models.Post.findOne(
+      const lookupOptions = { ...writeOptions, forUpdate: true };
+
+      if (data.comment_id) {
+        const existingSource = await this._models.Post.findOne(
+          { comment_id: data.comment_id, status: 'all' },
+          lookupOptions,
+        );
+
+        if (existingSource) {
+          return {
+            status: 'skipped',
+            reason: `A post with the source ID "${data.comment_id}" already exists.`,
+          };
+        }
+      }
+
+      const existingSlug = await this._models.Post.findOne(
         { slug: data.slug, status: 'all' },
-        { ...writeOptions, forUpdate: true },
+        lookupOptions,
       );
 
-      if (existing) {
+      if (existingSlug) {
         return {
           status: 'skipped',
           reason: `A post with the slug "${data.slug}" already exists.`,
