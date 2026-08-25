@@ -26,8 +26,7 @@ import {
   useMembersTrackSources,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
-import { centsToDollars, getPeriodText } from '@/shared/analytics/chart-helpers';
+import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMrrHistory } from '@tryghost/admin-x-framework/api/stats';
 import { useTopSourcesGrowth } from '@/analytics/hooks/use-top-sources-growth';

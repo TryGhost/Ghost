@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatMemberName, getMemberInitials } from '@/members/member-format';
+import { formatMemberName, getMemberInitials, memberAvatarProps } from '@/members/member-format';
 
 describe('formatMemberName', () => {
   it('returns the trimmed name when present', () => {
@@ -30,5 +30,24 @@ describe('getMemberInitials', () => {
 
   it('handles empty name by using fallback', () => {
     expect(getMemberInitials({ name: '' })).toBe('UM'); // "Unknown Member" -> "UM"
+  });
+});
+
+describe('memberAvatarProps', () => {
+  it('derives initials and a name-first color seed', () => {
+    expect(memberAvatarProps({ name: 'Jane Doe', email: 'jane@example.com' })).toEqual({
+      initials: 'JD',
+      colorSeed: 'Jane Doe',
+    });
+    expect(memberAvatarProps({ email: 'jane@example.com' })).toEqual({
+      initials: 'JA',
+      colorSeed: 'jane@example.com',
+    });
+  });
+
+  it('yields undefined props for an absent or empty member', () => {
+    expect(memberAvatarProps(undefined)).toEqual({ initials: undefined, colorSeed: undefined });
+    expect(memberAvatarProps(null)).toEqual({ initials: undefined, colorSeed: undefined });
+    expect(memberAvatarProps({})).toEqual({ initials: undefined, colorSeed: undefined });
   });
 });

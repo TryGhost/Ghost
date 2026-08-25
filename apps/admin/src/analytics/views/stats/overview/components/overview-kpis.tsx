@@ -19,12 +19,11 @@ import {
 } from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import {
   usePaidMembersEnabled,
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { centsToDollars, getPeriodText } from '@/shared/analytics/chart-helpers';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';

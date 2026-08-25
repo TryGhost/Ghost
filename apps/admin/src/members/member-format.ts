@@ -12,3 +12,18 @@ export const getMemberInitials = (member: { name?: string | null; email?: string
   }
   return name.substring(0, 2).toUpperCase();
 };
+
+// Avatar props for a member-shaped record: initials plus the hue seed
+// (name-first, so distinct people keep distinct fallback colors). Spread onto
+// Shade's <Avatar>; an absent member yields undefined props → icon fallback.
+export const memberAvatarProps = (
+  member?: { name?: string | null; email?: string | null } | null,
+) => {
+  if (!member || (!member.name && !member.email)) {
+    return { initials: undefined, colorSeed: undefined };
+  }
+  return {
+    initials: getMemberInitials(member),
+    colorSeed: member.name || member.email || undefined,
+  };
+};

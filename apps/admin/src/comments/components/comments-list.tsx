@@ -11,7 +11,7 @@ import { CommentHeader } from './comment-header';
 import { CommentMenu } from './comment-menu';
 import { CommentMetrics } from './comment-metrics';
 import { buildThreadLink } from './thread-link';
-import { getMemberInitials } from '@/members/member-format';
+import { memberAvatarProps } from '@/members/member-format';
 import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import {
   LoadMoreButton,
@@ -148,8 +148,7 @@ function CommentsList({
                         'mt-0.5 size-6 md:size-8',
                         item.status === 'hidden' && 'opacity-50',
                       )}
-                      colorSeed={item.member ? item.member.name || item.member.email : undefined}
-                      initials={item.member ? getMemberInitials(item.member) : undefined}
+                      {...memberAvatarProps(item.member)}
                       src={item.member?.avatar_image}
                     />
 

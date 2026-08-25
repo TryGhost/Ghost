@@ -26,7 +26,7 @@ import {
   inputSurface,
 } from '@tryghost/shade/components';
 import { ChevronDown, History, Pen, Plus, Trash2, X } from 'lucide-react';
-import { getMemberInitials } from '@/members/member-format';
+import { memberAvatarProps } from '@/members/member-format';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -59,8 +59,7 @@ const HistoryAvatar: React.FC<{ action: Action }> = ({ action }) => {
     <div className="relative shrink-0">
       <Avatar
         className="size-10"
-        colorSeed={actorName || undefined}
-        initials={actorName ? getMemberInitials({ name: actorName }) : undefined}
+        {...memberAvatarProps({ name: actorName })}
         src={action.actor?.image}
       />
       <div className="absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-border-default bg-background p-1 shadow-sm">
