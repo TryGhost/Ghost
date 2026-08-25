@@ -116,6 +116,7 @@ export function unparseErrorCSV(rows: unknown[]): string {
 
   return Papa.unparse(shaped, {
     quotes: true,
+    escapeFormulae: true,
     columns,
   });
 }

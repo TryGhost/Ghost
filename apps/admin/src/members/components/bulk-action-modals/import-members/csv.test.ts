@@ -65,6 +65,18 @@ describe('csv helpers', () => {
     expect(output).not.toContain('[object Object]');
   });
 
+  it('escapes formula-like values before writing the downloadable CSV', () => {
+    const output = unparseErrorCSV([
+      {
+        name: '=1+2',
+        email: 'a@example.com',
+        error: 'nope',
+      },
+    ]);
+
+    expect(output).toContain(`"'=1+2"`);
+  });
+
   it('keeps a column carried only by a later row, with the error column last', () => {
     const output = unparseErrorCSV([
       { email: 'a@example.com', labels: [], error: 'nope' },
