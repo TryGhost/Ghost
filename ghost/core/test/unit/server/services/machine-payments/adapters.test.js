@@ -26,6 +26,7 @@ function createX402Adapter(overrides = {}) {
     },
     facilitatorClient: {},
     configProvider: () => ({
+      enabled: true,
       network: 'eip155:8453',
       stripeNetwork: 'base',
       facilitatorUrl: 'https://facilitator.xpay.sh',
@@ -193,11 +194,29 @@ describe('Unit: server/services/machine-payments/adapters', function () {
   it('accepts supported x402 config values', function () {
     assert.deepEqual(
       parseX402Config({
+        enabled: true,
         network: 'eip155:8453',
         stripeNetwork: 'base',
         facilitatorUrl: 'https://facilitator.xpay.sh',
       }),
       {
+        enabled: true,
+        network: 'eip155:8453',
+        stripeNetwork: 'base',
+        facilitatorUrl: 'https://facilitator.xpay.sh',
+      },
+    );
+  });
+
+  it('defaults x402 enabled to false when omitted', function () {
+    assert.deepEqual(
+      parseX402Config({
+        network: 'eip155:8453',
+        stripeNetwork: 'base',
+        facilitatorUrl: 'https://facilitator.xpay.sh',
+      }),
+      {
+        enabled: false,
         network: 'eip155:8453',
         stripeNetwork: 'base',
         facilitatorUrl: 'https://facilitator.xpay.sh',
@@ -270,11 +289,13 @@ describe('Unit: server/services/machine-payments/adapters', function () {
     ]) {
       assert.deepEqual(
         parseX402Config({
+          enabled: true,
           network: 'eip155:84532',
           stripeNetwork: 'base',
           facilitatorUrl,
         }),
         {
+          enabled: true,
           network: 'eip155:84532',
           stripeNetwork: 'base',
           facilitatorUrl,
@@ -371,6 +392,26 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       assert.equal(await adapter.init(), false);
       assert.equal(adapter.isReady, false);
       assert.equal(await adapter.challenge(new Request('http://example.com/paid.md'), terms), null);
+    });
+
+    it('stays unready and never loads runtime modules when x402 is disabled', async function () {
+      let runtimeLoads = 0;
+      const adapter = createX402Adapter({
+        configProvider: () => ({
+          enabled: false,
+          network: 'eip155:8453',
+          stripeNetwork: 'base',
+          facilitatorUrl: 'https://facilitator.xpay.sh',
+        }),
+        runtimeFactory: () => {
+          runtimeLoads += 1;
+          return createX402RuntimeFactory().factory();
+        },
+      });
+
+      assert.equal(await adapter.init(), false);
+      assert.equal(adapter.isReady, false);
+      assert.equal(runtimeLoads, 0);
     });
 
     it('reuses cached route apps and evicts stale routes when the cache is full', async function () {

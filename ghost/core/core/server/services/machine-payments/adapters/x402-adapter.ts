@@ -21,13 +21,14 @@ function normalizeFacilitatorUrl(urlString: string): string {
 
 const x402ConfigSchema = z
   .object({
+    enabled: z.boolean().optional().default(false),
     network: z.string().regex(/^eip155:\d+$/, {
       message: 'machinePayments.x402.network must be a CAIP-2 EVM network (eip155:<chainId>)',
     }),
     stripeNetwork: z.enum(['base'], {
       message: 'machinePayments.x402.stripeNetwork must be "base"',
     }),
-    facilitatorUrl: z.string().url({
+    facilitatorUrl: z.url({
       message: 'machinePayments.x402.facilitatorUrl must be a valid URL',
     }),
   })
@@ -110,16 +111,19 @@ type X402RuntimeModules = {
   Hono: new () => HonoLike;
 };
 
+type X402RawConfig = {
+  enabled?: unknown;
+  network?: unknown;
+  stripeNetwork?: unknown;
+  facilitatorUrl?: unknown;
+};
+
 type X402AdapterDeps = {
   depositAddressStore: DepositAddressStoreLike;
   facilitatorClient?: FacilitatorClientLike;
   maxCachedApps?: number;
   runtimeFactory?: () => X402RuntimeModules;
-  configProvider?: () => {
-    network?: unknown;
-    stripeNetwork?: unknown;
-    facilitatorUrl?: unknown;
-  };
+  configProvider?: () => X402RawConfig;
 };
 
 /**
@@ -163,12 +167,9 @@ export class BoundedRouteCache<V> {
   }
 }
 
-export function parseX402Config(raw: {
-  network?: unknown;
-  stripeNetwork?: unknown;
-  facilitatorUrl?: unknown;
-}): X402Config | null {
+export function parseX402Config(raw: X402RawConfig): X402Config | null {
   const parsed = x402ConfigSchema.safeParse({
+    enabled: raw.enabled ?? false,
     network: raw.network ?? BASE_MAINNET,
     stripeNetwork: raw.stripeNetwork ?? 'base',
     facilitatorUrl: raw.facilitatorUrl ?? DEFAULT_FACILITATOR_URL,
@@ -236,13 +237,14 @@ export class X402Adapter implements PaymentAdapter {
     const rawConfig = this.#configProvider
       ? this.#configProvider()
       : {
+          enabled: config.get('machinePayments:x402:enabled'),
           network: config.get('machinePayments:x402:network'),
           stripeNetwork: config.get('machinePayments:x402:stripeNetwork'),
           facilitatorUrl: config.get('machinePayments:x402:facilitatorUrl'),
         };
 
     const parsedConfig = parseX402Config(rawConfig);
-    if (!parsedConfig) {
+    if (!parsedConfig?.enabled) {
       return false;
     }
 

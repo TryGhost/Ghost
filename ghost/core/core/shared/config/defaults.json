@@ -279,6 +279,7 @@
   "stripeDirect": false,
   "machinePayments": {
     "x402": {
+      "enabled": false,
       "network": "eip155:8453",
       "stripeNetwork": "base",
       "facilitatorUrl": "https://facilitator.xpay.sh"
