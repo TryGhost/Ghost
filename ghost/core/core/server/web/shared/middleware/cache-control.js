@@ -11,7 +11,7 @@ const cacheControl = (profile, options = { maxAge: 0 }) => {
     private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
   };
 
-  const output = profiles[profile];
+  const value = profiles[profile];
 
   /**
    * @param {import('express').Request} req
@@ -21,7 +21,7 @@ const cacheControl = (profile, options = { maxAge: 0 }) => {
    * @returns {void}
    */
   return function cacheControlHeaders(req, res, next) {
-    res.setHeader('Cache-Control', output);
+    res.setHeader('Cache-Control', value);
     next();
   };
 };
