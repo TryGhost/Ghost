@@ -1,4 +1,4 @@
-import { ZipArchive, type Archiver } from 'archiver';
+import type { Archiver } from 'archiver';
 import * as errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { SYNC_EXPORT_COMPONENTS } from './export-components';
@@ -46,6 +46,9 @@ export class SiteExporter {
    * opt out per-entry since they are already compressed.
    */
   createArchive(components: SyncExportComponent[]): Archiver {
+    // Lazy-loaded off the boot hotpath: archiver pulls in zlib/streams and is
+    // only needed once an export request actually builds an archive.
+    const { ZipArchive } = require('archiver') as typeof import('archiver');
     const archive = new ZipArchive();
     const cleanups: Array<() => Promise<void>> = [];
 
