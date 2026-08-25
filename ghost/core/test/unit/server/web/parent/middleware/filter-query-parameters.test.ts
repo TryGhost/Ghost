@@ -199,6 +199,32 @@ describe('Middleware: filterQueryParameters', function () {
       });
   });
 
+  it('works when mounted below the application root', async function () {
+    const app = express();
+    sinon.stub(logging, 'warn');
+
+    app.use('/nested', filterQueryParameters, (req, res) => {
+      res.json({
+        originalUrl: req.originalUrl,
+        url: req.url,
+        path: req.path,
+        query: req.query,
+      });
+    });
+
+    await request(app)
+      .get('/nested/r/example?step=run-step-id&unknown=value')
+      .expect(200)
+      .expect({
+        originalUrl: '/nested/r/example?step=run-step-id',
+        url: '/r/example?step=run-step-id',
+        path: '/r/example',
+        query: {
+          step: 'run-step-id',
+        },
+      });
+  });
+
   it('supports a getter-only query property', function () {
     let url = '/r/example?step=run-step-id&unknown=value';
     const req = {

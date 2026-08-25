@@ -38,6 +38,16 @@ const splitRequestTarget = (requestTarget: string) => {
   };
 };
 
+const replaceQueryString = (requestTarget: string, filteredRequestTarget: string) => {
+  const queryStart = requestTarget.indexOf('?');
+  const pathname = queryStart === -1 ? requestTarget : requestTarget.slice(0, queryStart);
+  const filteredQueryStart = filteredRequestTarget.indexOf('?');
+
+  return filteredQueryStart === -1
+    ? pathname
+    : `${pathname}${filteredRequestTarget.slice(filteredQueryStart)}`;
+};
+
 const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: ReadonlySet<string>) => {
   const removed = new Set<string>();
 
@@ -96,7 +106,7 @@ export function filterQueryParameters(req: Request, _res: Response, next: NextFu
     const query = req.query;
 
     req.originalUrl = result.requestTarget;
-    req.url = result.requestTarget;
+    req.url = replaceQueryString(req.url, result.requestTarget);
 
     for (const parameter of result.removedUnknownParameters) {
       delete query[parameter];
