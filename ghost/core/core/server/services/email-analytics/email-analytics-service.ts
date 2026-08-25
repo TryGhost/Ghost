@@ -24,6 +24,11 @@ type FetchDataScheduled = FetchData & { schedule?: { begin: Date; end: Date } };
 
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained';
 
+type FetchEventsResult = {
+  /** Earliest processed timestamp for a sending domain that stopped at its event limit. */
+  safeCursor?: Date;
+};
+
 /**
  * Names of the jobs this service runs. Each pipeline needs its own set so their
  * cursors don't overwrite each other in the jobs table.
@@ -68,7 +73,7 @@ type FetchEvents = (options: {
   end: Date;
   maxEvents: number;
   events?: EmailAnalyticsEvent[];
-}) => Promise<void>;
+}) => Promise<FetchEventsResult | void>;
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
@@ -539,13 +544,20 @@ export class EmailAnalyticsService {
     };
 
     try {
-      await this.#fetchEvents({
+      const fetchResult = await this.#fetchEvents({
         batchHandler: processBatch,
         begin,
         end,
         maxEvents,
         events: eventTypes,
       });
+
+      if (
+        fetchResult?.safeCursor &&
+        (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
+      ) {
+        fetchData.lastEventTimestamp = fetchResult.safeCursor;
+      }
     } catch (err) {
       if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
         logging.error('[EmailAnalytics] Error while fetching');

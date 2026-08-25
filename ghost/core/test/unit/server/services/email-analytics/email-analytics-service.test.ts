@@ -772,6 +772,72 @@ describe('EmailAnalyticsService', function () {
           new Date(lastEventTimestamp.getTime() + 1000),
         );
       });
+
+      it('resumes from a capped sending domain until all of its events are processed', async function () {
+        const newerDomainTimestamp = new Date(Date.now() - 70_000);
+        const fallbackTimestamps = [
+          new Date(Date.now() - 120_000),
+          new Date(Date.now() - 119_000),
+          new Date(Date.now() - 118_000),
+          new Date(Date.now() - 117_000),
+        ];
+        const setJobTimestamp = sinon.stub().resolves();
+        const processedEventIds = new Set<string>();
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (events, _result, fetchData) => {
+          for (const event of events) {
+            processedEventIds.add(event.id);
+            if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
+              fetchData.lastEventTimestamp = event.timestamp;
+            }
+          }
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp,
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents: async ({ batchHandler, begin }) => {
+            const fetchIndex = fetchBegins.push(begin) - 1;
+            const firstFallbackIndex = fetchIndex;
+            const safeCursor = fallbackTimestamps[firstFallbackIndex + 1];
+
+            await batchHandler([{ id: 'primary-10', timestamp: newerDomainTimestamp }]);
+            await batchHandler([
+              {
+                id: `fallback-${firstFallbackIndex + 1}`,
+                timestamp: fallbackTimestamps[firstFallbackIndex],
+              },
+              {
+                id: `fallback-${firstFallbackIndex + 2}`,
+                timestamp: safeCursor,
+              },
+            ]);
+            return { safeCursor };
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+        const fetchBegins: Date[] = [];
+
+        await service.fetchLatestNonOpenedEvents({ maxEvents: 2 });
+        await service.fetchLatestNonOpenedEvents({ maxEvents: 2 });
+        await service.fetchLatestNonOpenedEvents({ maxEvents: 2 });
+
+        assert.deepEqual(
+          setJobTimestamp
+            .getCalls()
+            .filter((call) => call.args[1] === 'finished')
+            .map((call) => call.args[2]),
+          fallbackTimestamps.slice(1),
+        );
+        assert.deepEqual(fetchBegins.slice(1), fallbackTimestamps.slice(1, 3));
+        assert.deepEqual(
+          [...processedEventIds],
+          ['primary-10', 'fallback-1', 'fallback-2', 'fallback-3', 'fallback-4'],
+        );
+        assert.deepEqual(service.getStatus().latest.lastEventTimestamp, fallbackTimestamps[3]);
+      });
     });
 
     describe('restoreScheduled', function () {
