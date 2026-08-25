@@ -12,7 +12,6 @@ const {
   getMarkdownPath,
   getMarkdownUrl,
   getResourcePathFromMarkdownPath,
-  getAcceptedMarkdownContentType,
   markdownFromHtml,
   getPrimaryAuthorName,
   getTagNames,
@@ -161,20 +160,6 @@ describe('Integration: machine-payments orchestration coverage', function () {
       assert.deepEqual(getTagNames({ tags: [{ name: 'A' }, { name: 'B' }] }), ['A', 'B']);
       assert.deepEqual(getTagNames({ primary_tag: { name: 'Solo' } }), ['Solo']);
       assert.deepEqual(getTagNames({}), []);
-      assert.equal(
-        getAcceptedMarkdownContentType({
-          get: () => 'text/markdown',
-          accepts: () => 'text/markdown',
-        }),
-        'text/markdown',
-      );
-      assert.equal(
-        getAcceptedMarkdownContentType({
-          get: () => 'text/html',
-          accepts: () => 'text/html',
-        }),
-        null,
-      );
     });
   });
 

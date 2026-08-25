@@ -224,10 +224,10 @@ describe('Machine payments markdown routing', function () {
     assert.equal(res.headers['www-authenticate'], undefined);
   });
 
-  it('ignores Payment credentials on Accept markdown negotiation for gated posts', async function () {
+  it('ignores Payment credentials on HTML permalinks even when Accept prefers markdown', async function () {
     const challengeOrFulfill = sinon.stub(machinePayments, 'challengeOrFulfill');
 
-    // Accept negotiation only unlocks public entries; paid HTML stays membership-gated.
+    // Canonical URLs always render HTML; markdown lives on explicit `.md` URLs.
     const res = await request
       .get(`/${paidSlug}/`)
       .set('Accept', 'text/markdown')
