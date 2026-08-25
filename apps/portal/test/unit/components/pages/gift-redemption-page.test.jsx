@@ -123,6 +123,24 @@ describe.each([
 });
 
 describe('BetaGiftRedemptionPage', () => {
+  test('shows the intended recipient name when a different member is logged in', () => {
+    const personalizedGift = {
+      ...gift,
+      buyer_name: 'Morgan',
+      recipient_name: 'Taylor',
+    };
+    const { getByText, queryByText } = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+      member: member.free,
+      pageData: {
+        token: 'gift-token-123',
+        gift: personalizedGift,
+      },
+    });
+
+    expect(getByText('Taylor')).toBeInTheDocument();
+    expect(queryByText(member.free.name)).not.toBeInTheDocument();
+  });
+
   test('presents the buyer details and prefills the intended recipient name', () => {
     const personalizedGift = {
       ...gift,
