@@ -165,6 +165,7 @@ describe('reading custom field values from a CSV row', function () {
   it('omits a composite whose every sub-cell is blank', function () {
     assert.deepEqual(
       fieldValuesFromCsvRow([address], {
+        'custom_fields.shipping_address.name': '',
         'custom_fields.shipping_address.line1': '',
         'custom_fields.shipping_address.line2': '',
         'custom_fields.shipping_address.city': '',
