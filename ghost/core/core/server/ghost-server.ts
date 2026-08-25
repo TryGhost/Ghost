@@ -7,6 +7,7 @@ import logging from '@tryghost/logging';
 import metrics from '@tryghost/metrics';
 // @ts-expect-error This module lacks type definitions.
 import notify from './notify';
+import { errify } from '../shared/errify';
 import { flushLogs } from '../shared/flush-logs';
 import moment from 'moment';
 import stoppable from 'stoppable';
@@ -48,15 +49,6 @@ const messages = {
     context: 'There was an error starting your server.',
     help: 'Please use the error code above to search for a solution.',
   },
-};
-
-const errify = (value: unknown) => {
-  if (value instanceof Error) {
-    return value;
-  }
-  // This result is passed into a Ghost error, so let's not wrap it in another one.
-  // eslint-disable-next-line ghost/ghost-custom/no-native-error
-  return new Error(String(value));
 };
 
 /**
