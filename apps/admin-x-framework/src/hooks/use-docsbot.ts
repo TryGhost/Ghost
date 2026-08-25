@@ -110,7 +110,9 @@ export function useDocsBot(): DocsBot {
   const flagEnabled = useFeatureFlag('helpChat');
 
   const { enabled, id } = config?.config.docsbot ?? {};
-  const isAvailable = flagEnabled && !!enabled && !!id;
+  // The /config/ response isn't runtime-validated, so guard against a
+  // misconfigured host config supplying a non-string id.
+  const isAvailable = flagEnabled && !!enabled && typeof id === 'string' && id !== '';
 
   // Identity is read through a ref so the callbacks stay referentially stable
   // across user refetches — a changed identity would remount the widget.
