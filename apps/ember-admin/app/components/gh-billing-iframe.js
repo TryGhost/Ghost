@@ -147,7 +147,10 @@ export default class GhBillingIframe extends Component {
         // Reload the limit service to ensure all admin pages can enforce limits
         this.limit.reload();
 
-        this.stateBridge.triggerSubscriptionChange(data);
+        this.stateBridge.triggerSubscriptionChange({
+            ...data,
+            forceUpgrade: this.config.hostSettings?.forceUpgrade === true
+        });
 
         // Invalidate React Query cache for config data in the React admin (settings)
         if (window?.adminXQueryClient?.refetchQueries && typeof window.adminXQueryClient.refetchQueries === 'function') {
@@ -165,8 +168,9 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        // Detect if the current subscription is in a grace state and render a notification
-        if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
+        // Billing owns the dunning lifecycle and reports it through isGrace.
+        // React owns the separate reminder modal and its per-session dismissal state.
+        if (data?.isGrace === true) {
             // This notification needs to be shown to every user regardless their permissions to see billing
             this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {

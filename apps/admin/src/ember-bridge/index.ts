@@ -22,4 +22,7 @@ export type {
   EmberDataChangeEvent,
   EmberRouting,
   OpenGiftLinkModalEvent,
+  StateBridge,
+  StateBridgeEventMap,
+  SubscriptionState,
 } from './ember-bridge';

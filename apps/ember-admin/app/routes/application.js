@@ -306,7 +306,8 @@ export default Route.extend(ShortcutsRoute, {
         // Notify React of the initial subscription state
         // React uses this to derive forceUpgrade state (config.forceUpgrade && subscription.status !== 'active')
         this.stateBridge.triggerSubscriptionChange({
-            subscription: this.billing.subscription
+            subscription: this.billing.subscription,
+            forceUpgrade: this.config.hostSettings?.forceUpgrade === true
         });
     }
 

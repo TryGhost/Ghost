@@ -5,6 +5,7 @@ import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
 import { useEmberAuthSync, useEmberDataSync } from './ember-bridge';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
+import { DunningModal } from './dunning-modal';
 
 function App() {
   const { data: currentUser } = useCurrentUser();
@@ -18,11 +19,14 @@ function App() {
   return (
     <EmberProvider>
       {currentUser ? (
-        <AdminLayout>
-          <Outlet />
-          <EmberRoot />
-          <DocsBotWidgetHost />
-        </AdminLayout>
+        <>
+          <AdminLayout>
+            <Outlet />
+            <EmberRoot />
+            <DocsBotWidgetHost />
+          </AdminLayout>
+          <DunningModal currentUser={currentUser} />
+        </>
       ) : (
         <>
           <EmberFallback />

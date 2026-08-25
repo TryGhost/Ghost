@@ -20,6 +20,7 @@ const FORCE_UPGRADE_BMA_HTML = `
     });
 
     window.parent.postMessage({
+        isGrace: true,
         subscription: {
             isActiveTrial: false,
             status: 'past_due'
@@ -47,6 +48,15 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
         body: FORCE_UPGRADE_BMA_HTML,
       });
     });
+  });
+
+  test('shows the overdue banner without the dunning modal', async ({ page }) => {
+    await page.reload();
+
+    await expect(
+      page.getByText('Your billing details need updating.', { exact: false }),
+    ).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /Your payment has failed/ })).toBeHidden();
   });
 
   test('sidebar navigation is blocked by billing iframe', async ({ page }) => {

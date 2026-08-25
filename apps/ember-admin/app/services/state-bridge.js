@@ -40,6 +40,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @inject config;
 
+    subscriptionState = null;
+
     /**
      * Gives React the same synchronous Labs route-ownership decision Ember
      * uses. Both routers must share one authority or they can each defer to
@@ -240,7 +242,27 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     triggerSubscriptionChange(data) {
-        this.trigger('subscriptionChange', data);
+        // Cache a minimal snapshot before emitting. React may mount after this
+        // event, and retaining the full Billing payload here would expose user
+        // and customer details that the Admin intervention does not need.
+        const status = typeof data?.subscription?.status === 'string' ? data.subscription.status : null;
+        const paymentAttempts = this.session.user?.isOwnerOnly === true
+            && Number.isSafeInteger(data?.user?.payment_attempts)
+            && data.user.payment_attempts >= 0
+            ? data.user.payment_attempts
+            : null;
+
+        this.subscriptionState = {
+            isGrace: data?.isGrace === true,
+            subscription: status ? {
+                status,
+                isActiveTrial: data.subscription?.isActiveTrial === true,
+                trial_end: typeof data.subscription?.trial_end === 'string' ? data.subscription.trial_end : null,
+                paymentAttempts,
+                forceUpgrade: data?.forceUpgrade === true
+            } : null
+        };
+        this.trigger('subscriptionChange', this.subscriptionState);
     }
 
     @action

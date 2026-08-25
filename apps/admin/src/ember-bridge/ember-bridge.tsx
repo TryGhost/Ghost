@@ -39,6 +39,7 @@ export interface StateBridge {
     routeNames: string | string[],
     queryParams?: Record<string, string | null> | null,
   ) => boolean;
+  subscriptionState?: SubscriptionState | null;
 }
 
 declare global {
@@ -59,11 +60,14 @@ export interface EmberAuthChangeEvent {
 }
 
 export interface SubscriptionState {
-  subscription?: {
-    isActiveTrial: boolean;
-    trial_end: string | null;
+  isGrace: boolean;
+  subscription: {
+    isActiveTrial?: boolean;
+    trial_end?: string | null;
     status: string;
-  };
+    paymentAttempts: number | null;
+    forceUpgrade: boolean;
+  } | null;
 }
 
 export interface SidebarVisibilityChangeEvent {
@@ -213,18 +217,25 @@ export function useEmberAuthSync() {
   }, [queryClient]);
 }
 
-export function useSubscriptionStatus() {
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
+function subscribeSubscriptionStatus(callback: () => void): () => void {
+  return onEmberStateBridgeEvent('subscriptionChange', callback, callback);
+}
 
-  useEffect(() => {
-    const handleSubscriptionChange = (payload: SubscriptionState) => {
-      setSubscriptionStatus(payload);
-    };
+/**
+ * Read the cached bridge value rather than relying on the event alone. Ember
+ * can publish Billing's initial subscription state before React mounts, so an
+ * event-only effect can miss the update for the rest of the Admin session.
+ */
+function getSubscriptionStatusSnapshot(): SubscriptionState | null {
+  return window.EmberBridge?.state.subscriptionState ?? null;
+}
 
-    return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
-  }, []);
-
-  return subscriptionStatus;
+export function useSubscriptionStatus(): SubscriptionState | null {
+  return useSyncExternalStore(
+    subscribeSubscriptionStatus,
+    getSubscriptionStatusSnapshot,
+    getSubscriptionStatusSnapshot,
+  );
 }
 
 /**
