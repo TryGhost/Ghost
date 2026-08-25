@@ -3,12 +3,7 @@ import type { Entry, EntryResponse } from '../entry';
 import buildCanonicalUrl from './canonical-url';
 
 const urlUtils = require('../../../../../shared/url-utils').default;
-const {
-  getAcceptedMarkdownContentType,
-  getGatedNotice,
-  getMarkdownPath,
-  renderEntryMarkdown,
-} = require('../../../llms/markdown');
+const { getGatedNotice, getMarkdownPath, renderEntryMarkdown } = require('../../../llms/markdown');
 
 const MEMBERS_ONLY_MARKDOWN =
   '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n';
@@ -54,7 +49,7 @@ async function copyFetchResponse(fetchResponse: globalThis.Response, res: Respon
  * Only public entries ever render as markdown without payment; gated entries
  * stay html (or preview / 402 on an explicit `.md` URL).
  */
-export function isPublic(entry: Entry): boolean {
+function isPublic(entry: Entry): boolean {
   return entry.visibility === 'public';
 }
 
@@ -196,23 +191,5 @@ export async function serveMdRequest(req: Request, res: EntryResponse, entry: En
     return servePreviewMarkdown(res, entry);
   }
 
-  return serveMarkdown(res, entry);
-}
-
-/**
- * Whether the request negotiates markdown via the Accept header (and the llms
- * feature is on) — request knowledge only, so it can be decided before the
- * entry lookup. Whether markdown is actually served still depends on the
- * entry: see `isPublic`.
- */
-export function isAcceptsRequest(req: Request): boolean {
-  return Boolean(getAcceptedMarkdownContentType(req)) && llmsEnabled(req);
-}
-
-/**
- * Serve markdown negotiated via the Accept header.
- */
-export function serveAcceptsRequest(res: Response, entry: Entry) {
-  res.vary('Accept');
   return serveMarkdown(res, entry);
 }

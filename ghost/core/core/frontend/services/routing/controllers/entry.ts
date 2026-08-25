@@ -61,11 +61,8 @@ export async function entryController(
 
   try {
     // A gift view is html-only. Redirecting before the lookup keeps the
-    // token off the read, so markdown paths can never see an unlocked entry.
-    if (
-      giftLinks.isGiftRequest(req) &&
-      (markdown.isMdRequest(res) || markdown.isAcceptsRequest(req))
-    ) {
+    // token off the read, so `.md` paths can never see an unlocked entry.
+    if (giftLinks.isGiftRequest(req) && markdown.isMdRequest(res)) {
       return giftLinks.stripGiftAndRedirect(req, res);
     }
 
@@ -105,13 +102,6 @@ export async function entryController(
     if (isPermalinkStale(req, entry)) {
       debug('redirect');
       return urlUtils.redirect301(res, buildCanonicalUrl(req, entry));
-    }
-
-    // MUST run after the permalink redirect above: negotiation rides on the
-    // canonical URL, so a stale dated-permalink URL is 301'd to canonical
-    // first, then markdown is served.
-    if (markdown.isAcceptsRequest(req) && markdown.isPublic(entry)) {
-      return markdown.serveAcceptsRequest(res, entry);
     }
 
     if (giftLinks.isGiftRequest(req)) {

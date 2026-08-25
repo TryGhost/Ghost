@@ -6,7 +6,6 @@ const {
   getMarkdownPath,
   getMarkdownUrl,
   getResourcePathFromMarkdownPath,
-  getAcceptedMarkdownContentType,
   getGatedNotice,
   markdownFromHtml,
   renderEntryMarkdown,
@@ -81,42 +80,6 @@ describe('Unit: frontend/services/llms/markdown', function () {
 
     it('returns null for null', function () {
       assert.equal(getResourcePathFromMarkdownPath(null), null);
-    });
-  });
-
-  describe('getAcceptedMarkdownContentType', function () {
-    function fakeReq(accept) {
-      return {
-        get(header) {
-          if (header === 'Accept') {
-            return accept;
-          }
-          return null;
-        },
-        accepts(types) {
-          if (!accept) {
-            return false;
-          }
-          for (const type of types) {
-            if (accept.includes(type)) {
-              return type;
-            }
-          }
-          return false;
-        },
-      };
-    }
-
-    it('returns text/markdown when accepted', function () {
-      assert.equal(getAcceptedMarkdownContentType(fakeReq('text/markdown')), 'text/markdown');
-    });
-
-    it('returns null for text/html only', function () {
-      assert.equal(getAcceptedMarkdownContentType(fakeReq('text/html')), null);
-    });
-
-    it('returns null when no accept header', function () {
-      assert.equal(getAcceptedMarkdownContentType(fakeReq(null)), null);
     });
   });
 

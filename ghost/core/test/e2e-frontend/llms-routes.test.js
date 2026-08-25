@@ -53,6 +53,17 @@ describe('llms.txt routing', function () {
     );
   });
 
+  it('serves HTML on the canonical URL even when Accept prefers markdown', async function () {
+    const res = await request
+      .get('/welcome/')
+      .set('Accept', 'text/markdown')
+      .expect('Content-Type', /html/)
+      .expect(200);
+
+    assert.doesNotMatch(res.text, /## Content Index/);
+    assert.match(res.text, /<html/i);
+  });
+
   it('serves llms-full.txt with entry bodies and absolute urls', async function () {
     const res = await request
       .get('/llms-full.txt')

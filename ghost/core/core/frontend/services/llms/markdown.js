@@ -53,22 +53,6 @@ function getResourcePathFromMarkdownPath(pathname) {
   return stripped.endsWith('/') ? stripped : `${stripped}/`;
 }
 
-function getAcceptedMarkdownContentType(req) {
-  const acceptHeader = (req.get('Accept') || '').toLowerCase();
-
-  if (!acceptHeader.includes('text/markdown') && !acceptHeader.includes('text/plain')) {
-    return null;
-  }
-
-  const preferredType = req.accepts(['text/markdown', 'text/plain', 'text/html']);
-
-  if (!preferredType || preferredType === 'text/html') {
-    return null;
-  }
-
-  return preferredType;
-}
-
 function markdownFromHtml(html) {
   const markdown = nhm.translate(html || '').trim();
 
@@ -227,7 +211,6 @@ module.exports = {
   MAX_DESCRIPTION_LENGTH,
   collapseWhitespace,
   formatIsoDate,
-  getAcceptedMarkdownContentType,
   getGatedNotice,
   getMarkdownPath,
   getMarkdownUrl,
