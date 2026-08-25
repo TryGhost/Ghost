@@ -18,7 +18,7 @@ export type MemberColumnCustomField = Pick<MemberCustomField, 'key' | 'name' | '
  * them out of the columns, which is also what the flag being off looks like.
  */
 export interface MemberActiveColumnOptions {
-  customFields?: MemberColumnCustomField[];
+  customFields?: readonly MemberColumnCustomField[];
 }
 
 export type ColumnValue = {

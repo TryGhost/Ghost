@@ -1,5 +1,7 @@
 import nql from '@tryghost/nql-lang';
-import { commentFields } from '@/comments/comment-fields';
+import { COMMENT_FIELD_CATALOG } from '@/comments/comment-filter-catalog';
+
+const commentFields = COMMENT_FIELD_CATALOG;
 import { describe, expect, it } from 'vitest';
 import type { CodecContext, FilterPredicate } from '@/shared/filters';
 
