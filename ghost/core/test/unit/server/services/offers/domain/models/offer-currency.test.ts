@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-
-const OfferCurrency = require('../../../../../../../core/server/services/offers/domain/models/offer-currency');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import OfferCurrency from '../../../../../../../core/server/services/offers/domain/models/offer-currency';
 
 describe('OfferCurrency', function () {
   describe('OfferCurrency.create factory', function () {
