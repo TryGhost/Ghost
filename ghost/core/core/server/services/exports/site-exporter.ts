@@ -1,17 +1,9 @@
 import { ZipArchive, type Archiver } from 'archiver';
 import * as errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import { SYNC_EXPORT_COMPONENTS } from './export-components';
 
-/**
- * The components a sync site export can contain, in zip-entry order. The
- * streaming CSVs come first so their DB connections release while the
- * (buffered) content JSON is still being built. `media` is deliberately
- * absent: it needs background jobs and email delivery, so it is only
- * available through a host archive webhook.
- */
-export const EXPORT_COMPONENTS = ['members', 'analytics', 'content', 'themes', 'routes'] as const;
-
-export type ExportComponent = (typeof EXPORT_COMPONENTS)[number];
+type SyncExportComponent = (typeof SYNC_EXPORT_COMPONENTS)[number];
 
 export interface SiteExporterDeps {
   /** Full site JSON in the same shape the `/db/` download produces. */
@@ -53,7 +45,7 @@ export class SiteExporter {
    * the response while it fills. Deflate-compressed — the nested theme zips
    * opt out per-entry since they are already compressed.
    */
-  createArchive(components: ExportComponent[]): Archiver {
+  createArchive(components: SyncExportComponent[]): Archiver {
     const archive = new ZipArchive();
     const cleanups: Array<() => Promise<void>> = [];
 
@@ -76,10 +68,10 @@ export class SiteExporter {
 
   async #populate(
     archive: Archiver,
-    components: Set<ExportComponent>,
+    components: Set<SyncExportComponent>,
     cleanups: Array<() => Promise<void>>,
   ): Promise<void> {
-    for (const component of EXPORT_COMPONENTS) {
+    for (const component of SYNC_EXPORT_COMPONENTS) {
       if (archive.destroyed) {
         return;
       }
@@ -100,7 +92,7 @@ export class SiteExporter {
 
   async #appendComponent(
     archive: Archiver,
-    component: ExportComponent,
+    component: SyncExportComponent,
     cleanups: Array<() => Promise<void>>,
   ): Promise<void> {
     try {

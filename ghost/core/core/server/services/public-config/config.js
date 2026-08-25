@@ -1,4 +1,4 @@
-const { isPlainObject } = require('lodash');
+const { isPlainObject, omit } = require('lodash');
 const config = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
@@ -8,6 +8,14 @@ const ghostVersion = require('@tryghost/version');
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
 
 const tinybirdLocalStatsPayloadProperties = ['enabled', 'endpoint', 'datasource'];
+
+const sanitizeHostSettings = (hostSettings) => {
+  if (!isPlainObject(hostSettings)) {
+    return hostSettings;
+  }
+
+  return omit(hostSettings, ['export.webhookSecret', 'emailVerification.webhookSecret']);
+};
 
 const copyPayloadProperties = (target, source, properties) => {
   for (const property of properties) {
@@ -53,7 +61,7 @@ module.exports = function getConfigProperties() {
     stripeDirect: config.get('stripeDirect'),
     mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
     emailAnalytics: config.get('emailAnalytics:enabled'),
-    hostSettings: config.get('hostSettings'),
+    hostSettings: sanitizeHostSettings(config.get('hostSettings')),
     klipy: config.get('klipy'),
     pintura: config.get('pintura'),
     signupForm: config.get('signupForm'),
