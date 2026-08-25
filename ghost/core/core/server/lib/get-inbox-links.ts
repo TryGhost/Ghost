@@ -27,20 +27,30 @@
  * SOFTWARE.
  */
 
-import type {MxRecord} from 'node:dns';
+import type { MxRecord } from 'node:dns';
 import * as dns from 'node:dns/promises';
-import {parseEmailAddress} from '@tryghost/parse-email-address';
+import { parseEmailAddress } from '@tryghost/parse-email-address';
 import logging from '@tryghost/logging';
 
-type GetLinkFn = (options: Readonly<{recipient: string; sender: string}>) => string;
+type GetLinkFn = (options: Readonly<{ recipient: string; sender: string }>) => string;
 
-type ProviderName = 'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru' | 'feedbin' | 'dev-mailpit';
+type ProviderName =
+  | 'gmail'
+  | 'yahoo'
+  | 'outlook'
+  | 'proton'
+  | 'icloud'
+  | 'hey'
+  | 'aol'
+  | 'mailru'
+  | 'feedbin'
+  | 'dev-mailpit';
 
 type Provider = {
-    name: ProviderName;
-    domains: ReadonlyArray<string>;
-    getDesktopLink: GetLinkFn;
-    getAndroidLink: GetLinkFn;
+  name: ProviderName;
+  domains: ReadonlyArray<string>;
+  getDesktopLink: GetLinkFn;
+  getAndroidLink: GetLinkFn;
 };
 
 /**
@@ -48,105 +58,128 @@ type Provider = {
  * or hits an HTTP fallback.
  * [0]: https://developer.chrome.com/docs/android/intents
  */
-const getAndroidIntentUrl = (packageName: string, fallbackUrl: string): string => (
-    `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;launchFlags=0x10000000;package=${packageName};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`
-);
+const getAndroidIntentUrl = (packageName: string, fallbackUrl: string): string =>
+  `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;launchFlags=0x10000000;package=${packageName};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
 
 /**
  * Helper for building a URL with a single query parameter.
  */
 const buildUrl = (baseHref: string, key: string, value: string): string => {
-    const result = new URL(baseHref);
-    result.searchParams.set(key, value);
-    return result.toString();
+  const result = new URL(baseHref);
+  result.searchParams.set(key, value);
+  return result.toString();
 };
 
 const PROVIDERS: ReadonlyArray<Provider> = [
-    {
-        name: 'gmail',
-        domains: ['gmail.com', 'googlemail.com', 'google.com'],
-        // Gmail's `/mail/u/<X>/` path expects a numeric account index. Passing a
-        // raw email only resolves when that account happens to be signed in at
-        // that slot; Workspace accounts and signed-out users hit a 404 before
-        // the `#search` fragment runs. `authuser` is Gmail's own account
-        // resolver and falls through to sign-in instead of erroring.
-        getDesktopLink: ({recipient, sender}) => (
-            `https://mail.google.com/mail/u/0/?authuser=${encodeURIComponent(
-                recipient
-            )}#search/from%3A(${encodeURIComponent(
-                sender
-            )})+in%3Aanywhere+newer_than%3A1h`
-        ),
-        getAndroidLink: () => getAndroidIntentUrl('com.google.android.gm', 'https://mail.google.com/')
-    },
-    {
-        name: 'yahoo',
-        domains: ['yahoo.com', 'myyahoo.com', 'yahoo.co.uk', 'yahoo.fr', 'yahoo.it', 'ymail.com', 'rocketmail.com'],
-        getDesktopLink: ({sender}) => `https://mail.yahoo.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
-        getAndroidLink: () => getAndroidIntentUrl('com.yahoo.mobile.client.android.mail', 'https://mail.yahoo.com/')
-    },
-    {
-        name: 'outlook',
-        domains: ['outlook.com', 'live.com', 'live.de', 'hotmail.com', 'hotmail.co.uk', 'hotmail.de', 'msn.com', 'passport.com', 'passport.net'],
-        getDesktopLink: ({recipient}) => buildUrl('https://outlook.live.com/mail/', 'login_hint', recipient),
-        getAndroidLink: () => getAndroidIntentUrl('com.microsoft.office.outlook', 'https://outlook.live.com/')
-    },
-    {
-        name: 'proton',
-        domains: ['proton.me', 'pm.me', 'protonmail.com', 'protonmail.ch'],
-        getDesktopLink: ({sender}) => `https://mail.proton.me/u/0/all-mail#from=${encodeURIComponent(sender)}`,
-        getAndroidLink: () => getAndroidIntentUrl('ch.protonmail.android', 'https://mail.proton.me/')
-    },
-    {
-        name: 'icloud',
-        domains: ['icloud.com', 'me.com', 'mac.com'],
-        getDesktopLink: () => 'https://www.icloud.com/mail',
-        getAndroidLink: () => 'https://www.icloud.com/mail'
-    },
-    {
-        name: 'hey',
-        domains: ['hey.com'],
-        getDesktopLink: () => 'https://app.hey.com/topics/everything',
-        getAndroidLink: () => getAndroidIntentUrl('com.basecamp.hey', 'https://app.hey.com/')
-    },
-    {
-        name: 'aol',
-        domains: ['aol.com'],
-        getDesktopLink: ({sender}) => `https://mail.aol.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
-        getAndroidLink: () => getAndroidIntentUrl('com.aol.mobile.aolapp', 'https://mail.aol.com/')
-    },
-    {
-        name: 'mailru',
-        domains: ['mail.ru'],
-        getDesktopLink: ({sender}) => buildUrl('https://e.mail.ru/search/', 'q_from', sender),
-        getAndroidLink: () => getAndroidIntentUrl('ru.mail.mailapp', 'https://e.mail.ru/')
-    },
-    {
-        name: 'feedbin',
-        domains: ['feedb.in'],
-        getDesktopLink: () => 'https://feedbin.com/',
-        getAndroidLink: () => 'https://feedbin.com/'
-    },
-    ...(process.env.NODE_ENV === 'development' ? [{
-        name: 'dev-mailpit' as const,
-        domains: ['example.com'],
-        getDesktopLink: () => 'http://localhost:8025',
-        getAndroidLink: () => 'http://localhost:8025'
-    }] : [])
+  {
+    name: 'gmail',
+    domains: ['gmail.com', 'googlemail.com', 'google.com'],
+    // Gmail's `/mail/u/<X>/` path expects a numeric account index. Passing a
+    // raw email only resolves when that account happens to be signed in at
+    // that slot; Workspace accounts and signed-out users hit a 404 before
+    // the `#search` fragment runs. `authuser` is Gmail's own account
+    // resolver and falls through to sign-in instead of erroring.
+    getDesktopLink: ({ recipient, sender }) =>
+      `https://mail.google.com/mail/u/0/?authuser=${encodeURIComponent(
+        recipient,
+      )}#search/from%3A(${encodeURIComponent(sender)})+in%3Aanywhere+newer_than%3A1h`,
+    getAndroidLink: () => getAndroidIntentUrl('com.google.android.gm', 'https://mail.google.com/'),
+  },
+  {
+    name: 'yahoo',
+    domains: [
+      'yahoo.com',
+      'myyahoo.com',
+      'yahoo.co.uk',
+      'yahoo.fr',
+      'yahoo.it',
+      'ymail.com',
+      'rocketmail.com',
+    ],
+    getDesktopLink: ({ sender }) =>
+      `https://mail.yahoo.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
+    getAndroidLink: () =>
+      getAndroidIntentUrl('com.yahoo.mobile.client.android.mail', 'https://mail.yahoo.com/'),
+  },
+  {
+    name: 'outlook',
+    domains: [
+      'outlook.com',
+      'live.com',
+      'live.de',
+      'hotmail.com',
+      'hotmail.co.uk',
+      'hotmail.de',
+      'msn.com',
+      'passport.com',
+      'passport.net',
+    ],
+    getDesktopLink: ({ recipient }) =>
+      buildUrl('https://outlook.live.com/mail/', 'login_hint', recipient),
+    getAndroidLink: () =>
+      getAndroidIntentUrl('com.microsoft.office.outlook', 'https://outlook.live.com/'),
+  },
+  {
+    name: 'proton',
+    domains: ['proton.me', 'pm.me', 'protonmail.com', 'protonmail.ch'],
+    getDesktopLink: ({ sender }) =>
+      `https://mail.proton.me/u/0/all-mail#from=${encodeURIComponent(sender)}`,
+    getAndroidLink: () => getAndroidIntentUrl('ch.protonmail.android', 'https://mail.proton.me/'),
+  },
+  {
+    name: 'icloud',
+    domains: ['icloud.com', 'me.com', 'mac.com'],
+    getDesktopLink: () => 'https://www.icloud.com/mail',
+    getAndroidLink: () => 'https://www.icloud.com/mail',
+  },
+  {
+    name: 'hey',
+    domains: ['hey.com'],
+    getDesktopLink: () => 'https://app.hey.com/topics/everything',
+    getAndroidLink: () => getAndroidIntentUrl('com.basecamp.hey', 'https://app.hey.com/'),
+  },
+  {
+    name: 'aol',
+    domains: ['aol.com'],
+    getDesktopLink: ({ sender }) =>
+      `https://mail.aol.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
+    getAndroidLink: () => getAndroidIntentUrl('com.aol.mobile.aolapp', 'https://mail.aol.com/'),
+  },
+  {
+    name: 'mailru',
+    domains: ['mail.ru'],
+    getDesktopLink: ({ sender }) => buildUrl('https://e.mail.ru/search/', 'q_from', sender),
+    getAndroidLink: () => getAndroidIntentUrl('ru.mail.mailapp', 'https://e.mail.ru/'),
+  },
+  {
+    name: 'feedbin',
+    domains: ['feedb.in'],
+    getDesktopLink: () => 'https://feedbin.com/',
+    getAndroidLink: () => 'https://feedbin.com/',
+  },
+  ...(process.env.NODE_ENV === 'development'
+    ? [
+        {
+          name: 'dev-mailpit' as const,
+          domains: ['example.com'],
+          getDesktopLink: () => 'http://localhost:8025',
+          getAndroidLink: () => 'http://localhost:8025',
+        },
+      ]
+    : []),
 ];
 
 const PROVIDER_BY_DOMAIN = new Map<string, Provider>();
 for (const provider of PROVIDERS) {
-    for (const domain of provider.domains) {
-        PROVIDER_BY_DOMAIN.set(domain, provider);
-    }
+  for (const domain of provider.domains) {
+    PROVIDER_BY_DOMAIN.set(domain, provider);
+  }
 }
 
-const getErrorCode = (err: unknown): undefined | string => (
-    err && typeof err === 'object' && 'code' in err && typeof err.code === 'string'
-        ? err.code
-        : undefined
-);
+const getErrorCode = (err: unknown): undefined | string =>
+  err && typeof err === 'object' && 'code' in err && typeof err.code === 'string'
+    ? err.code
+    : undefined;
 
 /**
  * Grab the MX records for a domain.
@@ -156,20 +189,20 @@ const getErrorCode = (err: unknown): undefined | string => (
  * "open in your email app" link.
  */
 const getMxRecords = async (
-    domain: string,
-    dnsResolver: Pick<dns.Resolver, 'resolveMx'>
+  domain: string,
+  dnsResolver: Pick<dns.Resolver, 'resolveMx'>,
 ): Promise<MxRecord[]> => {
-    try {
-        return await dnsResolver.resolveMx(domain);
-    } catch (err: unknown) {
-        // This logs a warning, not an error, because most DNS errors could
-        // happen normally. For example, a user could provide a bogus hostname.
-        // There are some errors (like `dns.NOMEM`) which should probably use
-        // `logging.error`, but it's not worth maintaining a long list of which
-        // errors are which.
-        logging.warn('Got error code when looking up MX record', getErrorCode(err));
-        return [];
-    }
+  try {
+    return await dnsResolver.resolveMx(domain);
+  } catch (err: unknown) {
+    // This logs a warning, not an error, because most DNS errors could
+    // happen normally. For example, a user could provide a bogus hostname.
+    // There are some errors (like `dns.NOMEM`) which should probably use
+    // `logging.error`, but it's not worth maintaining a long list of which
+    // errors are which.
+    logging.warn('Got error code when looking up MX record', getErrorCode(err));
+    return [];
+  }
 };
 
 /**
@@ -178,15 +211,15 @@ const getMxRecords = async (
  * `google.com` and `smtp.google.com` return the Google provider, for example.
  */
 const getProviderForMxExchange = (exchange: string): undefined | Provider => {
-    const direct = PROVIDER_BY_DOMAIN.get(exchange);
-    if (direct) {
-        return direct;
+  const direct = PROVIDER_BY_DOMAIN.get(exchange);
+  if (direct) {
+    return direct;
+  }
+  for (const [providerDomain, provider] of PROVIDER_BY_DOMAIN.entries()) {
+    if (exchange.endsWith(`.${providerDomain}`)) {
+      return provider;
     }
-    for (const [providerDomain, provider] of PROVIDER_BY_DOMAIN.entries()) {
-        if (exchange.endsWith(`.${providerDomain}`)) {
-            return provider;
-        }
-    }
+  }
 };
 
 /**
@@ -195,9 +228,9 @@ const getProviderForMxExchange = (exchange: string): undefined | Provider => {
  * Like `_.head()`, but works with any iterable.
  */
 const first = <T>(iterable: Iterable<T>): undefined | T => {
-    for (const result of iterable) {
-        return result;
-    }
+  for (const result of iterable) {
+    return result;
+  }
 };
 
 /**
@@ -209,38 +242,38 @@ const first = <T>(iterable: Iterable<T>): undefined | T => {
  * the best priority that has exactly one unique provider.
  */
 const getProvider = async (
-    domain: string,
-    dnsResolver: Pick<dns.Resolver, 'resolveMx'>
+  domain: string,
+  dnsResolver: Pick<dns.Resolver, 'resolveMx'>,
 ): Promise<undefined | Provider> => {
-    const hardcoded = PROVIDER_BY_DOMAIN.get(domain);
-    if (hardcoded) {
-        return hardcoded;
+  const hardcoded = PROVIDER_BY_DOMAIN.get(domain);
+  if (hardcoded) {
+    return hardcoded;
+  }
+
+  const mxRecords = await getMxRecords(domain, dnsResolver);
+
+  let bestPriorityThatHasAProvider = Infinity;
+  const providersByPriority = new Map<number, Set<undefined | Provider>>();
+
+  for (const { priority, exchange } of mxRecords) {
+    // We can skip these as an optimization.
+    if (priority > bestPriorityThatHasAProvider) {
+      continue;
     }
 
-    const mxRecords = await getMxRecords(domain, dnsResolver);
+    const provider = getProviderForMxExchange(exchange);
 
-    let bestPriorityThatHasAProvider = Infinity;
-    const providersByPriority = new Map<number, Set<undefined | Provider>>();
+    const providersWithThisPriority = providersByPriority.get(priority) ?? new Set();
+    providersWithThisPriority.add(provider);
+    providersByPriority.set(priority, providersWithThisPriority);
 
-    for (const {priority, exchange} of mxRecords) {
-        // We can skip these as an optimization.
-        if (priority > bestPriorityThatHasAProvider) {
-            continue;
-        }
-
-        const provider = getProviderForMxExchange(exchange);
-
-        const providersWithThisPriority = providersByPriority.get(priority) ?? new Set();
-        providersWithThisPriority.add(provider);
-        providersByPriority.set(priority, providersWithThisPriority);
-
-        if (provider) {
-            bestPriorityThatHasAProvider = Math.min(bestPriorityThatHasAProvider, priority);
-        }
+    if (provider) {
+      bestPriorityThatHasAProvider = Math.min(bestPriorityThatHasAProvider, priority);
     }
+  }
 
-    const candidates = providersByPriority.get(bestPriorityThatHasAProvider);
-    return candidates?.size === 1 ? first(candidates) : undefined;
+  const candidates = providersByPriority.get(bestPriorityThatHasAProvider);
+  return candidates?.size === 1 ? first(candidates) : undefined;
 };
 
 /**
@@ -250,27 +283,27 @@ const getProvider = async (
  * a link to open Gmail.
  */
 export const getInboxLinks = async (
-    options: Readonly<{
-        recipient: string;
-        sender: string;
-        dnsResolver: Pick<dns.Resolver, 'resolveMx'>
-    }>
-): Promise<undefined | {android: string; desktop: string; provider: ProviderName}> => {
-    const {recipient, dnsResolver} = options;
+  options: Readonly<{
+    recipient: string;
+    sender: string;
+    dnsResolver: Pick<dns.Resolver, 'resolveMx'>;
+  }>,
+): Promise<undefined | { android: string; desktop: string; provider: ProviderName }> => {
+  const { recipient, dnsResolver } = options;
 
-    const domain = parseEmailAddress(recipient)?.domain;
-    if (!domain) {
-        return;
-    }
+  const domain = parseEmailAddress(recipient)?.domain;
+  if (!domain) {
+    return;
+  }
 
-    const provider = await getProvider(domain, dnsResolver);
-    if (!provider) {
-        return;
-    }
+  const provider = await getProvider(domain, dnsResolver);
+  if (!provider) {
+    return;
+  }
 
-    return {
-        android: provider.getAndroidLink(options),
-        desktop: provider.getDesktopLink(options),
-        provider: provider.name
-    };
+  return {
+    android: provider.getAndroidLink(options),
+    desktop: provider.getDesktopLink(options),
+    provider: provider.name,
+  };
 };

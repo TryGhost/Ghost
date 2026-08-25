@@ -1,5 +1,5 @@
 export interface Adapter {
-    requiredFns: readonly string[];
+  requiredFns: readonly string[];
 }
 
 /**
@@ -12,8 +12,10 @@ export interface Adapter {
  * manager-facing signature; a concrete adapter is free to declare a narrower
  * assertion signature (`asserts config is XOptions`) on its own static.
  */
-export type AdapterConstructor<T extends Adapter = Adapter> = (abstract new (...args: any[]) => T) & {
-    validate?(config?: object): void;
+export type AdapterConstructor<T extends Adapter = Adapter> = (abstract new (
+  ...args: any[]
+) => T) & {
+  validate?(config?: object): void;
 };
 
 /**
@@ -34,12 +36,12 @@ export type AdapterType<Name extends string> = Name extends `${infer Type}:${str
  * type on its own, plus any "type:feature" extension of it.
  */
 export type AdapterName<Registry extends AdapterRegistry> = keyof Registry extends string
-    ? keyof Registry | `${keyof Registry}:${string}`
-    : never;
+  ? keyof Registry | `${keyof Registry}:${string}`
+  : never;
 
 /**
  * Resolve the registered adapter instance type for a (possibly feature-suffixed)
  * name, e.g. ResolvedAdapter<R, "storage:images"> === R["storage"].
  */
 export type ResolvedAdapter<Registry extends AdapterRegistry, Name extends string> =
-    AdapterType<Name> extends keyof Registry ? Registry[AdapterType<Name>] : never;
+  AdapterType<Name> extends keyof Registry ? Registry[AdapterType<Name>] : never;

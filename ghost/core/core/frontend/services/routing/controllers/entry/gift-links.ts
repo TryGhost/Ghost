@@ -1,7 +1,7 @@
-import {format, parse} from 'node:url';
-import type {ParsedUrlQueryInput} from 'node:querystring';
-import type {Request} from 'express';
-import type {EntryResponse} from '../entry';
+import { format, parse } from 'node:url';
+import type { ParsedUrlQueryInput } from 'node:querystring';
+import type { Request } from 'express';
+import type { EntryResponse } from '../entry';
 
 /**
  * Build this request's URL with `?gift` removed, preserving path, subdirectory
@@ -9,9 +9,9 @@ import type {EntryResponse} from '../entry';
  * like `?gift[]=x` are dropped too — otherwise the stripped redirect would loop.
  */
 function strippedGiftUrl(req: Request): string {
-    const query = {...req.query} as ParsedUrlQueryInput;
-    delete query.gift;
-    return format({pathname: parse(req.originalUrl).pathname, query});
+  const query = { ...req.query } as ParsedUrlQueryInput;
+  delete query.gift;
+  return format({ pathname: parse(req.originalUrl).pathname, query });
 }
 
 /**
@@ -19,7 +19,7 @@ function strippedGiftUrl(req: Request): string {
  * present (in any form).
  */
 export function isGiftRequest(req: Request): boolean {
-    return req.query.gift !== undefined;
+  return req.query.gift !== undefined;
 }
 
 /**
@@ -27,11 +27,11 @@ export function isGiftRequest(req: Request): boolean {
  * `?gift[]=x`, `?gift=`) isn't a token.
  */
 export function giftToken(req: Request): string | null {
-    return typeof req.query.gift === 'string' && req.query.gift !== '' ? req.query.gift : null;
+  return typeof req.query.gift === 'string' && req.query.gift !== '' ? req.query.gift : null;
 }
 
 export function isInvalidGiftTokenError(err: unknown): boolean {
-    return (err as {code?: string} | null)?.code === 'INVALID_GIFT_TOKEN';
+  return (err as { code?: string } | null)?.code === 'INVALID_GIFT_TOKEN';
 }
 
 /**
@@ -40,7 +40,7 @@ export function isInvalidGiftTokenError(err: unknown): boolean {
  * requests survives and the token-bearing redirect isn't cached.
  */
 export function stripGiftAndRedirect(req: Request, res: EntryResponse) {
-    return res.redirect(301, strippedGiftUrl(req));
+  return res.redirect(301, strippedGiftUrl(req));
 }
 
 /**
@@ -50,7 +50,7 @@ export function stripGiftAndRedirect(req: Request, res: EntryResponse) {
  * where `ghost_foot` (toast) and `ghost_head` (analytics) read it.
  */
 export function prepareGiftRender(res: EntryResponse, token: string): void {
-    res.set('X-Robots-Tag', 'noindex');
-    res.set('Referrer-Policy', 'no-referrer');
-    res.locals._giftLink = token;
+  res.set('X-Robots-Tag', 'noindex');
+  res.set('Referrer-Policy', 'no-referrer');
+  res.locals._giftLink = token;
 }

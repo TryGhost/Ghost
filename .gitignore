@@ -131,6 +131,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
 /ghost/core/core/frontend/public/private.min.js
+/ghost/core/core/frontend/public/cards.manifest.json
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
 !docker/dev-gateway/Caddyfile

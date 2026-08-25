@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -12,189 +12,192 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 // means we can't intercept the email transport on the parent thread.
 
 describe('Gift reminder processing', function () {
-    let giftService;
-    let emailMockReceiver;
-    let paidTier;
-    let redeemerMember;
-    let giftSequence = 0;
+  let giftService;
+  let emailMockReceiver;
+  let paidTier;
+  let redeemerMember;
+  let giftSequence = 0;
 
-    beforeAll(async function () {
-        const agent = await agentProvider.getAdminAPIAgent();
+  beforeAll(async function () {
+    const agent = await agentProvider.getAdminAPIAgent();
 
-        await fixtureManager.init('newsletters', 'members:newsletters');
-        await agent.loginAsOwner();
+    await fixtureManager.init('newsletters', 'members:newsletters');
+    await agent.loginAsOwner();
 
-        giftService = require('../../../../core/server/services/gifts');
-        await giftService.init();
+    giftService = require('../../../../core/server/services/gifts');
+    await giftService.init();
 
-        paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
+    paidTier = await models.Product.findOne({ type: 'paid' }, { require: true });
+  });
+
+  beforeEach(async function () {
+    emailMockReceiver = mockManager.mockMail();
+
+    redeemerMember = await models.Member.add({
+      email: `gift-redeemer-${Date.now()}-${Math.random()}@example.com`,
+      name: 'Gift Redeemer',
+      status: 'gift',
+      email_disabled: false,
     });
+  });
 
-    beforeEach(async function () {
-        emailMockReceiver = mockManager.mockMail();
+  afterEach(async function () {
+    await models.Gift.query().del();
 
-        redeemerMember = await models.Member.add({
-            email: `gift-redeemer-${Date.now()}-${Math.random()}@example.com`,
-            name: 'Gift Redeemer',
-            status: 'gift',
-            email_disabled: false
-        });
-    });
-
-    afterEach(async function () {
-        await models.Gift.query().del();
-
-        if (redeemerMember) {
-            await models.Member.destroy({id: redeemerMember.id});
-        }
-
-        mockManager.restore();
-        sinon.restore();
-    });
-
-    async function createRedeemedGift(options = {}) {
-        const {
-            consumesAt,
-            consumesSoonReminderSentAt = null,
-            redeemerId = redeemerMember.id,
-            overrides = {}
-        } = options;
-
-        giftSequence += 1;
-        const sequence = giftSequence;
-        const now = new Date();
-        const expiresAt = new Date(now.getTime() + 365 * MS_PER_DAY);
-
-        return await models.Gift.add({
-            token: `reminder-test-token-${sequence}-${Date.now()}`,
-            buyer_email: `gift-buyer-${sequence}@example.com`,
-            buyer_member_id: null,
-            redeemer_member_id: redeemerId,
-            tier_id: paidTier.id,
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripe_checkout_session_id: `cs_reminder_${sequence}_${Date.now()}`,
-            stripe_payment_intent_id: `pi_reminder_${sequence}_${Date.now()}`,
-            consumes_at: consumesAt,
-            expires_at: expiresAt,
-            status: 'redeemed',
-            purchased_at: now,
-            redeemed_at: now,
-            consumed_at: null,
-            expired_at: null,
-            refunded_at: null,
-            consumes_soon_reminder_sent_at: consumesSoonReminderSentAt,
-            ...overrides
-        });
+    if (redeemerMember) {
+      await models.Member.destroy({ id: redeemerMember.id });
     }
 
-    it('sends a reminder email for gifts with consumes_at in (now+3d, now+7d] and records the reminder', async function () {
-        const now = new Date();
-        const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
-        const gift = await createRedeemedGift({consumesAt: inWindow});
+    mockManager.restore();
+    sinon.restore();
+  });
 
-        const result = await giftService.service.processReminders();
+  async function createRedeemedGift(options = {}) {
+    const {
+      consumesAt,
+      consumesSoonReminderSentAt = null,
+      redeemerId = redeemerMember.id,
+      overrides = {},
+    } = options;
 
-        assert.equal(result.remindedCount, 1);
-        assert.equal(result.skippedCount, 0);
-        assert.equal(result.failedCount, 0);
+    giftSequence += 1;
+    const sequence = giftSequence;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 365 * MS_PER_DAY);
 
-        emailMockReceiver.assertSentEmailCount(1);
-
-        const sent = emailMockReceiver.getSentEmail(0);
-
-        assert.equal(sent.to, redeemerMember.get('email'));
-        assert.equal(sent.subject, 'Your gift subscription is ending soon');
-
-        const reloaded = await models.Gift.findOne({token: gift.get('token')}, {require: true});
-
-        assert.ok(reloaded.get('consumes_soon_reminder_sent_at'), 'Gift should be marked as reminded');
+    return await models.Gift.add({
+      token: `reminder-test-token-${sequence}-${Date.now()}`,
+      buyer_email: `gift-buyer-${sequence}@example.com`,
+      buyer_member_id: null,
+      redeemer_member_id: redeemerId,
+      tier_id: paidTier.id,
+      cadence: 'year',
+      duration: 1,
+      currency: 'usd',
+      amount: 5000,
+      stripe_checkout_session_id: `cs_reminder_${sequence}_${Date.now()}`,
+      stripe_payment_intent_id: `pi_reminder_${sequence}_${Date.now()}`,
+      consumes_at: consumesAt,
+      expires_at: expiresAt,
+      status: 'redeemed',
+      purchased_at: now,
+      redeemed_at: now,
+      consumed_at: null,
+      expired_at: null,
+      refunded_at: null,
+      consumes_soon_reminder_sent_at: consumesSoonReminderSentAt,
+      ...overrides,
     });
+  }
 
-    it('does not send a reminder for gifts that consume too soon (inside the floor)', async function () {
-        const now = new Date();
-        const tooSoon = new Date(now.getTime() + 2 * MS_PER_DAY);
-        const gift = await createRedeemedGift({consumesAt: tooSoon});
+  it('sends a reminder email for gifts with consumes_at in (now+3d, now+7d] and records the reminder', async function () {
+    const now = new Date();
+    const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
+    const gift = await createRedeemedGift({ consumesAt: inWindow });
 
-        const result = await giftService.service.processReminders();
+    const result = await giftService.service.processReminders();
 
-        assert.equal(result.remindedCount, 0);
-        assert.equal(result.skippedCount, 0);
-        assert.equal(result.failedCount, 0);
+    assert.equal(result.remindedCount, 1);
+    assert.equal(result.skippedCount, 0);
+    assert.equal(result.failedCount, 0);
 
-        emailMockReceiver.assertSentEmailCount(0);
+    emailMockReceiver.assertSentEmailCount(1);
 
-        const reloaded = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+    const sent = emailMockReceiver.getSentEmail(0);
 
-        assert.equal(reloaded.get('consumes_soon_reminder_sent_at'), null);
-    });
+    assert.equal(sent.to, redeemerMember.get('email'));
+    assert.equal(sent.subject, 'Your gift subscription is ending soon');
 
-    it('does not send a reminder for gifts that consume too far in the future', async function () {
-        const now = new Date();
-        const tooFar = new Date(now.getTime() + 30 * MS_PER_DAY);
-        const gift = await createRedeemedGift({consumesAt: tooFar});
+    const reloaded = await models.Gift.findOne({ token: gift.get('token') }, { require: true });
 
-        const result = await giftService.service.processReminders();
+    assert.ok(reloaded.get('consumes_soon_reminder_sent_at'), 'Gift should be marked as reminded');
+  });
 
-        assert.equal(result.remindedCount, 0);
-        assert.equal(result.skippedCount, 0);
-        assert.equal(result.failedCount, 0);
+  it('does not send a reminder for gifts that consume too soon (inside the floor)', async function () {
+    const now = new Date();
+    const tooSoon = new Date(now.getTime() + 2 * MS_PER_DAY);
+    const gift = await createRedeemedGift({ consumesAt: tooSoon });
 
-        emailMockReceiver.assertSentEmailCount(0);
+    const result = await giftService.service.processReminders();
 
-        const reloaded = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+    assert.equal(result.remindedCount, 0);
+    assert.equal(result.skippedCount, 0);
+    assert.equal(result.failedCount, 0);
 
-        assert.equal(reloaded.get('consumes_soon_reminder_sent_at'), null);
-    });
+    emailMockReceiver.assertSentEmailCount(0);
 
-    it('does not re-send a reminder for gifts that have already been reminded', async function () {
-        const now = new Date();
-        const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
-        const alreadyStamped = new Date(now.getTime() - MS_PER_DAY);
+    const reloaded = await models.Gift.findOne({ token: gift.get('token') }, { require: true });
 
-        await createRedeemedGift({consumesAt: inWindow, consumesSoonReminderSentAt: alreadyStamped});
+    assert.equal(reloaded.get('consumes_soon_reminder_sent_at'), null);
+  });
 
-        const result = await giftService.service.processReminders();
+  it('does not send a reminder for gifts that consume too far in the future', async function () {
+    const now = new Date();
+    const tooFar = new Date(now.getTime() + 30 * MS_PER_DAY);
+    const gift = await createRedeemedGift({ consumesAt: tooFar });
 
-        // findPendingReminder's NQL filter excludes gifts that have already been
-        // reminded, so the gift never enters the per-gift loop — counts stay at
-        // zero.
-        assert.equal(result.remindedCount, 0);
-        assert.equal(result.skippedCount, 0);
-        assert.equal(result.failedCount, 0);
-        emailMockReceiver.assertSentEmailCount(0);
-    });
+    const result = await giftService.service.processReminders();
 
-    it('marks the gift as reminded but does not email when the redeemer has email_disabled', async function () {
-        await models.Member.edit({email_disabled: true}, {id: redeemerMember.id});
+    assert.equal(result.remindedCount, 0);
+    assert.equal(result.skippedCount, 0);
+    assert.equal(result.failedCount, 0);
 
-        const now = new Date();
-        const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
-        const gift = await createRedeemedGift({consumesAt: inWindow});
+    emailMockReceiver.assertSentEmailCount(0);
 
-        const result = await giftService.service.processReminders();
+    const reloaded = await models.Gift.findOne({ token: gift.get('token') }, { require: true });
 
-        assert.equal(result.remindedCount, 0);
-        assert.equal(result.skippedCount, 1);
-        assert.equal(result.failedCount, 0);
-        emailMockReceiver.assertSentEmailCount(0);
+    assert.equal(reloaded.get('consumes_soon_reminder_sent_at'), null);
+  });
 
-        const reloaded = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+  it('does not re-send a reminder for gifts that have already been reminded', async function () {
+    const now = new Date();
+    const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
+    const alreadyStamped = new Date(now.getTime() - MS_PER_DAY);
 
-        assert.ok(reloaded.get('consumes_soon_reminder_sent_at'), 'Gift should still be marked as reminded to prevent retries');
-    });
+    await createRedeemedGift({ consumesAt: inWindow, consumesSoonReminderSentAt: alreadyStamped });
 
-    it('only sends one email across consecutive runs', async function () {
-        const now = new Date();
-        const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
+    const result = await giftService.service.processReminders();
 
-        await createRedeemedGift({consumesAt: inWindow});
+    // findPendingReminder's NQL filter excludes gifts that have already been
+    // reminded, so the gift never enters the per-gift loop — counts stay at
+    // zero.
+    assert.equal(result.remindedCount, 0);
+    assert.equal(result.skippedCount, 0);
+    assert.equal(result.failedCount, 0);
+    emailMockReceiver.assertSentEmailCount(0);
+  });
 
-        await giftService.service.processReminders();
-        await giftService.service.processReminders();
+  it('marks the gift as reminded but does not email when the redeemer has email_disabled', async function () {
+    await models.Member.edit({ email_disabled: true }, { id: redeemerMember.id });
 
-        emailMockReceiver.assertSentEmailCount(1);
-    });
+    const now = new Date();
+    const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
+    const gift = await createRedeemedGift({ consumesAt: inWindow });
+
+    const result = await giftService.service.processReminders();
+
+    assert.equal(result.remindedCount, 0);
+    assert.equal(result.skippedCount, 1);
+    assert.equal(result.failedCount, 0);
+    emailMockReceiver.assertSentEmailCount(0);
+
+    const reloaded = await models.Gift.findOne({ token: gift.get('token') }, { require: true });
+
+    assert.ok(
+      reloaded.get('consumes_soon_reminder_sent_at'),
+      'Gift should still be marked as reminded to prevent retries',
+    );
+  });
+
+  it('only sends one email across consecutive runs', async function () {
+    const now = new Date();
+    const inWindow = new Date(now.getTime() + 5 * MS_PER_DAY);
+
+    await createRedeemedGift({ consumesAt: inWindow });
+
+    await giftService.service.processReminders();
+    await giftService.service.processReminders();
+
+    emailMockReceiver.assertSentEmailCount(1);
+  });
 });

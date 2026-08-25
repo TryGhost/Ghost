@@ -1,6 +1,11 @@
 const assert = require('node:assert/strict');
-const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching} = matchers;
+const {
+  agentProvider,
+  fixtureManager,
+  matchers,
+  configUtils,
+} = require('../../utils/e2e-framework');
+const { anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching } = matchers;
 
 /**
  * This is a snapshot test for the happy path of the config API
@@ -8,66 +13,74 @@ const {anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching} 
  * as that should be tested in the unit tests for the public-config service
  */
 describe('Config API', function () {
-    let agent;
+  let agent;
 
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
+  });
+
+  describe('As Unauthorized User', function () {
+    it('Cannot fetch the config endpoint', async function () {
+      await agent.get('/config/').expectStatus(403);
+    });
+  });
+
+  describe('As Owner', function () {
     beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('users');
+      await agent.loginAsOwner();
     });
 
-    afterEach(async function () {
-        await configUtils.restore();
-    });
-
-    describe('As Unauthorized User', function () {
-        it('Cannot fetch the config endpoint', async function () {
-            await agent.get('/config/')
-                .expectStatus(403);
+    it('Can retrieve config and all expected properties', async function () {
+      await agent
+        .get('/config/')
+        .expectStatus(200)
+        .matchBodySnapshot({
+          config: {
+            database: stringMatching(/sqlite3|mysql|mysql2/),
+            environment: stringMatching(/^testing/),
+            version: stringMatching(/\d+\.\d+\.\d+/),
+            // labs is matched dynamically so adding/removing feature
+            // flags doesn't churn the snapshot
+            labs: anyObject,
+          },
+        })
+        .expect(({ body }) => {
+          const { labs } = body.config;
+          assert.ok(
+            labs && typeof labs === 'object' && !Array.isArray(labs),
+            'expected labs to be a plain object',
+          );
+          const labsValues = Object.values(labs);
+          assert.ok(labsValues.length > 0, 'expected labs to contain flags');
+          assert.ok(
+            labsValues.every((value) => typeof value === 'boolean'),
+            'expected all labs flags to be booleans',
+          );
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
+          etag: anyEtag,
         });
     });
 
-    describe('As Owner', function () {
-        beforeAll(async function () {
-            await agent.loginAsOwner();
-        });
-
-        it('Can retrieve config and all expected properties', async function () {
-            await agent
-                .get('/config/')
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    config: {
-                        database: stringMatching(/sqlite3|mysql|mysql2/),
-                        environment: stringMatching(/^testing/),
-                        version: stringMatching(/\d+\.\d+\.\d+/),
-                        // labs is matched dynamically so adding/removing feature
-                        // flags doesn't churn the snapshot
-                        labs: anyObject
-                    }
-                })
-                .expect(({body}) => {
-                    const {labs} = body.config;
-                    assert.ok(labs && typeof labs === 'object' && !Array.isArray(labs), 'expected labs to be a plain object');
-                    const labsValues = Object.values(labs);
-                    assert.ok(labsValues.length > 0, 'expected labs to contain flags');
-                    assert.ok(labsValues.every(value => typeof value === 'boolean'), 'expected all labs flags to be booleans');
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
-                    etag: anyEtag
-                });
-        });
-
-        it('Will receive exploreTestimonialsUrl if set', async function () {
-            // This is only set in production config, so we override it to test it works
-            configUtils.set('explore:testimonials_url', 'https://testing.com/that/this/is/set/correctly');
-            await agent
-                .get('/config/')
-                .expectStatus(200)
-                .expect(({body}) => {
-                    assert.equal(body.config.exploreTestimonialsUrl, 'https://testing.com/that/this/is/set/correctly');
-                });
+    it('Will receive exploreTestimonialsUrl if set', async function () {
+      // This is only set in production config, so we override it to test it works
+      configUtils.set('explore:testimonials_url', 'https://testing.com/that/this/is/set/correctly');
+      await agent
+        .get('/config/')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(
+            body.config.exploreTestimonialsUrl,
+            'https://testing.com/that/this/is/set/correctly',
+          );
         });
     });
+  });
 });

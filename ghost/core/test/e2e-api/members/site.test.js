@@ -1,79 +1,94 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, stringMatching, anyContentLength, anyUuid} = matchers;
+const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
+const { anyEtag, stringMatching, anyContentLength, anyUuid } = matchers;
 const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
 
 const siteMatcherObject = {
-    site: {
-        version: stringMatching(/\d+\.\d+/),
-        site_uuid: anyUuid
-    }
+  site: {
+    version: stringMatching(/\d+\.\d+/),
+    site_uuid: anyUuid,
+  },
 };
 
 describe('Site Public Settings', function () {
-    let membersAgent;
+  let membersAgent;
 
-    beforeAll(async function () {
-        membersAgent = await agentProvider.getMembersAPIAgent();
-        await fixtureManager.init();
-    });
+  beforeAll(async function () {
+    membersAgent = await agentProvider.getMembersAPIAgent();
+    await fixtureManager.init();
+  });
 
-    afterEach(async function () {
-        await models.Settings.edit({
-            key: 'members_signup_access',
-            value: 'all'
-        }, {context: {internal: true}});
-    });
+  afterEach(async function () {
+    await models.Settings.edit(
+      {
+        key: 'members_signup_access',
+        value: 'all',
+      },
+      { context: { internal: true } },
+    );
+  });
 
-    it('Can retrieve site pubic config', async function () {
-        const {body} = await membersAgent
-            .get('/api/site')
-            .matchBodySnapshot(siteMatcherObject)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyContentLength
-            });
-        assert.equal(body.site.allow_external_signup, true);
-    });
+  it('Can retrieve site pubic config', async function () {
+    const { body } = await membersAgent
+      .get('/api/site')
+      .matchBodySnapshot(siteMatcherObject)
+      .matchHeaderSnapshot({
+        etag: anyEtag,
+        'content-length': anyContentLength,
+      });
+    assert.equal(body.site.allow_external_signup, true);
+  });
 
-    it('Sets allow_external_signup to false when members are invite only', async function () {
-        await models.Settings.edit({
-            key: 'members_signup_access',
-            value: 'invite'
-        }, {context: {internal: true}});
+  it('Sets allow_external_signup to false when members are invite only', async function () {
+    await models.Settings.edit(
+      {
+        key: 'members_signup_access',
+        value: 'invite',
+      },
+      { context: { internal: true } },
+    );
 
-        const {body} = await membersAgent
-            .get('/api/site')
-            .matchBodySnapshot(siteMatcherObject)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyContentLength
-            });
-        assert.equal(body.site.allow_external_signup, false);
-    });
+    const { body } = await membersAgent
+      .get('/api/site')
+      .matchBodySnapshot(siteMatcherObject)
+      .matchHeaderSnapshot({
+        etag: anyEtag,
+        'content-length': anyContentLength,
+      });
+    assert.equal(body.site.allow_external_signup, false);
+  });
 
-    it('Sets allow_external_signup to false when portal requires checkbox', async function () {
-        const {body: initialBody} = await membersAgent
-            .get('/api/site');
-        assert.equal(initialBody.site.allow_external_signup, true, 'This test requires the initial state to allow external signups');
+  it('Sets allow_external_signup to false when portal requires checkbox', async function () {
+    const { body: initialBody } = await membersAgent.get('/api/site');
+    assert.equal(
+      initialBody.site.allow_external_signup,
+      true,
+      'This test requires the initial state to allow external signups',
+    );
 
-        await models.Settings.edit({
-            key: 'portal_signup_checkbox_required',
-            value: true
-        }, {context: {internal: true}});
+    await models.Settings.edit(
+      {
+        key: 'portal_signup_checkbox_required',
+        value: true,
+      },
+      { context: { internal: true } },
+    );
 
-        await models.Settings.edit({
-            key: 'portal_signup_terms_html',
-            value: 'I agree to the terms and conditions'
-        }, {context: {internal: true}});
+    await models.Settings.edit(
+      {
+        key: 'portal_signup_terms_html',
+        value: 'I agree to the terms and conditions',
+      },
+      { context: { internal: true } },
+    );
 
-        const {body} = await membersAgent
-            .get('/api/site')
-            .matchBodySnapshot(siteMatcherObject)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyContentLength
-            });
-        assert.equal(body.site.allow_external_signup, false);
-    });
+    const { body } = await membersAgent
+      .get('/api/site')
+      .matchBodySnapshot(siteMatcherObject)
+      .matchHeaderSnapshot({
+        etag: anyEtag,
+        'content-length': anyContentLength,
+      });
+    assert.equal(body.site.allow_external_signup, false);
+  });
 });

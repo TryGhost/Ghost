@@ -1,85 +1,84 @@
-import type { Plugin, ProxyOptions } from "vite";
-import type { IncomingMessage } from "http";
-import { getSubdir, GHOST_URL } from "./vite.config";
+import type { Plugin, ProxyOptions } from 'vite';
+import type { IncomingMessage } from 'http';
+import { getSubdir, GHOST_URL } from './vite.config';
 
 /**
  * Resolves the configured Ghost site URL by calling the admin api site endpoint
  * with retries (up to 20 seconds).
  */
 async function resolveGhostSiteUrl() {
-    const MAX_ATTEMPTS = 20;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        try {
-            const siteEndpoint = new URL('ghost/api/admin/site/', GHOST_URL);
-            const response = await fetch(siteEndpoint);
-            const data = (await response.json()) as { site: { url: string } };
-            return {
-                url: data.site.url,
-                host: new URL(data.site.url).host,
-            };
-        } catch (error) {
-            if (attempt === MAX_ATTEMPTS) {throw error;}
-            await new Promise((resolve) => {
-                setTimeout(resolve, attempt * 1000);
-            });
-        }
+  const MAX_ATTEMPTS = 20;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const siteEndpoint = new URL('ghost/api/admin/site/', GHOST_URL);
+      const response = await fetch(siteEndpoint);
+      const data = (await response.json()) as { site: { url: string } };
+      return {
+        url: data.site.url,
+        host: new URL(data.site.url).host,
+      };
+    } catch (error) {
+      if (attempt === MAX_ATTEMPTS) {
+        throw error;
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, attempt * 1000);
+      });
     }
+  }
 
-    throw new Error("Failed to resolve Ghost site URL");
+  throw new Error('Failed to resolve Ghost site URL');
 }
 
 /**
  * Creates proxy configuration for Ghost Admin API requests. Rewrites cookies
  * and headers to work with Ghost's security middleware.
  */
-function createAdminApiProxy(site: {
-    url: string;
-    host: string;
-}): Record<string, ProxyOptions> {
-    // When running the dev server against the backend on HTTPS, we need to
-    // remove the same site and secure flags from the cookie. Otherwise, the
-    // browser won't set it correctly since the dev server is running on HTTP.
-    const rewriteCookies = (proxyRes: IncomingMessage) => {
-        const cookies = proxyRes.headers["set-cookie"];
-        if (Array.isArray(cookies)) {
-            proxyRes.headers["set-cookie"] = cookies.map((cookie) => {
-                return cookie
-                    .split(";")
-                    .filter((v) => v.trim().toLowerCase() !== "secure")
-                    .filter((v) => v.trim().toLowerCase() !== "samesite=none")
-                    .join("; ");
-            });
-        }
-    };
+function createAdminApiProxy(site: { url: string; host: string }): Record<string, ProxyOptions> {
+  // When running the dev server against the backend on HTTPS, we need to
+  // remove the same site and secure flags from the cookie. Otherwise, the
+  // browser won't set it correctly since the dev server is running on HTTP.
+  const rewriteCookies = (proxyRes: IncomingMessage) => {
+    const cookies = proxyRes.headers['set-cookie'];
+    if (Array.isArray(cookies)) {
+      proxyRes.headers['set-cookie'] = cookies.map((cookie) => {
+        return cookie
+          .split(';')
+          .filter((v) => v.trim().toLowerCase() !== 'secure')
+          .filter((v) => v.trim().toLowerCase() !== 'samesite=none')
+          .join('; ');
+      });
+    }
+  };
 
-    const subdir = getSubdir();
+  const subdir = getSubdir();
 
-    return {
-        [`^${subdir}/ghost/api/.*`]: {
-            target: site.url,
-            changeOrigin: true,
-            followRedirects: true,
-            autoRewrite: true,
-            cookieDomainRewrite: {
-                "*": site.host,
-            },
-            configure(proxy) {
-                proxy.on("proxyRes", rewriteCookies);
-            },
-        },
-    };
+  return {
+    [`^${subdir}/ghost/api/.*`]: {
+      target: site.url,
+      changeOrigin: true,
+      followRedirects: true,
+      autoRewrite: true,
+      cookieDomainRewrite: {
+        '*': site.host,
+      },
+      configure(proxy) {
+        proxy.on('proxyRes', rewriteCookies);
+      },
+    },
+  };
 }
 
 /**
  * Creates proxy configuration for Ember CLI live reload script.
  */
 function createEmberLiveReloadProxy(): Record<string, ProxyOptions> {
-    return {
-        "^/ember-cli-live-reload.js": {
-            target: "http://localhost:4200",
-            changeOrigin: true,
-        },
-    };
+  return {
+    '^/ember-cli-live-reload.js': {
+      target: 'http://localhost:4200',
+      changeOrigin: true,
+    },
+  };
 }
 
 /**
@@ -88,56 +87,61 @@ function createEmberLiveReloadProxy(): Record<string, ProxyOptions> {
  * 2. Ember Live Reload - proxies ember-cli-live-reload.js to Ember dev server
  */
 export function ghostBackendProxyPlugin(): Plugin {
-    let siteUrl!: { url: string; host: string };
+  let siteUrl!: { url: string; host: string };
 
-    return {
-        name: "ghost-backend-proxy",
+  return {
+    name: 'ghost-backend-proxy',
 
-        async configResolved(config) {
-            // Only resolve backend URL for dev/preview, not for builds or tests
-            if (config.command !== 'serve' || config.mode === 'test') {return;}
+    async configResolved(config) {
+      // Only resolve backend URL for dev/preview, not for builds or tests
+      if (config.command !== 'serve' || config.mode === 'test') {
+        return;
+      }
 
-            try {
-                // We expect this to succeed immediately, but if the backend
-                // server is getting started, it might need some time.
-                // In that case, this lets the user know in case we're barking
-                // up the wrong tree (aka the GHOST_URL is wrong.)
-                const timeout = setTimeout(() => {
-                    config.logger.info(`Trying to reach Ghost Admin API at ${GHOST_URL}...`);
-                }, 1000);
+      try {
+        // We expect this to succeed immediately, but if the backend
+        // server is getting started, it might need some time.
+        // In that case, this lets the user know in case we're barking
+        // up the wrong tree (aka the GHOST_URL is wrong.)
+        const timeout = setTimeout(() => {
+          config.logger.info(`Trying to reach Ghost Admin API at ${GHOST_URL}...`);
+        }, 1000);
 
-                siteUrl = await resolveGhostSiteUrl();
-                clearTimeout(timeout);
+        siteUrl = await resolveGhostSiteUrl();
+        clearTimeout(timeout);
 
-                config.logger.info(`👻 Using backend url: ${siteUrl.url}`);
-            } catch (error) {
-                config.logger
-                    .error(`Could not reach Ghost Admin API at: ${GHOST_URL}
+        config.logger.info(`👻 Using backend url: ${siteUrl.url}`);
+      } catch (error) {
+        config.logger.error(`Could not reach Ghost Admin API at: ${GHOST_URL}
 
 Ensure the Ghost backend is running. If needed, set the GHOST_URL environment variable to the correct URL.
     `);
 
-                throw error;
-            }
-        },
+        throw error;
+      }
+    },
 
-        configureServer(server) {
-            if (!siteUrl) {return;}
+    configureServer(server) {
+      if (!siteUrl) {
+        return;
+      }
 
-            server.config.server.proxy = {
-                ...server.config.server.proxy,
-                ...createAdminApiProxy(siteUrl),
-                ...createEmberLiveReloadProxy(),
-            };
-        },
+      server.config.server.proxy = {
+        ...server.config.server.proxy,
+        ...createAdminApiProxy(siteUrl),
+        ...createEmberLiveReloadProxy(),
+      };
+    },
 
-        configurePreviewServer(server) {
-            if (!siteUrl) {return;}
+    configurePreviewServer(server) {
+      if (!siteUrl) {
+        return;
+      }
 
-            server.config.preview.proxy = {
-                ...server.config.preview.proxy,
-                ...createAdminApiProxy(siteUrl),
-            };
-        },
-    } as const satisfies Plugin;
+      server.config.preview.proxy = {
+        ...server.config.preview.proxy,
+        ...createAdminApiProxy(siteUrl),
+      };
+    },
+  } as const satisfies Plugin;
 }

@@ -2,53 +2,64 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const urlService = require('../../../../core/server/services/url');
-const {PostsService} = require('../../../../core/server/services/posts/posts-service-instance');
+const { PostsService } = require('../../../../core/server/services/posts/posts-service-instance');
 const searchIndexController = require('../../../../core/server/api/endpoints/search-index-public');
 
 describe('Search index public controller', function () {
-    let browsePostsStub;
+  let browsePostsStub;
 
-    beforeEach(function () {
-        // the controller constructs its own PostsService instance
-        browsePostsStub = sinon.stub(PostsService.prototype, 'browsePosts').resolves({data: []});
-        sinon.stub(models.Tag, 'findPage').resolves({data: []});
-        sinon.stub(models.Author, 'findPage').resolves({data: []});
-    });
+  beforeEach(function () {
+    // the controller constructs its own PostsService instance
+    browsePostsStub = sinon.stub(PostsService.prototype, 'browsePosts').resolves({ data: [] });
+    sinon.stub(models.Tag, 'findPage').resolves({ data: [] });
+    sinon.stub(models.Author, 'findPage').resolves({ data: [] });
+  });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+  afterEach(function () {
+    sinon.restore();
+  });
 
-    it('forces the URL service required columns into the posts fetch', async function () {
-        // the public posts fetch does not select `status`, which the lazy URL
-        // service's base filter reads
-        sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
+  it('forces the URL service required columns into the posts fetch', async function () {
+    // the public posts fetch does not select `status`, which the lazy URL
+    // service's base filter reads
+    sinon
+      .stub(urlService, 'getRequiredFields')
+      .withArgs('posts')
+      .returns(['status', 'type', 'slug']);
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
-        await searchIndexController.fetchPosts.query();
+    await searchIndexController.fetchPosts.query();
 
-        const options = browsePostsStub.getCall(0).args[0];
-        assert.ok(options.columns.includes('status'));
-        assert.ok(options.columns.includes('type'));
-    });
+    const options = browsePostsStub.getCall(0).args[0];
+    assert.ok(options.columns.includes('status'));
+    assert.ok(options.columns.includes('type'));
+  });
 
-    it('forces the URL service required columns into the tags fetch', async function () {
-        sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
+  it('forces the URL service required columns into the tags fetch', async function () {
+    sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
-        await searchIndexController.fetchTags.query();
+    await searchIndexController.fetchTags.query();
 
-        const options = models.Tag.findPage.getCall(0).args[0];
-        assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url', 'visibility']);
-    });
+    const options = models.Tag.findPage.getCall(0).args[0];
+    assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url', 'visibility']);
+  });
 
-    it('leaves columns untouched when the routing config needs none', async function () {
-        sinon.stub(urlService, 'getRequiredFields').returns([]);
-        sinon.stub(urlService, 'getRequiredRelations').returns([]);
+  it('leaves columns untouched when the routing config needs none', async function () {
+    sinon.stub(urlService, 'getRequiredFields').returns([]);
+    sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
-        await searchIndexController.fetchPosts.query();
+    await searchIndexController.fetchPosts.query();
 
-        const options = browsePostsStub.getCall(0).args[0];
-        assert.deepEqual(options.columns, ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility']);
-    });
+    const options = browsePostsStub.getCall(0).args[0];
+    assert.deepEqual(options.columns, [
+      'id',
+      'slug',
+      'title',
+      'excerpt',
+      'url',
+      'updated_at',
+      'visibility',
+    ]);
+  });
 });

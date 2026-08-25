@@ -20,7 +20,7 @@ Put logic shared by several scripts in `lib/`. A script that is its own
 entrypoint can just export the parts worth testing and guard the CLI path with
 `import.meta.main` — see `build-public-apps-matrix.js`. Either way, cover it in
 `test/`: tests are plain `node --test`, discovered automatically. Note this
-package is *not* part of the root Vitest watcher (`pnpm test:watch`), which only
+package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
 covers Vitest-based projects.
 
 ## The `.cjs` files
@@ -37,12 +37,12 @@ Don't add new `.cjs` files.
 ## Two things that don't live by these rules
 
 **`enforce-package-manager.js`** is the root `preinstall` hook, so it runs
-*before* `node_modules` exists. It can never import anything — not even from
+_before_ `node_modules` exists. It can never import anything — not even from
 `lib/` — and must stay runnable by plain `node` on a literal path. The
 devcontainer image copies it (and only it) out of this directory for the same
 reason; see `docker/ghost-dev/Dockerfile`.
 
-**`.github/scripts/i18n-review`** is intentionally *not* a workspace member and
+**`.github/scripts/i18n-review`** is intentionally _not_ a workspace member and
 stays where it is. It carries its own lockfile, eslint config and CI workflow so
 its `pull_request_target` job can install from a sparse checkout of `main`
 without the root lockfile, and so its CI-only deps never reach a dev's install.

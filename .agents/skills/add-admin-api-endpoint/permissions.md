@@ -69,6 +69,7 @@ edit: {
 ```
 
 **When to use:**
+
 - Standard CRUD operations
 - When the default permission handler meets your needs
 - Most common case for authenticated endpoints
@@ -83,11 +84,13 @@ When you set `permissions: true`, the framework delegates to the default permiss
    - `categories` → `category` (handles `ies` → `y`)
 
 2. **Permission Check**: It calls the permissions service:
+
    ```javascript
    permissions.canThis(frame.options.context)[method][singular](identifier, unsafeAttrs)
    ```
 
    For example, with `docName: 'posts'` and method `edit`:
+
    ```javascript
    permissions.canThis(context).edit.post(postId, unsafeAttrs)
    ```
@@ -102,6 +105,7 @@ When you set `permissions: true`, the framework delegates to the default permiss
 For the default handler to work, you must have:
 
 1. **Permission records** in the `permissions` table:
+
    ```sql
    INSERT INTO permissions (name, action_type, object_type) VALUES
    ('Browse posts', 'browse', 'post'),
@@ -114,6 +118,7 @@ For the default handler to work, you must have:
 2. **Role-permission mappings** in `permissions_roles` linking permissions to roles like Administrator, Editor, etc.
 
 These are typically added via:
+
 - Initial fixtures in `ghost/core/core/server/data/schema/fixtures/fixtures.json`
 - Database migrations using `addPermissionWithRoles()` from `ghost/core/core/server/data/migrations/utils/permissions.js`
 
@@ -134,6 +139,7 @@ browse: {
 ```
 
 **When to use:**
+
 - Public endpoints that don't require authentication
 - Health check or status endpoints
 - Resources that should be accessible to everyone
@@ -177,6 +183,7 @@ delete: {
 ```
 
 **When to use:**
+
 - Complex permission logic that varies by resource
 - Owner-based permissions
 - Role-based access control beyond the default handler
@@ -205,6 +212,7 @@ edit: {
 ```
 
 **When to use:**
+
 - Default permission handler is sufficient but needs configuration
 - You have attributes that require special permission handling
 - You need to prepare data before permission checks run
@@ -506,13 +514,13 @@ permissions: true
 
 ### 2. Use the Appropriate Pattern
 
-| Scenario | Pattern |
-|----------|---------|
-| Public endpoint | `permissions: false` |
-| Standard authenticated CRUD | `permissions: true` |
-| Need unsafe attrs tracking | `permissions: { unsafeAttrs: [...] }` |
-| Complex custom logic | `permissions: async function(frame) {...}` |
-| Need pre-processing | `permissions: { before: async function(frame) {...} }` |
+| Scenario                    | Pattern                                                |
+| --------------------------- | ------------------------------------------------------ |
+| Public endpoint             | `permissions: false`                                   |
+| Standard authenticated CRUD | `permissions: true`                                    |
+| Need unsafe attrs tracking  | `permissions: { unsafeAttrs: [...] }`                  |
+| Complex custom logic        | `permissions: async function(frame) {...}`             |
+| Need pre-processing         | `permissions: { before: async function(frame) {...} }` |
 
 ### 3. Keep Permission Logic Focused
 
@@ -696,6 +704,7 @@ Common roles you can assign permissions to:
 ### Restricting to Administrators Only
 
 To make an endpoint accessible only to administrators (not editors, authors, etc.), only assign permissions to:
+
 - `Administrator`
 - `Admin Integration`
 

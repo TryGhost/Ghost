@@ -6,7 +6,7 @@ const urlUtils = require('../../../shared/url-utils').default;
 const api = require('../../api').endpoints;
 
 const messages = {
-    jobPublishInThePast: 'Use the force flag to publish a post in the past.'
+  jobPublishInThePast: 'Use the force flag to publish a post in the past.',
 };
 
 // Returned when there is nothing to publish — the job fired ahead of its
@@ -14,7 +14,7 @@ const messages = {
 // holds the original, earlier job), or the resource was deleted. Lets the
 // caller respond 2xx so the scheduler treats the job as done rather than
 // retrying a publish that will never happen.
-const NO_OP = {scheduledResource: null, preScheduledResource: null};
+const NO_OP = { scheduledResource: null, preScheduledResource: null };
 
 /**
  * Publishes scheduled resource (a post or a page at the moment of writing)
@@ -27,48 +27,54 @@ const NO_OP = {scheduledResource: null, preScheduledResource: null};
  *   `scheduledResource: null` when there was nothing to publish yet
  */
 exports.publish = async (resourceType, id, force, options) => {
-    const publishAPostBySchedulerToleranceInMinutes = config.get('times').publishAPostBySchedulerToleranceInMinutes;
+  const publishAPostBySchedulerToleranceInMinutes =
+    config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
-    let preScheduledResource;
-    try {
-        const result = await api[resourceType].read({id}, options);
-        preScheduledResource = result[resourceType][0];
-    } catch (err) {
-        // Resource was deleted between scheduling and firing — nothing to
-        // publish. (The permissions stage tolerates the same NotFound so the
-        // request reaches here.)
-        if (errors.utils.isGhostError(err) && err.errorType === 'NotFoundError') {
-            return NO_OP;
-        }
-
-        throw err;
+  let preScheduledResource;
+  try {
+    const result = await api[resourceType].read({ id }, options);
+    preScheduledResource = result[resourceType][0];
+  } catch (err) {
+    // Resource was deleted between scheduling and firing — nothing to
+    // publish. (The permissions stage tolerates the same NotFound so the
+    // request reaches here.)
+    if (errors.utils.isGhostError(err) && err.errorType === 'NotFoundError') {
+      return NO_OP;
     }
 
-    const publishedAtMoment = moment(preScheduledResource.published_at);
+    throw err;
+  }
 
-    if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
-        return NO_OP;
-    }
+  const publishedAtMoment = moment(preScheduledResource.published_at);
 
-    // Past the tolerance without a force flag is a genuinely dropped publish, so
-    // keep it an error rather than silently skipping it.
-    if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && force !== true) {
-        return Promise.reject(new errors.NotFoundError({message: messages.jobPublishInThePast}));
-    }
+  if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
+    return NO_OP;
+  }
 
-    const editedResource = {};
-    editedResource[resourceType] = [{
-        status: 'published',
-        updated_at: moment(preScheduledResource.updated_at).toISOString(true)
-    }];
+  // Past the tolerance without a force flag is a genuinely dropped publish, so
+  // keep it an error rather than silently skipping it.
+  if (
+    publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 &&
+    force !== true
+  ) {
+    return Promise.reject(new errors.NotFoundError({ message: messages.jobPublishInThePast }));
+  }
 
-    const editResult = await api[resourceType].edit(
-        editedResource,
-        _.pick(options, ['context', 'id', 'transacting', 'forUpdate'])
-    );
-    const scheduledResource = editResult[resourceType][0];
+  const editedResource = {};
+  editedResource[resourceType] = [
+    {
+      status: 'published',
+      updated_at: moment(preScheduledResource.updated_at).toISOString(true),
+    },
+  ];
 
-    return {scheduledResource, preScheduledResource};
+  const editResult = await api[resourceType].edit(
+    editedResource,
+    _.pick(options, ['context', 'id', 'transacting', 'forUpdate']),
+  );
+  const scheduledResource = editResult[resourceType][0];
+
+  return { scheduledResource, preScheduledResource };
 };
 
 /**
@@ -77,21 +83,21 @@ exports.publish = async (resourceType, id, force, options) => {
  * @returns {boolean|{value: string}}
  */
 exports.handleCacheInvalidation = (scheduledResource, preScheduledResource) => {
-    if (
-        (scheduledResource.status === 'published' && preScheduledResource.status !== 'published') ||
-        (scheduledResource.status === 'draft' && preScheduledResource.status === 'published')
-    ) {
-        return true;
-    } else if (
-        (scheduledResource.status === 'draft' && preScheduledResource.status !== 'published') ||
-        (scheduledResource.status === 'scheduled' && preScheduledResource.status !== 'scheduled')
-    ) {
-        return {
-            value: urlUtils.urlFor({
-                relativeUrl: urlUtils.urlJoin('/p', scheduledResource.uuid, '/')
-            })
-        };
-    } else {
-        return false;
-    }
+  if (
+    (scheduledResource.status === 'published' && preScheduledResource.status !== 'published') ||
+    (scheduledResource.status === 'draft' && preScheduledResource.status === 'published')
+  ) {
+    return true;
+  } else if (
+    (scheduledResource.status === 'draft' && preScheduledResource.status !== 'published') ||
+    (scheduledResource.status === 'scheduled' && preScheduledResource.status !== 'scheduled')
+  ) {
+    return {
+      value: urlUtils.urlFor({
+        relativeUrl: urlUtils.urlJoin('/p', scheduledResource.uuid, '/'),
+      }),
+    };
+  } else {
+    return false;
+  }
 };

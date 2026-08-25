@@ -32,14 +32,12 @@ export * from './components/ui/input-group';
 export * from './components/ui/kbd';
 export * from './components/ui/label';
 export * from './components/ui/loading-indicator';
-export * from './components/ui/metric-value';
 export * from './components/ui/multi-select-combobox';
 export * from './components/ui/navbar';
 export * from './components/ui/no-value-label';
 export * from './components/ui/pagemenu';
 export * from './components/ui/popover';
 export * from './components/ui/preview-chrome';
-export * from './components/ui/right-sidebar';
 export * from './components/ui/radio-group';
 export * from './components/ui/separator';
 export * from './components/ui/select';
@@ -57,17 +55,16 @@ export * from './components/ui/tabs';
 export * from './components/ui/textarea';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
-export * from './components/ui/trend-badge';
 
-export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
-export type {ContextMenuCheckboxItemProps as ContextMenuCheckboxItemProps} from '@radix-ui/react-context-menu';
+export type { DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps } from '@radix-ui/react-dropdown-menu';
+export type { ContextMenuCheckboxItemProps as ContextMenuCheckboxItemProps } from '@radix-ui/react-context-menu';
 
-export {IconComponents as Icon} from './components/ui/icon';
+export { IconComponents as Icon } from './components/ui/icon';
 
 // Visual assets
-export {default as FacebookLogo} from './assets/images/facebook-logo.svg?react';
-export {default as GhostLogo} from './assets/images/ghost-logo.svg?react';
-export {default as GhostOrb} from './assets/images/ghost-orb.svg?react';
-export {default as GoogleLogo} from './assets/images/google-logo.svg?react';
-export {default as TwitterLogo} from './assets/images/twitter-logo.svg?react';
-export {default as XLogo} from './assets/images/x-logo.svg?react';
+export { default as FacebookLogo } from './assets/images/facebook-logo.svg?react';
+export { default as GhostLogo } from './assets/images/ghost-logo.svg?react';
+export { default as GhostOrb } from './assets/images/ghost-orb.svg?react';
+export { default as GoogleLogo } from './assets/images/google-logo.svg?react';
+export { default as TwitterLogo } from './assets/images/twitter-logo.svg?react';
+export { default as XLogo } from './assets/images/x-logo.svg?react';

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
-const {deferred} = require('../../../../../utils/deferred')
+const { deferred } = require('../../../../../utils/deferred');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
@@ -12,70 +12,70 @@ const rssService = require('../../../../../../core/frontend/services/rss');
 // from failing via timeout when they
 // should just immediately fail
 function failTest(done) {
-    return function (err) {
-        done(err);
-    };
+  return function (err) {
+    done(err);
+  };
 }
 
 describe('Unit - services/routing/controllers/rss', function () {
-    let req;
-    let res;
-    let fetchDataStub;
-    let rssServiceRenderStub;
-    let posts;
+  let req;
+  let res;
+  let fetchDataStub;
+  let rssServiceRenderStub;
+  let posts;
 
-    beforeEach(function () {
-        posts = [
-            testUtils.DataGenerator.forKnex.createPost(),
-            testUtils.DataGenerator.forKnex.createPost()
-        ];
+  beforeEach(function () {
+    posts = [
+      testUtils.DataGenerator.forKnex.createPost(),
+      testUtils.DataGenerator.forKnex.createPost(),
+    ];
 
-        req = {
-            params: {},
-            originalUrl: '/rss/'
-        };
+    req = {
+      params: {},
+      originalUrl: '/rss/',
+    };
 
-        res = {
-            routerOptions: {},
-            locals: {
-                safeVersion: '0.6'
-            }
-        };
+    res = {
+      routerOptions: {},
+      locals: {
+        safeVersion: '0.6',
+      },
+    };
 
-        fetchDataStub = sinon.stub();
+    fetchDataStub = sinon.stub();
 
-        sinon.stub(dataService, 'fetchData').get(function () {
-            return fetchDataStub;
-        });
-
-        sinon.stub(security.string, 'safe').returns('safe');
-
-        rssServiceRenderStub = sinon.stub(rssService, 'render');
-
-        const settingsCacheGetStub = sinon.stub(settingsCache, 'get');
-        settingsCacheGetStub.withArgs('title').returns('Ghost');
-        settingsCacheGetStub.withArgs('description').returns('Ghost is cool!');
+    sinon.stub(dataService, 'fetchData').get(function () {
+      return fetchDataStub;
     });
 
-    afterEach(function () {
-        sinon.restore();
+    sinon.stub(security.string, 'safe').returns('safe');
+
+    rssServiceRenderStub = sinon.stub(rssService, 'render');
+
+    const settingsCacheGetStub = sinon.stub(settingsCache, 'get');
+    settingsCacheGetStub.withArgs('title').returns('Ghost');
+    settingsCacheGetStub.withArgs('description').returns('Ghost is cool!');
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('should fetch data and attempt to send XML', function () {
+    const { promise, done } = deferred();
+    fetchDataStub.withArgs({ page: 1, slug: undefined }).resolves({
+      posts: posts,
     });
 
-    it('should fetch data and attempt to send XML', function () {
-        const {promise, done} = deferred();
-        fetchDataStub.withArgs({page: 1, slug: undefined}).resolves({
-            posts: posts
-        });
-
-        rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
-            assert.equal(baseUrl, '/rss/');
-            assert.equal(data.posts, posts);
-            assert.equal(data.title, 'Ghost');
-            assert.equal(data.description, 'Ghost is cool!');
-            done();
-        });
-
-        controllers.rss(req, res, failTest(done));
-        return promise;
+    rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
+      assert.equal(baseUrl, '/rss/');
+      assert.equal(data.posts, posts);
+      assert.equal(data.title, 'Ghost');
+      assert.equal(data.description, 'Ghost is cool!');
+      done();
     });
+
+    controllers.rss(req, res, failTest(done));
+    return promise;
+  });
 });

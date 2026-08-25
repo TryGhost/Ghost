@@ -1,19 +1,21 @@
 {
   "name": "@tryghost/adapter-base-redirects",
   "version": "0.0.0",
-  "description": "The adapter-base-redirects package for Ghost.",
   "private": true,
-  "ghostPackage": {
-    "goldenPath": "compliant"
-  },
-  "type": "module",
+  "description": "The adapter-base-redirects package for Ghost.",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/adapters/redirects-base"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -21,8 +23,6 @@
       "default": "./build/index.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -32,21 +32,21 @@
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
-  "files": [
-    "build"
-  ],
+  "dependencies": {},
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {},
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
   "nx": {
     "targets": {
       "build": {

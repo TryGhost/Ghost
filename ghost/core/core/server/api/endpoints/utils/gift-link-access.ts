@@ -5,24 +5,25 @@
  */
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import {service as giftLinksService} from '../../../services/gift-links';
+import { service as giftLinksService } from '../../../services/gift-links';
 import membersService from '../../../services/members';
 
 const messages = {
-    invalidGiftToken: 'Invalid gift link token.',
-    missingGiftKeyData: 'applyGiftAccess requires generateGiftKeyData in the endpoint\'s generateCacheKeyData, so a response cache can never serve unlocked content under an anonymous key.'
+  invalidGiftToken: 'Invalid gift link token.',
+  missingGiftKeyData:
+    "applyGiftAccess requires generateGiftKeyData in the endpoint's generateCacheKeyData, so a response cache can never serve unlocked content under an anonymous key.",
 };
 
 interface Frame {
-    // frame.original.context, not frame.options.context: the permissions
-    // stage replaces the latter with a parsed copy that drops unknown keys.
-    original: {context?: {member?: unknown; giftToken?: unknown}};
-    giftLinkPostId?: string | null;
+  // frame.original.context, not frame.options.context: the permissions
+  // stage replaces the latter with a parsed copy that drops unknown keys.
+  original: { context?: { member?: unknown; giftToken?: unknown } };
+  giftLinkPostId?: string | null;
 }
 
 function giftTokenFromFrame(frame: Frame): string | null {
-    const token = frame.original.context?.giftToken;
-    return typeof token === 'string' && token !== '' ? token : null;
+  const token = frame.original.context?.giftToken;
+  return typeof token === 'string' && token !== '' ? token : null;
 }
 
 /**
@@ -32,17 +33,19 @@ function giftTokenFromFrame(frame: Frame): string | null {
  * token's key distinct from a plain read's — sharing that key would serve a
  * cached gated 200 where a miss 403s.
  */
-export async function generateGiftKeyData(frame: Frame): Promise<{present: true; postId: string | null} | undefined> {
-    const token = giftTokenFromFrame(frame);
-    if (!token) {
-        return undefined;
-    }
+export async function generateGiftKeyData(
+  frame: Frame,
+): Promise<{ present: true; postId: string | null } | undefined> {
+  const token = giftTokenFromFrame(frame);
+  if (!token) {
+    return undefined;
+  }
 
-    const post = await giftLinksService!.getPostByToken(token);
-    const postId = post ? post.id : null;
-    frame.giftLinkPostId = postId;
+  const post = await giftLinksService!.getPostByToken(token);
+  const postId = post ? post.id : null;
+  frame.giftLinkPostId = postId;
 
-    return {present: true, postId};
+  return { present: true, postId };
 }
 
 /**
@@ -58,25 +61,25 @@ export async function generateGiftKeyData(frame: Frame): Promise<{present: true;
  * catch (the response cache is disabled there) but which poisons the
  * anonymous cache key with unlocked content in production.
  */
-export async function applyGiftAccess(frame: Frame, model: {id: string}): Promise<void> {
-    const token = giftTokenFromFrame(frame);
-    if (!token) {
-        return;
-    }
+export async function applyGiftAccess(frame: Frame, model: { id: string }): Promise<void> {
+  const token = giftTokenFromFrame(frame);
+  if (!token) {
+    return;
+  }
 
-    if (frame.giftLinkPostId === undefined) {
-        throw new errors.IncorrectUsageError({
-            message: tpl(messages.missingGiftKeyData)
-        });
-    }
+  if (frame.giftLinkPostId === undefined) {
+    throw new errors.IncorrectUsageError({
+      message: tpl(messages.missingGiftKeyData),
+    });
+  }
 
-    if (frame.giftLinkPostId !== model.id) {
-        throw new errors.NoPermissionError({
-            message: tpl(messages.invalidGiftToken),
-            code: 'INVALID_GIFT_TOKEN'
-        });
-    }
+  if (frame.giftLinkPostId !== model.id) {
+    throw new errors.NoPermissionError({
+      message: tpl(messages.invalidGiftToken),
+      code: 'INVALID_GIFT_TOKEN',
+    });
+  }
 
-    frame.original.context ??= {};
-    frame.original.context.member = await membersService.createPaidMemberShim();
+  frame.original.context ??= {};
+  frame.original.context.member = await membersService.createPaidMemberShim();
 }

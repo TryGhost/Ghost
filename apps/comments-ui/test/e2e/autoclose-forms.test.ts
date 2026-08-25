@@ -1,63 +1,66 @@
-import {FrameLocator, expect, test} from '@playwright/test';
-import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
-import {buildReply} from '../utils/fixtures';
+import { FrameLocator, expect, test } from '@playwright/test';
+import { MockedApi, initialize, waitEditorFocused } from '../utils/e2e';
+import { buildReply } from '../utils/fixtures';
 
 test.describe('Autoclose forms', async () => {
-    let mockedApi: MockedApi;
-    let frame: FrameLocator;
+  let mockedApi: MockedApi;
+  let frame: FrameLocator;
 
-    test.beforeEach(async ({page}) => {
-        mockedApi = new MockedApi({});
-        mockedApi.setMember({});
+  test.beforeEach(async ({ page }) => {
+    mockedApi = new MockedApi({});
+    mockedApi.setMember({});
 
-        mockedApi.addComment({
-            html: '<p>Comment 1</p>',
-            replies: [{
-                html: '<p>Reply 1.1</p>'
-            }, {
-                html: '<p>Reply 1.2</p>'
-            }].map(buildReply)
-        });
-        mockedApi.addComment({
-            html: '<p>Comment 2</p>'
-        });
-
-        ({frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher weekly',
-            labs: {}
-        }));
+    mockedApi.addComment({
+      html: '<p>Comment 1</p>',
+      replies: [
+        {
+          html: '<p>Reply 1.1</p>',
+        },
+        {
+          html: '<p>Reply 1.2</p>',
+        },
+      ].map(buildReply),
+    });
+    mockedApi.addComment({
+      html: '<p>Comment 2</p>',
     });
 
-    // NOTE: form counts are replies + 1 for the main form that is now always shown
-    //       at the top of the comments list
+    ({ frame } = await initialize({
+      mockedApi,
+      page,
+      publication: 'Publisher weekly',
+      labs: {},
+    }));
+  });
 
-    test('autocloses open reply forms when opening another', async ({}) => {
-        const reply1 = await frame.getByTestId('comment-component').nth(1);
-        await reply1.getByTestId('reply-button').click();
+  // NOTE: form counts are replies + 1 for the main form that is now always shown
+  //       at the top of the comments list
 
-        await expect(frame.getByTestId('form')).toHaveCount(2);
+  test('autocloses open reply forms when opening another', async ({}) => {
+    const reply1 = await frame.getByTestId('comment-component').nth(1);
+    await reply1.getByTestId('reply-button').click();
 
-        const comment2 = await frame.getByTestId('comment-component').nth(3);
-        await comment2.getByTestId('reply-button').click();
+    await expect(frame.getByTestId('form')).toHaveCount(2);
 
-        await expect(frame.getByTestId('form')).toHaveCount(2);
-    });
+    const comment2 = await frame.getByTestId('comment-component').nth(3);
+    await comment2.getByTestId('reply-button').click();
 
-    test('does not autoclose open reply form with unsaved changes', async ({}) => {
-        const reply1 = await frame.getByTestId('comment-component').nth(1);
-        await reply1.getByTestId('reply-button').click();
+    await expect(frame.getByTestId('form')).toHaveCount(2);
+  });
 
-        await expect(frame.getByTestId('form')).toHaveCount(2);
+  test('does not autoclose open reply form with unsaved changes', async ({}) => {
+    const reply1 = await frame.getByTestId('comment-component').nth(1);
+    await reply1.getByTestId('reply-button').click();
 
-        const editor = frame.getByTestId('form-editor').nth(1);
-        await waitEditorFocused(editor);
-        await editor.type('Replying to comment 1');
+    await expect(frame.getByTestId('form')).toHaveCount(2);
 
-        const comment2 = await frame.getByTestId('comment-component').nth(3);
-        await comment2.getByTestId('reply-button').click();
+    const editor = frame.getByTestId('form-editor').nth(1);
+    await waitEditorFocused(editor);
+    await editor.type('Replying to comment 1');
 
-        await expect(frame.getByTestId('form')).toHaveCount(3);
-    });
+    const comment2 = await frame.getByTestId('comment-component').nth(3);
+    await comment2.getByTestId('reply-button').click();
+
+    await expect(frame.getByTestId('form')).toHaveCount(3);
+  });
 });

@@ -1,282 +1,326 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../../core/frontend/services/routing/static-routes-router');
 const configUtils = require('../../../../utils/config-utils');
 
 describe('UNIT - services/routing/StaticRoutesRouter', function () {
-    let req;
-    let res;
-    let next;
-    let routerCreatedSpy;
-    let mountRouteSpy;
+  let req;
+  let res;
+  let next;
+  let routerCreatedSpy;
+  let mountRouteSpy;
 
-    afterEach(async function () {
-        await configUtils.restore();
+  afterEach(async function () {
+    await configUtils.restore();
+  });
+
+  beforeEach(function () {
+    routerCreatedSpy = sinon.spy();
+
+    mountRouteSpy = sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
+    sinon.spy(StaticRoutesRouter.prototype, 'mountRouter');
+
+    req = sinon.stub();
+    res = sinon.stub();
+    next = sinon.stub();
+
+    res.locals = {};
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('static routes', function () {
+    it('instantiate: default', function () {
+      const staticRoutesRouter = new StaticRoutesRouter(
+        '/about/',
+        { templates: ['test'] },
+        routerCreatedSpy,
+      );
+      assertExists(staticRoutesRouter.router);
+
+      assert.equal(staticRoutesRouter.filter, undefined);
+      assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+
+      assert.deepEqual(staticRoutesRouter.templates, ['test']);
+
+      sinon.assert.calledOnce(routerCreatedSpy);
+      sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
+
+      sinon.assert.calledOnce(mountRouteSpy);
+
+      // parent route
+      assert.equal(mountRouteSpy.args[0][0], '/about/');
+      assert.equal(mountRouteSpy.args[0][1], controllers.static);
     });
 
-    beforeEach(function () {
-        routerCreatedSpy = sinon.spy();
+    it('initialize with data+filter', function () {
+      const staticRoutesRouter = new StaticRoutesRouter(
+        '/about/',
+        {
+          data: {},
+          filter: 'tag:test',
+        },
+        routerCreatedSpy,
+      );
 
-        mountRouteSpy = sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
-        sinon.spy(StaticRoutesRouter.prototype, 'mountRouter');
+      assertExists(staticRoutesRouter.router);
 
-        req = sinon.stub();
-        res = sinon.stub();
-        next = sinon.stub();
+      assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+      assert.equal(staticRoutesRouter.filter, undefined);
+      assert.deepEqual(staticRoutesRouter.templates, []);
 
-        res.locals = {};
+      sinon.assert.calledOnce(routerCreatedSpy);
+      sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
+
+      sinon.assert.calledOnce(mountRouteSpy);
+
+      // parent route
+      assert.equal(mountRouteSpy.args[0][0], '/about/');
+      assert.equal(mountRouteSpy.args[0][1], controllers.static);
     });
 
-    afterEach(function () {
-        sinon.restore();
+    it('fn: _prepareStaticRouteContext', function () {
+      const staticRoutesRouter = new StaticRoutesRouter(
+        '/about/',
+        { templates: [] },
+        routerCreatedSpy,
+      );
+
+      staticRoutesRouter._prepareStaticRouteContext(req, res, next);
+      sinon.assert.called(next);
+
+      assert.equal(res.routerOptions.type, 'custom');
+      assert.deepEqual(res.routerOptions.templates, []);
+      assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
+      assert.deepEqual(res.routerOptions.context, ['about']);
+      assert.deepEqual(res.routerOptions.data, {});
+      assert('contentType' in res.routerOptions);
+      assert.equal(res.routerOptions.contentType, undefined);
+      assert.equal(res.locals.slug, undefined);
     });
 
-    describe('static routes', function () {
-        it('instantiate: default', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']}, routerCreatedSpy);
-            assertExists(staticRoutesRouter.router);
+    it('fn: _prepareStaticRouteContext (mainRoute=root)', function () {
+      const staticRoutesRouter = new StaticRoutesRouter('/', { templates: [] }, routerCreatedSpy);
 
-            assert.equal(staticRoutesRouter.filter, undefined);
-            assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+      staticRoutesRouter._prepareStaticRouteContext(req, res, next);
+      sinon.assert.called(next);
 
-            assert.deepEqual(staticRoutesRouter.templates, ['test']);
+      assert.equal(res.routerOptions.type, 'custom');
+      assert.deepEqual(res.routerOptions.templates, []);
+      assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
+      assert.deepEqual(res.routerOptions.context, ['index']);
+      assert.deepEqual(res.routerOptions.data, {});
+      assert('contentType' in res.routerOptions);
+      assert.equal(res.locals.slug, undefined);
+    });
+  });
 
-            sinon.assert.calledOnce(routerCreatedSpy);
-            sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
+  describe('channels', function () {
+    describe('initialize', function () {
+      it('initialize with controller+data+filter', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            data: {},
+            filter: 'tag:test',
+          },
+          routerCreatedSpy,
+        );
 
-            sinon.assert.calledOnce(mountRouteSpy);
+        assertExists(staticRoutesRouter.router);
 
-            // parent route
-            assert.equal(mountRouteSpy.args[0][0], '/about/');
-            assert.equal(mountRouteSpy.args[0][1], controllers.static);
-        });
+        assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+        assert.equal(staticRoutesRouter.filter, 'tag:test');
+        assert.deepEqual(staticRoutesRouter.templates, []);
+        assertExists(staticRoutesRouter.data);
 
-        it('initialize with data+filter', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/about/', {
-                data: {},
-                filter: 'tag:test'
-            }, routerCreatedSpy);
+        sinon.assert.calledOnce(routerCreatedSpy);
+        sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
 
-            assertExists(staticRoutesRouter.router);
+        sinon.assert.calledTwice(mountRouteSpy);
 
-            assert.equal(staticRoutesRouter.getPermalinks(), undefined);
-            assert.equal(staticRoutesRouter.filter, undefined);
-            assert.deepEqual(staticRoutesRouter.templates, []);
+        // parent route
+        assert.equal(mountRouteSpy.args[0][0], '/channel/');
+        assert.equal(mountRouteSpy.args[0][1], controllers.channel);
 
-            sinon.assert.calledOnce(routerCreatedSpy);
-            sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
+        // pagination feature
+        assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
+        assert.equal(mountRouteSpy.args[1][1], controllers.channel);
+      });
 
-            sinon.assert.calledOnce(mountRouteSpy);
+      it('initialize with controller+filter', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            filter: 'tag:test',
+          },
+          routerCreatedSpy,
+        );
 
-            // parent route
-            assert.equal(mountRouteSpy.args[0][0], '/about/');
-            assert.equal(mountRouteSpy.args[0][1], controllers.static);
-        });
+        assertExists(staticRoutesRouter.router);
 
-        it('fn: _prepareStaticRouteContext', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: []}, routerCreatedSpy);
+        assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+        assert.equal(staticRoutesRouter.filter, 'tag:test');
 
-            staticRoutesRouter._prepareStaticRouteContext(req, res, next);
-            sinon.assert.called(next);
+        assert.deepEqual(staticRoutesRouter.templates, []);
 
-            assert.equal(res.routerOptions.type, 'custom');
-            assert.deepEqual(res.routerOptions.templates, []);
-            assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
-            assert.deepEqual(res.routerOptions.context, ['about']);
-            assert.deepEqual(res.routerOptions.data, {});
-            assert('contentType' in res.routerOptions);
-            assert.equal(res.routerOptions.contentType, undefined);
-            assert.equal(res.locals.slug, undefined);
-        });
+        sinon.assert.calledOnce(routerCreatedSpy);
+        sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
 
-        it('fn: _prepareStaticRouteContext (mainRoute=root)', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []}, routerCreatedSpy);
+        sinon.assert.calledTwice(mountRouteSpy);
 
-            staticRoutesRouter._prepareStaticRouteContext(req, res, next);
-            sinon.assert.called(next);
+        // parent route
+        assert.equal(mountRouteSpy.args[0][0], '/channel/');
+        assert.equal(mountRouteSpy.args[0][1], controllers.channel);
 
-            assert.equal(res.routerOptions.type, 'custom');
-            assert.deepEqual(res.routerOptions.templates, []);
-            assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
-            assert.deepEqual(res.routerOptions.context, ['index']);
-            assert.deepEqual(res.routerOptions.data, {});
-            assert('contentType' in res.routerOptions);
-            assert.equal(res.locals.slug, undefined);
-        });
+        // pagination feature
+        assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
+        assert.equal(mountRouteSpy.args[1][1], controllers.channel);
+      });
+
+      it('initialize with controller+data', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            data: {},
+          },
+          routerCreatedSpy,
+        );
+
+        assert.equal(staticRoutesRouter.filter, undefined);
+      });
+
+      it('initialize on subdirectory with controller+data+filter', function () {
+        configUtils.set('url', 'http://localhost:2366/blog/');
+
+        new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            data: {},
+            filter: 'author:michi',
+          },
+          routerCreatedSpy,
+        );
+
+        sinon.assert.calledTwice(mountRouteSpy);
+
+        // parent route
+        assert.equal(mountRouteSpy.args[0][0], '/channel/');
+        assert.equal(mountRouteSpy.args[0][1], controllers.channel);
+
+        // pagination feature
+        assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
+        assert.equal(mountRouteSpy.args[1][1], controllers.channel);
+      });
     });
 
-    describe('channels', function () {
-        describe('initialize', function () {
-            it('initialize with controller+data+filter', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    data: {},
-                    filter: 'tag:test'
-                }, routerCreatedSpy);
+    describe('fn: _prepareChannelContext', function () {
+      it('with data+filter', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            data: {},
+            filter: 'tag:test',
+          },
+          routerCreatedSpy,
+        );
 
-                assertExists(staticRoutesRouter.router);
-
-                assert.equal(staticRoutesRouter.getPermalinks(), undefined);
-                assert.equal(staticRoutesRouter.filter, 'tag:test');
-                assert.deepEqual(staticRoutesRouter.templates, []);
-                assertExists(staticRoutesRouter.data);
-
-                sinon.assert.calledOnce(routerCreatedSpy);
-                sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
-
-                sinon.assert.calledTwice(mountRouteSpy);
-
-                // parent route
-                assert.equal(mountRouteSpy.args[0][0], '/channel/');
-                assert.equal(mountRouteSpy.args[0][1], controllers.channel);
-
-                // pagination feature
-                assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
-                assert.equal(mountRouteSpy.args[1][1], controllers.channel);
-            });
-
-            it('initialize with controller+filter', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    filter: 'tag:test'
-                }, routerCreatedSpy);
-
-                assertExists(staticRoutesRouter.router);
-
-                assert.equal(staticRoutesRouter.getPermalinks(), undefined);
-                assert.equal(staticRoutesRouter.filter, 'tag:test');
-
-                assert.deepEqual(staticRoutesRouter.templates, []);
-
-                sinon.assert.calledOnce(routerCreatedSpy);
-                sinon.assert.calledWith(routerCreatedSpy, staticRoutesRouter);
-
-                sinon.assert.calledTwice(mountRouteSpy);
-
-                // parent route
-                assert.equal(mountRouteSpy.args[0][0], '/channel/');
-                assert.equal(mountRouteSpy.args[0][1], controllers.channel);
-
-                // pagination feature
-                assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
-                assert.equal(mountRouteSpy.args[1][1], controllers.channel);
-            });
-
-            it('initialize with controller+data', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    data: {}
-                }, routerCreatedSpy);
-
-                assert.equal(staticRoutesRouter.filter, undefined);
-            });
-
-            it('initialize on subdirectory with controller+data+filter', function () {
-                configUtils.set('url', 'http://localhost:2366/blog/');
-
-                new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    data: {},
-                    filter: 'author:michi'
-                }, routerCreatedSpy);
-
-                sinon.assert.calledTwice(mountRouteSpy);
-
-                // parent route
-                assert.equal(mountRouteSpy.args[0][0], '/channel/');
-                assert.equal(mountRouteSpy.args[0][1], controllers.channel);
-
-                // pagination feature
-                assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
-                assert.equal(mountRouteSpy.args[1][1], controllers.channel);
-            });
+        staticRoutesRouter._prepareChannelContext(req, res, next);
+        sinon.assert.calledOnce(next);
+        assert.deepEqual(res.routerOptions, {
+          type: 'channel',
+          context: ['channel'],
+          filter: 'tag:test',
+          name: 'channel',
+          data: {},
+          limit: undefined,
+          order: undefined,
+          templates: [],
         });
+      });
 
-        describe('fn: _prepareChannelContext', function () {
-            it('with data+filter', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    data: {},
-                    filter: 'tag:test'
-                }, routerCreatedSpy);
+      it('with data', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/nothingcomparestoyou/',
+          {
+            type: 'channel',
+            data: { 'my-tag': 'tag.test' },
+          },
+          routerCreatedSpy,
+        );
 
-                staticRoutesRouter._prepareChannelContext(req, res, next);
-                sinon.assert.calledOnce(next);
-                assert.deepEqual(res.routerOptions, {
-                    type: 'channel',
-                    context: ['channel'],
-                    filter: 'tag:test',
-                    name: 'channel',
-                    data: {},
-                    limit: undefined,
-                    order: undefined,
-                    templates: []
-                });
-            });
-
-            it('with data', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/nothingcomparestoyou/', {
-                    type: 'channel',
-                    data: {'my-tag': 'tag.test'}
-                }, routerCreatedSpy);
-
-                staticRoutesRouter._prepareChannelContext(req, res, next);
-                sinon.assert.calledOnce(next);
-                assert.deepEqual(res.routerOptions, {
-                    type: 'channel',
-                    context: ['nothingcomparestoyou'],
-                    name: 'nothingcomparestoyou',
-                    filter: undefined,
-                    data: {'my-tag': 'tag.test'},
-                    limit: undefined,
-                    order: undefined,
-                    templates: []
-                });
-            });
-
-            it('with filter', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    filter: 'tag:test'
-                }, routerCreatedSpy);
-
-                staticRoutesRouter._prepareChannelContext(req, res, next);
-                sinon.assert.calledOnce(next);
-                assert.deepEqual(res.routerOptions, {
-                    type: 'channel',
-                    context: ['channel'],
-                    filter: 'tag:test',
-                    name: 'channel',
-                    limit: undefined,
-                    order: undefined,
-                    data: {},
-                    templates: []
-                });
-            });
-
-            it('with order+limit', function () {
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    type: 'channel',
-                    filter: 'tag:test',
-                    limit: 2,
-                    order: 'published_at asc'
-                }, routerCreatedSpy);
-
-                staticRoutesRouter._prepareChannelContext(req, res, next);
-                sinon.assert.calledOnce(next);
-                assert.deepEqual(res.routerOptions, {
-                    type: 'channel',
-                    context: ['channel'],
-                    filter: 'tag:test',
-                    name: 'channel',
-                    limit: 2,
-                    order: 'published_at asc',
-                    data: {},
-                    templates: []
-                });
-            });
+        staticRoutesRouter._prepareChannelContext(req, res, next);
+        sinon.assert.calledOnce(next);
+        assert.deepEqual(res.routerOptions, {
+          type: 'channel',
+          context: ['nothingcomparestoyou'],
+          name: 'nothingcomparestoyou',
+          filter: undefined,
+          data: { 'my-tag': 'tag.test' },
+          limit: undefined,
+          order: undefined,
+          templates: [],
         });
+      });
+
+      it('with filter', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            filter: 'tag:test',
+          },
+          routerCreatedSpy,
+        );
+
+        staticRoutesRouter._prepareChannelContext(req, res, next);
+        sinon.assert.calledOnce(next);
+        assert.deepEqual(res.routerOptions, {
+          type: 'channel',
+          context: ['channel'],
+          filter: 'tag:test',
+          name: 'channel',
+          limit: undefined,
+          order: undefined,
+          data: {},
+          templates: [],
+        });
+      });
+
+      it('with order+limit', function () {
+        const staticRoutesRouter = new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            filter: 'tag:test',
+            limit: 2,
+            order: 'published_at asc',
+          },
+          routerCreatedSpy,
+        );
+
+        staticRoutesRouter._prepareChannelContext(req, res, next);
+        sinon.assert.calledOnce(next);
+        assert.deepEqual(res.routerOptions, {
+          type: 'channel',
+          context: ['channel'],
+          filter: 'tag:test',
+          name: 'channel',
+          limit: 2,
+          order: 'published_at asc',
+          data: {},
+          templates: [],
+        });
+      });
     });
+  });
 });

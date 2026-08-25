@@ -1,35 +1,33 @@
 {
-    "editor.quickSuggestions": {
-        "strings": true
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "eslint.workingDirectories": [
+    {
+      "pattern": "./apps/*/"
     },
-    "eslint.workingDirectories": [
-        {
-            "pattern": "./apps/*/"
-        },
-        {
-            "pattern": "./ghost/*/"
-        },
-        {
-            "pattern": "./koenig/*/"
-        }
-    ],
-    "search.exclude": {
-        "**/.git": true,
-        "**/build/*": true,
-        "**/coverage/**": true,
-        "**/dist/**": true,
-        "**/ghost.map": true,
-        "**/node_modules": true,
-        "ghost/core/core/built/**": true,
-        ".claude/worktrees/**": true,
-        "**/config.*.json": false,
-        "**/config.*.jsonc": false
+    {
+      "pattern": "./ghost/*/"
     },
-    "tailwindCSS.experimental.classRegex": [
-        ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-    ],
-    "git.detectSubmodules": false,
-    "[typescript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    {
+      "pattern": "./koenig/*/"
     }
+  ],
+  "search.exclude": {
+    "**/.git": true,
+    "**/build/*": true,
+    "**/coverage/**": true,
+    "**/dist/**": true,
+    "**/ghost.map": true,
+    "**/node_modules": true,
+    "ghost/core/core/built/**": true,
+    ".claude/worktrees/**": true,
+    "**/config.*.json": false,
+    "**/config.*.jsonc": false
+  },
+  "tailwindCSS.experimental.classRegex": [["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]],
+  "git.detectSubmodules": false,
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  }
 }

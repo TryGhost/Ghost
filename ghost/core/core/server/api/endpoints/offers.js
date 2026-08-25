@@ -3,85 +3,86 @@ const errors = require('@tryghost/errors');
 const offersService = require('../../services/offers');
 
 const messages = {
-    offerNotFound: 'Offer not found.'
+  offerNotFound: 'Offer not found.',
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'offers',
+  docName: 'offers',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'filter'
-        ],
-        permissions: true,
-        async query(frame) {
-            const offers = await offersService.api.listOffers(frame.options);
-            return {
-                data: offers
-            };
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: ['id'],
-        permissions: true,
-        async query(frame) {
-            const offer = await offersService.api.getOffer(frame.data);
-            if (!offer) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.offerNotFound)
-                });
-            }
-
-            return {
-                data: [offer]
-            };
-        }
+    options: ['filter'],
+    permissions: true,
+    async query(frame) {
+      const offers = await offersService.api.listOffers(frame.options);
+      return {
+        data: offers,
+      };
     },
+  },
 
-    edit: {
-        options: ['id'],
-        permissions: true,
-        headers: {
-            cacheInvalidate: true
-        },
-        async query(frame) {
-            const offer = await offersService.api.updateOffer({
-                ...frame.data.offers[0],
-                id: frame.options.id
-            }, frame.options);
-
-            if (!offer) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.offerNotFound)
-                });
-            }
-
-            return {
-                data: [offer]
-            };
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
+    data: ['id'],
+    permissions: true,
+    async query(frame) {
+      const offer = await offersService.api.getOffer(frame.data);
+      if (!offer) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.offerNotFound),
+        });
+      }
 
-    add: {
-        permissions: true,
-        headers: {
-            cacheInvalidate: true
+      return {
+        data: [offer],
+      };
+    },
+  },
+
+  edit: {
+    options: ['id'],
+    permissions: true,
+    headers: {
+      cacheInvalidate: true,
+    },
+    async query(frame) {
+      const offer = await offersService.api.updateOffer(
+        {
+          ...frame.data.offers[0],
+          id: frame.options.id,
         },
-        async query(frame) {
-            const offer = await offersService.api.createOffer(frame.data.offers[0], frame.options);
-            return {
-                data: [offer]
-            };
-        }
-    }
+        frame.options,
+      );
+
+      if (!offer) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.offerNotFound),
+        });
+      }
+
+      return {
+        data: [offer],
+      };
+    },
+  },
+
+  add: {
+    permissions: true,
+    headers: {
+      cacheInvalidate: true,
+    },
+    async query(frame) {
+      const offer = await offersService.api.createOffer(frame.data.offers[0], frame.options);
+      return {
+        data: [offer],
+      };
+    },
+  },
 };
 
 module.exports = controller;

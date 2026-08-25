@@ -1,42 +1,46 @@
 // Core Factory exports
-export {Factory} from './factory';
-export {PostFactory} from './factories/post-factory';
-export type {Post} from './factories/post-factory';
-export {TagFactory} from './factories/tag-factory';
-export type {Tag} from './factories/tag-factory';
-export {MemberFactory} from './factories/member-factory';
-export type {Member, Tier} from './factories/member-factory';
-export {TierFactory} from './factories/tier-factory';
-export type {AdminTier, TierCreateInput} from './factories/tier-factory';
-export {OfferFactory} from './factories/offer-factory';
-export type {AdminOffer, OfferCreateInput, OfferUpdateInput} from './factories/offer-factory';
-export {AutomatedEmailFactory} from './factories/automated-email-factory';
-export type {AutomatedEmail} from './factories/automated-email-factory';
-export {CommentFactory} from './factories/comment-factory';
-export type {Comment} from './factories/comment-factory';
-export {StaffAccountFactory} from './factories/staff-account-factory';
-export type {AssignableStaffRoleName, InvitationTokenProvider, StaffAccount} from './factories/staff-account-factory';
+export { Factory } from './factory';
+export { PostFactory } from './factories/post-factory';
+export type { Post } from './factories/post-factory';
+export { TagFactory } from './factories/tag-factory';
+export type { Tag } from './factories/tag-factory';
+export { MemberFactory } from './factories/member-factory';
+export type { Member, Tier } from './factories/member-factory';
+export { TierFactory } from './factories/tier-factory';
+export type { AdminTier, TierCreateInput } from './factories/tier-factory';
+export { OfferFactory } from './factories/offer-factory';
+export type { AdminOffer, OfferCreateInput, OfferUpdateInput } from './factories/offer-factory';
+export { AutomatedEmailFactory } from './factories/automated-email-factory';
+export type { AutomatedEmail } from './factories/automated-email-factory';
+export { CommentFactory } from './factories/comment-factory';
+export type { Comment } from './factories/comment-factory';
+export { StaffAccountFactory } from './factories/staff-account-factory';
+export type {
+  AssignableStaffRoleName,
+  InvitationTokenProvider,
+  StaffAccount,
+} from './factories/staff-account-factory';
 export * from './factories/user-factory';
 
 // Persistence Adapters
-export {KnexPersistenceAdapter} from './persistence/adapters/knex';
-export {ApiPersistenceAdapter} from './persistence/adapters/api';
-export type {HttpClient, HttpResponse} from './persistence/adapters/http-client';
-export {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
-export type {PersistenceAdapter} from './persistence/adapter';
+export { KnexPersistenceAdapter } from './persistence/adapters/knex';
+export { ApiPersistenceAdapter } from './persistence/adapters/api';
+export type { HttpClient, HttpResponse } from './persistence/adapters/http-client';
+export { GhostAdminApiAdapter } from './persistence/adapters/ghost-api';
+export type { PersistenceAdapter } from './persistence/adapter';
 
 // Utilities (shared with the admin acceptance harness via @tryghost/test-data)
-export {generateId, generateUuid, generateSlug} from '@tryghost/test-data';
-export {buildLexical, buildLexicalParagraph} from '@tryghost/test-data';
-export type {CardSpec} from '@tryghost/test-data';
+export { generateId, generateUuid, generateSlug } from '@tryghost/test-data';
+export { buildLexical, buildLexicalParagraph } from '@tryghost/test-data';
+export type { CardSpec } from '@tryghost/test-data';
 
 // Factory Setup Helpers
-export {createPostFactory} from './setup';
-export {createTagFactory} from './setup';
-export {createMemberFactory} from './setup';
-export {createTierFactory} from './setup';
-export {createOfferFactory} from './setup';
-export {createAutomatedEmailFactory} from './setup';
-export {createCommentFactory} from './setup';
-export {createStaffAccountFactory} from './setup';
-export {createFactories} from './setup';
+export { createPostFactory } from './setup';
+export { createTagFactory } from './setup';
+export { createMemberFactory } from './setup';
+export { createTierFactory } from './setup';
+export { createOfferFactory } from './setup';
+export { createAutomatedEmailFactory } from './setup';
+export { createCommentFactory } from './setup';
+export { createStaffAccountFactory } from './setup';
+export { createFactories } from './setup';

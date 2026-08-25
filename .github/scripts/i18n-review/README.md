@@ -18,7 +18,7 @@ the lockfile as stray npm cruft.
 
 `translation-review.yml` runs on `pull_request_target`, so it holds
 `ANTHROPIC_API_KEY` and a write-scoped token while a PR is in flight. It
-sparse-checks-out *only this directory* from `main` and installs only these two
+sparse-checks-out _only this directory_ from `main` and installs only these two
 runtime deps, so no PR-controlled code — including a PR-modified lockfile or
 lifecycle script — can execute in that context. Making this a workspace member
 would drag the root manifests, `pnpm-lock.yaml` and the `preinstall` hook into

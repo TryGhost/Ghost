@@ -1,1 +1,1 @@
-export {default, useOnboardingStatus} from './onboarding';
+export { default, useOnboardingStatus } from './onboarding';

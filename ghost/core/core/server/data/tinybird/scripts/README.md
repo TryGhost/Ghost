@@ -7,10 +7,12 @@ Scripts for managing analytics data in the Docker development environment.
 Generates and clears analytics events directly in the local Tinybird instance.
 
 **Prerequisites:**
+
 - Docker environment running: `pnpm dev:analytics`
 - Ghost database populated: `pnpm reset:data`
 
 **Usage:**
+
 ```bash
 # Generate analytics events (default: 10,000)
 pnpm data:analytics:generate

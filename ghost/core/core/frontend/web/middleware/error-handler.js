@@ -9,14 +9,18 @@ const renderer = require('../../services/rendering');
 const themeEngine = require('../../services/theme-engine');
 
 // @TODO: make this properly shared code
-const {prepareError, prepareErrorCacheControl, prepareStack} = require('@tryghost/mw-error-handler');
+const {
+  prepareError,
+  prepareErrorCacheControl,
+  prepareStack,
+} = require('@tryghost/mw-error-handler');
 
 const messages = {
-    oopsErrorTemplateHasError: 'Oops, seems there is an error in the error template.',
-    encounteredError: 'Encountered the error: ',
-    whilstTryingToRender: 'whilst trying to render an error page for the error: ',
-    notFound: 'File not found',
-    unexpectedError: 'An unexpected error occurred'
+  oopsErrorTemplateHasError: 'Oops, seems there is an error in the error template.',
+  encounteredError: 'Encountered the error: ',
+  whilstTryingToRender: 'whilst trying to render an error page for the error: ',
+  notFound: 'File not found',
+  unexpectedError: 'An unexpected error occurred',
 };
 
 const escapeExpression = hbs.Utils.escapeExpression;
@@ -26,13 +30,13 @@ const escapeExpression = hbs.Utils.escapeExpression;
  * It uses the {{asset}} helper, and nothing more
  */
 const createHbsEngine = () => {
-    const engine = hbs.create();
-    engine.registerHelper('asset', require('../../helpers/asset'));
+  const engine = hbs.create();
+  engine.registerHelper('asset', require('../../helpers/asset'));
 
-    return engine.express4();
+  return engine.express4();
 };
 
-const errorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasError)}</h1>
+const errorFallbackMessage = (err) => `<h1>${tpl(messages.oopsErrorTemplateHasError)}</h1>
      <p>${tpl(messages.encounteredError)}</p>
      <pre>${escapeExpression(err.message || err)}</pre>
      <br ><p>${tpl(messages.whilstTryingToRender)}</p>
@@ -40,109 +44,109 @@ const errorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasErro
 
 // eslint-disable-next-line no-unused-vars
 const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
-    // Return a plain text response for static files. We do this because:
-    // 1. Customised 404 templates could reference the missing asset causing recursion
-    // 2. Static files should return plain errors, not HTML pages
-    // 3. The theme engine might not be initialized on first request after boot
-    const hasExtension = Boolean(path.extname(req.path));
-    const isStaticFile = (hasExtension || err.code === 'STATIC_FILE_NOT_FOUND');
-    if (isStaticFile) {
-        // Convert non-Ghost errors for static files into proper Ghost errors
-        if (!errors.utils.isGhostError(err)) {
-            // Convert Express static errors to Ghost errors based on status code
-            if (err.statusCode === 404) {
-                err = new errors.NotFoundError({
-                    message: tpl(messages.notFound),
-                    code: 'STATIC_FILE_NOT_FOUND',
-                    property: err.path
-                });
-            } else if (err.statusCode === 400) {
-                err = new errors.BadRequestError({err: err});
-            } else if (err.statusCode === 403) {
-                err = new errors.NoPermissionError({err: err});
-            } else if (err.name === 'RangeNotSatisfiableError') {
-                err = new errors.RangeNotSatisfiableError({err});
-            } else if (err.statusCode) {
-                err = new errors.InternalServerError({err: err});
-            }
-        } else if (err.statusCode === 404 && err.code !== 'STATIC_FILE_NOT_FOUND') {
-            // Override the message for 404s that were already converted to NotFoundError
-            // by prepareError middleware
-            err.message = tpl(messages.notFound);
-            err.code = 'STATIC_FILE_NOT_FOUND';
-        }
-
-        const message = err.message || tpl(messages.unexpectedError);
-        const statusCode = err.statusCode || 500;
-
-        // Send a simple plain text error response
-        res.status(statusCode);
-        res.type('text/plain');
-        return res.send(message);
+  // Return a plain text response for static files. We do this because:
+  // 1. Customised 404 templates could reference the missing asset causing recursion
+  // 2. Static files should return plain errors, not HTML pages
+  // 3. The theme engine might not be initialized on first request after boot
+  const hasExtension = Boolean(path.extname(req.path));
+  const isStaticFile = hasExtension || err.code === 'STATIC_FILE_NOT_FOUND';
+  if (isStaticFile) {
+    // Convert non-Ghost errors for static files into proper Ghost errors
+    if (!errors.utils.isGhostError(err)) {
+      // Convert Express static errors to Ghost errors based on status code
+      if (err.statusCode === 404) {
+        err = new errors.NotFoundError({
+          message: tpl(messages.notFound),
+          code: 'STATIC_FILE_NOT_FOUND',
+          property: err.path,
+        });
+      } else if (err.statusCode === 400) {
+        err = new errors.BadRequestError({ err: err });
+      } else if (err.statusCode === 403) {
+        err = new errors.NoPermissionError({ err: err });
+      } else if (err.name === 'RangeNotSatisfiableError') {
+        err = new errors.RangeNotSatisfiableError({ err });
+      } else if (err.statusCode) {
+        err = new errors.InternalServerError({ err: err });
+      }
+    } else if (err.statusCode === 404 && err.code !== 'STATIC_FILE_NOT_FOUND') {
+      // Override the message for 404s that were already converted to NotFoundError
+      // by prepareError middleware
+      err.message = tpl(messages.notFound);
+      err.code = 'STATIC_FILE_NOT_FOUND';
     }
 
-    // Renderer begin
-    // Format Data
-    const data = {
-        message: err.message,
-        statusCode: err.statusCode,
-        errorDetails: err.errorDetails || []
-    };
+    const message = err.message || tpl(messages.unexpectedError);
+    const statusCode = err.statusCode || 500;
 
-    // Template
-    // @TODO: very dirty !!!!!!
-    renderer.templates.setTemplate(req, res);
+    // Send a simple plain text error response
+    res.status(statusCode);
+    res.type('text/plain');
+    return res.send(message);
+  }
 
-    // If the active theme isn't mounted into Express we cannot render a theme error template.
-    // This happens when the error was thrown before the theme middleware ran (e.g. early in
-    // the request pipeline, or on the first requests after a boot): the theme's engine and
-    // views directory aren't set up, and neither is the per-request/global template data
-    // (@site, @custom, member, ...) that theme error pages such as error-404.hbs depend on.
-    // Fall back to Ghost's self-contained built-in error template instead.
-    //
-    // The built-in template is referenced by absolute path rather than by repointing the
-    // app-wide `views` directory, because mutating `views` here persists on the Express app
-    // and would break theme template lookups (e.g. error-404) on subsequent requests.
-    // @TODO: split the error handler for assets, admin & theme to refactor this away
-    const activeTheme = themeEngine.getActive();
-    if (!activeTheme || !activeTheme.mounted) {
-        res._template = path.resolve(config.get('paths').defaultViews, 'error.hbs');
+  // Renderer begin
+  // Format Data
+  const data = {
+    message: err.message,
+    statusCode: err.statusCode,
+    errorDetails: err.errorDetails || [],
+  };
 
-        // Register the bare-minimum hbs engine if it isn't already available. We check for the
-        // `hbs` engine specifically rather than testing whether req.app.engines is empty, so the
-        // fallback still works if some other engine happens to be registered. Express keys
-        // engines by file extension with a leading dot, hence `.hbs`.
-        if (!req.app.engines || !req.app.engines['.hbs']) {
-            req.app.engine('hbs', createHbsEngine());
-            req.app.set('view engine', 'hbs');
-        }
+  // Template
+  // @TODO: very dirty !!!!!!
+  renderer.templates.setTemplate(req, res);
+
+  // If the active theme isn't mounted into Express we cannot render a theme error template.
+  // This happens when the error was thrown before the theme middleware ran (e.g. early in
+  // the request pipeline, or on the first requests after a boot): the theme's engine and
+  // views directory aren't set up, and neither is the per-request/global template data
+  // (@site, @custom, member, ...) that theme error pages such as error-404.hbs depend on.
+  // Fall back to Ghost's self-contained built-in error template instead.
+  //
+  // The built-in template is referenced by absolute path rather than by repointing the
+  // app-wide `views` directory, because mutating `views` here persists on the Express app
+  // and would break theme template lookups (e.g. error-404) on subsequent requests.
+  // @TODO: split the error handler for assets, admin & theme to refactor this away
+  const activeTheme = themeEngine.getActive();
+  if (!activeTheme || !activeTheme.mounted) {
+    res._template = path.resolve(config.get('paths').defaultViews, 'error.hbs');
+
+    // Register the bare-minimum hbs engine if it isn't already available. We check for the
+    // `hbs` engine specifically rather than testing whether req.app.engines is empty, so the
+    // fallback still works if some other engine happens to be registered. Express keys
+    // engines by file extension with a leading dot, hence `.hbs`.
+    if (!req.app.engines || !req.app.engines['.hbs']) {
+      req.app.engine('hbs', createHbsEngine());
+      req.app.set('view engine', 'hbs');
+    }
+  }
+
+  // @TODO use renderer here?!
+  // Render Call - featuring an error handler for what happens if rendering fails
+  res.render(res._template, data, (_err, html) => {
+    if (!_err) {
+      return res.send(html);
     }
 
-    // @TODO use renderer here?!
-    // Render Call - featuring an error handler for what happens if rendering fails
-    res.render(res._template, data, (_err, html) => {
-        if (!_err) {
-            return res.send(html);
-        }
+    // re-attach new error e.g. error template has syntax error or misusage
+    req.err = _err;
 
-        // re-attach new error e.g. error template has syntax error or misusage
-        req.err = _err;
-
-        // And then try to explain things to the user...
-        // Cheat and output the error using handlebars escapeExpression
-        return res.status(500).send(errorFallbackMessage(_err));
-    });
+    // And then try to explain things to the user...
+    // Cheat and output the error using handlebars escapeExpression
+    return res.status(500).send(errorFallbackMessage(_err));
+  });
 };
 
 module.exports.handleThemeResponse = [
-    // Make sure the error can be served
-    prepareError,
-    // Add cache-control header
-    prepareErrorCacheControl(),
-    // Handle the error in Sentry
-    sentry.errorHandler,
-    // Format the stack for the user
-    prepareStack,
-    // Render the error using theme template
-    themeErrorRenderer
+  // Make sure the error can be served
+  prepareError,
+  // Add cache-control header
+  prepareErrorCacheControl(),
+  // Handle the error in Sentry
+  sentry.errorHandler,
+  // Format the stack for the user
+  prepareStack,
+  // Render the error using theme template
+  themeErrorRenderer,
 ];

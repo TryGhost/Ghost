@@ -1,7 +1,9 @@
 # What is a golden post?
+
 The golden post is a single lexical post that has at least one example of every card that is available in the Koenig editor (with a few exceptions for cards that should never make it into an email). We have run into problems in the past where a small change to a particular card or to the EmailRenderer itself results in seriously mangled email rendering in one or more clients (usually Outlook).
 
 # How do I update the golden post to include a new card?
+
 If you're seeing a failing test like `The golden post does not contain the ${card} card`, that means that you (or someone else) has added a new node to `@tryghost/kg-default-nodes` that is not currently represented in the golden post. This test is here to trigger a review of the rendered email of the new card, to make sure it doesn't break the formatting in email clients. To update this test properly, please do the following:
 
 1. Create a card in the lexical editor, either at `koenig.ghost.org` or in your local Koenig repo

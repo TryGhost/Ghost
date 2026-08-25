@@ -1,4 +1,4 @@
-import {defineConfig} from 'eslint/config';
+import { defineConfig } from 'eslint/config';
 import eslint from '@eslint/js';
 import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
@@ -7,16 +7,22 @@ export default defineConfig([
   { ignores: ['build/**', 'cjs/**', 'es/**'] },
   {
     files: ['**/*.ts'],
-    extends: [
-      eslint.configs.recommended,
-      tseslint.configs.recommended,
-    ],
+    extends: [eslint.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
-      parserOptions: { ecmaVersion: 2022, sourceType: 'module', tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     plugins: { ghost: ghostPlugin },
     rules: {
       ...ghostPlugin.configs.ts.rules,
+      // Formatting is owned by Oxfmt; keep the non-formatting rules ts-no-style also switches off
+      ...ghostPlugin.configs['ts-no-style'].rules,
+      camelcase: ghostPlugin.configs.ts.rules.camelcase,
+      curly: ghostPlugin.configs.ts.rules.curly,
+      'dot-notation': ghostPlugin.configs.ts.rules['dot-notation'],
       '@typescript-eslint/no-explicit-any': 'error',
     },
   },

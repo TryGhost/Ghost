@@ -5,6 +5,7 @@ Minimal Docker image for running Ghost Core in development with hot-reload suppo
 ## Purpose
 
 This lightweight image:
+
 - Installs only Ghost Core dependencies
 - Mounts source code from the host at runtime
 - Enables `nodemon` for automatic restarts on file changes
@@ -13,14 +14,16 @@ This lightweight image:
 ## Key Differences from Main Dockerfile
 
 **Main `Dockerfile`** (for E2E tests, full builds):
+
 - Builds all frontend apps (Admin, Portal, AdminX apps, etc.)
 - Bundles everything into the image
 - ~15 build stages, 5-10 minute build time
 
 **This `Dockerfile`** (for local development):
+
 - Only installs dependencies
 - No frontend builds or bundling
-- Source code mounted at runtime 
+- Source code mounted at runtime
 - Used for: Local development with `pnpm dev`
 
 ## Usage

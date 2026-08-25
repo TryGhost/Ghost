@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import {afterEach, beforeEach, describe, it} from 'vitest';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
-import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
-import {InMemoryStore} from '../../adapters/route-settings/helpers/in-memory-store';
+import { parseRouteSettings } from '../../../../../core/server/services/route-settings/route-settings-parser';
+import { InMemoryStore } from '../../adapters/route-settings/helpers/in-memory-store';
 
 const DynamicRoutingService = require('../../../../../core/server/services/route-settings/dynamic-routing-service');
 const bridge = require('../../../../../core/bridge');
@@ -26,163 +26,177 @@ taxonomies:
 `;
 
 describe('UNIT: DynamicRoutingService (store-backed)', function () {
-    let service: InstanceType<typeof DynamicRoutingService>;
-    let store: InMemoryStore;
+  let service: InstanceType<typeof DynamicRoutingService>;
+  let store: InMemoryStore;
 
-    beforeEach(function () {
-        service = new DynamicRoutingService();
-        store = new InMemoryStore();
-        service.configure({store});
+  beforeEach(function () {
+    service = new DynamicRoutingService();
+    store = new InMemoryStore();
+    service.configure({ store });
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('download returns the verbatim yaml source from the store', async function () {
+    await store.replace(fromYaml(CUSTOM_YAML));
+
+    assert.equal(await service.download(), CUSTOM_YAML);
+  });
+
+  it('loadRouteSettings returns the domain model from the store untransformed', async function () {
+    const stored = fromYaml(CUSTOM_YAML);
+    await store.replace(stored);
+
+    const settings = await service.loadRouteSettings();
+
+    // Deep-equal against what went in: nothing is reshaped on the way out,
+    // down to `yamlSource` and the `{tag, author}` taxonomies map.
+    assert.deepEqual(settings, stored);
+  });
+
+  describe('loadRouteSettings validation failure', function () {
+    it('logs a targeted validation error and rethrows when the file fails validation', async function () {
+      const errorStub = sinon.stub(logging, 'error');
+      const parseError = new errors.ValidationError({
+        message: 'slug is required for read data entries.',
+      });
+      sinon.stub(store, 'get').rejects(parseError);
+
+      await assert.rejects(service.loadRouteSettings(), (err: Error) => {
+        assert.equal(err, parseError, 'the original validation error is rethrown unchanged');
+        return true;
+      });
+
+      assert.ok(errorStub.calledOnce);
+      const reported = errorStub.firstCall.args[0];
+      assert.equal(reported.code, 'ROUTE_SETTINGS_VALIDATION_ERROR');
+      assert.equal(reported.errorDetails.reason, 'slug is required for read data entries.');
     });
 
-    afterEach(function () {
-        sinon.restore();
+    it('logs a targeted error and rethrows when the file is not parseable yaml', async function () {
+      const errorStub = sinon.stub(logging, 'error');
+      const parseError = new errors.IncorrectUsageError({
+        message: 'Could not parse provided YAML file: bad indentation of a mapping entry.',
+      });
+      sinon.stub(store, 'get').rejects(parseError);
+
+      await assert.rejects(service.loadRouteSettings(), (err: Error) => {
+        assert.equal(err, parseError, 'the original error is rethrown unchanged');
+        return true;
+      });
+
+      assert.ok(errorStub.calledOnce);
+      const reported = errorStub.firstCall.args[0];
+      assert.equal(reported.code, 'ROUTE_SETTINGS_VALIDATION_ERROR');
+      assert.equal(
+        reported.errorDetails.reason,
+        'Could not parse provided YAML file: bad indentation of a mapping entry.',
+      );
     });
 
-    it('download returns the verbatim yaml source from the store', async function () {
-        await store.replace(fromYaml(CUSTOM_YAML));
+    it('rethrows non-content errors (e.g. store IO failures) without logging', async function () {
+      const errorStub = sinon.stub(logging, 'error');
+      sinon.stub(store, 'get').rejects(
+        new errors.InternalServerError({
+          message: 'Error trying to access settings files in /content/settings.',
+        }),
+      );
 
-        assert.equal(await service.download(), CUSTOM_YAML);
+      await assert.rejects(service.loadRouteSettings(), /Error trying to access settings files/);
+      assert.equal(errorStub.called, false);
     });
 
-    it('loadRouteSettings returns the domain model from the store untransformed', async function () {
-        const stored = fromYaml(CUSTOM_YAML);
-        await store.replace(stored);
+    it('does not log when the store parser succeeds', async function () {
+      const errorStub = sinon.stub(logging, 'error');
+      await store.replace(fromYaml(CUSTOM_YAML));
 
-        const settings = await service.loadRouteSettings();
+      const settings = await service.loadRouteSettings();
 
-        // Deep-equal against what went in: nothing is reshaped on the way out,
-        // down to `yamlSource` and the `{tag, author}` taxonomies map.
-        assert.deepEqual(settings, stored);
+      assert.deepEqual(settings.routes, [
+        { type: 'template', path: '/about/', templates: ['about'] },
+      ]);
+      assert.equal(errorStub.called, false);
+    });
+  });
+
+  describe('download', function () {
+    it('rejects when the stored file fails validation rather than falling back to a raw read', async function () {
+      const parseError = new errors.ValidationError({
+        message: 'slug is required for read data entries.',
+      });
+      sinon.stub(store, 'get').rejects(parseError);
+
+      await assert.rejects(service.download(), (err: Error) => {
+        assert.equal(err, parseError);
+        return true;
+      });
     });
 
-    describe('loadRouteSettings validation failure', function () {
-        it('logs a targeted validation error and rethrows when the file fails validation', async function () {
-            const errorStub = sinon.stub(logging, 'error');
-            const parseError = new errors.ValidationError({message: 'slug is required for read data entries.'});
-            sinon.stub(store, 'get').rejects(parseError);
+    it('rejects when the stored file is not parseable yaml rather than falling back to a raw read', async function () {
+      const parseError = new errors.IncorrectUsageError({
+        message: 'Could not parse provided YAML file: bad indentation of a mapping entry.',
+      });
+      sinon.stub(store, 'get').rejects(parseError);
 
-            await assert.rejects(service.loadRouteSettings(), (err: Error) => {
-                assert.equal(err, parseError, 'the original validation error is rethrown unchanged');
-                return true;
-            });
+      await assert.rejects(service.download(), (err: Error) => {
+        assert.equal(err, parseError);
+        return true;
+      });
+    });
+  });
 
-            assert.ok(errorStub.calledOnce);
-            const reported = errorStub.firstCall.args[0];
-            assert.equal(reported.code, 'ROUTE_SETTINGS_VALIDATION_ERROR');
-            assert.equal(reported.errorDetails.reason, 'slug is required for read data entries.');
-        });
+  describe('upload', function () {
+    it('persists the parsed upload through the store', async function () {
+      sinon.stub(bridge, 'reloadFrontend').resolves();
 
-        it('logs a targeted error and rethrows when the file is not parseable yaml', async function () {
-            const errorStub = sinon.stub(logging, 'error');
-            const parseError = new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'});
-            sinon.stub(store, 'get').rejects(parseError);
+      await service.upload(CUSTOM_YAML);
 
-            await assert.rejects(service.loadRouteSettings(), (err: Error) => {
-                assert.equal(err, parseError, 'the original error is rethrown unchanged');
-                return true;
-            });
-
-            assert.ok(errorStub.calledOnce);
-            const reported = errorStub.firstCall.args[0];
-            assert.equal(reported.code, 'ROUTE_SETTINGS_VALIDATION_ERROR');
-            assert.equal(reported.errorDetails.reason, 'Could not parse provided YAML file: bad indentation of a mapping entry.');
-        });
-
-        it('rethrows non-content errors (e.g. store IO failures) without logging', async function () {
-            const errorStub = sinon.stub(logging, 'error');
-            sinon.stub(store, 'get').rejects(new errors.InternalServerError({message: 'Error trying to access settings files in /content/settings.'}));
-
-            await assert.rejects(service.loadRouteSettings(), /Error trying to access settings files/);
-            assert.equal(errorStub.called, false);
-        });
-
-        it('does not log when the store parser succeeds', async function () {
-            const errorStub = sinon.stub(logging, 'error');
-            await store.replace(fromYaml(CUSTOM_YAML));
-
-            const settings = await service.loadRouteSettings();
-
-            assert.deepEqual(settings.routes, [{type: 'template', path: '/about/', templates: ['about']}]);
-            assert.equal(errorStub.called, false);
-        });
+      assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
     });
 
-    describe('download', function () {
-        it('rejects when the stored file fails validation rather than falling back to a raw read', async function () {
-            const parseError = new errors.ValidationError({message: 'slug is required for read data entries.'});
-            sinon.stub(store, 'get').rejects(parseError);
+    it('rejects an invalid upload before anything reaches the store', async function () {
+      const reloadStub = sinon.stub(bridge, 'reloadFrontend').resolves();
+      await store.replace(fromYaml(CUSTOM_YAML));
 
-            await assert.rejects(service.download(), (err: Error) => {
-                assert.equal(err, parseError);
-                return true;
-            });
-        });
+      await assert.rejects(
+        service.upload('routes:\n  no-slashes: about\n'),
+        (err: { errorType?: string }) => {
+          assert.equal(err.errorType, 'ValidationError');
+          return true;
+        },
+      );
 
-        it('rejects when the stored file is not parseable yaml rather than falling back to a raw read', async function () {
-            const parseError = new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'});
-            sinon.stub(store, 'get').rejects(parseError);
-
-            await assert.rejects(service.download(), (err: Error) => {
-                assert.equal(err, parseError);
-                return true;
-            });
-        });
+      assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
+      assert.equal(reloadStub.called, false);
     });
 
-    describe('upload', function () {
-        it('persists the parsed upload through the store', async function () {
-            sinon.stub(bridge, 'reloadFrontend').resolves();
+    // Uploading is how a site recovers from a broken routes.yaml, so it
+    // must never read what is already stored.
+    it('accepts a valid upload without reading the current stored file', async function () {
+      sinon.stub(bridge, 'reloadFrontend').resolves();
+      const replaceStub = sinon.stub(store, 'replace').resolves();
+      const getStub = sinon.stub(store, 'get');
 
-            await service.upload(CUSTOM_YAML);
+      await service.upload(CUSTOM_YAML);
 
-            assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
-        });
-
-        it('rejects an invalid upload before anything reaches the store', async function () {
-            const reloadStub = sinon.stub(bridge, 'reloadFrontend').resolves();
-            await store.replace(fromYaml(CUSTOM_YAML));
-
-            await assert.rejects(
-                service.upload('routes:\n  no-slashes: about\n'),
-                (err: {errorType?: string}) => {
-                    assert.equal(err.errorType, 'ValidationError');
-                    return true;
-                }
-            );
-
-            assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
-            assert.equal(reloadStub.called, false);
-        });
-
-        // Uploading is how a site recovers from a broken routes.yaml, so it
-        // must never read what is already stored.
-        it('accepts a valid upload without reading the current stored file', async function () {
-            sinon.stub(bridge, 'reloadFrontend').resolves();
-            const replaceStub = sinon.stub(store, 'replace').resolves();
-            const getStub = sinon.stub(store, 'get');
-
-            await service.upload(CUSTOM_YAML);
-
-            assert.equal(getStub.called, false);
-            assert.equal(replaceStub.firstCall.args[0].yamlSource, CUSTOM_YAML);
-        });
-
-        it('surfaces a frontend reload failure without rolling back the store', async function () {
-            const reloadStub = sinon.stub(bridge, 'reloadFrontend');
-            reloadStub.rejects(new Error('YAMLException: bad indentation of a mapping entry'));
-
-            await store.replace(fromYaml(CUSTOM_YAML));
-
-            const nextYaml = CUSTOM_YAML.replace('/about/: about', '/contact/: contact');
-
-            await assert.rejects(
-                service.upload(nextYaml),
-                /YAMLException/
-            );
-
-            assert.equal((await store.get()).yamlSource, nextYaml);
-            assert.equal(reloadStub.callCount, 1);
-        });
+      assert.equal(getStub.called, false);
+      assert.equal(replaceStub.firstCall.args[0].yamlSource, CUSTOM_YAML);
     });
+
+    it('surfaces a frontend reload failure without rolling back the store', async function () {
+      const reloadStub = sinon.stub(bridge, 'reloadFrontend');
+      reloadStub.rejects(new Error('YAMLException: bad indentation of a mapping entry'));
+
+      await store.replace(fromYaml(CUSTOM_YAML));
+
+      const nextYaml = CUSTOM_YAML.replace('/about/: about', '/contact/: contact');
+
+      await assert.rejects(service.upload(nextYaml), /YAMLException/);
+
+      assert.equal((await store.get()).yamlSource, nextYaml);
+      assert.equal(reloadStub.callCount, 1);
+    });
+  });
 });

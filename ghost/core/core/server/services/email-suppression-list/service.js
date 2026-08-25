@@ -5,11 +5,11 @@ const MailgunClient = require('../lib/mailgun-client');
 const MailgunEmailSuppressionList = require('./mailgun-email-suppression-list');
 
 const mailgunClient = new MailgunClient({
-    config: configService,
-    settings: settingsCache
+  config: configService,
+  settings: settingsCache,
 });
 
 module.exports = new MailgunEmailSuppressionList({
-    Suppression: models.Suppression,
-    apiClient: mailgunClient
+  Suppression: models.Suppression,
+  apiClient: mailgunClient,
 });

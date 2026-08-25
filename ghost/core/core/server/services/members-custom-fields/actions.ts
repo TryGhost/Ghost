@@ -1,28 +1,28 @@
 import logging from '@tryghost/logging';
 
 export interface Actor {
-    id: string;
-    type: 'user' | 'integration';
+  id: string;
+  type: 'user' | 'integration';
 }
 
 export interface RequestContext {
-    actor: Actor | null;
+  actor: Actor | null;
 }
 
 export interface ActionRecorder {
-    add(data: Record<string, unknown>, options: {autoRefresh: boolean}): Promise<unknown>;
+  add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;
 }
 
 // Field-definition changes map to activity-feed events. A field's timeline reads
 // added -> edited -> archived -> restored, and a permanent delete (only from the
 // archived state) ends it with deleted.
 const COMMANDS = {
-    create: 'added',
-    rename: 'edited',
-    reorder: 'edited',
-    archive: 'archived',
-    restore: 'restored',
-    delete: 'deleted'
+  create: 'added',
+  rename: 'edited',
+  reorder: 'edited',
+  archive: 'archived',
+  restore: 'restored',
+  delete: 'deleted',
 } as const satisfies Record<string, 'added' | 'edited' | 'archived' | 'restored' | 'deleted'>;
 
 export type CustomFieldVerb = keyof typeof COMMANDS;
@@ -37,34 +37,50 @@ export type CustomFieldVerb = keyof typeof COMMANDS;
 //
 // A reorder names no field: it carries the count and the word the feed reads it by.
 export type CustomFieldActionDetails =
-    | {primary_name: string; key: string; previous_name?: string}
-    | {action_name: 'reordered'; count: number};
+  | { primary_name: string; key: string; previous_name?: string }
+  | { action_name: 'reordered'; count: number };
 
 // `subject` is the field's row id, or null for an act that belongs to no single field.
-export type RecordCustomFieldAction =
-    (input: {context: RequestContext; verb: CustomFieldVerb; subject: string | null; details: CustomFieldActionDetails}) => Promise<void>;
+export type RecordCustomFieldAction = (input: {
+  context: RequestContext;
+  verb: CustomFieldVerb;
+  subject: string | null;
+  details: CustomFieldActionDetails;
+}) => Promise<void>;
 
 // Best-effort action-log write: a failed action must never fail the command that triggered it.
-export async function recordCustomFieldAction(
-    {Action, context, verb, subject, details}:
-    {Action: ActionRecorder; context: RequestContext; verb: CustomFieldVerb; subject: string | null; details: CustomFieldActionDetails}
-): Promise<void> {
-    if (!context.actor) {
-        return;
-    }
-    try {
-        await Action.add({
-            event: COMMANDS[verb],
-            resource_type: 'member_custom_field',
-            // The field's id: this column holds 24 characters, and a key minted from
-            // a publisher-chosen name is bounded by the far wider key column, so only
-            // the id fits every field. Null where the act had no single field.
-            resource_id: subject,
-            actor_type: context.actor.type,
-            actor_id: context.actor.id,
-            context: details
-        }, {autoRefresh: false});
-    } catch (err) {
-        logging.error(err);
-    }
+export async function recordCustomFieldAction({
+  Action,
+  context,
+  verb,
+  subject,
+  details,
+}: {
+  Action: ActionRecorder;
+  context: RequestContext;
+  verb: CustomFieldVerb;
+  subject: string | null;
+  details: CustomFieldActionDetails;
+}): Promise<void> {
+  if (!context.actor) {
+    return;
+  }
+  try {
+    await Action.add(
+      {
+        event: COMMANDS[verb],
+        resource_type: 'member_custom_field',
+        // The field's id: this column holds 24 characters, and a key minted from
+        // a publisher-chosen name is bounded by the far wider key column, so only
+        // the id fits every field. Null where the act had no single field.
+        resource_id: subject,
+        actor_type: context.actor.type,
+        actor_id: context.actor.id,
+        context: details,
+      },
+      { autoRefresh: false },
+    );
+  } catch (err) {
+    logging.error(err);
+  }
 }

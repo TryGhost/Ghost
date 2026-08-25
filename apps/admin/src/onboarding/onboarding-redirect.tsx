@@ -1,23 +1,23 @@
-import type React from "react";
-import {Navigate, useLocation} from "@tryghost/admin-x-framework";
-import {useOnboarding} from "@/onboarding/hooks/use-onboarding";
+import type React from 'react';
+import { Navigate, useLocation } from '@tryghost/admin-x-framework';
+import { useOnboarding } from '@/onboarding/hooks/use-onboarding';
 
 interface OnboardingRedirectProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
-export function OnboardingRedirect({children}: OnboardingRedirectProps) {
-    const location = useLocation();
-    const onboarding = useOnboarding();
+export function OnboardingRedirect({ children }: OnboardingRedirectProps) {
+  const location = useLocation();
+  const onboarding = useOnboarding();
 
-    if (onboarding.isLoading) {
-        return null;
-    }
+  if (onboarding.isLoading) {
+    return null;
+  }
 
-    if (onboarding.shouldShowChecklist) {
-        const returnTo = `${location.pathname}${location.search}`;
-        return <Navigate to={`/setup/onboarding?returnTo=${encodeURIComponent(returnTo)}`} replace />;
-    }
+  if (onboarding.shouldShowChecklist) {
+    const returnTo = `${location.pathname}${location.search}`;
+    return <Navigate to={`/setup/onboarding?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+  }
 
-    return children;
+  return children;
 }

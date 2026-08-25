@@ -1,42 +1,45 @@
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils').default;
 
-const PostsMeta = ghostBookshelf.Model.extend({
+const PostsMeta = ghostBookshelf.Model.extend(
+  {
     tableName: 'posts_meta',
 
     defaults: function defaults() {
-        return {
-            email_only: false
-        };
+      return {
+        email_only: false,
+      };
     },
 
     formatOnWrite(attrs) {
-        ['og_image', 'twitter_image'].forEach((attr) => {
-            if (attrs[attr]) {
-                attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
-            }
-        });
+      ['og_image', 'twitter_image'].forEach((attr) => {
+        if (attrs[attr]) {
+          attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
+        }
+      });
 
-        return attrs;
+      return attrs;
     },
 
     parse() {
-        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+      const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
-        ['og_image', 'twitter_image'].forEach((attr) => {
-            if (attrs[attr]) {
-                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
-            }
-        });
+      ['og_image', 'twitter_image'].forEach((attr) => {
+        if (attrs[attr]) {
+          attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+        }
+      });
 
-        return attrs;
-    }
-}, {
+      return attrs;
+    },
+  },
+  {
     post() {
-        return this.belongsTo('Post');
-    }
-});
+      return this.belongsTo('Post');
+    },
+  },
+);
 
 module.exports = {
-    PostsMeta: ghostBookshelf.model('PostsMeta', PostsMeta)
+  PostsMeta: ghostBookshelf.model('PostsMeta', PostsMeta),
 };

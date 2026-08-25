@@ -7,9 +7,10 @@ const jsonSchema = require('@tryghost/admin-api-schema');
  * @param {string} apiConfig.method API's method name
  * @param {import('@tryghost/api-framework').Frame} frame "frame" object with data attached to it
  */
-const validate = async (apiConfig, frame) => await jsonSchema.validate({
+const validate = async (apiConfig, frame) =>
+  await jsonSchema.validate({
     data: frame.data,
-    schema: `${apiConfig.docName}-${apiConfig.method}`
-});
+    schema: `${apiConfig.docName}-${apiConfig.method}`,
+  });
 
 module.exports.validate = validate;

@@ -6,195 +6,199 @@ const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
 describe('Config Loader', function () {
-    beforeAll(async function () {
-        await configUtils.restore();
+  beforeAll(async function () {
+    await configUtils.restore();
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
+  });
+
+  describe('hierarchy of config channels', function () {
+    let originalEnv;
+    let originalArgv;
+    let customConfig;
+    let loader;
+    let tmpDir;
+
+    function writeSecret(contents) {
+      const filePath = path.join(tmpDir, 'secret');
+      fs.writeFileSync(filePath, contents);
+      return filePath;
+    }
+
+    beforeEach(function () {
+      originalEnv = _.clone(process.env);
+      originalArgv = _.clone(process.argv);
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-loader-'));
+      loader = require('../../../../core/shared/config/loader');
+      // getNodeEnv() reads process.env.NODE_ENV, so drive that directly
+      process.env.NODE_ENV = 'testing';
+      // we manually call `loadConf` in the tests and we need to ensure that the minimum
+      // required config properties are available
+      process.env.paths__contentPath = 'content/';
+      // Remove any nconf-style env vars that could interfere with
+      // config hierarchy assertions (e.g. logging__level set by CI)
+      delete process.env.logging__level;
     });
 
-    afterEach(async function () {
-        await configUtils.restore();
+    afterEach(function () {
+      process.env = originalEnv;
+      process.argv = originalArgv;
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+      sinon.restore();
     });
 
-    describe('hierarchy of config channels', function () {
-        let originalEnv;
-        let originalArgv;
-        let customConfig;
-        let loader;
-        let tmpDir;
+    it('env parameter is stronger than file', function () {
+      process.env.database__client = 'test';
 
-        function writeSecret(contents) {
-            const filePath = path.join(tmpDir, 'secret');
-            fs.writeFileSync(filePath, contents);
-            return filePath;
-        }
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
 
-        beforeEach(function () {
-            originalEnv = _.clone(process.env);
-            originalArgv = _.clone(process.argv);
-            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-loader-'));
-            loader = require('../../../../core/shared/config/loader');
-            // getNodeEnv() reads process.env.NODE_ENV, so drive that directly
-            process.env.NODE_ENV = 'testing';
-            // we manually call `loadConf` in the tests and we need to ensure that the minimum
-            // required config properties are available
-            process.env.paths__contentPath = 'content/';
-            // Remove any nconf-style env vars that could interfere with
-            // config hierarchy assertions (e.g. logging__level set by CI)
-            delete process.env.logging__level;
-        });
-
-        afterEach(function () {
-            process.env = originalEnv;
-            process.argv = originalArgv;
-            fs.rmSync(tmpDir, {recursive: true, force: true});
-            sinon.restore();
-        });
-
-        it('env parameter is stronger than file', function () {
-            process.env.database__client = 'test';
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert.equal(customConfig.get('database:client'), 'test');
-        });
-
-        it('argv is stronger than env parameter', function () {
-            process.env.database__client = 'test';
-            process.argv[2] = '--database:client=stronger';
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert.equal(customConfig.get('database:client'), 'stronger');
-        });
-
-        it('secret file is stronger than file', function () {
-            process.env.logging__level_FILE = writeSecret('warn\n');
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert.equal(customConfig.get('logging:level'), 'warn');
-        });
-
-        it('argv is stronger than a secret file', function () {
-            process.env.logging__level_FILE = writeSecret('warn\n');
-            process.argv[2] = '--logging:level=stronger';
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert.equal(customConfig.get('logging:level'), 'stronger');
-        });
-
-        it('does not leak the secret file path into config', function () {
-            process.env.database__connection__password_FILE = writeSecret('hunter2\n');
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert.equal(customConfig.get('database:connection:password_FILE'), undefined);
-        });
-
-        it('throws if a value and its secret file are both set', function () {
-            process.env.logging__level = 'warn';
-            process.env.logging__level_FILE = writeSecret('error\n');
-
-            assert.throws(() => loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            }), /Cannot set both logging__level and logging__level_FILE/);
-        });
-
-        it('argv or env is NOT stronger than overrides', function () {
-            process.env.paths__corePath = 'try-to-override';
-            process.argv[2] = '--paths:corePath=try-to-override';
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert(!customConfig.get('paths:corePath').includes('try-to-override'));
-        });
-
-        it('overrides is stronger than every other config file', function () {
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert(!customConfig.get('paths:corePath').includes('try-to-override'));
-            assert.equal(customConfig.get('database:client'), 'better-sqlite3');
-            // Note: database:connection:filename is now set via process.env in test/utils/vitest-setup-db.ts
-            // for concurrent test isolation, so we skip asserting the config file value
-            assert.equal(customConfig.get('database:debug'), true);
-            // Note: url is now set via process.env in test/utils/vitest-setup-db.ts for dynamic port allocation
-            assert.equal(customConfig.get('logging:level'), 'error');
-            assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
-        });
-
-        it('should load JSONC files', function () {
-            process.env.NODE_ENV = 'development';
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            assert.equal(customConfig.get('site_uuid'), 'a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
-            assert.equal(customConfig.get('commented'), undefined);
-        });
+      assert.equal(customConfig.get('database:client'), 'test');
     });
 
-    describe('Index', function () {
-        it('should have exactly the right keys', function () {
-            const pathConfig = configUtils.config.get('paths');
+    it('argv is stronger than env parameter', function () {
+      process.env.database__client = 'test';
+      process.argv[2] = '--database:client=stronger';
 
-            // This will fail if there are any extra keys
-            // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
-            //       because when `have.keys` fails there's no useful diff
-            //       and it doesn't make sure to check for "extra" keys
-            assert.deepEqual(Object.keys(pathConfig), [
-                'contentPath',
-                'fixtures',
-                'defaultSettings',
-                'assetSrc',
-                'appRoot',
-                'corePath',
-                'adminAssets',
-                'helperTemplates',
-                'defaultViews',
-                'defaultRouteSettings',
-                'internalAppPath',
-                'internalAdaptersPath',
-                'migrationPath',
-                'publicFilePath'
-            ]);
-        });
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
 
-        it('should have the correct values for each key', function () {
-            const pathConfig = configUtils.config.get('paths');
-            const appRoot = path.resolve(__dirname, '../../../../');
-
-            assert.equal(pathConfig.appRoot, appRoot);
-        });
-
-        it('should allow specific properties to be user defined', function () {
-            const contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
-
-            configUtils.set('paths:contentPath', contentPath);
-            assert.equal(configUtils.config.get('paths').contentPath, contentPath);
-            assert.equal(configUtils.config.getContentPath('images'), contentPath + 'images/');
-        });
+      assert.equal(customConfig.get('database:client'), 'stronger');
     });
+
+    it('secret file is stronger than file', function () {
+      process.env.logging__level_FILE = writeSecret('warn\n');
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert.equal(customConfig.get('logging:level'), 'warn');
+    });
+
+    it('argv is stronger than a secret file', function () {
+      process.env.logging__level_FILE = writeSecret('warn\n');
+      process.argv[2] = '--logging:level=stronger';
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert.equal(customConfig.get('logging:level'), 'stronger');
+    });
+
+    it('does not leak the secret file path into config', function () {
+      process.env.database__connection__password_FILE = writeSecret('hunter2\n');
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert.equal(customConfig.get('database:connection:password_FILE'), undefined);
+    });
+
+    it('throws if a value and its secret file are both set', function () {
+      process.env.logging__level = 'warn';
+      process.env.logging__level_FILE = writeSecret('error\n');
+
+      assert.throws(
+        () =>
+          loader.loadNconf({
+            baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+            customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+          }),
+        /Cannot set both logging__level and logging__level_FILE/,
+      );
+    });
+
+    it('argv or env is NOT stronger than overrides', function () {
+      process.env.paths__corePath = 'try-to-override';
+      process.argv[2] = '--paths:corePath=try-to-override';
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert(!customConfig.get('paths:corePath').includes('try-to-override'));
+    });
+
+    it('overrides is stronger than every other config file', function () {
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert(!customConfig.get('paths:corePath').includes('try-to-override'));
+      assert.equal(customConfig.get('database:client'), 'better-sqlite3');
+      // Note: database:connection:filename is now set via process.env in test/utils/vitest-setup-db.ts
+      // for concurrent test isolation, so we skip asserting the config file value
+      assert.equal(customConfig.get('database:debug'), true);
+      // Note: url is now set via process.env in test/utils/vitest-setup-db.ts for dynamic port allocation
+      assert.equal(customConfig.get('logging:level'), 'error');
+      assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
+    });
+
+    it('should load JSONC files', function () {
+      process.env.NODE_ENV = 'development';
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert.equal(customConfig.get('site_uuid'), 'a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
+      assert.equal(customConfig.get('commented'), undefined);
+    });
+  });
+
+  describe('Index', function () {
+    it('should have exactly the right keys', function () {
+      const pathConfig = configUtils.config.get('paths');
+
+      // This will fail if there are any extra keys
+      // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
+      //       because when `have.keys` fails there's no useful diff
+      //       and it doesn't make sure to check for "extra" keys
+      assert.deepEqual(Object.keys(pathConfig), [
+        'contentPath',
+        'fixtures',
+        'defaultSettings',
+        'assetSrc',
+        'appRoot',
+        'corePath',
+        'adminAssets',
+        'helperTemplates',
+        'defaultViews',
+        'defaultRouteSettings',
+        'internalAppPath',
+        'internalAdaptersPath',
+        'migrationPath',
+        'publicFilePath',
+      ]);
+    });
+
+    it('should have the correct values for each key', function () {
+      const pathConfig = configUtils.config.get('paths');
+      const appRoot = path.resolve(__dirname, '../../../../');
+
+      assert.equal(pathConfig.appRoot, appRoot);
+    });
+
+    it('should allow specific properties to be user defined', function () {
+      const contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
+
+      configUtils.set('paths:contentPath', contentPath);
+      assert.equal(configUtils.config.get('paths').contentPath, contentPath);
+      assert.equal(configUtils.config.getContentPath('images'), contentPath + 'images/');
+    });
+  });
 });

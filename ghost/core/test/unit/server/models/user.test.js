@@ -9,885 +9,1117 @@ const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 
 describe('Unit: models/user', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('lock method', function () {
+    function lockUser(status) {
+      const save = sinon.stub().resolves();
+      const instance = {
+        get(key) {
+          if (key === 'status') {
+            return status;
+          }
+          return undefined;
+        },
+        save,
+      };
+      models.User.prototype.lock.call(instance, { transacting: 'tx' });
+      return save;
+    }
+
+    it('rotates the password and transitions an active user to locked', function () {
+      const save = lockUser('active');
+      const update = save.firstCall.args[0];
+      assert.equal(update.status, 'locked');
+      assert.equal(typeof update.password, 'string');
+      assert.ok(update.password.length > 0);
     });
 
-    describe('lock method', function () {
-        function lockUser(status) {
-            const save = sinon.stub().resolves();
-            const instance = {
-                get(key) {
-                    if (key === 'status') {
-                        return status;
-                    }
-                    return undefined;
-                },
-                save
-            };
-            models.User.prototype.lock.call(instance, {transacting: 'tx'});
-            return save;
-        }
+    it('rotates the password on a suspended user but preserves inactive status', function () {
+      // The compromised credential is invalidated for the inactive
+      // account too, but the account stays on the suspended-signin
+      // path rather than gaining a password-reset path it shouldn't have.
+      const save = lockUser('inactive');
+      const update = save.firstCall.args[0];
+      assert.equal(update.status, undefined, 'status is left unchanged for inactive users');
+      assert.equal(typeof update.password, 'string');
+      assert.ok(update.password.length > 0);
+    });
 
-        it('rotates the password and transitions an active user to locked', function () {
-            const save = lockUser('active');
-            const update = save.firstCall.args[0];
-            assert.equal(update.status, 'locked');
-            assert.equal(typeof update.password, 'string');
-            assert.ok(update.password.length > 0);
-        });
+    it('rotates the password and transitions an already-locked user (still locked)', function () {
+      const save = lockUser('locked');
+      const update = save.firstCall.args[0];
+      assert.equal(update.status, 'locked');
+      assert.equal(typeof update.password, 'string');
+    });
+  });
 
-        it('rotates the password on a suspended user but preserves inactive status', function () {
-            // The compromised credential is invalidated for the inactive
-            // account too, but the account stays on the suspended-signin
-            // path rather than gaining a password-reset path it shouldn't have.
-            const save = lockUser('inactive');
-            const update = save.firstCall.args[0];
-            assert.equal(update.status, undefined, 'status is left unchanged for inactive users');
-            assert.equal(typeof update.password, 'string');
-            assert.ok(update.password.length > 0);
-        });
+  describe('updateLastSeen method', function () {
+    it('exists', function () {
+      assert.equal(typeof models.User.prototype.updateLastSeen, 'function');
+    });
 
-        it('rotates the password and transitions an already-locked user (still locked)', function () {
-            const save = lockUser('locked');
-            const update = save.firstCall.args[0];
-            assert.equal(update.status, 'locked');
-            assert.equal(typeof update.password, 'string');
+    it('sets the last_seen property to new Date and returns a call to save', function () {
+      const instance = {
+        set: sinon.spy(),
+        save: sinon.stub().resolves(),
+      };
+
+      const now = new Date();
+      const clock = sinon.useFakeTimers(now.getTime());
+
+      const returnVal = models.User.prototype.updateLastSeen.call(instance);
+
+      assert.deepEqual(instance.set.args[0][0], {
+        last_seen: now,
+      });
+
+      assert.equal(returnVal, instance.save.returnValues[0]);
+
+      clock.restore();
+    });
+  });
+
+  describe('validation', function () {
+    beforeEach(function () {
+      sinon
+        .stub(security.password, 'hash')
+        .resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+    });
+
+    describe('blank', function () {
+      it('name cannot be blank', function () {
+        return models.User.add({ email: 'test@ghost.org' })
+          .then(function () {
+            throw new Error('expected ValidationError');
+          })
+          .catch(function (err) {
+            assert.equal(err instanceof errors.ValidationError, true);
+            assert.match(err.message, /users\.name/);
+          });
+      });
+
+      it('email cannot be blank', function () {
+        let data = { name: 'name' };
+        sinon.stub(models.User, 'findOne').resolves(null);
+
+        return models.User.add(data)
+          .then(function () {
+            throw new Error('expected ValidationError');
+          })
+          .catch(function (err) {
+            assert(Array.isArray(err));
+            assert.equal(err[0] instanceof errors.ValidationError, true);
+            assert.match(err[0].message, /users\.email/);
+          });
+      });
+    });
+  });
+
+  describe('add', function () {
+    // Stub the parent Bookshelf add so we can inspect the filtered data
+    // without hitting the database; the rest of the add chain is skipped.
+    function stubParentAdd() {
+      return sinon.stub(ghostBookshelf.Model, 'add').rejects(new Error('stop'));
+    }
+
+    it('sets system colour mode as the default accessibility preference for new users', async function () {
+      const add = stubParentAdd();
+
+      await assert.rejects(
+        models.User.add(
+          {
+            name: 'Invited User',
+            email: 'invited@example.com',
+          },
+          { context: { internal: true } },
+        ),
+      );
+
+      assert.equal(add.calledOnce, true);
+      assert.deepEqual(JSON.parse(add.firstCall.args[0].accessibility), {
+        nightShift: 'system',
+      });
+    });
+
+    it('does not inject a default accessibility preference when importing', async function () {
+      const add = stubParentAdd();
+
+      await assert.rejects(
+        models.User.add(
+          {
+            name: 'Imported User',
+            email: 'imported@example.com',
+          },
+          { context: { internal: true }, importing: true },
+        ),
+      );
+
+      assert.equal(add.calledOnce, true);
+      assert.equal(add.firstCall.args[0].accessibility, undefined);
+    });
+
+    it('preserves an explicit accessibility preference for new users', async function () {
+      const add = stubParentAdd();
+
+      await assert.rejects(
+        models.User.add(
+          {
+            name: 'Invited User',
+            email: 'invited@example.com',
+            accessibility: JSON.stringify({ nightShift: 'dark' }),
+          },
+          { context: { internal: true } },
+        ),
+      );
+
+      assert.equal(add.calledOnce, true);
+      assert.deepEqual(JSON.parse(add.firstCall.args[0].accessibility), {
+        nightShift: 'dark',
+      });
+    });
+  });
+
+  describe('edit', function () {
+    it('checks for duplicate email before editing user', async function () {
+      sinon.stub(models.User, 'getByEmail').resolves({ id: 'another-user-id' });
+      const edit = sinon.stub(ghostBookshelf.Model, 'edit').resolves();
+
+      await assert.rejects(
+        models.User.edit(
+          {
+            email: 'duplicate@example.com',
+          },
+          {
+            id: 'user-id',
+            context: { internal: true },
+          },
+        ),
+        (error) => {
+          assert.equal(error instanceof errors.ValidationError, true);
+          assert.equal(error.message, 'Email is already in use');
+          return true;
+        },
+      );
+
+      assert.equal(edit.called, false);
+    });
+
+    it('updates role and returns reloaded user with change metadata', async function () {
+      const relation = {
+        fetch: sinon.stub().resolves({
+          models: [
+            {
+              id: 'old-role-id',
+              get: sinon.stub().withArgs('name').returns('Author'),
+            },
+          ],
+        }),
+        updatePivot: sinon.stub().resolves(),
+      };
+      const editedUser = {
+        id: 'user-id',
+        _changed: { roles: true },
+        roles: sinon.stub().returns(relation),
+      };
+      const role = {
+        id: 'new-role-id',
+        get: sinon.stub().withArgs('name').returns('Editor'),
+      };
+      const reloadedUser = {};
+
+      sinon.stub(ghostBookshelf.Model, 'edit').resolves(editedUser);
+      sinon.stub(models.Role, 'findOne').resolves(role);
+      const findOne = sinon.stub(models.User, 'findOne').resolves(reloadedUser);
+
+      const result = await models.User.edit(
+        { roles: ['Editor'] },
+        {
+          id: 'user-id',
+          context: { internal: true },
+        },
+      );
+
+      assert.equal(result, reloadedUser);
+      assert.deepEqual(reloadedUser._changed, { roles: true });
+      sinon.assert.calledWith(models.Role.findOne, { name: 'Editor' });
+      sinon.assert.calledWith(relation.updatePivot, { role_id: 'new-role-id' });
+      sinon.assert.calledWith(findOne, { id: 'user-id' }, sinon.match({ status: 'all' }));
+    });
+  });
+
+  describe('setup', function () {
+    it('sets system colour mode as the default accessibility preference for the initial owner', async function () {
+      const edit = sinon.stub(models.User, 'edit').resolves();
+
+      await models.User.setup(
+        {
+          name: 'Test User',
+          email: 'test@example.com',
+          password: 'Xt9!pL4#vQ8$mN2@rZ6%',
+        },
+        {
+          id: 'owner-id',
+          context: { internal: true },
+        },
+      );
+
+      assert.equal(edit.calledOnce, true);
+      assert.deepEqual(JSON.parse(edit.firstCall.args[0].accessibility), {
+        nightShift: 'system',
+      });
+    });
+
+    it('preserves explicit accessibility preference during initial owner setup', async function () {
+      const edit = sinon.stub(models.User, 'edit').resolves();
+
+      await models.User.setup(
+        {
+          name: 'Test User',
+          email: 'test@example.com',
+          password: 'Xt9!pL4#vQ8$mN2@rZ6%',
+          accessibility: JSON.stringify({ nightShift: 'dark' }),
+        },
+        {
+          id: 'owner-id',
+          context: { internal: true },
+        },
+      );
+
+      assert.equal(edit.calledOnce, true);
+      assert.deepEqual(JSON.parse(edit.firstCall.args[0].accessibility), {
+        nightShift: 'dark',
+      });
+    });
+  });
+
+  describe('fn: check', function () {
+    beforeEach(function () {
+      sinon
+        .stub(security.password, 'hash')
+        .resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+    });
+
+    it('user status is warn', function () {
+      sinon.stub(security.password, 'compare').resolves(true);
+
+      // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
+      sinon.stub(schema, 'validate').resolves();
+
+      const user = models.User.forge(
+        testUtils.DataGenerator.forKnex.createUser({
+          status: 'warn-1',
+          email: 'test-9@example.de',
+          website: '!!!!!this-is-not-a-website!!!!',
+        }),
+      );
+
+      sinon.stub(models.User, 'getByEmail').resolves(user);
+      sinon.stub(models.User, 'isPasswordCorrect').resolves();
+
+      sinon.stub(user, 'updateLastSeen').resolves();
+      sinon.stub(user, 'save').resolves();
+
+      return models.User.check({ email: user.get('email'), password: 'test' });
+    });
+
+    it('user status is active', function () {
+      const user = models.User.forge(
+        testUtils.DataGenerator.forKnex.createUser({
+          status: 'active',
+          email: 'test@ghost.de',
+        }),
+      );
+
+      sinon.stub(models.User, 'getByEmail').resolves(user);
+      sinon.stub(models.User, 'isPasswordCorrect').resolves();
+
+      sinon.stub(user, 'updateLastSeen').resolves();
+      sinon.stub(user, 'save').resolves();
+
+      return models.User.check({ email: user.get('email'), password: 'test' });
+    });
+
+    it('password is incorrect', function () {
+      const user = models.User.forge(
+        testUtils.DataGenerator.forKnex.createUser({
+          status: 'active',
+          email: 'test@ghost.de',
+        }),
+      );
+
+      sinon.stub(models.User, 'getByEmail').resolves(user);
+      sinon.stub(models.User, 'isPasswordCorrect').rejects(new errors.ValidationError());
+
+      return models.User.check({ email: user.get('email'), password: 'test' }).catch(
+        function (err) {
+          assert.equal(err instanceof errors.ValidationError, true);
+        },
+      );
+    });
+
+    it('status is locked', function () {
+      const user = models.User.forge(
+        testUtils.DataGenerator.forKnex.createUser({
+          status: 'locked',
+          email: 'test@ghost.de',
+        }),
+      );
+
+      sinon.stub(models.User, 'getByEmail').resolves(user);
+
+      return models.User.check({ email: user.get('email'), password: 'test' }).catch(
+        function (err) {
+          assert.equal(err instanceof errors.PasswordResetRequiredError, true);
+        },
+      );
+    });
+  });
+
+  describe('permissible', function () {
+    function getUserModel(id, role, roleId) {
+      const hasRole = sinon.stub();
+
+      hasRole.withArgs(role).returns(true);
+
+      return {
+        id: id,
+        hasRole: hasRole,
+        related: sinon.stub().returns([{ name: role, id: roleId }]),
+        get: sinon.stub().returns(id),
+      };
+    }
+
+    it('cannot delete owner', async function () {
+      const mockUser = getUserModel(1, 'Owner');
+      const context = { user: 1 };
+
+      await assert.rejects(async () => {
+        await models.User.permissible(
+          mockUser,
+          'destroy',
+          context,
+          {},
+          testUtils.permissions.owner,
+          true,
+          true,
+          true,
+        );
+      }, errors.NoPermissionError);
+      sinon.assert.calledOnce(mockUser.hasRole);
+    });
+
+    it('can always edit self', function () {
+      const mockUser = getUserModel(3, 'Contributor');
+      const context = { user: 3 };
+
+      return models.User.permissible(
+        mockUser,
+        'edit',
+        context,
+        {},
+        testUtils.permissions.contributor,
+        false,
+        true,
+        true,
+      ).then(() => {
+        sinon.assert.calledOnce(mockUser.get);
+      });
+    });
+
+    it('cannot edit my status to inactive', function () {
+      const mockUser = getUserModel(3, 'Editor');
+      const context = { user: 3 };
+
+      return models.User.permissible(
+        mockUser,
+        'edit',
+        context,
+        { status: 'inactive' },
+        testUtils.permissions.editor,
+        false,
+        true,
+        true,
+      )
+        .then(Promise.reject)
+        .catch((err) => {
+          assert(err instanceof errors.NoPermissionError);
         });
     });
 
-    describe('updateLastSeen method', function () {
-        it('exists', function () {
-            assert.equal(typeof models.User.prototype.updateLastSeen, 'function');
-        });
+    it('without related roles', function () {
+      sinon
+        .stub(models.User, 'findOne')
+        .withArgs(
+          {
+            id: 3,
+            status: 'all',
+          },
+          { withRelated: ['roles'] },
+        )
+        .resolves(getUserModel(3, 'Contributor'));
 
-        it('sets the last_seen property to new Date and returns a call to save', function () {
-            const instance = {
-                set: sinon.spy(),
-                save: sinon.stub().resolves()
-            };
+      const mockUser = { id: 3, related: sinon.stub().returns() };
+      const context = { user: 3 };
 
-            const now = new Date();
-            const clock = sinon.useFakeTimers(now.getTime());
-
-            const returnVal = models.User.prototype.updateLastSeen.call(instance);
-
-            assert.deepEqual(instance.set.args[0][0], {
-                last_seen: now
-            });
-
-            assert.equal(returnVal, instance.save.returnValues[0]);
-
-            clock.restore();
-        });
+      return models.User.permissible(
+        mockUser,
+        'edit',
+        context,
+        {},
+        testUtils.permissions.contributor,
+        false,
+        true,
+        true,
+      ).then(() => {
+        sinon.assert.calledOnce(models.User.findOne);
+      });
     });
 
-    describe('validation', function () {
-        beforeEach(function () {
-            sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        });
+    describe('change role', function () {
+      function getUserToEdit(id, role) {
+        const hasRole = sinon.stub();
 
-        describe('blank', function () {
-            it('name cannot be blank', function () {
-                return models.User.add({email: 'test@ghost.org'})
-                    .then(function () {
-                        throw new Error('expected ValidationError');
-                    })
-                    .catch(function (err) {
-                        assert.equal((err instanceof errors.ValidationError), true);
-                        assert.match(err.message, /users\.name/);
-                    });
-            });
+        hasRole.withArgs(role).returns(true);
 
-            it('email cannot be blank', function () {
-                let data = {name: 'name'};
-                sinon.stub(models.User, 'findOne').resolves(null);
+        return {
+          id: id,
+          hasRole: hasRole,
+          related: sinon.stub().returns([role]),
+          get: sinon.stub().returns(id),
+        };
+      }
 
-                return models.User.add(data)
-                    .then(function () {
-                        throw new Error('expected ValidationError');
-                    })
-                    .catch(function (err) {
-                        assert(Array.isArray(err));
-                        assert.equal((err[0] instanceof errors.ValidationError), true);
-                        assert.match(err[0].message, /users\.email/);
-                    });
-            });
-        });
-    });
+      beforeEach(function () {
+        sinon.stub(models.User, 'getOwnerUser');
+        sinon.stub(permissions, 'canThis');
 
-    describe('add', function () {
-        // Stub the parent Bookshelf add so we can inspect the filtered data
-        // without hitting the database; the rest of the add chain is skipped.
-        function stubParentAdd() {
-            return sinon.stub(ghostBookshelf.Model, 'add').rejects(new Error('stop'));
-        }
-
-        it('sets system colour mode as the default accessibility preference for new users', async function () {
-            const add = stubParentAdd();
-
-            await assert.rejects(models.User.add({
-                name: 'Invited User',
-                email: 'invited@example.com'
-            }, {context: {internal: true}}));
-
-            assert.equal(add.calledOnce, true);
-            assert.deepEqual(JSON.parse(add.firstCall.args[0].accessibility), {
-                nightShift: 'system'
-            });
-        });
-
-        it('does not inject a default accessibility preference when importing', async function () {
-            const add = stubParentAdd();
-
-            await assert.rejects(models.User.add({
-                name: 'Imported User',
-                email: 'imported@example.com'
-            }, {context: {internal: true}, importing: true}));
-
-            assert.equal(add.calledOnce, true);
-            assert.equal(add.firstCall.args[0].accessibility, undefined);
-        });
-
-        it('preserves an explicit accessibility preference for new users', async function () {
-            const add = stubParentAdd();
-
-            await assert.rejects(models.User.add({
-                name: 'Invited User',
-                email: 'invited@example.com',
-                accessibility: JSON.stringify({nightShift: 'dark'})
-            }, {context: {internal: true}}));
-
-            assert.equal(add.calledOnce, true);
-            assert.deepEqual(JSON.parse(add.firstCall.args[0].accessibility), {
-                nightShift: 'dark'
-            });
-        });
-    });
-
-    describe('edit', function () {
-        it('checks for duplicate email before editing user', async function () {
-            sinon.stub(models.User, 'getByEmail').resolves({id: 'another-user-id'});
-            const edit = sinon.stub(ghostBookshelf.Model, 'edit').resolves();
-
-            await assert.rejects(models.User.edit({
-                email: 'duplicate@example.com'
-            }, {
-                id: 'user-id',
-                context: {internal: true}
-            }), (error) => {
-                assert.equal(error instanceof errors.ValidationError, true);
-                assert.equal(error.message, 'Email is already in use');
-                return true;
-            });
-
-            assert.equal(edit.called, false);
-        });
-
-        it('updates role and returns reloaded user with change metadata', async function () {
-            const relation = {
-                fetch: sinon.stub().resolves({
-                    models: [{
-                        id: 'old-role-id',
-                        get: sinon.stub().withArgs('name').returns('Author')
-                    }]
-                }),
-                updatePivot: sinon.stub().resolves()
-            };
-            const editedUser = {
-                id: 'user-id',
-                _changed: {roles: true},
-                roles: sinon.stub().returns(relation)
-            };
-            const role = {
-                id: 'new-role-id',
-                get: sinon.stub().withArgs('name').returns('Editor')
-            };
-            const reloadedUser = {};
-
-            sinon.stub(ghostBookshelf.Model, 'edit').resolves(editedUser);
-            sinon.stub(models.Role, 'findOne').resolves(role);
-            const findOne = sinon.stub(models.User, 'findOne').resolves(reloadedUser);
-
-            const result = await models.User.edit({roles: ['Editor']}, {
-                id: 'user-id',
-                context: {internal: true}
-            });
-
-            assert.equal(result, reloadedUser);
-            assert.deepEqual(reloadedUser._changed, {roles: true});
-            sinon.assert.calledWith(models.Role.findOne, {name: 'Editor'});
-            sinon.assert.calledWith(relation.updatePivot, {role_id: 'new-role-id'});
-            sinon.assert.calledWith(findOne, {id: 'user-id'}, sinon.match({status: 'all'}));
-        });
-    });
-
-    describe('setup', function () {
-        it('sets system colour mode as the default accessibility preference for the initial owner', async function () {
-            const edit = sinon.stub(models.User, 'edit').resolves();
-
-            await models.User.setup({
-                name: 'Test User',
-                email: 'test@example.com',
-                password: 'Xt9!pL4#vQ8$mN2@rZ6%'
-            }, {
-                id: 'owner-id',
-                context: {internal: true}
-            });
-
-            assert.equal(edit.calledOnce, true);
-            assert.deepEqual(JSON.parse(edit.firstCall.args[0].accessibility), {
-                nightShift: 'system'
-            });
-        });
-
-        it('preserves explicit accessibility preference during initial owner setup', async function () {
-            const edit = sinon.stub(models.User, 'edit').resolves();
-
-            await models.User.setup({
-                name: 'Test User',
-                email: 'test@example.com',
-                password: 'Xt9!pL4#vQ8$mN2@rZ6%',
-                accessibility: JSON.stringify({nightShift: 'dark'})
-            }, {
-                id: 'owner-id',
-                context: {internal: true}
-            });
-
-            assert.equal(edit.calledOnce, true);
-            assert.deepEqual(JSON.parse(edit.firstCall.args[0].accessibility), {
-                nightShift: 'dark'
-            });
-        });
-    });
-
-    describe('fn: check', function () {
-        beforeEach(function () {
-            sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        });
-
-        it('user status is warn', function () {
-            sinon.stub(security.password, 'compare').resolves(true);
-
-            // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
-            sinon.stub(schema, 'validate').resolves();
-
-            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
-                status: 'warn-1',
-                email: 'test-9@example.de',
-                website: '!!!!!this-is-not-a-website!!!!'
-            }));
-
-            sinon.stub(models.User, 'getByEmail').resolves(user);
-            sinon.stub(models.User, 'isPasswordCorrect').resolves();
-
-            sinon.stub(user, 'updateLastSeen').resolves();
-            sinon.stub(user, 'save').resolves();
-
-            return models.User.check({email: user.get('email'), password: 'test'});
-        });
-
-        it('user status is active', function () {
-            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
-                status: 'active',
-                email: 'test@ghost.de'
-            }));
-
-            sinon.stub(models.User, 'getByEmail').resolves(user);
-            sinon.stub(models.User, 'isPasswordCorrect').resolves();
-
-            sinon.stub(user, 'updateLastSeen').resolves();
-            sinon.stub(user, 'save').resolves();
-
-            return models.User.check({email: user.get('email'), password: 'test'});
-        });
-
-        it('password is incorrect', function () {
-            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
-                status: 'active',
-                email: 'test@ghost.de'
-            }));
-
-            sinon.stub(models.User, 'getByEmail').resolves(user);
-            sinon.stub(models.User, 'isPasswordCorrect').rejects(new errors.ValidationError());
-
-            return models.User.check({email: user.get('email'), password: 'test'})
-                .catch(function (err) {
-                    assert.equal((err instanceof errors.ValidationError), true);
-                });
-        });
-
-        it('status is locked', function () {
-            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
-                status: 'locked',
-                email: 'test@ghost.de'
-            }));
-
-            sinon.stub(models.User, 'getByEmail').resolves(user);
-
-            return models.User.check({email: user.get('email'), password: 'test'})
-                .catch(function (err) {
-                    assert.equal((err instanceof errors.PasswordResetRequiredError), true);
-                });
-        });
-    });
-
-    describe('permissible', function () {
-        function getUserModel(id, role, roleId) {
-            const hasRole = sinon.stub();
-
-            hasRole.withArgs(role).returns(true);
-
+        models.User.getOwnerUser.resolves({
+          id: testUtils.context.owner.context.user,
+          related: () => {
             return {
-                id: id,
-                hasRole: hasRole,
-                related: sinon.stub().returns([{name: role, id: roleId}]),
-                get: sinon.stub().returns(id)
+              at: () => {
+                return testUtils.permissions.owner.user.roles[0].id;
+              },
             };
-        }
+          },
+        });
+      });
 
-        it('cannot delete owner', async function () {
-            const mockUser = getUserModel(1, 'Owner');
-            const context = {user: 1};
+      it('cannot change own role', function () {
+        const mockUser = getUserToEdit(
+          testUtils.context.admin.context.user,
+          testUtils.permissions.editor.user.roles[0],
+        );
+        const context = testUtils.context.admin.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
 
-            await assert.rejects(async () => {
-                await models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.owner, true, true, true);
-            }, errors.NoPermissionError);
-            sinon.assert.calledOnce(mockUser.hasRole);
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.admin,
+          false,
+          true,
+          true,
+        )
+          .then(Promise.reject)
+          .catch((err) => {
+            assert(err instanceof errors.NoPermissionError);
+          });
+      });
+
+      it('is owner and does not change the role', function () {
+        const mockUser = getUserToEdit(
+          testUtils.context.owner.context.user,
+          testUtils.permissions.owner.user.roles[0],
+        );
+        const context = testUtils.context.owner.context;
+        const unsafeAttrs = testUtils.permissions.owner.user;
+
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.owner,
+          false,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.calledOnce(models.User.getOwnerUser);
+        });
+      });
+
+      it("cannot change owner's role", function () {
+        const mockUser = getUserToEdit(
+          testUtils.context.owner.context.user,
+          testUtils.permissions.owner.user.roles[0],
+        );
+        const context = testUtils.context.admin.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
+
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.admin,
+          false,
+          true,
+          true,
+        )
+          .then(Promise.reject)
+          .catch((err) => {
+            assert(err instanceof errors.NoPermissionError);
+          });
+      });
+
+      it('admin can change author role', function () {
+        const mockUser = getUserToEdit(
+          testUtils.context.author.context.user,
+          testUtils.permissions.author.user.roles[0],
+        );
+        const context = testUtils.context.admin.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
+
+        permissions.canThis.returns({
+          assign: {
+            role: sinon.stub().resolves(),
+          },
         });
 
-        it('can always edit self', function () {
-            const mockUser = getUserModel(3, 'Contributor');
-            const context = {user: 3};
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.admin,
+          true,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.calledOnce(models.User.getOwnerUser);
+          sinon.assert.calledOnce(permissions.canThis);
+        });
+      });
 
-            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true, true).then(() => {
-                sinon.assert.calledOnce(mockUser.get);
-            });
+      it("author can't change admin role", function () {
+        const mockUser = getUserToEdit(
+          testUtils.context.admin.context.user,
+          testUtils.permissions.admin.user.roles[0],
+        );
+        const context = testUtils.context.author.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
+
+        permissions.canThis.returns({
+          assign: {
+            role: sinon.stub().resolves(),
+          },
         });
 
-        it('cannot edit my status to inactive', function () {
-            const mockUser = getUserModel(3, 'Editor');
-            const context = {user: 3};
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.author,
+          false,
+          true,
+          true,
+        )
+          .then(Promise.reject)
+          .catch((err) => {
+            assert(err instanceof errors.NoPermissionError);
+          });
+      });
+    });
 
-            return models.User.permissible(mockUser, 'edit', context, {status: 'inactive'}, testUtils.permissions.editor, false, true, true)
-                .then(Promise.reject)
-                .catch((err) => {
-                    assert(err instanceof errors.NoPermissionError);
-                });
+    describe('as editor', function () {
+      it("can't edit another editor", async function () {
+        const mockUser = getUserModel(3, 'Editor');
+        const context = { user: 2 };
+
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'edit',
+            context,
+            {},
+            testUtils.permissions.editor,
+            true,
+            true,
+            true,
+          );
+        }, errors.NoPermissionError);
+        sinon.assert.called(mockUser.hasRole);
+        sinon.assert.calledOnce(mockUser.get);
+      });
+
+      it("can't edit owner", async function () {
+        const mockUser = getUserModel(3, 'Owner');
+        const context = { user: 2 };
+
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'edit',
+            context,
+            {},
+            testUtils.permissions.editor,
+            true,
+            true,
+            true,
+          );
+        }, errors.NoPermissionError);
+        sinon.assert.called(mockUser.hasRole);
+        sinon.assert.calledOnce(mockUser.get);
+      });
+
+      it("can't edit an admin", async function () {
+        const mockUser = getUserModel(3, 'Administrator');
+        const context = { user: 2 };
+
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'edit',
+            context,
+            {},
+            testUtils.permissions.editor,
+            true,
+            true,
+            true,
+          );
+        }, errors.NoPermissionError);
+        sinon.assert.called(mockUser.hasRole);
+        sinon.assert.calledOnce(mockUser.get);
+      });
+
+      it('can edit author', function () {
+        const mockUser = getUserModel(3, 'Author');
+        const context = { user: 2 };
+
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          {},
+          testUtils.permissions.editor,
+          true,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.called(mockUser.hasRole);
+          sinon.assert.calledOnce(mockUser.get);
         });
+      });
 
-        it('without related roles', function () {
-            sinon.stub(models.User, 'findOne').withArgs({
-                id: 3,
-                status: 'all'
-            }, {withRelated: ['roles']}).resolves(getUserModel(3, 'Contributor'));
+      it('can edit contributor', function () {
+        const mockUser = getUserModel(3, 'Contributor');
+        const context = { user: 2 };
 
-            const mockUser = {id: 3, related: sinon.stub().returns()};
-            const context = {user: 3};
-
-            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true, true)
-                .then(() => {
-                    sinon.assert.calledOnce(models.User.findOne);
-                });
+        return models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          {},
+          testUtils.permissions.editor,
+          true,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.called(mockUser.hasRole);
+          sinon.assert.calledOnce(mockUser.get);
         });
+      });
 
-        describe('change role', function () {
-            function getUserToEdit(id, role) {
-                const hasRole = sinon.stub();
+      it('can destroy self', function () {
+        const mockUser = getUserModel(3, 'Editor');
+        const context = { user: 3 };
 
-                hasRole.withArgs(role).returns(true);
-
-                return {
-                    id: id,
-                    hasRole: hasRole,
-                    related: sinon.stub().returns([role]),
-                    get: sinon.stub().returns(id)
-                };
-            }
-
-            beforeEach(function () {
-                sinon.stub(models.User, 'getOwnerUser');
-                sinon.stub(permissions, 'canThis');
-
-                models.User.getOwnerUser.resolves({
-                    id: testUtils.context.owner.context.user,
-                    related: () => {
-                        return {
-                            at: () => {
-                                return testUtils.permissions.owner.user.roles[0].id;
-                            }
-                        };
-                    }
-                });
-            });
-
-            it('cannot change own role', function () {
-                const mockUser = getUserToEdit(testUtils.context.admin.context.user, testUtils.permissions.editor.user.roles[0]);
-                const context = testUtils.context.admin.context;
-                const unsafeAttrs = testUtils.permissions.editor.user;
-
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true, true)
-                    .then(Promise.reject)
-                    .catch((err) => {
-                        assert(err instanceof errors.NoPermissionError);
-                    });
-            });
-
-            it('is owner and does not change the role', function () {
-                const mockUser = getUserToEdit(testUtils.context.owner.context.user, testUtils.permissions.owner.user.roles[0]);
-                const context = testUtils.context.owner.context;
-                const unsafeAttrs = testUtils.permissions.owner.user;
-
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.owner, false, true, true)
-                    .then(() => {
-                        sinon.assert.calledOnce(models.User.getOwnerUser);
-                    });
-            });
-
-            it('cannot change owner\'s role', function () {
-                const mockUser = getUserToEdit(testUtils.context.owner.context.user, testUtils.permissions.owner.user.roles[0]);
-                const context = testUtils.context.admin.context;
-                const unsafeAttrs = testUtils.permissions.editor.user;
-
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true, true)
-                    .then(Promise.reject)
-                    .catch((err) => {
-                        assert(err instanceof errors.NoPermissionError);
-                    });
-            });
-
-            it('admin can change author role', function () {
-                const mockUser = getUserToEdit(testUtils.context.author.context.user, testUtils.permissions.author.user.roles[0]);
-                const context = testUtils.context.admin.context;
-                const unsafeAttrs = testUtils.permissions.editor.user;
-
-                permissions.canThis.returns({
-                    assign: {
-                        role: sinon.stub().resolves()
-                    }
-                });
-
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, true, true, true)
-                    .then(() => {
-                        sinon.assert.calledOnce(models.User.getOwnerUser);
-                        sinon.assert.calledOnce(permissions.canThis);
-                    });
-            });
-
-            it('author can\'t change admin role', function () {
-                const mockUser = getUserToEdit(testUtils.context.admin.context.user, testUtils.permissions.admin.user.roles[0]);
-                const context = testUtils.context.author.context;
-                const unsafeAttrs = testUtils.permissions.editor.user;
-
-                permissions.canThis.returns({
-                    assign: {
-                        role: sinon.stub().resolves()
-                    }
-                });
-
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.author, false, true, true)
-                    .then(Promise.reject)
-                    .catch((err) => {
-                        assert(err instanceof errors.NoPermissionError);
-                    });
-            });
+        return models.User.permissible(
+          mockUser,
+          'destroy',
+          context,
+          {},
+          testUtils.permissions.editor,
+          true,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.called(mockUser.hasRole);
+          sinon.assert.calledOnce(mockUser.get);
         });
+      });
 
-        describe('as editor', function () {
-            it('can\'t edit another editor', async function () {
-                const mockUser = getUserModel(3, 'Editor');
-                const context = {user: 2};
+      it("can't destroy another editor", async function () {
+        const mockUser = getUserModel(3, 'Editor');
+        const context = { user: 2 };
 
-                await assert.rejects(async () => {
-                    await models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true);
-                }, errors.NoPermissionError);
-                sinon.assert.called(mockUser.hasRole);
-                sinon.assert.calledOnce(mockUser.get);
-            });
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'destroy',
+            context,
+            {},
+            testUtils.permissions.editor,
+            true,
+            true,
+            true,
+          );
+        }, errors.NoPermissionError);
+        sinon.assert.called(mockUser.hasRole);
+        sinon.assert.calledOnce(mockUser.get);
+      });
 
-            it('can\'t edit owner', async function () {
-                const mockUser = getUserModel(3, 'Owner');
-                const context = {user: 2};
+      it("can't destroy an admin", async function () {
+        const mockUser = getUserModel(3, 'Administrator');
+        const context = { user: 2 };
 
-                await assert.rejects(async () => {
-                    await models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true);
-                }, errors.NoPermissionError);
-                sinon.assert.called(mockUser.hasRole);
-                sinon.assert.calledOnce(mockUser.get);
-            });
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'destroy',
+            context,
+            {},
+            testUtils.permissions.editor,
+            true,
+            true,
+            true,
+          );
+        }, errors.NoPermissionError);
+        sinon.assert.called(mockUser.hasRole);
+        sinon.assert.calledOnce(mockUser.get);
+      });
 
-            it('can\'t edit an admin', async function () {
-                const mockUser = getUserModel(3, 'Administrator');
-                const context = {user: 2};
+      it('can destroy an author', function () {
+        const mockUser = getUserModel(3, 'Author');
+        const context = { user: 2 };
 
-                await assert.rejects(async () => {
-                    await models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true);
-                }, errors.NoPermissionError);
-                sinon.assert.called(mockUser.hasRole);
-                sinon.assert.calledOnce(mockUser.get);
-            });
+        return models.User.permissible(
+          mockUser,
+          'destroy',
+          context,
+          {},
+          testUtils.permissions.editor,
+          true,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.called(mockUser.hasRole);
+          sinon.assert.calledOnce(mockUser.get);
+        });
+      });
 
-            it('can edit author', function () {
-                const mockUser = getUserModel(3, 'Author');
-                const context = {user: 2};
+      it('can destroy a contributor', function () {
+        const mockUser = getUserModel(3, 'Contributor');
+        const context = { user: 2 };
 
-                return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                });
-            });
+        return models.User.permissible(
+          mockUser,
+          'destroy',
+          context,
+          {},
+          testUtils.permissions.editor,
+          true,
+          true,
+          true,
+        ).then(() => {
+          sinon.assert.called(mockUser.hasRole);
+          sinon.assert.calledOnce(mockUser.get);
+        });
+      });
+    });
+  });
 
-            it('can edit contributor', function () {
-                const mockUser = getUserModel(3, 'Contributor');
-                const context = {user: 2};
+  describe('transferOwnership', function () {
+    beforeEach(function () {
+      sinon.stub(models.Role, 'findOne');
 
-                return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                });
-            });
+      models.Role.findOne
+        .withArgs({ name: 'Owner' })
+        .resolves(testUtils.permissions.owner.user.roles[0]);
 
-            it('can destroy self', function () {
-                const mockUser = getUserModel(3, 'Editor');
-                const context = {user: 3};
+      models.Role.findOne
+        .withArgs({ name: 'Administrator' })
+        .resolves(testUtils.permissions.admin.user.roles[0]);
 
-                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                });
-            });
+      sinon.stub(models.User, 'findOne');
+    });
 
-            it('can\'t destroy another editor', async function () {
-                const mockUser = getUserModel(3, 'Editor');
-                const context = {user: 2};
+    it('Cannot transfer ownership if not owner', function () {
+      const loggedInUser = testUtils.context.admin;
+      const contextUser = sinon.stub();
 
-                await assert.rejects(async () => {
-                    await models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true);
-                }, errors.NoPermissionError);
-                sinon.assert.called(mockUser.hasRole);
-                sinon.assert.calledOnce(mockUser.get);
-            });
+      contextUser.toJSON = sinon.stub().returns(testUtils.permissions.admin.user);
 
-            it('can\'t destroy an admin', async function () {
-                const mockUser = getUserModel(3, 'Administrator');
-                const context = {user: 2};
+      models.User.findOne
+        .withArgs({ id: loggedInUser.context.user }, { withRelated: ['roles'] })
+        .resolves(contextUser);
 
-                await assert.rejects(async () => {
-                    await models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true);
-                }, errors.NoPermissionError);
-                sinon.assert.called(mockUser.hasRole);
-                sinon.assert.calledOnce(mockUser.get);
-            });
-
-            it('can destroy an author', function () {
-                const mockUser = getUserModel(3, 'Author');
-                const context = {user: 2};
-
-                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                });
-            });
-
-            it('can destroy a contributor', function () {
-                const mockUser = getUserModel(3, 'Contributor');
-                const context = {user: 2};
-
-                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                });
-            });
+      return models.User.transferOwnership({ id: loggedInUser.context.user }, loggedInUser)
+        .then(Promise.reject)
+        .catch((err) => {
+          assert(err instanceof errors.NoPermissionError);
         });
     });
 
-    describe('transferOwnership', function () {
-        beforeEach(function () {
-            sinon.stub(models.Role, 'findOne');
+    it('Owner tries to transfer ownership to editor', function () {
+      const loggedInUser = testUtils.context.owner;
+      const userToChange = testUtils.context.editor;
 
-            models.Role.findOne
-                .withArgs({name: 'Owner'})
-                .resolves(testUtils.permissions.owner.user.roles[0]);
+      const loggedInContext = {
+        toJSON: sinon.stub().returns(testUtils.permissions.owner.user),
+      };
+      const userToChangeContext = {
+        toJSON: sinon.stub().returns(
+          // Test utils don't contain `status` which is required
+          Object.assign({ status: 'active' }, testUtils.permissions.editor.user),
+        ),
+      };
 
-            models.Role.findOne
-                .withArgs({name: 'Administrator'})
-                .resolves(testUtils.permissions.admin.user.roles[0]);
+      models.User.findOne
+        .withArgs({ id: loggedInUser.context.user }, { withRelated: ['roles'] })
+        .resolves(loggedInContext);
 
-            sinon.stub(models.User, 'findOne');
-        });
+      models.User.findOne
+        .withArgs({ id: userToChange.context.user }, { withRelated: ['roles'] })
+        .resolves(userToChangeContext);
 
-        it('Cannot transfer ownership if not owner', function () {
-            const loggedInUser = testUtils.context.admin;
-            const contextUser = sinon.stub();
-
-            contextUser.toJSON = sinon.stub().returns(testUtils.permissions.admin.user);
-
-            models.User
-                .findOne
-                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
-                .resolves(contextUser);
-
-            return models.User.transferOwnership({id: loggedInUser.context.user}, loggedInUser)
-                .then(Promise.reject)
-                .catch((err) => {
-                    assert(err instanceof errors.NoPermissionError);
-                });
-        });
-
-        it('Owner tries to transfer ownership to editor', function () {
-            const loggedInUser = testUtils.context.owner;
-            const userToChange = testUtils.context.editor;
-
-            const loggedInContext = {
-                toJSON: sinon.stub().returns(testUtils.permissions.owner.user)
-            };
-            const userToChangeContext = {
-                toJSON: sinon.stub().returns(
-                    // Test utils don't contain `status` which is required
-                    Object.assign({status: 'active'}, testUtils.permissions.editor.user)
-                )
-            };
-
-            models.User
-                .findOne
-                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
-                .resolves(loggedInContext);
-
-            models.User
-                .findOne
-                .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
-                .resolves(userToChangeContext);
-
-            return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
-                .then(Promise.reject)
-                .catch((err) => {
-                    assert(err instanceof errors.ValidationError);
-                    assert(err.message.includes('Only administrators can'), 'contains correct error message');
-                });
-        });
-
-        it('Owner tries to transfer ownership to suspended user', function () {
-            const loggedInUser = testUtils.context.owner;
-            const userToChange = testUtils.context.admin;
-
-            const userToChangeJSON = Object.assign({status: 'inactive'}, testUtils.permissions.admin.user);
-            const loggedInContext = {
-                toJSON: sinon.stub().returns(testUtils.permissions.owner.user)
-            };
-            const userToChangeContext = {
-                toJSON: sinon.stub().returns(userToChangeJSON)
-            };
-
-            models.User
-                .findOne
-                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
-                .resolves(loggedInContext);
-
-            models.User
-                .findOne
-                .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
-                .resolves(userToChangeContext);
-
-            return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
-                .then(Promise.reject)
-                .catch((err) => {
-                    assert(err instanceof errors.ValidationError);
-                    assert(err.message.includes('Only active administrators can'), 'contains correct error message');
-                });
-        });
-
-        it('should clear ownerIdCache after successful transfer', function () {
-            const loggedInUser = testUtils.context.owner;
-            const userToChange = testUtils.context.admin;
-
-            const userToChangeJSON = Object.assign({status: 'active'}, testUtils.permissions.admin.user);
-            const loggedInContext = {
-                toJSON: sinon.stub().returns(testUtils.permissions.owner.user),
-                roles: sinon.stub().returns({
-                    updatePivot: sinon.stub().resolves()
-                })
-            };
-            const userToChangeContext = {
-                toJSON: sinon.stub().returns(userToChangeJSON),
-                roles: sinon.stub().returns({
-                    updatePivot: sinon.stub().resolves()
-                }),
-                id: userToChange.context.user
-            };
-
-            models.User
-                .findOne
-                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
-                .resolves(loggedInContext);
-
-            models.User
-                .findOne
-                .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
-                .resolves(userToChangeContext);
-
-            models.User.ownerIdCache.set('old-owner-id');
-            assert.equal(models.User.ownerIdCache.get(), 'old-owner-id');
-
-            const clearSpy = sinon.spy(models.User.ownerIdCache, 'clear');
-
-            const mockCollection = {
-                query: sinon.stub().returnsThis(),
-                fetch: sinon.stub().resolves({
-                    models: [loggedInContext, userToChangeContext]
-                })
-            };
-
-            sinon.stub(models.Users, 'forge').returns(mockCollection);
-
-            return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
-                .then(() => {
-                    sinon.assert.calledOnce(clearSpy);
-                    assert.equal(models.User.ownerIdCache.get(), null);
-                })
-                .finally(() => {
-                    clearSpy.restore();
-                });
+      return models.User.transferOwnership({ id: userToChange.context.user }, loggedInUser)
+        .then(Promise.reject)
+        .catch((err) => {
+          assert(err instanceof errors.ValidationError);
+          assert(err.message.includes('Only administrators can'), 'contains correct error message');
         });
     });
 
-    describe('getEmailAlertUsers', function () {
-        beforeEach(function () {
-            sinon.stub(models.User, 'findAll');
-        });
+    it('Owner tries to transfer ownership to suspended user', function () {
+      const loggedInUser = testUtils.context.owner;
+      const userToChange = testUtils.context.admin;
 
-        it('can filter out only Admin and Owner users', function () {
-            const users = sinon.stub();
+      const userToChangeJSON = Object.assign(
+        { status: 'inactive' },
+        testUtils.permissions.admin.user,
+      );
+      const loggedInContext = {
+        toJSON: sinon.stub().returns(testUtils.permissions.owner.user),
+      };
+      const userToChangeContext = {
+        toJSON: sinon.stub().returns(userToChangeJSON),
+      };
 
-            users.toJSON = sinon.stub().returns([
-                testUtils.permissions.owner.user,
-                testUtils.permissions.admin.user,
-                testUtils.permissions.editor.user,
-                testUtils.permissions.author.user,
-                testUtils.permissions.contributor.user
-            ]);
+      models.User.findOne
+        .withArgs({ id: loggedInUser.context.user }, { withRelated: ['roles'] })
+        .resolves(loggedInContext);
 
-            models.User
-                .findAll
-                .resolves(users);
+      models.User.findOne
+        .withArgs({ id: userToChange.context.user }, { withRelated: ['roles'] })
+        .resolves(userToChangeContext);
 
-            return models.User.getEmailAlertUsers('free-signup', {}).then((alertUsers) => {
-                assert.equal(alertUsers.length, 2);
-                assert.equal(alertUsers[0].roles[0].name, 'Owner');
-                assert.equal(alertUsers[1].roles[0].name, 'Administrator');
-            });
-        });
-    });
-
-    describe('isSetup', function () {
-        it('active', function () {
-            sinon.stub(models.User, 'getOwnerUser').resolves({get: sinon.stub().returns('active')});
-
-            return models.User.isSetup()
-                .then((result) => {
-                    assert.equal(result, true);
-                });
-        });
-
-        it('inactive', function () {
-            sinon.stub(models.User, 'getOwnerUser').resolves({get: sinon.stub().returns('inactive')});
-
-            return models.User.isSetup()
-                .then((result) => {
-                    assert.equal(result, false);
-                });
+      return models.User.transferOwnership({ id: userToChange.context.user }, loggedInUser)
+        .then(Promise.reject)
+        .catch((err) => {
+          assert(err instanceof errors.ValidationError);
+          assert(
+            err.message.includes('Only active administrators can'),
+            'contains correct error message',
+          );
         });
     });
 
-    describe('ownerIdCache', function () {
-        it('should return null initially', function () {
-            assert.equal(models.User.ownerIdCache.get(), null);
+    it('should clear ownerIdCache after successful transfer', function () {
+      const loggedInUser = testUtils.context.owner;
+      const userToChange = testUtils.context.admin;
+
+      const userToChangeJSON = Object.assign(
+        { status: 'active' },
+        testUtils.permissions.admin.user,
+      );
+      const loggedInContext = {
+        toJSON: sinon.stub().returns(testUtils.permissions.owner.user),
+        roles: sinon.stub().returns({
+          updatePivot: sinon.stub().resolves(),
+        }),
+      };
+      const userToChangeContext = {
+        toJSON: sinon.stub().returns(userToChangeJSON),
+        roles: sinon.stub().returns({
+          updatePivot: sinon.stub().resolves(),
+        }),
+        id: userToChange.context.user,
+      };
+
+      models.User.findOne
+        .withArgs({ id: loggedInUser.context.user }, { withRelated: ['roles'] })
+        .resolves(loggedInContext);
+
+      models.User.findOne
+        .withArgs({ id: userToChange.context.user }, { withRelated: ['roles'] })
+        .resolves(userToChangeContext);
+
+      models.User.ownerIdCache.set('old-owner-id');
+      assert.equal(models.User.ownerIdCache.get(), 'old-owner-id');
+
+      const clearSpy = sinon.spy(models.User.ownerIdCache, 'clear');
+
+      const mockCollection = {
+        query: sinon.stub().returnsThis(),
+        fetch: sinon.stub().resolves({
+          models: [loggedInContext, userToChangeContext],
+        }),
+      };
+
+      sinon.stub(models.Users, 'forge').returns(mockCollection);
+
+      return models.User.transferOwnership({ id: userToChange.context.user }, loggedInUser)
+        .then(() => {
+          sinon.assert.calledOnce(clearSpy);
+          assert.equal(models.User.ownerIdCache.get(), null);
+        })
+        .finally(() => {
+          clearSpy.restore();
         });
+    });
+  });
 
-        it('should store and retrieve values', function () {
-            models.User.ownerIdCache.set('abc123');
+  describe('getEmailAlertUsers', function () {
+    beforeEach(function () {
+      sinon.stub(models.User, 'findAll');
+    });
 
-            assert.equal(models.User.ownerIdCache.get(), 'abc123');
-        });
+    it('can filter out only Admin and Owner users', function () {
+      const users = sinon.stub();
 
-        it('should clear stored values', function () {
-            models.User.ownerIdCache.set('abc123');
-            models.User.ownerIdCache.clear();
+      users.toJSON = sinon
+        .stub()
+        .returns([
+          testUtils.permissions.owner.user,
+          testUtils.permissions.admin.user,
+          testUtils.permissions.editor.user,
+          testUtils.permissions.author.user,
+          testUtils.permissions.contributor.user,
+        ]);
 
-            assert.equal(models.User.ownerIdCache.get(), null);
+      models.User.findAll.resolves(users);
+
+      return models.User.getEmailAlertUsers('free-signup', {}).then((alertUsers) => {
+        assert.equal(alertUsers.length, 2);
+        assert.equal(alertUsers[0].roles[0].name, 'Owner');
+        assert.equal(alertUsers[1].roles[0].name, 'Administrator');
+      });
+    });
+  });
+
+  describe('isSetup', function () {
+    it('active', function () {
+      sinon.stub(models.User, 'getOwnerUser').resolves({ get: sinon.stub().returns('active') });
+
+      return models.User.isSetup().then((result) => {
+        assert.equal(result, true);
+      });
+    });
+
+    it('inactive', function () {
+      sinon.stub(models.User, 'getOwnerUser').resolves({ get: sinon.stub().returns('inactive') });
+
+      return models.User.isSetup().then((result) => {
+        assert.equal(result, false);
+      });
+    });
+  });
+
+  describe('ownerIdCache', function () {
+    it('should return null initially', function () {
+      assert.equal(models.User.ownerIdCache.get(), null);
+    });
+
+    it('should store and retrieve values', function () {
+      models.User.ownerIdCache.set('abc123');
+
+      assert.equal(models.User.ownerIdCache.get(), 'abc123');
+    });
+
+    it('should clear stored values', function () {
+      models.User.ownerIdCache.set('abc123');
+      models.User.ownerIdCache.clear();
+
+      assert.equal(models.User.ownerIdCache.get(), null);
+    });
+  });
+
+  describe('getOwnerId', function () {
+    beforeEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
+    afterEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
+    it('should return cached owner id if available', function () {
+      models.User.ownerIdCache.set('abc123');
+
+      sinon.stub(models.User, 'getOwnerUser');
+
+      return models.User.getOwnerId().then((ownerId) => {
+        assert.equal(ownerId, 'abc123');
+        sinon.assert.notCalled(models.User.getOwnerUser);
+      });
+    });
+
+    it('should fetch owner and cache the id if not cached', function () {
+      const mockOwner = {
+        id: 'abc123',
+      };
+
+      sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
+
+      return models.User.getOwnerId().then((ownerId) => {
+        assert.equal(ownerId, mockOwner.id);
+        sinon.assert.calledOnce(models.User.getOwnerUser);
+        assert.equal(models.User.ownerIdCache.get(), mockOwner.id);
+      });
+    });
+
+    it('should use cached value on subsequent calls', function () {
+      const mockOwner = {
+        id: 'abc123',
+      };
+
+      sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
+
+      return models.User.getOwnerId()
+        .then((ownerId) => {
+          assert.equal(ownerId, mockOwner.id);
+          sinon.assert.calledOnce(models.User.getOwnerUser);
+
+          return models.User.getOwnerId();
+        })
+        .then((ownerId) => {
+          assert.equal(ownerId, mockOwner.id);
+          sinon.assert.calledOnce(models.User.getOwnerUser);
         });
     });
 
-    describe('getOwnerId', function () {
-        beforeEach(function () {
-            models.User.ownerIdCache.clear();
-        });
+    it('should pass options to getOwnerUser', function () {
+      const mockOwner = {
+        id: 'abc123',
+      };
+      const options = {
+        transacting: true,
+      };
 
-        afterEach(function () {
-            models.User.ownerIdCache.clear();
-        });
+      sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
 
-        it('should return cached owner id if available', function () {
-            models.User.ownerIdCache.set('abc123');
-
-            sinon.stub(models.User, 'getOwnerUser');
-
-            return models.User.getOwnerId()
-                .then((ownerId) => {
-                    assert.equal(ownerId, 'abc123');
-                    sinon.assert.notCalled(models.User.getOwnerUser);
-                });
-        });
-
-        it('should fetch owner and cache the id if not cached', function () {
-            const mockOwner = {
-                id: 'abc123'
-            };
-
-            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
-
-            return models.User.getOwnerId()
-                .then((ownerId) => {
-                    assert.equal(ownerId, mockOwner.id);
-                    sinon.assert.calledOnce(models.User.getOwnerUser);
-                    assert.equal(models.User.ownerIdCache.get(), mockOwner.id);
-                });
-        });
-
-        it('should use cached value on subsequent calls', function () {
-            const mockOwner = {
-                id: 'abc123'
-            };
-
-            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
-
-            return models.User.getOwnerId()
-                .then((ownerId) => {
-                    assert.equal(ownerId, mockOwner.id);
-                    sinon.assert.calledOnce(models.User.getOwnerUser);
-
-                    return models.User.getOwnerId();
-                })
-                .then((ownerId) => {
-                    assert.equal(ownerId, mockOwner.id);
-                    sinon.assert.calledOnce(models.User.getOwnerUser);
-                });
-        });
-
-        it('should pass options to getOwnerUser', function () {
-            const mockOwner = {
-                id: 'abc123'
-            };
-            const options = {
-                transacting: true
-            };
-
-            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
-
-            return models.User.getOwnerId(options)
-                .then(() => {
-                    sinon.assert.calledOnce(models.User.getOwnerUser);
-                    sinon.assert.calledWith(models.User.getOwnerUser, options);
-                });
-        });
+      return models.User.getOwnerId(options).then(() => {
+        sinon.assert.calledOnce(models.User.getOwnerUser);
+        sinon.assert.calledWith(models.User.getOwnerUser, options);
+      });
     });
+  });
 });

@@ -1,1 +1,1 @@
-export {default} from './growth';
+export { default } from './growth';

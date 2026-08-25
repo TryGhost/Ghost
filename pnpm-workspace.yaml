@@ -36,7 +36,7 @@ allowBuilds:
   'msw@2.14.6': true
   'nx@23.1.1': true
   'protobufjs@7.6.4': true
-  're2@1.25.0': true
+  're2@1.26.1': true
   'sharp@0.35.3': true
   ssh2: false
 
@@ -54,7 +54,6 @@ catalog:
   '@codemirror/state': 6.7.1
   '@codemirror/theme-one-dark': 6.1.3
   '@codemirror/view': 6.43.6
-  '@ebay/nice-modal-react': 1.2.13
   '@eslint/compat': 2.1.0
   '@eslint/js': 9.39.5
   '@faker-js/faker': 10.5.0
@@ -79,28 +78,30 @@ catalog:
   '@tanstack/react-virtual': 3.14.9
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.3.5
-  '@tryghost/brute-knex': 3.2.1
+  '@tryghost/api-framework': 3.3.9
+  '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.3.5
-  '@tryghost/domain-events': 3.3.5
-  '@tryghost/errors': 3.3.5
+  '@tryghost/debug': 2.3.9
+  '@tryghost/domain-events': 3.3.10
+  '@tryghost/errors': 3.3.9
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
-  '@tryghost/logging': 5.3.0
-  '@tryghost/mongo-knex': 0.10.1
-  '@tryghost/nql': 0.13.1
-  '@tryghost/nql-lang': 0.6.6
+  '@tryghost/logging': 5.4.0
+  '@tryghost/mg-clean-html': 0.12.6
+  '@tryghost/metrics': 3.5.0
+  '@tryghost/mongo-knex': 0.11.2
+  '@tryghost/nql': 0.13.4
+  '@tryghost/nql-lang': 0.7.0
+  '@tryghost/request': 4.0.2
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
-  '@tryghost/tpl': 2.3.5
+  '@tryghost/tpl': 2.3.9
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4
-  '@types/jest': 29.5.14
-  '@types/jsdom': 28.0.3
+  '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
   '@types/node': 22.20.1
   '@types/react': 18.3.31
@@ -142,8 +143,9 @@ catalog:
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
+  got: 15.1.0
   js-yaml: 4.3.0
-  jsdom: 29.1.1
+  jsdom: 30.0.1
   jsonc-parser: 3.3.1
   knex-migrator: 5.4.1
   lodash: 4.18.1
@@ -154,10 +156,12 @@ catalog:
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
+  oxfmt: 0.63.0
   postcss: 8.5.26
   preact: ^10.29.2
   prettier: 3.9.6
   react: 18.3.1
+  react-day-picker: 9.14.0
   react-dom: 18.3.1
   react-router: 7.18.1
   semver: 7.8.5
@@ -195,6 +199,10 @@ catalog:
   shell-quote: 1.10.0
   unidecode: 1.1.0
   mppx: 0.6.20
+  '@x402/core': 2.12.0
+  '@x402/evm': 2.12.0
+  '@x402/hono': 2.12.0
+  hono: 4.12.18
   '@octokit/core': 7.0.7
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
@@ -206,6 +214,15 @@ catalog:
   '@pnpm/releasing.versioning': 1100.2.4
   '@pnpm/workspace.workspace-manifest-reader': 1100.1.5
   execa: 10.0.1
+  remark-cli: 12.0.1
+  remark-validate-links: 13.1.0
+  markdownlint-cli2: 0.23.2
+  parse-email-address: 0.0.4
+  '@breejs/later': 4.2.0
+  fastq: ^1.20.1
+  cron-validate: 1.4.5
+  '@types/stoppable': 1.1.3
+  '@types/express-brute': 1.0.6
 
 catalogs:
   react17:
@@ -223,9 +240,12 @@ overrides:
   # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
+  cron-validate: 1.4.5
   'knex-migrator>knex': 2.4.2
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
+  '@tryghost/nql': 'catalog:'
+  '@tryghost/nql-lang': 'catalog:'
   jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'

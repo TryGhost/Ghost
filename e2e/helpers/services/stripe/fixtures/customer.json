@@ -1,0 +1,30 @@
+{
+  "id": "cus_V6MM2ouqpuTHrR",
+  "object": "customer",
+  "address": null,
+  "balance": 0,
+  "created": 1787146476,
+  "currency": null,
+  "customer_account": null,
+  "default_currency": null,
+  "default_source": null,
+  "delinquent": false,
+  "description": null,
+  "discount": null,
+  "email": "fixture-1787146475935@example.com",
+  "invoice_prefix": "IMQPIQTM",
+  "invoice_settings": {
+    "custom_fields": null,
+    "default_payment_method": null,
+    "footer": null,
+    "rendering_options": null
+  },
+  "livemode": false,
+  "metadata": {},
+  "name": "Fixture Customer",
+  "phone": null,
+  "preferred_locales": [],
+  "shipping": null,
+  "tax_exempt": "none",
+  "test_clock": null
+}

@@ -6,65 +6,71 @@ const tiersService = require('../../../../../../../core/server/services/tiers');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/pages', function () {
-    let pageModel;
+  let pageModel;
 
-    beforeEach(function () {
-        pageModel = (data) => {
-            return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-        };
+  beforeEach(function () {
+    pageModel = (data) => {
+      return Object.assign(data, { toJSON: sinon.stub().returns(data) });
+    };
 
-        tiersService.api = {
-            browse() {
-                return {data: null};
-            }
-        };
+    tiersService.api = {
+      browse() {
+        return { data: null };
+      },
+    };
 
-        sinon.stub(mappers, 'pages').returns({});
+    sinon.stub(mappers, 'pages').returns({});
+  });
+
+  afterEach(function () {
+    sinon.restore();
+    tiersService.api = null;
+  });
+
+  it('destroy responds without serializing the destroyed model', async function () {
+    const frame = { options: { context: {} } };
+    const destroyedModel = pageModel({});
+
+    await serializers.output.pages.destroy(destroyedModel, {}, frame);
+
+    assert.deepEqual(frame.response, { pages: [] });
+    sinon.assert.notCalled(mappers.pages);
+  });
+
+  it('calls the mapper', async function () {
+    const apiConfig = {};
+    const frame = {
+      options: {
+        withRelated: ['tags', 'authors'],
+        context: {
+          private: false,
+        },
+      },
+    };
+
+    const ctrlResponse = {
+      data: [
+        pageModel(
+          testUtils.DataGenerator.forKnex.createPost({
+            id: 'id1',
+            page: true,
+          }),
+        ),
+        pageModel(
+          testUtils.DataGenerator.forKnex.createPost({
+            id: 'id2',
+            page: true,
+          }),
+        ),
+      ],
+      meta: {},
+    };
+
+    await serializers.output.pages.all(ctrlResponse, apiConfig, frame);
+
+    sinon.assert.callCount(mappers.pages, 2);
+    sinon.assert.calledWithExactly(mappers.pages.firstCall, ctrlResponse.data[0], frame, {
+      tiers: [],
     });
-
-    afterEach(function () {
-        sinon.restore();
-        tiersService.api = null;
-    });
-
-    it('destroy responds without serializing the destroyed model', async function () {
-        const frame = {options: {context: {}}};
-        const destroyedModel = pageModel({});
-
-        await serializers.output.pages.destroy(destroyedModel, {}, frame);
-
-        assert.deepEqual(frame.response, {pages: []});
-        sinon.assert.notCalled(mappers.pages);
-    });
-
-    it('calls the mapper', async function () {
-        const apiConfig = {};
-        const frame = {
-            options: {
-                withRelated: ['tags', 'authors'],
-                context: {
-                    private: false
-                }
-            }
-        };
-
-        const ctrlResponse = {
-            data: [
-                pageModel(testUtils.DataGenerator.forKnex.createPost({
-                    id: 'id1',
-                    page: true
-                })),
-                pageModel(testUtils.DataGenerator.forKnex.createPost({
-                    id: 'id2',
-                    page: true
-                }))
-            ],
-            meta: {}
-        };
-
-        await serializers.output.pages.all(ctrlResponse, apiConfig, frame);
-
-        sinon.assert.callCount(mappers.pages, 2);
-        sinon.assert.calledWithExactly(mappers.pages.firstCall, ctrlResponse.data[0], frame, {tiers: []});
-    });
+  });
 });

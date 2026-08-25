@@ -68,8 +68,12 @@ export function getSentryConfig(dsn, environment, appVersion, transport) {
                 // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
                 // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
                 new Replay({
-                    mask: ['.koenig-lexical', '.gh-dashboard'],
-                    unmask: ['[role="menu"]', '[data-testid="settings-panel"]', '.gh-nav'],
+                    mask: ['.koenig-lexical', '.gh-dashboard', '[data-sentry-automations-mask]'],
+                    unmask: [
+                        'body:not([data-sentry-automations-mask]) [role="menu"]',
+                        'body:not([data-sentry-automations-mask]) [data-testid="settings-panel"]',
+                        'body:not([data-sentry-automations-mask]) .gh-nav'
+                    ],
                     maskAllText: false,
                     maskAllInputs: true,
                     blockAllMedia: true

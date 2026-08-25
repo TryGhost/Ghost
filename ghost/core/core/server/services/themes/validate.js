@@ -10,10 +10,10 @@ const logging = require('@tryghost/logging');
 const list = require('./list');
 
 const messages = {
-    themeHasErrors: 'Theme "{theme}" is not compatible or contains errors.',
-    activeThemeHasFatalErrors: 'The currently active theme "{theme}" has fatal errors.',
-    activeThemeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.',
-    themeNotLoaded: 'Theme "{themeName}" is not loaded and cannot be checked.'
+  themeHasErrors: 'Theme "{theme}" is not compatible or contains errors.',
+  activeThemeHasFatalErrors: 'The currently active theme "{theme}" has fatal errors.',
+  activeThemeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.',
+  themeNotLoaded: 'Theme "{themeName}" is not loaded and cannot be checked.',
 };
 
 /**
@@ -30,70 +30,70 @@ const messages = {
 let gscanCacheStore;
 
 module.exports.init = () => {
-    gscanCacheStore = adapterManager.getAdapter('cache:gscan');
+  gscanCacheStore = adapterManager.getAdapter('cache:gscan');
 };
 
 const canActivate = function canActivate(checkedTheme) {
-    return !checkedTheme.results.hasFatalErrors;
+  return !checkedTheme.results.hasFatalErrors;
 };
 
 const getErrorsFromCheckedTheme = function getErrorsFromCheckedTheme(checkedTheme) {
-    return {
-        errors: checkedTheme.results.error ?? [],
-        warnings: checkedTheme.results.warning ?? []
-    };
+  return {
+    errors: checkedTheme.results.error ?? [],
+    warnings: checkedTheme.results.warning ?? [],
+  };
 };
 
 const check = async function check(themeName, theme, options = {}) {
-    debug('Begin: Check');
-    // gscan can slow down boot time if we require on boot, for now nest the require.
-    const gscan = require('gscan');
-    const ghostVersion = require('@tryghost/version');
-    const checkedVersion = `v${ghostVersion.safe.split('.')[0]}`;
-    let checkedTheme;
+  debug('Begin: Check');
+  // gscan can slow down boot time if we require on boot, for now nest the require.
+  const gscan = require('gscan');
+  const ghostVersion = require('@tryghost/version');
+  const checkedVersion = `v${ghostVersion.safe.split('.')[0]}`;
+  let checkedTheme;
 
-    if (options.isZip === true) {
-        debug('zip mode');
-        checkedTheme = await gscan.checkZip(theme, {
-            keepExtractedDir: true,
-            checkVersion: checkedVersion,
-            labs: labs.getAll(),
-            skipChecks: options.skipChecks || false,
-            limits: {
-                perEntryUncompressedBytes: config.get('theme:uploadLimits:entryUncompressedBytes'),
-                totalUncompressedBytes: config.get('theme:uploadLimits:totalUncompressedBytes')
-            }
-        });
-    } else {
-        debug('non-zip mode');
-        checkedTheme = await gscan.check(theme.path, {
-            checkVersion: checkedVersion,
-            labs: labs.getAll(),
-            skipChecks: options.skipChecks || false
-        });
-    }
-
-    checkedTheme = gscan.format(checkedTheme, {
-        onlyFatalErrors: false,
-        checkVersion: checkedVersion
+  if (options.isZip === true) {
+    debug('zip mode');
+    checkedTheme = await gscan.checkZip(theme, {
+      keepExtractedDir: true,
+      checkVersion: checkedVersion,
+      labs: labs.getAll(),
+      skipChecks: options.skipChecks || false,
+      limits: {
+        perEntryUncompressedBytes: config.get('theme:uploadLimits:entryUncompressedBytes'),
+        totalUncompressedBytes: config.get('theme:uploadLimits:totalUncompressedBytes'),
+      },
     });
+  } else {
+    debug('non-zip mode');
+    checkedTheme = await gscan.check(theme.path, {
+      checkVersion: checkedVersion,
+      labs: labs.getAll(),
+      skipChecks: options.skipChecks || false,
+    });
+  }
 
-    // In production we don't want to show warnings
-    // Warnings are meant for developers only
-    if (config.get('env') === 'production') {
-        checkedTheme.results.warning = [];
-    }
+  checkedTheme = gscan.format(checkedTheme, {
+    onlyFatalErrors: false,
+    checkVersion: checkedVersion,
+  });
 
-    // Cache warnings and errors
-    try {
-        await gscanCacheStore.set(themeName, getErrorsFromCheckedTheme(checkedTheme));
-    } catch (err) {
-        logging.error('Failed to cache gscan result');
-        logging.error(err);
-    }
+  // In production we don't want to show warnings
+  // Warnings are meant for developers only
+  if (config.get('env') === 'production') {
+    checkedTheme.results.warning = [];
+  }
 
-    debug('End: Check');
-    return checkedTheme;
+  // Cache warnings and errors
+  try {
+    await gscanCacheStore.set(themeName, getErrorsFromCheckedTheme(checkedTheme));
+  } catch (err) {
+    logging.error('Failed to cache gscan result');
+    logging.error(err);
+  }
+
+  debug('End: Check');
+  return checkedTheme;
 };
 
 /**
@@ -102,59 +102,60 @@ const check = async function check(themeName, theme, options = {}) {
  * @returns {Promise<{errors: Array, warnings: Array}>}
  */
 const getThemeErrors = async function getThemeErrors(themeName) {
-    try {
-        const cachedThemeErrors = await gscanCacheStore.get(themeName);
-        if (cachedThemeErrors) {
-            return cachedThemeErrors;
-        }
-    } catch (err) {
-        logging.error('Failed to get gscan result from cache');
-        logging.error(err);
+  try {
+    const cachedThemeErrors = await gscanCacheStore.get(themeName);
+    if (cachedThemeErrors) {
+      return cachedThemeErrors;
     }
+  } catch (err) {
+    logging.error('Failed to get gscan result from cache');
+    logging.error(err);
+  }
 
-    const loadedTheme = list.get(themeName);
+  const loadedTheme = list.get(themeName);
 
-    if (!loadedTheme) {
-        throw new errors.ValidationError({
-            message: tpl(messages.themeNotLoaded, {themeName: themeName}),
-            errorDetails: themeName
-        });
-    }
+  if (!loadedTheme) {
+    throw new errors.ValidationError({
+      message: tpl(messages.themeNotLoaded, { themeName: themeName }),
+      errorDetails: themeName,
+    });
+  }
 
-    const result = await check(themeName, loadedTheme);
-    return getErrorsFromCheckedTheme(result);
+  const result = await check(themeName, loadedTheme);
+  return getErrorsFromCheckedTheme(result);
 };
 
 const checkSafe = async function checkSafe(themeName, theme, isZip) {
-    const checkedTheme = await check(themeName, theme, {isZip});
+  const checkedTheme = await check(themeName, theme, { isZip });
 
-    if (canActivate(checkedTheme)) {
-        return checkedTheme;
-    }
+  if (canActivate(checkedTheme)) {
+    return checkedTheme;
+  }
 
-    // NOTE: When theme cannot be activated and gscan explicitly keeps extracted files (after
-    //       being called with `keepExtractedDir: true`), this is the best place for a cleanup.
-    // TODO: The `keepExtractedDir` flag is the cause of confusion for when and where the cleanup
-    //       should be done. It's probably best if gscan is called directly with path to the extracted
-    //       directory, this would allow keeping gscan to do just one thing - validate the theme, and
-    //       file manipulations could be left to another module/library
-    if (isZip) {
-        fs.remove(checkedTheme.path);
-    }
+  // NOTE: When theme cannot be activated and gscan explicitly keeps extracted files (after
+  //       being called with `keepExtractedDir: true`), this is the best place for a cleanup.
+  // TODO: The `keepExtractedDir` flag is the cause of confusion for when and where the cleanup
+  //       should be done. It's probably best if gscan is called directly with path to the extracted
+  //       directory, this would allow keeping gscan to do just one thing - validate the theme, and
+  //       file manipulations could be left to another module/library
+  if (isZip) {
+    fs.remove(checkedTheme.path);
+  }
 
-    throw getThemeValidationError('themeHasErrors', themeName, checkedTheme);
+  throw getThemeValidationError('themeHasErrors', themeName, checkedTheme);
 };
 
 const getThemeValidationError = (message, themeName, checkedTheme) => {
-    return new errors.ThemeValidationError({
-        message: tpl(messages[message], {theme: themeName}),
-        errorDetails: Object.assign(
-            _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
-                errors: checkedTheme.results.error,
-                warnings: checkedTheme.results.warning
-            }
-        )
-    });
+  return new errors.ThemeValidationError({
+    message: tpl(messages[message], { theme: themeName }),
+    errorDetails: Object.assign(
+      _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']),
+      {
+        errors: checkedTheme.results.error,
+        warnings: checkedTheme.results.warning,
+      },
+    ),
+  });
 };
 
 module.exports.check = check;

@@ -68,6 +68,7 @@ Local docs with Storybook:
 
 - `pnpm storybook` — run Storybook and view docs under `src/docs/`
 - `pnpm build-storybook` — build a static export
+- `pnpm build` — build the package and its type declarations
 
 ## Test
 

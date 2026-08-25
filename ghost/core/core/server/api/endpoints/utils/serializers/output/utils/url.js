@@ -3,97 +3,105 @@ const urlUtils = require('../../../../../../../shared/url-utils').default;
 const localUtils = require('../../../index');
 
 const forPost = (id, attrs, frame, type = 'posts') => {
-    // `forPost` is shared between the posts and pages mappers (pages.js
-    // delegates to posts.js). The router-level resource type is passed in
-    // explicitly because `attrs.type` can't be relied on — `?fields=url`
-    // strips every attribute except the requested ones, so deriving the
-    // type from `attrs` would silently fall back to 'posts' for pages.
-    // The mapper that owns the resource always knows which it is.
-    //
-    // `id` is passed separately for the same reason: `?fields=url` strips it
-    // from `attrs`, and the URL service needs it for `:id` permalinks and to
-    // name the resource when it reports a problem.
-    //
-    // When `url` was not requested (`?fields=id,title`), don't compute it at
-    // all — attrs is stripped to the requested columns, so the resource would
-    // reach the lazy URL service without the fields it needs (status,
-    // tags/authors) and be rejected as thin. The value would only be deleted
-    // at the end of this function anyway. forUser/forTag guard the same way.
-    // Shared with the input serializers' force-load so both sides always
-    // agree on when a URL is generated.
-    if (!localUtils.willSerializeUrl(frame)) {
-        return attrs;
-    }
-
-    // Names the fetch that produced this resource. It matters on the degrade
-    // path: a thin resource is answered with a silent /404/, and the report is
-    // the only way back to the endpoint that under-fetched it. Ignored by URL
-    // generation itself; read only into that report.
-    const options = {absolute: true};
-    if (frame && (frame.docName || frame.method)) {
-        options.serializerContext = {
-            apiType: frame.apiType,
-            docName: frame.docName,
-            method: frame.method,
-            withRelated: frame.options && frame.options.withRelated,
-            columns: frame.options && frame.options.columns,
-            forcedUrlRelations: frame.forcedUrlRelations
-        };
-    }
-
-    attrs.url = urlService.getUrlForResource({...attrs, id, type}, options);
-
-    /**
-     * CASE: admin api should serve preview urls
-     *
-     * @NOTE
-     * The url service has no clue of the draft/scheduled concept. It only generates urls for published resources.
-     * Adding a hardcoded fallback into the url service feels wrong IMO.
-     *
-     * Imagine the site won't be part of core and core does not serve urls anymore.
-     * Core needs to offer a preview API, which returns draft posts.
-     * That means the url is no longer /p/:uuid, it's e.g. GET /api/content/preview/:uuid/.
-     * /p/ is a concept of the site, not of core.
-     *
-     * The site is not aware of existing drafts. It won't be able to get the uuid.
-     *
-     * Needs further discussion.
-     */
-    if (!localUtils.isContentAPI(frame)) {
-        if (attrs.status !== 'published' && attrs.url.match(/\/404\//)) {
-            if (attrs.posts_meta && attrs.posts_meta.email_only) {
-                attrs.url = urlUtils.urlFor({
-                    relativeUrl: urlUtils.urlJoin('/email', attrs.uuid, '/')
-                }, null, true);
-            } else {
-                attrs.url = urlUtils.urlFor({
-                    relativeUrl: urlUtils.urlJoin('/p', attrs.uuid, '/')
-                }, null, true);
-            }
-        }
-    }
-
+  // `forPost` is shared between the posts and pages mappers (pages.js
+  // delegates to posts.js). The router-level resource type is passed in
+  // explicitly because `attrs.type` can't be relied on — `?fields=url`
+  // strips every attribute except the requested ones, so deriving the
+  // type from `attrs` would silently fall back to 'posts' for pages.
+  // The mapper that owns the resource always knows which it is.
+  //
+  // `id` is passed separately for the same reason: `?fields=url` strips it
+  // from `attrs`, and the URL service needs it for `:id` permalinks and to
+  // name the resource when it reports a problem.
+  //
+  // When `url` was not requested (`?fields=id,title`), don't compute it at
+  // all — attrs is stripped to the requested columns, so the resource would
+  // reach the lazy URL service without the fields it needs (status,
+  // tags/authors) and be rejected as thin. The value would only be deleted
+  // at the end of this function anyway. forUser/forTag guard the same way.
+  // Shared with the input serializers' force-load so both sides always
+  // agree on when a URL is generated.
+  if (!localUtils.willSerializeUrl(frame)) {
     return attrs;
+  }
+
+  // Names the fetch that produced this resource. It matters on the degrade
+  // path: a thin resource is answered with a silent /404/, and the report is
+  // the only way back to the endpoint that under-fetched it. Ignored by URL
+  // generation itself; read only into that report.
+  const options = { absolute: true };
+  if (frame && (frame.docName || frame.method)) {
+    options.serializerContext = {
+      apiType: frame.apiType,
+      docName: frame.docName,
+      method: frame.method,
+      withRelated: frame.options && frame.options.withRelated,
+      columns: frame.options && frame.options.columns,
+      forcedUrlRelations: frame.forcedUrlRelations,
+    };
+  }
+
+  attrs.url = urlService.getUrlForResource({ ...attrs, id, type }, options);
+
+  /**
+   * CASE: admin api should serve preview urls
+   *
+   * @NOTE
+   * The url service has no clue of the draft/scheduled concept. It only generates urls for published resources.
+   * Adding a hardcoded fallback into the url service feels wrong IMO.
+   *
+   * Imagine the site won't be part of core and core does not serve urls anymore.
+   * Core needs to offer a preview API, which returns draft posts.
+   * That means the url is no longer /p/:uuid, it's e.g. GET /api/content/preview/:uuid/.
+   * /p/ is a concept of the site, not of core.
+   *
+   * The site is not aware of existing drafts. It won't be able to get the uuid.
+   *
+   * Needs further discussion.
+   */
+  if (!localUtils.isContentAPI(frame)) {
+    if (attrs.status !== 'published' && attrs.url.match(/\/404\//)) {
+      if (attrs.posts_meta && attrs.posts_meta.email_only) {
+        attrs.url = urlUtils.urlFor(
+          {
+            relativeUrl: urlUtils.urlJoin('/email', attrs.uuid, '/'),
+          },
+          null,
+          true,
+        );
+      } else {
+        attrs.url = urlUtils.urlFor(
+          {
+            relativeUrl: urlUtils.urlJoin('/p', attrs.uuid, '/'),
+          },
+          null,
+          true,
+        );
+      }
+    }
+  }
+
+  return attrs;
 };
 
 const forUser = (id, attrs, options) => {
-    if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
-    }
+  if (!options.columns || (options.columns && options.columns.includes('url'))) {
+    attrs.url = urlService.getUrlForResource({ ...attrs, id, type: 'authors' }, { absolute: true });
+  }
 
-    return attrs;
+  return attrs;
 };
 
 const forTag = (id, attrs, options) => {
-    if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
-    }
+  if (!options.columns || (options.columns && options.columns.includes('url'))) {
+    attrs.url = urlService.getUrlForResource({ ...attrs, id, type: 'tags' }, { absolute: true });
+  }
 
-    return attrs;
+  return attrs;
 };
 
 const forImage = (path) => {
-    return urlUtils.urlFor('image', {image: path}, true);
+  return urlUtils.urlFor('image', { image: path }, true);
 };
 
 module.exports.forPost = forPost;

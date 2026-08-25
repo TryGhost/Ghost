@@ -1,11 +1,11 @@
 import assert from 'assert/strict';
-import {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/identity-token-service';
-import {JWK} from 'node-jose';
-import {verify} from 'jsonwebtoken';
+import { IdentityTokenService } from '../../../../../core/server/services/identity-tokens/identity-token-service';
+import { JWK } from 'node-jose';
+import { verify } from 'jsonwebtoken';
 
 describe('IdentityTokenService', function () {
-    it('Can create JWTs', async function () {
-        const privateKey = `-----BEGIN PRIVATE KEY-----
+  it('Can create JWTs', async function () {
+    const privateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCYhlD7QVSExM/t
 qtFuJh5tJVMInFMNdoYVTFC+1uEMJnaNfSgvI1fpBSbhBc9Dirg76RNh1uUbX/fm
 tpanZ2TULkh4e7MqOI4gIyrsyxT5ouRGYFEdXMGGLBfffwTC8e6ndoKyRq6hF1PO
@@ -33,26 +33,22 @@ XWjlRpQoljptDtGoNA5dQrTJo4wPA9h297QgNgg5AoGAOlKZuC4Fa4RWaltvgLrQ
 m+HAlDNOZe7ryiuK7dj04wY2qoO/kCsxO9bR1M8LGRWFIHd4e8ExGWn5Qxk0/9X+
 8/teeCoaDHNy7R6167uxyX8=
 -----END PRIVATE KEY-----`;
-        const issuer = 'issuer.com';
-        const keyStore = JWK.createKeyStore();
-        const key = await keyStore.add(privateKey, 'pem');
+    const issuer = 'issuer.com';
+    const keyStore = JWK.createKeyStore();
+    const key = await keyStore.add(privateKey, 'pem');
 
-        const service = new IdentityTokenService(
-            privateKey,
-            issuer,
-            key.kid
-        );
+    const service = new IdentityTokenService(privateKey, issuer, key.kid);
 
-        const token = await service.getTokenForUser('egg@ghost.org', 'Legend');
+    const token = await service.getTokenForUser('egg@ghost.org', 'Legend');
 
-        const claims = verify(token, key.toPEM());
+    const claims = verify(token, key.toPEM());
 
-        if (typeof claims === 'string') {
-            throw new Error('Unexpected return type');
-        }
+    if (typeof claims === 'string') {
+      throw new Error('Unexpected return type');
+    }
 
-        assert.equal(claims.sub, 'egg@ghost.org');
-        assert.equal(claims.role, 'Legend');
-        assert.equal(claims.iss, 'issuer.com');
-    });
+    assert.equal(claims.sub, 'egg@ghost.org');
+    assert.equal(claims.role, 'Legend');
+    assert.equal(claims.iss, 'issuer.com');
+  });
 });

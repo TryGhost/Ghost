@@ -1,109 +1,109 @@
 {
-    "name": "@tryghost/comments-ui",
-    "type": "module",
-    "version": "1.6.0",
-    "description": "Comments interface for Ghost posts",
-    "license": "MIT",
-    "repository": "https://github.com/TryGhost/Ghost",
-    "author": "Ghost Foundation",
-    "unpkg": "umd/comments-ui.umd.js",
-    "files": [
-        "umd/",
-        "LICENSE",
-        "README.md"
+  "name": "@tryghost/comments-ui",
+  "version": "1.6.0",
+  "description": "Comments interface for Ghost posts",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "unpkg": "umd/comments-ui.umd.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "dev:test": "vite build && vite preview --port 7175",
+    "build": "vite build",
+    "test": "pnpm run '/^test:(types|unit)$/'",
+    "test:types": "tsc --noEmit --incremental false && tsc -p tsconfig.node.json --noEmit",
+    "test:unit": "vitest run --coverage",
+    "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 pnpm test:acceptance --headed",
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
+    "lint": "pnpm run '/^lint:/'",
+    "lint:code": "eslint src --cache",
+    "lint:types": "pnpm test:types",
+    "preship": "pnpm lint",
+    "ship": "node ../../scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@doist/react-interpolate": "2.2.4",
+    "@headlessui/react": "1.7.19",
+    "@tiptap/core": "2.27.2",
+    "@tiptap/extension-blockquote": "2.27.2",
+    "@tiptap/extension-document": "2.27.2",
+    "@tiptap/extension-hard-break": "2.27.2",
+    "@tiptap/extension-link": "2.27.2",
+    "@tiptap/extension-paragraph": "2.27.2",
+    "@tiptap/extension-placeholder": "2.27.2",
+    "@tiptap/extension-text": "2.27.2",
+    "@tiptap/pm": "2.27.2",
+    "@tiptap/react": "2.27.2",
+    "@tryghost/debug": "catalog:",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17",
+    "react-string-replace": "2.0.1"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@tryghost/i18n": "workspace:*",
+    "@tryghost/nql": "catalog:",
+    "@types/react": "catalog:react17",
+    "@types/react-dom": "catalog:react17",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "autoprefixer": "10.5.4",
+    "bson-objectid": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jsdom": "catalog:",
+    "moment": "2.30.1",
+    "postcss": "catalog:",
+    "postcss-import": "16.1.1",
+    "sinon": "catalog:",
+    "tailwindcss": "catalog:tailwind3",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
     ],
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/comments-ui",
+          "command": "vite build --watch --mode development"
+        }
+      }
     },
-    "scripts": {
-        "dev": "vite build --watch --mode development",
-        "dev:test": "vite build && vite preview --port 7175",
-        "build": "vite build",
-        "test": "pnpm run '/^test:(types|unit)$/'",
-        "test:types": "tsc --noEmit --incremental false && tsc -p tsconfig.node.json --noEmit",
-        "test:unit": "vitest run --coverage",
-        "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
-        "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 pnpm test:acceptance --headed",
-        "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
-        "lint": "pnpm run '/^lint:/'",
-        "lint:code": "eslint src --cache",
-        "lint:types": "pnpm test:types",
-        "preship": "pnpm lint",
-        "ship": "node ../../scripts/release-apps.js",
-        "prepublishOnly": "pnpm build"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "dependencies": {
-        "@doist/react-interpolate": "2.2.4",
-        "@headlessui/react": "1.7.19",
-        "@tiptap/core": "2.27.2",
-        "@tiptap/extension-blockquote": "2.27.2",
-        "@tiptap/extension-document": "2.27.2",
-        "@tiptap/extension-hard-break": "2.27.2",
-        "@tiptap/extension-link": "2.27.2",
-        "@tiptap/extension-paragraph": "2.27.2",
-        "@tiptap/extension-placeholder": "2.27.2",
-        "@tiptap/extension-text": "2.27.2",
-        "@tiptap/pm": "2.27.2",
-        "@tiptap/react": "2.27.2",
-        "@tryghost/debug": "catalog:",
-        "react": "catalog:react17",
-        "react-dom": "catalog:react17",
-        "react-string-replace": "2.0.1"
-    },
-    "devDependencies": {
-        "@typescript/native": "catalog:",
-        "typescript": "catalog:",
-        "@internal/cfg-eslint-react": "workspace:*",
-        "@internal/cfg-vite-public-app": "workspace:*",
-        "@playwright/test": "catalog:",
-        "@testing-library/jest-dom": "catalog:",
-        "@testing-library/react": "catalog:react17",
-        "@tryghost/i18n": "workspace:*",
-        "@tryghost/nql": "catalog:",
-        "@types/react": "catalog:react17",
-        "@types/react-dom": "catalog:react17",
-        "@vitest/coverage-v8": "catalog:",
-        "autoprefixer": "10.5.4",
-        "bson-objectid": "catalog:",
-        "eslint": "catalog:",
-        "eslint-plugin-tailwindcss": "catalog:tailwind3",
-        "jsdom": "catalog:",
-        "moment": "2.30.1",
-        "postcss": "catalog:",
-        "postcss-import": "16.1.1",
-        "sinon": "catalog:",
-        "tailwindcss": "catalog:tailwind3",
-        "vite": "catalog:",
-        "vitest": "catalog:"
-    },
-    "nx": {
-        "targets": {
-            "dev": {
-                "continuous": true,
-                "executor": "nx:run-commands",
-                "options": {
-                    "cwd": "apps/comments-ui",
-                    "command": "vite build --watch --mode development"
-                }
-            }
-        },
-        "tags": [
-            "i18n",
-            "public-app",
-            "playwright"
-        ]
-    }
+    "tags": [
+      "i18n",
+      "public-app",
+      "playwright"
+    ]
+  }
 }

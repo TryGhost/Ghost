@@ -25,6 +25,21 @@ The Portal journey in which a buyer selects a duration and membership tier and s
 
 _Avoid_: Gift purchase, gift page
 
+**Portal gift promotion**:
+The publisher-controlled presentation of Ghost-owned entry points into gift checkout. Signup and account promotion are controlled independently, and neither controls whether gift checkout itself is available through a direct Portal link.
+
+_Avoid_: Gift subscriptions enabled, gifting enabled, global gift promotion
+
+**Signup gift entry point**:
+Portal promotion in the signup journey for a visitor buying membership for someone else. Its visibility is independent of the account gift entry point.
+
+_Avoid_: Gift signup, account gift entry point
+
+**Account gift entry point**:
+Portal promotion in the account journey for paid and complimentary members buying a gift for someone else. It is not presented to free members or members receiving gifted access.
+
+_Avoid_: Gift continuation, gift-recipient card
+
 **Gift redemption page**:
 The Portal surface opened from a redemption link, where a visitor or signed-in member can review and claim a gift subscription.
 

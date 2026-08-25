@@ -1,132 +1,135 @@
-import {APIRequestContext, Page} from '@playwright/test';
-import {HomePage, MemberDetailsPage, MembersPage} from '@/helpers/pages';
-import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {PortalAccountHomePage, PortalNewsletterManagementPage} from '@/portal-pages';
-import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+import { APIRequestContext, Page } from '@playwright/test';
+import { HomePage, MemberDetailsPage, MembersPage } from '@/helpers/pages';
+import { MemberFactory, createMemberFactory } from '@/data-factory';
+import { PortalAccountHomePage, PortalNewsletterManagementPage } from '@/portal-pages';
+import { SettingsService } from '@/helpers/services/settings/settings-service';
+import { expect, test } from '@/helpers/playwright';
+import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
 async function getNewsletterIds(request: APIRequestContext): Promise<string[]> {
-    const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
-    const data = await response.json();
-    return data.newsletters.map((n: {id: string}) => n.id);
+  const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
+  const data = await response.json();
+  return data.newsletters.map((n: { id: string }) => n.id);
 }
 
 async function createNewsletter(request: APIRequestContext, name: string): Promise<string> {
-    const response = await request.post('/ghost/api/admin/newsletters/', {
-        data: {newsletters: [{name}]}
-    });
-    const data = await response.json();
-    return data.newsletters[0].id;
+  const response = await request.post('/ghost/api/admin/newsletters/', {
+    data: { newsletters: [{ name }] },
+  });
+  const data = await response.json();
+  return data.newsletters[0].id;
 }
 
 async function createSubscribedMember(request: APIRequestContext, memberFactory: MemberFactory) {
-    const newsletterIds = await getNewsletterIds(request);
-    const newsletters = newsletterIds.map(id => ({id}));
-    const member = await memberFactory.create({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        newsletters: newsletters as any
-    });
-    return member;
+  const newsletterIds = await getNewsletterIds(request);
+  const newsletters = newsletterIds.map((id) => ({ id }));
+  const member = await memberFactory.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    newsletters: newsletters as any,
+  });
+  return member;
 }
 
 async function impersonateMember(page: Page, memberName: string): Promise<void> {
-    const membersPage = new MembersPage(page);
-    await membersPage.goto();
-    await membersPage.getMemberByName(memberName).click();
+  const membersPage = new MembersPage(page);
+  await membersPage.goto();
+  await membersPage.getMemberByName(memberName).click();
 
-    const memberDetailsPage = new MemberDetailsPage(page);
-    await memberDetailsPage.settingsSection.memberActionsButton.click();
-    await memberDetailsPage.settingsSection.impersonateButton.click();
+  const memberDetailsPage = new MemberDetailsPage(page);
+  await memberDetailsPage.settingsSection.memberActionsButton.click();
+  await memberDetailsPage.settingsSection.impersonateButton.click();
 
-    await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
-    const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
-    await memberDetailsPage.goto(magicLink);
+  await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
+  const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
+  await memberDetailsPage.goto(magicLink);
 
-    const homePage = new HomePage(page);
-    await homePage.waitUntilLoaded();
+  const homePage = new HomePage(page);
+  await homePage.waitUntilLoaded();
 }
 
-async function getMemberNewsletters(request: APIRequestContext, memberId: string): Promise<{id: string}[]> {
-    const response = await request.get(`/ghost/api/admin/members/${memberId}/`);
-    const data = await response.json();
-    return data.members[0].newsletters;
+async function getMemberNewsletters(
+  request: APIRequestContext,
+  memberId: string,
+): Promise<{ id: string }[]> {
+  const response = await request.get(`/ghost/api/admin/members/${memberId}/`);
+  const data = await response.json();
+  return data.members[0].newsletters;
 }
 
 test.describe('Portal - Member Actions', () => {
-    let memberFactory: MemberFactory;
+  let memberFactory: MemberFactory;
 
-    test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(page.request);
-    });
+  test.beforeEach(async ({ page }) => {
+    memberFactory = createMemberFactory(page.request);
+  });
 
-    test('can log out', async ({page}) => {
-        const member = await memberFactory.create();
+  test('can log out', async ({ page }) => {
+    const member = await memberFactory.create();
 
-        await impersonateMember(page, member.name!);
+    await impersonateMember(page, member.name!);
 
-        const homePage = new HomePage(page);
-        await homePage.openAccountPortal();
+    const homePage = new HomePage(page);
+    await homePage.openAccountPortal();
 
-        const accountHome = new PortalAccountHomePage(page);
-        await accountHome.signOut();
+    const accountHome = new PortalAccountHomePage(page);
+    await accountHome.signOut();
 
-        await homePage.openPortal();
+    await homePage.openPortal();
 
-        await expect(accountHome.signinSwitchButton).toBeVisible();
-    });
+    await expect(accountHome.signinSwitchButton).toBeVisible();
+  });
 
-    test('can unsubscribe from newsletter', async ({page}) => {
-        const settingsService = new SettingsService(page.request);
-        await settingsService.setCommentsEnabled('off');
+  test('can unsubscribe from newsletter', async ({ page }) => {
+    const settingsService = new SettingsService(page.request);
+    await settingsService.setCommentsEnabled('off');
 
-        const member = await createSubscribedMember(page.request, memberFactory);
+    const member = await createSubscribedMember(page.request, memberFactory);
 
-        await impersonateMember(page, member.name!);
+    await impersonateMember(page, member.name!);
 
-        const homePage = new HomePage(page);
-        await homePage.openAccountPortal();
+    const homePage = new HomePage(page);
+    await homePage.openAccountPortal();
 
-        const accountHome = new PortalAccountHomePage(page);
-        await expect(accountHome.defaultNewsletterCheckbox).toBeChecked();
-        await accountHome.defaultNewsletterToggle.click();
-        await expect(accountHome.defaultNewsletterCheckbox).not.toBeChecked();
+    const accountHome = new PortalAccountHomePage(page);
+    await expect(accountHome.defaultNewsletterCheckbox).toBeChecked();
+    await accountHome.defaultNewsletterToggle.click();
+    await expect(accountHome.defaultNewsletterCheckbox).not.toBeChecked();
 
-        await expect(async () => {
-            const memberNewsletters = await getMemberNewsletters(page.request, member.id);
-            expect(memberNewsletters).toHaveLength(0);
-        }).toPass();
-    });
+    await expect(async () => {
+      const memberNewsletters = await getMemberNewsletters(page.request, member.id);
+      expect(memberNewsletters).toHaveLength(0);
+    }).toPass();
+  });
 
-    test('can unsubscribe from all newsletters', async ({page}) => {
-        await createNewsletter(page.request, 'Second newsletter');
+  test('can unsubscribe from all newsletters', async ({ page }) => {
+    await createNewsletter(page.request, 'Second newsletter');
 
-        const member = await createSubscribedMember(page.request, memberFactory);
+    const member = await createSubscribedMember(page.request, memberFactory);
 
-        await impersonateMember(page, member.name!);
+    await impersonateMember(page, member.name!);
 
-        const homePage = new HomePage(page);
-        await homePage.openAccountPortal();
+    const homePage = new HomePage(page);
+    await homePage.openAccountPortal();
 
-        const accountHome = new PortalAccountHomePage(page);
-        await accountHome.manageNewslettersButton.click();
+    const accountHome = new PortalAccountHomePage(page);
+    await accountHome.manageNewslettersButton.click();
 
-        const newsletterManagement = new PortalNewsletterManagementPage(page);
-        await expect(newsletterManagement.newsletterToggles).toHaveCount(2);
-        await expect(newsletterManagement.newsletterToggle(0)).toHaveAttribute('aria-pressed', 'true');
-        await expect(newsletterManagement.newsletterToggle(1)).toHaveAttribute('aria-pressed', 'true');
+    const newsletterManagement = new PortalNewsletterManagementPage(page);
+    await expect(newsletterManagement.newsletterToggles).toHaveCount(2);
+    await expect(newsletterManagement.newsletterToggle(0)).toHaveAttribute('aria-pressed', 'true');
+    await expect(newsletterManagement.newsletterToggle(1)).toHaveAttribute('aria-pressed', 'true');
 
-        await newsletterManagement.unsubscribeFromAllButton.click();
-        await expect(newsletterManagement.successNotification).toBeVisible();
+    await newsletterManagement.unsubscribeFromAllButton.click();
+    await expect(newsletterManagement.successNotification).toBeVisible();
 
-        await expect(newsletterManagement.newsletterToggle(0)).toHaveAttribute('aria-pressed', 'false');
-        await expect(newsletterManagement.newsletterToggle(1)).toHaveAttribute('aria-pressed', 'false');
+    await expect(newsletterManagement.newsletterToggle(0)).toHaveAttribute('aria-pressed', 'false');
+    await expect(newsletterManagement.newsletterToggle(1)).toHaveAttribute('aria-pressed', 'false');
 
-        await expect(async () => {
-            const memberNewsletters = await getMemberNewsletters(page.request, member.id);
-            expect(memberNewsletters).toHaveLength(0);
-        }).toPass();
-    });
+    await expect(async () => {
+      const memberNewsletters = await getMemberNewsletters(page.request, member.id);
+      expect(memberNewsletters).toHaveLength(0);
+    }).toPass();
+  });
 });

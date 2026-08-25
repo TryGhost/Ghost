@@ -26,132 +26,132 @@ const assetHash = require('../asset-hash');
 let currentActiveTheme;
 
 class ActiveTheme {
-    /**
-     * @TODO this API needs to be simpler, but for now should work!
-     * @param {object} settings
-     * @param {string} settings.locale - the active locale for i18n
-     * @param {object} loadedTheme - the loaded theme object from the theme list
-     * @param {object} checkedTheme - the result of gscan.format for the theme we're activating
-     */
-    constructor(settings, loadedTheme, checkedTheme) {
-        // Assign some data, mark it all as pseudo-private
-        this._name = loadedTheme.name;
-        this._path = loadedTheme.path;
-        this._mounted = false;
+  /**
+   * @TODO this API needs to be simpler, but for now should work!
+   * @param {object} settings
+   * @param {string} settings.locale - the active locale for i18n
+   * @param {object} loadedTheme - the loaded theme object from the theme list
+   * @param {object} checkedTheme - the result of gscan.format for the theme we're activating
+   */
+  constructor(settings, loadedTheme, checkedTheme) {
+    // Assign some data, mark it all as pseudo-private
+    this._name = loadedTheme.name;
+    this._path = loadedTheme.path;
+    this._mounted = false;
 
-        // We get passed in a locale
-        this._locale = settings.locale || 'en';
+    // We get passed in a locale
+    this._locale = settings.locale || 'en';
 
-        // @TODO: get gscan to return validated, useful package.json fields for us!
-        this._packageInfo = loadedTheme['package.json'];
-        this._partials = checkedTheme.partials;
+    // @TODO: get gscan to return validated, useful package.json fields for us!
+    this._packageInfo = loadedTheme['package.json'];
+    this._partials = checkedTheme.partials;
 
-        // all custom .hbs templates (e.g. custom-about)
-        this._customTemplates = checkedTheme.templates.custom;
+    // all custom .hbs templates (e.g. custom-about)
+    this._customTemplates = checkedTheme.templates.custom;
 
-        // all .hbs templates
-        this._templates = checkedTheme.templates.all;
+    // all .hbs templates
+    this._templates = checkedTheme.templates.all;
 
-        // Create a theme config object
-        this._config = themeConfig.create(this._packageInfo);
+    // Create a theme config object
+    this._config = themeConfig.create(this._packageInfo);
 
-        this.initI18n();
+    this.initI18n();
 
-        this._hasRobotsTxt = fs.existsSync(join(this._path, 'robots.txt'));
+    this._hasRobotsTxt = fs.existsSync(join(this._path, 'robots.txt'));
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get customTemplates() {
+    return this._customTemplates;
+  }
+
+  get path() {
+    return this._path;
+  }
+
+  get partialsPath() {
+    return this._partials.length > 0 ? join(this.path, 'partials') : null;
+  }
+
+  get mounted() {
+    return this._mounted;
+  }
+
+  get error() {
+    return this._error;
+  }
+
+  hasTemplate(templateName) {
+    return this._templates.indexOf(templateName) > -1;
+  }
+
+  hasRobotsTxt() {
+    return this._hasRobotsTxt;
+  }
+
+  updateTemplateOptions(options) {
+    engine.updateTemplateOptions(_.merge({}, engine.getTemplateOptions(), options));
+  }
+
+  config(key) {
+    return this._config[key];
+  }
+
+  /**
+   *
+   * @param {object} options
+   * @param {string} [options.activeTheme]
+   * @param {string} [options.locale]
+   */
+  initI18n(options = {}) {
+    options.activeTheme = options.activeTheme || this._name;
+    options.locale = options.locale || this._locale;
+
+    if (labs.isSet('themeTranslation')) {
+      // Initialize the new translation service
+      themeI18next.init(options);
+    } else {
+      // Initialize the legacy translation service
+      themeI18n.init(options);
     }
+  }
 
-    get name() {
-        return this._name;
-    }
+  mount(siteApp) {
+    // Reset the global asset hash (used as fallback for non-theme assets)
+    config.set('assetHash', null);
+    // Clear the file-based asset hash cache (for theme assets)
+    assetHash.clearCache();
+    // clear the view cache
+    siteApp.cache = {};
+    // Set the views and engine
+    siteApp.set('views', this.path);
+    siteApp.engine('hbs', engine.configure(this.partialsPath, this.path));
 
-    get customTemplates() {
-        return this._customTemplates;
-    }
-
-    get path() {
-        return this._path;
-    }
-
-    get partialsPath() {
-        return this._partials.length > 0 ? join(this.path, 'partials') : null;
-    }
-
-    get mounted() {
-        return this._mounted;
-    }
-
-    get error() {
-        return this._error;
-    }
-
-    hasTemplate(templateName) {
-        return this._templates.indexOf(templateName) > -1;
-    }
-
-    hasRobotsTxt() {
-        return this._hasRobotsTxt;
-    }
-
-    updateTemplateOptions(options) {
-        engine.updateTemplateOptions(_.merge({}, engine.getTemplateOptions(), options));
-    }
-
-    config(key) {
-        return this._config[key];
-    }
-
-    /**
-     *
-     * @param {object} options
-     * @param {string} [options.activeTheme]
-     * @param {string} [options.locale]
-     */
-    initI18n(options = {}) {
-        options.activeTheme = options.activeTheme || this._name;
-        options.locale = options.locale || this._locale;
-
-        if (labs.isSet('themeTranslation')) {
-            // Initialize the new translation service
-            themeI18next.init(options);
-        } else {
-            // Initialize the legacy translation service
-            themeI18n.init(options);
-        }
-    }
-
-    mount(siteApp) {
-        // Reset the global asset hash (used as fallback for non-theme assets)
-        config.set('assetHash', null);
-        // Clear the file-based asset hash cache (for theme assets)
-        assetHash.clearCache();
-        // clear the view cache
-        siteApp.cache = {};
-        // Set the views and engine
-        siteApp.set('views', this.path);
-        siteApp.engine('hbs', engine.configure(this.partialsPath, this.path));
-
-        this._mounted = true;
-    }
+    this._mounted = true;
+  }
 }
 
 module.exports = {
-    get() {
-        return currentActiveTheme;
-    },
-    /**
-     * Set theme
-     *
-     * At this point we trust that the theme has been validated.
-     * Any handling for invalid themes should happen before we get here
-     *
-     * @param {object} settings
-     * @param {string} settings.locale - the active locale for i18n
-     * @param {object} loadedTheme - the loaded theme object from the theme list
-     * @param {object} checkedTheme - the result of gscan.format for the theme we're activating
-     * @return {ActiveTheme}
-     */
-    set(settings, loadedTheme, checkedTheme) {
-        currentActiveTheme = new ActiveTheme(settings, loadedTheme, checkedTheme);
-        return currentActiveTheme;
-    }
+  get() {
+    return currentActiveTheme;
+  },
+  /**
+   * Set theme
+   *
+   * At this point we trust that the theme has been validated.
+   * Any handling for invalid themes should happen before we get here
+   *
+   * @param {object} settings
+   * @param {string} settings.locale - the active locale for i18n
+   * @param {object} loadedTheme - the loaded theme object from the theme list
+   * @param {object} checkedTheme - the result of gscan.format for the theme we're activating
+   * @return {ActiveTheme}
+   */
+  set(settings, loadedTheme, checkedTheme) {
+    currentActiveTheme = new ActiveTheme(settings, loadedTheme, checkedTheme);
+    return currentActiveTheme;
+  },
 };

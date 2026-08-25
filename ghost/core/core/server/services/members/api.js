@@ -23,7 +23,7 @@ const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
 const customFieldsService = require('../members-custom-fields');
-const {t} = require('../i18n');
+const { t } = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
@@ -35,81 +35,87 @@ const ghostMailer = new mail.GhostMailer();
 module.exports = createApiInstance;
 
 function trimLeadingWhitespace(strings, ...values) {
-    // Interweave the strings with the
-    // substitution vars first.
-    let output = '';
-    for (let i = 0; i < values.length; i++) {
-        output += strings[i] + values[i];
-    }
-    output += strings[values.length];
+  // Interweave the strings with the
+  // substitution vars first.
+  let output = '';
+  for (let i = 0; i < values.length; i++) {
+    output += strings[i] + values[i];
+  }
+  output += strings[values.length];
 
-    // Split on newlines.
-    const lines = output.split(/(?:\r\n|\n|\r)/);
+  // Split on newlines.
+  const lines = output.split(/(?:\r\n|\n|\r)/);
 
-    // Rip out the leading whitespace on each line.
-    return lines.map((line) => {
-        return line.trimStart();
-    }).join('\n').trim();
+  // Rip out the leading whitespace on each line.
+  return lines
+    .map((line) => {
+      return line.trimStart();
+    })
+    .join('\n')
+    .trim();
 }
 
 function createApiInstance(config) {
-    const membersApiInstance = MembersApi({
-        urlService,
-        tokenConfig: config.getTokenConfig(),
-        auth: {
-            getSigninURL: config.getSigninURL.bind(config),
-            allowSelfSignup: config.getAllowSelfSignup.bind(config),
-            tokenProvider: new SingleUseTokenProvider({
-                SingleUseTokenModel: models.SingleUseToken,
-                validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
-                validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-                maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
-                secret: settingsCache.get('members_otc_secret')
-            })
-        },
-        mail: {
-            transporter: {
-                sendMail(message) {
-                    if (process.env.NODE_ENV !== 'production') {
-                        logging.warn(message.text);
-                    }
-                    let msg = Object.assign({
-                        from: config.getEmailSupportAddress(),
-                        subject: 'Signin',
-                        forceTextContent: true
-                    }, message);
+  const membersApiInstance = MembersApi({
+    urlService,
+    tokenConfig: config.getTokenConfig(),
+    auth: {
+      getSigninURL: config.getSigninURL.bind(config),
+      allowSelfSignup: config.getAllowSelfSignup.bind(config),
+      tokenProvider: new SingleUseTokenProvider({
+        SingleUseTokenModel: models.SingleUseToken,
+        validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
+        validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
+        maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+        secret: settingsCache.get('members_otc_secret'),
+      }),
+    },
+    mail: {
+      transporter: {
+        sendMail(message) {
+          if (process.env.NODE_ENV !== 'production') {
+            logging.warn(message.text);
+          }
+          let msg = Object.assign(
+            {
+              from: config.getEmailSupportAddress(),
+              subject: 'Signin',
+              forceTextContent: true,
+            },
+            message,
+          );
 
-                    return ghostMailer.send(msg);
-                }
-            },
-            getSubject(type, otc) {
-                const siteTitle = settingsCache.get('title');
-                switch (type) {
-                case 'subscribe':
-                    return `📫 ${t(`Confirm your subscription to {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'signup':
-                    return `🙌 ${t(`Complete your sign up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'signup-paid':
-                    return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'updateEmail':
-                    return `📫 ${t(`Confirm your email update for {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'signin':
-                default:
-                    if (otc) {
-                        return `🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}`;
-                    } else {
-                        return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                    }
-                }
-            },
-            getText(url, type, email, otc) {
-                const siteTitle = settingsCache.get('title');
-                switch (type) {
-                case 'subscribe':
-                    return trimLeadingWhitespace`
+          return ghostMailer.send(msg);
+        },
+      },
+      getSubject(type, otc) {
+        const siteTitle = settingsCache.get('title');
+        switch (type) {
+          case 'subscribe':
+            return `📫 ${t(`Confirm your subscription to {siteTitle}`, { siteTitle, interpolation: { escapeValue: false } })}`;
+          case 'signup':
+            return `🙌 ${t(`Complete your sign up to {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
+          case 'signup-paid':
+            return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
+          case 'updateEmail':
+            return `📫 ${t(`Confirm your email update for {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
+          case 'signin':
+          default:
+            if (otc) {
+              return `🔑 ${t('Sign in to {siteTitle} with code {otc}', { siteTitle, otc, interpolation: { escapeValue: false } })}`;
+            } else {
+              return `🔑 ${t(`Secure sign in link for {siteTitle}`, { siteTitle, interpolation: { escapeValue: false } })}`;
+            }
+        }
+      },
+      getText(url, type, email, otc) {
+        const siteTitle = settingsCache.get('title');
+        switch (type) {
+          case 'subscribe':
+            return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('You\'re one tap away from subscribing to {siteTitle} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t("You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:", { siteTitle, interpolation: { escapeValue: false } })}
 
                         ${url}
 
@@ -119,14 +125,14 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {email}', {email})}
+                        ${t('Sent to {email}', { email })}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
                         `;
-                case 'signup':
-                    return trimLeadingWhitespace`
+          case 'signup':
+            return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', { siteTitle, interpolation: { escapeValue: false } })}
 
                         ${url}
 
@@ -136,14 +142,14 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {email}', {email})}
+                        ${t('Sent to {email}', { email })}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
                         `;
-                case 'signup-paid':
-                    return trimLeadingWhitespace`
+          case 'signup-paid':
+            return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', { siteTitle, interpolation: { escapeValue: false } })}
 
                         ${url}
 
@@ -153,11 +159,11 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {email}', {email})}
-                        ${t('Thank you for subscribing to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Sent to {email}', { email })}
+                        ${t('Thank you for subscribing to {siteTitle}!', { siteTitle, interpolation: { escapeValue: false } })}
                         `;
-                case 'updateEmail':
-                    return trimLeadingWhitespace`
+          case 'updateEmail':
+            return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
                         ${t('Please confirm your email address with this link:')}
@@ -168,17 +174,18 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {email}', {email})}
+                        ${t('Sent to {email}', { email })}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
                         `;
-                case 'signin':
-                default:
-                    return trimLeadingWhitespace`
+          case 'signin':
+          default:
+            return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${otc
-                            ? `${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}: ${otc}\n\n${t('Or use this link to securely sign in', {interpolation: {escapeValue: false}})}:`
-                            : `${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}`
+                        ${
+                          otc
+                            ? `${t('Your verification code for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}: ${otc}\n\n${t('Or use this link to securely sign in', { interpolation: { escapeValue: false } })}:`
+                            : `${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', { siteTitle, interpolation: { escapeValue: false } })}`
                         }
 
                         ${url}
@@ -189,83 +196,85 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {email}', {email})}
+                        ${t('Sent to {email}', { email })}
                         ${t('If you did not make this request, you can safely ignore this email.')}
                     `;
-                }
-            },
-            getHTML(url, type, email, otc) {
-                const siteTitle = settingsCache.get('title');
-                const siteUrl = urlUtils.urlFor('home', true);
-                const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-                const siteDomain = (domain && domain[1]);
-                const accentColor = settingsCache.get('accent_color');
-                switch (type) {
-                case 'subscribe':
-                    return subscribeEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'signup':
-                    return signupEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'signup-paid':
-                    return signupPaidEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'updateEmail':
-                    return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'signin':
-                default:
-                    return signinEmail({t, url, otc, email, siteTitle, accentColor, siteDomain, siteUrl});
-                }
-            }
-        },
-        models: {
-            DonationPaymentEvent: models.DonationPaymentEvent,
-            EmailRecipient: models.EmailRecipient,
-            StripeCustomer: models.MemberStripeCustomer,
-            StripeCustomerSubscription: models.StripeCustomerSubscription,
-            Member: models.Member,
-            MemberNewsletter: models.MemberNewsletter,
-            MemberCancelEvent: models.MemberCancelEvent,
-            MemberSubscribeEvent: models.MemberSubscribeEvent,
-            MemberPaidSubscriptionEvent: models.MemberPaidSubscriptionEvent,
-            MemberLoginEvent: models.MemberLoginEvent,
-            MemberEmailChangeEvent: models.MemberEmailChangeEvent,
-            MemberPaymentEvent: models.MemberPaymentEvent,
-            MemberStatusEvent: models.MemberStatusEvent,
-            MemberProductEvent: models.MemberProductEvent,
-            MemberCreatedEvent: models.MemberCreatedEvent,
-            SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
-            MemberLinkClickEvent: models.MemberClickEvent,
-            OfferRedemption: models.OfferRedemption,
-            Offer: models.Offer,
-            StripeProduct: models.StripeProduct,
-            StripePrice: models.StripePrice,
-            Product: models.Product,
-            Settings: models.Settings,
-            Comment: models.Comment,
-            MemberFeedback: models.MemberFeedback,
-            EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
-            Automation: models.Automation,
-            WelcomeEmailAutomationRun: models.WelcomeEmailAutomationRun,
-            AutomatedEmailRecipient: models.AutomatedEmailRecipient
-        },
-        stripeAPIService: stripeService.api,
-        tiersService: tiersService,
-        offersAPI: offersService.api,
-        labsService: labsService,
-        newslettersService: newslettersService,
-        memberAttributionService: memberAttributionService.service,
-        emailSuppressionList,
-        settingsCache,
-        sentry,
-        settingsHelpers,
-        urlUtils,
-        commentsService,
-        emailAddressService: emailAddressService.service,
-        giftService,
-        // Resolved here rather than passed as the module: the members service needs
-        // the values service itself, and reading it at construction is what ties the
-        // two together in boot order. Custom fields is initialised in initCore, the
-        // members API is built in initServices, so this is always the live instance.
-        customFieldValues: customFieldsService.values
-    });
+        }
+      },
+      getHTML(url, type, email, otc) {
+        const siteTitle = settingsCache.get('title');
+        const siteUrl = urlUtils.urlFor('home', true);
+        const domain = urlUtils
+          .urlFor('home', true)
+          .match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const siteDomain = domain && domain[1];
+        const accentColor = settingsCache.get('accent_color');
+        switch (type) {
+          case 'subscribe':
+            return subscribeEmail({ t, url, email, siteTitle, accentColor, siteDomain, siteUrl });
+          case 'signup':
+            return signupEmail({ t, url, email, siteTitle, accentColor, siteDomain, siteUrl });
+          case 'signup-paid':
+            return signupPaidEmail({ t, url, email, siteTitle, accentColor, siteDomain, siteUrl });
+          case 'updateEmail':
+            return updateEmail({ t, url, email, siteTitle, accentColor, siteDomain, siteUrl });
+          case 'signin':
+          default:
+            return signinEmail({ t, url, otc, email, siteTitle, accentColor, siteDomain, siteUrl });
+        }
+      },
+    },
+    models: {
+      DonationPaymentEvent: models.DonationPaymentEvent,
+      EmailRecipient: models.EmailRecipient,
+      StripeCustomer: models.MemberStripeCustomer,
+      StripeCustomerSubscription: models.StripeCustomerSubscription,
+      Member: models.Member,
+      MemberNewsletter: models.MemberNewsletter,
+      MemberCancelEvent: models.MemberCancelEvent,
+      MemberSubscribeEvent: models.MemberSubscribeEvent,
+      MemberPaidSubscriptionEvent: models.MemberPaidSubscriptionEvent,
+      MemberLoginEvent: models.MemberLoginEvent,
+      MemberEmailChangeEvent: models.MemberEmailChangeEvent,
+      MemberPaymentEvent: models.MemberPaymentEvent,
+      MemberStatusEvent: models.MemberStatusEvent,
+      MemberProductEvent: models.MemberProductEvent,
+      MemberCreatedEvent: models.MemberCreatedEvent,
+      SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
+      MemberLinkClickEvent: models.MemberClickEvent,
+      OfferRedemption: models.OfferRedemption,
+      Offer: models.Offer,
+      StripeProduct: models.StripeProduct,
+      StripePrice: models.StripePrice,
+      Product: models.Product,
+      Settings: models.Settings,
+      Comment: models.Comment,
+      MemberFeedback: models.MemberFeedback,
+      EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
+      Automation: models.Automation,
+      WelcomeEmailAutomationRun: models.WelcomeEmailAutomationRun,
+      AutomatedEmailRecipient: models.AutomatedEmailRecipient,
+    },
+    stripeAPIService: stripeService.api,
+    tiersService: tiersService,
+    offersAPI: offersService.api,
+    labsService: labsService,
+    newslettersService: newslettersService,
+    memberAttributionService: memberAttributionService.service,
+    emailSuppressionList,
+    settingsCache,
+    sentry,
+    settingsHelpers,
+    urlUtils,
+    commentsService,
+    emailAddressService: emailAddressService.service,
+    giftService,
+    // Resolved here rather than passed as the module: the members service needs
+    // the values service itself, and reading it at construction is what ties the
+    // two together in boot order. Custom fields is initialised in initCore, the
+    // members API is built in initServices, so this is always the live instance.
+    customFieldValues: customFieldsService.values,
+  });
 
-    return membersApiInstance;
+  return membersApiInstance;
 }

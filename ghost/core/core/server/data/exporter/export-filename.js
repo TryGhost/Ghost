@@ -5,31 +5,34 @@ const security = require('@tryghost/security');
 const models = require('../../models');
 const path = require('path');
 
-const modelOptions = {context: {internal: true}};
+const modelOptions = { context: { internal: true } };
 
 const exportFileName = async function exportFileName(options) {
-    const datetime = require('moment')().format('YYYY-MM-DD-HH-mm-ss');
-    let title = '';
+  const datetime = require('moment')().format('YYYY-MM-DD-HH-mm-ss');
+  let title = '';
 
-    options = options || {};
+  options = options || {};
 
-    // custom filename
-    if (options.filename) {
-        return path.basename(options.filename) + '.json';
+  // custom filename
+  if (options.filename) {
+    return path.basename(options.filename) + '.json';
+  }
+
+  try {
+    const settingsTitle = await models.Settings.findOne(
+      { key: 'title' },
+      _.merge({}, modelOptions, _.pick(options, 'transacting')),
+    );
+
+    if (settingsTitle) {
+      title = security.string.safe(settingsTitle.get('value')) + '.';
     }
 
-    try {
-        const settingsTitle = await models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, _.pick(options, 'transacting')));
-
-        if (settingsTitle) {
-            title = security.string.safe(settingsTitle.get('value')) + '.';
-        }
-
-        return title + 'ghost.' + datetime + '.json';
-    } catch (err) {
-        logging.error(new errors.InternalServerError({err: err}));
-        return 'ghost.' + datetime + '.json';
-    }
+    return title + 'ghost.' + datetime + '.json';
+  } catch (err) {
+    logging.error(new errors.InternalServerError({ err: err }));
+    return 'ghost.' + datetime + '.json';
+  }
 };
 
 module.exports = exportFileName;

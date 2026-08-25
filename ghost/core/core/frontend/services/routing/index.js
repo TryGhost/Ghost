@@ -1,11 +1,11 @@
 const registry = require('./registry');
 const RouterManager = require('./router-manager');
-const routerManager = new RouterManager({registry});
+const routerManager = new RouterManager({ registry });
 
 module.exports = {
-    routerManager: routerManager,
+  routerManager: routerManager,
 
-    get registry() {
-        return registry;
-    }
+  get registry() {
+    return registry;
+  },
 };

@@ -15,28 +15,28 @@ import {Stack, Inline, Box, Grid, Container, Text} from '@tryghost/shade/primiti
 
 ## Picking the primitive
 
-| You need | Use | Element |
-|---|---|---|
-| Column of children | `Stack` | flex-col |
-| Row of children | `Inline` | flex-row (with optional `wrap`, `as`) |
-| Padding / radius around content | `Box` | div with `padding`, `radius` props |
-| Two-dimensional layout | `Grid` | display: grid |
-| Width-constrained shell | `Container` | max-width wrapper |
-| Text with size/tone/weight | `Text` | `as`, `size`, `tone`, `weight` |
+| You need                        | Use         | Element                               |
+| ------------------------------- | ----------- | ------------------------------------- |
+| Column of children              | `Stack`     | flex-col                              |
+| Row of children                 | `Inline`    | flex-row (with optional `wrap`, `as`) |
+| Padding / radius around content | `Box`       | div with `padding`, `radius` props    |
+| Two-dimensional layout          | `Grid`      | display: grid                         |
+| Width-constrained shell         | `Container` | max-width wrapper                     |
+| Text with size/tone/weight      | `Text`      | `as`, `size`, `tone`, `weight`        |
 
 ## Use the semantic gap scale, not raw numbers
 
 `gap="md"` reads as intent and resolves to the shared spacing scale. Mapping:
 
-| Step | Tailwind | Use for |
-|---|---|---|
-| `none` | `gap-0` | flush |
-| `xs` | `gap-1` | inline icons-to-text |
-| `sm` | `gap-2` | dense lists, badges |
-| `md` | `gap-3` | default row/column spacing |
-| `lg` | `gap-5` | section spacing |
-| `xl` | `gap-6` | between major blocks |
-| `2xl` | `gap-8` | page-level rhythm |
+| Step   | Tailwind | Use for                    |
+| ------ | -------- | -------------------------- |
+| `none` | `gap-0`  | flush                      |
+| `xs`   | `gap-1`  | inline icons-to-text       |
+| `sm`   | `gap-2`  | dense lists, badges        |
+| `md`   | `gap-3`  | default row/column spacing |
+| `lg`   | `gap-5`  | section spacing            |
+| `xl`   | `gap-6`  | between major blocks       |
+| `2xl`  | `gap-8`  | page-level rhythm          |
 
 The same scale applies to `Box` padding (`padding="md"` → `p-3`).
 

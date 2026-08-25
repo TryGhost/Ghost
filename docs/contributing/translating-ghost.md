@@ -17,13 +17,13 @@ string.
 1. Find your language in `packages/i18n/locales/`.
 2. Open the JSON file for the part of Ghost you want to translate:
 
-   | File | Where the translation appears |
-   | --- | --- |
-   | `ghost.json` | Ghost Core and emails |
-   | `portal.json` | Portal |
-   | `comments.json` | Comments |
-   | `signup-form.json` | Signup form |
-   | `search.json` | Search |
+   | File               | Where the translation appears |
+   | ------------------ | ----------------------------- |
+   | `ghost.json`       | Ghost Core and emails         |
+   | `portal.json`      | Portal                        |
+   | `comments.json`    | Comments                      |
+   | `signup-form.json` | Signup form                   |
+   | `search.json`      | Search                        |
 
 3. Add or improve the translated values. Leave the English keys unchanged.
 4. Run the translation checks from the repository root:

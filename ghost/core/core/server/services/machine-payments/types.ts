@@ -1,20 +1,20 @@
-import type {PaymentAmountTerms} from './pricing';
+import type { PaymentAmountTerms } from './pricing';
 
 export type PaymentTerms = PaymentAmountTerms & {
-    description: string;
-    method: string;
-    mimeType: string;
-    url: string;
+  description: string;
+  method: string;
+  mimeType: string;
+  url: string;
 };
 
 export type Fulfillment = {
-    protocol?: string;
-    method: string;
-    reference: string;
-    amount?: number;
-    currency?: string;
-    stripePaymentIntentId?: string | null;
-    receiptHeaders?: Record<string, string>;
+  protocol?: string;
+  method: string;
+  reference: string;
+  amount?: number;
+  currency?: string;
+  stripePaymentIntentId?: string | null;
+  receiptHeaders?: Record<string, string>;
 };
 
 /**
@@ -22,8 +22,8 @@ export type Fulfillment = {
  * method string — MachinePaymentEvent.create() requires it.
  */
 export type PaymentAdapter = {
-    name?: string;
-    canHandle: (request: Request) => boolean;
-    challenge: (request: Request, terms: PaymentTerms) => Promise<Response | null | undefined>;
-    fulfill: (request: Request, terms: PaymentTerms) => Promise<Fulfillment>;
+  name?: string;
+  canHandle: (request: Request) => boolean;
+  challenge: (request: Request, terms: PaymentTerms) => Promise<Response | null | undefined>;
+  fulfill: (request: Request, terms: PaymentTerms) => Promise<Fulfillment>;
 };

@@ -5,4 +5,4 @@ const SettingsHelpers = require('./settings-helpers');
 const labs = require('../../../shared/labs');
 const limitService = require('../limits');
 
-module.exports = new SettingsHelpers({settingsCache, urlUtils, config, labs, limitService});
+module.exports = new SettingsHelpers({ settingsCache, urlUtils, config, labs, limitService });

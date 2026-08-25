@@ -1,227 +1,231 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import html2canvas from 'html2canvas-pro';
 
-import {fixFirefoxTextSpacing, takeScreenshot} from '../../../src/utils/screenshot';
+import { fixFirefoxTextSpacing, takeScreenshot } from '../../../src/utils/screenshot';
 
 // Mock html2canvas
 vi.mock('html2canvas-pro');
 
 // Mock DOM methods
 Object.defineProperty(window, 'URL', {
-    value: {
-        createObjectURL: vi.fn(),
-        revokeObjectURL: vi.fn()
-    },
-    writable: true
+  value: {
+    createObjectURL: vi.fn(),
+    revokeObjectURL: vi.fn(),
+  },
+  writable: true,
 });
 
 describe('takeScreenshot', function () {
-    let mockElement: HTMLElement;
-    let mockCanvas: HTMLCanvasElement;
-    let mockBlob: Blob;
+  let mockElement: HTMLElement;
+  let mockCanvas: HTMLCanvasElement;
+  let mockBlob: Blob;
 
-    beforeEach(function () {
-        // Create mock element
-        mockElement = document.createElement('div');
+  beforeEach(function () {
+    // Create mock element
+    mockElement = document.createElement('div');
 
-        // Create mock canvas
-        mockCanvas = document.createElement('canvas');
-        mockBlob = new Blob(['fake-image-data'], {type: 'image/png'});
+    // Create mock canvas
+    mockCanvas = document.createElement('canvas');
+    mockBlob = new Blob(['fake-image-data'], { type: 'image/png' });
 
-        // Mock canvas.toBlob method
-        mockCanvas.toBlob = vi.fn();
+    // Mock canvas.toBlob method
+    mockCanvas.toBlob = vi.fn();
 
-        // Mock html2canvas to return our mock canvas
-        vi.mocked(html2canvas).mockResolvedValue(mockCanvas);
+    // Mock html2canvas to return our mock canvas
+    vi.mocked(html2canvas).mockResolvedValue(mockCanvas);
 
-        // Mock URL methods
-        vi.mocked(window.URL.createObjectURL).mockReturnValue('blob:fake-url');
-        vi.mocked(window.URL.revokeObjectURL).mockImplementation(() => {});
+    // Mock URL methods
+    vi.mocked(window.URL.createObjectURL).mockReturnValue('blob:fake-url');
+    vi.mocked(window.URL.revokeObjectURL).mockImplementation(() => {});
 
-        // Mock DOM methods
-        const originalCreateElement = document.createElement.bind(document);
-        vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-            if (tagName === 'a') {
-                const link = {
-                    href: '',
-                    download: '',
-                    click: vi.fn()
-                } as unknown as HTMLAnchorElement;
-                return link;
-            }
-            return originalCreateElement(tagName);
-        });
-
-        vi.spyOn(document.body, 'appendChild').mockImplementation(() => undefined as unknown as Node);
-        vi.spyOn(document.body, 'removeChild').mockImplementation(() => undefined as unknown as Node);
-
-        // Mock console.error
-        vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Mock DOM methods
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      if (tagName === 'a') {
+        const link = {
+          href: '',
+          download: '',
+          click: vi.fn(),
+        } as unknown as HTMLAnchorElement;
+        return link;
+      }
+      return originalCreateElement(tagName);
     });
 
-    afterEach(function () {
-        vi.restoreAllMocks();
+    vi.spyOn(document.body, 'appendChild').mockImplementation(() => undefined as unknown as Node);
+    vi.spyOn(document.body, 'removeChild').mockImplementation(() => undefined as unknown as Node);
+
+    // Mock console.error
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(function () {
+    vi.restoreAllMocks();
+  });
+
+  it('calls html2canvas with correct default options', async function () {
+    // Mock successful toBlob callback
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(mockBlob);
     });
 
-    it('calls html2canvas with correct default options', async function () {
-        // Mock successful toBlob callback
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(mockBlob);
-        });
+    await takeScreenshot(mockElement);
 
-        await takeScreenshot(mockElement);
+    expect(html2canvas).toHaveBeenCalledWith(mockElement, {
+      backgroundColor: null,
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      allowTaint: true,
+      imageTimeout: 0,
+      onclone: expect.any(Function),
+    });
+  });
 
-        expect(html2canvas).toHaveBeenCalledWith(mockElement, {
-            backgroundColor: null,
-            scale: 2,
-            logging: false,
-            useCORS: true,
-            allowTaint: true,
-            imageTimeout: 0,
-            onclone: expect.any(Function)
-        });
+  it('calls html2canvas with custom options', async function () {
+    // Mock successful toBlob callback
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(mockBlob);
     });
 
-    it('calls html2canvas with custom options', async function () {
-        // Mock successful toBlob callback
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(mockBlob);
-        });
-
-        await takeScreenshot(mockElement, {
-            scale: 3,
-            backgroundColor: '#ffffff'
-        });
-
-        expect(html2canvas).toHaveBeenCalledWith(mockElement, {
-            backgroundColor: '#ffffff',
-            scale: 3,
-            logging: false,
-            useCORS: true,
-            allowTaint: true,
-            imageTimeout: 0,
-            onclone: expect.any(Function)
-        });
+    await takeScreenshot(mockElement, {
+      scale: 3,
+      backgroundColor: '#ffffff',
     });
 
-    it('creates anchor element and triggers download on successful blob creation', async function () {
-        const mockLink = {
-            href: '',
-            download: '',
-            click: vi.fn()
-        };
+    expect(html2canvas).toHaveBeenCalledWith(mockElement, {
+      backgroundColor: '#ffffff',
+      scale: 3,
+      logging: false,
+      useCORS: true,
+      allowTaint: true,
+      imageTimeout: 0,
+      onclone: expect.any(Function),
+    });
+  });
 
-        vi.mocked(document.createElement).mockReturnValue(mockLink as unknown as HTMLAnchorElement);
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(mockBlob);
-        });
+  it('creates anchor element and triggers download on successful blob creation', async function () {
+    const mockLink = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+    };
 
-        await takeScreenshot(mockElement, {filename: 'test-screenshot.png'});
-
-        expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
-        expect(mockLink.href).toBe('blob:fake-url');
-        expect(mockLink.download).toBe('test-screenshot.png');
-        expect(document.body.appendChild).toHaveBeenCalledWith(mockLink);
-        expect(mockLink.click).toHaveBeenCalled();
-        expect(document.body.removeChild).toHaveBeenCalledWith(mockLink);
-        expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
+    vi.mocked(document.createElement).mockReturnValue(mockLink as unknown as HTMLAnchorElement);
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(mockBlob);
     });
 
-    it('uses default filename when none provided', async function () {
-        const mockLink = {
-            href: '',
-            download: '',
-            click: vi.fn()
-        };
+    await takeScreenshot(mockElement, { filename: 'test-screenshot.png' });
 
-        vi.mocked(document.createElement).mockReturnValue(mockLink as unknown as HTMLAnchorElement);
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(mockBlob);
-        });
+    expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
+    expect(mockLink.href).toBe('blob:fake-url');
+    expect(mockLink.download).toBe('test-screenshot.png');
+    expect(document.body.appendChild).toHaveBeenCalledWith(mockLink);
+    expect(mockLink.click).toHaveBeenCalled();
+    expect(document.body.removeChild).toHaveBeenCalledWith(mockLink);
+    expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
+  });
 
-        // Mock Date.now for consistent filename
-        const mockNow = 1234567890;
-        vi.spyOn(Date, 'now').mockReturnValue(mockNow);
+  it('uses default filename when none provided', async function () {
+    const mockLink = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+    };
 
-        await takeScreenshot(mockElement);
-
-        expect(mockLink.download).toBe('screenshot-1234567890.png');
+    vi.mocked(document.createElement).mockReturnValue(mockLink as unknown as HTMLAnchorElement);
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(mockBlob);
     });
 
-    it('logs error and throws when html2canvas throws exception', async function () {
-        const error = new Error('html2canvas failed');
-        vi.mocked(html2canvas).mockRejectedValue(error);
+    // Mock Date.now for consistent filename
+    const mockNow = 1234567890;
+    vi.spyOn(Date, 'now').mockReturnValue(mockNow);
 
-        await expect(takeScreenshot(mockElement)).rejects.toThrow('html2canvas failed');
-        // eslint-disable-next-line no-console
-        expect(console.error).toHaveBeenCalledWith('Failed to take screenshot:', error);
+    await takeScreenshot(mockElement);
+
+    expect(mockLink.download).toBe('screenshot-1234567890.png');
+  });
+
+  it('logs error and throws when html2canvas throws exception', async function () {
+    const error = new Error('html2canvas failed');
+    vi.mocked(html2canvas).mockRejectedValue(error);
+
+    await expect(takeScreenshot(mockElement)).rejects.toThrow('html2canvas failed');
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith('Failed to take screenshot:', error);
+  });
+
+  it('handles null blob from toBlob callback', async function () {
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(null);
     });
 
-    it('handles null blob from toBlob callback', async function () {
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(null);
-        });
+    await expect(takeScreenshot(mockElement)).rejects.toThrow('Failed to create blob from canvas');
+  });
 
-        await expect(takeScreenshot(mockElement)).rejects.toThrow('Failed to create blob from canvas');
+  it('handles error during blob processing', async function () {
+    const error = new Error('URL creation failed');
+    vi.mocked(window.URL.createObjectURL).mockImplementation(() => {
+      throw error;
     });
 
-    it('handles error during blob processing', async function () {
-        const error = new Error('URL creation failed');
-        vi.mocked(window.URL.createObjectURL).mockImplementation(() => {
-            throw error;
-        });
-
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(mockBlob);
-        });
-
-        await expect(takeScreenshot(mockElement)).rejects.toThrow('URL creation failed');
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(mockBlob);
     });
 
-    it('handles error during DOM manipulation', async function () {
-        const error = new Error('DOM manipulation failed');
-        vi.mocked(document.body.appendChild).mockImplementation(() => {
-            throw error;
-        });
+    await expect(takeScreenshot(mockElement)).rejects.toThrow('URL creation failed');
+  });
 
-        vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
-            callback(mockBlob);
-        });
-
-        await expect(takeScreenshot(mockElement)).rejects.toThrow('DOM manipulation failed');
+  it('handles error during DOM manipulation', async function () {
+    const error = new Error('DOM manipulation failed');
+    vi.mocked(document.body.appendChild).mockImplementation(() => {
+      throw error;
     });
+
+    vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
+      callback(mockBlob);
+    });
+
+    await expect(takeScreenshot(mockElement)).rejects.toThrow('DOM manipulation failed');
+  });
 });
 
 describe('fixFirefoxTextSpacing', function () {
-    afterEach(function () {
-        vi.restoreAllMocks();
-    });
+  afterEach(function () {
+    vi.restoreAllMocks();
+  });
 
-    const buildElement = () => {
-        const element = document.createElement('div');
-        const child = document.createElement('span');
-        element.appendChild(child);
-        return {element, child};
-    };
+  const buildElement = () => {
+    const element = document.createElement('div');
+    const child = document.createElement('span');
+    element.appendChild(child);
+    return { element, child };
+  };
 
-    it('applies letter-spacing to the element and its descendants in Firefox', function () {
-        vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:140.0) Gecko/20100101 Firefox/140.0');
+  it('applies letter-spacing to the element and its descendants in Firefox', function () {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:140.0) Gecko/20100101 Firefox/140.0',
+    );
 
-        const {element, child} = buildElement();
-        fixFirefoxTextSpacing(element);
+    const { element, child } = buildElement();
+    fixFirefoxTextSpacing(element);
 
-        expect(element.style.letterSpacing).toBe('0.1px');
-        expect(child.style.letterSpacing).toBe('0.1px');
-    });
+    expect(element.style.letterSpacing).toBe('0.1px');
+    expect(child.style.letterSpacing).toBe('0.1px');
+  });
 
-    it('does nothing in non-Firefox browsers', function () {
-        vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36');
+  it('does nothing in non-Firefox browsers', function () {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+    );
 
-        const {element, child} = buildElement();
-        fixFirefoxTextSpacing(element);
+    const { element, child } = buildElement();
+    fixFirefoxTextSpacing(element);
 
-        expect(element.style.letterSpacing).toBe('');
-        expect(child.style.letterSpacing).toBe('');
-    });
+    expect(element.style.letterSpacing).toBe('');
+    expect(child.style.letterSpacing).toBe('');
+  });
 });

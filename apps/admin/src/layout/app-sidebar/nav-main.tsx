@@ -1,76 +1,91 @@
-import React from "react"
+import React from 'react';
 
-import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
-import {LucideIcon} from "@tryghost/shade/utils"
-import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
-import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
-import { getSettingValue } from "@tryghost/admin-x-framework/api/settings";
-import { hasAdminAccess } from "@tryghost/admin-x-framework/api/users";
-import { useNotificationsCountForUser } from "@tryghost/activitypub/api";
-import NetworkIcon from "./icons/network-icon";
-import { NavMenuItem } from "./nav-menu-item";
-import { useIsActiveLink } from "./use-is-active-link";
-import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuBadge,
+} from '@tryghost/shade/components';
+import { LucideIcon } from '@tryghost/shade/utils';
+import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
+import { hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
+import { useNotificationsCountForUser } from '@tryghost/activitypub/api';
+import NetworkIcon from './icons/network-icon';
+import { NavMenuItem } from './nav-menu-item';
+import { useIsActiveLink } from './use-is-active-link';
+import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
-    const { data: currentUser } = useCurrentUser();
-    const { data: settings } = useBrowseSettings();
-    const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
-    const site = useBrowseSite();
-    const url = getAdminToolbarUrl(site.data?.site.url);
+  const { data: currentUser } = useCurrentUser();
+  const { data: settings } = useBrowseSettings();
+  const networkEnabled =
+    getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
+  const site = useBrowseSite();
+  const url = getAdminToolbarUrl(site.data?.site.url);
 
+  // The network app has its own notification state, so we don't want to show
+  // multiple indicators when you have navigated there.
+  const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(
+    currentUser?.slug || '',
+    networkEnabled,
+  );
+  const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true });
+  const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
+  const showNetworkBadge =
+    networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
 
-    // The network app has its own notification state, so we don't want to show
-    // multiple indicators when you have navigated there.
-    const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '', networkEnabled);
-    const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true })
-    const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
-    const showNetworkBadge = networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
-
-    // Only show NavMain for admin users
-    if (!currentUser || !hasAdminAccess(currentUser)) {
-        return null;
-    }
-    return (
-        <SidebarGroup {...props}>
-            <SidebarGroupContent>
-                <SidebarMenu>
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="analytics" activeOnSubpath>
-                            <LucideIcon.TrendingUp />
-                            <NavMenuItem.Label>Analytics</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
-                    {networkEnabled && (
-                        <NavMenuItem>
-                            <NavMenuItem.Link isActive={isNetworkRouteActive || isActivitypubRouteActive} to="network">
-                                <NetworkIcon />
-                                <NavMenuItem.Label>Network</NavMenuItem.Label>
-                            </NavMenuItem.Link>
-                            {showNetworkBadge && (
-                                <SidebarMenuBadge data-testid="network-notification-badge">{networkNotificationCount}</SidebarMenuBadge>
-                            )}
-                        </NavMenuItem>
-                    )}
-                    <NavMenuItem className="group/viewsite relative">
-                        <NavMenuItem.Link to="site">
-                            <LucideIcon.AppWindow />
-                            <NavMenuItem.Label>View site</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                        <a
-                            aria-label="View site in new tab"
-                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2"
-                            href={url}
-                            rel="noopener noreferrer"
-                            target="_blank">
-                                <LucideIcon.ExternalLink size={16} />
-                        </a>
-                    </NavMenuItem>
-                </SidebarMenu>
-            </SidebarGroupContent>
-        </SidebarGroup>
-    );
+  // Only show NavMain for admin users
+  if (!currentUser || !hasAdminAccess(currentUser)) {
+    return null;
+  }
+  return (
+    <SidebarGroup {...props}>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <NavMenuItem>
+            <NavMenuItem.Link to="analytics" activeOnSubpath>
+              <LucideIcon.TrendingUp />
+              <NavMenuItem.Label>Analytics</NavMenuItem.Label>
+            </NavMenuItem.Link>
+          </NavMenuItem>
+          {networkEnabled && (
+            <NavMenuItem>
+              <NavMenuItem.Link
+                isActive={isNetworkRouteActive || isActivitypubRouteActive}
+                to="network"
+              >
+                <NetworkIcon />
+                <NavMenuItem.Label>Network</NavMenuItem.Label>
+              </NavMenuItem.Link>
+              {showNetworkBadge && (
+                <SidebarMenuBadge data-testid="network-notification-badge">
+                  {networkNotificationCount}
+                </SidebarMenuBadge>
+              )}
+            </NavMenuItem>
+          )}
+          <NavMenuItem className="group/viewsite relative">
+            <NavMenuItem.Link to="site">
+              <LucideIcon.AppWindow />
+              <NavMenuItem.Label>View site</NavMenuItem.Label>
+            </NavMenuItem.Link>
+            <a
+              aria-label="View site in new tab"
+              className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2"
+              href={url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <LucideIcon.ExternalLink size={16} />
+            </a>
+          </NavMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
 }
 
 export default NavMain;

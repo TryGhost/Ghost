@@ -3,38 +3,39 @@ const urlUtils = require('../../../shared/url-utils').default;
 const adapterManager = require('../adapter-manager').default;
 
 const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
-const {RedirectsService} = require('./redirects-service');
+const { RedirectsService } = require('./redirects-service');
 const validation = require('./validation');
 
 let redirectsService;
 let redirectManager;
 
-const makeRedirectManager = () => new DynamicRedirectManager({
+const makeRedirectManager = () =>
+  new DynamicRedirectManager({
     permanentMaxAge: config.get('caching:customRedirects:maxAge'),
-    getSubdirectoryURL: pathname => urlUtils.urlJoin(urlUtils.getSubdir(), pathname)
-});
+    getSubdirectoryURL: (pathname) => urlUtils.urlJoin(urlUtils.getSubdir(), pathname),
+  });
 
 module.exports = {
-    init() {
-        redirectManager = makeRedirectManager();
+  init() {
+    redirectManager = makeRedirectManager();
 
-        const store = adapterManager.getAdapter('redirects');
+    const store = adapterManager.getAdapter('redirects');
 
-        redirectsService = new RedirectsService({
-            store,
-            redirectManager,
-            validate: validation.validate.bind(validation),
-            createDryRunManager: makeRedirectManager
-        });
+    redirectsService = new RedirectsService({
+      store,
+      redirectManager,
+      validate: validation.validate.bind(validation),
+      createDryRunManager: makeRedirectManager,
+    });
 
-        return redirectsService.init();
-    },
+    return redirectsService.init();
+  },
 
-    get api() {
-        return redirectsService;
-    },
+  get api() {
+    return redirectsService;
+  },
 
-    get middleware() {
-        return redirectManager.handleRequest;
-    }
+  get middleware() {
+    return redirectManager.handleRequest;
+  },
 };

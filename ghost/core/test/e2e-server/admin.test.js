@@ -4,7 +4,7 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 const assert = require('node:assert/strict');
-const {assertExists} = require('../utils/assertions');
+const { assertExists } = require('../utils/assertions');
 const path = require('path');
 const fs = require('fs');
 
@@ -17,138 +17,139 @@ const config = require('../../core/shared/config');
 let request;
 
 function assertCorrectHeaders(res) {
-    assert.equal(res.headers['x-cache-invalidate'], undefined);
-    assertExists(res.headers.date);
+  assert.equal(res.headers['x-cache-invalidate'], undefined);
+  assertExists(res.headers.date);
 }
 
 describe('Admin Routing', function () {
+  beforeAll(async function () {
+    adminUtils.stubAdminFiles();
+
+    await testUtils.startGhost();
+    request = supertest.agent(config.get('url'));
+  });
+
+  describe('Assets', function () {
+    it('should return 404 for unknown assets', async function () {
+      await request
+        .get('/ghost/assets/not-found.js')
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(404)
+        .expect(assertCorrectHeaders);
+    });
+
+    it('should retrieve built assets', async function () {
+      await request
+        .get('/ghost/assets/vendor.js')
+        .expect('Cache-Control', testUtils.cacheRules.yearImmutable)
+        .expect(200)
+        .expect(assertCorrectHeaders);
+    });
+  });
+
+  describe('Auth Frame', function () {
+    beforeAll(function () {
+      // ensure the admin-auth folder exists so serveStatic doesn't fall through
+      adminUtils.stubAuthFrameFiles(configUtils.config.getContentPath('public'));
+    });
+
+    it('Renders 204 with no admin session cookie', async function () {
+      await request
+        .get('/ghost/auth-frame/')
+        .set('Origin', config.get('url'))
+        .expect(204)
+        .expect('Cache-Control', 'public, max-age=0');
+    });
+
+    it('Renders static file with admin session cookie', async function () {
+      await request
+        .get('/ghost/auth-frame/')
+        .set('Origin', config.get('url'))
+        .set('Cookie', ['ghost-admin-api-session=abc; Path=/; HttpOnly; Secure; SameSite=Strict'])
+        .expect(200);
+    });
+  });
+
+  describe('Admin Redirects', function () {
+    it('should redirect /GHOST/ to /ghost/', async function () {
+      await request
+        .get('/GHOST/')
+        .expect('Location', '/ghost/')
+        .expect(301)
+        .expect(assertCorrectHeaders);
+    });
+  });
+
+  // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
+  describe('Require HTTPS - redirect', function () {
     beforeAll(async function () {
-        adminUtils.stubAdminFiles();
+      configUtils.set('url', 'https://localhost:2390');
+      urlUtils.stubUrlUtilsFromConfig();
 
-        await testUtils.startGhost();
-        request = supertest.agent(config.get('url'));
+      await testUtils.startGhost();
+      request = supertest.agent(configUtils.getServerUrl());
     });
 
-    describe('Assets', function () {
-        it('should return 404 for unknown assets', async function () {
-            await request.get('/ghost/assets/not-found.js')
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(404)
-                .expect(assertCorrectHeaders);
-        });
-
-        it('should retrieve built assets', async function () {
-            await request.get('/ghost/assets/vendor.js')
-                .expect('Cache-Control', testUtils.cacheRules.yearImmutable)
-                .expect(200)
-                .expect(assertCorrectHeaders);
-        });
+    afterAll(async function () {
+      await urlUtils.restore();
+      await configUtils.restore();
     });
 
-    describe('Auth Frame', function () {
-        beforeAll(function () {
-            // ensure the admin-auth folder exists so serveStatic doesn't fall through
-            adminUtils.stubAuthFrameFiles(configUtils.config.getContentPath('public'));
-        });
-
-        it('Renders 204 with no admin session cookie', async function () {
-            await request
-                .get('/ghost/auth-frame/')
-                .set('Origin', config.get('url'))
-                .expect(204)
-                .expect('Cache-Control', 'public, max-age=0');
-        });
-
-        it('Renders static file with admin session cookie', async function () {
-            await request
-                .get('/ghost/auth-frame/')
-                .set('Origin', config.get('url'))
-                .set('Cookie', [
-                    'ghost-admin-api-session=abc; Path=/; HttpOnly; Secure; SameSite=Strict'
-                ])
-                .expect(200);
-        });
+    it('should redirect admin access over non-HTTPS', async function () {
+      await request
+        .get('/ghost/')
+        .expect('Location', /^https:\/\/localhost:2390\/ghost\//)
+        .expect(301)
+        .expect(assertCorrectHeaders);
     });
 
-    describe('Admin Redirects', function () {
-        it('should redirect /GHOST/ to /ghost/', async function () {
-            await request.get('/GHOST/')
-                .expect('Location', '/ghost/')
-                .expect(301)
-                .expect(assertCorrectHeaders);
-        });
+    it('should allow admin access over HTTPS', async function () {
+      await request
+        .get('/ghost/')
+        .set('X-Forwarded-Proto', 'https')
+        .expect(200)
+        .expect(assertCorrectHeaders);
+    });
+  });
+
+  describe('built template', function () {
+    beforeEach(function () {
+      const configPaths = configUtils.config.get('paths');
+      configPaths.adminAssets = path.resolve('test/utils/fixtures/admin-build');
+      configUtils.set('paths', configPaths);
     });
 
-    // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
-    describe('Require HTTPS - redirect', function () {
-        beforeAll(async function () {
-            configUtils.set('url', 'https://localhost:2390');
-            urlUtils.stubUrlUtilsFromConfig();
-
-            await testUtils.startGhost();
-            request = supertest.agent(configUtils.getServerUrl());
-        });
-
-        afterAll(async function () {
-            await urlUtils.restore();
-            await configUtils.restore();
-        });
-
-        it('should redirect admin access over non-HTTPS', async function () {
-            await request.get('/ghost/')
-                .expect('Location', /^https:\/\/localhost:2390\/ghost\//)
-                .expect(301)
-                .expect(assertCorrectHeaders);
-        });
-
-        it('should allow admin access over HTTPS', async function () {
-            await request.get('/ghost/')
-                .set('X-Forwarded-Proto', 'https')
-                .expect(200)
-                .expect(assertCorrectHeaders);
-        });
+    afterEach(async function () {
+      await configUtils.restore();
     });
 
-    describe('built template', function () {
-        beforeEach(function () {
-            const configPaths = configUtils.config.get('paths');
-            configPaths.adminAssets = path.resolve('test/utils/fixtures/admin-build');
-            configUtils.set('paths', configPaths);
-        });
+    it('serves assets in production', async function () {
+      configUtils.set('env', 'production');
 
-        afterEach(async function () {
-            await configUtils.restore();
-        });
+      const prodTemplate = fs
+        .readFileSync(path.resolve('test/utils/fixtures/admin-build/index.html'))
+        .toString();
 
-        it('serves assets in production', async function () {
-            configUtils.set('env', 'production');
+      const res = await request.get('/ghost/').set('X-Forwarded-Proto', 'https').expect(200);
 
-            const prodTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/index.html')).toString();
-
-            const res = await request.get('/ghost/')
-                .set('X-Forwarded-Proto', 'https')
-                .expect(200);
-
-            assert.equal(res.text, prodTemplate);
-        });
-
-        it('serves assets when not in production', async function () {
-            const devTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/index.html')).toString();
-
-            const res = await request.get('/ghost/')
-                .set('X-Forwarded-Proto', 'https')
-                .expect(200);
-
-            assert.equal(res.text, devTemplate);
-        });
-
-        it('generates it\'s own ETag header from file contents', async function () {
-            const res = await request.get('/ghost/')
-                .set('X-Forwarded-Proto', 'https')
-                .expect(200);
-
-            assertExists(res.headers.etag);
-            assert.equal(res.headers.etag, '8793333e8e91cde411b1336c58ec6ef3');
-        });
+      assert.equal(res.text, prodTemplate);
     });
+
+    it('serves assets when not in production', async function () {
+      const devTemplate = fs
+        .readFileSync(path.resolve('test/utils/fixtures/admin-build/index.html'))
+        .toString();
+
+      const res = await request.get('/ghost/').set('X-Forwarded-Proto', 'https').expect(200);
+
+      assert.equal(res.text, devTemplate);
+    });
+
+    it("generates it's own ETag header from file contents", async function () {
+      const res = await request.get('/ghost/').set('X-Forwarded-Proto', 'https').expect(200);
+
+      assertExists(res.headers.etag);
+      assert.equal(res.headers.etag, '8793333e8e91cde411b1336c58ec6ef3');
+    });
+  });
 });

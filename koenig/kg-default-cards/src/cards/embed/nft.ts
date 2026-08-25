@@ -1,14 +1,14 @@
-import {escapeHtml} from '@tryghost/string';
-import type {CardRenderArgs, CardRenderOptions, SimpleDomNode} from '../../types.js';
+import { escapeHtml } from '@tryghost/string';
+import type { CardRenderArgs, CardRenderOptions, SimpleDomNode } from '../../types.js';
 
 const nftCard = {
-    render({payload, env: {dom}, options = {}}: CardRenderArgs): SimpleDomNode {
-        const figure = dom.createElement('figure');
-        figure.setAttribute('class', 'kg-card kg-embed-card kg-nft-card');
+  render({ payload, env: { dom }, options = {} }: CardRenderArgs): SimpleDomNode {
+    const figure = dom.createElement('figure');
+    figure.setAttribute('class', 'kg-card kg-embed-card kg-nft-card');
 
-        const metadata = payload.metadata as Record<string, string>;
+    const metadata = payload.metadata as Record<string, string>;
 
-        let html = `
+    let html = `
             <a class="kg-nft-card-container" href="${escapeHtml(payload.url as string)}" data-payload="${encodeURIComponent(JSON.stringify(payload))}">
                 <div class="kg-ntf-image-container"><img class="kg-nft-image" src="${escapeHtml(metadata.image_url)}"></div>
                 <div class="kg-nft-metadata">
@@ -18,15 +18,15 @@ const nftCard = {
                     </div>
                     <div class="kg-nft-creator">
                         Created by <span class="kg-nft-creator-name">${escapeHtml(metadata.author_name)}</span>
-                        ${(metadata.collection_name ? `&bull; ${escapeHtml(metadata.collection_name)}` : ``)}
+                        ${metadata.collection_name ? `&bull; ${escapeHtml(metadata.collection_name)}` : ``}
                     </div>
-                    ${(metadata.description ? `<p class="kg-nft-description">${escapeHtml(metadata.description)}</p>` : ``)}
+                    ${metadata.description ? `<p class="kg-nft-description">${escapeHtml(metadata.description)}</p>` : ``}
                 </div>
             </a>
         `;
 
-        if ((options as CardRenderOptions).target === 'email') {
-            html = `
+    if ((options as CardRenderOptions).target === 'email') {
+      html = `
             <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;">
                 <tr>
                     <td align="center">
@@ -44,34 +44,38 @@ const nftCard = {
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                <a href="${escapeHtml(payload.url as string)}" class="kg-nft-link" style="padding-top: 0px; ${(!metadata.description ? ` padding-bottom: 20px;` : ``)}"><span style="color: #ABB4BE;">Created by</span> <span style="color: #15171A; font-weight: 500;">${escapeHtml(metadata.author_name)}</span> ${(metadata.collection_name ? `<span style="color: #ABB4BE;">&bull; ${escapeHtml(metadata.collection_name)}</span>` : ``)}</a>
+                                <a href="${escapeHtml(payload.url as string)}" class="kg-nft-link" style="padding-top: 0px; ${!metadata.description ? ` padding-bottom: 20px;` : ``}"><span style="color: #ABB4BE;">Created by</span> <span style="color: #15171A; font-weight: 500;">${escapeHtml(metadata.author_name)}</span> ${metadata.collection_name ? `<span style="color: #ABB4BE;">&bull; ${escapeHtml(metadata.collection_name)}</span>` : ``}</a>
                                 </td>
                             </tr>
-                            ${(metadata.description ? `
+                            ${
+                              metadata.description
+                                ? `
                             <tr>
                                 <td colspan="2">
                                 <a href="${escapeHtml(payload.url as string)}" class="kg-nft-link" style="padding-bottom: 20px; max-width: 440px;">${escapeHtml(metadata.description)}</a>
                                 </td>
                             </tr>
-                            ` : ``)}
+                            `
+                                : ``
+                            }
                         </table>
                     </td>
                 </tr>
             </table>
             `;
-        }
-
-        figure.appendChild(dom.createRawHTMLSection(html));
-
-        if (payload.caption) {
-            const figcaption = dom.createElement('figcaption');
-            figcaption.appendChild(dom.createRawHTMLSection(payload.caption as string));
-            figure.appendChild(figcaption);
-            figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
-        }
-
-        return figure;
     }
+
+    figure.appendChild(dom.createRawHTMLSection(html));
+
+    if (payload.caption) {
+      const figcaption = dom.createElement('figcaption');
+      figcaption.appendChild(dom.createRawHTMLSection(payload.caption as string));
+      figure.appendChild(figcaption);
+      figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
+    }
+
+    return figure;
+  },
 };
 
 export default nftCard;

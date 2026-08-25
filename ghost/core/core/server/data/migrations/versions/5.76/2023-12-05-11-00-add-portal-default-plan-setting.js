@@ -1,8 +1,8 @@
-const {addSetting} = require('../../utils');
+const { addSetting } = require('../../utils');
 
 module.exports = addSetting({
-    key: 'portal_default_plan',
-    value: 'yearly',
-    type: 'string',
-    group: 'portal'
+  key: 'portal_default_plan',
+  value: 'yearly',
+  type: 'string',
+  group: 'portal',
 });

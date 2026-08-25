@@ -1,87 +1,95 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type {EmailAddressService} from '../../../../../core/server/services/email-address/email-address-service';
-import {validateEmailSenderFields} from '../../../../../core/server/api/endpoints/utils/validate-email-sender-fields';
+import type { EmailAddressService } from '../../../../../core/server/services/email-address/email-address-service';
+import { validateEmailSenderFields } from '../../../../../core/server/api/endpoints/utils/validate-email-sender-fields';
 
 type ValidationResult = ReturnType<EmailAddressService['validate']>;
 
-function buildEmailAddressService(result: ValidationResult = {
+function buildEmailAddressService(
+  result: ValidationResult = {
     allowed: true,
-    verificationEmailRequired: false
-}) {
-    const validate = sinon.stub().returns(result);
-    const emailAddressService: Pick<EmailAddressService, 'validate'> = {
-        validate
-    };
+    verificationEmailRequired: false,
+  },
+) {
+  const validate = sinon.stub().returns(result);
+  const emailAddressService: Pick<EmailAddressService, 'validate'> = {
+    validate,
+  };
 
-    return {
-        validate,
-        emailAddressService
-    };
+  return {
+    validate,
+    emailAddressService,
+  };
 }
 
 describe('validateEmailSenderFields', function () {
-    it('does not validate when sender fields are missing', function () {
-        const {validate, emailAddressService} = buildEmailAddressService();
+  it('does not validate when sender fields are missing', function () {
+    const { validate, emailAddressService } = buildEmailAddressService();
 
-        validateEmailSenderFields(emailAddressService, {});
+    validateEmailSenderFields(emailAddressService, {});
 
-        sinon.assert.notCalled(validate);
+    sinon.assert.notCalled(validate);
+  });
+
+  it('does not validate empty sender fields', function () {
+    const { validate, emailAddressService } = buildEmailAddressService();
+
+    validateEmailSenderFields(emailAddressService, {
+      sender_email: '',
+      sender_reply_to: '',
     });
 
-    it('does not validate empty sender fields', function () {
-        const {validate, emailAddressService} = buildEmailAddressService();
+    sinon.assert.notCalled(validate);
+  });
 
+  it('validates sender email and reply-to with correct address types', function () {
+    const { validate, emailAddressService } = buildEmailAddressService();
+
+    validateEmailSenderFields(emailAddressService, {
+      sender_email: 'sender@example.com',
+      sender_reply_to: 'reply@example.com',
+    });
+
+    sinon.assert.calledTwice(validate);
+    sinon.assert.calledWithExactly(validate.firstCall, 'sender@example.com', 'from');
+    sinon.assert.calledWithExactly(validate.secondCall, 'reply@example.com', 'replyTo');
+  });
+
+  it('throws when sender email is not allowed', function () {
+    const { emailAddressService } = buildEmailAddressService({
+      allowed: false,
+      verificationEmailRequired: false,
+    });
+
+    assert.throws(
+      () => {
         validateEmailSenderFields(emailAddressService, {
-            sender_email: '',
-            sender_reply_to: ''
+          sender_email: 'sender@example.com',
         });
+      },
+      {
+        name: 'ValidationError',
+        message: 'You cannot set sender_email to sender@example.com',
+      },
+    );
+  });
 
-        sinon.assert.notCalled(validate);
+  it('throws when sender reply-to requires verification', function () {
+    const { emailAddressService } = buildEmailAddressService({
+      allowed: true,
+      verificationEmailRequired: true,
     });
 
-    it('validates sender email and reply-to with correct address types', function () {
-        const {validate, emailAddressService} = buildEmailAddressService();
-
+    assert.throws(
+      () => {
         validateEmailSenderFields(emailAddressService, {
-            sender_email: 'sender@example.com',
-            sender_reply_to: 'reply@example.com'
+          sender_reply_to: 'reply@example.com',
         });
-
-        sinon.assert.calledTwice(validate);
-        sinon.assert.calledWithExactly(validate.firstCall, 'sender@example.com', 'from');
-        sinon.assert.calledWithExactly(validate.secondCall, 'reply@example.com', 'replyTo');
-    });
-
-    it('throws when sender email is not allowed', function () {
-        const {emailAddressService} = buildEmailAddressService({
-            allowed: false,
-            verificationEmailRequired: false
-        });
-
-        assert.throws(() => {
-            validateEmailSenderFields(emailAddressService, {
-                sender_email: 'sender@example.com'
-            });
-        }, {
-            name: 'ValidationError',
-            message: 'You cannot set sender_email to sender@example.com'
-        });
-    });
-
-    it('throws when sender reply-to requires verification', function () {
-        const {emailAddressService} = buildEmailAddressService({
-            allowed: true,
-            verificationEmailRequired: true
-        });
-
-        assert.throws(() => {
-            validateEmailSenderFields(emailAddressService, {
-                sender_reply_to: 'reply@example.com'
-            });
-        }, {
-            name: 'ValidationError',
-            message: 'You cannot set sender_reply_to to reply@example.com without verification'
-        });
-    });
+      },
+      {
+        name: 'ValidationError',
+        message: 'You cannot set sender_reply_to to reply@example.com without verification',
+      },
+    );
+  });
 });

@@ -3,16 +3,18 @@
 This top-level workspace is Ghost's browser end-to-end test suite. It runs
 automated browser tests against a complete, running Ghost instance to verify
 critical user journeys across packages and applications. A package's own
-Playwright suite is an *acceptance* suite, not an E2E one — see the
+Playwright suite is an _acceptance_ suite, not an E2E one — see the
 [testing guide](../docs/contributing/testing.md) for how the layers differ.
 
 ## Quick Start
 
 ### Prerequisites
+
 - Docker and Docker Compose installed
 - Node.js installed (pnpm is managed via corepack — run `corepack enable pnpm` first)
 
 ### Running Tests
+
 To run the test, within this `e2e` folder run:
 
 ```bash
@@ -26,6 +28,7 @@ pnpm test
 ### Dev Environment Mode (Recommended for Development)
 
 If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
+
 - `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
 - `build` otherwise
 
@@ -83,12 +86,11 @@ For a CI-like local preflight (pulls Playwright + gateway images and starts infr
 pnpm --filter @tryghost/e2e preflight:build
 ```
 
-
 ### Running Specific Tests
 
 ```bash
-# Specific test file
-pnpm test specific/folder/testfile.spec.ts
+# Run the Admin sign-in test
+pnpm test tests/admin/signin.test.ts
 
 # Matching a pattern
 pnpm test --grep "homepage"
@@ -99,24 +101,20 @@ pnpm test --debug
 
 ## Tests Development
 
+See [Writing Browser E2E Tests](../docs/contributing/e2e-testing.md) for the
+canonical conventions, Page Object pattern, locator priority, waiting patterns,
+and worked examples. This README covers the local workspace, infrastructure,
+fixtures, and commands.
+
 The test suite is organized into separate directories for different areas/functions:
 
 ### **Current Test Suites**
+
 - `tests/public/` - Public-facing site tests (homepage, posts, etc.)
 - `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
 - `tests/portal/` - Portal member journey tests
 
 We can decide whether to add additional sub-folders as we add more tests.
-
-Filenames are kebab-case — `eslint.config.js` enforces this. Test files end in
-`.test.ts` and are named after the behaviour under test, not the page:
-
-```text
-tests/admin/
-├── signin.test.ts
-├── two-factor-auth.test.ts
-└── whats-new.test.ts
-```
 
 Project folder structure can be seen below:
 
@@ -148,88 +146,6 @@ e2e/
 └── tsconfig.json               # TypeScript configuration and path aliases
 ```
 
-### Writing Tests
-
-Tests use [Playwright Test](https://playwright.dev/docs/writing-tests). Use
-Arrange–Act–Assert (AAA) as a readability heuristic: set up the scenario, perform
-the behavior under test, then verify the outcome. Keep those phases clear through
-test structure and naming; comments are only useful when the boundaries would
-otherwise be unclear.
-
-Import through the `@/` path aliases defined in `tsconfig.json`, not relative paths:
-
-```typescript
-import {expect, test} from '@/helpers/playwright';
-import {HomePage} from '@/public-pages';
-
-test.describe('Ghost Homepage', () => {
-    test('loads correctly', async ({page}) => {
-        const homePage = new HomePage(page);
-
-        await homePage.goto();
-
-        await expect(homePage.title).toBeVisible();
-    });
-});
-```
-
-### Using Page Objects
-
-Page Objects are the default home for reusable knowledge about a page or major UI
-component. They encapsulate locators, readiness guards, and semantic interactions
-so tests can describe behavior rather than DOM structure. Assertions stay in test
-files.
-
-Prefer an existing Page Object when a test exercises reusable UI behavior. A direct
-semantic locator in a test is acceptable for a small, one-off assertion or
-interaction when creating a Page Object would add indirection without reuse.
-Structural selectors sometimes remain necessary for iframes, editor internals,
-generated theme markup, and elements without an accessible role. Keep those inside
-Page Objects where practical and prefer, in order:
-
-1. Accessible roles, labels, and visible text
-2. Stable test IDs
-3. Stable structural selectors when no semantic locator exists
-
-Avoid selectors coupled to visual styling, DOM position, or incidental class names.
-See [Playwright's locator guidance](https://playwright.dev/docs/locators) and
-[Martin Fowler's Page Object description](https://martinfowler.com/bliki/PageObject.html)
-for background.
-
-Admin page objects extend `AdminPage`, public and portal ones extend `BasePage`.
-The base class supplies `goto()`, `refresh()` and `pressKey()`, so a subclass
-only sets its own `pageUrl` and locators:
-
-```typescript
-// helpers/pages/admin/login-page.ts
-import {AdminPage} from './admin-page';
-import type {Locator, Page} from '@playwright/test';
-
-export class LoginPage extends AdminPage {
-    readonly emailAddressField: Locator;
-    readonly passwordField: Locator;
-    readonly signInButton: Locator;
-
-    constructor(page: Page) {
-        super(page);
-        this.pageUrl = '/ghost/#/signin';
-
-        this.emailAddressField = page.getByRole('textbox', {name: 'Email address'});
-        this.passwordField = page.getByRole('textbox', {name: 'Password'});
-        this.signInButton = page.getByRole('button', {name: 'Sign in →'});
-    }
-
-    async signIn(email: string, password: string) {
-        await this.emailAddressField.fill(email);
-        await this.passwordField.fill(password);
-        await this.signInButton.click();
-    }
-}
-```
-
-For worked examples of modals, iframes, and discovering selectors for new page
-objects, see the [test writing guide](./.claude/E2E_TEST_WRITING_GUIDE.md).
-
 ### Global Setup and Teardown
 
 Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-teardown#option-1-project-dependencies) to define special tests as global setup and teardown tests:
@@ -242,6 +158,7 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
 
 The fixtures a test usually reaches for:
+
 - `page` - browser page against this test's Ghost instance
 - `pageWithAuthenticatedUser` - the same, already signed in to Ghost Admin
 - `ghostAccountOwner` - the owner account's credentials
@@ -250,6 +167,7 @@ The fixtures a test usually reaches for:
 - `resetEnvironment()` - force an environment recycle (see the escape hatch below)
 
 The fixture resolves isolation mode per test file:
+
 - Default: per-file isolation (one Ghost environment cycle per file)
 - Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file
 - Forced per-test: any run with `fullyParallel: true`
@@ -261,30 +179,36 @@ Test isolation is still automatic, but no longer always per-test.
 Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `pnpm dev` or `pnpm --filter @tryghost/e2e infra:up`.
 
 Global setup (`tests/global.setup.ts`) does:
+
 - Cleans up e2e containers and test databases
 - Creates a base database, starts Ghost, waits for health, snapshots the DB
 
 Per-file mode (`helpers/playwright/fixture.ts`) does:
+
 - Clones a new database from snapshot at file boundary
 - Restarts Ghost with the new database and waits for readiness
 - Reuses that environment for tests in the file
 
 Per-test mode (`helpers/playwright/fixture.ts`) does:
+
 - Clones a new database from snapshot for each test
 - Restarts Ghost with the new database and waits for readiness
 
 Environment identity for per-file reuse:
+
 - `config` participates in the environment identity.
 - `labs` participates in the environment identity.
 - If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
 - `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
 
 Fixture option behavior:
+
 - `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
 - `labs`: use for labs flags that should get a fresh environment when they change.
 - `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
 
 Escape hatch:
+
 - `resetEnvironment()` is supported only in `beforeEach` hooks for per-file tests.
 - Use it only before resolving stateful fixtures such as `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`.
 - Safe hook pattern: `test.beforeEach(async ({resetEnvironment}) => { ... })`
@@ -292,13 +216,16 @@ Escape hatch:
 - ESLint catches the obvious misuse cases, but the runtime guard in the fixture remains the hard safety check.
 
 Opting into per-test isolation:
+
 - Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file.
 - This configures both Playwright parallel mode and the fixture isolation in one call.
 
 Global teardown (`tests/global.teardown.ts`) does:
+
 - Cleans up e2e containers and test databases (infra services stay running)
 
 Modes:
+
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
 - Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
 
@@ -342,6 +269,18 @@ pnpm preflight:build
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true pnpm test
 
+# Check the fake Stripe server against captured Stripe responses (no infra, ~1s)
+pnpm test:fixtures
+
+# Put a Stripe test account into the state fixtures are captured from
+pnpm stripe:provision
+
+# Re-capture Stripe fixtures from test mode (needs STRIPE_SECRET_KEY)
+pnpm stripe:fixtures
+
+# Re-measure the checkout limits the fake server enforces
+pnpm stripe:probe
+
 # Run TypeScript type checking
 pnpm test:types
 
@@ -352,6 +291,65 @@ pnpm lint
 pnpm build
 pnpm dev           # Watch mode for TypeScript compilation
 ```
+
+## Stripe fixtures
+
+The fake Stripe server in `helpers/services/stripe/` hand-builds the objects Stripe
+would return. Those shapes were originally written from the docs rather than from
+Stripe, so nothing checked them against the real API.
+
+`helpers/services/stripe/fixtures/` holds responses captured from Stripe test mode at
+API version `2020-08-27`, the version `ghost/core` pins. `pnpm test:fixtures` asserts
+the builders against them, and needs no Ghost, no Docker and no browser.
+
+Two failures are worth catching. A builder emitting a key Stripe does not return means
+the fake describes an API that does not exist. A builder omitting a key Ghost reads is
+worse, because it is silent: the property access yields `undefined`, the branch behind
+it never runs, and the suite stays green.
+
+The same suite checks that the fake refuses requests Stripe refuses. Those constraints
+were measured, not read from the docs, because the docs and Stripe's published OpenAPI
+spec each disagree with the API on at least one of them.
+
+### Re-capturing
+
+```bash
+STRIPE_SECRET_KEY=sk_test_... pnpm stripe:provision   # once per account
+STRIPE_SECRET_KEY=sk_test_... pnpm stripe:fixtures
+```
+
+Test-mode keys only; a live key is refused.
+
+`stripe:provision` puts the account into the state fixtures are captured from: a tier
+product, its Monthly, Yearly and Complimentary prices, and a coupon. The nicknames are
+the point, because Ghost's own code matches on them. Capturing runs it first, so the
+two commands are only separate when you want to inspect what an account holds.
+
+Both are idempotent and reuse what is already there, since Stripe cannot delete a
+product that has prices.
+
+### Capturing a completed checkout
+
+A completed checkout cannot be captured with the above, because Stripe blocks automating
+its hosted payment page. `pnpm stripe:fixtures:checkout` does everything either side of
+the payment and asks for one card entry:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_... pnpm stripe:fixtures:checkout
+```
+
+It prints a Checkout URL, waits, then captures the completed session once you have paid
+with `4242 4242 4242 4242`. Shipping address, tax ID and custom field collection are all
+requested on the same session, so one payment captures every shape the API cannot give
+us. Fill all of them in, or the fields come back null and the fixture answers nothing.
+
+The event envelope is deliberately not captured. An Event is an immutable snapshot
+rendered at the account's default API version when it was created, and fetching it with a
+pinned client does not re-render it. Ghost pins its webhook endpoint to the same version
+its client uses, so what Ghost receives and what the API can hand back are different
+renderings: at Stripe's current default the shipping address moves to
+`collected_information.shipping_details`, which Ghost never sees. Ghost reads only
+`event.type` and `event.data.object`, so the envelope carries nothing worth pinning.
 
 ## Resolving issues
 

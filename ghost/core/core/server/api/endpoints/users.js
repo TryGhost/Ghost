@@ -6,28 +6,30 @@ const dbBackup = require('../../data/db/backup');
 const auth = require('../../services/auth');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const {rejectAdminApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
+const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 const UsersService = require('../../services/users');
-const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
+const userService = new UsersService({ dbBackup, models, auth, apiMail, apiSettings });
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
 
 const messages = {
-    noPermissionToAction: 'You do not have permission to perform this action',
-    userNotFound: 'User not found.'
+  noPermissionToAction: 'You do not have permission to perform this action',
+  userNotFound: 'User not found.',
 };
 
 function permissionOnlySelf(frame) {
-    const targetId = getTargetId(frame);
-    const userId = frame.user.id;
-    if (targetId !== userId) {
-        return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
-    }
-    return Promise.resolve();
+  const targetId = getTargetId(frame);
+  const userId = frame.user.id;
+  if (targetId !== userId) {
+    return Promise.reject(
+      new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
+    );
+  }
+  return Promise.resolve();
 }
 
 function getTargetId(frame) {
-    return frame.options.id === 'me' ? frame.user.id : frame.options.id;
+  return frame.options.id === 'me' ? frame.user.id : frame.options.id;
 }
 
 // When a user changes their own password we destroy all of their sessions in
@@ -35,289 +37,261 @@ function getTargetId(frame) {
 // for the current browser. Rotating invalidates any cloned or stolen copy of
 // the pre-change cookie.
 async function rotateSessionForSelfPasswordChange(frame, user) {
-    const targetUserId = frame.data.password[0].user_id;
-    const currentUserId = frame.options.context && frame.options.context.user;
-    if (targetUserId !== currentUserId) {
-        return;
-    }
-    const req = frame.original.session && frame.original.session.req;
-    if (!req) {
-        return;
-    }
-    await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
-        req,
-        user,
-        ip: frame.options.ip
-    });
+  const targetUserId = frame.data.password[0].user_id;
+  const currentUserId = frame.options.context && frame.options.context.user;
+  if (targetUserId !== currentUserId) {
+    return;
+  }
+  const req = frame.original.session && frame.original.session.req;
+  if (!req) {
+    return;
+  }
+  await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+    req,
+    user,
+    ip: frame.options.ip,
+  });
 }
 
 async function fetchOrCreateStaffToken(userId) {
-    const token = await models.ApiKey.findOne({user_id: userId}, {});
+  const token = await models.ApiKey.findOne({ user_id: userId }, {});
 
-    if (!token) {
-        const newToken = await models.ApiKey.add({user_id: userId, type: 'admin'});
-        return newToken;
-    }
+  if (!token) {
+    const newToken = await models.ApiKey.add({ user_id: userId, type: 'admin' });
+    return newToken;
+  }
 
-    return token;
+  return token;
 }
 
 function shouldInvalidateCacheAfterChange(model) {
-    // Model attributes that should trigger cache invalidation when changed
-    // (because they affect the frontend)
-    const publicAttrs = [
-        'name',
-        'slug',
-        'profile_image',
-        'cover_image',
-        'bio',
-        'website',
-        'location',
-        'facebook',
-        'twitter',
-        'mastodon',
-        'youtube',
-        'linkedin',
-        'bluesky',
-        'instagram',
-        'tiktok',
-        'threads',
-        'status',
-        'visibility',
-        'meta_title',
-        'meta_description'
-    ];
+  // Model attributes that should trigger cache invalidation when changed
+  // (because they affect the frontend)
+  const publicAttrs = [
+    'name',
+    'slug',
+    'profile_image',
+    'cover_image',
+    'bio',
+    'website',
+    'location',
+    'facebook',
+    'twitter',
+    'mastodon',
+    'youtube',
+    'linkedin',
+    'bluesky',
+    'instagram',
+    'tiktok',
+    'threads',
+    'status',
+    'visibility',
+    'meta_title',
+    'meta_description',
+  ];
 
-    if (model.wasChanged() === false) {
-        return false;
-    }
-
-    // Check if any of the changed attributes are public
-    for (const attr of Object.keys(model._changed)) {
-        if (publicAttrs.includes(attr) === true) {
-            return true;
-        }
-    }
-
+  if (model.wasChanged() === false) {
     return false;
+  }
+
+  // Check if any of the changed attributes are public
+  for (const attr of Object.keys(model._changed)) {
+    if (publicAttrs.includes(attr) === true) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'users',
+  docName: 'users',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'filter',
-            'fields',
-            'limit',
-            'order',
-            'page',
-            'debug'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                }
-            }
-        },
-        permissions: true,
-        query(frame) {
-            const options = {
-                ...frame.options,
-                mongoTransformer: rejectAdminApiRestrictedFieldsTransformer
-            };
-            return models.User.findPage(options);
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
+    options: ['include', 'filter', 'fields', 'limit', 'order', 'page', 'debug'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'include',
-            'fields',
-            'debug'
-        ],
-        data: [
-            'id',
-            'slug',
-            'email',
-            'role'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            const model = await models.User.findOne(frame.data, frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.userNotFound)
-                });
-            }
-
-            return model;
-        }
+      },
     },
-
-    edit: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id',
-            'include'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            unsafeAttrs: UNSAFE_ATTRS
-        },
-        async query(frame) {
-            const model = await models.User.edit(frame.data.users[0], frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.userNotFound)
-                });
-            }
-
-            if (shouldInvalidateCacheAfterChange(model)) {
-                frame.setHeader('X-Cache-Invalidate', '/*');
-            }
-
-            return model;
-        }
+    permissions: true,
+    query(frame) {
+      const options = {
+        ...frame.options,
+        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
+      };
+      return models.User.findPage(options);
     },
+  },
 
-    destroy: {
-        headers: {
-            cacheInvalidate: true
-        },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            try {
-                return userService.destroyUser(frame.options);
-            } catch (err) {
-                throw new errors.NoPermissionError({
-                    err: err
-                });
-            }
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    changePassword: {
-        headers: {
-            cacheInvalidate: false
+    options: ['include', 'fields', 'debug'],
+    data: ['id', 'slug', 'email', 'role'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'ip'
-        ],
-        validation: {
-            docName: 'password',
-            data: {
-                newPassword: {required: true},
-                ne2Password: {required: true},
-                user_id: {required: true}
-            }
-        },
-        permissions: {
-            docName: 'user',
-            method: 'edit',
-            identifier(frame) {
-                return frame.data.password[0].user_id;
-            }
-        },
-        async query(frame) {
-            const result = await models.User.changePassword(frame.data.password[0], frame.options);
-            await rotateSessionForSelfPasswordChange(frame, result);
-            return result;
-        }
+      },
     },
+    permissions: true,
+    async query(frame) {
+      const model = await models.User.findOne(frame.data, frame.options);
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.userNotFound),
+        });
+      }
 
-    transferOwnership: {
-        headers: {
-            cacheInvalidate: false
-        },
-        async permissions(frame) {
-            const ownerRole = await models.Role.findOne({name: 'Owner'});
-            return permissionsService.canThis(frame.options.context).assign.role(ownerRole);
-        },
-        query(frame) {
-            return models.User.transferOwnership(frame.data.owner[0], frame.options);
-        }
+      return model;
     },
+  },
 
-    readStaffToken: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: permissionOnlySelf,
-        query(frame) {
-            const targetId = getTargetId(frame);
-            return fetchOrCreateStaffToken(targetId);
-        }
+  edit: {
+    headers: {
+      cacheInvalidate: false,
     },
+    options: ['id', 'include'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
+        },
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      unsafeAttrs: UNSAFE_ATTRS,
+    },
+    async query(frame) {
+      const model = await models.User.edit(frame.data.users[0], frame.options);
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.userNotFound),
+        });
+      }
 
-    regenerateStaffToken: {
-        headers: {
-            cacheInvalidate: false
+      if (shouldInvalidateCacheAfterChange(model)) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+
+      return model;
+    },
+  },
+
+  destroy: {
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      try {
+        return userService.destroyUser(frame.options);
+      } catch (err) {
+        throw new errors.NoPermissionError({
+          err: err,
+        });
+      }
+    },
+  },
+
+  changePassword: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['ip'],
+    validation: {
+      docName: 'password',
+      data: {
+        newPassword: { required: true },
+        ne2Password: { required: true },
+        user_id: { required: true },
+      },
+    },
+    permissions: {
+      docName: 'user',
+      method: 'edit',
+      identifier(frame) {
+        return frame.data.password[0].user_id;
+      },
+    },
+    async query(frame) {
+      const result = await models.User.changePassword(frame.data.password[0], frame.options);
+      await rotateSessionForSelfPasswordChange(frame, result);
+      return result;
+    },
+  },
+
+  transferOwnership: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    async permissions(frame) {
+      const ownerRole = await models.Role.findOne({ name: 'Owner' });
+      return permissionsService.canThis(frame.options.context).assign.role(ownerRole);
+    },
+    query(frame) {
+      return models.User.transferOwnership(frame.data.owner[0], frame.options);
+    },
+  },
+
+  readStaffToken: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        permissions: permissionOnlySelf,
-        async query(frame) {
-            const targetId = getTargetId(frame);
-            const model = await fetchOrCreateStaffToken(targetId);
-            return models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, {id: model.id}));
-        }
-    }
+      },
+    },
+    permissions: permissionOnlySelf,
+    query(frame) {
+      const targetId = getTargetId(frame);
+      return fetchOrCreateStaffToken(targetId);
+    },
+  },
+
+  regenerateStaffToken: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: permissionOnlySelf,
+    async query(frame) {
+      const targetId = getTargetId(frame);
+      const model = await fetchOrCreateStaffToken(targetId);
+      return models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, { id: model.id }));
+    },
+  },
 };
 
 module.exports = controller;

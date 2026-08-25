@@ -3,11 +3,11 @@
 // requires — the ESM/browser build never imports this file, so bundlers
 // (Vite/Rolldown/esbuild) never encounter the dynamic-require pattern.
 function requireLoader(locale, ns) {
-    try {
-        return require(`../locales/${locale}/${ns}.json`);
-    } catch (err) {
-        return require(`../locales/en/${ns}.json`);
-    }
+  try {
+    return require(`../locales/${locale}/${ns}.json`);
+  } catch (err) {
+    return require(`../locales/en/${ns}.json`);
+  }
 }
 
-module.exports = {requireLoader};
+module.exports = { requireLoader };

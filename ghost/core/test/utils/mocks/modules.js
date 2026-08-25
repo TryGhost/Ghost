@@ -6,18 +6,18 @@ const originalRequireFn = Module.prototype.require;
  * mocks.modules.mockNonExistentModule(/pattern/, mockedModule)
  */
 exports.mockNonExistentModule = (modulePath, module, error = false) => {
-    Module.prototype.require = function (path) {
-        if (path.match(modulePath)) {
-            if (error) {
-                throw module;
-            }
-            return module;
-        }
+  Module.prototype.require = function (path) {
+    if (path.match(modulePath)) {
+      if (error) {
+        throw module;
+      }
+      return module;
+    }
 
-        return originalRequireFn.apply(this, arguments);
-    };
+    return originalRequireFn.apply(this, arguments);
+  };
 };
 
 exports.unmockNonExistentModule = () => {
-    Module.prototype.require = originalRequireFn;
+  Module.prototype.require = originalRequireFn;
 };

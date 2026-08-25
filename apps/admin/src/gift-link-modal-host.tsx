@@ -1,11 +1,11 @@
-import { Suspense, lazy, useEffect, useState } from "react";
-import { EmberFallback, subscribeOpenGiftLinkModal } from "./ember-bridge";
-import type { OpenGiftLinkModalEvent } from "./ember-bridge";
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { EmberFallback, subscribeOpenGiftLinkModal } from './ember-bridge';
+import type { OpenGiftLinkModalEvent } from './ember-bridge';
 
 // The gift-link modal is React-owned but triggered from the Ember posts/pages
 // list. It's only needed once someone opens it, so lazy-load it rather than
 // pulling the posts bundle into every list view.
-const GiftLinkModal = lazy(() => import("./posts/analytics/modals/gift-link-modal"));
+const GiftLinkModal = lazy(() => import('./posts/analytics/modals/gift-link-modal'));
 
 /**
  * Bridges the Ember posts/pages context menu to the React gift-link modal.
@@ -16,30 +16,34 @@ const GiftLinkModal = lazy(() => import("./posts/analytics/modals/gift-link-moda
  * so the modal can animate out.
  */
 function GiftLinkModalHost() {
-    const [entry, setEntry] = useState<OpenGiftLinkModalEvent | null>(null);
-    const [open, setOpen] = useState(false);
+  const [entry, setEntry] = useState<OpenGiftLinkModalEvent | null>(null);
+  const [open, setOpen] = useState(false);
 
-    useEffect(() => subscribeOpenGiftLinkModal((event) => {
+  useEffect(
+    () =>
+      subscribeOpenGiftLinkModal((event) => {
         setEntry(event);
         setOpen(true);
-    }), []);
+      }),
+    [],
+  );
 
-    if (!entry) {
-        return null;
-    }
+  if (!entry) {
+    return null;
+  }
 
-    return (
-        <Suspense fallback={null}>
-            <GiftLinkModal
-                key={`${entry.resource}:${entry.id}`}
-                open={open}
-                postId={entry.id}
-                resource={entry.resource}
-                source="context-menu"
-                onOpenChange={setOpen}
-            />
-        </Suspense>
-    );
+  return (
+    <Suspense fallback={null}>
+      <GiftLinkModal
+        key={`${entry.resource}:${entry.id}`}
+        open={open}
+        postId={entry.id}
+        resource={entry.resource}
+        source="context-menu"
+        onOpenChange={setOpen}
+      />
+    </Suspense>
+  );
 }
 
 /**
@@ -48,10 +52,10 @@ function GiftLinkModalHost() {
  * mounted so the list's context menu can open it.
  */
 export function EmberListWithGiftLinks() {
-    return (
-        <>
-            <EmberFallback />
-            <GiftLinkModalHost />
-        </>
-    );
+  return (
+    <>
+      <EmberFallback />
+      <GiftLinkModalHost />
+    </>
+  );
 }

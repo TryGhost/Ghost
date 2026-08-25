@@ -96,11 +96,7 @@
           "maxLength": 191
         }
       },
-      "anyOf": [
-        { "required": ["id"] },
-        { "required": ["name"] },
-        { "required": ["slug"] }
-      ]
+      "anyOf": [{ "required": ["id"] }, { "required": ["name"] }, { "required": ["slug"] }]
     }
   }
 }

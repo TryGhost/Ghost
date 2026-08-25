@@ -1,15 +1,15 @@
 interface BuildMembersUrlOptions {
-    filter?: string;
+  filter?: string;
 }
 
-export function buildMembersUrl({filter}: BuildMembersUrlOptions = {}): string {
-    const searchParams = new URLSearchParams();
+export function buildMembersUrl({ filter }: BuildMembersUrlOptions = {}): string {
+  const searchParams = new URLSearchParams();
 
-    if (filter) {
-        searchParams.set('filter', filter);
-    }
+  if (filter) {
+    searchParams.set('filter', filter);
+  }
 
-    const search = searchParams.toString();
+  const search = searchParams.toString();
 
-    return search ? `/members?${search}` : '/members';
+  return search ? `/members?${search}` : '/members';
 }

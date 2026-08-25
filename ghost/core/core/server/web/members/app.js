@@ -9,7 +9,7 @@ const middleware = membersService.middleware;
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const config = require('../../../shared/config');
-const {http} = require('@tryghost/api-framework');
+const { http } = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
@@ -20,179 +20,197 @@ const corsMiddleware = require('./middleware/cors');
  * @returns {import('express').Application}
  */
 module.exports = function setupMembersApp() {
-    debug('Members App setup start');
-    const membersApp = express('members');
+  debug('Members App setup start');
+  const membersApp = express('members');
 
-    // Members API shouldn't be cached
-    membersApp.use(shared.middleware.cacheControl('private'));
+  // Members API shouldn't be cached
+  membersApp.use(shared.middleware.cacheControl('private'));
 
-    // Support CORS for requests from the frontend
-    membersApp.use(corsMiddleware);
+  // Support CORS for requests from the frontend
+  membersApp.use(corsMiddleware);
 
-    // Currently global handling for signing in with ?token= magiclinks
-    membersApp.use(middleware.createSessionFromMagicLink);
+  // Currently global handling for signing in with ?token= magiclinks
+  membersApp.use(middleware.createSessionFromMagicLink);
 
-    // Routing
+  // Routing
 
-    // Webhooks
-    membersApp.post('/webhooks/stripe', bodyParser.raw({type: 'application/json'}), stripeService.webhookController.handle.bind(stripeService.webhookController));
+  // Webhooks
+  membersApp.post(
+    '/webhooks/stripe',
+    bodyParser.raw({ type: 'application/json' }),
+    stripeService.webhookController.handle.bind(stripeService.webhookController),
+  );
 
-    // Initializes members specific routes as well as assigns members specific data to the req/res objects
-    // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
+  // Initializes members specific routes as well as assigns members specific data to the req/res objects
+  // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
-    // Manage newsletter subscription via unsubscribe link - these should be authenticated by uuid and hashed key
-    membersApp.get('/api/member/newsletters',
-        middleware.authMemberByUuid,
-        middleware.getMemberNewsletters
-    );
-    membersApp.put('/api/member/newsletters',
-        bodyParser.json({limit: '50mb'}),
-        middleware.authMemberByUuid,
-        middleware.updateMemberNewsletters
-    );
+  // Manage newsletter subscription via unsubscribe link - these should be authenticated by uuid and hashed key
+  membersApp.get(
+    '/api/member/newsletters',
+    middleware.authMemberByUuid,
+    middleware.getMemberNewsletters,
+  );
+  membersApp.put(
+    '/api/member/newsletters',
+    bodyParser.json({ limit: '50mb' }),
+    middleware.authMemberByUuid,
+    middleware.updateMemberNewsletters,
+  );
 
-    // Get and update member data
-    // Caching members content is an experimental feature
-    const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
-    if (shouldCacheMembersContent) {
-        membersApp.get('/api/member', middleware.loadMemberSession, middleware.accessInfoSession, middleware.getMemberData);
-    } else {
-        membersApp.get('/api/member', middleware.getMemberData);
-    }
-
-    membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
-    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next));
-
-    // Member offers (retention etc.)
-    membersApp.post('/api/member/offers', bodyParser.json(), function lazyGetMemberOffersMw(req, res, next) {
-        return membersService.api.middleware.getMemberOffers(req, res, next);
-    });
-
-    // Remove email from suppression list
-    membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
-
-    // Manage session
-    membersApp.get('/api/session', middleware.getIdentityToken);
-    membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
-
-    membersApp.get('/api/entitlements', middleware.getEntitlementToken);
-    membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
-
-    membersApp.post(
-        '/api/send-magic-link',
-        bodyParser.json(),
-        middleware.verifyIntegrityToken,
-        // Prevent brute forcing email addresses (user enumeration)
-        shared.middleware.brute.membersAuthEnumeration,
-        // Prevent brute forcing passwords for the same email address
-        shared.middleware.brute.membersAuth,
-        // NOTE: this is wrapped in a function to ensure we always go via the getter
-        function lazySendMagicLinkMw(req, res, next) {
-            return membersService.api.middleware.sendMagicLink(req, res, next);
-        }
-    );
-    membersApp.post(
-        '/api/verify-otc',
-        bodyParser.json(),
-        middleware.verifyIntegrityToken,
-        shared.middleware.brute.otcVerificationEnumeration,
-        shared.middleware.brute.otcVerification,
-        // NOTE: this is wrapped in a function to ensure we always go via the getter
-        function lazyVerifyOTCMw(req, res, next) {
-            return membersService.api.middleware.verifyOTC(req, res, next);
-        }
-    );
-    membersApp.post(
-        '/api/create-stripe-checkout-session',
-        bodyParser.json(),
-        shared.middleware.brute.checkoutSessionGlobal,
-        shared.middleware.brute.checkoutSessionEmail,
-        function lazyCreateCheckoutSessionMw(req, res, next) {
-            return membersService.api.middleware.createCheckoutSession(req, res, next);
-        }
-    );
-    membersApp.post('/api/create-stripe-update-session', function lazyCreateCheckoutSetupSessionMw(req, res, next) {
-        return membersService.api.middleware.createCheckoutSetupSession(req, res, next);
-    });
-    membersApp.post('/api/create-stripe-billing-portal-session', function lazyCreateBillingPortalSessionMw(req, res, next) {
-        return membersService.api.middleware.createBillingPortalSession(req, res, next);
-    });
-    membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
-        return membersService.api.middleware.updateSubscription(req, res, next);
-    });
-    membersApp.post('/api/subscriptions/:id/apply-offer', function lazyApplyOfferMw(req, res, next) {
-        return membersService.api.middleware.applyOfferToSubscription(req, res, next);
-    });
-
-    // Comments
-    membersApp.use('/api/comments', commentRouter());
-
-    // Feedback
-    membersApp.post(
-        '/api/feedback',
-        bodyParser.json({limit: '50mb'}),
-        middleware.loadMemberSession,
-        middleware.authMemberByUuid,
-        http(api.feedbackMembers.add)
-    );
-
-    // Durable, id-based feedback link from newsletters. Resolves the post's
-    // current URL at click time so changing a slug never breaks feedback buttons.
+  // Get and update member data
+  // Caching members content is an experimental feature
+  const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
+  if (shouldCacheMembersContent) {
     membersApp.get(
-        '/feedback/:postId/:score',
-        (req, res, next) => audienceFeedbackService.controller.redirectToPost(req, res, next)
+      '/api/member',
+      middleware.loadMemberSession,
+      middleware.accessInfoSession,
+      middleware.getMemberData,
     );
+  } else {
+    membersApp.get('/api/member', middleware.getMemberData);
+  }
 
-    // Gifts
-    membersApp.get(
-        '/api/gifts/:token/redeem',
-        middleware.loadMemberSession,
-        http(api.giftsMembers.getRedeemable)
-    );
-    membersApp.post(
-        '/api/gifts/:token/redeem',
-        bodyParser.json({limit: '50mb'}),
-        middleware.loadMemberSession,
-        http(api.giftsMembers.redeem)
-    );
+  membersApp.put('/api/member', bodyParser.json({ limit: '50mb' }), middleware.updateMemberData);
+  membersApp.post('/api/member/email', bodyParser.json({ limit: '50mb' }), (req, res, next) =>
+    membersService.api.middleware.updateEmailAddress(req, res, next),
+  );
 
-    // Announcement
-    membersApp.use(
-        '/api/announcement',
-        middleware.loadMemberSession,
-        announcementRouter()
-    );
+  // Member offers (retention etc.)
+  membersApp.post(
+    '/api/member/offers',
+    bodyParser.json(),
+    function lazyGetMemberOffersMw(req, res, next) {
+      return membersService.api.middleware.getMemberOffers(req, res, next);
+    },
+  );
 
-    // Recommendations
-    membersApp.post(
-        '/api/recommendations/:id/clicked',
-        middleware.loadMemberSession,
-        http(api.recommendationsPublic.trackClicked)
-    );
+  // Remove email from suppression list
+  membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
 
-    // Recommendations
-    membersApp.post(
-        '/api/recommendations/:id/subscribed',
-        middleware.loadMemberSession,
-        http(api.recommendationsPublic.trackSubscribed)
-    );
+  // Manage session
+  membersApp.get('/api/session', middleware.getIdentityToken);
+  membersApp.delete('/api/session', bodyParser.json({ limit: '5mb' }), middleware.deleteSession);
 
-    // Allow external systems to read public settings via the members api
-    // Without CORS issues and without a required integration token
-    // 1. Detect if a site is Running Ghost
-    // 2. For recommendations to know when we can offer 'one-click-subscribe' to know if members are enabled
-    // Why not content API? Domain can be different from recommended domain + CORS issues
-    membersApp.get('/api/site', http(api.site.read));
+  membersApp.get('/api/entitlements', middleware.getEntitlementToken);
+  membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
 
-    // API error handling
-    membersApp.use('/api', errorHandler.resourceNotFound);
-    membersApp.use('/api', errorHandler.handleJSONResponse(sentry));
+  membersApp.post(
+    '/api/send-magic-link',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    // Prevent brute forcing email addresses (user enumeration)
+    shared.middleware.brute.membersAuthEnumeration,
+    // Prevent brute forcing passwords for the same email address
+    shared.middleware.brute.membersAuth,
+    // NOTE: this is wrapped in a function to ensure we always go via the getter
+    function lazySendMagicLinkMw(req, res, next) {
+      return membersService.api.middleware.sendMagicLink(req, res, next);
+    },
+  );
+  membersApp.post(
+    '/api/verify-otc',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    shared.middleware.brute.otcVerificationEnumeration,
+    shared.middleware.brute.otcVerification,
+    // NOTE: this is wrapped in a function to ensure we always go via the getter
+    function lazyVerifyOTCMw(req, res, next) {
+      return membersService.api.middleware.verifyOTC(req, res, next);
+    },
+  );
+  membersApp.post(
+    '/api/create-stripe-checkout-session',
+    bodyParser.json(),
+    shared.middleware.brute.checkoutSessionGlobal,
+    shared.middleware.brute.checkoutSessionEmail,
+    function lazyCreateCheckoutSessionMw(req, res, next) {
+      return membersService.api.middleware.createCheckoutSession(req, res, next);
+    },
+  );
+  membersApp.post(
+    '/api/create-stripe-update-session',
+    function lazyCreateCheckoutSetupSessionMw(req, res, next) {
+      return membersService.api.middleware.createCheckoutSetupSession(req, res, next);
+    },
+  );
+  membersApp.post(
+    '/api/create-stripe-billing-portal-session',
+    function lazyCreateBillingPortalSessionMw(req, res, next) {
+      return membersService.api.middleware.createBillingPortalSession(req, res, next);
+    },
+  );
+  membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
+    return membersService.api.middleware.updateSubscription(req, res, next);
+  });
+  membersApp.post('/api/subscriptions/:id/apply-offer', function lazyApplyOfferMw(req, res, next) {
+    return membersService.api.middleware.applyOfferToSubscription(req, res, next);
+  });
 
-    // Webhook error handling
-    membersApp.use('/webhooks', errorHandler.resourceNotFound);
-    membersApp.use('/webhooks', errorHandler.handleJSONResponse(sentry));
+  // Comments
+  membersApp.use('/api/comments', commentRouter());
 
-    debug('Members App setup end');
+  // Feedback
+  membersApp.post(
+    '/api/feedback',
+    bodyParser.json({ limit: '50mb' }),
+    middleware.loadMemberSession,
+    middleware.authMemberByUuid,
+    http(api.feedbackMembers.add),
+  );
 
-    return membersApp;
+  // Durable, id-based feedback link from newsletters. Resolves the post's
+  // current URL at click time so changing a slug never breaks feedback buttons.
+  membersApp.get('/feedback/:postId/:score', (req, res, next) =>
+    audienceFeedbackService.controller.redirectToPost(req, res, next),
+  );
+
+  // Gifts
+  membersApp.get(
+    '/api/gifts/:token/redeem',
+    middleware.loadMemberSession,
+    http(api.giftsMembers.getRedeemable),
+  );
+  membersApp.post(
+    '/api/gifts/:token/redeem',
+    bodyParser.json({ limit: '50mb' }),
+    middleware.loadMemberSession,
+    http(api.giftsMembers.redeem),
+  );
+
+  // Announcement
+  membersApp.use('/api/announcement', middleware.loadMemberSession, announcementRouter());
+
+  // Recommendations
+  membersApp.post(
+    '/api/recommendations/:id/clicked',
+    middleware.loadMemberSession,
+    http(api.recommendationsPublic.trackClicked),
+  );
+
+  // Recommendations
+  membersApp.post(
+    '/api/recommendations/:id/subscribed',
+    middleware.loadMemberSession,
+    http(api.recommendationsPublic.trackSubscribed),
+  );
+
+  // Allow external systems to read public settings via the members api
+  // Without CORS issues and without a required integration token
+  // 1. Detect if a site is Running Ghost
+  // 2. For recommendations to know when we can offer 'one-click-subscribe' to know if members are enabled
+  // Why not content API? Domain can be different from recommended domain + CORS issues
+  membersApp.get('/api/site', http(api.site.read));
+
+  // API error handling
+  membersApp.use('/api', errorHandler.resourceNotFound);
+  membersApp.use('/api', errorHandler.handleJSONResponse(sentry));
+
+  // Webhook error handling
+  membersApp.use('/webhooks', errorHandler.resourceNotFound);
+  membersApp.use('/webhooks', errorHandler.handleJSONResponse(sentry));
+
+  debug('Members App setup end');
+
+  return membersApp;
 };

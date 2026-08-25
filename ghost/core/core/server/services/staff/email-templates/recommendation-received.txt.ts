@@ -1,18 +1,19 @@
-import type {ReadonlyDeep} from 'type-fest';
-import type {StaffTextBaseData} from './types';
+import type { ReadonlyDeep } from 'type-fest';
+import type { StaffTextBaseData } from './types';
 
-type RecommendationReceivedTextData = StaffTextBaseData & ReadonlyDeep<{
+type RecommendationReceivedTextData = StaffTextBaseData &
+  ReadonlyDeep<{
     recommendation: {
-        title?: string | null;
-        url: string;
+      title?: string | null;
+      url: string;
     };
-}>;
+  }>;
 
 export function renderText(data: RecommendationReceivedTextData): string {
-    const {recommendation} = data;
+  const { recommendation } = data;
 
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 You have been recommended by ${recommendation.title || recommendation.url}.
 
 ---

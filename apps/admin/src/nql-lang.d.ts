@@ -1,11 +1,11 @@
 declare module '@tryghost/nql-lang' {
-    interface ParseOptions {
-        preserveRelativeDates?: boolean;
-    }
+  interface ParseOptions {
+    preserveRelativeDates?: boolean;
+  }
 
-    const nql: {
-        parse(input: string, options?: ParseOptions): unknown;
-    };
+  const nql: {
+    parse(input: string, options?: ParseOptions): unknown;
+  };
 
-    export default nql;
+  export default nql;
 }

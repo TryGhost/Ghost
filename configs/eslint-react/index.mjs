@@ -8,7 +8,7 @@
 //
 // Shared atoms come from the base package (`@internal/cfg-eslint`).
 
-import {createRequire} from 'node:module';
+import { createRequire } from 'node:module';
 import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
@@ -20,15 +20,15 @@ import tailwindcssPluginV4 from 'eslint-plugin-tailwindcss';
 import i18nextPluginImport from 'eslint-plugin-i18next';
 import storybookPluginImport from 'eslint-plugin-storybook';
 import {
-    jsReactAppRules,
-    mochaRulesOff,
-    shadeLayeredImportsRule,
-    sortImportsRule,
-    strictLinterOptions,
-    tailwindRulesV4,
-    tailwindRulesWithConfig,
-    tsReactAppRules,
-    viteOnlyExtras
+  jsReactAppRules,
+  mochaRulesOff,
+  shadeLayeredImportsRule,
+  sortImportsRule,
+  strictLinterOptions,
+  tailwindRulesV4,
+  tailwindRulesWithConfig,
+  tsReactAppRules,
+  viteOnlyExtras,
 } from '@internal/cfg-eslint';
 
 /**
@@ -119,284 +119,311 @@ import {
  * });
  */
 const REACT_APP_PARAMS = new Set([
-    'typescript', 'reactRefresh', 'i18next', 'storybook', 'tailwindCssPath',
-    'legacyTailwindV3ConfigPath', 'shadeRestricted', 'sortImports',
-    'legacyJsTsSplit', 'tsconfigRootDir', 'ignores', 'srcGlobs', 'testGlobs',
-    'extraSrcRules', 'extraTestRules'
+  'typescript',
+  'reactRefresh',
+  'i18next',
+  'storybook',
+  'tailwindCssPath',
+  'legacyTailwindV3ConfigPath',
+  'shadeRestricted',
+  'sortImports',
+  'legacyJsTsSplit',
+  'tsconfigRootDir',
+  'ignores',
+  'srcGlobs',
+  'testGlobs',
+  'extraSrcRules',
+  'extraTestRules',
 ]);
 
 export function reactAppConfig(options = {}) {
-    const unknown = Object.keys(options).filter(k => !REACT_APP_PARAMS.has(k));
-    if (unknown.length) {
-        throw new Error(`reactAppConfig: unknown options ${JSON.stringify(unknown)}. Valid keys: ${JSON.stringify([...REACT_APP_PARAMS])}`);
-    }
-    const {
-        typescript = true,
-        reactRefresh = true,
-        i18next = false,
-        storybook = null,
-        tailwindCssPath,
-        legacyTailwindV3ConfigPath,
-        shadeRestricted = false,
-        sortImports = false,
-        legacyJsTsSplit = false,
-        tsconfigRootDir,
-        ignores = ['dist/**/*'],
-        srcGlobs,
-        testGlobs,
-        extraSrcRules = {},
-        extraTestRules = {}
-    } = options;
-    if (tailwindCssPath && legacyTailwindV3ConfigPath) {
-        throw new Error('reactAppConfig: pass either tailwindCssPath (v4) or legacyTailwindV3ConfigPath (v3), not both.');
-    }
-    if (legacyJsTsSplit && !typescript) {
-        throw new Error('reactAppConfig: legacyJsTsSplit requires typescript: true (the TS block uses tseslint).');
-    }
-    if (legacyJsTsSplit && (srcGlobs || testGlobs !== undefined)) {
-        // The split branch hardcodes its file globs by extension (.js,.jsx vs
-        // .ts,.tsx) — if a consumer passes srcGlobs/testGlobs we'd silently
-        // ignore them. Throw rather than confuse.
-        throw new Error('reactAppConfig: legacyJsTsSplit does not honor srcGlobs/testGlobs; they would be silently dropped.');
-    }
-    if (shadeRestricted && extraSrcRules['no-restricted-imports']) {
-        // Setting both would silently replace the shade restriction with the
-        // user's rule (last-key-wins on spread). If a workspace needs both,
-        // add the user's paths to shadeLayeredImportsRule via a custom
-        // `no-restricted-imports` value that includes both shade + the
-        // workspace's paths. Throwing rather than silently losing the shade
-        // restriction (which is security-shaped).
-        throw new Error('reactAppConfig: shadeRestricted + extraSrcRules[\'no-restricted-imports\'] would silently override the shade restriction. Merge them in your workspace config.');
-    }
+  const unknown = Object.keys(options).filter((k) => !REACT_APP_PARAMS.has(k));
+  if (unknown.length) {
+    throw new Error(
+      `reactAppConfig: unknown options ${JSON.stringify(unknown)}. Valid keys: ${JSON.stringify([...REACT_APP_PARAMS])}`,
+    );
+  }
+  const {
+    typescript = true,
+    reactRefresh = true,
+    i18next = false,
+    storybook = null,
+    tailwindCssPath,
+    legacyTailwindV3ConfigPath,
+    shadeRestricted = false,
+    sortImports = false,
+    legacyJsTsSplit = false,
+    tsconfigRootDir,
+    ignores = ['dist/**/*'],
+    srcGlobs,
+    testGlobs,
+    extraSrcRules = {},
+    extraTestRules = {},
+  } = options;
+  if (tailwindCssPath && legacyTailwindV3ConfigPath) {
+    throw new Error(
+      'reactAppConfig: pass either tailwindCssPath (v4) or legacyTailwindV3ConfigPath (v3), not both.',
+    );
+  }
+  if (legacyJsTsSplit && !typescript) {
+    throw new Error(
+      'reactAppConfig: legacyJsTsSplit requires typescript: true (the TS block uses tseslint).',
+    );
+  }
+  if (legacyJsTsSplit && (srcGlobs || testGlobs !== undefined)) {
+    // The split branch hardcodes its file globs by extension (.js,.jsx vs
+    // .ts,.tsx) — if a consumer passes srcGlobs/testGlobs we'd silently
+    // ignore them. Throw rather than confuse.
+    throw new Error(
+      'reactAppConfig: legacyJsTsSplit does not honor srcGlobs/testGlobs; they would be silently dropped.',
+    );
+  }
+  if (shadeRestricted && extraSrcRules['no-restricted-imports']) {
+    // Setting both would silently replace the shade restriction with the
+    // user's rule (last-key-wins on spread). If a workspace needs both,
+    // add the user's paths to shadeLayeredImportsRule via a custom
+    // `no-restricted-imports` value that includes both shade + the
+    // workspace's paths. Throwing rather than silently losing the shade
+    // restriction (which is security-shaped).
+    throw new Error(
+      "reactAppConfig: shadeRestricted + extraSrcRules['no-restricted-imports'] would silently override the shade restriction. Merge them in your workspace config.",
+    );
+  }
 
-    // Plugins are statically imported at module load. The conditionals below
-    // pick whether to register/use each optional one.
-    // typescript-eslint is always available because we use its `config()` helper
-    // to flatten the `extends:` key (vanilla ESLint flat config doesn't support
-    // `extends:` natively).
-    const reactRefreshPlugin = reactRefresh ? reactRefreshPluginImport : null;
-    // The v4 lane resolves the plugin from this package (main catalog). The
-    // legacy v3 lane must resolve it from the app instead: importing the root's
-    // 4.x plugin, whose rules take no per-rule options, would hard-fail ESLint
-    // schema validation on the v3-style {config} options. The v3 apps pin
-    // eslint-plugin-tailwindcss via catalog:tailwind3 precisely for this, and
-    // the tailwind config path lives in the app dir.
-    const tailwindcssPlugin = legacyTailwindV3ConfigPath
-        ? createRequire(legacyTailwindV3ConfigPath)('eslint-plugin-tailwindcss')
-        : (tailwindCssPath ? tailwindcssPluginV4 : null);
-    const i18nextPlugin = i18next ? i18nextPluginImport : null;
-    const storybookPlugin = storybook === 'plugin' ? storybookPluginImport : null;
+  // Plugins are statically imported at module load. The conditionals below
+  // pick whether to register/use each optional one.
+  // typescript-eslint is always available because we use its `config()` helper
+  // to flatten the `extends:` key (vanilla ESLint flat config doesn't support
+  // `extends:` natively).
+  const reactRefreshPlugin = reactRefresh ? reactRefreshPluginImport : null;
+  // The v4 lane resolves the plugin from this package (main catalog). The
+  // legacy v3 lane must resolve it from the app instead: importing the root's
+  // 4.x plugin, whose rules take no per-rule options, would hard-fail ESLint
+  // schema validation on the v3-style {config} options. The v3 apps pin
+  // eslint-plugin-tailwindcss via catalog:tailwind3 precisely for this, and
+  // the tailwind config path lives in the app dir.
+  const tailwindcssPlugin = legacyTailwindV3ConfigPath
+    ? createRequire(legacyTailwindV3ConfigPath)('eslint-plugin-tailwindcss')
+    : tailwindCssPath
+      ? tailwindcssPluginV4
+      : null;
+  const i18nextPlugin = i18next ? i18nextPluginImport : null;
+  const storybookPlugin = storybook === 'plugin' ? storybookPluginImport : null;
 
-    const reactFlat = reactPlugin.configs.flat.recommended;
-    const reactJsxRuntime = reactPlugin.configs.flat['jsx-runtime'];
-    const i18nextFlat = i18nextPlugin?.configs['flat/recommended'];
+  const reactFlat = reactPlugin.configs.flat.recommended;
+  const reactJsxRuntime = reactPlugin.configs.flat['jsx-runtime'];
+  const i18nextFlat = i18nextPlugin?.configs['flat/recommended'];
 
-    const defaultTsSrcGlobs = ['src/**/*.{js,ts,cjs,tsx}'];
-    const defaultJsSrcGlobs = ['src/**/*.{js,jsx}'];
-    const defaultTsTestGlobs = ['test/**/*.{js,ts,cjs,tsx}'];
-    const defaultJsTestGlobs = ['test/**/*.{js,jsx}'];
+  const defaultTsSrcGlobs = ['src/**/*.{js,ts,cjs,tsx}'];
+  const defaultJsSrcGlobs = ['src/**/*.{js,jsx}'];
+  const defaultTsTestGlobs = ['test/**/*.{js,ts,cjs,tsx}'];
+  const defaultJsTestGlobs = ['test/**/*.{js,jsx}'];
 
-    const baseLanguageOptions = {
+  const baseLanguageOptions = {
+    ...reactFlat.languageOptions,
+    ecmaVersion: 2022,
+    sourceType: 'module',
+    globals: { ...globals.browser, ...globals.node },
+  };
+
+  const basePlugins = {
+    ...reactFlat.plugins,
+    ...(i18nextFlat?.plugins ?? {}),
+    ghost: ghostPlugin,
+    'react-hooks': reactHooksPlugin,
+    ...(reactRefreshPlugin && { 'react-refresh': reactRefreshPlugin }),
+    ...(tailwindcssPlugin && { tailwindcss: tailwindcssPlugin }),
+  };
+
+  const baseSettings = {
+    react: { version: 'detect' },
+    ...(tailwindCssPath && { tailwindcss: { cssConfigPath: tailwindCssPath } }),
+  };
+
+  const tailwindRules = tailwindCssPath
+    ? tailwindRulesV4
+    : legacyTailwindV3ConfigPath
+      ? tailwindRulesWithConfig(legacyTailwindV3ConfigPath)
+      : {};
+
+  // Shared rule layers for any src block (TS or JS variant overlays on top).
+  const baseSrcRules = {
+    ...js.configs.recommended.rules,
+    ...reactFlat.rules,
+    ...(i18nextFlat?.rules ?? {}),
+    ...reactHooksPlugin.configs.recommended.rules,
+    // TODO: ~46 legacy violations (~24 across Vite TS apps + 22 in
+    // comments-ui surfaced when react-hooks plugin was added there + 1 in
+    // announcement-bar). Real bug-catcher (missing useEffect/useMemo deps);
+    // cleanup PR will fix per-call-site and flip this to 'error'. Until
+    // then 'off' is intentional — the plugin's default is 'warn' which
+    // Ghost's stance forbids.
+    'react-hooks/exhaustive-deps': 'off',
+    ...(reactRefresh ? viteOnlyExtras : {}),
+    ...(shadeRestricted ? shadeLayeredImportsRule : {}),
+    ...(sortImports ? sortImportsRule : {}),
+    ...tailwindRules,
+  };
+
+  // Build src block(s). legacyJsTsSplit produces two src blocks
+  // (one .js, one .ts); everything else produces one.
+  const srcBlocks = [];
+
+  if (legacyJsTsSplit) {
+    // Portal — split blocks. The validator above guarantees srcGlobs and
+    // testGlobs are not set when legacyJsTsSplit is true.
+    srcBlocks.push({
+      files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
+      ...js.configs.recommended,
+      languageOptions: {
         ...reactFlat.languageOptions,
         ecmaVersion: 2022,
         sourceType: 'module',
-        globals: {...globals.browser, ...globals.node}
-    };
+        globals: {
+          ...globals.browser,
+          ...globals.vitest,
+          ...globals.jest,
+          vi: 'readonly',
+          require: 'readonly',
+        },
+      },
+      plugins: basePlugins,
+      settings: baseSettings,
+      rules: {
+        ...baseSrcRules,
+        ...reactJsxRuntime.rules,
+        ...jsReactAppRules,
+        ...extraSrcRules,
+      },
+    });
+    srcBlocks.push({
+      files: ['src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
+      extends: [...tseslint.configs.recommended],
+      languageOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        parserOptions: {
+          ecmaFeatures: { jsx: true },
+          project: './tsconfig.json',
+          // BUG-FIX: was `import.meta.dirname` which resolves to the
+          // factory's directory (repo root), not the workspace.
+          tsconfigRootDir: tsconfigRootDir ?? process.cwd(),
+        },
+        globals: {
+          ...globals.browser,
+          ...globals.vitest,
+          ...globals.jest,
+          vi: 'readonly',
+        },
+      },
+      plugins: basePlugins,
+      settings: baseSettings,
+      rules: {
+        ...baseSrcRules, // includes js.recommended + reactFlat + i18nextFlat + react-hooks + viteOnlyExtras + tailwindRules
+        ...reactJsxRuntime.rules,
+        ...tsReactAppRules, // TS branch needs TS-safe defaults (no-undef: off, no-explicit-any: error, react strict rules)
+        ...extraSrcRules,
+      },
+    });
+  } else if (typescript) {
+    srcBlocks.push({
+      files: srcGlobs ?? defaultTsSrcGlobs,
+      extends: [...tseslint.configs.recommended],
+      languageOptions: baseLanguageOptions,
+      plugins: basePlugins,
+      settings: baseSettings,
+      rules: {
+        ...baseSrcRules,
+        ...tsReactAppRules,
+        ...extraSrcRules,
+      },
+    });
+  } else {
+    // Vanilla JS (sodo-search, announcement-bar). LEGACY: should migrate to TS.
+    srcBlocks.push({
+      files: srcGlobs ?? defaultJsSrcGlobs,
+      ...js.configs.recommended,
+      languageOptions: {
+        ...reactFlat.languageOptions,
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        globals: globals.browser,
+      },
+      plugins: basePlugins,
+      settings: baseSettings,
+      rules: {
+        ...baseSrcRules,
+        ...jsReactAppRules,
+        ...extraSrcRules,
+      },
+    });
+  }
 
-    const basePlugins = {
-        ...reactFlat.plugins,
-        ...(i18nextFlat?.plugins ?? {}),
-        ghost: ghostPlugin,
-        'react-hooks': reactHooksPlugin,
-        ...(reactRefreshPlugin && {'react-refresh': reactRefreshPlugin}),
-        ...(tailwindcssPlugin && {tailwindcss: tailwindcssPlugin})
-    };
+  // Test block — skipped if testGlobs === false.
+  const testBlocks = [];
+  if (testGlobs !== false && !legacyJsTsSplit) {
+    const resolvedTestGlobs = testGlobs ?? (typescript ? defaultTsTestGlobs : defaultJsTestGlobs);
+    const testLanguageOptions = typescript
+      ? {
+          ecmaVersion: 2022,
+          sourceType: 'module',
+          globals: {
+            ...globals.browser,
+            ...globals.node,
+            ...globals.vitest,
+            vi: 'readonly',
+          },
+        }
+      : {
+          ...reactFlat.languageOptions,
+          ecmaVersion: 2022,
+          sourceType: 'module',
+          globals: {
+            ...globals.browser,
+            ...globals.vitest,
+            ...globals.jest,
+            vi: 'readonly',
+          },
+        };
+    // Test blocks need the same plugins as src because the spread rules
+    // (tsReactAppRules / jsReactAppRules) reference react/*, react-hooks/*,
+    // etc. — ESLint flat config errors if a rule references a plugin not
+    // registered in the same block.
+    testBlocks.push({
+      files: resolvedTestGlobs,
+      ...(typescript ? { extends: [...tseslint.configs.recommended] } : js.configs.recommended),
+      languageOptions: testLanguageOptions,
+      plugins: basePlugins,
+      settings: baseSettings,
+      rules: {
+        ...(typescript
+          ? tsReactAppRules
+          : { ...js.configs.recommended.rules, ...reactFlat.rules, ...jsReactAppRules }),
+        ...mochaRulesOff(ghostPlugin),
+        ...extraTestRules,
+      },
+    });
+  }
 
-    const baseSettings = {
-        react: {version: 'detect'},
-        ...(tailwindCssPath && {tailwindcss: {cssConfigPath: tailwindCssPath}})
-    };
+  // Storybook handling (after src/test so storybook rules win for stories).
+  const storybookBlocks = [];
+  if (storybook === 'plugin') {
+    storybookBlocks.push(...storybookPlugin.configs['flat/recommended']);
+    storybookBlocks.push({
+      files: ['**/*.stories.{ts,tsx,js,jsx,mjs,cjs}', '**/*.story.{ts,tsx,js,jsx,mjs,cjs}'],
+      rules: {
+        'storybook/hierarchy-separator': 'error',
+        'storybook/no-redundant-story-name': 'error',
+        'storybook/prefer-pascal-case': 'error',
+      },
+    });
+  }
 
-    const tailwindRules = tailwindCssPath
-        ? tailwindRulesV4
-        : (legacyTailwindV3ConfigPath ? tailwindRulesWithConfig(legacyTailwindV3ConfigPath) : {});
-
-    // Shared rule layers for any src block (TS or JS variant overlays on top).
-    const baseSrcRules = {
-        ...js.configs.recommended.rules,
-        ...reactFlat.rules,
-        ...(i18nextFlat?.rules ?? {}),
-        ...reactHooksPlugin.configs.recommended.rules,
-        // TODO: ~46 legacy violations (~24 across Vite TS apps + 22 in
-        // comments-ui surfaced when react-hooks plugin was added there + 1 in
-        // announcement-bar). Real bug-catcher (missing useEffect/useMemo deps);
-        // cleanup PR will fix per-call-site and flip this to 'error'. Until
-        // then 'off' is intentional — the plugin's default is 'warn' which
-        // Ghost's stance forbids.
-        'react-hooks/exhaustive-deps': 'off',
-        ...(reactRefresh ? viteOnlyExtras : {}),
-        ...(shadeRestricted ? shadeLayeredImportsRule : {}),
-        ...(sortImports ? sortImportsRule : {}),
-        ...tailwindRules
-    };
-
-    // Build src block(s). legacyJsTsSplit produces two src blocks
-    // (one .js, one .ts); everything else produces one.
-    const srcBlocks = [];
-
-    if (legacyJsTsSplit) {
-        // Portal — split blocks. The validator above guarantees srcGlobs and
-        // testGlobs are not set when legacyJsTsSplit is true.
-        srcBlocks.push({
-            files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
-            ...js.configs.recommended,
-            languageOptions: {
-                ...reactFlat.languageOptions,
-                ecmaVersion: 2022,
-                sourceType: 'module',
-                globals: {
-                    ...globals.browser,
-                    ...globals.vitest,
-                    ...globals.jest,
-                    vi: 'readonly',
-                    require: 'readonly'
-                }
-            },
-            plugins: basePlugins,
-            settings: baseSettings,
-            rules: {
-                ...baseSrcRules,
-                ...reactJsxRuntime.rules,
-                ...jsReactAppRules,
-                ...extraSrcRules
-            }
-        });
-        srcBlocks.push({
-            files: ['src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
-            extends: [...tseslint.configs.recommended],
-            languageOptions: {
-                ecmaVersion: 2022,
-                sourceType: 'module',
-                parserOptions: {
-                    ecmaFeatures: {jsx: true},
-                    project: './tsconfig.json',
-                    // BUG-FIX: was `import.meta.dirname` which resolves to the
-                    // factory's directory (repo root), not the workspace.
-                    tsconfigRootDir: tsconfigRootDir ?? process.cwd()
-                },
-                globals: {
-                    ...globals.browser,
-                    ...globals.vitest,
-                    ...globals.jest,
-                    vi: 'readonly'
-                }
-            },
-            plugins: basePlugins,
-            settings: baseSettings,
-            rules: {
-                ...baseSrcRules,         // includes js.recommended + reactFlat + i18nextFlat + react-hooks + viteOnlyExtras + tailwindRules
-                ...reactJsxRuntime.rules,
-                ...tsReactAppRules,      // TS branch needs TS-safe defaults (no-undef: off, no-explicit-any: error, react strict rules)
-                ...extraSrcRules
-            }
-        });
-    } else if (typescript) {
-        srcBlocks.push({
-            files: srcGlobs ?? defaultTsSrcGlobs,
-            extends: [...tseslint.configs.recommended],
-            languageOptions: baseLanguageOptions,
-            plugins: basePlugins,
-            settings: baseSettings,
-            rules: {
-                ...baseSrcRules,
-                ...tsReactAppRules,
-                ...extraSrcRules
-            }
-        });
-    } else {
-        // Vanilla JS (sodo-search, announcement-bar). LEGACY: should migrate to TS.
-        srcBlocks.push({
-            files: srcGlobs ?? defaultJsSrcGlobs,
-            ...js.configs.recommended,
-            languageOptions: {
-                ...reactFlat.languageOptions,
-                ecmaVersion: 2022,
-                sourceType: 'module',
-                globals: globals.browser
-            },
-            plugins: basePlugins,
-            settings: baseSettings,
-            rules: {
-                ...baseSrcRules,
-                ...jsReactAppRules,
-                ...extraSrcRules
-            }
-        });
-    }
-
-    // Test block — skipped if testGlobs === false.
-    const testBlocks = [];
-    if (testGlobs !== false && !legacyJsTsSplit) {
-        const resolvedTestGlobs = testGlobs ?? (typescript ? defaultTsTestGlobs : defaultJsTestGlobs);
-        const testLanguageOptions = typescript
-            ? {
-                ecmaVersion: 2022,
-                sourceType: 'module',
-                globals: {
-                    ...globals.browser,
-                    ...globals.node,
-                    ...globals.vitest,
-                    vi: 'readonly'
-                }
-            }
-            : {
-                ...reactFlat.languageOptions,
-                ecmaVersion: 2022,
-                sourceType: 'module',
-                globals: {
-                    ...globals.browser,
-                    ...globals.vitest,
-                    ...globals.jest,
-                    vi: 'readonly'
-                }
-            };
-        // Test blocks need the same plugins as src because the spread rules
-        // (tsReactAppRules / jsReactAppRules) reference react/*, react-hooks/*,
-        // etc. — ESLint flat config errors if a rule references a plugin not
-        // registered in the same block.
-        testBlocks.push({
-            files: resolvedTestGlobs,
-            ...(typescript ? {extends: [...tseslint.configs.recommended]} : js.configs.recommended),
-            languageOptions: testLanguageOptions,
-            plugins: basePlugins,
-            settings: baseSettings,
-            rules: {
-                ...(typescript ? tsReactAppRules : {...js.configs.recommended.rules, ...reactFlat.rules, ...jsReactAppRules}),
-                ...mochaRulesOff(ghostPlugin),
-                ...extraTestRules
-            }
-        });
-    }
-
-    // Storybook handling (after src/test so storybook rules win for stories).
-    const storybookBlocks = [];
-    if (storybook === 'plugin') {
-        storybookBlocks.push(...storybookPlugin.configs['flat/recommended']);
-        storybookBlocks.push({
-            files: ['**/*.stories.{ts,tsx,js,jsx,mjs,cjs}', '**/*.story.{ts,tsx,js,jsx,mjs,cjs}'],
-            rules: {
-                'storybook/hierarchy-separator': 'error',
-                'storybook/no-redundant-story-name': 'error',
-                'storybook/prefer-pascal-case': 'error'
-            }
-        });
-    }
-
-    return tseslint.config(
-        {ignores},
-        {files: ['**/*'], ...strictLinterOptions},
-        ...srcBlocks,
-        ...storybookBlocks,
-        ...testBlocks
-    );
+  return tseslint.config(
+    { ignores },
+    { files: ['**/*'], ...strictLinterOptions },
+    ...srcBlocks,
+    ...storybookBlocks,
+    ...testBlocks,
+  );
 }

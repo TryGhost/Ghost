@@ -7,205 +7,205 @@ const errors = require('@tryghost/errors');
 const InvoiceEventService = require('../../../../../../../core/server/services/stripe/services/webhook/invoice-event-service');
 
 describe('InvoiceEventService', function () {
-    let memberRepositoryStub, eventRepositoryStub, productRepositoryStub, apiStub, service;
+  let memberRepositoryStub, eventRepositoryStub, productRepositoryStub, apiStub, service;
 
-    beforeEach(function () {
-        memberRepositoryStub = {
-            get: sinon.stub()
-        };
-        eventRepositoryStub = {
-            registerPayment: sinon.stub()
-        };
-        productRepositoryStub = {
-            get: sinon.stub()
-        };
-        apiStub = {
-            getSubscription: sinon.stub()
-        };
-        service = new InvoiceEventService({
-            memberRepository: memberRepositoryStub,
-            eventRepository: eventRepositoryStub,
-            productRepository: productRepositoryStub,
-            api: apiStub
-        });
+  beforeEach(function () {
+    memberRepositoryStub = {
+      get: sinon.stub(),
+    };
+    eventRepositoryStub = {
+      registerPayment: sinon.stub(),
+    };
+    productRepositoryStub = {
+      get: sinon.stub(),
+    };
+    apiStub = {
+      getSubscription: sinon.stub(),
+    };
+    service = new InvoiceEventService({
+      memberRepository: memberRepositoryStub,
+      eventRepository: eventRepositoryStub,
+      productRepository: productRepositoryStub,
+      api: apiStub,
     });
+  });
 
-    it('should return early if invoice does not have a subscription, because its probably a donation', async function () {
-        const invoice = {subscription: null};
+  it('should return early if invoice does not have a subscription, because its probably a donation', async function () {
+    const invoice = { subscription: null };
 
-        await service.handleInvoiceEvent(invoice);
+    await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.notCalled(apiStub.getSubscription);
-        sinon.assert.notCalled(memberRepositoryStub.get);
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+    sinon.assert.notCalled(apiStub.getSubscription);
+    sinon.assert.notCalled(memberRepositoryStub.get);
+    sinon.assert.notCalled(eventRepositoryStub.registerPayment);
 
-        sinon.assert.notCalled(apiStub.getSubscription);
+    sinon.assert.notCalled(apiStub.getSubscription);
+  });
+
+  it('should return early if invoice is a one-time payment', async function () {
+    const invoice = { subscription: null };
+
+    await service.handleInvoiceEvent(invoice);
+
+    sinon.assert.notCalled(apiStub.getSubscription);
+    sinon.assert.notCalled(memberRepositoryStub.get);
+    sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+
+    sinon.assert.notCalled(apiStub.getSubscription);
+  });
+
+  it('should throw NotFoundError if no member is found for subscription customer', async function () {
+    const invoice = {
+      customer: 'cust_123',
+      plan: 'plan_123',
+      subscription: 'sub_123',
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves(null);
+    productRepositoryStub.get.resolves({
+      stripe_product_id: 'product_123',
     });
+    // expect throw
 
-    it('should return early if invoice is a one-time payment', async function () {
-        const invoice = {subscription: null};
+    let error;
 
-        await service.handleInvoiceEvent(invoice);
+    try {
+      await service.handleInvoiceEvent(invoice);
+    } catch (err) {
+      error = err;
+    }
 
-        sinon.assert.notCalled(apiStub.getSubscription);
-        sinon.assert.notCalled(memberRepositoryStub.get);
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+    // Use Sinon to assert that the error is a NotFoundError with the expected message
+    // expect(error).to.be.instanceOf(errors.NotFoundError);
+    assert(error instanceof errors.NotFoundError);
+    // expect(error.message).to.equal('No member found for customer cust_123');
+    assert(error.message === 'No member found for customer cust_123');
+  });
 
-        sinon.assert.notCalled(apiStub.getSubscription);
-    });
+  it('should return early if subscription has more than one plan or no plans', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: null,
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves(null);
+    productRepositoryStub.get.resolves(null);
 
-    it('should throw NotFoundError if no member is found for subscription customer', async function () {
-        const invoice = {
-            customer: 'cust_123',
-            plan: 'plan_123',
-            subscription: 'sub_123'
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves(null);
-        productRepositoryStub.get.resolves({
-            stripe_product_id: 'product_123'
-        });
-        // expect throw
+    await service.handleInvoiceEvent(invoice);
 
-        let error;
+    // sinon.assert.calledOnce(apiStub.getSubscription);
+    // sinon.assert.calledOnce(memberRepositoryStub.get);
+    // sinon.assert.notCalled(productRepositoryStub.get);
 
-        try {
-            await service.handleInvoiceEvent(invoice);
-        } catch (err) {
-            error = err;
-        }
+    sinon.assert.calledOnce(apiStub.getSubscription);
+    sinon.assert.calledOnce(memberRepositoryStub.get);
+    sinon.assert.notCalled(productRepositoryStub.get);
+  });
 
-        // Use Sinon to assert that the error is a NotFoundError with the expected message
-        // expect(error).to.be.instanceOf(errors.NotFoundError);
-        assert(error instanceof errors.NotFoundError);
-        // expect(error.message).to.equal('No member found for customer cust_123');
-        assert(error.message === 'No member found for customer cust_123');
-    });
+  it('should return early if product is not found', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: 'plan_123',
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves(null);
+    productRepositoryStub.get.resolves(null);
 
-    it('should return early if subscription has more than one plan or no plans', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: null
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves(null);
-        productRepositoryStub.get.resolves(null);
+    await service.handleInvoiceEvent(invoice);
 
-        await service.handleInvoiceEvent(invoice);
+    sinon.assert.calledOnce(apiStub.getSubscription);
+    sinon.assert.calledOnce(memberRepositoryStub.get);
+    sinon.assert.calledOnce(productRepositoryStub.get);
+  });
 
-        // sinon.assert.calledOnce(apiStub.getSubscription);
-        // sinon.assert.calledOnce(memberRepositoryStub.get);
-        // sinon.assert.notCalled(productRepositoryStub.get);
+  it('can registerPayment', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: 'plan_123',
+      amount_paid: 100,
+      paid: true,
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves({ id: 'member_123' });
+    productRepositoryStub.get.resolves({ stripe_product_id: 'product_123' });
 
-        sinon.assert.calledOnce(apiStub.getSubscription);
-        sinon.assert.calledOnce(memberRepositoryStub.get);
-        sinon.assert.notCalled(productRepositoryStub.get);
-    });
+    await service.handleInvoiceEvent(invoice);
 
-    it('should return early if product is not found', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: 'plan_123'
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves(null);
-        productRepositoryStub.get.resolves(null);
+    // sinon.assert.calledOnce(eventRepositoryStub.registerPayment);
+    sinon.assert.calledOnce(eventRepositoryStub.registerPayment);
+  });
 
-        await service.handleInvoiceEvent(invoice);
+  it('should not registerPayment if invoice is not paid', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: 'plan_123',
+      amount_paid: 0,
+      paid: false,
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves({ id: 'member_123' });
+    productRepositoryStub.get.resolves({ stripe_product_id: 'product_123' });
 
-        sinon.assert.calledOnce(apiStub.getSubscription);
-        sinon.assert.calledOnce(memberRepositoryStub.get);
-        sinon.assert.calledOnce(productRepositoryStub.get);
-    });
+    await service.handleInvoiceEvent(invoice);
 
-    it('can registerPayment', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: 'plan_123',
-            amount_paid: 100,
-            paid: true
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves({id: 'member_123'});
-        productRepositoryStub.get.resolves({stripe_product_id: 'product_123'});
+    // sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+    sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+  });
 
-        await service.handleInvoiceEvent(invoice);
+  it('should not registerPayment if invoice amount paid is 0', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: 'plan_123',
+      amount_paid: 0,
+      paid: true,
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves({ id: 'member_123' });
+    productRepositoryStub.get.resolves({ stripe_product_id: 'product_123' });
 
-        // sinon.assert.calledOnce(eventRepositoryStub.registerPayment);
-        sinon.assert.calledOnce(eventRepositoryStub.registerPayment);
-    });
+    await service.handleInvoiceEvent(invoice);
 
-    it('should not registerPayment if invoice is not paid', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: 'plan_123',
-            amount_paid: 0,
-            paid: false
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves({id: 'member_123'});
-        productRepositoryStub.get.resolves({stripe_product_id: 'product_123'});
+    // sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+    sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+  });
 
-        await service.handleInvoiceEvent(invoice);
+  it('should not register payment if amount paid is 0 and invoice is not paid', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: 'plan_123',
+      amount_paid: 0,
+      paid: false,
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves({ id: 'member_123' });
+    productRepositoryStub.get.resolves({ stripe_product_id: 'product_123' });
 
-        // sinon.assert.notCalled(eventRepositoryStub.registerPayment);
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
-    });
+    await service.handleInvoiceEvent(invoice);
 
-    it('should not registerPayment if invoice amount paid is 0', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: 'plan_123',
-            amount_paid: 0,
-            paid: true
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves({id: 'member_123'});
-        productRepositoryStub.get.resolves({stripe_product_id: 'product_123'});
+    sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+  });
 
-        await service.handleInvoiceEvent(invoice);
+  it('should not registerPayment if member is not found', async function () {
+    const invoice = {
+      subscription: 'sub_123',
+      plan: 'plan_123',
+      amount_paid: 100,
+      paid: true,
+    };
+    apiStub.getSubscription.resolves(invoice);
+    memberRepositoryStub.get.resolves(null);
+    productRepositoryStub.get.resolves({ stripe_product_id: 'product_123' });
 
-        // sinon.assert.notCalled(eventRepositoryStub.registerPayment);
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
-    });
+    let error;
 
-    it('should not register payment if amount paid is 0 and invoice is not paid', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: 'plan_123',
-            amount_paid: 0,
-            paid: false
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves({id: 'member_123'});
-        productRepositoryStub.get.resolves({stripe_product_id: 'product_123'});
+    try {
+      await service.handleInvoiceEvent(invoice);
+    } catch (err) {
+      error = err;
+    }
 
-        await service.handleInvoiceEvent(invoice);
+    assert(error instanceof errors.NotFoundError);
 
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
-    });
-
-    it('should not registerPayment if member is not found', async function () {
-        const invoice = {
-            subscription: 'sub_123',
-            plan: 'plan_123',
-            amount_paid: 100,
-            paid: true
-        };
-        apiStub.getSubscription.resolves(invoice);
-        memberRepositoryStub.get.resolves(null);
-        productRepositoryStub.get.resolves({stripe_product_id: 'product_123'});
-
-        let error;
-
-        try {
-            await service.handleInvoiceEvent(invoice);
-        } catch (err) {
-            error = err;
-        }
-
-        assert(error instanceof errors.NotFoundError);
-
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
-    });
+    sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+  });
 });

@@ -7,17 +7,17 @@ const errors = require('@tryghost/errors');
  * @returns {Migration}
  */
 function createNonTransactionalMigration(up, down) {
-    return {
-        config: {
-            transaction: false
-        },
-        async up(config) {
-            await up(config.connection);
-        },
-        async down(config) {
-            await down(config.connection);
-        }
-    };
+  return {
+    config: {
+      transaction: false,
+    },
+    async up(config) {
+      await up(config.connection);
+    },
+    async down(config) {
+      await down(config.connection);
+    },
+  };
 }
 
 /**
@@ -26,17 +26,17 @@ function createNonTransactionalMigration(up, down) {
  * @returns {Migration}
  */
 function createIrreversibleMigration(up) {
-    return {
-        config: {
-            irreversible: true
-        },
-        async up(config) {
-            await up(config.connection);
-        },
-        async down() {
-            return Promise.reject();
-        }
-    };
+  return {
+    config: {
+      irreversible: true,
+    },
+    async up(config) {
+      await up(config.connection);
+    },
+    async down() {
+      return Promise.reject();
+    },
+  };
 }
 
 /**
@@ -46,17 +46,17 @@ function createIrreversibleMigration(up) {
  * @returns {Migration}
  */
 function createTransactionalMigration(up, down) {
-    return {
-        config: {
-            transaction: true
-        },
-        async up(config) {
-            await up(config.transacting);
-        },
-        async down(config) {
-            await down(config.transacting);
-        }
-    };
+  return {
+    config: {
+      transaction: true,
+    },
+    async up(config) {
+      await up(config.transacting);
+    },
+    async down(config) {
+      await down(config.transacting);
+    },
+  };
 }
 
 /**
@@ -65,23 +65,23 @@ function createTransactionalMigration(up, down) {
  * @returns {Migration}
  */
 function combineTransactionalMigrations(...migrations) {
-    return {
-        config: {
-            transaction: true
-        },
-        async up(config) {
-            for (const migration of migrations) {
-                await migration.up(config);
-            }
-        },
-        async down(config) {
-            // Down migrations must be run backwards!!
-            const reverseMigrations = migrations.slice().reverse();
-            for (const migration of reverseMigrations) {
-                await migration.down(config);
-            }
-        }
-    };
+  return {
+    config: {
+      transaction: true,
+    },
+    async up(config) {
+      for (const migration of migrations) {
+        await migration.up(config);
+      }
+    },
+    async down(config) {
+      // Down migrations must be run backwards!!
+      const reverseMigrations = migrations.slice().reverse();
+      for (const migration of reverseMigrations) {
+        await migration.down(config);
+      }
+    },
+  };
 }
 
 /**
@@ -90,49 +90,50 @@ function combineTransactionalMigrations(...migrations) {
  * @returns {Migration}
  */
 function combineNonTransactionalMigrations(...migrations) {
-    return {
-        config: {
-            transaction: false
-        },
-        async up(config) {
-            for (const migration of migrations) {
-                await migration.up(config);
-            }
-        },
-        async down(config) {
-            // Down migrations must be run backwards!!
-            const reverseMigrations = migrations.slice().reverse();
-            for (const migration of reverseMigrations) {
-                await migration.down(config);
-            }
-        }
-    };
+  return {
+    config: {
+      transaction: false,
+    },
+    async up(config) {
+      for (const migration of migrations) {
+        await migration.up(config);
+      }
+    },
+    async down(config) {
+      // Down migrations must be run backwards!!
+      const reverseMigrations = migrations.slice().reverse();
+      for (const migration of reverseMigrations) {
+        await migration.down(config);
+      }
+    },
+  };
 }
 
 /**
  * @param {number} major
  */
 function createFinalMigration(major) {
-    return createTransactionalMigration(
-        async function up() {
-            throw new errors.InternalServerError({
-                message: `Unable to run migrations`,
-                context: `You must be on the latest v${major}.x to update across major versions - https://ghost.org/docs/update/`,
-                help: `Run 'ghost update v${major}' to get the latest v${major}.x version, then run 'ghost update' to get to the latest.`
-            });
-        },
-        async function down() {
-            // no-op
-        });
+  return createTransactionalMigration(
+    async function up() {
+      throw new errors.InternalServerError({
+        message: `Unable to run migrations`,
+        context: `You must be on the latest v${major}.x to update across major versions - https://ghost.org/docs/update/`,
+        help: `Run 'ghost update v${major}' to get the latest v${major}.x version, then run 'ghost update' to get to the latest.`,
+      });
+    },
+    async function down() {
+      // no-op
+    },
+  );
 }
 
 module.exports = {
-    createFinalMigration,
-    createTransactionalMigration,
-    createNonTransactionalMigration,
-    createIrreversibleMigration,
-    combineTransactionalMigrations,
-    combineNonTransactionalMigrations
+  createFinalMigration,
+  createTransactionalMigration,
+  createNonTransactionalMigration,
+  createIrreversibleMigration,
+  combineTransactionalMigrations,
+  combineNonTransactionalMigrations,
 };
 
 /**

@@ -10,12 +10,12 @@ Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.ts
 - **When** — `await renderAdminApp("/tags")`, then gesture through the screen helper (`tagsScreen.internalTab().click()`).
 - **Then** — three assertion idioms, plus one documented fallback:
 
-| Asserting | Idiom |
-| --- | --- |
-| Element state | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()` |
-| Element counts | `await expect(locator).toHaveCount(n)` |
+| Asserting         | Idiom                                                                                                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Element state     | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()`                                                                              |
+| Element counts    | `await expect(locator).toHaveCount(n)`                                                                                                                               |
 | Captured requests | `await expect(membersApi).toHaveSentFilter("label:[VIP]")` / `toHaveSentSearch(...)` — string for an exact match against the decoded param, RegExp for a partial one |
-| Edited settings | `await expect(settingsApi).toHaveEditedSettings([{key: "title", value: "New title"}])` — exact settings in the latest `PUT /settings/` payload; order-independent |
+| Edited settings   | `await expect(settingsApi).toHaveEditedSettings([{key: "title", value: "New title"}])` — exact settings in the latest `PUT /settings/` payload; order-independent    |
 
 The request matchers assert against the **latest** captured request; inspect `capture.requests` for history. For anything they don't cover — other captured fields (`url`, `order`, `page`, `limit`), payload bodies, the current URL — fall back to raw polling:
 
@@ -25,7 +25,7 @@ await expect.poll(currentRoute).toBe("/members");   // URL assertions
 await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(true);   // DOM state no locator reaches
 ```
 
-**One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is *represented* by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
+**One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
@@ -33,7 +33,7 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 ## The 418 loop
 
-Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths *and* known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
+Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths _and_ known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
 
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
@@ -62,7 +62,7 @@ Boot responses are STATELESS — a canned reply per request, nothing is stored �
 For a **browse endpoint** (`GET /<resource>/`), add a resource fake in `resources.ts` with `defineResource({resource, semantics})` and pick its semantics honestly:
 
 - `{kind: "passthrough"}` — serves exactly the declared entities, never interprets the query. Right for NQL-filtered lists; per-request responses are declared with a function of the parsed query.
-- `{kind: "declared-query", covers, select}` — implements *trivial declared* behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
+- `{kind: "declared-query", covers, select}` — implements _trivial declared_ behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
 
 For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo).
 
@@ -78,7 +78,7 @@ The pipe capture exposes each request's query params (`site_uuid`, `date_from`, 
 
 Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared per-area registry modules — flat named constants imported via `@tryghost/test-data/selectors/<area>` (e.g. `import {repliesMetric} from "@tryghost/test-data/selectors/comments"`, or `import * as sel from ...` when a file uses many) — the same strings the e2e page objects use, so both tiers break together when the UI changes. Testid constants are the camelCase of the testid string itself (`"replies-metric"` → `repliesMetric`); accessible-name constants carry their element kind or a `Label` suffix (`newTagLink`, `searchLabel`); bare text fragments end in `Text`. The modules are deliberately not re-exported from the package root — flat names collide across surfaces.
 
-**Row scopes.** A helper that identifies a repeated row returns a *scope*: the row locator itself, augmented with factories for the row's parts — `commentsScreen.threadRow(id).repliedToLink()`. Never write a helper that takes another helper's locator as an argument; scopes keep call sites at one nesting level, reading left-to-right, and the scope is still a locator, so all three assertion idioms work on it unchanged (`await expect.element(commentsScreen.commentRow("…")).toBeVisible()`).
+**Row scopes.** A helper that identifies a repeated row returns a _scope_: the row locator itself, augmented with factories for the row's parts — `commentsScreen.threadRow(id).repliedToLink()`. Never write a helper that takes another helper's locator as an argument; scopes keep call sites at one nesting level, reading left-to-right, and the scope is still a locator, so all three assertion idioms work on it unchanged (`await expect.element(commentsScreen.commentRow("…")).toBeVisible()`).
 
 Adding a new screen:
 

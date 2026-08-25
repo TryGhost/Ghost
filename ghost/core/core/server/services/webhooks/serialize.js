@@ -8,21 +8,23 @@
 // `model._changed` carries raw model keys, but `previous` is picked off the
 // API-serialized payload, where some keys are renamed (members `products` → `tiers`).
 const SERIALIZED_KEYS = {
-    members: {
-        products: 'tiers',
-        stripeSubscriptions: 'subscriptions'
-    }
+  members: {
+    products: 'tiers',
+    stripeSubscriptions: 'subscriptions',
+  },
 };
 
 const loadRequiredUrlRelations = async (model, urlService) => {
-    const required = urlService.getRequiredRelations();
-    const missing = required.filter(relation => !model.relations[relation]);
-    if (missing.length) {
-        await model.load(missing);
-    }
+  const required = urlService.getRequiredRelations();
+  const missing = required.filter((relation) => !model.relations[relation]);
+  if (missing.length) {
+    await model.load(missing);
+  }
 };
 
-module.exports = ({urlService}) => async (event, model) => {
+module.exports =
+  ({ urlService }) =>
+  async (event, model) => {
     const _ = require('lodash');
     const api = require('../../api').endpoints;
     const apiFramework = require('@tryghost/api-framework');
@@ -32,11 +34,7 @@ module.exports = ({urlService}) => async (event, model) => {
 
     const POST_FORMATS = ['html', 'plaintext'];
     const POST_WITH_RELATED = ['tags', 'authors'];
-    const MEMBER_WITH_RELATED = [
-        'labels',
-        'products',
-        'newsletters'
-    ];
+    const MEMBER_WITH_RELATED = ['labels', 'products', 'newsletters'];
 
     let current = {};
     let previous = {};
@@ -44,61 +42,67 @@ module.exports = ({urlService}) => async (event, model) => {
     const changed = model._changed ? Object.keys(model._changed) : [];
 
     if (Object.keys(model.attributes).length) {
-        let frame = {options: {previous: false, context: {user: true}}};
+      let frame = { options: { previous: false, context: { user: true } } };
 
-        // @NOTE: below options are lost during event processing, a more holistic approach would be
-        //       to pass them somehow along with the model
-        switch (docName) {
+      // @NOTE: below options are lost during event processing, a more holistic approach would be
+      //       to pass them somehow along with the model
+      switch (docName) {
         case 'posts':
         case 'pages':
-            frame.options.formats = POST_FORMATS;
-            await loadRequiredUrlRelations(model, urlService);
-            frame.options.withRelated = POST_WITH_RELATED;
-            model._originalOptions = {
-                withRelated: POST_WITH_RELATED
-            };
-            break;
+          frame.options.formats = POST_FORMATS;
+          await loadRequiredUrlRelations(model, urlService);
+          frame.options.withRelated = POST_WITH_RELATED;
+          model._originalOptions = {
+            withRelated: POST_WITH_RELATED,
+          };
+          break;
         case 'members':
-            await model.load(MEMBER_WITH_RELATED);
-            break;
+          await model.load(MEMBER_WITH_RELATED);
+          break;
         default:
-            break;
-        }
+          break;
+      }
 
-        await apiFramework
-            .serializers
-            .handle
-            .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
-        current = frame.response[docName][0];
+      await apiFramework.serializers.handle.output(
+        model,
+        { docName: docName, method: 'read' },
+        api.serializers.output,
+        frame,
+      );
+      current = frame.response[docName][0];
     }
 
     if (changed.length && Object.keys(model._previousAttributes).length) {
-        const frame = {options: {previous: true, context: {user: true}}};
+      const frame = { options: { previous: true, context: { user: true } } };
 
-        switch (docName) {
+      switch (docName) {
         case 'posts':
         case 'pages':
-            frame.options.formats = POST_FORMATS;
-            frame.options.withRelated = POST_WITH_RELATED;
-            break;
+          frame.options.formats = POST_FORMATS;
+          frame.options.withRelated = POST_WITH_RELATED;
+          break;
         default:
-            break;
-        }
+          break;
+      }
 
-        await apiFramework
-            .serializers
-            .handle
-            .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
-        previous = _.pick(frame.response[docName][0], changed.map(key => SERIALIZED_KEYS[docName]?.[key] ?? key));
+      await apiFramework.serializers.handle.output(
+        model,
+        { docName: docName, method: 'read' },
+        api.serializers.output,
+        frame,
+      );
+      previous = _.pick(
+        frame.response[docName][0],
+        changed.map((key) => SERIALIZED_KEYS[docName]?.[key] ?? key),
+      );
     }
 
-
     const payload = {
-        [docName.replace(/s$/, '')]: {
-            current,
-            previous
-        }
+      [docName.replace(/s$/, '')]: {
+        current,
+        previous,
+      },
     };
 
     return payload;
-};
+  };

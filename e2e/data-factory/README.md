@@ -28,11 +28,13 @@ from the `@/data-factory` barrel.
 This is part of the Ghost e2e test suite. All dependencies are managed by the main Ghost monorepo.
 
 1. **Start Ghost development server** (provides database):
+
    ```bash
    pnpm dev
    ```
 
 2. **Configure database connection** (optional - uses Ghost's database by default):
+
    ```bash
    cp e2e/data-factory/.env.example e2e/data-factory/.env
    # Edit .env if using different database credentials
@@ -48,6 +50,7 @@ This is part of the Ghost e2e test suite. All dependencies are managed by the ma
 ### In Tests
 
 **Option 1: Use setup helpers (recommended)**
+
 ```typescript
 import {createPostFactory, PostFactory} from '../data-factory';
 
@@ -68,6 +71,7 @@ const publishedPost = await postFactory.create({
 ```
 
 **Option 2: Manual setup**
+
 ```typescript
 import {PostFactory} from '../data-factory/factories/post-factory';
 import {GhostAdminApiAdapter} from '../data-factory/persistence/adapters/ghost-api';
@@ -87,9 +91,9 @@ const post = await postFactory.create({
 ### Adding New Factories
 
 1. Add (or reuse) a canonical builder in `@tryghost/test-data` — it owns the
-   entity's Admin API *response* shape and randomised defaults
+   entity's Admin API _response_ shape and randomised defaults
 2. Create a factory class extending `Factory<TOptions, TResult>` whose
-   `build()` derives the *write/create* payload from that builder (see
+   `build()` derives the _write/create_ payload from that builder (see
    `tag-factory.ts` for a 1:1 delegation, `member-factory.ts` and
    `post-factory.ts` for shapes where the write payload differs from the
    response — flattened relations, dropped response-only fields)
@@ -97,6 +101,7 @@ const post = await postFactory.create({
 4. Create a setup helper in `setup.ts` for convenient usage in tests
 
 Example:
+
 ```typescript
 import {Factory} from '../factory';
 import {member} from '@tryghost/test-data';
@@ -114,6 +119,7 @@ export class MemberFactory extends Factory<Partial<Member>, Member> {
 ```
 
 Then create a setup helper:
+
 ```typescript
 // In setup.ts
 export function createMemberFactory(httpClient: HttpClient): MemberFactory {

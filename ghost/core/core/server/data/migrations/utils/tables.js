@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
-const {commands} = require('../../schema');
-const {createIrreversibleMigration, createNonTransactionalMigration} = require('./migrations');
+const { commands } = require('../../schema');
+const { createIrreversibleMigration, createNonTransactionalMigration } = require('./migrations');
 
 /**
  * Creates a migrations which will add a new table from schema.js to the database
@@ -10,28 +10,28 @@ const {createIrreversibleMigration, createNonTransactionalMigration} = require('
  * @returns {Object} migration object returning config/up/down properties
  */
 function addTable(name, tableSpec) {
-    return createNonTransactionalMigration(
-        async function up(connection) {
-            const tableExists = await connection.schema.hasTable(name);
-            if (tableExists) {
-                logging.warn(`Skipping adding table: ${name} - table already exists`);
-                return;
-            }
+  return createNonTransactionalMigration(
+    async function up(connection) {
+      const tableExists = await connection.schema.hasTable(name);
+      if (tableExists) {
+        logging.warn(`Skipping adding table: ${name} - table already exists`);
+        return;
+      }
 
-            logging.info(`Adding table: ${name}`);
-            return commands.createTable(name, connection, tableSpec);
-        },
-        async function down(connection) {
-            const tableExists = await connection.schema.hasTable(name);
-            if (!tableExists) {
-                logging.warn(`Skipping dropping table: ${name} - table does not exist`);
-                return;
-            }
+      logging.info(`Adding table: ${name}`);
+      return commands.createTable(name, connection, tableSpec);
+    },
+    async function down(connection) {
+      const tableExists = await connection.schema.hasTable(name);
+      if (!tableExists) {
+        logging.warn(`Skipping dropping table: ${name} - table does not exist`);
+        return;
+      }
 
-            logging.info(`Dropping table: ${name}`);
-            return commands.deleteTable(name, connection);
-        }
-    );
+      logging.info(`Dropping table: ${name}`);
+      return commands.deleteTable(name, connection);
+    },
+  );
 }
 
 /**
@@ -40,20 +40,18 @@ function addTable(name, tableSpec) {
  * @param {string[]} names  - names of the tables to drop
  */
 function dropTables(names) {
-    return createIrreversibleMigration(
-        async function up(connection) {
-            for (const name of names) {
-                const exists = await connection.schema.hasTable(name);
+  return createIrreversibleMigration(async function up(connection) {
+    for (const name of names) {
+      const exists = await connection.schema.hasTable(name);
 
-                if (!exists) {
-                    logging.warn(`Skipping dropping table: ${name} - table does not exist`);
-                } else {
-                    logging.info(`Dropping table: ${name}`);
-                    await commands.deleteTable(name, connection);
-                }
-            }
-        }
-    );
+      if (!exists) {
+        logging.warn(`Skipping dropping table: ${name} - table does not exist`);
+      } else {
+        logging.info(`Dropping table: ${name}`);
+        await commands.deleteTable(name, connection);
+      }
+    }
+  });
 }
 
 /**
@@ -64,29 +62,29 @@ function dropTables(names) {
  * @returns {Object} migration object returning config/up/down properties
  */
 function recreateTable(name, tableSpec) {
-    return createNonTransactionalMigration(
-        async function up(connection) {
-            const exists = await connection.schema.hasTable(name);
+  return createNonTransactionalMigration(
+    async function up(connection) {
+      const exists = await connection.schema.hasTable(name);
 
-            if (!exists) {
-                logging.warn(`Skipping dropping table: ${name} - table does not exist`);
-            } else {
-                logging.info(`Dropping table: ${name}`);
-                await commands.deleteTable(name, connection);
-                logging.info(`Re-adding table: ${name}`);
-                await commands.createTable(name, connection, tableSpec);
-            }
-        },
-        async function down() {
-            // noop: we cannot go back to old table schema
-            logging.warn(`Ignoring rollback for table recreate: ${name}`);
-            return Promise.resolve();
-        }
-    );
+      if (!exists) {
+        logging.warn(`Skipping dropping table: ${name} - table does not exist`);
+      } else {
+        logging.info(`Dropping table: ${name}`);
+        await commands.deleteTable(name, connection);
+        logging.info(`Re-adding table: ${name}`);
+        await commands.createTable(name, connection, tableSpec);
+      }
+    },
+    async function down() {
+      // noop: we cannot go back to old table schema
+      logging.warn(`Ignoring rollback for table recreate: ${name}`);
+      return Promise.resolve();
+    },
+  );
 }
 
 module.exports = {
-    addTable,
-    dropTables,
-    recreateTable
+  addTable,
+  dropTables,
+  recreateTable,
 };

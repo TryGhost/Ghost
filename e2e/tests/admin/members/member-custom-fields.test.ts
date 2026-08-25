@@ -1,7 +1,7 @@
-import {MemberDetailsPage, SettingsPage} from '@/admin-pages';
-import {createMemberFactory} from '@/data-factory';
-import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+import { MemberDetailsPage, SettingsPage } from '@/admin-pages';
+import { createMemberFactory } from '@/data-factory';
+import { expect, test } from '@/helpers/playwright';
+import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
 /**
  * The custom-fields journey that crosses two surfaces: a field defined in
@@ -16,27 +16,32 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Member custom fields', () => {
-    test.use({labs: {membersCustomFields: true}});
+  test.use({ labs: { membersCustomFields: true } });
 
-    test('a field defined in settings takes a value on a member and persists it', async ({page}) => {
-        const fieldName = `Job title ${Date.now()}`;
-        const memberFactory = createMemberFactory(page.request);
-        const member = await memberFactory.create({name: 'Ada Lovelace', email: `ada-custom-fields-${Date.now()}@ghost.org`});
-
-        const settingsPage = new SettingsPage(page);
-        const memberDetailsPage = new MemberDetailsPage(page);
-
-        await settingsPage.goto();
-        await settingsPage.customFieldsSection.createShortTextField(fieldName);
-
-        await page.goto(`/ghost/#/members/${member.id}`);
-        await expect(memberDetailsPage.customFieldEditButton(fieldName)).toBeVisible();
-
-        await memberDetailsPage.setCustomFieldValue(fieldName, 'Editor');
-        await expect(memberDetailsPage.customFieldsCard.getByText('Editor')).toBeVisible();
-
-        await page.reload();
-
-        await expect(memberDetailsPage.customFieldsCard.getByText('Editor')).toBeVisible();
+  test('a field defined in settings takes a value on a member and persists it', async ({
+    page,
+  }) => {
+    const fieldName = `Job title ${Date.now()}`;
+    const memberFactory = createMemberFactory(page.request);
+    const member = await memberFactory.create({
+      name: 'Ada Lovelace',
+      email: `ada-custom-fields-${Date.now()}@ghost.org`,
     });
+
+    const settingsPage = new SettingsPage(page);
+    const memberDetailsPage = new MemberDetailsPage(page);
+
+    await settingsPage.goto();
+    await settingsPage.customFieldsSection.createShortTextField(fieldName);
+
+    await page.goto(`/ghost/#/members/${member.id}`);
+    await expect(memberDetailsPage.customFieldEditButton(fieldName)).toBeVisible();
+
+    await memberDetailsPage.setCustomFieldValue(fieldName, 'Editor');
+    await expect(memberDetailsPage.customFieldsCard.getByText('Editor')).toBeVisible();
+
+    await page.reload();
+
+    await expect(memberDetailsPage.customFieldsCard.getByText('Editor')).toBeVisible();
+  });
 });

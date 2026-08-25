@@ -86,7 +86,6 @@ runs:
           exit 1
         fi
 
-
 outputs:
   image-tag:
     description: 'The Docker image tag to use'

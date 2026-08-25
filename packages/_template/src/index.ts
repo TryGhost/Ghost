@@ -1,3 +1,3 @@
 export function greeting(): string {
-    return 'Hello from @tryghost/{{NAME}}';
+  return 'Hello from @tryghost/{{NAME}}';
 }

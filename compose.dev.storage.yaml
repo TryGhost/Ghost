@@ -10,22 +10,22 @@ services:
     container_name: ghost-dev-minio
     command: server /data --console-address ':9001'
     ports:
-      - "9000:9000"  # S3 API
-      - "9001:9001"  # Web console
+      - '9000:9000' # S3 API
+      - '9001:9001' # Web console
     environment:
       - MINIO_ROOT_USER=minio-user
       - MINIO_ROOT_PASSWORD=minio-pass
     volumes:
       - minio-data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/ready']
       interval: 1s
       retries: 120
 
   minio-setup:
     image: minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
     container_name: ghost-dev-minio-setup
-    entrypoint: ["/bin/sh", "/setup.sh"]
+    entrypoint: ['/bin/sh', '/setup.sh']
     environment:
       - MINIO_ROOT_USER=minio-user
       - MINIO_ROOT_PASSWORD=minio-pass
@@ -36,7 +36,7 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-    restart: "no"
+    restart: 'no'
 
   ghost-dev:
     environment:
@@ -48,7 +48,7 @@ services:
       storage__S3Storage__bucket: ghost-dev
       storage__S3Storage__region: us-east-1
       storage__S3Storage__tenantPrefix: ab/ab1234567890abcdef1234567890abcd
-      storage__S3Storage__forcePathStyle: "true"
+      storage__S3Storage__forcePathStyle: 'true'
       storage__S3Storage__cdnUrl: http://127.0.0.1:9000/ghost-dev
       storage__S3Storage__staticFileURLPrefix: content/images
       storage__S3Storage__endpoint: http://minio:9000
@@ -64,4 +64,3 @@ services:
 
 volumes:
   minio-data:
-

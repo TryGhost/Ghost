@@ -15,8 +15,8 @@
  * i18n note: apps import their locales via `@tryghost/i18n/registry/<namespace>`,
  * a static ESM registry any bundler can resolve.
  */
-import {resolve} from 'path';
-import {defineConfig, mergeConfig} from 'vitest/config';
+import { resolve } from 'path';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
 /**
  * @param {Object} opts
@@ -33,62 +33,61 @@ import {defineConfig, mergeConfig} from 'vitest/config';
  * @returns {import('vitest/config').UserConfig}
  */
 export function publicAppViteConfig(opts) {
-    const {
-        packageRoot,
-        packageName,
-        entry,
-        framework = 'react',
-        svgr = true,
-        libFormat = 'umd',
-        libName,
-        sourcemap = true,
-        cssCodeSplit = true,
-        overrides = {}
-    } = opts;
+  const {
+    packageRoot,
+    packageName,
+    entry,
+    framework = 'react',
+    svgr = true,
+    libFormat = 'umd',
+    libName,
+    sourcemap = true,
+    cssCodeSplit = true,
+    overrides = {},
+  } = opts;
 
-    return defineConfig(async (config) => {
-        const outputFileName = packageName[0] === '@'
-            ? packageName.slice(packageName.indexOf('/') + 1)
-            : packageName;
+  return defineConfig(async (config) => {
+    const outputFileName =
+      packageName[0] === '@' ? packageName.slice(packageName.indexOf('/') + 1) : packageName;
 
-        const plugins = [];
-        if (framework === 'react') {
-            const {default: reactPlugin} = await import('@vitejs/plugin-react');
-            plugins.push(reactPlugin());
-        }
-        if (svgr) {
-            const {default: svgrPlugin} = await import('vite-plugin-svgr');
-            plugins.push(svgrPlugin());
-        }
+    const plugins = [];
+    if (framework === 'react') {
+      const { default: reactPlugin } = await import('@vitejs/plugin-react');
+      plugins.push(reactPlugin());
+    }
+    if (svgr) {
+      const { default: svgrPlugin } = await import('vite-plugin-svgr');
+      plugins.push(svgrPlugin());
+    }
 
-        const base = {
-            logLevel: process.env.CI ? 'info' : 'warn',
-            clearScreen: false,
-            plugins,
-            define: {
-                'process.env.NODE_ENV': JSON.stringify(config.mode)
-            },
-            build: {
-                outDir: resolve(packageRoot, 'umd'),
-                emptyOutDir: true,
-                reportCompressedSize: false,
-                minify: config.mode === 'production',
-                sourcemap,
-                cssCodeSplit,
-                lib: {
-                    entry: resolve(packageRoot, entry),
-                    formats: [libFormat],
-                    name: libName ?? packageName,
-                    fileName: () => `${outputFileName}.min.js`
-                }
-            },
-            test: {
-                globals: true,
-                environment: 'jsdom',
-                testTimeout: 10000
-            }
-        };
+    const base = {
+      logLevel: process.env.CI ? 'info' : 'warn',
+      clearScreen: false,
+      plugins,
+      define: {
+        'process.env.NODE_ENV': JSON.stringify(config.mode),
+      },
+      build: {
+        outDir: resolve(packageRoot, 'umd'),
+        emptyOutDir: true,
+        reportCompressedSize: false,
+        minify: config.mode === 'production',
+        sourcemap,
+        cssCodeSplit,
+        lib: {
+          entry: resolve(packageRoot, entry),
+          formats: [libFormat],
+          name: libName ?? packageName,
+          fileName: () => `${outputFileName}.min.js`,
+        },
+      },
+      test: {
+        globals: true,
+        environment: 'jsdom',
+        testTimeout: 10000,
+      },
+    };
 
-        return mergeConfig(base, overrides);
-    });
+    return mergeConfig(base, overrides);
+  });
 }

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 
@@ -11,258 +11,302 @@ const logging = require('@tryghost/logging');
 const api = require('../../../../core/server/api').endpoints;
 
 describe('{{url}} helper', function () {
-    let rendered;
-    let getUrlForResourceStub;
+  let rendered;
+  let getUrlForResourceStub;
 
-    beforeEach(function () {
-        rendered = null;
+  beforeEach(function () {
+    rendered = null;
 
-        // The helpers read through the URL service, so that is the seam to stub.
-        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
+    // The helpers read through the URL service, so that is the seam to stub.
+    getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
 
-        sinon.stub(api.settings, 'read').callsFake(function () {
-            return Promise.resolve({settings: [{value: '/:slug/'}]});
-        });
+    sinon.stub(api.settings, 'read').callsFake(function () {
+      return Promise.resolve({ settings: [{ value: '/:slug/' }] });
+    });
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('no subdir', function () {
+    beforeAll(function () {
+      configUtils.set({ url: 'http://localhost:65535/' });
     });
 
-    afterEach(function () {
-        sinon.restore();
+    afterAll(async function () {
+      await configUtils.restore();
     });
 
-    describe('no subdir', function () {
-        beforeAll(function () {
-            configUtils.set({url: 'http://localhost:65535/'});
-        });
+    it('should return the slug with a prefix slash if the context is a post', function () {
+      const post = testUtils.DataGenerator.forKnex.createPost({
+        html: 'content',
+        lexical: markdownToLexical('ff'),
+        title: 'title',
+        slug: 'slug',
+        created_at: new Date(0),
+        url: '/slug/',
+      });
 
-        afterAll(async function () {
-            await configUtils.restore();
-        });
+      getUrlForResourceStub
+        .withArgs(sinon.match({ id: post.id, type: 'posts' }), {
+          absolute: undefined,
+          withSubdirectory: true,
+        })
+        .returns('/slug/');
 
-        it('should return the slug with a prefix slash if the context is a post', function () {
-            const post = testUtils.DataGenerator.forKnex.createPost({
-                html: 'content',
-                lexical: markdownToLexical('ff'),
-                title: 'title',
-                slug: 'slug',
-                created_at: new Date(0),
-                url: '/slug/'
-            });
-
-            getUrlForResourceStub.withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: undefined, withSubdirectory: true}).returns('/slug/');
-
-            rendered = url.call(post);
-            assertExists(rendered);
-            assert.equal(rendered.string, '/slug/');
-        });
-
-        it('should output an absolute URL if the option is present', function () {
-            const post = testUtils.DataGenerator.forKnex.createPost({
-                html: 'content',
-                lexical: markdownToLexical('ff'),
-                title: 'title',
-                slug: 'slug',
-                url: '/slug/',
-                created_at: new Date(0)
-            });
-
-            getUrlForResourceStub.withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: true, withSubdirectory: true}).returns('http://localhost:65535/slug/');
-
-            rendered = url.call(post, {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://localhost:65535/slug/');
-        });
-
-        it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
-            const tag = testUtils.DataGenerator.forKnex.createTag({
-                name: 'the tag',
-                slug: 'the-tag',
-                description: null,
-                parent: null
-            });
-
-            getUrlForResourceStub.withArgs(sinon.match({id: tag.id, type: 'tags'}), {absolute: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
-
-            rendered = url.call(tag);
-            assertExists(rendered);
-            assert.equal(rendered.string, '/tag/the-tag/');
-        });
-
-        it('should return the slug with a prefixed /author/ if the context is author', function () {
-            const user = testUtils.DataGenerator.forKnex.createUser({
-                bio: null,
-                website: null,
-                profile_image: null,
-                location: null,
-                slug: 'some-author'
-            });
-
-            getUrlForResourceStub.withArgs(sinon.match({id: user.id, type: 'authors'}), {absolute: undefined, withSubdirectory: true}).returns('/author/some-author/');
-
-            rendered = url.call(user);
-            assertExists(rendered);
-            assert.equal(rendered.string, '/author/some-author/');
-        });
-
-        it('should return / if not a post or tag', function () {
-            rendered = url.call({something: 'key'});
-            assertExists(rendered);
-            assert.equal(rendered.string, '/');
-        });
-
-        it('should return a relative url if passed through a nav context', function () {
-            rendered = url.call(
-                {url: '/foo', label: 'Foo', slug: 'foo', current: true});
-            assertExists(rendered);
-            assert.equal(rendered.string, '/foo');
-        });
-
-        it('should return an absolute url if passed through a nav context', function () {
-            rendered = url.call(
-                {url: '/bar', label: 'Bar', slug: 'bar', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://localhost:65535/bar');
-        });
-
-        it('external urls should be retained in a nav context', function () {
-            rendered = url.call(
-                {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://casper.website/baz');
-        });
-
-        it('should handle hosted urls in a nav context', function () {
-            rendered = url.call(
-                {url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://localhost:65535/qux');
-        });
-
-        it('should handle hosted urls with the wrong protocol in a nav context', function () {
-            rendered = url.call(
-                {url: 'https://localhost:65535/quux', label: 'Quux', slug: 'quux', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://localhost:65535/quux');
-        });
-
-        it('should pass through protocol-less URLs regardless of absolute setting', function () {
-            rendered = url.call(
-                {url: '//casper.website/baz', label: 'Baz', slug: 'baz', current: true},
-                {hash: {}});
-            assertExists(rendered);
-            assert.equal(rendered.string, '//casper.website/baz');
-
-            rendered = url.call(
-                {url: '//casper.website/baz', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, '//casper.website/baz');
-        });
-
-        it('should pass through URLs with alternative schemes regardless of absolute setting', function () {
-            rendered = url.call(
-                {url: 'tel:01234567890', label: 'Baz', slug: 'baz', current: true},
-                {hash: {}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'tel:01234567890');
-
-            rendered = url.call(
-                {url: 'mailto:example@ghost.org', label: 'Baz', slug: 'baz', current: true},
-                {hash: {}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'mailto:example@ghost.org');
-
-            rendered = url.call(
-                {url: 'tel:01234567890', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'tel:01234567890');
-
-            rendered = url.call(
-                {url: 'mailto:example@ghost.org', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'mailto:example@ghost.org');
-        });
-
-        it('should pass through anchor-only URLs  regardless of absolute setting', function () {
-            rendered = url.call(
-                {url: '#thatsthegoodstuff', label: 'Baz', slug: 'baz', current: true},
-                {hash: {}});
-            assertExists(rendered);
-            assert.equal(rendered.string, '#thatsthegoodstuff');
-
-            rendered = url.call(
-                {url: '#thatsthegoodstuff', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, '#thatsthegoodstuff');
-        });
-
-        it('should not HTML-escape URLs', function () {
-            rendered = url.call(
-                {url: '/foo?foo=bar&baz=qux', label: 'Foo', slug: 'foo', current: true});
-            assertExists(rendered);
-            assert.equal(rendered.string, '/foo?foo=bar&baz=qux');
-        });
-
-        it('should encode URLs', function () {
-            rendered = url.call(
-                {url: '/foo?foo=bar&baz=qux&<script>alert("gotcha")</script>', label: 'Foo', slug: 'foo', current: true});
-            assertExists(rendered);
-            assert.equal(rendered.string, '/foo?foo=bar&baz=qux&%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E');
-        });
-
-        it('should not double-encode URLs', function () {
-            rendered = url.call(
-                {url: '/?foo=space%20bar', label: 'Foo', slug: 'foo', current: true});
-            assertExists(rendered);
-            assert.equal(rendered.string, '/?foo=space%20bar');
-        });
-
-        it('should return an empty string when we can\'t parse a string', function () {
-            const loggingStub = sinon.stub(logging, 'error');
-            rendered = url.call({url: '/?foo=space%%bar', label: 'Baz', slug: 'baz', current: true});
-            assertExists(rendered);
-            assert.equal(rendered.string, '');
-            sinon.assert.calledOnce(loggingStub);
-        });
-
-        it('should not encode square brackets (as in valid IPV6 addresses)', function () {
-            rendered = url.call(
-                {url: 'http://[ffff::]:2368/baz', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://[ffff::]:2368/baz');
-        });
+      rendered = url.call(post);
+      assertExists(rendered);
+      assert.equal(rendered.string, '/slug/');
     });
 
-    describe('with subdir', function () {
-        beforeAll(function () {
-            configUtils.set({url: 'http://localhost:65535/blog'});
-        });
+    it('should output an absolute URL if the option is present', function () {
+      const post = testUtils.DataGenerator.forKnex.createPost({
+        html: 'content',
+        lexical: markdownToLexical('ff'),
+        title: 'title',
+        slug: 'slug',
+        url: '/slug/',
+        created_at: new Date(0),
+      });
 
-        afterAll(async function () {
-            await configUtils.restore();
-        });
+      getUrlForResourceStub
+        .withArgs(sinon.match({ id: post.id, type: 'posts' }), {
+          absolute: true,
+          withSubdirectory: true,
+        })
+        .returns('http://localhost:65535/slug/');
 
-        it('external urls should be retained in a nav context with subdir', function () {
-            rendered = url.call(
-                {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://casper.website/baz');
-        });
-
-        it('should handle subdir being set in nav context', function () {
-            rendered = url.call(
-                {url: '/xyzzy', label: 'xyzzy', slug: 'xyzzy', current: true},
-                {hash: {absolute: 'true'}});
-            assertExists(rendered);
-            assert.equal(rendered.string, 'http://localhost:65535/blog/xyzzy');
-        });
+      rendered = url.call(post, { hash: { absolute: 'true' } });
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://localhost:65535/slug/');
     });
+
+    it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
+      const tag = testUtils.DataGenerator.forKnex.createTag({
+        name: 'the tag',
+        slug: 'the-tag',
+        description: null,
+        parent: null,
+      });
+
+      getUrlForResourceStub
+        .withArgs(sinon.match({ id: tag.id, type: 'tags' }), {
+          absolute: undefined,
+          withSubdirectory: true,
+        })
+        .returns('/tag/the-tag/');
+
+      rendered = url.call(tag);
+      assertExists(rendered);
+      assert.equal(rendered.string, '/tag/the-tag/');
+    });
+
+    it('should return the slug with a prefixed /author/ if the context is author', function () {
+      const user = testUtils.DataGenerator.forKnex.createUser({
+        bio: null,
+        website: null,
+        profile_image: null,
+        location: null,
+        slug: 'some-author',
+      });
+
+      getUrlForResourceStub
+        .withArgs(sinon.match({ id: user.id, type: 'authors' }), {
+          absolute: undefined,
+          withSubdirectory: true,
+        })
+        .returns('/author/some-author/');
+
+      rendered = url.call(user);
+      assertExists(rendered);
+      assert.equal(rendered.string, '/author/some-author/');
+    });
+
+    it('should return / if not a post or tag', function () {
+      rendered = url.call({ something: 'key' });
+      assertExists(rendered);
+      assert.equal(rendered.string, '/');
+    });
+
+    it('should return a relative url if passed through a nav context', function () {
+      rendered = url.call({ url: '/foo', label: 'Foo', slug: 'foo', current: true });
+      assertExists(rendered);
+      assert.equal(rendered.string, '/foo');
+    });
+
+    it('should return an absolute url if passed through a nav context', function () {
+      rendered = url.call(
+        { url: '/bar', label: 'Bar', slug: 'bar', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://localhost:65535/bar');
+    });
+
+    it('external urls should be retained in a nav context', function () {
+      rendered = url.call(
+        { url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://casper.website/baz');
+    });
+
+    it('should handle hosted urls in a nav context', function () {
+      rendered = url.call(
+        { url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://localhost:65535/qux');
+    });
+
+    it('should handle hosted urls with the wrong protocol in a nav context', function () {
+      rendered = url.call(
+        { url: 'https://localhost:65535/quux', label: 'Quux', slug: 'quux', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://localhost:65535/quux');
+    });
+
+    it('should pass through protocol-less URLs regardless of absolute setting', function () {
+      rendered = url.call(
+        { url: '//casper.website/baz', label: 'Baz', slug: 'baz', current: true },
+        { hash: {} },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, '//casper.website/baz');
+
+      rendered = url.call(
+        { url: '//casper.website/baz', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, '//casper.website/baz');
+    });
+
+    it('should pass through URLs with alternative schemes regardless of absolute setting', function () {
+      rendered = url.call(
+        { url: 'tel:01234567890', label: 'Baz', slug: 'baz', current: true },
+        { hash: {} },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'tel:01234567890');
+
+      rendered = url.call(
+        { url: 'mailto:example@ghost.org', label: 'Baz', slug: 'baz', current: true },
+        { hash: {} },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'mailto:example@ghost.org');
+
+      rendered = url.call(
+        { url: 'tel:01234567890', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'tel:01234567890');
+
+      rendered = url.call(
+        { url: 'mailto:example@ghost.org', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'mailto:example@ghost.org');
+    });
+
+    it('should pass through anchor-only URLs  regardless of absolute setting', function () {
+      rendered = url.call(
+        { url: '#thatsthegoodstuff', label: 'Baz', slug: 'baz', current: true },
+        { hash: {} },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, '#thatsthegoodstuff');
+
+      rendered = url.call(
+        { url: '#thatsthegoodstuff', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, '#thatsthegoodstuff');
+    });
+
+    it('should not HTML-escape URLs', function () {
+      rendered = url.call({
+        url: '/foo?foo=bar&baz=qux',
+        label: 'Foo',
+        slug: 'foo',
+        current: true,
+      });
+      assertExists(rendered);
+      assert.equal(rendered.string, '/foo?foo=bar&baz=qux');
+    });
+
+    it('should encode URLs', function () {
+      rendered = url.call({
+        url: '/foo?foo=bar&baz=qux&<script>alert("gotcha")</script>',
+        label: 'Foo',
+        slug: 'foo',
+        current: true,
+      });
+      assertExists(rendered);
+      assert.equal(
+        rendered.string,
+        '/foo?foo=bar&baz=qux&%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E',
+      );
+    });
+
+    it('should not double-encode URLs', function () {
+      rendered = url.call({ url: '/?foo=space%20bar', label: 'Foo', slug: 'foo', current: true });
+      assertExists(rendered);
+      assert.equal(rendered.string, '/?foo=space%20bar');
+    });
+
+    it("should return an empty string when we can't parse a string", function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      rendered = url.call({ url: '/?foo=space%%bar', label: 'Baz', slug: 'baz', current: true });
+      assertExists(rendered);
+      assert.equal(rendered.string, '');
+      sinon.assert.calledOnce(loggingStub);
+    });
+
+    it('should not encode square brackets (as in valid IPV6 addresses)', function () {
+      rendered = url.call(
+        { url: 'http://[ffff::]:2368/baz', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://[ffff::]:2368/baz');
+    });
+  });
+
+  describe('with subdir', function () {
+    beforeAll(function () {
+      configUtils.set({ url: 'http://localhost:65535/blog' });
+    });
+
+    afterAll(async function () {
+      await configUtils.restore();
+    });
+
+    it('external urls should be retained in a nav context with subdir', function () {
+      rendered = url.call(
+        { url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://casper.website/baz');
+    });
+
+    it('should handle subdir being set in nav context', function () {
+      rendered = url.call(
+        { url: '/xyzzy', label: 'xyzzy', slug: 'xyzzy', current: true },
+        { hash: { absolute: 'true' } },
+      );
+      assertExists(rendered);
+      assert.equal(rendered.string, 'http://localhost:65535/blog/xyzzy');
+    });
+  });
 });

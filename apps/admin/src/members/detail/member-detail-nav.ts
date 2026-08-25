@@ -13,17 +13,17 @@
  * @param search - the location search string (e.g. `?back=%2Fmembers%3Ffilter...`)
  */
 export function deriveMemberDetailBackPath(search: string): string {
-    const params = new URLSearchParams(search);
+  const params = new URLSearchParams(search);
 
-    const back = params.get('back');
-    if (back && back.startsWith('/members')) {
-        return back;
-    }
+  const back = params.get('back');
+  if (back && back.startsWith('/members')) {
+    return back;
+  }
 
-    const post = params.get('post');
-    if (post) {
-        return `/members?post=${encodeURIComponent(post)}`;
-    }
+  const post = params.get('post');
+  if (post) {
+    return `/members?post=${encodeURIComponent(post)}`;
+  }
 
-    return '/members';
+  return '/members';
 }

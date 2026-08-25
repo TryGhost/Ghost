@@ -23,40 +23,41 @@ const hashCache = new Map();
  * @returns {string|null} - First 16 characters of SHA256 hash, or null if file doesn't exist
  */
 function getHashForFile(filePath) {
-    try {
-        const stat = fs.statSync(filePath);
-        const mtimeMs = stat.mtimeMs;
+  try {
+    const stat = fs.statSync(filePath);
+    const mtimeMs = stat.mtimeMs;
 
-        // Check cache
-        const cached = hashCache.get(filePath);
-        if (cached && cached.mtimeMs === mtimeMs) {
-            return cached.hash;
-        }
-
-        // Read file and compute hash
-        const content = fs.readFileSync(filePath);
-        const hash = crypto.createHash('sha256')
-            .update(content)
-            .digest('base64url')
-            .substring(0, HASH_LENGTH);
-
-        // Clear cache if it exceeds the size limit (safeguard against bugs)
-        const maxSize = config.get('caching:assets:contentBasedHash:maxSize');
-        if (hashCache.size >= maxSize) {
-            hashCache.clear();
-        }
-
-        // Cache the result
-        hashCache.set(filePath, {hash, mtimeMs});
-
-        return hash;
-    } catch (err) {
-        // File doesn't exist or can't be read
-        if (err.code === 'ENOENT' || err.code === 'EACCES') {
-            return null;
-        }
-        throw err;
+    // Check cache
+    const cached = hashCache.get(filePath);
+    if (cached && cached.mtimeMs === mtimeMs) {
+      return cached.hash;
     }
+
+    // Read file and compute hash
+    const content = fs.readFileSync(filePath);
+    const hash = crypto
+      .createHash('sha256')
+      .update(content)
+      .digest('base64url')
+      .substring(0, HASH_LENGTH);
+
+    // Clear cache if it exceeds the size limit (safeguard against bugs)
+    const maxSize = config.get('caching:assets:contentBasedHash:maxSize');
+    if (hashCache.size >= maxSize) {
+      hashCache.clear();
+    }
+
+    // Cache the result
+    hashCache.set(filePath, { hash, mtimeMs });
+
+    return hash;
+  } catch (err) {
+    // File doesn't exist or can't be read
+    if (err.code === 'ENOENT' || err.code === 'EACCES') {
+      return null;
+    }
+    throw err;
+  }
 }
 
 /**
@@ -64,10 +65,10 @@ function getHashForFile(filePath) {
  * Should be called when theme is changed/remounted
  */
 function clearCache() {
-    hashCache.clear();
+  hashCache.clear();
 }
 
 module.exports = {
-    getHashForFile,
-    clearCache
+  getHashForFile,
+  clearCache,
 };

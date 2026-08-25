@@ -13,49 +13,60 @@ const configUtils = require('../../../utils/config-utils');
 const urlServiceUtils = require('../../../utils/url-service-utils');
 
 module.exports = {
-    overrideGhostConfig: (utils) => {
-        utils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures'));
-        utils.set('times:getImageSizeTimeoutInMS', 1);
+  overrideGhostConfig: (utils) => {
+    utils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures'));
+    utils.set('times:getImageSizeTimeoutInMS', 1);
+  },
+
+  defaultMocks: (sandbox, options) => {
+    options = options || {};
+
+    configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures'));
+
+    const cacheStub = sandbox.stub(settingsCache, 'get');
+
+    cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
+    cacheStub.withArgs('timezone').returns('Etc/UTC');
+    cacheStub.withArgs('permalinks').returns('/:slug/');
+    cacheStub
+      .withArgs('ghost_private_key')
+      .returns(
+        '-----BEGIN RSA PRIVATE KEY-----\nMB8CAQACAgPBAgMBAAECAgMFAgEfAgEfAgEXAgEXAgEA\n-----END RSA PRIVATE KEY-----\n',
+      );
+    cacheStub
+      .withArgs('ghost_public_key')
+      .returns('-----BEGIN RSA PUBLIC KEY-----\nMAkCAgPBAgMBAAE=\n-----END RSA PUBLIC KEY-----\n');
+
+    sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+  },
+
+  /**
+   * This is a really rough frontend-only version of Ghost boot
+   * In order for this test pattern to be really considered the right pattern this needs to be replaced
+   * With something based on the real boot
+   * @returns {Promise<object>} express App
+   */
+  initGhost: async (options = {}) => {
+    const app = await boot(
+      Object.assign(
+        {
+          server: false,
+          backend: false,
+        },
+        options,
+      ),
+    );
+
+    await urlServiceUtils.isFinished();
+
+    return app;
+  },
+
+  routing: {
+    reset: function () {
+      routingService.registry.resetAll();
     },
+  },
 
-    defaultMocks: (sandbox, options) => {
-        options = options || {};
-
-        configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures'));
-
-        const cacheStub = sandbox.stub(settingsCache, 'get');
-
-        cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
-        cacheStub.withArgs('timezone').returns('Etc/UTC');
-        cacheStub.withArgs('permalinks').returns('/:slug/');
-        cacheStub.withArgs('ghost_private_key').returns('-----BEGIN RSA PRIVATE KEY-----\nMB8CAQACAgPBAgMBAAECAgMFAgEfAgEfAgEXAgEXAgEA\n-----END RSA PRIVATE KEY-----\n');
-        cacheStub.withArgs('ghost_public_key').returns('-----BEGIN RSA PUBLIC KEY-----\nMAkCAgPBAgMBAAE=\n-----END RSA PUBLIC KEY-----\n');
-
-        sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
-    },
-
-    /**
-     * This is a really rough frontend-only version of Ghost boot
-     * In order for this test pattern to be really considered the right pattern this needs to be replaced
-     * With something based on the real boot
-     * @returns {Promise<object>} express App
-     */
-    initGhost: async (options = {}) => {
-        const app = await boot(Object.assign({
-            server: false,
-            backend: false
-        }, options));
-
-        await urlServiceUtils.isFinished();
-
-        return app;
-    },
-
-    routing: {
-        reset: function () {
-            routingService.registry.resetAll();
-        }
-    },
-
-    urlService: urlServiceUtils
+  urlService: urlServiceUtils,
 };

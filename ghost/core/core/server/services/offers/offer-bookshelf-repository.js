@@ -1,33 +1,37 @@
-const {flowRight} = require('lodash');
-const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
+const { flowRight } = require('lodash');
+const { mapKeyValues, mapQuery } = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const Offer = require('./domain/models/offer');
 const sentry = require('../../../shared/sentry');
 const logger = require('@tryghost/logging');
 
 const statusTransformer = mapKeyValues({
-    key: {
-        from: 'status',
-        to: 'active'
+  key: {
+    from: 'status',
+    to: 'active',
+  },
+  values: [
+    {
+      from: 'active',
+      to: true,
     },
-    values: [{
-        from: 'active',
-        to: true
-    }, {
-        from: 'archived',
-        to: false
-    }]
+    {
+      from: 'archived',
+      to: false,
+    },
+  ],
 });
 
-const rejectInvalidTransformer = input => mapQuery(input, function (value, key) {
+const rejectInvalidTransformer = (input) =>
+  mapQuery(input, function (value, key) {
     if (key !== 'status' && key !== 'redemption_type') {
-        return;
+      return;
     }
 
     return {
-        [key]: value
+      [key]: value,
     };
-});
+  });
 
 const mongoTransformer = flowRight(statusTransformer, rejectInvalidTransformer);
 
@@ -43,249 +47,261 @@ const mongoTransformer = flowRight(statusTransformer, rejectInvalidTransformer);
  */
 
 class OfferBookshelfRepository {
-    /**
-     * @param {{forge: (data: object) => import('bookshelf').Model<Offer.OfferProps>}} OfferModel
-     * @param {{forge: (data: object) => import('bookshelf').Model<any>}} OfferRedemptionModel
-     */
-    constructor(OfferModel, OfferRedemptionModel) {
-        /** @private */
-        this.OfferModel = OfferModel;
-        /** @private */
-        this.OfferRedemptionModel = OfferRedemptionModel;
+  /**
+   * @param {{forge: (data: object) => import('bookshelf').Model<Offer.OfferProps>}} OfferModel
+   * @param {{forge: (data: object) => import('bookshelf').Model<any>}} OfferRedemptionModel
+   */
+  constructor(OfferModel, OfferRedemptionModel) {
+    /** @private */
+    this.OfferModel = OfferModel;
+    /** @private */
+    this.OfferRedemptionModel = OfferRedemptionModel;
+  }
+
+  /**
+   * @template T
+   * @param {(t: import('knex').Knex.Transaction) => Promise<T>} cb
+   * @returns {Promise<T>}
+   */
+  async createTransaction(cb) {
+    return this.OfferModel.transaction(cb);
+  }
+
+  /**
+   * @param {string} name
+   * @param {BaseOptions} [options]
+   * @returns {Promise<boolean>}
+   */
+  async existsByName(name, options) {
+    const model = await this.OfferModel.findOne({ name }, options);
+    if (!model) {
+      return false;
     }
+    return true;
+  }
 
-    /**
-     * @template T
-     * @param {(t: import('knex').Knex.Transaction) => Promise<T>} cb
-     * @returns {Promise<T>}
-     */
-    async createTransaction(cb) {
-        return this.OfferModel.transaction(cb);
+  /**
+   * @param {string} code
+   * @param {BaseOptions} [options]
+   * @returns {Promise<boolean>}
+   */
+  async existsByCode(code, options) {
+    const model = await this.OfferModel.findOne({ code }, options);
+    if (!model) {
+      return false;
     }
+    return true;
+  }
 
-    /**
-     * @param {string} name
-     * @param {BaseOptions} [options]
-     * @returns {Promise<boolean>}
-     */
-    async existsByName(name, options) {
-        const model = await this.OfferModel.findOne({name}, options);
-        if (!model) {
-            return false;
-        }
-        return true;
-    }
+  /**
+   * @private
+   * @param {import('bookshelf').Model<any>} model
+   * @param {BaseOptions} options
+   * @param {object} [queryOptions]
+   * @param {boolean} [queryOptions.withRedemptionStats]
+   * @returns {Promise<import('./domain/models/offer')>}
+   */
+  async mapToOffer(model, options, { withRedemptionStats = true } = {}) {
+    const json = model.toJSON();
 
-    /**
-     * @param {string} code
-     * @param {BaseOptions} [options]
-     * @returns {Promise<boolean>}
-     */
-    async existsByCode(code, options) {
-        const model = await this.OfferModel.findOne({code}, options);
-        if (!model) {
-            return false;
-        }
-        return true;
-    }
+    let count = 0;
+    let lastRedeemed = null;
 
-    /**
-     * @private
-     * @param {import('bookshelf').Model<any>} model
-     * @param {BaseOptions} options
-     * @param {object} [queryOptions]
-     * @param {boolean} [queryOptions.withRedemptionStats]
-     * @returns {Promise<import('./domain/models/offer')>}
-     */
-    async mapToOffer(model, options, {withRedemptionStats = true} = {}) {
-        const json = model.toJSON();
+    if (withRedemptionStats) {
+      count = await this.OfferRedemptionModel.where({ offer_id: json.id }).count('id', {
+        transacting: options.transacting,
+      });
 
-        let count = 0;
-        let lastRedeemed = null;
-
-        if (withRedemptionStats) {
-            count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
-                transacting: options.transacting
-            });
-
-            const lastRedeemedResult = await this.OfferRedemptionModel
-                .where({offer_id: json.id})
-                .orderBy('created_at', 'DESC')
-                .fetch({
-                    transacting: options.transacting,
-                    require: false
-                });
-
-            lastRedeemed = lastRedeemedResult ? lastRedeemedResult.get('created_at') : null;
-        }
-
-        try {
-            return await Offer.create({
-                id: json.id,
-                name: json.name,
-                code: json.code,
-                display_title: json.portal_title,
-                display_description: json.portal_description,
-                type: json.discount_type === 'amount' ? 'fixed' : json.discount_type,
-                amount: json.discount_amount,
-                cadence: json.interval,
-                currency: json.currency,
-                duration: json.duration,
-                duration_in_months: json.duration_in_months,
-                stripe_coupon_id: json.stripe_coupon_id,
-                redemptionCount: count,
-                redemption_type: json.redemption_type,
-                status: json.active ? 'active' : 'archived',
-                tier: json.product && json.product.id
-                    ? {id: json.product.id, name: json.product.name}
-                    : null,
-                created_at: json.created_at,
-                last_redeemed: lastRedeemed
-            }, null);
-        } catch (err) {
-            logger.error(err);
-            sentry.captureException(err);
-            return null;
-        }
-    }
-
-    /**
-     * @param {string} id
-     * @param {BaseOptions} [options]
-     * @returns {Promise<import('./domain/models/offer')>}
-     */
-    async getById(id, options) {
-        const model = await this.OfferModel.findOne({id}, {
-            ...options,
-            withRelated: ['product']
+      const lastRedeemedResult = await this.OfferRedemptionModel.where({ offer_id: json.id })
+        .orderBy('created_at', 'DESC')
+        .fetch({
+          transacting: options.transacting,
+          require: false,
         });
 
-        if (!model) {
-            return null;
-        }
-
-        return this.mapToOffer(model, options);
+      lastRedeemed = lastRedeemedResult ? lastRedeemedResult.get('created_at') : null;
     }
 
-    /**
-     * @param {string} id stripe_coupon_id
-     * @param {BaseOptions} [options]
-     * @returns {Promise<import('./domain/models/offer')>}
-     */
-    async getByStripeCouponId(id, options) {
-        const model = await this.OfferModel.findOne({stripe_coupon_id: id}, {
-            ...options,
-            withRelated: ['product']
+    try {
+      return await Offer.create(
+        {
+          id: json.id,
+          name: json.name,
+          code: json.code,
+          display_title: json.portal_title,
+          display_description: json.portal_description,
+          type: json.discount_type === 'amount' ? 'fixed' : json.discount_type,
+          amount: json.discount_amount,
+          cadence: json.interval,
+          currency: json.currency,
+          duration: json.duration,
+          duration_in_months: json.duration_in_months,
+          stripe_coupon_id: json.stripe_coupon_id,
+          redemptionCount: count,
+          redemption_type: json.redemption_type,
+          status: json.active ? 'active' : 'archived',
+          tier:
+            json.product && json.product.id
+              ? { id: json.product.id, name: json.product.name }
+              : null,
+          created_at: json.created_at,
+          last_redeemed: lastRedeemed,
+        },
+        null,
+      );
+    } catch (err) {
+      logger.error(err);
+      sentry.captureException(err);
+      return null;
+    }
+  }
+
+  /**
+   * @param {string} id
+   * @param {BaseOptions} [options]
+   * @returns {Promise<import('./domain/models/offer')>}
+   */
+  async getById(id, options) {
+    const model = await this.OfferModel.findOne(
+      { id },
+      {
+        ...options,
+        withRelated: ['product'],
+      },
+    );
+
+    if (!model) {
+      return null;
+    }
+
+    return this.mapToOffer(model, options);
+  }
+
+  /**
+   * @param {string} id stripe_coupon_id
+   * @param {BaseOptions} [options]
+   * @returns {Promise<import('./domain/models/offer')>}
+   */
+  async getByStripeCouponId(id, options) {
+    const model = await this.OfferModel.findOne(
+      { stripe_coupon_id: id },
+      {
+        ...options,
+        withRelated: ['product'],
+      },
+    );
+
+    if (!model) {
+      return null;
+    }
+
+    return this.mapToOffer(model, options);
+  }
+
+  /**
+   * @param {ListOptions} options
+   * @param {object} [queryOptions]
+   * @param {boolean} [queryOptions.withRedemptionStats]
+   * @returns {Promise<import('./domain/models/offer')[]>}
+   */
+  async getAll(options, { withRedemptionStats = true } = {}) {
+    const models = await this.OfferModel.findAll({
+      ...options,
+      mongoTransformer,
+      withRelated: ['product'],
+    });
+
+    const mapOptions = {
+      transacting: options && options.transacting,
+    };
+
+    const offers = models.map((model) =>
+      this.mapToOffer(model, mapOptions, { withRedemptionStats }),
+    );
+
+    return (await Promise.all(offers)).filter((offer) => offer !== null);
+  }
+
+  /**
+   * @param {string} subscriptionId
+   * @param {BaseOptions} [options]
+   * @returns {Promise<string[]>}
+   */
+  async getRedeemedOfferIdsForSubscription(subscriptionId, options = {}) {
+    const redemptions = await this.OfferRedemptionModel.where({
+      subscription_id: subscriptionId,
+    }).fetchAll({ transacting: options.transacting, columns: ['offer_id'] });
+
+    return redemptions.map((r) => r.get('offer_id'));
+  }
+
+  /**
+   * @param {string[]} subscriptionIds
+   * @param {BaseOptions} [options]
+   * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+   */
+  async getRedeemedOfferIdsForSubscriptions(subscriptionIds, options = {}) {
+    if (subscriptionIds.length === 0) {
+      return [];
+    }
+
+    const redemptions = await this.OfferRedemptionModel.query((qb) =>
+      qb.whereIn('subscription_id', subscriptionIds),
+    ).fetchAll({ transacting: options.transacting, columns: ['subscription_id', 'offer_id'] });
+
+    return redemptions.map((r) => ({
+      subscription_id: r.get('subscription_id'),
+      offer_id: r.get('offer_id'),
+    }));
+  }
+
+  /**
+   * @param {import('./domain/models/offer')} offer
+   * @param {BaseOptions} [options]
+   * @returns {Promise<void>}
+   */
+  async save(offer, options) {
+    /** @type any */
+    const data = {
+      id: offer.id,
+      name: offer.name.value,
+      code: offer.code.value,
+      portal_title: offer.displayTitle.value || null,
+      portal_description: offer.displayDescription.value || null,
+      discount_type: offer.type.value === 'fixed' ? 'amount' : offer.type.value,
+      discount_amount: offer.amount.value,
+      interval: offer.cadence.value,
+      product_id: offer.tier ? offer.tier.id : null,
+      duration: offer.duration.value.type,
+      duration_in_months:
+        offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
+      currency: offer.currency ? offer.currency.value : null,
+      active: offer.status.value === 'active',
+      redemption_type: offer.redemptionType.value,
+    };
+
+    if (offer.stripeCouponId !== undefined) {
+      data.stripe_coupon_id = offer.stripeCouponId;
+    }
+
+    if (offer.isNew) {
+      await this.OfferModel.add(data, options);
+    } else {
+      await this.OfferModel.edit(data, { ...options, id: data.id });
+    }
+
+    for (const event of offer.events) {
+      if (options.transacting) {
+        // Only dispatch the event after the transaction has finished
+        // Because else the offer won't be committed to the database yet
+        options.transacting.executionPromise.then(() => {
+          DomainEvents.dispatch(event);
         });
-
-        if (!model) {
-            return null;
-        }
-
-        return this.mapToOffer(model, options);
+      } else {
+        DomainEvents.dispatch(event);
+      }
     }
-
-    /**
-     * @param {ListOptions} options
-     * @param {object} [queryOptions]
-     * @param {boolean} [queryOptions.withRedemptionStats]
-     * @returns {Promise<import('./domain/models/offer')[]>}
-     */
-    async getAll(options, {withRedemptionStats = true} = {}) {
-        const models = await this.OfferModel.findAll({
-            ...options,
-            mongoTransformer,
-            withRelated: ['product']
-        });
-
-        const mapOptions = {
-            transacting: options && options.transacting
-        };
-
-        const offers = models.map(model => this.mapToOffer(model, mapOptions, {withRedemptionStats}));
-
-        return (await Promise.all(offers)).filter(offer => offer !== null);
-    }
-
-    /**
-     * @param {string} subscriptionId
-     * @param {BaseOptions} [options]
-     * @returns {Promise<string[]>}
-     */
-    async getRedeemedOfferIdsForSubscription(subscriptionId, options = {}) {
-        const redemptions = await this.OfferRedemptionModel.where({
-            subscription_id: subscriptionId
-        }).fetchAll({transacting: options.transacting, columns: ['offer_id']});
-
-        return redemptions.map(r => r.get('offer_id'));
-    }
-
-    /**
-     * @param {string[]} subscriptionIds
-     * @param {BaseOptions} [options]
-     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
-     */
-    async getRedeemedOfferIdsForSubscriptions(subscriptionIds, options = {}) {
-        if (subscriptionIds.length === 0) {
-            return [];
-        }
-
-        const redemptions = await this.OfferRedemptionModel
-            .query(qb => qb.whereIn('subscription_id', subscriptionIds))
-            .fetchAll({transacting: options.transacting, columns: ['subscription_id', 'offer_id']});
-
-        return redemptions.map(r => ({
-            subscription_id: r.get('subscription_id'),
-            offer_id: r.get('offer_id')
-        }));
-    }
-
-    /**
-     * @param {import('./domain/models/offer')} offer
-     * @param {BaseOptions} [options]
-     * @returns {Promise<void>}
-     */
-    async save(offer, options) {
-        /** @type any */
-        const data = {
-            id: offer.id,
-            name: offer.name.value,
-            code: offer.code.value,
-            portal_title: offer.displayTitle.value || null,
-            portal_description: offer.displayDescription.value || null,
-            discount_type: offer.type.value === 'fixed' ? 'amount' : offer.type.value,
-            discount_amount: offer.amount.value,
-            interval: offer.cadence.value,
-            product_id: offer.tier ? offer.tier.id : null,
-            duration: offer.duration.value.type,
-            duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
-            currency: offer.currency ? offer.currency.value : null,
-            active: offer.status.value === 'active',
-            redemption_type: offer.redemptionType.value
-        };
-
-        if (offer.stripeCouponId !== undefined) {
-            data.stripe_coupon_id = offer.stripeCouponId;
-        }
-
-        if (offer.isNew) {
-            await this.OfferModel.add(data, options);
-        } else {
-            await this.OfferModel.edit(data, {...options, id: data.id});
-        }
-
-        for (const event of offer.events) {
-            if (options.transacting) {
-                // Only dispatch the event after the transaction has finished
-                // Because else the offer won't be committed to the database yet
-                options.transacting.executionPromise.then(() => {
-                    DomainEvents.dispatch(event);
-                });
-            } else {
-                DomainEvents.dispatch(event);
-            }
-        }
-    }
+  }
 }
 
 module.exports = OfferBookshelfRepository;

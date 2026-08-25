@@ -1,20 +1,20 @@
 const urlUtils = require('../../shared/url-utils').default;
 const settingsCache = require('../../shared/settings-cache');
-const {blogIcon} = require('../services/proxy');
+const { blogIcon } = require('../services/proxy');
 
 function getBlogLogo() {
-    const logo = {};
+  const logo = {};
 
-    if (settingsCache.get('logo')) {
-        logo.url = urlUtils.urlFor('image', {image: settingsCache.get('logo')}, true);
-    } else {
-        // CASE: no publication logo is updated. We can try to use either an uploaded publication icon
-        // or use the default one to make
-        // Google happy with it. See https://github.com/TryGhost/Ghost/issues/7558
-        logo.url = blogIcon.getIconUrl({absolute: true});
-    }
+  if (settingsCache.get('logo')) {
+    logo.url = urlUtils.urlFor('image', { image: settingsCache.get('logo') }, true);
+  } else {
+    // CASE: no publication logo is updated. We can try to use either an uploaded publication icon
+    // or use the default one to make
+    // Google happy with it. See https://github.com/TryGhost/Ghost/issues/7558
+    logo.url = blogIcon.getIconUrl({ absolute: true });
+  }
 
-    return logo;
+  return logo;
 }
 
 module.exports = getBlogLogo;

@@ -8,19 +8,19 @@ const shared = require('../shared');
  * @returns {import('express').Application}
  */
 module.exports = (routerConfig) => {
-    debug('FrontendApp setup start', routerConfig);
+  debug('FrontendApp setup start', routerConfig);
 
-    // FRONTEND
-    const frontendApp = express('frontend');
+  // FRONTEND
+  const frontendApp = express('frontend');
 
-    // Force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
-    // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin app.
-    frontendApp.use(shared.middleware.urlRedirects.frontendSSLRedirect);
+  // Force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
+  // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin app.
+  frontendApp.use(shared.middleware.urlRedirects.frontendSSLRedirect);
 
-    frontendApp.lazyUse('/members', require('../members'));
-    frontendApp.lazyUse('/webmentions', require('../webmentions'));
-    frontendApp.lazyUse('/gift', require('../gift-preview'));
-    frontendApp.use('/', require('../../../frontend/web')(routerConfig));
+  frontendApp.lazyUse('/members', require('../members'));
+  frontendApp.lazyUse('/webmentions', require('../webmentions'));
+  frontendApp.lazyUse('/gift', require('../gift-preview'));
+  frontendApp.use('/', require('../../../frontend/web')(routerConfig));
 
-    return frontendApp;
+  return frontendApp;
 };

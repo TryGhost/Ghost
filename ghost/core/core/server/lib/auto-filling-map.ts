@@ -7,17 +7,17 @@
  * `.delete(key)` and `.clear()` for invalidation flows.
  */
 export class AutoFillingMap<K, V> extends Map<K, V> {
-    readonly #compute: (key: K) => V;
+  readonly #compute: (key: K) => V;
 
-    constructor(compute: (key: K) => V) {
-        super();
-        this.#compute = compute;
-    }
+  constructor(compute: (key: K) => V) {
+    super();
+    this.#compute = compute;
+  }
 
-    get(key: K): V {
-        if (!super.has(key)) {
-            super.set(key, this.#compute(key));
-        }
-        return super.get(key)!;
+  get(key: K): V {
+    if (!super.has(key)) {
+      super.set(key, this.#compute(key));
     }
+    return super.get(key)!;
+  }
 }

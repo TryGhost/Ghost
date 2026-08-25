@@ -1,92 +1,92 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const {Automation} = require('../../../../core/server/models/automation');
+const { Automation } = require('../../../../core/server/models/automation');
 const logging = require('@tryghost/logging');
 
 describe('Unit: models/automation', function () {
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('defaults', function () {
+    it('sets default status to inactive', function () {
+      const model = new Automation();
+      const defaults = model.defaults();
+
+      assert.equal(defaults.status, 'inactive');
     });
 
-    describe('defaults', function () {
-        it('sets default status to inactive', function () {
-            const model = new Automation();
-            const defaults = model.defaults();
+    it('returns expected default values', function () {
+      const model = new Automation();
+      const defaults = model.defaults();
 
-            assert.equal(defaults.status, 'inactive');
-        });
+      assert.ok(defaults);
+      assert.equal(Object.keys(defaults).length, 1);
+      assert.equal(defaults.status, 'inactive');
+    });
+  });
 
-        it('returns expected default values', function () {
-            const model = new Automation();
-            const defaults = model.defaults();
+  describe('onSaved', function () {
+    it('logs when a welcome email is enabled', function () {
+      const infoStub = sinon.stub(logging, 'info');
+      const model = Automation.forge({
+        id: 'test-id',
+        slug: 'member-welcome-email-free',
+        status: 'active',
+      });
+      sinon.stub(model, 'previous').withArgs('status').returns('inactive');
 
-            assert.ok(defaults);
-            assert.equal(Object.keys(defaults).length, 1);
-            assert.equal(defaults.status, 'inactive');
-        });
+      model.onSaved(model);
+
+      sinon.assert.calledOnce(infoStub);
+      const logArg = infoStub.firstCall.args[0];
+      assert.equal(logArg.system.event, 'welcome_email.enabled');
+      assert.equal(logArg.system.slug, 'member-welcome-email-free');
     });
 
-    describe('onSaved', function () {
-        it('logs when a welcome email is enabled', function () {
-            const infoStub = sinon.stub(logging, 'info');
-            const model = Automation.forge({
-                id: 'test-id',
-                slug: 'member-welcome-email-free',
-                status: 'active'
-            });
-            sinon.stub(model, 'previous').withArgs('status').returns('inactive');
+    it('logs when a welcome email is disabled', function () {
+      const infoStub = sinon.stub(logging, 'info');
+      const model = Automation.forge({
+        id: 'test-id',
+        slug: 'member-welcome-email-paid',
+        status: 'inactive',
+      });
+      sinon.stub(model, 'previous').withArgs('status').returns('active');
 
-            model.onSaved(model);
+      model.onSaved(model);
 
-            sinon.assert.calledOnce(infoStub);
-            const logArg = infoStub.firstCall.args[0];
-            assert.equal(logArg.system.event, 'welcome_email.enabled');
-            assert.equal(logArg.system.slug, 'member-welcome-email-free');
-        });
-
-        it('logs when a welcome email is disabled', function () {
-            const infoStub = sinon.stub(logging, 'info');
-            const model = Automation.forge({
-                id: 'test-id',
-                slug: 'member-welcome-email-paid',
-                status: 'inactive'
-            });
-            sinon.stub(model, 'previous').withArgs('status').returns('active');
-
-            model.onSaved(model);
-
-            sinon.assert.calledOnce(infoStub);
-            const logArg = infoStub.firstCall.args[0];
-            assert.equal(logArg.system.event, 'welcome_email.disabled');
-            assert.equal(logArg.system.slug, 'member-welcome-email-paid');
-        });
-
-        it('does not log for non-welcome-email slugs', function () {
-            const infoStub = sinon.stub(logging, 'info');
-            const model = Automation.forge({
-                id: 'test-id',
-                slug: 'some-other-slug',
-                status: 'active'
-            });
-            sinon.stub(model, 'previous').withArgs('status').returns('inactive');
-
-            model.onSaved(model);
-
-            sinon.assert.notCalled(infoStub);
-        });
-
-        it('does not log when status has not changed', function () {
-            const infoStub = sinon.stub(logging, 'info');
-            const model = Automation.forge({
-                id: 'test-id',
-                slug: 'member-welcome-email-free',
-                status: 'active'
-            });
-            sinon.stub(model, 'previous').withArgs('status').returns('active');
-
-            model.onSaved(model);
-
-            sinon.assert.notCalled(infoStub);
-        });
+      sinon.assert.calledOnce(infoStub);
+      const logArg = infoStub.firstCall.args[0];
+      assert.equal(logArg.system.event, 'welcome_email.disabled');
+      assert.equal(logArg.system.slug, 'member-welcome-email-paid');
     });
+
+    it('does not log for non-welcome-email slugs', function () {
+      const infoStub = sinon.stub(logging, 'info');
+      const model = Automation.forge({
+        id: 'test-id',
+        slug: 'some-other-slug',
+        status: 'active',
+      });
+      sinon.stub(model, 'previous').withArgs('status').returns('inactive');
+
+      model.onSaved(model);
+
+      sinon.assert.notCalled(infoStub);
+    });
+
+    it('does not log when status has not changed', function () {
+      const infoStub = sinon.stub(logging, 'info');
+      const model = Automation.forge({
+        id: 'test-id',
+        slug: 'member-welcome-email-free',
+        status: 'active',
+      });
+      sinon.stub(model, 'previous').withArgs('status').returns('active');
+
+      model.onSaved(model);
+
+      sinon.assert.notCalled(infoStub);
+    });
+  });
 });

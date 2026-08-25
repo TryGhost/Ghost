@@ -4,7 +4,7 @@
  * both places at once (the admin client reads labs from settings AND config).
  */
 export const labsDefaults: Record<string, boolean> = {
-    superEditors: false,
-    editorExcerpt: false,
-    additionalPaymentMethods: false
+  superEditors: false,
+  editorExcerpt: false,
+  additionalPaymentMethods: false,
 };

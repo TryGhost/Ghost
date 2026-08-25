@@ -78,15 +78,15 @@ Available atoms:
 
 ## What the recipe owns vs. what you add
 
-| Recipe owns | You add |
-|---|---|
-| Border (`border-control-border`) | Height, padding |
-| Background (`bg-control-surface`) | Typography (`text-control`, `text-sm`) |
-| Radius (`rounded-md`) | Layout (`flex`, `items-center`) |
-| Transition (`transition-colors`) | Placeholder styling |
-| Focus ring (`focus-visible:ring-focus-ring/25`) | Component-specific tweaks |
-| Invalid state (`aria-[invalid=true]:border-destructive`) | Icons / slot positioning |
-| Disabled (`disabled:opacity-50`) — self only | — |
+| Recipe owns                                              | You add                                |
+| -------------------------------------------------------- | -------------------------------------- |
+| Border (`border-control-border`)                         | Height, padding                        |
+| Background (`bg-control-surface`)                        | Typography (`text-control`, `text-sm`) |
+| Radius (`rounded-md`)                                    | Layout (`flex`, `items-center`)        |
+| Transition (`transition-colors`)                         | Placeholder styling                    |
+| Focus ring (`focus-visible:ring-focus-ring/25`)          | Component-specific tweaks              |
+| Invalid state (`aria-[invalid=true]:border-destructive`) | Icons / slot positioning               |
+| Disabled (`disabled:opacity-50`) — self only             | —                                      |
 
 ## Don't
 

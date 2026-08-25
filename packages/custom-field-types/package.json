@@ -1,19 +1,21 @@
 {
   "name": "@tryghost/custom-field-types",
   "version": "0.0.0",
-  "description": "Shared catalog of member custom field types: storage routing and value validation, consumed by Ghost core and admin",
   "private": true,
-  "ghostPackage": {
-    "goldenPath": "compliant"
-  },
-  "type": "module",
+  "description": "Shared catalog of member custom field types: storage routing and value validation, consumed by Ghost core and admin",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/custom-field-types"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -26,8 +28,6 @@
       "default": "./build/csv.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -37,22 +37,22 @@
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
-  "files": [
-    "build"
-  ],
+  "dependencies": {
+    "zod": "catalog:"
+  },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {
-    "zod": "catalog:"
+  "ghostPackage": {
+    "goldenPath": "compliant"
   },
   "nx": {
     "targets": {

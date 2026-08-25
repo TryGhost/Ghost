@@ -1,17 +1,18 @@
-import type {ReadonlyDeep} from 'type-fest';
-import type {StaffMemberTextData} from './types';
+import type { ReadonlyDeep } from 'type-fest';
+import type { StaffMemberTextData } from './types';
 
-type NewGiftSubscriptionTextData = StaffMemberTextData & ReadonlyDeep<{
+type NewGiftSubscriptionTextData = StaffMemberTextData &
+  ReadonlyDeep<{
     tierData: {
-        name: string;
-        details: string | null | undefined;
+      name: string;
+      details: string | null | undefined;
     };
     giftedByEmail: string;
-}>;
+  }>;
 
 export function renderText(data: NewGiftSubscriptionTextData): string {
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 A gift subscription was redeemed
 
 Member: ${data.memberData.name}

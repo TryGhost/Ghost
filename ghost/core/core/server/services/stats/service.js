@@ -1,33 +1,33 @@
 class StatsServiceWrapper {
-    constructor() {
-        this.api = null;
-        this.cache = null;
+  constructor() {
+    this.api = null;
+    this.cache = null;
+  }
+
+  async init() {
+    if (this.api) {
+      // Already done
+      return;
     }
 
-    async init() {
-        if (this.api) {
-            // Already done
-            return;
-        }
+    const StatsService = require('./stats-service');
+    const db = require('../../data/db');
+    const models = require('../../models');
+    const urlService = require('../url');
 
-        const StatsService = require('./stats-service');
-        const db = require('../../data/db');
-        const models = require('../../models');
-        const urlService = require('../url');
+    this.api = StatsService.create({
+      knex: db.knex,
+      models,
+      urlService,
+    });
 
-        this.api = StatsService.create({
-            knex: db.knex,
-            models,
-            urlService
-        });
+    const adapterManager = require('../adapter-manager').default;
+    const config = require('../../../shared/config');
 
-        const adapterManager = require('../adapter-manager').default;
-        const config = require('../../../shared/config');
-
-        if (config.get('hostSettings:statsCache:enabled')) {
-            this.cache = adapterManager.getAdapter('cache:stats');
-        }
+    if (config.get('hostSettings:statsCache:enabled')) {
+      this.cache = adapterManager.getAdapter('cache:stats');
     }
+  }
 }
 
 module.exports = new StatsServiceWrapper();

@@ -29,6 +29,7 @@ The api-framework uses a **pipeline-based validation system** where validations 
 5. Output serialisation
 
 Validation ensures that:
+
 - Required fields are present
 - Values are in allowed lists
 - Data types are correct (IDs, emails, slugs, etc.)
@@ -64,6 +65,7 @@ browse: {
 ```
 
 **When to use:**
+
 - Standard field validation (required, allowed values)
 - Most common case for API endpoints
 
@@ -102,6 +104,7 @@ add: {
 ```
 
 **When to use:**
+
 - Complex validation logic
 - Cross-field validation
 - Conditional validation rules
@@ -137,6 +140,7 @@ browse: {
 Two equivalent syntaxes:
 
 **Object notation:**
+
 ```javascript
 validation: {
   options: {
@@ -148,6 +152,7 @@ validation: {
 ```
 
 **Array shorthand:**
+
 ```javascript
 validation: {
   options: {
@@ -235,6 +240,7 @@ add: {
 ```
 
 **Request body structure:**
+
 ```json
 {
   "posts": [{
@@ -247,6 +253,7 @@ add: {
 ### Root Key Validation
 
 For ADD/EDIT operations, the framework automatically validates:
+
 1. Root key exists (e.g., `posts`, `users`)
 2. Root key contains an array with at least one item
 3. Required fields exist and are not null
@@ -257,22 +264,23 @@ For ADD/EDIT operations, the framework automatically validates:
 
 The framework automatically validates common field types using the `@tryghost/validator` package:
 
-| Field Name | Validation Rule | Example Valid Values |
-|------------|-----------------|---------------------|
-| `id` | MongoDB ObjectId, `1`, or `me` | `507f1f77bcf86cd799439011`, `me` |
-| `uuid` | UUID format | `550e8400-e29b-41d4-a716-446655440000` |
-| `slug` | URL-safe slug | `my-post-title` |
-| `email` | Email format | `user@example.com` |
-| `page` | Numeric | `1`, `25` |
-| `limit` | Numeric or `all` | `10`, `all` |
-| `from` | Date format | `2024-01-15` |
-| `to` | Date format | `2024-12-31` |
-| `order` | Sort format | `created_at desc`, `title asc` |
-| `columns` | Column list | `id,title,created_at` |
+| Field Name | Validation Rule                | Example Valid Values                   |
+| ---------- | ------------------------------ | -------------------------------------- |
+| `id`       | MongoDB ObjectId, `1`, or `me` | `507f1f77bcf86cd799439011`, `me`       |
+| `uuid`     | UUID format                    | `550e8400-e29b-41d4-a716-446655440000` |
+| `slug`     | URL-safe slug                  | `my-post-title`                        |
+| `email`    | Email format                   | `user@example.com`                     |
+| `page`     | Numeric                        | `1`, `25`                              |
+| `limit`    | Numeric or `all`               | `10`, `all`                            |
+| `from`     | Date format                    | `2024-01-15`                           |
+| `to`       | Date format                    | `2024-12-31`                           |
+| `order`    | Sort format                    | `created_at desc`, `title asc`         |
+| `columns`  | Column list                    | `id,title,created_at`                  |
 
 ### Fields with No Validation
 
 These fields skip validation by default:
+
 - `filter`
 - `context`
 - `forUpdate`
@@ -300,6 +308,7 @@ Different HTTP methods have different validation behaviors:
 3. Checks required fields are not null
 
 **Error examples:**
+
 - `"No root key ('posts') provided."`
 - `"Validation (FieldIsRequired) failed for title"`
 - `"Validation (FieldIsInvalid) failed for title"` (when null)
@@ -318,6 +327,7 @@ Different HTTP methods have different validation behaviors:
 ### Special Methods
 
 These methods use specific validation behaviors:
+
 - `changePassword()` - Uses ADD rules
 - `resetPassword()` - Uses ADD rules
 - `setup()` - Uses ADD rules
@@ -540,6 +550,7 @@ module.exports = {
 ### Error Types
 
 Validation errors use types from `@tryghost/errors`:
+
 - **ValidationError** - Field validation failed
 - **BadRequestError** - Malformed request structure
 

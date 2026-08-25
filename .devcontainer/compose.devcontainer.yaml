@@ -51,13 +51,13 @@ services:
         - ghcr.io/tryghost/ghost-devcontainer:latest
     # Override the default `pnpm dev` command. VS Code controls startup and the
     # user runs backend/frontend dev servers as tasks (see .vscode/tasks.json).
-    command: ["sleep", "infinity"]
+    command: ['sleep', 'infinity']
     working_dir: /workspaces/Ghost
     # The baseline healthcheck in compose.dev.yaml hits Ghost on :2368, but in
     # the devcontainer Ghost isn't running until the user starts the dev task.
     # Replace with a trivial check so the gateway's depends_on doesn't time out.
     healthcheck:
-      test: ["CMD", "true"]
+      test: ['CMD', 'true']
       interval: 5s
       timeout: 2s
       retries: 1

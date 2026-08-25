@@ -15,8 +15,8 @@
             <span>Cancel</span>
         </button>
 
-        <LinkTo @route="pro" @query={{hash action="checkout"}} class="gh-btn gh-btn-green" {{on "click" @close}} data-test-button="upgrade-plan">
+        <a href={{this.upgradeUrl}} class="gh-btn gh-btn-green" {{on "click" @close}} data-test-button="upgrade-plan">
             <span>Upgrade</span>
-        </LinkTo>
+        </a>
     </div>
 </div>

@@ -14,13 +14,13 @@ Translation files live at
 `packages/i18n/locales/<locale>/<namespace>.json`. The extraction scripts define
 five namespaces:
 
-| Namespace | Source |
-| --- | --- |
-| `ghost` | Ghost Core, including server, frontend, and member email templates |
-| `portal` | Portal |
-| `comments` | Comments |
-| `signup-form` | Signup form |
-| `search` | Search |
+| Namespace     | Source                                                             |
+| ------------- | ------------------------------------------------------------------ |
+| `ghost`       | Ghost Core, including server, frontend, and member email templates |
+| `portal`      | Portal                                                             |
+| `comments`    | Comments                                                           |
+| `signup-form` | Signup form                                                        |
+| `search`      | Search                                                             |
 
 The English string passed to `t()` is the translation key. English locale values
 are empty so i18next falls back to that key.

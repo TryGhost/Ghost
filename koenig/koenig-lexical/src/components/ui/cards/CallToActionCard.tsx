@@ -382,7 +382,7 @@ export function CallToActionCard({
                             initialEditorState={htmlEditorInitialState}
                             initialTheme={theme}
                             nodes='basic'
-                            placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 `}
+                            placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl text-grey-500 dark:text-grey-800`}
                             placeholderText="Write something worth clicking..."
                             textClassName={clsx(
                                 'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',

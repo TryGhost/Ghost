@@ -1,321 +1,374 @@
-import {MemoryRouter, useSearchParams} from 'react-router';
-import {act, renderHook, waitFor} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
-import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './use-members-filter-state';
-import type {ReactNode} from 'react';
+import { MemoryRouter, useSearchParams } from 'react-router';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  shouldDelayMembersDateFilterHydration,
+  useMembersFilterState,
+} from './use-members-filter-state';
+import type { ReactNode } from 'react';
 
 vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
-    useBrowseSettings: () => ({
-        data: {settings: [{key: 'timezone', value: 'UTC'}]}
-    })
+  useBrowseSettings: () => ({
+    data: { settings: [{ key: 'timezone', value: 'UTC' }] },
+  }),
 }));
 
 function createWrapper(initialEntry: string) {
-    return function Wrapper({children}: {children: ReactNode}) {
-        return <MemoryRouter initialEntries={[initialEntry]}>{children}</MemoryRouter>;
-    };
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return <MemoryRouter initialEntries={[initialEntry]}>{children}</MemoryRouter>;
+  };
 }
 
 describe('shouldDelayMembersDateFilterHydration', () => {
-    it('waits for timezone resolution when date filters are present', () => {
-        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', false, true)).toBe(true);
-    });
+  it('waits for timezone resolution when date filters are present', () => {
+    expect(
+      shouldDelayMembersDateFilterHydration("created_at:<='2024-02-01T22:59:59.999Z'", false, true),
+    ).toBe(true);
+  });
 
-    it('does not wait for unsupported non-date filters', () => {
-        expect(shouldDelayMembersDateFilterHydration('status:paid,label:vip', false, true)).toBe(false);
-    });
+  it('does not wait for unsupported non-date filters', () => {
+    expect(shouldDelayMembersDateFilterHydration('status:paid,label:vip', false, true)).toBe(false);
+  });
 
-    it('does not wait once the site timezone is resolved', () => {
-        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', true, false)).toBe(false);
-    });
+  it('does not wait once the site timezone is resolved', () => {
+    expect(
+      shouldDelayMembersDateFilterHydration("created_at:<='2024-02-01T22:59:59.999Z'", true, false),
+    ).toBe(false);
+  });
 
-    it('does not wait if settings loading has already stopped', () => {
-        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', false, false)).toBe(false);
-    });
+  it('does not wait if settings loading has already stopped', () => {
+    expect(
+      shouldDelayMembersDateFilterHydration(
+        "created_at:<='2024-02-01T22:59:59.999Z'",
+        false,
+        false,
+      ),
+    ).toBe(false);
+  });
 });
 
 describe('useMembersFilterState', () => {
-    it('drops unsupported OR filters and rewrites the URL canonically', async () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+  it('drops unsupported OR filters and rewrites the URL canonically', async () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {
-            wrapper: createWrapper('/?filter=status:paid,label:vip')
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      {
+        wrapper: createWrapper('/?filter=status:paid,label:vip'),
+      },
+    );
 
-        await waitFor(() => {
-            expect(result.current.query).toBe('');
-        });
-
-        expect(result.current.filters).toEqual([]);
-        expect(result.current.nql).toBeUndefined();
-        expect(result.current.hasFilterOrSearch).toBe(false);
+    await waitFor(() => {
+      expect(result.current.query).toBe('');
     });
 
-    it('parses the multiple active Stripe customers filter into a predicate', async () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.filters).toEqual([]);
+    expect(result.current.nql).toBeUndefined();
+    expect(result.current.hasFilterOrSearch).toBe(false);
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {
-            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E1')
-        });
+  it('parses the multiple active Stripe customers filter into a predicate', async () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        await waitFor(() => {
-            expect(result.current.nql).toBe('count.active_stripe_customers:>1');
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      {
+        wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E1'),
+      },
+    );
 
-        expect(result.current.filters).toEqual([
-            {
-                id: 'count.active_stripe_customers:1',
-                field: 'count.active_stripe_customers',
-                operator: 'is',
-                values: ['true']
-            }
-        ]);
-        expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3E1');
-        expect(result.current.hasFilterOrSearch).toBe(true);
+    await waitFor(() => {
+      expect(result.current.nql).toBe('count.active_stripe_customers:>1');
     });
 
-    it('parses the inverted multiple active Stripe customers filter into a predicate', async () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.filters).toEqual([
+      {
+        id: 'count.active_stripe_customers:1',
+        field: 'count.active_stripe_customers',
+        operator: 'is',
+        values: ['true'],
+      },
+    ]);
+    expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3E1');
+    expect(result.current.hasFilterOrSearch).toBe(true);
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {
-            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3C2')
-        });
+  it('parses the inverted multiple active Stripe customers filter into a predicate', async () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        await waitFor(() => {
-            expect(result.current.nql).toBe('count.active_stripe_customers:<2');
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      {
+        wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3C2'),
+      },
+    );
 
-        expect(result.current.filters).toEqual([
-            {
-                id: 'count.active_stripe_customers:1',
-                field: 'count.active_stripe_customers',
-                operator: 'is',
-                values: ['false']
-            }
-        ]);
-        expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3C2');
-        expect(result.current.hasFilterOrSearch).toBe(true);
+    await waitFor(() => {
+      expect(result.current.nql).toBe('count.active_stripe_customers:<2');
     });
 
-    it('drops unsupported multiple active Stripe customers filter values', async () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.filters).toEqual([
+      {
+        id: 'count.active_stripe_customers:1',
+        field: 'count.active_stripe_customers',
+        operator: 'is',
+        values: ['false'],
+      },
+    ]);
+    expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3C2');
+    expect(result.current.hasFilterOrSearch).toBe(true);
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {
-            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E2')
-        });
+  it('drops unsupported multiple active Stripe customers filter values', async () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        await waitFor(() => {
-            expect(result.current.query).toBe('');
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      {
+        wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E2'),
+      },
+    );
 
-        expect(result.current.filters).toEqual([]);
-        expect(result.current.nql).toBeUndefined();
-        expect(result.current.hasFilterOrSearch).toBe(false);
+    await waitFor(() => {
+      expect(result.current.query).toBe('');
     });
 
-    it('retains supported filters and rewrites mixed URLs canonically', async () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.filters).toEqual([]);
+    expect(result.current.nql).toBeUndefined();
+    expect(result.current.hasFilterOrSearch).toBe(false);
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {
-            wrapper: createWrapper('/?filter=(status:paid,label:vip)%2Bcreated_at%3A%3C%3D%272024-02-01T23%3A59%3A59.999Z%27')
-        });
+  it('retains supported filters and rewrites mixed URLs canonically', async () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        await waitFor(() => {
-            expect(result.current.nql).toBe('created_at:<=\'2024-02-01T23:59:59.999Z\'');
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      {
+        wrapper: createWrapper(
+          '/?filter=(status:paid,label:vip)%2Bcreated_at%3A%3C%3D%272024-02-01T23%3A59%3A59.999Z%27',
+        ),
+      },
+    );
 
-        expect(result.current.filters.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
-            {field: 'created_at', operator: 'is-or-less', values: ['2024-02-01']}
-        ]);
-        expect(result.current.nql).toBe('created_at:<=\'2024-02-01T23:59:59.999Z\'');
-        expect(result.current.hasFilterOrSearch).toBe(true);
-        expect(result.current.query).toBe('filter=created_at%3A%3C%3D%272024-02-01T23%3A59%3A59.999Z%27');
+    await waitFor(() => {
+      expect(result.current.nql).toBe("created_at:<='2024-02-01T23:59:59.999Z'");
     });
 
-    it('reads Ember-style filter params and keeps search separate', () => {
-        const {result} = renderHook(() => useMembersFilterState('UTC'), {
-            wrapper: createWrapper('/?filter=status:paid&search=jamie')
-        });
+    expect(
+      result.current.filters.map(({ field, operator, values }) => ({ field, operator, values })),
+    ).toEqual([{ field: 'created_at', operator: 'is-or-less', values: ['2024-02-01'] }]);
+    expect(result.current.nql).toBe("created_at:<='2024-02-01T23:59:59.999Z'");
+    expect(result.current.hasFilterOrSearch).toBe(true);
+    expect(result.current.query).toBe(
+      'filter=created_at%3A%3C%3D%272024-02-01T23%3A59%3A59.999Z%27',
+    );
+  });
 
-        expect(result.current.filters).toEqual([
-            {
-                id: 'status:1',
-                field: 'status',
-                operator: 'is',
-                values: ['paid']
-            }
-        ]);
-        expect(result.current.search).toBe('jamie');
-        expect(result.current.hasFilterOrSearch).toBe(true);
+  it('reads Ember-style filter params and keeps search separate', () => {
+    const { result } = renderHook(() => useMembersFilterState('UTC'), {
+      wrapper: createWrapper('/?filter=status:paid&search=jamie'),
     });
 
-    it('writes canonical Ember filter params', () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.filters).toEqual([
+      {
+        id: 'status:1',
+        field: 'status',
+        operator: 'is',
+        values: ['paid'],
+      },
+    ]);
+    expect(result.current.search).toBe('jamie');
+    expect(result.current.hasFilterOrSearch).toBe(true);
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/')});
+  it('writes canonical Ember filter params', () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        act(() => {
-            result.current.setFilters([
-                {
-                    id: '1',
-                    field: 'emails.post_id',
-                    operator: 'is',
-                    values: ['post_123']
-                },
-                {
-                    id: '2',
-                    field: 'status',
-                    operator: 'is',
-                    values: ['paid']
-                }
-            ], {replace: false});
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      { wrapper: createWrapper('/') },
+    );
 
-        expect(result.current.query).toBe('filter=emails.post_id%3A%27post_123%27%2Bstatus%3Apaid');
+    act(() => {
+      result.current.setFilters(
+        [
+          {
+            id: '1',
+            field: 'emails.post_id',
+            operator: 'is',
+            values: ['post_123'],
+          },
+          {
+            id: '2',
+            field: 'status',
+            operator: 'is',
+            values: ['paid'],
+          },
+        ],
+        { replace: false },
+      );
     });
 
-    it('preserves search when clearing filters', () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.query).toBe('filter=emails.post_id%3A%27post_123%27%2Bstatus%3Apaid');
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?filter=status:paid&search=jamie')});
+  it('preserves search when clearing filters', () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        act(() => {
-            result.current.clearFilters({replace: false});
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      { wrapper: createWrapper('/?filter=status:paid&search=jamie') },
+    );
 
-        expect(result.current.query).toBe('search=jamie');
-        expect(result.current.filters).toEqual([]);
-        expect(result.current.search).toBe('jamie');
+    act(() => {
+      result.current.clearFilters({ replace: false });
     });
 
-    it('writes search params without clearing existing filters', () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.query).toBe('search=jamie');
+    expect(result.current.filters).toEqual([]);
+    expect(result.current.search).toBe('jamie');
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?filter=status:paid')});
+  it('writes search params without clearing existing filters', () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        act(() => {
-            result.current.setSearch('jamie@example.com', {replace: false});
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      { wrapper: createWrapper('/?filter=status:paid') },
+    );
 
-        expect(result.current.query).toBe('filter=status%3Apaid&search=jamie%40example.com');
-        expect(result.current.filters).toEqual([
-            {
-                id: 'status:1',
-                field: 'status',
-                operator: 'is',
-                values: ['paid']
-            }
-        ]);
-        expect(result.current.search).toBe('jamie@example.com');
+    act(() => {
+      result.current.setSearch('jamie@example.com', { replace: false });
     });
 
-    it('keeps incomplete text filters locally while preserving serializable filters in the URL', () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.query).toBe('filter=status%3Apaid&search=jamie%40example.com');
+    expect(result.current.filters).toEqual([
+      {
+        id: 'status:1',
+        field: 'status',
+        operator: 'is',
+        values: ['paid'],
+      },
+    ]);
+    expect(result.current.search).toBe('jamie@example.com');
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?filter=label:vip')});
+  it('keeps incomplete text filters locally while preserving serializable filters in the URL', () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        act(() => {
-            result.current.setFilters([
-                ...result.current.filters,
-                {
-                    id: 'name:2',
-                    field: 'name',
-                    operator: 'is',
-                    values: ['']
-                }
-            ], {replace: false});
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      { wrapper: createWrapper('/?filter=label:vip') },
+    );
 
-        expect(result.current.query).toBe('filter=label%3A%5Bvip%5D');
-        expect(result.current.nql).toBe('label:[vip]');
-        expect(result.current.filters).toEqual([
-            {
-                id: 'label:1',
-                field: 'label',
-                operator: 'is-any',
-                values: ['vip']
-            },
-            {
-                id: 'name:2',
-                field: 'name',
-                operator: 'is',
-                values: ['']
-            }
-        ]);
+    act(() => {
+      result.current.setFilters(
+        [
+          ...result.current.filters,
+          {
+            id: 'name:2',
+            field: 'name',
+            operator: 'is',
+            values: [''],
+          },
+        ],
+        { replace: false },
+      );
     });
 
-    it('can clear both filters and search for empty-state reset flows', () => {
-        const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC');
-            const [searchParams] = useSearchParams();
+    expect(result.current.query).toBe('filter=label%3A%5Bvip%5D');
+    expect(result.current.nql).toBe('label:[vip]');
+    expect(result.current.filters).toEqual([
+      {
+        id: 'label:1',
+        field: 'label',
+        operator: 'is-any',
+        values: ['vip'],
+      },
+      {
+        id: 'name:2',
+        field: 'name',
+        operator: 'is',
+        values: [''],
+      },
+    ]);
+  });
 
-            return {
-                ...state,
-                query: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?filter=status:paid&search=jamie')});
+  it('can clear both filters and search for empty-state reset flows', () => {
+    const { result } = renderHook(
+      () => {
+        const state = useMembersFilterState('UTC');
+        const [searchParams] = useSearchParams();
 
-        act(() => {
-            result.current.clearAll({replace: false});
-        });
+        return {
+          ...state,
+          query: searchParams.toString(),
+        };
+      },
+      { wrapper: createWrapper('/?filter=status:paid&search=jamie') },
+    );
 
-        expect(result.current.query).toBe('');
-        expect(result.current.filters).toEqual([]);
-        expect(result.current.search).toBe('');
-        expect(result.current.hasFilterOrSearch).toBe(false);
+    act(() => {
+      result.current.clearAll({ replace: false });
     });
+
+    expect(result.current.query).toBe('');
+    expect(result.current.filters).toEqual([]);
+    expect(result.current.search).toBe('');
+    expect(result.current.hasFilterOrSearch).toBe(false);
+  });
 });

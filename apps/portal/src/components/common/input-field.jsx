@@ -1,6 +1,6 @@
-import {useEffect, useRef} from 'react';
-import {hasMode} from '../../utils/check-mode';
-import {isCookiesDisabled} from '../../utils/helpers';
+import { useEffect, useRef } from 'react';
+import { hasMode } from '../../utils/check-mode';
+import { isCookiesDisabled } from '../../utils/helpers';
 
 export const InputFieldStyles = `
     .gh-portal-input-section.hidden {
@@ -68,113 +68,118 @@ export const InputFieldStyles = `
     }
 `;
 
-function InputError({message, style}) {
-    if (!message) {
-        return null;
-    }
-    return (
-        <p style={{
-            ...(style || {})
-        }}>
-            {message}
-        </p>
-    );
+function InputError({ message, style }) {
+  if (!message) {
+    return null;
+  }
+  return (
+    <p
+      style={{
+        ...(style || {}),
+      }}
+    >
+      {message}
+    </p>
+  );
 }
 
 function InputField({
-    name,
-    id,
-    hidden,
-    label,
-    hideLabel,
-    type,
-    value,
-    placeholder,
-    disabled = false,
-    onChange = () => {},
-    onBlur = () => {},
-    onKeyDown = () => {},
-    tabIndex,
-    maxLength,
-    autoFocus,
-    errorMessage
+  name,
+  id,
+  hidden,
+  label,
+  hideLabel,
+  type,
+  value,
+  placeholder,
+  disabled = false,
+  onChange = () => {},
+  onBlur = () => {},
+  onKeyDown = () => {},
+  tabIndex,
+  maxLength,
+  autoFocus,
+  errorMessage,
 }) {
-    const fieldNode = useRef(null);
-    id = id || `input-${name}`;
-    const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
-    const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
-    const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
-    if (isCookiesDisabled()) {
-        disabled = true;
-    }
+  const fieldNode = useRef(null);
+  id = id || `input-${name}`;
+  const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
+  const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
+  const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
+  if (isCookiesDisabled()) {
+    disabled = true;
+  }
 
-    // Disable all input fields in preview mode
-    if (hasMode(['preview'])) {
-        disabled = true;
-    }
+  // Disable all input fields in preview mode
+  if (hasMode(['preview'])) {
+    disabled = true;
+  }
 
-    let autoComplete = '';
-    let autoCorrect = '';
-    let autoCapitalize = '';
-    let inputMode;
-    let pattern;
-    switch (id) {
+  let autoComplete = '';
+  let autoCorrect = '';
+  let autoCapitalize = '';
+  let inputMode;
+  let pattern;
+  switch (id) {
     case 'input-email':
-        autoComplete = 'off';
-        autoCorrect = 'off';
-        autoCapitalize = 'off';
-        break;
+      autoComplete = 'off';
+      autoCorrect = 'off';
+      autoCapitalize = 'off';
+      break;
     case 'input-name':
-        autoComplete = 'off';
-        autoCorrect = 'off';
-        break;
+      autoComplete = 'off';
+      autoCorrect = 'off';
+      break;
     case 'input-otc':
-        autoComplete = 'one-time-code';
-        autoCorrect = 'off';
-        autoCapitalize = 'off';
-        inputMode = 'numeric';
-        pattern = '[0-9]*';
-        placeholder ??= '• • • • • •';
+      autoComplete = 'one-time-code';
+      autoCorrect = 'off';
+      autoCapitalize = 'off';
+      inputMode = 'numeric';
+      pattern = '[0-9]*';
+      placeholder ??= '• • • • • •';
 
-        break;
+      break;
     default:
-        break;
+      break;
+  }
+  useEffect(() => {
+    if (autoFocus) {
+      fieldNode.current.focus();
     }
-    useEffect(() => {
-        if (autoFocus) {
-            fieldNode.current.focus();
-        }
-    }, [autoFocus]);
-    return (
-        <section className={sectionClasses}>
-            <div className='gh-portal-input-labelcontainer'>
-                <label htmlFor={id} className={labelClasses}> {label} </label>
-                <InputError message={errorMessage} name={name} />
-            </div>
-            <input
-                data-test-input={id}
-                ref={fieldNode}
-                id={id}
-                className={inputClasses}
-                type={type}
-                name={name}
-                value={value}
-                placeholder={placeholder}
-                onChange={e => onChange(e, name)}
-                onKeyDown={e => onKeyDown(e, name)}
-                onBlur={e => onBlur(e, name)}
-                disabled={disabled}
-                tabIndex={tabIndex}
-                maxLength={maxLength}
-                autoComplete={autoComplete}
-                autoCorrect={autoCorrect}
-                autoCapitalize={autoCapitalize}
-                aria-label={label}
-                inputMode={inputMode}
-                pattern={pattern}
-            />
-        </section>
-    );
+  }, [autoFocus]);
+  return (
+    <section className={sectionClasses}>
+      <div className="gh-portal-input-labelcontainer">
+        <label htmlFor={id} className={labelClasses}>
+          {' '}
+          {label}{' '}
+        </label>
+        <InputError message={errorMessage} name={name} />
+      </div>
+      <input
+        data-test-input={id}
+        ref={fieldNode}
+        id={id}
+        className={inputClasses}
+        type={type}
+        name={name}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e, name)}
+        onKeyDown={(e) => onKeyDown(e, name)}
+        onBlur={(e) => onBlur(e, name)}
+        disabled={disabled}
+        tabIndex={tabIndex}
+        maxLength={maxLength}
+        autoComplete={autoComplete}
+        autoCorrect={autoCorrect}
+        autoCapitalize={autoCapitalize}
+        aria-label={label}
+        inputMode={inputMode}
+        pattern={pattern}
+      />
+    </section>
+  );
 }
 
 export default InputField;

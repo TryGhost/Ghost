@@ -1,111 +1,117 @@
 const adapterManager = require('../../adapter-manager').default;
 const createSessionService = require('./session-service');
-const sessionFromToken = require('./session-from-token');
+const { sessionFromToken } = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
-const {GhostMailer} = require('../../mail');
-const {t} = require('../../i18n');
+const { GhostMailer } = require('../../mail');
+const { t } = require('../../i18n');
 
 const expressSession = require('./express-session');
 
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils').default;
 const config = require('../../../../shared/config');
-const {blogIcon} = require('../../../lib/image');
+const { blogIcon } = require('../../../lib/image');
 const url = require('url');
 
 // TODO: We have too many lines here, should move functions out into a utils module
 
 function getOriginOfRequest(req) {
-    const getHeader = (name) => {
-        if (req && typeof req.get === 'function') {
-            return req.get(name);
-        }
-
-        const headers = req && req.headers ? req.headers : {};
-        const normalizedName = name.toLowerCase();
-        return headers[normalizedName];
-    };
-
-    const origin = getHeader('origin');
-    const referrer = getHeader('referrer') || getHeader('referer') || urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
-
-    if (!origin && !referrer || origin === 'null') {
-        return null;
+  const getHeader = (name) => {
+    if (req && typeof req.get === 'function') {
+      return req.get(name);
     }
 
-    if (origin) {
-        return origin;
-    }
+    const headers = req && req.headers ? req.headers : {};
+    const normalizedName = name.toLowerCase();
+    return headers[normalizedName];
+  };
 
-    const {protocol, host} = url.parse(referrer);
-    if (protocol && host) {
-        return `${protocol}//${host}`;
-    }
+  const origin = getHeader('origin');
+  const referrer =
+    getHeader('referrer') ||
+    getHeader('referer') ||
+    urlUtils.getAdminUrl() ||
+    urlUtils.getSiteUrl();
+
+  if ((!origin && !referrer) || origin === 'null') {
     return null;
+  }
+
+  if (origin) {
+    return origin;
+  }
+
+  const { protocol, host } = url.parse(referrer);
+  if (protocol && host) {
+    return `${protocol}//${host}`;
+  }
+  return null;
 }
 
 const mailer = new GhostMailer();
 
 const sessionService = createSessionService({
-    getOriginOfRequest,
-    getSession: expressSession.getSession,
-    findUserById({id}) {
-        return models.User.findOne({id, status: 'active'});
-    },
-    getSettingsCache(key) {
-        return settingsCache.get(key);
-    },
-    isStaffDeviceVerificationDisabled() {
-        // This config flag is set to true by default, so we need to check for false
-        return config.get('security:staffDeviceVerification') !== true;
-    },
-    getBlogLogo() {
-        return blogIcon.getIconUrl({absolute: true, fallbackToDefault: false})
-            || 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
-    },
-    mailer,
-    urlUtils,
-    t
+  getOriginOfRequest,
+  getSession: expressSession.getSession,
+  findUserById({ id }) {
+    return models.User.findOne({ id, status: 'active' });
+  },
+  getSettingsCache(key) {
+    return settingsCache.get(key);
+  },
+  isStaffDeviceVerificationDisabled() {
+    // This config flag is set to true by default, so we need to check for false
+    return config.get('security:staffDeviceVerification') !== true;
+  },
+  getBlogLogo() {
+    return (
+      blogIcon.getIconUrl({ absolute: true, fallbackToDefault: false }) ||
+      'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png'
+    );
+  },
+  mailer,
+  urlUtils,
+  t,
 });
 
-module.exports = createSessionMiddleware({sessionService});
+module.exports = createSessionMiddleware({ sessionService });
 
 // Looks funky but this is a "custom" piece of middleware
 module.exports.createSessionFromToken = () => {
-    const ssoAdapter = adapterManager.getAdapter('sso');
+  const ssoAdapter = adapterManager.getAdapter('sso');
 
-    // Provide the SSO adapter with the user lookups it needs, backed by the User
-    // model. This keeps the model coupling here in core and lets adapter
-    // implementations resolve users via the base class helpers instead of
-    // requiring Ghost's model layer directly.
-    ssoAdapter.setUserRepository({
-        async getByEmail(email) {
-            const user = await models.User.findOne({email});
-            return user ? {id: user.id, email: user.get('email')} : null;
-        },
-        async getOwner() {
-            const owner = await models.User.findOne({role: 'Owner', status: 'all'});
-            return owner ? {id: owner.id, email: owner.get('email')} : null;
-        }
-    });
+  // Provide the SSO adapter with the user lookups it needs, backed by the User
+  // model. This keeps the model coupling here in core and lets adapter
+  // implementations resolve users via the base class helpers instead of
+  // requiring Ghost's model layer directly.
+  ssoAdapter.setUserRepository({
+    async getByEmail(email) {
+      const user = await models.User.findOne({ email });
+      return user ? { id: user.id, email: user.get('email') } : null;
+    },
+    async getOwner() {
+      const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
+      return owner ? { id: owner.id, email: owner.get('email') } : null;
+    },
+  });
 
-    return sessionFromToken({
-        callNextWithError: false,
-        createSession: sessionService.createVerifiedSessionForUser,
-        findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
-        getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
-        getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
-    });
+  return sessionFromToken({
+    callNextWithError: false,
+    createSession: sessionService.createVerifiedSessionForUser,
+    findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
+    getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
+    getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter),
+  });
 };
 
 module.exports.initSession = async function initSession(req, res, next) {
-    try {
-        await expressSession.getSession(req, res);
-        next();
-    } catch (err) {
-        next(err);
-    }
+  try {
+    await expressSession.getSession(req, res);
+    next();
+  } catch (err) {
+    next(err);
+  }
 };
 
 module.exports.getOriginOfRequest = getOriginOfRequest;

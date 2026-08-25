@@ -4,19 +4,19 @@ const urlUtils = require('../../../shared/url-utils').default;
 
 // Extract the core redirect logic for easier testing
 const handleAdminRedirect = function (req, res) {
-    const adminPath = req.path.replace(/^\/ghost/, '') || '/';
-    return urlUtils.redirectToAdmin(301, res, adminPath);
+  const adminPath = req.path.replace(/^\/ghost/, '') || '/';
+  return urlUtils.redirectToAdmin(301, res, adminPath);
 };
 
 // redirect to /ghost to the admin
 module.exports = function redirectGhostToAdmin() {
-    const router = express.Router('redirect-ghost-to-admin');
+  const router = express.Router('redirect-ghost-to-admin');
 
-    if (config.get('admin:redirects')) {
-        router.get(/^\/ghost(\/.*)?\/?$/, handleAdminRedirect);
-    }
+  if (config.get('admin:redirects')) {
+    router.get(/^\/ghost(\/.*)?\/?$/, handleAdminRedirect);
+  }
 
-    return router;
+  return router;
 };
 
 // Export the core logic for testing

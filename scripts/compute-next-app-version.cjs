@@ -26,28 +26,31 @@ const semver = require('semver');
  * @returns {string} the version to publish next
  */
 function computeNextVersion(currentVersion, publishedVersions) {
-    const current = semver.parse(currentVersion);
-    if (!current) {
-        throw new Error(`Invalid version "${currentVersion}" in package.json`);
-    }
+  const current = semver.parse(currentVersion);
+  if (!current) {
+    throw new Error(`Invalid version "${currentVersion}" in package.json`);
+  }
 
-    const patchesInLine = publishedVersions
-        .map(version => semver.parse(version))
-        // Ignore prereleases (e.g. 2.69.5-beta.1) — only stable patches in this
-        // major.minor line should drive the next patch number.
-        .filter(version => version
-            && version.major === current.major
-            && version.minor === current.minor
-            && version.prerelease.length === 0)
-        .map(version => version.patch);
+  const patchesInLine = publishedVersions
+    .map((version) => semver.parse(version))
+    // Ignore prereleases (e.g. 2.69.5-beta.1) — only stable patches in this
+    // major.minor line should drive the next patch number.
+    .filter(
+      (version) =>
+        version &&
+        version.major === current.major &&
+        version.minor === current.minor &&
+        version.prerelease.length === 0,
+    )
+    .map((version) => version.patch);
 
-    if (patchesInLine.length === 0) {
-        // Fresh major.minor line — publish exactly what package.json declares.
-        return current.version;
-    }
+  if (patchesInLine.length === 0) {
+    // Fresh major.minor line — publish exactly what package.json declares.
+    return current.version;
+  }
 
-    const highestPatch = Math.max(...patchesInLine);
-    return `${current.major}.${current.minor}.${highestPatch + 1}`;
+  const highestPatch = Math.max(...patchesInLine);
+  return `${current.major}.${current.minor}.${highestPatch + 1}`;
 }
 
 /**
@@ -58,52 +61,54 @@ function computeNextVersion(currentVersion, publishedVersions) {
  * @returns {string[]}
  */
 function getPublishedVersions(packageName) {
-    let output;
+  let output;
 
-    try {
-        output = execFileSync('npm', ['view', packageName, 'versions', '--json'], {encoding: 'utf8'});
-    } catch (error) {
-        const combined = `${error.stdout || ''}${error.stderr || ''}`;
-        if (combined.includes('E404') || combined.includes('404 Not Found')) {
-            return [];
-        }
-        throw new Error(`Failed to read published versions for ${packageName}: ${combined || error.message}`);
+  try {
+    output = execFileSync('npm', ['view', packageName, 'versions', '--json'], { encoding: 'utf8' });
+  } catch (error) {
+    const combined = `${error.stdout || ''}${error.stderr || ''}`;
+    if (combined.includes('E404') || combined.includes('404 Not Found')) {
+      return [];
     }
+    throw new Error(
+      `Failed to read published versions for ${packageName}: ${combined || error.message}`,
+    );
+  }
 
-    const trimmed = output.trim();
-    if (!trimmed) {
-        return [];
-    }
+  const trimmed = output.trim();
+  if (!trimmed) {
+    return [];
+  }
 
-    const parsed = JSON.parse(trimmed);
-    // npm returns a bare string when only one version exists, an array otherwise.
-    return Array.isArray(parsed) ? parsed : [parsed];
+  const parsed = JSON.parse(trimmed);
+  // npm returns a bare string when only one version exists, an array otherwise.
+  return Array.isArray(parsed) ? parsed : [parsed];
 }
 
 function main() {
-    const packageDir = process.argv[2] || process.cwd();
-    const packageJsonPath = path.resolve(packageDir, 'package.json');
+  const packageDir = process.argv[2] || process.cwd();
+  const packageJsonPath = path.resolve(packageDir, 'package.json');
 
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-    if (!packageJson.name || !packageJson.version) {
-        throw new Error(`${packageJsonPath} is missing a name or version`);
-    }
+  if (!packageJson.name || !packageJson.version) {
+    throw new Error(`${packageJsonPath} is missing a name or version`);
+  }
 
-    const publishedVersions = getPublishedVersions(packageJson.name);
-    const nextVersion = computeNextVersion(packageJson.version, publishedVersions);
+  const publishedVersions = getPublishedVersions(packageJson.name);
+  const nextVersion = computeNextVersion(packageJson.version, publishedVersions);
 
-    // Stdout is the contract — the workflow captures this to set the version.
-    process.stdout.write(nextVersion);
+  // Stdout is the contract — the workflow captures this to set the version.
+  process.stdout.write(nextVersion);
 }
 
 if (require.main === module) {
-    try {
-        main();
-    } catch (error) {
-        console.error(error.message);
-        process.exit(1);
-    }
+  try {
+    main();
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
 }
 
-module.exports = {computeNextVersion, getPublishedVersions};
+module.exports = { computeNextVersion, getPublishedVersions };

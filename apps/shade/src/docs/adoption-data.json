@@ -1578,12 +1578,6 @@
   },
   "publicApps": {
     "count": 5,
-    "names": [
-      "portal",
-      "comments-ui",
-      "signup-form",
-      "sodo-search",
-      "announcement-bar"
-    ]
+    "names": ["portal", "comments-ui", "signup-form", "sodo-search", "announcement-bar"]
   }
 }

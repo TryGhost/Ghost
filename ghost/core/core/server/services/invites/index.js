@@ -5,8 +5,8 @@ const urlUtils = require('../../../shared/url-utils').default;
 const Invites = require('./invites');
 
 module.exports = new Invites({
-    settingsCache,
-    settingsHelpers,
-    mailService,
-    urlUtils
+  settingsCache,
+  settingsHelpers,
+  mailService,
+  urlUtils,
 });

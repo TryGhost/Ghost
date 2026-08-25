@@ -2,33 +2,33 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:
 const url = require('./utils/url');
 
 module.exports = {
-    browse(apiConfig, frame) {
-        debug('browse');
+  browse(apiConfig, frame) {
+    debug('browse');
 
-        // Staff users route through the authors router types.
-        url.forceUrlColumns(frame, 'authors');
-    },
+    // Staff users route through the authors router types.
+    url.forceUrlColumns(frame, 'authors');
+  },
 
-    read(apiConfig, frame) {
-        debug('read');
+  read(apiConfig, frame) {
+    debug('read');
 
-        url.forceUrlColumns(frame, 'authors');
+    url.forceUrlColumns(frame, 'authors');
 
-        if (frame.data.id === 'me' && frame.options.context && frame.options.context.user) {
-            frame.data.id = frame.options.context.user;
-        }
-    },
-
-    edit(apiConfig, frame) {
-        debug('edit');
-
-        if (frame.options.id === 'me' && frame.options.context && frame.options.context.user) {
-            frame.options.id = frame.options.context.user;
-        }
-
-        delete frame.data.users[0].password;
-        delete frame.data.users[0].last_seen;
-
-        frame.data.users[0] = url.forUser(Object.assign({}, frame.data.users[0]));
+    if (frame.data.id === 'me' && frame.options.context && frame.options.context.user) {
+      frame.data.id = frame.options.context.user;
     }
+  },
+
+  edit(apiConfig, frame) {
+    debug('edit');
+
+    if (frame.options.id === 'me' && frame.options.context && frame.options.context.user) {
+      frame.options.id = frame.options.context.user;
+    }
+
+    delete frame.data.users[0].password;
+    delete frame.data.users[0].last_seen;
+
+    frame.data.users[0] = url.forUser(Object.assign({}, frame.data.users[0]));
+  },
 };

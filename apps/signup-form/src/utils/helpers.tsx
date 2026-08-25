@@ -1,69 +1,70 @@
-import {SignupFormOptions} from '../app-context';
+import { SignupFormOptions } from '../app-context';
 
 export type URLHistory = {
-    type?: 'post',
-    path?: string,
-    time: number,
-    referrerSource: string | null,
-    referrerMedium: string | null,
-    referrerUrl: string | null,
+  type?: 'post';
+  path?: string;
+  time: number;
+  referrerSource: string | null;
+  referrerMedium: string | null;
+  referrerUrl: string | null;
 }[];
 
 export function isMinimal(options: SignupFormOptions): boolean {
-    return !options.title;
+  return !options.title;
 }
 
 /**
  * Get the URL history when the form is embedded on the site itself.
  */
 export function getDefaultUrlHistory() {
-    const STORAGE_KEY = 'ghost-history';
+  const STORAGE_KEY = 'ghost-history';
 
-    try {
-        const historyString = sessionStorage.getItem(STORAGE_KEY);
-        if (historyString) {
-            const parsed = JSON.parse(historyString);
+  try {
+    const historyString = sessionStorage.getItem(STORAGE_KEY);
+    if (historyString) {
+      const parsed = JSON.parse(historyString);
 
-            if (Array.isArray(parsed)) {
-                return parsed;
-            }
-        }
-    } catch (error) {
-        // Failed to access sessionStorage or something related to that.
-        // Log a warning, as this shouldn't happen on a modern browser.
-
-        /* eslint-disable no-console */
-        console.warn(`[Signup-Form] Failed to load member URL history:`, error);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
     }
+  } catch (error) {
+    // Failed to access sessionStorage or something related to that.
+    // Log a warning, as this shouldn't happen on a modern browser.
+
+    /* eslint-disable no-console */
+    console.warn(`[Signup-Form] Failed to load member URL history:`, error);
+  }
 }
 
-export function getUrlHistory({siteUrl}: {siteUrl: string}): URLHistory {
-    // If we are embedded on the site itself, use the default attribution sessionStorage, just like Portal
-    try {
-        if (window.location.host === new URL(siteUrl).host) {
-            const history = getDefaultUrlHistory();
-            if (history) {
-                return history;
-            }
-        }
-    } catch (error) {
-        // Most likely an invalid siteUrl
-
-        console.warn(`[Signup-Form] Failed to load member URL history:`, error);
+export function getUrlHistory({ siteUrl }: { siteUrl: string }): URLHistory {
+  // If we are embedded on the site itself, use the default attribution sessionStorage, just like Portal
+  try {
+    if (window.location.host === new URL(siteUrl).host) {
+      const history = getDefaultUrlHistory();
+      if (history) {
+        return history;
+      }
     }
+  } catch (error) {
+    // Most likely an invalid siteUrl
 
-    const history: URLHistory = [];
+    console.warn(`[Signup-Form] Failed to load member URL history:`, error);
+  }
 
-    // Href without query string
-    const currentPath = window.location.protocol + '//' + window.location.host + window.location.pathname;
-    const currentTime = new Date().getTime();
+  const history: URLHistory = [];
 
-    history.push({
-        time: currentTime,
-        referrerSource: window.location.host,
-        referrerMedium: 'Embed',
-        referrerUrl: currentPath
-    });
+  // Href without query string
+  const currentPath =
+    window.location.protocol + '//' + window.location.host + window.location.pathname;
+  const currentTime = new Date().getTime();
 
-    return history;
+  history.push({
+    time: currentTime,
+    referrerSource: window.location.host,
+    referrerMedium: 'Embed',
+    referrerUrl: currentPath,
+  });
+
+  return history;
 }

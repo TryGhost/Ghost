@@ -7,10 +7,10 @@ For the design rationale and how the code is organised, see `README.md`.
 
 ## 1. Add the API key
 
-The workflow needs a single new secret in *Settings → Secrets and variables → Actions*:
+The workflow needs a single new secret in _Settings → Secrets and variables → Actions_:
 
-| Secret | Value | Scope |
-|---|---|---|
+| Secret              | Value                     | Scope      |
+| ------------------- | ------------------------- | ---------- |
 | `ANTHROPIC_API_KEY` | Anthropic Console API key | Repository |
 
 No other workflow currently uses Anthropic, so this is a fresh secret on
@@ -48,12 +48,12 @@ back to the Sonnet default if unset.
 The workflow is gated on a `paths` filter — the PR must touch a file under
 `packages/i18n/locales/**` — and runs on these events:
 
-| Event | Trigger | Notes |
-|---|---|---|
-| `pull_request_target.opened` / `.reopened` | When a PR touching a locale file is opened/reopened | The most common path. Fires from a real PR-author event, so it is not subject to the `GITHUB_TOKEN` suppression below. |
-| `pull_request_target.synchronize` | When new commits are pushed to a PR touching a locale file | The bot re-runs and posts a fresh advisory review. Prior runs are not auto-deleted — GitHub does not allow deleting a submitted review. |
-| `pull_request_target.labeled` | When a maintainer adds the `affects:i18n` label | Kept purely as a **manual re-trigger** — a human removing + re-adding the label fires a fresh run. |
-| `workflow_dispatch` | Manual run from the Actions tab with PR number + optional model override | Used to retroactively review existing PRs (see §3) or to A/B compare models. |
+| Event                                      | Trigger                                                                  | Notes                                                                                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `pull_request_target.opened` / `.reopened` | When a PR touching a locale file is opened/reopened                      | The most common path. Fires from a real PR-author event, so it is not subject to the `GITHUB_TOKEN` suppression below.                  |
+| `pull_request_target.synchronize`          | When new commits are pushed to a PR touching a locale file               | The bot re-runs and posts a fresh advisory review. Prior runs are not auto-deleted — GitHub does not allow deleting a submitted review. |
+| `pull_request_target.labeled`              | When a maintainer adds the `affects:i18n` label                          | Kept purely as a **manual re-trigger** — a human removing + re-adding the label fires a fresh run.                                      |
+| `workflow_dispatch`                        | Manual run from the Actions tab with PR number + optional model override | Used to retroactively review existing PRs (see §3) or to A/B compare models.                                                            |
 
 > **Why not key off the `affects:i18n` label?** The label is applied
 > automatically by the label-actions workflow using the default
@@ -78,13 +78,13 @@ doesn't replay past `opened` events. They'll start being reviewed when:
 
 To kick one off manually:
 
-1. Go to *Actions → Translation Review*
-2. Click *Run workflow*
+1. Go to _Actions → Translation Review_
+2. Click _Run workflow_
 3. Enter the PR number
 4. (Optional) pick a `model` to override the default — leave blank to use
    the workflow's configured default. Useful for comparing Sonnet vs.
    Haiku output on the same PR.
-5. Click *Run workflow*
+5. Click _Run workflow_
 
 The advisory review appears on the PR within ~1 minute.
 
@@ -118,7 +118,7 @@ likely causes:
 
 ## 5. Tuning the reviewer's behaviour
 
-Everything that controls *what* the model checks lives in **`prompt.md`**.
+Everything that controls _what_ the model checks lives in **`prompt.md`**.
 Edit and PR like any other code change — no workflow edit needed.
 
 Common tunings:
@@ -139,7 +139,7 @@ adjusting what fields the review carries.
 
 If the bot starts misbehaving and you want to mute it without reverting:
 
-- *Settings → Actions → General → Disable actions* (nuclear)
+- _Settings → Actions → General → Disable actions_ (nuclear)
 - Or comment out the trigger block in `translation-review.yml` and PR
 - Or simply rename the `affects:i18n` label — the conditional won't match
 

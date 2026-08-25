@@ -6,60 +6,62 @@ const tiersService = require('../../../../../../../core/server/services/tiers');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/posts', function () {
-    let postModel;
+  let postModel;
 
-    beforeEach(function () {
-        postModel = (data) => {
-            return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-        };
+  beforeEach(function () {
+    postModel = (data) => {
+      return Object.assign(data, { toJSON: sinon.stub().returns(data) });
+    };
 
-        tiersService.api = {
-            browse() {
-                return {data: null};
-            }
-        };
+    tiersService.api = {
+      browse() {
+        return { data: null };
+      },
+    };
 
-        sinon.stub(mappers, 'posts').returns({});
+    sinon.stub(mappers, 'posts').returns({});
+  });
+
+  afterEach(function () {
+    sinon.restore();
+    tiersService.api = null;
+  });
+
+  it('destroy responds without serializing the destroyed model', async function () {
+    const frame = { options: { context: {} } };
+    // bookshelf clears attributes on destroy; only relations remain
+    const destroyedModel = postModel({});
+
+    await serializers.output.posts.destroy(destroyedModel, {}, frame);
+
+    assert.deepEqual(frame.response, { posts: [] });
+    sinon.assert.notCalled(mappers.posts);
+  });
+
+  it('calls the mapper', async function () {
+    const apiConfig = {};
+    const frame = {
+      options: {
+        withRelated: ['tags', 'authors'],
+        context: {
+          private: false,
+        },
+      },
+    };
+
+    const ctrlResponse = {
+      data: [
+        postModel(testUtils.DataGenerator.forKnex.createPost({})),
+        postModel(testUtils.DataGenerator.forKnex.createPost({})),
+      ],
+      meta: {},
+    };
+
+    await serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+
+    sinon.assert.callCount(mappers.posts, 2);
+    sinon.assert.calledWithExactly(mappers.posts.firstCall, ctrlResponse.data[0], frame, {
+      tiers: [],
     });
-
-    afterEach(function () {
-        sinon.restore();
-        tiersService.api = null;
-    });
-
-    it('destroy responds without serializing the destroyed model', async function () {
-        const frame = {options: {context: {}}};
-        // bookshelf clears attributes on destroy; only relations remain
-        const destroyedModel = postModel({});
-
-        await serializers.output.posts.destroy(destroyedModel, {}, frame);
-
-        assert.deepEqual(frame.response, {posts: []});
-        sinon.assert.notCalled(mappers.posts);
-    });
-
-    it('calls the mapper', async function () {
-        const apiConfig = {};
-        const frame = {
-            options: {
-                withRelated: ['tags', 'authors'],
-                context: {
-                    private: false
-                }
-            }
-        };
-
-        const ctrlResponse = {
-            data: [
-                postModel(testUtils.DataGenerator.forKnex.createPost({})),
-                postModel(testUtils.DataGenerator.forKnex.createPost({}))
-            ],
-            meta: {}
-        };
-
-        await serializers.output.posts.all(ctrlResponse, apiConfig, frame);
-
-        sinon.assert.callCount(mappers.posts, 2);
-        sinon.assert.calledWithExactly(mappers.posts.firstCall, ctrlResponse.data[0], frame, {tiers: []});
-    });
+  });
 });

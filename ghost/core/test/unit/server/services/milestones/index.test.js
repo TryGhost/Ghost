@@ -1,11 +1,11 @@
 const assert = require('node:assert/strict');
 
 describe('Milestones Service', function () {
-    let milestonesService;
+  let milestonesService;
 
-    it('Provides expected public API', async function () {
-        milestonesService = require('../../../../../core/server/services/milestones');
+  it('Provides expected public API', async function () {
+    milestonesService = require('../../../../../core/server/services/milestones');
 
-        assert.ok(milestonesService.initAndRun);
-    });
+    assert.ok(milestonesService.initAndRun);
+  });
 });

@@ -1,34 +1,34 @@
 export const STATS_RANGES = {
-    today: {
-        name: 'Today',
-        value: 1
-    },
-    last7Days: {
-        name: 'Last 7 days',
-        value: 7
-    },
-    last30Days: {
-        name: 'Last 30 days',
-        value: 30 + 1
-    },
-    last3Months: {
-        name: 'Last 90 days',
-        value: 91
-    },
-    yearToDate: {
-        name: 'Year to date',
-        // -1 is the year-to-date sentinel understood by shade's getRangeDates —
-        // it resolves to January 1st of the current year, not a trailing window
-        value: -1
-    },
-    last12Months: {
-        name: 'Last 12 months',
-        value: 12 * (30 + 1)
-    },
-    allTime: {
-        name: 'All time',
-        value: 1000
-    }
+  today: {
+    name: 'Today',
+    value: 1,
+  },
+  last7Days: {
+    name: 'Last 7 days',
+    value: 7,
+  },
+  last30Days: {
+    name: 'Last 30 days',
+    value: 30 + 1,
+  },
+  last3Months: {
+    name: 'Last 90 days',
+    value: 91,
+  },
+  yearToDate: {
+    name: 'Year to date',
+    // -1 is the year-to-date sentinel understood by shade's getRangeDates —
+    // it resolves to January 1st of the current year, not a trailing window
+    value: -1,
+  },
+  last12Months: {
+    name: 'Last 12 months',
+    value: 12 * (30 + 1),
+  },
+  allTime: {
+    name: 'All time',
+    value: 1000,
+  },
 };
 
 export const STATS_RANGE_OPTIONS = Object.values(STATS_RANGES);
@@ -36,57 +36,59 @@ export const STATS_RANGE_OPTIONS = Object.values(STATS_RANGES);
 export const STATS_DEFAULT_RANGE_KEY = 2;
 
 export const STATS_LABEL_MAPPINGS = {
-    // Countries — overrides where i18n-iso-countries has no friendly alias,
-    // or where the alias-mode pick isn't the common short form.
-    GB: 'United Kingdom',
-    KR: 'South Korea',
-    LA: 'Laos',
-    MD: 'Moldova',
-    SY: 'Syria',
+  // Countries — overrides where i18n-iso-countries has no friendly alias,
+  // or where the alias-mode pick isn't the common short form.
+  GB: 'United Kingdom',
+  KR: 'South Korea',
+  LA: 'Laos',
+  MD: 'Moldova',
+  SY: 'Syria',
 
-    // Technical
-    'mobile-ios': 'iOS',
-    'mobile-android': 'Android',
-    macos: 'macOS',
+  // Technical
+  'mobile-ios': 'iOS',
+  'mobile-android': 'Android',
+  macos: 'macOS',
 
-    // Sources
-    'google.com': 'Google',
-    'ghost.org': 'Ghost',
-    'bing.com': 'Bing',
-    'bsky.app': 'Bluesky',
-    'yahoo.com': 'Yahoo',
-    'duckduckgo.com': 'DuckDuckGo',
+  // Sources
+  'google.com': 'Google',
+  'ghost.org': 'Ghost',
+  'bing.com': 'Bing',
+  'bsky.app': 'Bluesky',
+  'yahoo.com': 'Yahoo',
+  'duckduckgo.com': 'DuckDuckGo',
 
-    // Unknown/Other values - normalize to "Unknown"
-    unknown: 'Unknown',
-    Others: 'Unknown',
-    Other: 'Unknown',
-    NULL: 'Unknown',
-    ᴺᵁᴸᴸ: 'Unknown'
+  // Unknown/Other values - normalize to "Unknown"
+  unknown: 'Unknown',
+  Others: 'Unknown',
+  Other: 'Unknown',
+  NULL: 'Unknown',
+  ᴺᵁᴸᴸ: 'Unknown',
 };
 
 // Values that represent unknown locations in the data
 export const UNKNOWN_LOCATION_VALUES = ['NULL', 'ᴺᵁᴸᴸ', '', 'Others', 'Other'];
 
-export const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
+export const STATS_DEFAULT_SOURCE_ICON_URL =
+  'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 // Audience bitmask values for filtering stats by visitor type
 export const AUDIENCE_BITS = {
-    PUBLIC: 1 << 0, // 1
-    FREE: 1 << 1, // 2
-    PAID: 1 << 2 // 4
+  PUBLIC: 1 << 0, // 1
+  FREE: 1 << 1, // 2
+  PAID: 1 << 2, // 4
 };
 
 // All audiences selected (PUBLIC | FREE | PAID = 7)
 export const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
 
 export const AUDIENCE_TYPES = [
-    {name: 'Public visitors', value: 'undefined', bit: AUDIENCE_BITS.PUBLIC},
-    {name: 'Free members', value: 'free', bit: AUDIENCE_BITS.FREE},
-    {name: 'Paid members', value: 'paid', bit: AUDIENCE_BITS.PAID}
+  { name: 'Public visitors', value: 'undefined', bit: AUDIENCE_BITS.PUBLIC },
+  { name: 'Free members', value: 'free', bit: AUDIENCE_BITS.FREE },
+  { name: 'Paid members', value: 'paid', bit: AUDIENCE_BITS.PAID },
 ];
 
 // The includes the post-analytics screen fetches for a post. Shared so any
 // consumer wanting the *same* cached post (e.g. the gift-link modal opened from
 // the analytics header) hits the identical query key instead of a near-miss.
-export const POST_ANALYTICS_INCLUDE = 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions,count.positive_feedback,count.negative_feedback,newsletter';
+export const POST_ANALYTICS_INCLUDE =
+  'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions,count.positive_feedback,count.negative_feedback,newsletter';

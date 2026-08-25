@@ -1,6 +1,3 @@
 {
-  "setup-worktree": [
-    "git submodule update --init --recursive",
-    "pnpm"
-  ]
+  "setup-worktree": ["git submodule update --init --recursive", "pnpm"]
 }

@@ -13,7 +13,7 @@ This is a **dispatcher agent** that routes your request to the appropriate speci
 
 - **Creating new workflows**: Routes to `create` prompt
 - **Updating existing workflows**: Routes to `update` prompt
-- **Debugging workflows**: Routes to `debug` prompt  
+- **Debugging workflows**: Routes to `debug` prompt
 - **Upgrading workflows**: Routes to `upgrade-agentic-workflows` prompt
 - **Creating shared components**: Routes to `create-shared-agentic-workflow` prompt
 - **Fixing Dependabot PRs**: Routes to `dependabot` prompt — use this when Dependabot opens PRs that modify generated manifest files (`.github/workflows/package.json`, `.github/workflows/requirements.txt`, `.github/workflows/go.mod`). Never merge those PRs directly; instead update the source `.md` files and rerun `gh aw compile --dependabot` to bundle all fixes
@@ -48,61 +48,73 @@ When you interact with this agent, it will:
 ## Available Prompts
 
 ### Create New Workflow
+
 **Load when**: User wants to create a new workflow from scratch, add automation, or design a workflow that doesn't exist yet
 
 **Prompt file**: https://github.com/github/gh-aw/blob/v0.49.3/.github/aw/create-agentic-workflow.md
 
 **Use cases**:
+
 - "Create a workflow that triages issues"
 - "I need a workflow to label pull requests"
 - "Design a weekly research automation"
 
-### Update Existing Workflow  
+### Update Existing Workflow
+
 **Load when**: User wants to modify, improve, or refactor an existing workflow
 
 **Prompt file**: https://github.com/github/gh-aw/blob/v0.49.3/.github/aw/update-agentic-workflow.md
 
 **Use cases**:
+
 - "Add web-fetch tool to the issue-classifier workflow"
 - "Update the PR reviewer to use discussions instead of issues"
 - "Improve the prompt for the weekly-research workflow"
 
-### Debug Workflow  
+### Debug Workflow
+
 **Load when**: User needs to investigate, audit, debug, or understand a workflow, troubleshoot issues, analyze logs, or fix errors
 
 **Prompt file**: https://github.com/github/gh-aw/blob/v0.49.3/.github/aw/debug-agentic-workflow.md
 
 **Use cases**:
+
 - "Why is this workflow failing?"
 - "Analyze the logs for workflow X"
 - "Investigate missing tool calls in run #12345"
 
 ### Upgrade Agentic Workflows
+
 **Load when**: User wants to upgrade workflows to a new gh-aw version or fix deprecations
 
 **Prompt file**: https://github.com/github/gh-aw/blob/v0.49.3/.github/aw/upgrade-agentic-workflows.md
 
 **Use cases**:
+
 - "Upgrade all workflows to the latest version"
 - "Fix deprecated fields in workflows"
 - "Apply breaking changes from the new release"
 
 ### Create Shared Agentic Workflow
+
 **Load when**: User wants to create a reusable workflow component or wrap an MCP server
 
 **Prompt file**: https://github.com/github/gh-aw/blob/v0.49.3/.github/aw/create-shared-agentic-workflow.md
 
 **Use cases**:
+
 - "Create a shared component for Notion integration"
 - "Wrap the Slack MCP server as a reusable component"
 - "Design a shared workflow for database queries"
 
 ### Fix Dependabot PRs
+
 **Load when**: User needs to close or fix open Dependabot PRs that update dependencies in generated manifest files (`.github/workflows/package.json`, `.github/workflows/requirements.txt`, `.github/workflows/go.mod`)
 
 **Prompt file**: https://github.com/github/gh-aw/blob/v0.49.3/.github/aw/dependabot.md
 
 **Use cases**:
+
 - "Fix the open Dependabot PRs for npm dependencies"
 - "Bundle and close the Dependabot PRs for workflow dependencies"
 - "Update @playwright/test to fix the Dependabot PR"

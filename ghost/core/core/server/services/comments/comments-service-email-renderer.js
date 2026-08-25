@@ -1,36 +1,39 @@
-const {promises: fs} = require('fs');
+const { promises: fs } = require('fs');
 const path = require('path');
 
 class CommentsServiceEmailRenderer {
-    constructor({t}) {
-        this.t = t;
+  constructor({ t }) {
+    this.t = t;
 
-        this.Handlebars = require('handlebars').create();
-        this.Handlebars.registerHelper('t', function (key, options) {
-            let hash = options?.hash;
-            const params = hash || options || {};
+    this.Handlebars = require('handlebars').create();
+    this.Handlebars.registerHelper('t', function (key, options) {
+      let hash = options?.hash;
+      const params = hash || options || {};
 
-            return t(key, {
-                ...params,
-                interpolation: {escapeValue: false}
-            });
-        });
-        this.Handlebars.registerHelper('concat', (...args) => {
-            args.pop(); // Remove the options object
-            return new this.Handlebars.SafeString(args.join(''));
-        });
-    }
+      return t(key, {
+        ...params,
+        interpolation: { escapeValue: false },
+      });
+    });
+    this.Handlebars.registerHelper('concat', (...args) => {
+      args.pop(); // Remove the options object
+      return new this.Handlebars.SafeString(args.join(''));
+    });
+  }
 
-    async renderEmailTemplate(templateName, data) {
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
-        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        const {renderText} = require(`./email-templates/${templateName}.txt`);
+  async renderEmailTemplate(templateName, data) {
+    const htmlTemplateSource = await fs.readFile(
+      path.join(__dirname, './email-templates/', `${templateName}.hbs`),
+      'utf8',
+    );
+    const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+    const { renderText } = require(`./email-templates/${templateName}.txt`);
 
-        const html = htmlTemplate(data);
-        const text = renderText(data, this.t);
+    const html = htmlTemplate(data);
+    const text = renderText(data, this.t);
 
-        return {html, text};
-    }
+    return { html, text };
+  }
 }
 
 module.exports = CommentsServiceEmailRenderer;

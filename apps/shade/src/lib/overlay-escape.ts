@@ -5,10 +5,10 @@ type OverlayEscapeHandler = (event: KeyboardEvent) => void;
  * from reaching legacy document-level shells such as SettingsModal.
  */
 const consumeOverlayEscape = (event: KeyboardEvent, onEscapeKeyDown?: OverlayEscapeHandler) => {
-    onEscapeKeyDown?.(event);
-    if (!event.defaultPrevented) {
-        event.stopPropagation();
-    }
+  onEscapeKeyDown?.(event);
+  if (!event.defaultPrevented) {
+    event.stopPropagation();
+  }
 };
 
-export {consumeOverlayEscape};
+export { consumeOverlayEscape };

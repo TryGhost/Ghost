@@ -10,67 +10,67 @@
 const config = require('../shared/config');
 
 let notified = {
-    started: false,
-    ready: false
+  started: false,
+  ready: false,
 };
 
 function resetNotifications() {
-    notified = {
-        started: false,
-        ready: false
-    };
+  notified = {
+    started: false,
+    ready: false,
+  };
 }
 
 const debugInfo = {
-    versions: process.versions,
-    platform: process.platform,
-    arch: process.arch,
-    release: process.release
+  versions: process.versions,
+  platform: process.platform,
+  arch: process.arch,
+  release: process.release,
 };
 
 async function notify(type, error = null) {
-    // If we already sent this notification, we should not do it again
-    if (notified[type]) {
-        return;
-    }
+  // If we already sent this notification, we should not do it again
+  if (notified[type]) {
+    return;
+  }
 
-    // Mark this function as called
-    notified[type] = true;
+  // Mark this function as called
+  notified[type] = true;
 
-    // Build our message
-    // - if there's an error then the server is not ready, include the errors
-    // - if there's no error then the server has started
-    let message = {};
-    if (error) {
-        message[type] = false;
-        message.error = error;
-    } else {
-        message[type] = true;
-    }
-    // Add debug info to the message
-    message.debug = debugInfo;
+  // Build our message
+  // - if there's an error then the server is not ready, include the errors
+  // - if there's no error then the server has started
+  let message = {};
+  if (error) {
+    message[type] = false;
+    message.error = error;
+  } else {
+    message[type] = true;
+  }
+  // Add debug info to the message
+  message.debug = debugInfo;
 
-    // CASE: IPC communication to the CLI for local process manager
-    if (process.send) {
-        process.send(message);
-    }
+  // CASE: IPC communication to the CLI for local process manager
+  if (process.send) {
+    process.send(message);
+  }
 
-    // CASE: use bootstrap socket to communicate with CLI for systemd
-    let socketAddress = config.get('bootstrap-socket');
-    if (socketAddress) {
-        const bootstrapSocket = require('./lib/bootstrap-socket');
-        return bootstrapSocket.connectAndSend(socketAddress, message);
-    }
+  // CASE: use bootstrap socket to communicate with CLI for systemd
+  let socketAddress = config.get('bootstrap-socket');
+  if (socketAddress) {
+    const bootstrapSocket = require('./lib/bootstrap-socket');
+    return bootstrapSocket.connectAndSend(socketAddress, message);
+  }
 
-    return Promise.resolve();
+  return Promise.resolve();
 }
 
 module.exports.notifyServerStarted = async function (error = null) {
-    return await notify('started', error);
+  return await notify('started', error);
 };
 
 module.exports.notifyServerReady = async function (error = null) {
-    return await notify('ready', error);
+  return await notify('ready', error);
 };
 
 module.exports.resetNotifications = resetNotifications;

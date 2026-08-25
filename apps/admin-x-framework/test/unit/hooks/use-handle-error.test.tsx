@@ -1,318 +1,329 @@
-import {renderHook} from '@testing-library/react';
-import React, {ReactNode} from 'react';
+import { renderHook } from '@testing-library/react';
+import React, { ReactNode } from 'react';
 import useHandleError from '../../../src/hooks/use-handle-error';
-import {FrameworkProvider} from '../../../src/providers/framework-provider';
-import {APIError, SessionExpiredError, UnauthorizedError, ValidationError} from '../../../src/utils/errors';
+import { FrameworkProvider } from '../../../src/providers/framework-provider';
+import {
+  APIError,
+  SessionExpiredError,
+  UnauthorizedError,
+  ValidationError,
+} from '../../../src/utils/errors';
 
 // Mock external dependencies
 vi.mock('@sentry/react', () => ({
-    withScope: vi.fn((callback: any) => callback({
-        setTag: vi.fn(),
-        setContext: vi.fn()
-    })),
-    captureException: vi.fn(),
-    ErrorBoundary: ({children}: {children: any}) => children
+  withScope: vi.fn((callback: any) =>
+    callback({
+      setTag: vi.fn(),
+      setContext: vi.fn(),
+    }),
+  ),
+  captureException: vi.fn(),
+  ErrorBoundary: ({ children }: { children: any }) => children,
 }));
 
-const {mockToastDismiss, mockToastError} = vi.hoisted(() => ({
-    mockToastDismiss: vi.fn(),
-    mockToastError: vi.fn()
+const { mockToastDismiss, mockToastError } = vi.hoisted(() => ({
+  mockToastDismiss: vi.fn(),
+  mockToastError: vi.fn(),
 }));
 
 vi.mock('sonner', () => ({
-    toast: {
-        dismiss: mockToastDismiss,
-        error: mockToastError
-    }
+  toast: {
+    dismiss: mockToastDismiss,
+    error: mockToastError,
+  },
 }));
 
 import * as Sentry from '@sentry/react';
-import {toast} from 'sonner';
+import { toast } from 'sonner';
 
-const createWrapper = (sentryDSN?: string): React.FC<{children: ReactNode}> => {
-    const TestWrapper: React.FC<{children: ReactNode}> = ({children}) => (
-        <FrameworkProvider
-            externalNavigate={() => {}}
-            ghostVersion='5.x'
-            sentryDSN={sentryDSN || ''}
-            unsplashConfig={{
-                Authorization: '',
-                'Accept-Version': '',
-                'Content-Type': '',
-                'App-Pragma': '',
-                'X-Unsplash-Cache': true
-            }}
-            onDelete={() => {}}
-            onInvalidate={() => {}}
-            onUpdate={() => {}}
-        >
-            {children}
-        </FrameworkProvider>
-    );
-    TestWrapper.displayName = 'TestWrapper';
-    return TestWrapper;
+const createWrapper = (sentryDSN?: string): React.FC<{ children: ReactNode }> => {
+  const TestWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
+    <FrameworkProvider
+      externalNavigate={() => {}}
+      ghostVersion="5.x"
+      sentryDSN={sentryDSN || ''}
+      unsplashConfig={{
+        Authorization: '',
+        'Accept-Version': '',
+        'Content-Type': '',
+        'App-Pragma': '',
+        'X-Unsplash-Cache': true,
+      }}
+      onDelete={() => {}}
+      onInvalidate={() => {}}
+      onUpdate={() => {}}
+    >
+      {children}
+    </FrameworkProvider>
+  );
+  TestWrapper.displayName = 'TestWrapper';
+  return TestWrapper;
 };
 
 describe('useHandleError', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
 
-        // Setup mocks
-        (Sentry.withScope as any).mockImplementation((callback: any) => {
-            const scope = {
-                setTag: vi.fn(),
-                setContext: vi.fn()
-            };
-            callback(scope);
-        });
-
-        // Reset console.error mock
-        vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Setup mocks
+    (Sentry.withScope as any).mockImplementation((callback: any) => {
+      const scope = {
+        setTag: vi.fn(),
+        setContext: vi.fn(),
+      };
+      callback(scope);
     });
 
-    afterEach(() => {
-        vi.clearAllMocks();
-        vi.restoreAllMocks();
+    // Reset console.error mock
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  it('returns a function', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+
+    expect(typeof result.current).toBe('function');
+  });
+
+  it('logs error to console', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+    const error = new Error('Test error');
+
+    result.current(error);
+
+    expect(console.error).toHaveBeenCalledWith(error); // eslint-disable-line no-console
+  });
+
+  it('sends error to Sentry when DSN is provided', () => {
+    const wrapper = createWrapper('https://sentry.dsn');
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+    const error = new Error('Test error');
+
+    result.current(error);
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(error);
+  });
+
+  it('does not send to Sentry when no DSN is provided', () => {
+    const wrapper = createWrapper('');
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+    const error = new Error('Test error');
+
+    result.current(error);
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('adds API error context to Sentry', () => {
+    const wrapper = createWrapper('https://sentry.dsn');
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+
+    const mockResponse = new Response(null, { status: 404 });
+    Object.defineProperty(mockResponse, 'url', {
+      value: 'https://api.example.com/test',
+      writable: false,
     });
 
-    it('returns a function', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    const error = new APIError(mockResponse);
 
-        expect(typeof result.current).toBe('function');
+    let scopeUsed: any;
+    (Sentry.withScope as any).mockImplementation((callback: any) => {
+      scopeUsed = {
+        setTag: vi.fn(),
+        setContext: vi.fn(),
+      };
+      callback(scopeUsed);
     });
 
-    it('logs error to console', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-        const error = new Error('Test error');
+    result.current(error);
 
-        result.current(error);
+    expect(scopeUsed.setTag).toHaveBeenCalledWith('api_url', 'https://api.example.com/test');
+    expect(scopeUsed.setTag).toHaveBeenCalledWith('api_response_status', 404);
+  });
 
-        expect(console.error).toHaveBeenCalledWith(error); // eslint-disable-line no-console
-    });
+  it('removes existing toasts', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+    const error = new Error('Test error');
 
-    it('sends error to Sentry when DSN is provided', () => {
-        const wrapper = createWrapper('https://sentry.dsn');
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-        const error = new Error('Test error');
+    result.current(error);
 
-        result.current(error);
+    expect(toast.dismiss).toHaveBeenCalled();
+  });
 
-        expect(Sentry.captureException).toHaveBeenCalledWith(error);
-    });
+  it('does not show toast when withToast is false', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+    const error = new Error('Test error');
 
-    it('does not send to Sentry when no DSN is provided', () => {
-        const wrapper = createWrapper('');
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-        const error = new Error('Test error');
+    result.current(error, { withToast: false });
 
-        result.current(error);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
 
-        expect(Sentry.captureException).not.toHaveBeenCalled();
-    });
+  it('does not show toast for 418 status (test indicator)', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-    it('adds API error context to Sentry', () => {
-        const wrapper = createWrapper('https://sentry.dsn');
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    const mockResponse = new Response(null, { status: 418 });
+    const error = new APIError(mockResponse);
 
-        const mockResponse = new Response(null, {status: 404});
-        Object.defineProperty(mockResponse, 'url', {
-            value: 'https://api.example.com/test',
-            writable: false
-        });
+    result.current(error);
 
-        const error = new APIError(mockResponse);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('still clears lingering toasts for 418 status', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        let scopeUsed: any;
-        (Sentry.withScope as any).mockImplementation((callback: any) => {
-            scopeUsed = {
-                setTag: vi.fn(),
-                setContext: vi.fn()
-            };
-            callback(scopeUsed);
-        });
+    const mockResponse = new Response(null, { status: 418 });
+    const error = new APIError(mockResponse);
 
-        result.current(error);
+    result.current(error);
 
-        expect(scopeUsed.setTag).toHaveBeenCalledWith('api_url', 'https://api.example.com/test');
-        expect(scopeUsed.setTag).toHaveBeenCalledWith('api_response_status', 404);
-    });
+    expect(toast.dismiss).toHaveBeenCalled();
+  });
 
-    it('removes existing toasts', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-        const error = new Error('Test error');
+  it('does not send session expiry errors to Sentry', () => {
+    const wrapper = createWrapper('https://sentry.dsn');
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        result.current(error);
+    const mockResponse = new Response(null, { status: 401 });
+    const error = new SessionExpiredError(mockResponse, '');
 
-        expect(toast.dismiss).toHaveBeenCalled();
-    });
+    result.current(error);
 
-    it('does not show toast when withToast is false', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-        const error = new Error('Test error');
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
 
-        result.current(error, {withToast: false});
+  it('does not show toast for session expiry errors', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        expect(toast.error).not.toHaveBeenCalled();
-    });
+    const mockResponse = new Response(null, { status: 401 });
+    const error = new SessionExpiredError(mockResponse, '');
 
-    it('does not show toast for 418 status (test indicator)', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    result.current(error);
 
-        const mockResponse = new Response(null, {status: 418});
-        const error = new APIError(mockResponse);
+    // The fetch layer redirects to signin on session expiry, so the
+    // error handler must not flash a toast over the unloading page
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(toast.dismiss).toHaveBeenCalled();
+  });
 
-        result.current(error);
+  it('shows toast for unauthorized errors that do not trigger a redirect', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        expect(toast.error).not.toHaveBeenCalled();
-    });
+    const mockResponse = new Response(null, { status: 401 });
+    const error = new UnauthorizedError(mockResponse, '');
 
-    it('still clears lingering toasts for 418 status', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    result.current(error);
 
-        const mockResponse = new Response(null, {status: 418});
-        const error = new APIError(mockResponse);
+    expect(toast.error).toHaveBeenCalledWith('You are not authorised to make this request.');
+  });
 
-        result.current(error);
+  it('shows validation error message from context', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        expect(toast.dismiss).toHaveBeenCalled();
-    });
+    const mockResponse = new Response();
+    const errorData = {
+      errors: [
+        {
+          message: 'Field is required',
+          context: 'This field must be filled out',
+          code: 'VALIDATION_ERROR',
+          id: 'error-id',
+          help: 'Help text',
+          type: 'ValidationError',
+          details: null,
+          ghostErrorCode: null,
+          property: 'fieldName',
+        },
+      ],
+    };
 
-    it('does not send session expiry errors to Sentry', () => {
-        const wrapper = createWrapper('https://sentry.dsn');
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    const error = new ValidationError(mockResponse, errorData);
 
-        const mockResponse = new Response(null, {status: 401});
-        const error = new SessionExpiredError(mockResponse, '');
+    result.current(error);
 
-        result.current(error);
+    expect(toast.error).toHaveBeenCalledWith('This field must be filled out');
+  });
 
-        expect(Sentry.captureException).not.toHaveBeenCalled();
-    });
+  it('shows validation error message when no context available', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-    it('does not show toast for session expiry errors', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    const mockResponse = new Response();
+    const errorData = {
+      errors: [
+        {
+          message: 'Field is required',
+          context: null,
+          code: 'VALIDATION_ERROR',
+          id: 'error-id',
+          help: 'Help text',
+          type: 'ValidationError',
+          details: null,
+          ghostErrorCode: null,
+          property: 'fieldName',
+        },
+      ],
+    };
 
-        const mockResponse = new Response(null, {status: 401});
-        const error = new SessionExpiredError(mockResponse, '');
+    const error = new ValidationError(mockResponse, errorData);
 
-        result.current(error);
+    result.current(error);
 
-        // The fetch layer redirects to signin on session expiry, so the
-        // error handler must not flash a toast over the unloading page
-        expect(toast.error).not.toHaveBeenCalled();
-        expect(toast.dismiss).toHaveBeenCalled();
-    });
+    expect(toast.error).toHaveBeenCalledWith('Field is required');
+  });
 
-    it('shows toast for unauthorized errors that do not trigger a redirect', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+  it('shows API error message', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        const mockResponse = new Response(null, {status: 401});
-        const error = new UnauthorizedError(mockResponse, '');
+    const error = new APIError(undefined, undefined, 'API Error occurred');
 
-        result.current(error);
+    result.current(error);
 
-        expect(toast.error).toHaveBeenCalledWith('You are not authorised to make this request.');
-    });
+    expect(toast.error).toHaveBeenCalledWith('API Error occurred');
+  });
 
-    it('shows validation error message from context', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+  it('shows generic error message for unknown errors', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        const mockResponse = new Response();
-        const errorData = {
-            errors: [{
-                message: 'Field is required',
-                context: 'This field must be filled out',
-                code: 'VALIDATION_ERROR',
-                id: 'error-id',
-                help: 'Help text',
-                type: 'ValidationError',
-                details: null,
-                ghostErrorCode: null,
-                property: 'fieldName'
-            }]
-        };
+    const error = new Error('Unknown error');
 
-        const error = new ValidationError(mockResponse, errorData);
+    result.current(error);
 
-        result.current(error);
+    expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
+  });
 
-        expect(toast.error).toHaveBeenCalledWith('This field must be filled out');
-    });
+  it('handles string errors', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-    it('shows validation error message when no context available', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
+    result.current('String error');
 
-        const mockResponse = new Response();
-        const errorData = {
-            errors: [{
-                message: 'Field is required',
-                context: null,
-                code: 'VALIDATION_ERROR',
-                id: 'error-id',
-                help: 'Help text',
-                type: 'ValidationError',
-                details: null,
-                ghostErrorCode: null,
-                property: 'fieldName'
-            }]
-        };
+    expect(console.error).toHaveBeenCalledWith('String error'); // eslint-disable-line no-console
+    expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
+  });
 
-        const error = new ValidationError(mockResponse, errorData);
+  it('handles null/undefined errors', () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
 
-        result.current(error);
+    result.current(null);
 
-        expect(toast.error).toHaveBeenCalledWith('Field is required');
-    });
-
-    it('shows API error message', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-
-        const error = new APIError(undefined, undefined, 'API Error occurred');
-
-        result.current(error);
-
-        expect(toast.error).toHaveBeenCalledWith('API Error occurred');
-    });
-
-    it('shows generic error message for unknown errors', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-
-        const error = new Error('Unknown error');
-
-        result.current(error);
-
-        expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
-    });
-
-    it('handles string errors', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-
-        result.current('String error');
-
-        expect(console.error).toHaveBeenCalledWith('String error'); // eslint-disable-line no-console
-        expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
-    });
-
-    it('handles null/undefined errors', () => {
-        const wrapper = createWrapper();
-        const {result} = renderHook(() => useHandleError(), {wrapper});
-
-        result.current(null);
-
-        expect(console.error).toHaveBeenCalledWith(null); // eslint-disable-line no-console
-        expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
-    });
+    expect(console.error).toHaveBeenCalledWith(null); // eslint-disable-line no-console
+    expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
+  });
 });

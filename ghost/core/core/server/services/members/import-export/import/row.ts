@@ -1,19 +1,20 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 // Labels reach the import as a comma-separated cell and are split into objects here.
 export interface Label {
-    name: string;
+  name: string;
 }
 
 function splitLabels(cell: string): Label[] {
-    return cell ? cell.split(',').map(name => ({name})) : [];
+  return cell ? cell.split(',').map((name) => ({ name })) : [];
 }
 
 // An empty cell (or the literal 'undefined') reads as absent, not as a value -- so an
 // empty created_at is a missing date, not the invalid empty string.
-const optionalCell = z.string()
-    .transform(cell => (cell === '' || cell === 'undefined' ? undefined : cell))
-    .optional();
+const optionalCell = z
+  .string()
+  .transform((cell) => (cell === '' || cell === 'undefined' ? undefined : cell))
+  .optional();
 
 // Present cells are lenient in opposite directions: subscribed unless the cell reads
 // 'false', comped only when it reads 'true'. An absent column stays undefined (optional,
@@ -24,7 +25,8 @@ const isComplimentary = (cell: string): boolean => cell.toLowerCase() === 'true'
 // The member import vocabulary as a schema: the single source of truth that coerces the
 // raw string Row into typed member fields. Unknown columns (custom_fields.*, and anything
 // else a source carries) pass through via .loose() so nothing is lost before the kernel.
-export const memberImportRowSchema = z.object({
+export const memberImportRowSchema = z
+  .object({
     id: optionalCell,
     email: optionalCell,
     name: optionalCell,
@@ -35,8 +37,9 @@ export const memberImportRowSchema = z.object({
     created_at: optionalCell,
     import_tier: optionalCell,
     gift_id: optionalCell,
-    labels: z.string().default('').transform(splitLabels)
-}).loose();
+    labels: z.string().default('').transform(splitLabels),
+  })
+  .loose();
 
 export type MemberImportRow = z.infer<typeof memberImportRowSchema>;
 
@@ -46,11 +49,11 @@ export type MemberImportRow = z.infer<typeof memberImportRowSchema>;
 // written out for the error report's single cell. Two fields because a reason may quote a
 // cell the publisher wrote, and a CSV cell legally holds commas and newlines, so no
 // separator survives being split back apart.
-export type ImportErrorRow = MemberImportRow & {error: string; errors: string[]};
+export type ImportErrorRow = MemberImportRow & { error: string; errors: string[] };
 
 // The persisted import label as plain data -- taken off the Bookshelf model before it
 // leaves the kernel, so the result and the email carry only what they show.
 export interface ImportLabel {
-    name: string;
-    slug: string;
+  name: string;
+  slug: string;
 }

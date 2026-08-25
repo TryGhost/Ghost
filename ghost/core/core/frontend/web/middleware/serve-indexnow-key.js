@@ -28,33 +28,33 @@ const settingsCache = require('../../../shared/settings-cache');
  * Middleware to serve the IndexNow API key verification file
  */
 function serveIndexNowKey(req, res, next) {
-    // Only handle requests for .txt files at the root
-    if (!req.path.match(/^\/[a-f0-9]{32}\.txt$/)) {
-        return next();
-    }
+  // Only handle requests for .txt files at the root
+  if (!req.path.match(/^\/[a-f0-9]{32}\.txt$/)) {
+    return next();
+  }
 
-    const apiKey = settingsCache.get('indexnow_api_key');
+  const apiKey = settingsCache.get('indexnow_api_key');
 
-    // No key configured
-    if (!apiKey) {
-        return next();
-    }
+  // No key configured
+  if (!apiKey) {
+    return next();
+  }
 
-    // Extract the requested key from the path (remove leading / and trailing .txt)
-    const requestedKey = req.path.slice(1, -4);
+  // Extract the requested key from the path (remove leading / and trailing .txt)
+  const requestedKey = req.path.slice(1, -4);
 
-    // Only serve if the requested key matches the configured key
-    if (requestedKey !== apiKey) {
-        return next();
-    }
+  // Only serve if the requested key matches the configured key
+  if (requestedKey !== apiKey) {
+    return next();
+  }
 
-    // Serve the key as plain text
-    res.set({
-        'Content-Type': 'text/plain',
-        'Cache-Control': 'public, max-age=86400' // Cache for 24 hours
-    });
+  // Serve the key as plain text
+  res.set({
+    'Content-Type': 'text/plain',
+    'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+  });
 
-    return res.send(apiKey);
+  return res.send(apiKey);
 }
 
 module.exports = serveIndexNowKey;

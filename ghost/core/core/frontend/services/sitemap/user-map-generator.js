@@ -3,16 +3,19 @@ const validator = require('@tryghost/validator');
 const BaseMapGenerator = require('./base-site-map-generator');
 
 class UserMapGenerator extends BaseMapGenerator {
-    constructor(opts) {
-        super();
+  constructor(opts) {
+    super();
 
-        this.name = 'authors';
-        _.extend(this, opts);
-    }
+    this.name = 'authors';
+    _.extend(this, opts);
+  }
 
-    validateImageUrl(imageUrl) {
-        return imageUrl && validator.isURL(imageUrl, {protocols: ['http', 'https'], require_protocol: true});
-    }
+  validateImageUrl(imageUrl) {
+    return (
+      imageUrl &&
+      validator.isURL(imageUrl, { protocols: ['http', 'https'], require_protocol: true })
+    );
+  }
 }
 
 module.exports = UserMapGenerator;

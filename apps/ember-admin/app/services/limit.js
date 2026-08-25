@@ -57,14 +57,43 @@ export default class LimitsService extends Service {
             helpLink = 'https://ghost.org/help/';
         }
 
+        let subscription;
+
+        // A subscription without a start can't anchor a period, so it's treated as
+        // absent rather than built into one that throws on the way to the count query
+        if (this.config.hostSettings?.subscription?.start) {
+            subscription = {
+                startDate: this.config.hostSettings.subscription.start,
+                interval: 'month'
+            };
+        }
+
         this.limiter.loadLimits({
-            limits: this.decorateWithCountQueries(limits),
+            limits: this.decorateWithCountQueries(this.usableLimits(limits, subscription)),
+            subscription,
             helpLink,
             errors: {
                 HostLimitError,
                 IncorrectUsageError
             }
         });
+    }
+
+    // Periodic limits need a subscription to build. Registration stops at the first
+    // limit that throws, so passing one through would drop every limit after it
+    usableLimits(limits, subscription) {
+        if (subscription) {
+            return limits;
+        }
+
+        return Object.fromEntries(Object.entries(limits).filter(([name, limit]) => {
+            if (limit && Object.prototype.hasOwnProperty.call(limit, 'maxPeriodic')) {
+                console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`); // eslint-disable-line no-console
+                return false;
+            }
+
+            return true;
+        }));
     }
 
     reload() {
@@ -82,6 +111,10 @@ export default class LimitsService extends Service {
 
         if (limits.newsletters) {
             limits.newsletters.currentCountQuery = bind(this, this.getNewslettersCount);
+        }
+
+        if (limits.emails) {
+            limits.emails.currentCountQuery = bind(this, this.getEmailsCount);
         }
 
         return limits;
@@ -107,5 +140,14 @@ export default class LimitsService extends Service {
     async getNewslettersCount() {
         const activeNewsletters = await this.store.query('newsletter', {filter: 'status:active', limit: 'all'});
         return activeNewsletters.length;
+    }
+
+    // Periodic limits pass the period start as the second argument. The default
+    // emails query counts recipients via knex, which doesn't exist in the browser
+    async getEmailsCount(_db, startDate) {
+        const since = new Date(startDate).toISOString();
+        const emails = await this.store.query('email', {filter: `created_at:>='${since}'`, fields: 'id,email_count', limit: 'all'});
+
+        return emails.reduce((total, email) => total + (email.emailCount ?? 0), 0);
     }
 }

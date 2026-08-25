@@ -10,81 +10,87 @@ const db = require('../../../core/server/data/db');
 const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Collection Model', function () {
-    beforeAll(testUtils.teardownDb);
-    beforeAll(testUtils.stopGhost);
-    afterAll(testUtils.teardownDb);
+  beforeAll(testUtils.teardownDb);
+  beforeAll(testUtils.stopGhost);
+  afterAll(testUtils.teardownDb);
 
-    // This is required for the models to be initialised ???
-    // @TODO remove this once we have a better way of initialising models
-    beforeAll(testUtils.setup('users:roles', 'posts'));
+  // This is required for the models to be initialised ???
+  // @TODO remove this once we have a better way of initialising models
+  beforeAll(testUtils.setup('users:roles', 'posts'));
 
-    describe('add', function () {
-        it.skipIf(isMySQL)('does not update the sort_order of the collections_posts table if the type is "automatic"', async function () {
-            /** @type {import('knex').Knex.Client} */
-            const database = db.knex.client;
+  describe('add', function () {
+    it.skipIf(isMySQL)(
+      'does not update the sort_order of the collections_posts table if the type is "automatic"',
+      async function () {
+        /** @type {import('knex').Knex.Client} */
+        const database = db.knex.client;
 
-            let didUpdateCollectionPosts = false;
+        let didUpdateCollectionPosts = false;
 
-            function handler(/** @type {{sql: string}} */ query) {
-                if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
-                    didUpdateCollectionPosts = true;
-                }
-            }
+        function handler(/** @type {{sql: string}} */ query) {
+          if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
+            didUpdateCollectionPosts = true;
+          }
+        }
 
-            const posts = await models.Post.findAll();
+        const posts = await models.Post.findAll();
 
-            database.on('query', handler);
+        database.on('query', handler);
 
-            await models.Collection.add({
-                title: 'Test Collection',
-                slug: 'test-collection-automatic',
-                description: 'Test description',
-                type: 'automatic',
-                filter: 'featured:true',
-                posts: posts.toJSON().map(post => ({id: post.id})),
-                feature_image: null
-            });
-
-            database.off('query', handler);
-
-            const actual = didUpdateCollectionPosts;
-            const expected = false;
-
-            assert.equal(actual, expected, 'collections_posts should not have been updated');
+        await models.Collection.add({
+          title: 'Test Collection',
+          slug: 'test-collection-automatic',
+          description: 'Test description',
+          type: 'automatic',
+          filter: 'featured:true',
+          posts: posts.toJSON().map((post) => ({ id: post.id })),
+          feature_image: null,
         });
 
-        it.skipIf(isMySQL)('does update the sort_order of the collections_posts table if the type is "manual"', async function () {
-            /** @type {import('knex').Knex.Client} */
-            const database = db.knex.client;
+        database.off('query', handler);
 
-            let didUpdateCollectionPosts = false;
+        const actual = didUpdateCollectionPosts;
+        const expected = false;
 
-            function handler(/** @type {{sql: string}} */ query) {
-                if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
-                    didUpdateCollectionPosts = true;
-                }
-            }
+        assert.equal(actual, expected, 'collections_posts should not have been updated');
+      },
+    );
 
-            const posts = await models.Post.findAll();
+    it.skipIf(isMySQL)(
+      'does update the sort_order of the collections_posts table if the type is "manual"',
+      async function () {
+        /** @type {import('knex').Knex.Client} */
+        const database = db.knex.client;
 
-            database.on('query', handler);
+        let didUpdateCollectionPosts = false;
 
-            await models.Collection.add({
-                title: 'Test Collection',
-                slug: 'test-collection-manual',
-                description: 'Test description',
-                type: 'manual',
-                filter: null,
-                posts: posts.toJSON().map(post => ({id: post.id})),
-                feature_image: null
-            });
+        function handler(/** @type {{sql: string}} */ query) {
+          if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
+            didUpdateCollectionPosts = true;
+          }
+        }
 
-            database.off('query', handler);
+        const posts = await models.Post.findAll();
 
-            const actual = didUpdateCollectionPosts;
-            const expected = true;
+        database.on('query', handler);
 
-            assert.equal(actual, expected, 'collections_posts should not have been updated');
+        await models.Collection.add({
+          title: 'Test Collection',
+          slug: 'test-collection-manual',
+          description: 'Test description',
+          type: 'manual',
+          filter: null,
+          posts: posts.toJSON().map((post) => ({ id: post.id })),
+          feature_image: null,
         });
-    });
+
+        database.off('query', handler);
+
+        const actual = didUpdateCollectionPosts;
+        const expected = true;
+
+        assert.equal(actual, expected, 'collections_posts should not have been updated');
+      },
+    );
+  });
 });

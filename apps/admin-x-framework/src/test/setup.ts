@@ -8,43 +8,43 @@
  * Call this in your app's test setup file.
  */
 export function setupShadeMocks() {
-    // Mock window.matchMedia - required for shade components that use responsive behavior
-    Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: (query: string) => ({
-            matches: false,
-            media: query,
-            onchange: null,
-            addListener: () => {}, // deprecated
-            removeListener: () => {}, // deprecated
-            addEventListener: () => {},
-            removeEventListener: () => {},
-            dispatchEvent: () => {}
-        })
-    });
+  // Mock window.matchMedia - required for shade components that use responsive behavior
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {}, // deprecated
+      removeListener: () => {}, // deprecated
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => {},
+    }),
+  });
 
-    // Mock ResizeObserver - required for charts and responsive components
-    class ResizeObserverMock {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
-    }
-    
-    Object.defineProperty(window, 'ResizeObserver', {
-        writable: true,
-        value: ResizeObserverMock
-    });
+  // Mock ResizeObserver - required for charts and responsive components
+  class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
 
-    // Mock getBoundingClientRect - required for positioning calculations
-    Element.prototype.getBoundingClientRect = () => ({
-        width: 0,
-        height: 0,
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-        x: 0,
-        y: 0,
-        toJSON: () => {}
-    });
+  Object.defineProperty(window, 'ResizeObserver', {
+    writable: true,
+    value: ResizeObserverMock,
+  });
+
+  // Mock getBoundingClientRect - required for positioning calculations
+  Element.prototype.getBoundingClientRect = () => ({
+    width: 0,
+    height: 0,
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    x: 0,
+    y: 0,
+    toJSON: () => {},
+  });
 }

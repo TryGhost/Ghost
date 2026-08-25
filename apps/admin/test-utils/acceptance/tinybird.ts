@@ -1,7 +1,20 @@
-import { buildTinybirdPipeRows, configResponse, settingsResponse, type ConfigResponse, type TinybirdPipeInputs, type TinybirdPipeName } from "@tryghost/test-data";
+import {
+  buildTinybirdPipeRows,
+  configResponse,
+  settingsResponse,
+  type ConfigResponse,
+  type TinybirdPipeInputs,
+  type TinybirdPipeName,
+} from '@tryghost/test-data';
 
-import type { BootOverrides } from "./boot";
-import { TINYBIRD_ORIGIN, fakeAdminEndpoint, fakeEndpoint, registerRoute, type EndpointCapture } from "./worker";
+import type { BootOverrides } from './boot';
+import {
+  TINYBIRD_ORIGIN,
+  fakeAdminEndpoint,
+  fakeEndpoint,
+  registerRoute,
+  type EndpointCapture,
+} from './worker';
 
 /**
  * Web-analytics data flows through Tinybird: the browser fetches a JWT from
@@ -12,13 +25,13 @@ import { TINYBIRD_ORIGIN, fakeAdminEndpoint, fakeEndpoint, registerRoute, type E
  */
 
 /** The `config.stats.id` pipes receive as their `site_uuid` param. */
-export const TINYBIRD_SITE_UUID = "tinybird-site-uuid";
+export const TINYBIRD_SITE_UUID = 'tinybird-site-uuid';
 
 /** Config boot response with a Tinybird stats block, so the stats views treat Tinybird as provisioned. */
 function statsEnabledConfigResponse(): ConfigResponse {
-    const response = configResponse();
-    response.config.stats = { id: TINYBIRD_SITE_UUID, endpoint: TINYBIRD_ORIGIN };
-    return response;
+  const response = configResponse();
+  response.config.stats = { id: TINYBIRD_SITE_UUID, endpoint: TINYBIRD_ORIGIN };
+  return response;
 }
 
 /**
@@ -28,10 +41,10 @@ function statsEnabledConfigResponse(): ConfigResponse {
  * spec needs further boot overrides.
  */
 export function webAnalyticsBootOverrides(): BootOverrides {
-    return {
-        browseConfig: { response: statsEnabledConfigResponse() },
-        browseSettings: { response: settingsResponse({ settings: { web_analytics_enabled: true } }) },
-    };
+  return {
+    browseConfig: { response: statsEnabledConfigResponse() },
+    browseSettings: { response: settingsResponse({ settings: { web_analytics_enabled: true } }) },
+  };
 }
 
 let tokenSerial = 0;
@@ -44,25 +57,27 @@ let tokenSerial = 0;
  * queries without a request.
  */
 export function fakeTinybirdToken(): EndpointCapture {
-    tokenSerial += 1;
-    return fakeAdminEndpoint("GET", "/tinybird/token/", { tinybird: { token: `tinybird-test-token-${tokenSerial}` } });
+  tokenSerial += 1;
+  return fakeAdminEndpoint('GET', '/tinybird/token/', {
+    tinybird: { token: `tinybird-test-token-${tokenSerial}` },
+  });
 }
 
 export interface TinybirdPipeQuery {
-    /** Full request URL. */
-    url: string;
-    /** The request's query params (site_uuid, date_from, filters, ...). */
-    params: URLSearchParams;
+  /** Full request URL. */
+  url: string;
+  /** The request's query params (site_uuid, date_from, filters, ...). */
+  params: URLSearchParams;
 }
 
 export interface TinybirdPipeCapture {
-    /** Every request the pipe served, oldest first. */
-    requests: TinybirdPipeQuery[];
-    readonly lastRequest: TinybirdPipeQuery | undefined;
+  /** Every request the pipe served, oldest first. */
+  requests: TinybirdPipeQuery[];
+  readonly lastRequest: TinybirdPipeQuery | undefined;
 }
 
 function toPipeQuery(url: string): TinybirdPipeQuery {
-    return { url, params: new URL(url).searchParams };
+  return { url, params: new URL(url).searchParams };
 }
 
 /**
@@ -70,24 +85,27 @@ function toPipeQuery(url: string): TinybirdPipeQuery {
  * from resources.ts applies: the declared rows are served for every request,
  * never filtered by the query — assert the captured query params instead.
  */
-export function fakeTinybirdPipe<Pipe extends TinybirdPipeName>(pipe: Pipe, inputs: Array<TinybirdPipeInputs[Pipe]>): TinybirdPipeCapture {
-    const rows = buildTinybirdPipeRows(pipe, inputs);
-    const url = `${TINYBIRD_ORIGIN}/v0/pipes/${pipe}.json`;
-    registerRoute("GET", url);
-    const capture = fakeEndpoint("GET", url, {
-        meta: [],
-        data: rows,
-        rows: rows.length,
-        statistics: { elapsed: 0.001, rows_read: rows.length, bytes_read: 0 },
-    });
+export function fakeTinybirdPipe<Pipe extends TinybirdPipeName>(
+  pipe: Pipe,
+  inputs: Array<TinybirdPipeInputs[Pipe]>,
+): TinybirdPipeCapture {
+  const rows = buildTinybirdPipeRows(pipe, inputs);
+  const url = `${TINYBIRD_ORIGIN}/v0/pipes/${pipe}.json`;
+  registerRoute('GET', url);
+  const capture = fakeEndpoint('GET', url, {
+    meta: [],
+    data: rows,
+    rows: rows.length,
+    statistics: { elapsed: 0.001, rows_read: rows.length, bytes_read: 0 },
+  });
 
-    return {
-        get requests() {
-            return capture.requests.map(({ url: requestUrl }) => toPipeQuery(requestUrl));
-        },
-        get lastRequest() {
-            const last = capture.lastRequest;
-            return last && toPipeQuery(last.url);
-        },
-    };
+  return {
+    get requests() {
+      return capture.requests.map(({ url: requestUrl }) => toPipeQuery(requestUrl));
+    },
+    get lastRequest() {
+      const last = capture.lastRequest;
+      return last && toPipeQuery(last.url);
+    },
+  };
 }

@@ -7,124 +7,105 @@ const ALLOWED_INCLUDES = [];
 const UNSAFE_ATTRS = ['role_id'];
 
 const messages = {
-    inviteNotFound: 'Invite not found.'
+  inviteNotFound: 'Invite not found.',
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'invites',
+  docName: 'invites',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'page',
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'debug'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: true,
-        query(frame) {
-            return models.Invite.findPage(frame.options);
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include'
-        ],
-        data: [
-            'id',
-            'email'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            const model = await models.Invite.findOne(frame.data, frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.inviteNotFound)
-                });
-            }
-
-            return model;
-        }
+    options: ['include', 'page', 'limit', 'fields', 'filter', 'order', 'debug'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
     },
-
-    destroy: {
-        headers: {
-            cacheInvalidate: false
-        },
-        statusCode: 204,
-        options: [
-            'include',
-            'id'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: true,
-        query(frame) {
-            return models.Invite.destroy({...frame.options, require: true});
-        }
+    permissions: true,
+    query(frame) {
+      return models.Invite.findPage(frame.options);
     },
+  },
 
-    add: {
-        statusCode: 201,
-        headers: {
-            cacheInvalidate: false
+  read: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include'],
+    data: ['id', 'email'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      const model = await models.Invite.findOne(frame.data, frame.options);
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.inviteNotFound),
+        });
+      }
+
+      return model;
+    },
+  },
+
+  destroy: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    statusCode: 204,
+    options: ['include', 'id'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: true,
+    query(frame) {
+      return models.Invite.destroy({ ...frame.options, require: true });
+    },
+  },
+
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include', 'email'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+      data: {
+        role_id: {
+          required: true,
         },
-        options: [
-            'include',
-            'email'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            },
-            data: {
-                role_id: {
-                    required: true
-                },
-                email: {
-                    required: true
-                }
-            }
+        email: {
+          required: true,
         },
-        permissions: {
-            unsafeAttrs: UNSAFE_ATTRS
+      },
+    },
+    permissions: {
+      unsafeAttrs: UNSAFE_ATTRS,
+    },
+    query(frame) {
+      return invites.add({
+        api,
+        InviteModel: models.Invite,
+        invites: frame.data.invites,
+        options: frame.options,
+        user: {
+          name: frame.user?.get('name'),
+          email: frame.user?.get('email'),
         },
-        query(frame) {
-            return invites.add({
-                api,
-                InviteModel: models.Invite,
-                invites: frame.data.invites,
-                options: frame.options,
-                user: {
-                    name: frame.user?.get('name'),
-                    email: frame.user?.get('email')
-                }
-            });
-        }
-    }
+      });
+    },
+  },
 };
 
 module.exports = controller;

@@ -1,25 +1,27 @@
-import {Meta, createMutation} from '../utils/api/hooks';
+import { Meta, createMutation } from '../utils/api/hooks';
 
 export type emailVerification = {
-    token: string;
+  token: string;
 };
 
 export interface EmailVerificationResponseType {
-    meta?: Meta,
-    settings: [];
+  meta?: Meta;
+  settings: [];
 }
 const dataType = 'SettingsResponseType';
 
-export const verifyEmailToken = createMutation<EmailVerificationResponseType, emailVerification>({
+export const useVerifyEmailToken = createMutation<EmailVerificationResponseType, emailVerification>(
+  {
     path: () => '/settings/verifications',
     method: 'PUT',
-    body: ({token}) => ({token}),
+    body: ({ token }) => ({ token }),
     updateQueries: {
-        dataType,
-        emberUpdateType: 'createOrUpdate',
-        update: newData => ({
-            ...newData,
-            settings: newData.settings
-        })
-    }
-});
+      dataType,
+      emberUpdateType: 'createOrUpdate',
+      update: (newData) => ({
+        ...newData,
+        settings: newData.settings,
+      }),
+    },
+  },
+);

@@ -10,16 +10,18 @@
  *   urlService.getUrlForResource({...data, type: 'posts'}, ...)
  */
 type JsonSerializable<T> = {
-    toJSON(): T;
+  toJSON(): T;
 };
 
-const isJsonSerializable = <T>(modelOrObj: T | JsonSerializable<T>): modelOrObj is JsonSerializable<T> => !!(
-    modelOrObj
-    && typeof modelOrObj === 'object'
-    && 'toJSON' in modelOrObj
-    && typeof modelOrObj.toJSON === 'function'
-);
+const isJsonSerializable = <T>(
+  modelOrObj: T | JsonSerializable<T>,
+): modelOrObj is JsonSerializable<T> =>
+  !!(
+    modelOrObj &&
+    typeof modelOrObj === 'object' &&
+    'toJSON' in modelOrObj &&
+    typeof modelOrObj.toJSON === 'function'
+  );
 
-export const toPlain = <T>(modelOrObj: T | JsonSerializable<T>): T => (
-    isJsonSerializable(modelOrObj) ? modelOrObj.toJSON() : modelOrObj
-);
+export const toPlain = <T>(modelOrObj: T | JsonSerializable<T>): T =>
+  isJsonSerializable(modelOrObj) ? modelOrObj.toJSON() : modelOrObj;

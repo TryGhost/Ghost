@@ -1,14 +1,14 @@
-import {Factory} from '@/data-factory';
-import {faker} from '@faker-js/faker';
-import {member} from '@tryghost/test-data';
-import type {Member as CanonicalMember} from '@tryghost/test-data';
+import { Factory } from '@/data-factory';
+import { faker } from '@faker-js/faker';
+import { member } from '@tryghost/test-data';
+import type { Member as CanonicalMember } from '@tryghost/test-data';
 
 export interface Tier {
-    id: string;
-    name: string;
-    slug: string;
-    type: 'free' | 'paid';
-    active: boolean;
+  id: string;
+  name: string;
+  slug: string;
+  type: 'free' | 'paid';
+  active: boolean;
 }
 
 /**
@@ -17,25 +17,25 @@ export interface Tier {
  * `@tryghost/test-data`; `build()` derives this payload from it.
  */
 export interface Member {
-    id: string;
-    uuid: string;
-    name: string | null;
-    email: string;
-    note?: string | null;
-    geolocation: string | null;
-    labels?: string[];
-    email_count: number;
-    email_opened_count: number;
-    email_open_rate: number | null;
-    status: 'free' | 'paid' | 'comped' | 'gift';
-    last_seen_at: Date | null;
-    last_commented_at: Date | null;
-    newsletters: string[];
-    tiers?: Partial<Tier>[];
-    created_at?: string; // ISO 8601 format for backdating
-    complimentary_plan?: boolean;
-    stripe_customer_id?: string;
-    subscribed_to_emails?: string;
+  id: string;
+  uuid: string;
+  name: string | null;
+  email: string;
+  note?: string | null;
+  geolocation: string | null;
+  labels?: string[];
+  email_count: number;
+  email_opened_count: number;
+  email_open_rate: number | null;
+  status: 'free' | 'paid' | 'comped' | 'gift';
+  last_seen_at: Date | null;
+  last_commented_at: Date | null;
+  newsletters: string[];
+  tiers?: Partial<Tier>[];
+  created_at?: string; // ISO 8601 format for backdating
+  complimentary_plan?: boolean;
+  stripe_customer_id?: string;
+  subscribed_to_emails?: string;
 }
 
 /**
@@ -47,35 +47,35 @@ export interface Member {
  *   the response shape does not carry
  */
 function toCreatePayload(canonical: CanonicalMember): Member {
-    return {
-        id: canonical.id,
-        uuid: canonical.uuid,
-        name: canonical.name,
-        email: canonical.email,
-        note: canonical.note,
-        geolocation: canonical.geolocation,
-        labels: canonical.labels.map(label => label.name),
-        email_count: canonical.email_count,
-        email_opened_count: canonical.email_opened_count,
-        email_open_rate: canonical.email_open_rate,
-        status: canonical.status,
-        last_seen_at: canonical.last_seen_at ? new Date(canonical.last_seen_at) : null,
-        last_commented_at: canonical.last_commented_at ? new Date(canonical.last_commented_at) : null,
-        newsletters: canonical.newsletters.map(newsletter => newsletter.id),
-        subscribed_to_emails: 'false'
-    };
+  return {
+    id: canonical.id,
+    uuid: canonical.uuid,
+    name: canonical.name,
+    email: canonical.email,
+    note: canonical.note,
+    geolocation: canonical.geolocation,
+    labels: canonical.labels.map((label) => label.name),
+    email_count: canonical.email_count,
+    email_opened_count: canonical.email_opened_count,
+    email_open_rate: canonical.email_open_rate,
+    status: canonical.status,
+    last_seen_at: canonical.last_seen_at ? new Date(canonical.last_seen_at) : null,
+    last_commented_at: canonical.last_commented_at ? new Date(canonical.last_commented_at) : null,
+    newsletters: canonical.newsletters.map((newsletter) => newsletter.id),
+    subscribed_to_emails: 'false',
+  };
 }
 
 export class MemberFactory extends Factory<Partial<Member>, Member> {
-    entityType = 'members';
+  entityType = 'members';
 
-    build(options: Partial<Member> = {}): Member {
-        // The write lane seeds a note by default (specs type it into the
-        // member form); the canonical response default is null.
-        const canonical = member({note: faker.lorem.sentence()});
-        return {
-            ...toCreatePayload(canonical),
-            ...options
-        };
-    }
+  build(options: Partial<Member> = {}): Member {
+    // The write lane seeds a note by default (specs type it into the
+    // member form); the canonical response default is null.
+    const canonical = member({ note: faker.lorem.sentence() });
+    return {
+      ...toCreatePayload(canonical),
+      ...options,
+    };
+  }
 }

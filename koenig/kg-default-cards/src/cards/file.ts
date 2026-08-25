@@ -1,57 +1,56 @@
 import {
-    absoluteToRelative,
-    relativeToAbsolute,
-    toTransformReady
+  absoluteToRelative,
+  relativeToAbsolute,
+  toTransformReady,
 } from '@tryghost/url-utils/lib/utils/index.js';
-import {
-    escapeHtml
-} from '@tryghost/string';
-import type {Card} from '../types.js';
+import { escapeHtml } from '@tryghost/string';
+import type { Card } from '../types.js';
 
 interface FilePayload {
-    src?: string;
-    fileTitle?: string;
-    fileCaption?: string;
-    fileName?: string;
-    fileSize?: number;
+  src?: string;
+  fileTitle?: string;
+  fileCaption?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 function bytesToSize(bytes: number) {
-    if (!bytes) {
-        return '0 Byte';
-    }
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    if (bytes === 0) {
-        return '0 Byte';
-    }
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i))) + ' ' + sizes[i];
+  if (!bytes) {
+    return '0 Byte';
+  }
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) {
+    return '0 Byte';
+  }
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
 }
 
 const fileCard: Card = {
-    name: 'file',
-    type: 'dom',
+  name: 'file',
+  type: 'dom',
 
-    render({payload: _payload, env: {dom}, options = {}}) {
-        const payload = _payload as FilePayload;
-        if (!payload.src) {
-            return dom.createTextNode('');
-        }
+  render({ payload: _payload, env: { dom }, options = {} }) {
+    const payload = _payload as FilePayload;
+    if (!payload.src) {
+      return dom.createTextNode('');
+    }
 
-        let classNames = '';
-        const emailStyles = {
-            icon: 'height: 24px; width: 24px; max-width: 24px; margin-top: 8px;'
-        };
+    let classNames = '';
+    const emailStyles = {
+      icon: 'height: 24px; width: 24px; max-width: 24px; margin-top: 8px;',
+    };
 
-        if (!payload.fileTitle && !payload.fileCaption) {
-            classNames = 'kg-file-card-small';
-            emailStyles.icon = 'margin-top: 6px; height: 20px; width: 20px; max-width: 20px; padding-top: 4px; padding-bottom: 4px;';
-        } else if (!payload.fileTitle || !payload.fileCaption) {
-            classNames = 'kg-file-card-medium';
-            emailStyles.icon = 'margin-top: 6px; height: 24px; width: 24px; max-width: 24px;';
-        }
+    if (!payload.fileTitle && !payload.fileCaption) {
+      classNames = 'kg-file-card-small';
+      emailStyles.icon =
+        'margin-top: 6px; height: 20px; width: 20px; max-width: 20px; padding-top: 4px; padding-bottom: 4px;';
+    } else if (!payload.fileTitle || !payload.fileCaption) {
+      classNames = 'kg-file-card-medium';
+      emailStyles.icon = 'margin-top: 6px; height: 24px; width: 24px; max-width: 24px;';
+    }
 
-        let html = `
+    let html = `
         <div class="kg-card kg-file-card ${classNames}">
             <a class="kg-file-card-container" href="${escapeHtml(payload.src)}" title="Download" download>
                 <div class="kg-file-card-contents">
@@ -69,26 +68,34 @@ const fileCard: Card = {
         </div>
         `;
 
-        const postUrl = options.postUrl || 'https://ghost.org';
+    const postUrl = options.postUrl || 'https://ghost.org';
 
-        if (options.target === 'email') {
-            html = `
+    if (options.target === 'email') {
+      html = `
             <table cellspacing="0" cellpadding="4" border="0" class="kg-file-card" width="100%">
                 <tr>
                     <td>
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td valign="middle" style="vertical-align: middle;">
-                                    ${payload.fileTitle ? `
+                                    ${
+                                      payload.fileTitle
+                                        ? `
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
                                         <a href="${escapeHtml(postUrl)}" class="kg-file-title">${escapeHtml(payload.fileTitle)}</a>
                                     </td></tr></table>
-                                    ` : ``}
-                                    ${payload.fileCaption ? `
+                                    `
+                                        : ``
+                                    }
+                                    ${
+                                      payload.fileCaption
+                                        ? `
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
                                         <a href="${escapeHtml(postUrl)}" class="kg-file-description">${escapeHtml(payload.fileCaption)}</a>
                                     </td></tr></table>
-                                    ` : ``}
+                                    `
+                                        : ``
+                                    }
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
                                         <a href="${escapeHtml(postUrl)}" class="kg-file-meta"><span class="kg-file-name">${escapeHtml(payload.fileName || '')}</span> &bull; ${bytesToSize(payload.fileSize || 0)}</a>
                                     </td></tr></table>
@@ -103,28 +110,28 @@ const fileCard: Card = {
                 </tr>
             </table>
             `;
-        }
-
-        return dom.createRawHTMLSection(html);
-    },
-
-    absoluteToRelative(payload, options) {
-        const p = payload as FilePayload;
-        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
-        return payload;
-    },
-
-    relativeToAbsolute(payload, options) {
-        const p = payload as FilePayload;
-        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
-        return payload;
-    },
-
-    toTransformReady(payload, options) {
-        const p = payload as FilePayload;
-        p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
-        return payload;
     }
+
+    return dom.createRawHTMLSection(html);
+  },
+
+  absoluteToRelative(payload, options) {
+    const p = payload as FilePayload;
+    p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
+    return payload;
+  },
+
+  relativeToAbsolute(payload, options) {
+    const p = payload as FilePayload;
+    p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
+    return payload;
+  },
+
+  toTransformReady(payload, options) {
+    const p = payload as FilePayload;
+    p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
+    return payload;
+  },
 };
 
 export default fileCard;

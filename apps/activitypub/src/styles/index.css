@@ -98,7 +98,7 @@ button.ap-action-button:active svg {
 .ap-profile-content a:not(.hashtag) span.ellipsis:after,
 .ap-note-content-large a:not(.hashtag) span.ellipsis:after,
 .ap-likes .ellipsis::after {
-  content: "…";
+  content: '…';
 }
 
 .ap-note-content > * + * {
@@ -128,7 +128,7 @@ button.ap-action-button:active svg {
 
 .ap-note-content ul,
 .ap-note-content-large ul {
-  list-style-type: "-" !important;
+  list-style-type: '-' !important;
   padding-left: 1rem !important;
 }
 

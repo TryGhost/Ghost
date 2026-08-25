@@ -4,6 +4,7 @@
 # Targets:
 #   deploy — build the prod dependency closure + a self-contained /home/ghost
 #            (build-only stage, never shipped)
+#   report — per-package sizes of that closure, for CI (build-only, not shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
 #   full — core + built admin (self-hosting)
 #
@@ -78,17 +79,25 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
 # ghost/core/scripts/prune.mts for the rules and the exclusions they carry. The COPY
 # layer below is extracted single-threaded, once per CI E2E shard, and that cost
 # scales with file count: this removes roughly half of them.
-RUN node ghost/core/scripts/prune.mts /home/ghost --profile=image
+RUN node ghost/core/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
 
 # Fail the build now if the native module didn't install correctly (missing/broken
 # prebuilt binary) rather than at container runtime.
 RUN cd /home/ghost && node -e "require('better-sqlite3'); console.log('better-sqlite3 OK')"
 
+# ---- report: per-package sizes of the shipped node_modules (build-only) ----
+# CI extracts this with `--target=report --output=type=local` and diffs it against
+# the base commit's report, so a dependency that duplicates a large package (a
+# peer-forked viem, say) is visible on the PR that adds it. Every layer in `deploy`
+# is already cached by the core build, so this target costs an export, not a build.
+FROM scratch AS report
+
+COPY --from=deploy /image-report.json /
+
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core
 
 ENV NODE_ENV=production
-ENV NODE_COMPILE_CACHE=/home/ghost/.compile-cache
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libjemalloc2 fontconfig && \

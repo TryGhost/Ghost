@@ -1,20 +1,23 @@
 const _ = require('lodash');
 const resourcesConfig = require('./config');
 
-import type {ResourceLookupParams, FindResource} from './lazy-url-service';
+import type { ResourceLookupParams, FindResource } from './lazy-url-service';
 
 interface BookshelfModel {
-    findOne(query: Record<string, unknown>, options?: Record<string, unknown>): Promise<{toJSON(): Record<string, unknown>} | null>;
+  findOne(
+    query: Record<string, unknown>,
+    options?: Record<string, unknown>,
+  ): Promise<{ toJSON(): Record<string, unknown> } | null>;
 }
 
 interface Models {
-    Post: BookshelfModel;
-    TagPublic: BookshelfModel;
-    Author: BookshelfModel;
+  Post: BookshelfModel;
+  TagPublic: BookshelfModel;
+  Author: BookshelfModel;
 }
 
-const POST_SCOPE = {type: 'post', status: 'published'};
-const PAGE_SCOPE = {type: 'page', status: 'published'};
+const POST_SCOPE = { type: 'post', status: 'published' };
+const PAGE_SCOPE = { type: 'page', status: 'published' };
 const POST_RELATIONS = ['tags', 'authors'];
 const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
 
@@ -23,40 +26,43 @@ const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
 // extra author/tag fields). posts_meta is an auto-loaded relation Ghost has
 // never exposed here.
 function excludeFor(type: string): string[] {
-    const cfg = resourcesConfig.find((c: {type: string}) => c.type === type);
-    const exclude = cfg?.exclude ?? [];
-    return [...exclude, 'posts_meta'];
+  const cfg = resourcesConfig.find((c: { type: string }) => c.type === type);
+  const exclude = cfg?.exclude ?? [];
+  return [...exclude, 'posts_meta'];
 }
 
 // Relations are trimmed to {id, slug}: permalinks and filters read nothing
 // else off them, and callers have never seen more.
 function trimRelation(value: unknown): unknown {
-    if (Array.isArray(value)) {
-        return value.map(item => _.pick(item, ['id', 'slug']));
-    }
-    if (value && typeof value === 'object') {
-        return _.pick(value, ['id', 'slug']);
-    }
-    return value;
+  if (Array.isArray(value)) {
+    return value.map((item) => _.pick(item, ['id', 'slug']));
+  }
+  if (value && typeof value === 'object') {
+    return _.pick(value, ['id', 'slug']);
+  }
+  return value;
 }
 
-function pruneToPublicShape(record: Record<string, unknown>, type: string): Record<string, unknown> {
-    const pruned = _.omit(record, excludeFor(type));
+function pruneToPublicShape(
+  record: Record<string, unknown>,
+  type: string,
+): Record<string, unknown> {
+  const pruned = _.omit(record, excludeFor(type));
 
-    if (type === 'pages') {
-        // primary_tag/primary_author are always null on pages (they are virtual
-        // Post fields), and pages never carry the tags/authors arrays.
-        pruned.primary_tag = null;
-        pruned.primary_author = null;
-        return pruned;
-    }
-
-    for (const key of RELATION_KEYS) {
-        if (pruned[key] !== undefined) {
-            pruned[key] = trimRelation(pruned[key]);
-        }
-    }
+  if (type === 'pages') {
+    // primary_tag/primary_author are always null on pages (they are virtual
+    // Post fields), and pages never carry the tags/authors arrays.
+    pruned.primary_tag = null;
+    pruned.primary_author = null;
     return pruned;
+  }
+
+  for (const key of RELATION_KEYS) {
+    if (pruned[key] !== undefined) {
+      pruned[key] = trimRelation(pruned[key]);
+    }
+  }
+  return pruned;
 }
 
 /**
@@ -66,39 +72,41 @@ function pruneToPublicShape(record: Record<string, unknown>, type: string): Reco
  * resolve to null.
  */
 export function createFindResource(models: Models): FindResource {
-    const loadOne = async (
-        Model: BookshelfModel,
-        query: Record<string, unknown>,
-        type: string,
-        options: Record<string, unknown> = {}
-    ): Promise<Record<string, unknown> | null> => {
-        const result = await Model.findOne(query, {...options, require: false});
-        if (!result) {
-            return null;
-        }
-        const record = result.toJSON();
-        // Post.toJSON computes primary_tag but not primary_author.
-        if (Array.isArray(record.authors)) {
-            record.primary_author = record.authors[0] ?? null;
-        }
-        return pruneToPublicShape(record, type);
-    };
+  const loadOne = async (
+    Model: BookshelfModel,
+    query: Record<string, unknown>,
+    type: string,
+    options: Record<string, unknown> = {},
+  ): Promise<Record<string, unknown> | null> => {
+    const result = await Model.findOne(query, { ...options, require: false });
+    if (!result) {
+      return null;
+    }
+    const record = result.toJSON();
+    // Post.toJSON computes primary_tag but not primary_author.
+    if (Array.isArray(record.authors)) {
+      record.primary_author = record.authors[0] ?? null;
+    }
+    return pruneToPublicShape(record, type);
+  };
 
-    return (type: string, params: ResourceLookupParams): Promise<Record<string, unknown> | null> => {
-        switch (type) {
-        case 'posts':
-            return loadOne(models.Post, {...params, ...POST_SCOPE}, type, {withRelated: POST_RELATIONS});
-        case 'pages':
-            return loadOne(models.Post, {...params, ...PAGE_SCOPE}, type);
-        case 'tags':
-            return loadOne(models.TagPublic, {...params, visibility: 'public'}, type);
-        case 'authors':
-            return loadOne(models.Author, {...params, visibility: 'public'}, type);
-        default:
-            return Promise.resolve(null);
-        }
-    };
+  return (type: string, params: ResourceLookupParams): Promise<Record<string, unknown> | null> => {
+    switch (type) {
+      case 'posts':
+        return loadOne(models.Post, { ...params, ...POST_SCOPE }, type, {
+          withRelated: POST_RELATIONS,
+        });
+      case 'pages':
+        return loadOne(models.Post, { ...params, ...PAGE_SCOPE }, type);
+      case 'tags':
+        return loadOne(models.TagPublic, { ...params, visibility: 'public' }, type);
+      case 'authors':
+        return loadOne(models.Author, { ...params, visibility: 'public' }, type);
+      default:
+        return Promise.resolve(null);
+    }
+  };
 }
 
-module.exports = {createFindResource};
+module.exports = { createFindResource };
 module.exports.createFindResource = createFindResource;

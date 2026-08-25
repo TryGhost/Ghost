@@ -4,45 +4,43 @@ const DataGenerator = require('../fixtures/data-generator');
 const jwt = require('jsonwebtoken');
 
 const roleMap = {
-    owner: 0,
-    admin: 1,
-    editor: 2,
-    author: 3,
-    contributor: 7,
-    superEditor: 9
+  owner: 0,
+  admin: 1,
+  editor: 2,
+  author: 3,
+  contributor: 7,
+  superEditor: 9,
 };
 
 const getRoleUserFromFixtures = (role) => {
-    const {email, password} = DataGenerator.Content.users[roleMap[role]];
-    return {email, password};
+  const { email, password } = DataGenerator.Content.users[roleMap[role]];
+  return { email, password };
 };
 
 const getUserApiKeyForRole = (role) => {
-    const userId = DataGenerator.Content.users[roleMap[role]].id;
-    const {id: apiKeyId, secret: apiKeySecret} = DataGenerator.forKnex.user_api_keys.find(apiKey => apiKey.user_id === userId);
-    return {apiKeyId, apiKeySecret};
+  const userId = DataGenerator.Content.users[roleMap[role]].id;
+  const { id: apiKeyId, secret: apiKeySecret } = DataGenerator.forKnex.user_api_keys.find(
+    (apiKey) => apiKey.user_id === userId,
+  );
+  return { apiKeyId, apiKeySecret };
 };
 
 const findIntegrationKey = async (slug) => {
-    const models = require('../../../core/server/models');
-    const integration = await models.Integration.findOne({slug}, {withRelated: 'api_keys'});
-    const key = integration.related('api_keys').first();
-    return {apiKeyId: key.get('id'), apiKeySecret: key.get('secret')};
+  const models = require('../../../core/server/models');
+  const integration = await models.Integration.findOne({ slug }, { withRelated: 'api_keys' });
+  const key = integration.related('api_keys').first();
+  return { apiKeyId: key.get('id'), apiKeySecret: key.get('secret') };
 };
 
 const createValidAPIToken = (apiKeyId, apiKeySecret) => {
-    // Create a JWT token with the user's personal token
-    return jwt.sign(
-        {},
-        Buffer.from(apiKeySecret, 'hex'),
-        {
-            keyid: apiKeyId,
-            algorithm: 'HS256',
-            expiresIn: '5m',
-            audience: '/admin/',
-            issuer: apiKeyId
-        }
-    );
+  // Create a JWT token with the user's personal token
+  return jwt.sign({}, Buffer.from(apiKeySecret, 'hex'), {
+    keyid: apiKeyId,
+    algorithm: 'HS256',
+    expiresIn: '5m',
+    audience: '/admin/',
+    issuer: apiKeyId,
+  });
 };
 
 /**
@@ -53,129 +51,128 @@ const createValidAPIToken = (apiKeyId, apiKeySecret) => {
  * @param {string} options.originURL
  */
 class AdminAPITestAgent extends TestAgent {
-    constructor(app, options) {
-        super(app, options);
+  constructor(app, options) {
+    super(app, options);
+  }
+
+  async loginAs(email, password, role) {
+    this.resetAuthentication();
+
+    if (role) {
+      let user = getRoleUserFromFixtures(role);
+      email = user.email;
+      password = user.password;
     }
 
-    async loginAs(email, password, role) {
-        this.resetAuthentication();
+    const res = await this.post('/session/').body({
+      grant_type: 'password',
+      username: email,
+      password: password,
+    });
 
-        if (role) {
-            let user = getRoleUserFromFixtures(role);
-            email = user.email;
-            password = user.password;
-        }
-
-        const res = await this.post('/session/')
-            .body({
-                grant_type: 'password',
-                username: email,
-                password: password
-            });
-
-        if (res.statusCode === 302) {
-            // This can happen if you already have an instance running e.g. if you've been using Ghost CLI recently
-            throw new errors.IncorrectUsageError({
-                message: 'Ghost is redirecting, do you have an instance already running on port 2369?'
-            });
-        } else if (res.statusCode === 404 && role) {
-            throw new errors.IncorrectUsageError({
-                message: `Unable to login as ${role} - user not found. Did you pass 'users' to fixtureManager.init() ?`
-            });
-        } else if (res.statusCode !== 200 && res.statusCode !== 201) {
-            throw new errors.IncorrectUsageError({
-                message: res.body.errors[0].message
-            });
-        }
-
-        return res.headers['set-cookie'];
+    if (res.statusCode === 302) {
+      // This can happen if you already have an instance running e.g. if you've been using Ghost CLI recently
+      throw new errors.IncorrectUsageError({
+        message: 'Ghost is redirecting, do you have an instance already running on port 2369?',
+      });
+    } else if (res.statusCode === 404 && role) {
+      throw new errors.IncorrectUsageError({
+        message: `Unable to login as ${role} - user not found. Did you pass 'users' to fixtureManager.init() ?`,
+      });
+    } else if (res.statusCode !== 200 && res.statusCode !== 201) {
+      throw new errors.IncorrectUsageError({
+        message: res.body.errors[0].message,
+      });
     }
 
-    async loginAsOwner() {
-        await this.loginAs(null, null, 'owner');
-    }
+    return res.headers['set-cookie'];
+  }
 
-    async loginAsAdmin() {
-        await this.loginAs(null, null, 'admin');
-    }
+  async loginAsOwner() {
+    await this.loginAs(null, null, 'owner');
+  }
 
-    async loginAsEditor() {
-        await this.loginAs(null, null, 'editor');
-    }
+  async loginAsAdmin() {
+    await this.loginAs(null, null, 'admin');
+  }
 
-    async loginAsAuthor() {
-        await this.loginAs(null, null, 'author');
-    }
+  async loginAsEditor() {
+    await this.loginAs(null, null, 'editor');
+  }
 
-    async loginAsContributor() {
-        await this.loginAs(null, null, 'contributor');
-    }
+  async loginAsAuthor() {
+    await this.loginAs(null, null, 'author');
+  }
 
-    /**
-     * Use
-     * @param {string} apiKeyId
-     * @param {string} apiKeySecret
-     */
-    async useToken(apiKeyId, apiKeySecret) {
-        this.resetAuthentication();
+  async loginAsContributor() {
+    await this.loginAs(null, null, 'contributor');
+  }
 
-        const token = createValidAPIToken(apiKeyId, apiKeySecret);
+  /**
+   * Use
+   * @param {string} apiKeyId
+   * @param {string} apiKeySecret
+   */
+  async useToken(apiKeyId, apiKeySecret) {
+    this.resetAuthentication();
 
-        // Set the Authorization header for subsequent requests
-        this.defaults.headers = {
-            ...this.defaults.headers,
-            Authorization: `Ghost ${token}`
-        };
-    }
+    const token = createValidAPIToken(apiKeyId, apiKeySecret);
 
-    /**
-     * Gets a staff token for the specified role and sets it as the Authorization header
-     * @param {string} role - The role to get a token for (owner, admin, editor, etc.)
-     * @returns {Promise<void>}
-     */
-    async useStaffTokenFor(role) {
-        const {apiKeyId, apiKeySecret} = getUserApiKeyForRole(role);
-        return this.useToken(apiKeyId, apiKeySecret);
-    }
+    // Set the Authorization header for subsequent requests
+    this.defaults.headers = {
+      ...this.defaults.headers,
+      Authorization: `Ghost ${token}`,
+    };
+  }
 
-    /**
-     * Gets a staff token for the owner role and sets it as the Authorization header
-     * @returns {Promise<void>}
-     */
-    async useStaffTokenForOwner() {
-        await this.useStaffTokenFor('owner');
-    }
+  /**
+   * Gets a staff token for the specified role and sets it as the Authorization header
+   * @param {string} role - The role to get a token for (owner, admin, editor, etc.)
+   * @returns {Promise<void>}
+   */
+  async useStaffTokenFor(role) {
+    const { apiKeyId, apiKeySecret } = getUserApiKeyForRole(role);
+    return this.useToken(apiKeyId, apiKeySecret);
+  }
 
-    async useStaffTokenForAdmin() {
-        await this.useStaffTokenFor('admin');
-    }
+  /**
+   * Gets a staff token for the owner role and sets it as the Authorization header
+   * @returns {Promise<void>}
+   */
+  async useStaffTokenForOwner() {
+    await this.useStaffTokenFor('owner');
+  }
 
-    async useStaffTokenForEditor() {
-        await this.useStaffTokenFor('editor');
-    }
+  async useStaffTokenForAdmin() {
+    await this.useStaffTokenFor('admin');
+  }
 
-    async useStaffTokenForAuthor() {
-        await this.useStaffTokenFor('author');
-    }
+  async useStaffTokenForEditor() {
+    await this.useStaffTokenFor('editor');
+  }
 
-    async useStaffTokenForContributor() {
-        await this.useStaffTokenFor('contributor');
-    }
+  async useStaffTokenForAuthor() {
+    await this.useStaffTokenFor('author');
+  }
 
-    async useBackupAdminAPIKey() {
-        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('ghost-backup');
-        return this.useToken(apiKeyId, apiKeySecret);
-    }
+  async useStaffTokenForContributor() {
+    await this.useStaffTokenFor('contributor');
+  }
 
-    async useZapierAdminAPIKey() {
-        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('zapier');
-        return this.useToken(apiKeyId, apiKeySecret);
-    }
+  async useBackupAdminAPIKey() {
+    const { apiKeyId, apiKeySecret } = await findIntegrationKey('ghost-backup');
+    return this.useToken(apiKeyId, apiKeySecret);
+  }
 
-    async useSelfServeMigrationAdminAPIKey() {
-        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('self-serve-migration');
-        return this.useToken(apiKeyId, apiKeySecret);
-    }
+  async useZapierAdminAPIKey() {
+    const { apiKeyId, apiKeySecret } = await findIntegrationKey('zapier');
+    return this.useToken(apiKeyId, apiKeySecret);
+  }
+
+  async useSelfServeMigrationAdminAPIKey() {
+    const { apiKeyId, apiKeySecret } = await findIntegrationKey('self-serve-migration');
+    return this.useToken(apiKeyId, apiKeySecret);
+  }
 }
 
 module.exports = AdminAPITestAgent;

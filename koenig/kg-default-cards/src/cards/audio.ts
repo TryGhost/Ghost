@@ -1,50 +1,47 @@
 import {
-    absoluteToRelative,
-    relativeToAbsolute,
-    htmlAbsoluteToRelative,
-    htmlRelativeToAbsolute,
-    htmlToTransformReady,
-    toTransformReady
+  absoluteToRelative,
+  relativeToAbsolute,
+  htmlAbsoluteToRelative,
+  htmlRelativeToAbsolute,
+  htmlToTransformReady,
+  toTransformReady,
 } from '@tryghost/url-utils/lib/utils/index.js';
-import {
-    hbs,
-    dedent
-} from '../utils/index.js';
-import type {Card} from '../types.js';
+import { hbs, dedent } from '../utils/index.js';
+import type { Card } from '../types.js';
 
 interface AudioPayload {
-    src: string;
-    thumbnailSrc: string;
-    duration: number;
-    title: string;
+  src: string;
+  thumbnailSrc: string;
+  duration: number;
+  title: string;
 }
 
 function getFormattedDuration(duration = 200) {
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration - (minutes * 60));
-    const paddedSeconds = String(seconds).padStart(2, '0');
-    const formattedDuration = `${minutes}:${paddedSeconds}`;
-    return formattedDuration;
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration - minutes * 60);
+  const paddedSeconds = String(seconds).padStart(2, '0');
+  const formattedDuration = `${minutes}:${paddedSeconds}`;
+  return formattedDuration;
 }
 
 const audioCard: Card = {
-    name: 'audio',
-    type: 'dom',
+  name: 'audio',
+  type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
-        const p = payload as unknown as AudioPayload;
-        if (!p.src) {
-            return dom.createTextNode('');
-        }
-        let thumbnailCls = 'kg-audio-thumbnail';
-        let emptyThumbnailCls = 'kg-audio-thumbnail placeholder';
-        const hasThumbnail = Boolean(p.thumbnailSrc);
-        if (!p.thumbnailSrc) {
-            thumbnailCls += ' kg-audio-hide';
-        } else {
-            emptyThumbnailCls += ' kg-audio-hide';
-        }
-        const frontendTemplate = hbs`
+  render({ payload, env: { dom }, options = {} }) {
+    const p = payload as unknown as AudioPayload;
+    if (!p.src) {
+      return dom.createTextNode('');
+    }
+    let thumbnailCls = 'kg-audio-thumbnail';
+    let emptyThumbnailCls = 'kg-audio-thumbnail placeholder';
+    const hasThumbnail = Boolean(p.thumbnailSrc);
+    if (!p.thumbnailSrc) {
+      thumbnailCls += ' kg-audio-hide';
+    } else {
+      emptyThumbnailCls += ' kg-audio-hide';
+    }
+    const frontendTemplate = hbs`
             <div class="kg-card kg-audio-card">
                 <img src="{{thumbnailSrc}}" alt="audio-thumbnail" class="${thumbnailCls}">
                 <div class="${emptyThumbnailCls}">
@@ -91,9 +88,9 @@ const audioCard: Card = {
             </div>
         `;
 
-        const postUrl = options.postUrl || 'https://ghost.org';
+    const postUrl = options.postUrl || 'https://ghost.org';
 
-        const emailTemplate = hbs`
+    const emailTemplate = hbs`
             <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>
                     <td>
@@ -101,11 +98,15 @@ const audioCard: Card = {
                             <tr>
                                 <td width="60">
                                     <a href="{{postUrl}}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
-                                        ${hasThumbnail ? `
+                                        ${
+                                          hasThumbnail
+                                            ? `
                                         <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
-                                        ` : `
+                                        `
+                                            : `
                                         <img src="https://static.ghost.org/v4.0.0/images/audio-file-icon.png" class="${emptyThumbnailCls}" style="width: 24px; height: 24px; padding: 18px; border-radius: 2px;">
-                                        `}
+                                        `
+                                        }
                                     </a>
                                 </td>
                                 <td style="position: relative; vertical-align: center;" valign="middle">
@@ -139,39 +140,45 @@ const audioCard: Card = {
             </table>
         `;
 
-        const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
+    const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
 
-        const html = dedent(renderTemplate({
-            postUrl,
-            src: p.src,
-            thumbnailSrc: p.thumbnailSrc,
-            duration: getFormattedDuration(p.duration),
-            title: p.title
-        }));
+    const html = dedent(
+      renderTemplate({
+        postUrl,
+        src: p.src,
+        thumbnailSrc: p.thumbnailSrc,
+        duration: getFormattedDuration(p.duration),
+        title: p.title,
+      }),
+    );
 
-        return dom.createRawHTMLSection(html);
-    },
+    return dom.createRawHTMLSection(html);
+  },
 
-    absoluteToRelative(payload, options) {
-        const p = payload as unknown as AudioPayload;
-        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
-        p.thumbnailSrc = p.thumbnailSrc && htmlAbsoluteToRelative(p.thumbnailSrc, options.siteUrl, options);
-        return payload;
-    },
+  absoluteToRelative(payload, options) {
+    const p = payload as unknown as AudioPayload;
+    p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
+    p.thumbnailSrc =
+      p.thumbnailSrc && htmlAbsoluteToRelative(p.thumbnailSrc, options.siteUrl, options);
+    return payload;
+  },
 
-    relativeToAbsolute(payload, options) {
-        const p = payload as unknown as AudioPayload;
-        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
-        p.thumbnailSrc = p.thumbnailSrc && htmlRelativeToAbsolute(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
-        return payload;
-    },
+  relativeToAbsolute(payload, options) {
+    const p = payload as unknown as AudioPayload;
+    p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
+    p.thumbnailSrc =
+      p.thumbnailSrc &&
+      htmlRelativeToAbsolute(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+    return payload;
+  },
 
-    toTransformReady(payload, options) {
-        const p = payload as unknown as AudioPayload;
-        p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
-        p.thumbnailSrc = p.thumbnailSrc && htmlToTransformReady(p.thumbnailSrc, options.siteUrl, options);
-        return payload;
-    }
+  toTransformReady(payload, options) {
+    const p = payload as unknown as AudioPayload;
+    p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
+    p.thumbnailSrc =
+      p.thumbnailSrc && htmlToTransformReady(p.thumbnailSrc, options.siteUrl, options);
+    return payload;
+  },
 };
 
 export default audioCard;

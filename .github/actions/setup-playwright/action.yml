@@ -1,5 +1,5 @@
-name: "Setup Playwright"
-description: "Download Playwright browser binaries with no apt-get involvement."
+name: 'Setup Playwright'
+description: 'Download Playwright browser binaries with no apt-get involvement.'
 
 # NOTE: This action deliberately does NOT call `playwright install --with-deps`
 # or `playwright install-deps`. Both go through apt-get, which has been
@@ -15,7 +15,7 @@ description: "Download Playwright browser binaries with no apt-get involvement."
 # step does not call apt-get and is reliably fast.
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Get Playwright version
       id: playwright-version

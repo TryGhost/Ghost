@@ -1,27 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {TopLevelFrameworkProps} from '../providers/framework-provider';
+import { TopLevelFrameworkProps } from '../providers/framework-provider';
 
 // Shared standalone app props for design-system context.
 interface DesignSystemProps {
-    darkMode: boolean;
-    fetchKoenigLexical: () => Promise<unknown>;
+  darkMode: boolean;
+  fetchKoenigLexical: () => Promise<unknown>;
 }
 
 const fetchKoenigLexical: DesignSystemProps['fetchKoenigLexical'] = async () => {
-    // @ts-expect-error koenig-lexical doesn't currently ship TypeScript declarations.
-    return await import('@tryghost/koenig-lexical');
+  // @ts-expect-error koenig-lexical doesn't currently ship TypeScript declarations.
+  return await import('@tryghost/koenig-lexical');
 };
 
 export default function renderStandaloneApp<Props extends object>(
-    App: React.ComponentType<Props & {
-        framework: TopLevelFrameworkProps;
-        designSystem: DesignSystemProps;
-    }>,
-    props: Props
+  App: React.ComponentType<
+    Props & {
+      framework: TopLevelFrameworkProps;
+      designSystem: DesignSystemProps;
+    }
+  >,
+  props: Props,
 ) {
-    const style = document.createElement('style');
-    style.appendChild(document.createTextNode(`
+  const style = document.createElement('style');
+  style.appendChild(
+    document.createTextNode(`
         :root {
             font-size: 62.5%;
             line-height: 1.5;
@@ -40,33 +43,34 @@ export default function renderStandaloneApp<Props extends object>(
             margin: 0;
             letter-spacing: unset;
         }
-    `));
-    document.head.appendChild(style);
+    `),
+  );
+  document.head.appendChild(style);
 
-    ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-        <React.StrictMode>
-            <App
-                designSystem={{darkMode: false, fetchKoenigLexical}}
-                framework={{
-                    externalNavigate: (link) => {
-                        // Standalone tests can assert this captured navigation on document.body.
-                        document.body.dataset.externalNavigate = JSON.stringify(link);
-                    },
-                    ghostVersion: '5.x',
-                    sentryDSN: null,
-                    unsplashConfig: {
-                        Authorization: '',
-                        'Accept-Version': '',
-                        'Content-Type': '',
-                        'App-Pragma': '',
-                        'X-Unsplash-Cache': false
-                    },
-                    onDelete: () => {},
-                    onInvalidate: () => {},
-                    onUpdate: () => {}
-                }}
-                {...props}
-            />
-        </React.StrictMode>
-    );
+  ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    <React.StrictMode>
+      <App
+        designSystem={{ darkMode: false, fetchKoenigLexical }}
+        framework={{
+          externalNavigate: (link) => {
+            // Standalone tests can assert this captured navigation on document.body.
+            document.body.dataset.externalNavigate = JSON.stringify(link);
+          },
+          ghostVersion: '5.x',
+          sentryDSN: null,
+          unsplashConfig: {
+            Authorization: '',
+            'Accept-Version': '',
+            'Content-Type': '',
+            'App-Pragma': '',
+            'X-Unsplash-Cache': false,
+          },
+          onDelete: () => {},
+          onInvalidate: () => {},
+          onUpdate: () => {},
+        }}
+        {...props}
+      />
+    </React.StrictMode>,
+  );
 }

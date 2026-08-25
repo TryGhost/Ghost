@@ -1,14 +1,8 @@
 {
   "all": true,
   "check-coverage": false,
-  "reporter": [
-    "html-spa",
-    "text-summary",
-    "cobertura"
-  ],
-  "include": [
-    "core/{*.js,frontend,server,shared}"
-  ],
+  "reporter": ["html-spa", "text-summary", "cobertura"],
+  "include": ["core/{*.js,frontend,server,shared}"],
   "exclude": [
     "core/frontend/src/**",
     "core/frontend/public/**",

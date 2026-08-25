@@ -1,11 +1,11 @@
-import {$ as $$} from 'execa';
+import { $ as $$ } from 'execa';
 import pm from 'picomatch';
 
-import {ROOT_DIR} from './constants.js';
+import { ROOT_DIR } from './constants.js';
 
 // Always run git from the repo root so callers can pass repo-relative paths
 // regardless of the process working directory.
-const $ = $$({cwd: ROOT_DIR});
+const $ = $$({ cwd: ROOT_DIR });
 
 // Git prints one of these when the commit is valid but the path isn't in it —
 // including the new-file case, where the working tree has the path but the base
@@ -14,7 +14,7 @@ const $ = $$({cwd: ROOT_DIR});
 const MISSING_PATH_RE = /does not exist in|exists on disk, but not in/;
 
 function isMissingPathError(error) {
-    return MISSING_PATH_RE.test(`${error.stderr ?? ''}\n${error.message ?? ''}`);
+  return MISSING_PATH_RE.test(`${error.stderr ?? ''}\n${error.message ?? ''}`);
 }
 
 /**
@@ -29,16 +29,16 @@ function isMissingPathError(error) {
  * @returns {Promise<string|null>} - The file contents, or null when the path is
  *   missing and allowMissing is set.
  */
-export async function getFileFromCommit(commitHash, filePath, {allowMissing = false} = {}) {
-    try {
-        const {stdout} = await $`git show ${commitHash}:${filePath}`;
-        return stdout;
-    } catch (error) {
-        if (allowMissing && isMissingPathError(error)) {
-            return null;
-        }
-        throw new Error(`Failed to retrieve file from commit: ${error.message}`);
+export async function getFileFromCommit(commitHash, filePath, { allowMissing = false } = {}) {
+  try {
+    const { stdout } = await $`git show ${commitHash}:${filePath}`;
+    return stdout;
+  } catch (error) {
+    if (allowMissing && isMissingPathError(error)) {
+      return null;
     }
+    throw new Error(`Failed to retrieve file from commit: ${error.message}`);
+  }
 }
 
 /**
@@ -51,18 +51,18 @@ export async function getFileFromCommit(commitHash, filePath, {allowMissing = fa
  * @param {boolean?} onlyNew - If true, only returns files that are new in the head commit (not present in the base commit).
  */
 export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onlyNew = false) {
-    try {
-        // An empty headCommit diffs baseCommit against the working tree (git omits
-        // the second ref), which is what the Renovate/pre-commit flows need —
-        // they inspect uncommitted changes. A ref (commit/tag/tree) diffs the two.
-        const filter = onlyNew ? ['--diff-filter=A'] : [];
-        const refs = headCommit ? [baseCommit, headCommit] : [baseCommit];
-        const {stdout} = await $`git diff --name-only ${filter} ${refs} -- ${path}`;
+  try {
+    // An empty headCommit diffs baseCommit against the working tree (git omits
+    // the second ref), which is what the Renovate/pre-commit flows need —
+    // they inspect uncommitted changes. A ref (commit/tag/tree) diffs the two.
+    const filter = onlyNew ? ['--diff-filter=A'] : [];
+    const refs = headCommit ? [baseCommit, headCommit] : [baseCommit];
+    const { stdout } = await $`git diff --name-only ${filter} ${refs} -- ${path}`;
 
-        return stdout.trim().split('\n').filter(Boolean);
-    } catch (error) {
-        throw new Error(`Failed to get changed files: ${error.message}`);
-    }
+    return stdout.trim().split('\n').filter(Boolean);
+  } catch (error) {
+    throw new Error(`Failed to get changed files: ${error.message}`);
+  }
 }
 
 /**
@@ -75,7 +75,10 @@ export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onl
  * @returns {(file: string) => boolean} - True when a repo-relative path is ignored.
  */
 export function buildIgnoreMatcher(path, ignorePatterns) {
-    return pm(ignorePatterns.map(pattern => `${path}/${pattern}`), {dot: true});
+  return pm(
+    ignorePatterns.map((pattern) => `${path}/${pattern}`),
+    { dot: true },
+  );
 }
 
 /**
@@ -90,12 +93,12 @@ export function buildIgnoreMatcher(path, ignorePatterns) {
  * @returns {Promise<boolean>} - A promise that resolves to true if there are changes, false otherwise.
  */
 export async function pathHasChanges(path, baseCommit, headCommit, ignorePatterns = []) {
-    let changedFiles = await getChangedFiles(path, baseCommit, headCommit);
+  let changedFiles = await getChangedFiles(path, baseCommit, headCommit);
 
-    if (ignorePatterns.length > 0) {
-        const match = buildIgnoreMatcher(path, ignorePatterns);
-        changedFiles = changedFiles.filter(file => !match(file));
-    }
+  if (ignorePatterns.length > 0) {
+    const match = buildIgnoreMatcher(path, ignorePatterns);
+    changedFiles = changedFiles.filter((file) => !match(file));
+  }
 
-    return changedFiles.length > 0;
+  return changedFiles.length > 0;
 }

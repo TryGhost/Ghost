@@ -453,6 +453,22 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "portal_signup_gift_promotion": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "portal_account_gift_promotion": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "email": {

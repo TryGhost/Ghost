@@ -1,21 +1,21 @@
-import {type Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {type Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {type StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useMemo} from 'react';
+import { type Config, useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { type Setting, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { type StatsConfig, useTinybirdToken } from '@tryghost/admin-x-framework';
+import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { useMemo } from 'react';
 
 export interface AnalyticsSite {
-    url?: string;
-    icon?: string;
-    title?: string;
+  url?: string;
+  icon?: string;
+  title?: string;
 }
 
 export interface AnalyticsFrameworkData {
-    config: Config | undefined;
-    site: AnalyticsSite;
-    statsConfig: StatsConfig | undefined;
-    isLoading: boolean;
-    settings: Setting[];
+  config: Config | undefined;
+  site: AnalyticsSite;
+  statsConfig: StatsConfig | undefined;
+  isLoading: boolean;
+  settings: Setting[];
 }
 
 /**
@@ -34,45 +34,48 @@ export interface AnalyticsFrameworkData {
  * StatsErrorBoundary that used to catch it is gone along with the standalone app.
  */
 export const useAnalyticsData = (): AnalyticsFrameworkData => {
-    const settings = useBrowseSettings();
-    const site = useBrowseSite();
-    const config = useBrowseConfig();
-    // config.data is ConfigResponseType which has shape { config: Config }
-    const configData = config.data?.config;
-    // Load the token only when Tinybird is provisioned; the web analytics
-    // kill-switch is applied inside useTinybirdToken.
-    const hasStatsConfig = Boolean(configData?.stats);
-    const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
+  const settings = useBrowseSettings();
+  const site = useBrowseSite();
+  const config = useBrowseConfig();
+  // config.data is ConfigResponseType which has shape { config: Config }
+  const configData = config.data?.config;
+  // Load the token only when Tinybird is provisioned; the web analytics
+  // kill-switch is applied inside useTinybirdToken.
+  const hasStatsConfig = Boolean(configData?.stats);
+  const tinybirdTokenQuery = useTinybirdToken({ enabled: hasStatsConfig });
 
-    // Check for errors in the main requests
-    const ghostRequests = [config, settings, site];
-    const ghostError = ghostRequests.map(request => request.error).find(Boolean);
-    const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
-    const error = ghostError || tinybirdError;
+  // Check for errors in the main requests
+  const ghostRequests = [config, settings, site];
+  const ghostError = ghostRequests.map((request) => request.error).find(Boolean);
+  const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
+  const error = ghostError || tinybirdError;
 
-    // Check loading states
-    const isGhostLoading = ghostRequests.some(request => request.isLoading);
-    const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
-    const isLoading = isGhostLoading || isTinybirdLoading;
+  // Check loading states
+  const isGhostLoading = ghostRequests.some((request) => request.isLoading);
+  const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
+  const isLoading = isGhostLoading || isTinybirdLoading;
 
-    // Stable identity: there are ~10 independent call sites, so a fresh object
-    // literal per render would be a footgun for anything using it as a dep.
-    const siteData = site.data?.site;
-    const analyticsSite = useMemo(() => ({
-        url: siteData?.url,
-        icon: siteData?.icon,
-        title: siteData?.title
-    }), [siteData]);
+  // Stable identity: there are ~10 independent call sites, so a fresh object
+  // literal per render would be a footgun for anything using it as a dep.
+  const siteData = site.data?.site;
+  const analyticsSite = useMemo(
+    () => ({
+      url: siteData?.url,
+      icon: siteData?.icon,
+      title: siteData?.title,
+    }),
+    [siteData],
+  );
 
-    if (error) {
-        throw error instanceof Error ? error : new Error('Failed to load analytics framework data');
-    }
+  if (error) {
+    throw error instanceof Error ? error : new Error('Failed to load analytics framework data');
+  }
 
-    return {
-        config: configData,
-        site: analyticsSite,
-        statsConfig: configData?.stats,
-        isLoading,
-        settings: settings.data?.settings || []
-    };
+  return {
+    config: configData,
+    site: analyticsSite,
+    statsConfig: configData?.stats,
+    isLoading,
+    settings: settings.data?.settings || [],
+  };
 };

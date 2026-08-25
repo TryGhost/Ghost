@@ -1,8 +1,8 @@
 module.exports = {
-    get admin() {
-        return require('./admin');
-    },
-    get content() {
-        return require('./content');
-    }
+  get admin() {
+    return require('./admin');
+  },
+  get content() {
+    return require('./content');
+  },
 };

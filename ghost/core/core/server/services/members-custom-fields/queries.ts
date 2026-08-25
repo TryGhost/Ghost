@@ -1,5 +1,5 @@
-import type {Knex} from 'knex';
-import {FIELD_STATUS} from './schema';
+import type { Knex } from 'knex';
+import { FIELD_STATUS } from './schema';
 
 const FIELDS_TABLE = 'members_custom_fields';
 
@@ -9,7 +9,7 @@ const FIELDS_TABLE = 'members_custom_fields';
 
 /** Takes the executor so the same query runs standalone or inside a write's transaction. */
 export function activeFields(db: Knex) {
-    return db(FIELDS_TABLE).where('status', FIELD_STATUS.active);
+  return db(FIELDS_TABLE).where('status', FIELD_STATUS.active);
 }
 
 /**
@@ -20,9 +20,9 @@ export function activeFields(db: Knex) {
  * default rank; `id` settles the rest so the order is total.
  */
 export function inFieldOrder<T extends Knex.QueryBuilder>(query: T): T {
-    query
-        .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
-        .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-        .orderBy(`${FIELDS_TABLE}.id`, 'asc');
-    return query;
+  query
+    .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
+    .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
+    .orderBy(`${FIELDS_TABLE}.id`, 'asc');
+  return query;
 }

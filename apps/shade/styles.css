@@ -20,71 +20,71 @@
 @import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
 @import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
 
-@import "tailwindcss/theme.css";
-@import "./preflight.css";
-@import "tailwindcss/utilities.css";
-@import "tw-animate-css";
-@import "./tailwind.theme.css";
+@import 'tailwindcss/theme.css';
+@import './preflight.css';
+@import 'tailwindcss/utilities.css';
+@import 'tw-animate-css';
+@import './tailwind.theme.css';
 
-@import "./theme-variables.css";
+@import './theme-variables.css';
 
 @layer base {
-    /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
-    @font-face {
-        font-family: "Inter";
-        src: local("Inter") format("truetype-variations");
-        font-weight: 100 900;
-    }
+  /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
+  @font-face {
+    font-family: 'Inter';
+    src: local('Inter') format('truetype-variations');
+    font-weight: 100 900;
+  }
 
-    .shade {
-        & {
-            @apply font-sans text-black text-base leading-normal;
-        }
+  .shade {
+    & {
+      @apply font-sans text-black text-base leading-normal;
     }
+  }
 
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply font-sans antialiased bg-background text-foreground;
-    }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
 }
 
 .shade {
-    line-height: 1.5;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
+  line-height: 1.5;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-text-size-adjust: 100%;
-    letter-spacing: unset;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  letter-spacing: unset;
 }
 
 .shade.app-container {
-    height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+  height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 @media (max-width: 800px) {
-    body:not(.react-admin) .shade {
-        height: calc(100vh - var(--mobile-navbar-height));
-    }
+  body:not(.react-admin) .shade {
+    height: calc(100vh - var(--mobile-navbar-height));
+  }
 }
 
 .dark .shade {
-    color: #fafafb;
+  color: #fafafb;
 }
 
 .dark .shade .gh-loading-orb-container {
-    background-color: #000000;
+  background-color: #000000;
 }
 
 .dark .shade .gh-loading-orb {
-    filter: invert(100%);
+  filter: invert(100%);
 }
 
 /* Suppress transitions/animations during a light/dark mode swap so the
@@ -93,18 +93,18 @@ html.theme-switching,
 html.theme-switching *,
 html.theme-switching *::before,
 html.theme-switching *::after {
-    transition: none !important;
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
+  transition: none !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
 }
 
 .shade .no-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome */
+  display: none; /* Chrome */
 }
 
 .shade .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* CodeEditor autocomplete is portalled to a viewport-sized body child so it
@@ -112,19 +112,19 @@ html.theme-switching *::after {
    an intermediate container carrying the editor theme classes; collapse and
    clear that container so those classes cannot paint a full-screen surface. */
 .cm-tooltip-parent > * {
-    height: 0 !important;
-    background: none !important;
+  height: 0 !important;
+  background: none !important;
 }
 
 .cm-tooltip-parent .cm-tooltip {
-    pointer-events: auto;
+  pointer-events: auto;
 }
 
 .cm-tooltip-parent .cm-tooltip-autocomplete.cm-tooltip ul li:not([aria-selected]) {
-    background: var(--background);
+  background: var(--background);
 }
 
 /* Prose classes are for formatting arbitrary HTML that comes from the API */
 .gh-prose-links a {
-    color: #30cf43;
+  color: #30cf43;
 }

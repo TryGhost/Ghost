@@ -1,5 +1,5 @@
-const {createNonTransactionalMigration} = require('../../utils');
-const {addIndex, dropIndex} = require('../../../schema/commands');
+const { createNonTransactionalMigration } = require('../../utils');
+const { addIndex, dropIndex } = require('../../../schema/commands');
 
 // Indexes for the admin "all comments" moderation page (getAdminAllComments).
 // The query orders by created_at and emits count.replies / count.direct_replies
@@ -20,18 +20,18 @@ const {addIndex, dropIndex} = require('../../../schema/commands');
 // composites or MySQL rejects the drop with "needed in a foreign key
 // constraint".
 module.exports = createNonTransactionalMigration(
-    async function up(knex) {
-        await addIndex('comments', ['created_at'], knex);
-        await addIndex('comments', ['status'], knex);
-        await addIndex('comments', ['in_reply_to_id', 'status'], knex);
-        await addIndex('comments', ['parent_id', 'in_reply_to_id', 'status'], knex);
-    },
-    async function down(knex) {
-        await dropIndex('comments', ['created_at'], knex);
-        await dropIndex('comments', ['status'], knex);
-        await addIndex('comments', ['parent_id'], knex);
-        await addIndex('comments', ['in_reply_to_id'], knex);
-        await dropIndex('comments', ['in_reply_to_id', 'status'], knex);
-        await dropIndex('comments', ['parent_id', 'in_reply_to_id', 'status'], knex);
-    }
+  async function up(knex) {
+    await addIndex('comments', ['created_at'], knex);
+    await addIndex('comments', ['status'], knex);
+    await addIndex('comments', ['in_reply_to_id', 'status'], knex);
+    await addIndex('comments', ['parent_id', 'in_reply_to_id', 'status'], knex);
+  },
+  async function down(knex) {
+    await dropIndex('comments', ['created_at'], knex);
+    await dropIndex('comments', ['status'], knex);
+    await addIndex('comments', ['parent_id'], knex);
+    await addIndex('comments', ['in_reply_to_id'], knex);
+    await dropIndex('comments', ['in_reply_to_id', 'status'], knex);
+    await dropIndex('comments', ['parent_id', 'in_reply_to_id', 'status'], knex);
+  },
 );

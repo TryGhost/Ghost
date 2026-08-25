@@ -1,133 +1,147 @@
-import {DateTime} from 'luxon';
-import type {CardRenderArgs, CardRenderOptions, SimpleDomNode} from '../../types.js';
+import { DateTime } from 'luxon';
+import type { CardRenderArgs, CardRenderOptions, SimpleDomNode } from '../../types.js';
 
 interface TwitterUser {
-    id: string;
-    name: string;
-    username: string;
-    profile_image_url: string;
+  id: string;
+  name: string;
+  username: string;
+  profile_image_url: string;
 }
 
 interface TwitterEntity {
-    start: number;
-    end: number;
-    url?: string;
-    display_url?: string;
-    username?: string;
-    tag?: string;
+  start: number;
+  end: number;
+  url?: string;
+  display_url?: string;
+  username?: string;
+  tag?: string;
 }
 
 interface TweetData {
-    id: string;
-    text: string;
-    author_id: string;
-    created_at: string;
-    public_metrics: {retweet_count: number; like_count: number};
-    includes: {users: TwitterUser[]; media: {preview_image_url?: string; url?: string}[]};
-    entities?: {mentions?: TwitterEntity[]; urls?: TwitterEntity[]; hashtags?: TwitterEntity[]};
-    attachments?: {media_keys?: string[]; poll_ids?: string[]};
+  id: string;
+  text: string;
+  author_id: string;
+  created_at: string;
+  public_metrics: { retweet_count: number; like_count: number };
+  includes: { users: TwitterUser[]; media: { preview_image_url?: string; url?: string }[] };
+  entities?: { mentions?: TwitterEntity[]; urls?: TwitterEntity[]; hashtags?: TwitterEntity[] };
+  attachments?: { media_keys?: string[]; poll_ids?: string[] };
 }
 
 interface TwitterPayload {
-    html?: string;
-    caption?: string;
-    metadata?: {
-        tweet_data?: TweetData;
-    };
+  html?: string;
+  caption?: string;
+  metadata?: {
+    tweet_data?: TweetData;
+  };
 }
 
 const twitterCard = {
-    render({payload: _payload, env: {dom}, options = {}}: CardRenderArgs): SimpleDomNode {
-        const payload = _payload as TwitterPayload;
-        const figure = dom.createElement('figure');
-        figure.setAttribute('class', 'kg-card kg-embed-card');
+  render({ payload: _payload, env: { dom }, options = {} }: CardRenderArgs): SimpleDomNode {
+    const payload = _payload as TwitterPayload;
+    const figure = dom.createElement('figure');
+    figure.setAttribute('class', 'kg-card kg-embed-card');
 
-        let html = payload.html || '';
+    let html = payload.html || '';
 
-        const tweetData = payload.metadata && payload.metadata.tweet_data;
+    const tweetData = payload.metadata && payload.metadata.tweet_data;
 
-        if (tweetData) {
-            const tweetId = tweetData.id;
-            const numberFormatter = new Intl.NumberFormat('en-US', {
-                style: 'decimal',
-                notation: 'compact',
-                unitDisplay: 'narrow',
-                maximumFractionDigits: 1
-            });
-            const retweetCount = numberFormatter.format(tweetData.public_metrics.retweet_count);
-            const likeCount = numberFormatter.format(tweetData.public_metrics.like_count);
-            const authorUser = tweetData.includes.users.find((user: TwitterUser) => user.id === tweetData.author_id)!;
-            const tweetTime = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.TIME_SIMPLE);
-            const tweetDate = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.DATE_MED);
+    if (tweetData) {
+      const tweetId = tweetData.id;
+      const numberFormatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        notation: 'compact',
+        unitDisplay: 'narrow',
+        maximumFractionDigits: 1,
+      });
+      const retweetCount = numberFormatter.format(tweetData.public_metrics.retweet_count);
+      const likeCount = numberFormatter.format(tweetData.public_metrics.like_count);
+      const authorUser = tweetData.includes.users.find(
+        (user: TwitterUser) => user.id === tweetData.author_id,
+      )!;
+      const tweetTime = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.TIME_SIMPLE);
+      const tweetDate = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.DATE_MED);
 
-            const mentions = tweetData.entities && tweetData.entities.mentions || [];
-            const urls = tweetData.entities && tweetData.entities.urls || [];
-            const hashtags = tweetData.entities && tweetData.entities.hashtags || [];
-            const entities = mentions.concat(urls).concat(hashtags).sort((a: TwitterEntity, b: TwitterEntity) => a.start - b.start);
-            let tweetContent = tweetData.text;
+      const mentions = (tweetData.entities && tweetData.entities.mentions) || [];
+      const urls = (tweetData.entities && tweetData.entities.urls) || [];
+      const hashtags = (tweetData.entities && tweetData.entities.hashtags) || [];
+      const entities = mentions
+        .concat(urls)
+        .concat(hashtags)
+        .sort((a: TwitterEntity, b: TwitterEntity) => a.start - b.start);
+      let tweetContent = tweetData.text;
 
-            let tweetImageUrl: string | null | undefined = null;
-            const hasImageOrVideo = tweetData.attachments && tweetData.attachments && tweetData.attachments.media_keys;
-            if (hasImageOrVideo) {
-                tweetImageUrl = tweetData.includes.media[0].preview_image_url || tweetData.includes.media[0].url;
+      let tweetImageUrl: string | null | undefined = null;
+      const hasImageOrVideo =
+        tweetData.attachments && tweetData.attachments && tweetData.attachments.media_keys;
+      if (hasImageOrVideo) {
+        tweetImageUrl =
+          tweetData.includes.media[0].preview_image_url || tweetData.includes.media[0].url;
+      }
+      const hasPoll =
+        tweetData.attachments && tweetData.attachments && tweetData.attachments.poll_ids;
+
+      if (mentions) {
+        let last = 0;
+        const parts: { type: string; data: string }[] = [];
+        const content = Array.from(tweetContent);
+        for (const entity of entities) {
+          let type = 'text';
+          let data = content
+            .slice(entity.start, entity.end + 1)
+            .join('')
+            .replace(/\n/g, '<br>');
+          if (entity.url) {
+            if (!entity.display_url || entity.display_url.startsWith('pic.twitter.com')) {
+              type = 'img_url';
+            } else {
+              type = 'url';
+              data = data.replace(entity.url, entity.display_url);
             }
-            const hasPoll = tweetData.attachments && tweetData.attachments && tweetData.attachments.poll_ids;
+          }
+          if (entity.username) {
+            type = 'mention';
+          }
+          if (entity.tag) {
+            type = 'hashtag';
+          }
+          parts.push({
+            type: 'text',
+            data: content.slice(last, entity.start).join('').replace(/\n/g, '<br>'),
+          });
+          parts.push({
+            type: type,
+            data: data,
+          });
+          last = entity.end + 1;
+        }
+        parts.push({
+          type: 'text',
+          data: content.slice(last, content.length).join('').replace(/\n/g, '<br>'),
+        });
 
-            if (mentions) {
-                let last = 0;
-                const parts: {type: string; data: string}[] = [];
-                const content = Array.from(tweetContent);
-                for (const entity of entities) {
-                    let type = 'text';
-                    let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
-                    if (entity.url) {
-                        if (!entity.display_url || entity.display_url.startsWith('pic.twitter.com')) {
-                            type = 'img_url';
-                        } else {
-                            type = 'url';
-                            data = data.replace(entity.url, entity.display_url);
-                        }
-                    }
-                    if (entity.username) {
-                        type = 'mention';
-                    }
-                    if (entity.tag) {
-                        type = 'hashtag';
-                    }
-                    parts.push({
-                        type: 'text',
-                        data: content.slice(last, entity.start).join('').replace(/\n/g, '<br>')
-                    });
-                    parts.push({
-                        type: type,
-                        data: data
-                    });
-                    last = entity.end + 1;
-                }
-                parts.push({
-                    type: 'text',
-                    data: content.slice(last, content.length).join('').replace(/\n/g, '<br>')
-                });
+        tweetContent = parts.reduce((partContent: string, part) => {
+          if (part.type === 'text') {
+            return partContent + part.data;
+          }
+          if (part.type === 'mention') {
+            return partContent + `<span style="color: #1DA1F2;">${part.data}</span>`;
+          }
+          if (part.type === 'hashtag') {
+            return partContent + `<span style="color: #1DA1F2;">${part.data}</span>`;
+          }
+          if (part.type === 'url') {
+            return (
+              partContent +
+              `<span style="color: #1DA1F2; word-break: break-all;">${part.data}</span>`
+            );
+          }
+          return partContent;
+        }, '');
+      }
 
-                tweetContent = parts.reduce((partContent: string, part) => {
-                    if (part.type === 'text') {
-                        return partContent + part.data;
-                    }
-                    if (part.type === 'mention') {
-                        return partContent + `<span style="color: #1DA1F2;">${part.data}</span>`;
-                    }
-                    if (part.type === 'hashtag') {
-                        return partContent + `<span style="color: #1DA1F2;">${part.data}</span>`;
-                    }
-                    if (part.type === 'url') {
-                        return partContent + `<span style="color: #1DA1F2; word-break: break-all;">${part.data}</span>`;
-                    }
-                    return partContent;
-                }, '');
-            }
-
-            if ((options as CardRenderOptions).target === 'email') {
-                html = `
+      if ((options as CardRenderOptions).target === 'email') {
+        html = `
                 <table cellspacing="0" cellpadding="0" border="0" class="kg-twitter-card">
                     <tr>
                         <td>
@@ -150,11 +164,15 @@ const twitterCard = {
                                         </a>
                                     </td>
                                 </tr>
-                                ${hasImageOrVideo ? `<tr>
+                                ${
+                                  hasImageOrVideo
+                                    ? `<tr>
                                     <td colspan="3" align="center" style="width: 100%;">
                                         <a href="https://twitter.com/twitter/status/${tweetId}" style="display: block; padding-top: 0; padding-left: 16px; padding-right: 16px; padding-bottom: 0;"><img src="${tweetImageUrl}" style="width: 100%; border: 1px solid #E9E9E9; max-width: 528px; border-radius: 10px;" border="0"></a>
                                     </td>
-                                </tr>` : ''}
+                                </tr>`
+                                    : ''
+                                }
                                 <tr>
                                     <td colspan="3" style="width: 100%;">
                                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -185,20 +203,20 @@ const twitterCard = {
                     </tr>
                 </table>
                 `;
-            }
-        }
-
-        figure.appendChild(dom.createRawHTMLSection(html));
-
-        if (payload.caption) {
-            const figcaption = dom.createElement('figcaption');
-            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
-            figure.appendChild(figcaption);
-            figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
-        }
-
-        return figure;
+      }
     }
+
+    figure.appendChild(dom.createRawHTMLSection(html));
+
+    if (payload.caption) {
+      const figcaption = dom.createElement('figcaption');
+      figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
+      figure.appendChild(figcaption);
+      figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
+    }
+
+    return figure;
+  },
 };
 
 export default twitterCard;

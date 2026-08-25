@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import totalPaidMembers from '../../../../core/frontend/helpers/total_paid_members';
 
 describe('{{total_paid_members}} helper', function () {
-    it('can render total paid members', async function () {
-        const rendered = await totalPaidMembers.call({paid: 3000});
-        assert.equal(rendered.string, '3,000+');
-    });
+  it('can render total paid members', async function () {
+    const rendered = await totalPaidMembers.call({ paid: 3000 });
+    assert.equal(rendered.string, '3,000+');
+  });
 });

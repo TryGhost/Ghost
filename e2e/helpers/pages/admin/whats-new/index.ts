@@ -1,1 +1,1 @@
-export {WhatsNewBanner} from './whats-new-banner';
+export { WhatsNewBanner } from './whats-new-banner';

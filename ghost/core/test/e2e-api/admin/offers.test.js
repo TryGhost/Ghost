@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
-const {assertObjectMatches} = require('../../utils/assertions');
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime} = matchers;
+const { assertObjectMatches } = require('../../utils/assertions');
+const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
+const { anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime } =
+  matchers;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -9,875 +10,889 @@ const logging = require('@tryghost/logging');
 let agent;
 
 async function getPaidProduct() {
-    return await models.Product.findOne({type: 'paid'});
+  return await models.Product.findOne({ type: 'paid' });
 }
 
 async function getFreeProduct() {
-    return await models.Product.findOne({type: 'free'});
+  return await models.Product.findOne({ type: 'free' });
 }
 
 describe('Offers API', function () {
-    let defaultTier;
-    let savedOffer;
-    let trialOffer;
+  let defaultTier;
+  let savedOffer;
+  let trialOffer;
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init();
-        await agent.loginAsOwner();
-        defaultTier = await getPaidProduct();
-    });
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init();
+    await agent.loginAsOwner();
+    defaultTier = await getPaidProduct();
+  });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+  afterEach(function () {
+    sinon.restore();
+  });
 
-    it('Has no initial offers', async function () {
-        await agent
-            .get(`offers/`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot();
-    });
+  it('Has no initial offers', async function () {
+    await agent
+      .get(`offers/`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot();
+  });
 
-    it('Can add a new offer', async function () {
-        const newOffer = {
-            name: 'Black Friday',
-            code: 'black-friday',
-            display_title: 'Black Friday Sale!',
-            display_description: '10% off on yearly plan',
-            type: 'percent',
-            cadence: 'year',
-            amount: 12,
-            duration: 'once',
-            duration_in_months: null,
-            currency_restriction: false,
-            currency: null,
+  it('Can add a new offer', async function () {
+    const newOffer = {
+      name: 'Black Friday',
+      code: 'black-friday',
+      display_title: 'Black Friday Sale!',
+      display_description: '10% off on yearly plan',
+      type: 'percent',
+      cadence: 'year',
+      amount: 12,
+      duration: 'once',
+      duration_in_months: null,
+      currency_restriction: false,
+      currency: null,
+      status: 'active',
+      redemption_count: 0,
+      redemption_type: 'signup',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    const { body } = await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('offers'),
+      })
+      .matchBodySnapshot({
+        offers: [
+          {
+            id: anyObjectId,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          },
+        ],
+      });
+    savedOffer = body.offers[0];
+  });
+
+  it('Can add a new offer with minimal fields', async function () {
+    const newOffer = {
+      name: 'Easter Sales',
+      code: 'easter',
+      cadence: 'month',
+      amount: 50,
+      duration: 'once',
+      type: 'percent',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('offers'),
+      })
+      .matchBodySnapshot({
+        offers: [
+          {
+            id: anyObjectId,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          },
+        ],
+      });
+  });
+
+  it('Slugifies offer codes', async function () {
+    const newOffer = {
+      name: 'Summer Sale',
+      code: 'Summer sale',
+      cadence: 'year',
+      amount: 20,
+      duration: 'once',
+      type: 'percent',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('offers'),
+      })
+      .matchBodySnapshot({
+        offers: [
+          {
+            id: anyObjectId,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          },
+        ],
+      })
+      .expect(({ body }) => {
+        assert.equal(body.offers[0].code, 'summer-sale');
+      });
+  });
+
+  it('Can add a fixed offer', async function () {
+    const newOffer = {
+      name: 'Fourth of July Sales',
+      code: '4th',
+      cadence: 'year',
+      amount: 100,
+      duration: 'once',
+      type: 'fixed',
+      currency: 'USD',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('offers'),
+      })
+      .matchBodySnapshot({
+        offers: [
+          {
+            id: anyObjectId,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          },
+        ],
+      });
+  });
+
+  it('Can add a trial offer', async function () {
+    const newOffer = {
+      name: 'Fourth of July Sales trial',
+      code: '4th-trial',
+      cadence: 'year',
+      amount: 20,
+      duration: 'trial',
+      type: 'trial',
+      currency: 'USD',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    const { body } = await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('offers'),
+      })
+      .matchBodySnapshot({
+        offers: [
+          {
+            id: anyObjectId,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          },
+        ],
+      });
+    trialOffer = body.offers[0];
+  });
+
+  it('Can add a retention offer without a tier', async function () {
+    const newOffer = {
+      name: 'Stay With Us',
+      code: 'stay-with-us',
+      display_title: 'Stay With Us',
+      display_description: '10% off if you stay',
+      type: 'percent',
+      cadence: 'month',
+      amount: 10,
+      duration: 'forever',
+      duration_in_months: null,
+      currency_restriction: false,
+      currency: null,
+      status: 'active',
+      redemption_count: 0,
+      redemption_type: 'retention',
+      tier: null,
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('offers'),
+      })
+      .matchBodySnapshot({
+        offers: [
+          {
+            id: anyObjectId,
+            tier: null,
+            created_at: anyISODateTime,
+          },
+        ],
+      })
+      .expect(({ body }) => {
+        assert.equal(body.offers[0].redemption_type, 'retention');
+        assert.equal(body.offers[0].tier, null);
+      });
+  });
+
+  it('Cannot create a signup offer without a tier', async function () {
+    sinon.stub(logging, 'warn');
+
+    const newOffer = {
+      name: 'Bad Signup Offer',
+      code: 'bad-signup',
+      type: 'percent',
+      cadence: 'month',
+      amount: 10,
+      duration: 'once',
+      redemption_type: 'signup',
+      tier: null,
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Cannot create a retention offer with a tier', async function () {
+    sinon.stub(logging, 'warn');
+
+    const newOffer = {
+      name: 'Bad Retention Offer',
+      code: 'bad-retention',
+      type: 'percent',
+      cadence: 'month',
+      amount: 10,
+      duration: 'forever',
+      redemption_type: 'retention',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Cannot create offer with same code', async function () {
+    sinon.stub(logging, 'warn');
+
+    const newOffer = {
+      name: 'Fourth of July',
+      code: '4th',
+      cadence: 'year',
+      amount: 200,
+      duration: 'once',
+      type: 'fixed',
+      currency: 'USD',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Cannot create offer with same slugified code', async function () {
+    sinon.stub(logging, 'warn');
+
+    const newOffer = {
+      name: 'Another Black Friday Sale',
+      code: 'black friday',
+      cadence: 'year',
+      amount: 200,
+      duration: 'once',
+      type: 'fixed',
+      currency: 'USD',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Cannot create offer with same name', async function () {
+    sinon.stub(logging, 'warn');
+
+    const newOffer = {
+      name: 'Fourth of July Sales',
+      code: 'july4',
+      cadence: 'year',
+      amount: 150,
+      duration: 'once',
+      type: 'fixed',
+      currency: 'USD',
+      tier: {
+        id: defaultTier.id,
+      },
+    };
+
+    await agent
+      .post(`offers/`)
+      .body({ offers: [newOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Can browse', async function () {
+    await agent
+      .get(`offers/`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: [
+          ...new Array(5).fill({
+            id: anyObjectId,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          }),
+          {
+            id: anyObjectId,
+            tier: null,
+            created_at: anyISODateTime,
+          },
+        ],
+      });
+  });
+
+  it('Can get a single offer', async function () {
+    await agent
+      .get(`offers/${savedOffer.id}/`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      });
+  });
+
+  it('Can get a trial offer', async function () {
+    await agent
+      .get(`offers/${trialOffer.id}/`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          type: 'trial',
+          duration: 'trial',
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      });
+  });
+
+  it('Can edit an offer', async function () {
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      name: 'Cyber Monday',
+      code: 'cyber monday',
+      display_title: 'Cyber Monday Sale!',
+      display_description: '10% off on yearly plan, only today',
+    };
+
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      })
+      .expect(({ body }) => {
+        // Test if all the changes were applied, and that the code has been slugified
+        assertObjectMatches(body.offers[0], { ...updatedOffer, code: 'cyber-monday' });
+      });
+  });
+
+  it('Cannot update offer code to one that exists', async function () {
+    sinon.stub(logging, 'warn');
+
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      code: '4th',
+    };
+
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: new Array(1).fill({
+          id: anyErrorId,
+        }),
+      });
+  });
+
+  it('Cannot update offer code to one that exists after it is slugified', async function () {
+    sinon.stub(logging, 'warn');
+
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      code: 'Summer sale',
+    };
+
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: new Array(1).fill({
+          id: anyErrorId,
+        }),
+      });
+  });
+
+  it('Cannot update offer name to one that exists', async function () {
+    sinon.stub(logging, 'warn');
+
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      name: 'Easter Sales',
+    };
+
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(400)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: new Array(1).fill({
+          id: anyErrorId,
+        }),
+      });
+  });
+
+  it('Can archive an offer', async function () {
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      status: 'archived',
+    };
+
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      })
+      .expect(({ body }) => {
+        assertObjectMatches(body.offers[0], updatedOffer);
+      });
+  });
+
+  it('Can browse archived', async function () {
+    const filter = encodeURIComponent(`status:archived`);
+    await agent
+      .get(`offers/?filter=${filter}`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      });
+  });
+
+  it('Can filter by status', async function () {
+    const filter = encodeURIComponent(`status:active`);
+    await agent
+      .get(`offers/?filter=${filter}`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: [
+          ...new Array(4).fill({
+            id: anyObjectId,
             status: 'active',
-            redemption_count: 0,
+            tier: {
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          }),
+          {
+            id: anyObjectId,
+            status: 'active',
+            tier: null,
+            created_at: anyISODateTime,
+          },
+        ],
+      });
+  });
+
+  it('Can filter by status and redemption type', async function () {
+    const filter = encodeURIComponent(`status:active+redemption_type:signup`);
+
+    await agent
+      .get(`offers/?filter=${filter}`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: [
+          ...new Array(4).fill({
+            id: anyObjectId,
+            status: 'active',
             redemption_type: 'signup',
             tier: {
-                id: defaultTier.id
-            }
-        };
-
-        const {body} = await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('offers')
-            })
-            .matchBodySnapshot({
-                offers: [{
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                }]
-            });
-        savedOffer = body.offers[0];
-    });
-
-    it('Can add a new offer with minimal fields', async function () {
-        const newOffer = {
-            name: 'Easter Sales',
-            code: 'easter',
-            cadence: 'month',
-            amount: 50,
-            duration: 'once',
-            type: 'percent',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('offers')
-            })
-            .matchBodySnapshot({
-                offers: [{
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                }]
-            });
-    });
-
-    it('Slugifies offer codes', async function () {
-        const newOffer = {
-            name: 'Summer Sale',
-            code: 'Summer sale',
-            cadence: 'year',
-            amount: 20,
-            duration: 'once',
-            type: 'percent',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('offers')
-            })
-            .matchBodySnapshot({
-                offers: [{
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                }]
-            })
-            .expect(({body}) => {
-                assert.equal(body.offers[0].code, 'summer-sale');
-            });
-    });
-
-    it('Can add a fixed offer', async function () {
-        const newOffer = {
-            name: 'Fourth of July Sales',
-            code: '4th',
-            cadence: 'year',
-            amount: 100,
-            duration: 'once',
-            type: 'fixed',
-            currency: 'USD',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('offers')
-            })
-            .matchBodySnapshot({
-                offers: [{
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                }]
-            });
-    });
-
-    it('Can add a trial offer', async function () {
-        const newOffer = {
-            name: 'Fourth of July Sales trial',
-            code: '4th-trial',
-            cadence: 'year',
-            amount: 20,
-            duration: 'trial',
-            type: 'trial',
-            currency: 'USD',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        const {body} = await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('offers')
-            })
-            .matchBodySnapshot({
-                offers: [{
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                }]
-            });
-        trialOffer = body.offers[0];
-    });
-
-    it('Can add a retention offer without a tier', async function () {
-        const newOffer = {
-            name: 'Stay With Us',
-            code: 'stay-with-us',
-            display_title: 'Stay With Us',
-            display_description: '10% off if you stay',
-            type: 'percent',
-            cadence: 'month',
-            amount: 10,
-            duration: 'forever',
-            duration_in_months: null,
-            currency_restriction: false,
-            currency: null,
-            status: 'active',
-            redemption_count: 0,
-            redemption_type: 'retention',
-            tier: null
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('offers')
-            })
-            .matchBodySnapshot({
-                offers: [{
-                    id: anyObjectId,
-                    tier: null,
-                    created_at: anyISODateTime
-                }]
-            })
-            .expect(({body}) => {
-                assert.equal(body.offers[0].redemption_type, 'retention');
-                assert.equal(body.offers[0].tier, null);
-            });
-    });
-
-    it('Cannot create a signup offer without a tier', async function () {
-        sinon.stub(logging, 'warn');
-
-        const newOffer = {
-            name: 'Bad Signup Offer',
-            code: 'bad-signup',
-            type: 'percent',
-            cadence: 'month',
-            amount: 10,
-            duration: 'once',
-            redemption_type: 'signup',
-            tier: null
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Cannot create a retention offer with a tier', async function () {
-        sinon.stub(logging, 'warn');
-
-        const newOffer = {
-            name: 'Bad Retention Offer',
-            code: 'bad-retention',
-            type: 'percent',
-            cadence: 'month',
-            amount: 10,
-            duration: 'forever',
-            redemption_type: 'retention',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Cannot create offer with same code', async function () {
-        sinon.stub(logging, 'warn');
-
-        const newOffer = {
-            name: 'Fourth of July',
-            code: '4th',
-            cadence: 'year',
-            amount: 200,
-            duration: 'once',
-            type: 'fixed',
-            currency: 'USD',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Cannot create offer with same slugified code', async function () {
-        sinon.stub(logging, 'warn');
-
-        const newOffer = {
-            name: 'Another Black Friday Sale',
-            code: 'black friday',
-            cadence: 'year',
-            amount: 200,
-            duration: 'once',
-            type: 'fixed',
-            currency: 'USD',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Cannot create offer with same name', async function () {
-        sinon.stub(logging, 'warn');
-
-        const newOffer = {
-            name: 'Fourth of July Sales',
-            code: 'july4',
-            cadence: 'year',
-            amount: 150,
-            duration: 'once',
-            type: 'fixed',
-            currency: 'USD',
-            tier: {
-                id: defaultTier.id
-            }
-        };
-
-        await agent
-            .post(`offers/`)
-            .body({offers: [newOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Can browse', async function () {
-        await agent
-            .get(`offers/`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: [
-                    ...new Array(5).fill({
-                        id: anyObjectId,
-                        tier: {
-                            id: anyObjectId
-                        },
-                        created_at: anyISODateTime
-                    }),
-                    {
-                        id: anyObjectId,
-                        tier: null,
-                        created_at: anyISODateTime
-                    }
-                ]
-            });
-    });
-
-    it('Can get a single offer', async function () {
-        await agent
-            .get(`offers/${savedOffer.id}/`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            });
-    });
-
-    it('Can get a trial offer', async function () {
-        await agent
-            .get(`offers/${trialOffer.id}/`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    type: 'trial',
-                    duration: 'trial',
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            });
-    });
-
-    it('Can edit an offer', async function () {
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            name: 'Cyber Monday',
-            code: 'cyber monday',
-            display_title: 'Cyber Monday Sale!',
-            display_description: '10% off on yearly plan, only today'
-        };
-
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            })
-            .expect(({body}) => {
-                // Test if all the changes were applied, and that the code has been slugified
-                assertObjectMatches(body.offers[0], {...updatedOffer, code: 'cyber-monday'});
-            });
-    });
-
-    it('Cannot update offer code to one that exists', async function () {
-        sinon.stub(logging, 'warn');
-
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            code: '4th'
-        };
-
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: new Array(1).fill({
-                    id: anyErrorId
-                })
-            });
-    });
-
-    it('Cannot update offer code to one that exists after it is slugified', async function () {
-        sinon.stub(logging, 'warn');
-
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            code: 'Summer sale'
-        };
-
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: new Array(1).fill({
-                    id: anyErrorId
-                })
-            });
-    });
-
-    it('Cannot update offer name to one that exists', async function () {
-        sinon.stub(logging, 'warn');
-
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            name: 'Easter Sales'
-        };
-
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(400)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: new Array(1).fill({
-                    id: anyErrorId
-                })
-            });
-    });
-
-    it('Can archive an offer', async function () {
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            status: 'archived'
-        };
-
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            })
-            .expect(({body}) => {
-                assertObjectMatches(body.offers[0], updatedOffer);
-            });
-    });
-
-    it('Can browse archived', async function () {
-        const filter = encodeURIComponent(`status:archived`);
-        await agent
-            .get(`offers/?filter=${filter}`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            });
-    });
-
-    it('Can filter by status', async function () {
-        const filter = encodeURIComponent(`status:active`);
-        await agent
-            .get(`offers/?filter=${filter}`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: [
-                    ...new Array(4).fill({
-                        id: anyObjectId,
-                        status: 'active',
-                        tier: {
-                            id: anyObjectId
-                        },
-                        created_at: anyISODateTime
-                    }),
-                    {
-                        id: anyObjectId,
-                        status: 'active',
-                        tier: null,
-                        created_at: anyISODateTime
-                    }
-                ]
-            });
-    });
-
-    it('Can filter by status and redemption type', async function () {
-        const filter = encodeURIComponent(`status:active+redemption_type:signup`);
-
-        await agent
-            .get(`offers/?filter=${filter}`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: [
-                    ...new Array(4).fill({
-                        id: anyObjectId,
-                        status: 'active',
-                        redemption_type: 'signup',
-                        tier: {
-                            id: anyObjectId
-                        },
-                        created_at: anyISODateTime
-                    })
-                ]
-            });
-    });
-
-    it('Cannot update offer cadence', async function () {
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            cadence: 'month'
-        };
-
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            })
-            .expect(({body}) => {
-                assert.equal(body.offers[0].cadence, 'year');
-            });
-    });
-
-    it('Cannot update offer amount', async function () {
-        // We can change all fields except discount related fields
-        let updatedOffer = {
-            amount: 20
-        };
-
-        // No validation errors are thrown at the moment
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            })
-            .expect(({body}) => {
-                assert.equal(body.offers[0].amount, 12);
-            });
-    });
-
-    it('Cannot update offer tier', async function () {
-        // We can change all fields except discount related fields
-        const freeTier = await getFreeProduct();
-        let updatedOffer = {
-            tier: {
-                id: freeTier.id
-            }
-        };
-
-        // No validation errors are thrown at the moment
-        await agent
-            .put(`offers/${savedOffer.id}/`)
-            .body({offers: [updatedOffer]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                offers: new Array(1).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
-            })
-            .expect(({body}) => {
-                assert.equal(body.offers[0].tier.id, defaultTier.id);
-            });
-    });
-
-    it('Keeps one active retention offer per cadence on create', async function () {
-        const suffix = Date.now().toString(16).slice(-6);
-
-        const firstOffer = {
-            name: `Yearly retention one ${suffix}`,
-            code: `yearly-retention-${suffix}-1`,
-            display_title: '',
-            display_description: '',
-            type: 'percent',
-            cadence: 'year',
-            amount: 20,
-            duration: 'once',
-            duration_in_months: null,
-            currency_restriction: false,
-            currency: null,
-            status: 'active',
-            redemption_type: 'retention',
-            tier: null
-        };
-
-        const secondOffer = {
-            ...firstOffer,
-            name: `Yearly retention two ${suffix}`,
-            code: `yearly-retention-${suffix}-2`,
-            amount: 25
-        };
-
-        const firstCreateResponse = await agent
-            .post('offers/')
-            .body({offers: [firstOffer]})
-            .expectStatus(200);
-        const firstOfferId = firstCreateResponse.body.offers[0].id;
-
-        const secondCreateResponse = await agent
-            .post('offers/')
-            .body({offers: [secondOffer]})
-            .expectStatus(200);
-        const secondOfferId = secondCreateResponse.body.offers[0].id;
-
-        const firstReadResponse = await agent
-            .get(`offers/${firstOfferId}/`)
-            .expectStatus(200);
-        const secondReadResponse = await agent
-            .get(`offers/${secondOfferId}/`)
-            .expectStatus(200);
-
-        assert.equal(firstReadResponse.body.offers[0].status, 'archived');
-        assert.equal(secondReadResponse.body.offers[0].status, 'active');
-    });
-
-    it('Keeps one active retention offer per cadence on activate', async function () {
-        const suffix = (Date.now() + 1).toString(16).slice(-6);
-
-        const activeOffer = {
-            name: `Yearly retention active ${suffix}`,
-            code: `yearly-retention-${suffix}-active`,
-            display_title: '',
-            display_description: '',
-            type: 'percent',
-            cadence: 'year',
-            amount: 20,
-            duration: 'once',
-            duration_in_months: null,
-            currency_restriction: false,
-            currency: null,
-            status: 'active',
-            redemption_type: 'retention',
-            tier: null
-        };
-
-        const archivedOffer = {
-            ...activeOffer,
-            name: `Yearly retention archived ${suffix}`,
-            code: `yearly-retention-${suffix}-archived`,
-            status: 'archived',
-            amount: 30
-        };
-
-        const activeCreateResponse = await agent
-            .post('offers/')
-            .body({offers: [activeOffer]})
-            .expectStatus(200);
-        const activeOfferId = activeCreateResponse.body.offers[0].id;
-
-        const archivedCreateResponse = await agent
-            .post('offers/')
-            .body({offers: [archivedOffer]})
-            .expectStatus(200);
-        const archivedOfferId = archivedCreateResponse.body.offers[0].id;
-
-        await agent
-            .put(`offers/${archivedOfferId}/`)
-            .body({offers: [{status: 'active'}]})
-            .expectStatus(200);
-
-        const activeReadResponse = await agent
-            .get(`offers/${activeOfferId}/`)
-            .expectStatus(200);
-        const archivedReadResponse = await agent
-            .get(`offers/${archivedOfferId}/`)
-            .expectStatus(200);
-
-        assert.equal(activeReadResponse.body.offers[0].status, 'archived');
-        assert.equal(archivedReadResponse.body.offers[0].status, 'active');
-    });
+              id: anyObjectId,
+            },
+            created_at: anyISODateTime,
+          }),
+        ],
+      });
+  });
+
+  it('Cannot update offer cadence', async function () {
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      cadence: 'month',
+    };
+
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      })
+      .expect(({ body }) => {
+        assert.equal(body.offers[0].cadence, 'year');
+      });
+  });
+
+  it('Cannot update offer amount', async function () {
+    // We can change all fields except discount related fields
+    let updatedOffer = {
+      amount: 20,
+    };
+
+    // No validation errors are thrown at the moment
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      })
+      .expect(({ body }) => {
+        assert.equal(body.offers[0].amount, 12);
+      });
+  });
+
+  it('Cannot update offer tier', async function () {
+    // We can change all fields except discount related fields
+    const freeTier = await getFreeProduct();
+    let updatedOffer = {
+      tier: {
+        id: freeTier.id,
+      },
+    };
+
+    // No validation errors are thrown at the moment
+    await agent
+      .put(`offers/${savedOffer.id}/`)
+      .body({ offers: [updatedOffer] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        offers: new Array(1).fill({
+          id: anyObjectId,
+          tier: {
+            id: anyObjectId,
+          },
+          created_at: anyISODateTime,
+        }),
+      })
+      .expect(({ body }) => {
+        assert.equal(body.offers[0].tier.id, defaultTier.id);
+      });
+  });
+
+  it('Keeps one active retention offer per cadence on create', async function () {
+    const suffix = Date.now().toString(16).slice(-6);
+
+    const firstOffer = {
+      name: `Yearly retention one ${suffix}`,
+      code: `yearly-retention-${suffix}-1`,
+      display_title: '',
+      display_description: '',
+      type: 'percent',
+      cadence: 'year',
+      amount: 20,
+      duration: 'once',
+      duration_in_months: null,
+      currency_restriction: false,
+      currency: null,
+      status: 'active',
+      redemption_type: 'retention',
+      tier: null,
+    };
+
+    const secondOffer = {
+      ...firstOffer,
+      name: `Yearly retention two ${suffix}`,
+      code: `yearly-retention-${suffix}-2`,
+      amount: 25,
+    };
+
+    const firstCreateResponse = await agent
+      .post('offers/')
+      .body({ offers: [firstOffer] })
+      .expectStatus(200);
+    const firstOfferId = firstCreateResponse.body.offers[0].id;
+
+    const secondCreateResponse = await agent
+      .post('offers/')
+      .body({ offers: [secondOffer] })
+      .expectStatus(200);
+    const secondOfferId = secondCreateResponse.body.offers[0].id;
+
+    const firstReadResponse = await agent.get(`offers/${firstOfferId}/`).expectStatus(200);
+    const secondReadResponse = await agent.get(`offers/${secondOfferId}/`).expectStatus(200);
+
+    assert.equal(firstReadResponse.body.offers[0].status, 'archived');
+    assert.equal(secondReadResponse.body.offers[0].status, 'active');
+  });
+
+  it('Keeps one active retention offer per cadence on activate', async function () {
+    const suffix = (Date.now() + 1).toString(16).slice(-6);
+
+    const activeOffer = {
+      name: `Yearly retention active ${suffix}`,
+      code: `yearly-retention-${suffix}-active`,
+      display_title: '',
+      display_description: '',
+      type: 'percent',
+      cadence: 'year',
+      amount: 20,
+      duration: 'once',
+      duration_in_months: null,
+      currency_restriction: false,
+      currency: null,
+      status: 'active',
+      redemption_type: 'retention',
+      tier: null,
+    };
+
+    const archivedOffer = {
+      ...activeOffer,
+      name: `Yearly retention archived ${suffix}`,
+      code: `yearly-retention-${suffix}-archived`,
+      status: 'archived',
+      amount: 30,
+    };
+
+    const activeCreateResponse = await agent
+      .post('offers/')
+      .body({ offers: [activeOffer] })
+      .expectStatus(200);
+    const activeOfferId = activeCreateResponse.body.offers[0].id;
+
+    const archivedCreateResponse = await agent
+      .post('offers/')
+      .body({ offers: [archivedOffer] })
+      .expectStatus(200);
+    const archivedOfferId = archivedCreateResponse.body.offers[0].id;
+
+    await agent
+      .put(`offers/${archivedOfferId}/`)
+      .body({ offers: [{ status: 'active' }] })
+      .expectStatus(200);
+
+    const activeReadResponse = await agent.get(`offers/${activeOfferId}/`).expectStatus(200);
+    const archivedReadResponse = await agent.get(`offers/${archivedOfferId}/`).expectStatus(200);
+
+    assert.equal(activeReadResponse.body.offers[0].status, 'archived');
+    assert.equal(archivedReadResponse.body.offers[0].status, 'active');
+  });
 });

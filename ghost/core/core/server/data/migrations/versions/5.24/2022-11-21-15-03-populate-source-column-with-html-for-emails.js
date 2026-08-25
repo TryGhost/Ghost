@@ -1,19 +1,18 @@
 const logging = require('@tryghost/logging');
-const {createTransactionalMigration} = require('../../utils');
+const { createTransactionalMigration } = require('../../utils');
 
 module.exports = createTransactionalMigration(
-    async function up(knex) {
-        logging.info('Populating source from html in emails table');
+  async function up(knex) {
+    logging.info('Populating source from html in emails table');
 
-        const affectedRows = await knex('emails')
-            .update({
-                source: knex.ref('html')
-            });
+    const affectedRows = await knex('emails').update({
+      source: knex.ref('html'),
+    });
 
-        logging.info(`Updated ${affectedRows} rows with source html data`);
-    },
+    logging.info(`Updated ${affectedRows} rows with source html data`);
+  },
 
-    async function down() {
-        // no-op: we don't want to remove the data
-    }
+  async function down() {
+    // no-op: we don't want to remove the data
+  },
 );

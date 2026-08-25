@@ -4,7 +4,9 @@ const ObjectID = require('bson-objectid').default;
 const EventEmitter = require('events').EventEmitter;
 
 const LinkRedirectRepository = require('../../../../../core/server/services/link-redirection/link-redirect-repository');
-const {LinkRedirect} = require('../../../../../core/server/services/link-redirection/link-redirect');
+const {
+  LinkRedirect,
+} = require('../../../../../core/server/services/link-redirection/link-redirect');
 
 /**
  * Create a stubbed LinkRedirect Bookshelf model for testing, with overridable values
@@ -20,16 +22,16 @@ const {LinkRedirect} = require('../../../../../core/server/services/link-redirec
  *
  */
 function createRedirectModel(values = {}) {
-    const get = sinon.stub();
-    get.withArgs('updated_at').returns(values.updated_at || new Date('2022-10-20T00:00:10.000Z'));
-    get.withArgs('created_at').returns(values.created_at || new Date('2022-10-20T00:00:00.000Z'));
-    get.withArgs('from').returns(values.from || '/r/1234abcd');
-    get.withArgs('to').returns(values.to || 'https://google.com');
-    get.withArgs('automation_action_revision_id').returns(values.automation_action_revision_id);
-    return {
-        id: values.id || '662194931d0ba6fb37c080ee',
-        get
-    };
+  const get = sinon.stub();
+  get.withArgs('updated_at').returns(values.updated_at || new Date('2022-10-20T00:00:10.000Z'));
+  get.withArgs('created_at').returns(values.created_at || new Date('2022-10-20T00:00:00.000Z'));
+  get.withArgs('from').returns(values.from || '/r/1234abcd');
+  get.withArgs('to').returns(values.to || 'https://google.com');
+  get.withArgs('automation_action_revision_id').returns(values.automation_action_revision_id);
+  return {
+    id: values.id || '662194931d0ba6fb37c080ee',
+    get,
+  };
 }
 
 /**
@@ -44,263 +46,281 @@ function createRedirectModel(values = {}) {
  * @returns {LinkRedirectRepository}
  */
 function createLinkRedirectRepository(deps = {}) {
-    const linkRows = [
-        {id: '662194931d0ba6fb37c080ee'}
-    ];
-    const model = createRedirectModel();
-    const models = {
-        models: [model]
-    };
-    return new LinkRedirectRepository({
-        LinkRedirect: deps.LinkRedirect || {
-            findOne: sinon.stub().returns(model),
-            findAll: sinon.stub().returns(models),
-            getFilteredCollectionQuery: sinon.stub().returns({
-                select: sinon.stub().returns({
-                    distinct: sinon.stub().returns(linkRows)
-                })
-            }),
-            add: sinon.stub().callsFake((data) => {
-                return createRedirectModel(data);
-            })
-        },
-        urlUtils: deps.urlUtils || {
-            urlFor: sinon.stub().returns('https://example.com'),
-            relativeToAbsolute: sinon.stub().returns(new URL('https://example.com')),
-            absoluteToRelative: sinon.stub().returns('/r/1234abcd')
-        },
-        cacheAdapter: deps.cacheAdapter || null,
-        EventRegistry: deps.EventRegistry || new EventEmitter()
-    });
+  const linkRows = [{ id: '662194931d0ba6fb37c080ee' }];
+  const model = createRedirectModel();
+  const models = {
+    models: [model],
+  };
+  return new LinkRedirectRepository({
+    LinkRedirect: deps.LinkRedirect || {
+      findOne: sinon.stub().returns(model),
+      findAll: sinon.stub().returns(models),
+      getFilteredCollectionQuery: sinon.stub().returns({
+        select: sinon.stub().returns({
+          distinct: sinon.stub().returns(linkRows),
+        }),
+      }),
+      add: sinon.stub().callsFake((data) => {
+        return createRedirectModel(data);
+      }),
+    },
+    urlUtils: deps.urlUtils || {
+      urlFor: sinon.stub().returns('https://example.com'),
+      relativeToAbsolute: sinon.stub().returns(new URL('https://example.com')),
+      absoluteToRelative: sinon.stub().returns('/r/1234abcd'),
+    },
+    cacheAdapter: deps.cacheAdapter || null,
+    EventRegistry: deps.EventRegistry || new EventEmitter(),
+  });
 }
 
 describe('UNIT: LinkRedirectRepository class', function () {
-    let linkRedirectRepository;
+  let linkRedirectRepository;
 
-    afterEach(function () {
-        sinon.restore();
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('fromModel', function () {
+    it('should set edited to false if updated_at equals created_at', function () {
+      const model = createRedirectModel({
+        updated_at: new Date('2022-10-20T00:00:00.000Z'),
+        created_at: new Date('2022-10-20T00:00:00.000Z'),
+      });
+      linkRedirectRepository = createLinkRedirectRepository();
+      const linkRedirect = linkRedirectRepository.fromModel(model);
+      assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
+      assert.equal(linkRedirect.to.href, 'https://google.com/');
+      assert.equal(linkRedirect.edited, false);
+      assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
     });
 
-    describe('fromModel', function () {
-        it('should set edited to false if updated_at equals created_at', function () {
-            const model = createRedirectModel({
-                updated_at: new Date('2022-10-20T00:00:00.000Z'),
-                created_at: new Date('2022-10-20T00:00:00.000Z')
-            });
-            linkRedirectRepository = createLinkRedirectRepository();
-            const linkRedirect = linkRedirectRepository.fromModel(model);
-            assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
-            assert.equal(linkRedirect.to.href, 'https://google.com/');
-            assert.equal(linkRedirect.edited, false);
-            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
-        });
-
-        it('should set edited to false if updated_at is within 1 second of created_at', function () {
-            const model = createRedirectModel({
-                updated_at: new Date('2022-10-20T00:00:00.999Z'),
-                created_at: new Date('2022-10-20T00:00:00.000Z')
-            });
-            linkRedirectRepository = createLinkRedirectRepository();
-            const linkRedirect = linkRedirectRepository.fromModel(model);
-            assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
-            assert.equal(linkRedirect.to.href, 'https://google.com/');
-            assert.equal(linkRedirect.edited, false);
-            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
-        });
-
-        it('should set edited to true if updated_at is greater than created_at by more than 1 second', function () {
-            const model = createRedirectModel({
-                updated_at: new Date('2022-10-20T00:00:10.000Z'),
-                created_at: new Date('2022-10-20T00:00:00.000Z')
-            });
-            linkRedirectRepository = createLinkRedirectRepository();
-            const linkRedirect = linkRedirectRepository.fromModel(model);
-            assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
-            assert.equal(linkRedirect.to.href, 'https://google.com/');
-            assert.equal(linkRedirect.edited, true);
-            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
-        });
-
-        it('should omit null automation revision ownership from serialized redirects', function () {
-            const model = createRedirectModel({
-                automation_action_revision_id: null
-            });
-            linkRedirectRepository = createLinkRedirectRepository();
-
-            const linkRedirect = linkRedirectRepository.fromModel(model);
-            const serialized = JSON.parse(JSON.stringify(linkRedirect));
-
-            assert.equal(linkRedirect.automationActionRevisionId, undefined);
-            assert.equal('automationActionRevisionId' in serialized, false);
-        });
+    it('should set edited to false if updated_at is within 1 second of created_at', function () {
+      const model = createRedirectModel({
+        updated_at: new Date('2022-10-20T00:00:00.999Z'),
+        created_at: new Date('2022-10-20T00:00:00.000Z'),
+      });
+      linkRedirectRepository = createLinkRedirectRepository();
+      const linkRedirect = linkRedirectRepository.fromModel(model);
+      assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
+      assert.equal(linkRedirect.to.href, 'https://google.com/');
+      assert.equal(linkRedirect.edited, false);
+      assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
     });
 
-    describe('getAll', function () {
-        it('should return an array of LinkRedirect instances', async function () {
-            linkRedirectRepository = createLinkRedirectRepository();
-            const linkRedirects = await linkRedirectRepository.getAll({});
-            assert(Array.isArray(linkRedirects));
-            assert.equal(linkRedirects.length, 1);
-            const linkRedirect = linkRedirects[0];
-            assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
-            assert.equal(linkRedirect.to.href, 'https://google.com/');
-            assert.equal(linkRedirect.edited, true);
-            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
-        });
+    it('should set edited to true if updated_at is greater than created_at by more than 1 second', function () {
+      const model = createRedirectModel({
+        updated_at: new Date('2022-10-20T00:00:10.000Z'),
+        created_at: new Date('2022-10-20T00:00:00.000Z'),
+      });
+      linkRedirectRepository = createLinkRedirectRepository();
+      const linkRedirect = linkRedirectRepository.fromModel(model);
+      assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
+      assert.equal(linkRedirect.to.href, 'https://google.com/');
+      assert.equal(linkRedirect.edited, true);
+      assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
     });
 
-    describe('getFilteredIds', function () {
-        it('should return an array of link ids', async function () {
-            linkRedirectRepository = createLinkRedirectRepository();
-            const linkIds = await linkRedirectRepository.getFilteredIds({});
-            assert(Array.isArray(linkIds));
-            assert.equal(linkIds.length, 1);
-            assert.equal(linkIds[0], '662194931d0ba6fb37c080ee');
-        });
+    it('should omit null automation revision ownership from serialized redirects', function () {
+      const model = createRedirectModel({
+        automation_action_revision_id: null,
+      });
+      linkRedirectRepository = createLinkRedirectRepository();
+
+      const linkRedirect = linkRedirectRepository.fromModel(model);
+      const serialized = JSON.parse(JSON.stringify(linkRedirect));
+
+      assert.equal(linkRedirect.automationActionRevisionId, undefined);
+      assert.equal('automationActionRevisionId' in serialized, false);
+    });
+  });
+
+  describe('getAll', function () {
+    it('should return an array of LinkRedirect instances', async function () {
+      linkRedirectRepository = createLinkRedirectRepository();
+      const linkRedirects = await linkRedirectRepository.getAll({});
+      assert(Array.isArray(linkRedirects));
+      assert.equal(linkRedirects.length, 1);
+      const linkRedirect = linkRedirects[0];
+      assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
+      assert.equal(linkRedirect.to.href, 'https://google.com/');
+      assert.equal(linkRedirect.edited, true);
+      assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
+    });
+  });
+
+  describe('getFilteredIds', function () {
+    it('should return an array of link ids', async function () {
+      linkRedirectRepository = createLinkRedirectRepository();
+      const linkIds = await linkRedirectRepository.getFilteredIds({});
+      assert(Array.isArray(linkIds));
+      assert.equal(linkIds.length, 1);
+      assert.equal(linkIds[0], '662194931d0ba6fb37c080ee');
+    });
+  });
+
+  describe('getByURL', function () {
+    it('should return a LinkRedirect instance', async function () {
+      const url = new URL('https://example.com/r/1234abcd');
+      linkRedirectRepository = createLinkRedirectRepository();
+      const result = await linkRedirectRepository.getByURL(url);
+      assert.equal(result.from.href, url.href);
+      assert.equal(result.to.href, 'https://google.com/');
     });
 
-    describe('getByURL', function () {
-        it('should return a LinkRedirect instance', async function () {
-            const url = new URL('https://example.com/r/1234abcd');
-            linkRedirectRepository = createLinkRedirectRepository();
-            const result = await linkRedirectRepository.getByURL(url);
-            assert.equal(result.from.href, url.href);
-            assert.equal(result.to.href, 'https://google.com/');
-        });
-
-        it('should return a LinkRedirect instance from cache if enabled and key exists', async function () {
-            const url = new URL('https://example.com/r/1234abcd');
-            const cacheAdapterStub = {
-                get: sinon.stub().returns({
-                    link_id: '662194931d0ba6fb37c080ee',
-                    from: 'https://example.com/r/1234abcd',
-                    to: 'https://google.com',
-                    edited: true
-                }),
-                reset: sinon.stub()
-            };
-            linkRedirectRepository = createLinkRedirectRepository({
-                cacheAdapter: cacheAdapterStub
-            });
-            const result = await linkRedirectRepository.getByURL(url);
-            assert.equal(result.from.href, 'https://example.com/r/1234abcd');
-            assert.equal(result.to.href, 'https://google.com/');
-            assert.equal(result.edited, true);
-            assert.equal(ObjectID.isValid(result.link_id), true);
-        });
-
-        it('should return a LinkRedirect instance from the DB if cache is enabled and key does not exist', async function () {
-            const url = new URL('https://example.com/r/1234abcd');
-            const cacheAdapterStub = {
-                get: sinon.stub().returns(null),
-                set: sinon.stub(),
-                reset: sinon.stub()
-            };
-            linkRedirectRepository = createLinkRedirectRepository({
-                cacheAdapter: cacheAdapterStub
-            });
-            const result = await linkRedirectRepository.getByURL(url);
-            assert.equal(result.from.href, 'https://example.com/r/1234abcd');
-            assert.equal(result.to.href, 'https://google.com/');
-            assert.equal(result.edited, true);
-            assert.equal(ObjectID.isValid(result.link_id), true);
-            sinon.assert.calledOnce(cacheAdapterStub.set);
-        });
+    it('should return a LinkRedirect instance from cache if enabled and key exists', async function () {
+      const url = new URL('https://example.com/r/1234abcd');
+      const cacheAdapterStub = {
+        get: sinon.stub().returns({
+          link_id: '662194931d0ba6fb37c080ee',
+          from: 'https://example.com/r/1234abcd',
+          to: 'https://google.com',
+          edited: true,
+        }),
+        reset: sinon.stub(),
+      };
+      linkRedirectRepository = createLinkRedirectRepository({
+        cacheAdapter: cacheAdapterStub,
+      });
+      const result = await linkRedirectRepository.getByURL(url);
+      assert.equal(result.from.href, 'https://example.com/r/1234abcd');
+      assert.equal(result.to.href, 'https://google.com/');
+      assert.equal(result.edited, true);
+      assert.equal(ObjectID.isValid(result.link_id), true);
     });
 
-    describe('automation redirects', function () {
-        it('looks up redirects by revision and destination hash', async function () {
-            const findOne = sinon.stub().returns(createRedirectModel());
-            linkRedirectRepository = createLinkRedirectRepository({
-                LinkRedirect: {
-                    findOne,
-                    findAll: sinon.stub(),
-                    getFilteredCollectionQuery: sinon.stub(),
-                    add: sinon.stub()
-                }
-            });
+    it('should return a LinkRedirect instance from the DB if cache is enabled and key does not exist', async function () {
+      const url = new URL('https://example.com/r/1234abcd');
+      const cacheAdapterStub = {
+        get: sinon.stub().returns(null),
+        set: sinon.stub(),
+        reset: sinon.stub(),
+      };
+      linkRedirectRepository = createLinkRedirectRepository({
+        cacheAdapter: cacheAdapterStub,
+      });
+      const result = await linkRedirectRepository.getByURL(url);
+      assert.equal(result.from.href, 'https://example.com/r/1234abcd');
+      assert.equal(result.to.href, 'https://google.com/');
+      assert.equal(result.edited, true);
+      assert.equal(ObjectID.isValid(result.link_id), true);
+      sinon.assert.calledOnce(cacheAdapterStub.set);
+    });
+  });
 
-            const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL('revision-id', new URL('https://google.com/'));
+  describe('automation redirects', function () {
+    it('looks up redirects by revision and destination hash', async function () {
+      const findOne = sinon.stub().returns(createRedirectModel());
+      linkRedirectRepository = createLinkRedirectRepository({
+        LinkRedirect: {
+          findOne,
+          findAll: sinon.stub(),
+          getFilteredCollectionQuery: sinon.stub(),
+          add: sinon.stub(),
+        },
+      });
 
-            assert.equal(result.to.href, 'https://google.com/');
-            sinon.assert.calledOnceWithExactly(findOne, {
-                automation_action_revision_id: 'revision-id',
-                to_hash: Buffer.from('9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e', 'hex')
-            }, {});
-        });
+      const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL(
+        'revision-id',
+        new URL('https://google.com/'),
+      );
 
-        it('returns undefined when no matching redirect exists', async function () {
-            linkRedirectRepository = createLinkRedirectRepository({
-                LinkRedirect: {
-                    findOne: sinon.stub().returns(null),
-                    findAll: sinon.stub(),
-                    getFilteredCollectionQuery: sinon.stub(),
-                    add: sinon.stub()
-                }
-            });
-
-            const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL('revision-id', new URL('https://google.com/'));
-
-            assert.equal(result, undefined);
-        });
-
-        it('saves revision ownership and the destination hash', async function () {
-            const add = sinon.stub().callsFake(data => createRedirectModel(data));
-            linkRedirectRepository = createLinkRedirectRepository({
-                LinkRedirect: {
-                    findOne: sinon.stub(),
-                    findAll: sinon.stub(),
-                    getFilteredCollectionQuery: sinon.stub(),
-                    add
-                }
-            });
-            const linkRedirect = new LinkRedirect({
-                from: new URL('https://example.com/r/1234abcd'),
-                to: new URL('https://google.com'),
-                automationActionRevisionId: 'revision-id'
-            });
-
-            await linkRedirectRepository.save(linkRedirect);
-
-            sinon.assert.calledOnceWithExactly(add, {
-                from: '/r/1234abcd',
-                to: 'https://google.com/',
-                automation_action_revision_id: 'revision-id',
-                to_hash: Buffer.from('9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e', 'hex')
-            }, {});
-        });
+      assert.equal(result.to.href, 'https://google.com/');
+      sinon.assert.calledOnceWithExactly(
+        findOne,
+        {
+          automation_action_revision_id: 'revision-id',
+          to_hash: Buffer.from(
+            '9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e',
+            'hex',
+          ),
+        },
+        {},
+      );
     });
 
-    describe('caching', function () {
-        it('should add a new link redirect to the cache on save', async function () {
-            const cacheAdapterStub = {
-                set: sinon.stub()
-            };
-            linkRedirectRepository = createLinkRedirectRepository({
-                cacheAdapter: cacheAdapterStub
-            });
+    it('returns undefined when no matching redirect exists', async function () {
+      linkRedirectRepository = createLinkRedirectRepository({
+        LinkRedirect: {
+          findOne: sinon.stub().returns(null),
+          findAll: sinon.stub(),
+          getFilteredCollectionQuery: sinon.stub(),
+          add: sinon.stub(),
+        },
+      });
 
-            const linkRedirect = new LinkRedirect({
-                from: new URL('https://example.com/r/1234abcd'),
-                to: new URL('https://google.com')
-            });
-            await linkRedirectRepository.save(linkRedirect);
-            sinon.assert.calledOnce(cacheAdapterStub.set);
-        });
+      const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL(
+        'revision-id',
+        new URL('https://google.com/'),
+      );
 
-        it('should clear cache on site.changed event', function () {
-            const reset = sinon.stub();
-            const cacheAdapterStub = {
-                reset: reset
-            };
-            const EventRegistry = new EventEmitter();
-            linkRedirectRepository = createLinkRedirectRepository({
-                cacheAdapter: cacheAdapterStub,
-                EventRegistry
-            });
-
-            EventRegistry.emit('site.changed');
-            sinon.assert.calledOnce(reset);
-        });
+      assert.equal(result, undefined);
     });
+
+    it('saves revision ownership and the destination hash', async function () {
+      const add = sinon.stub().callsFake((data) => createRedirectModel(data));
+      linkRedirectRepository = createLinkRedirectRepository({
+        LinkRedirect: {
+          findOne: sinon.stub(),
+          findAll: sinon.stub(),
+          getFilteredCollectionQuery: sinon.stub(),
+          add,
+        },
+      });
+      const linkRedirect = new LinkRedirect({
+        from: new URL('https://example.com/r/1234abcd'),
+        to: new URL('https://google.com'),
+        automationActionRevisionId: 'revision-id',
+      });
+
+      await linkRedirectRepository.save(linkRedirect);
+
+      sinon.assert.calledOnceWithExactly(
+        add,
+        {
+          from: '/r/1234abcd',
+          to: 'https://google.com/',
+          automation_action_revision_id: 'revision-id',
+          to_hash: Buffer.from(
+            '9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e',
+            'hex',
+          ),
+        },
+        {},
+      );
+    });
+  });
+
+  describe('caching', function () {
+    it('should add a new link redirect to the cache on save', async function () {
+      const cacheAdapterStub = {
+        set: sinon.stub(),
+      };
+      linkRedirectRepository = createLinkRedirectRepository({
+        cacheAdapter: cacheAdapterStub,
+      });
+
+      const linkRedirect = new LinkRedirect({
+        from: new URL('https://example.com/r/1234abcd'),
+        to: new URL('https://google.com'),
+      });
+      await linkRedirectRepository.save(linkRedirect);
+      sinon.assert.calledOnce(cacheAdapterStub.set);
+    });
+
+    it('should clear cache on site.changed event', function () {
+      const reset = sinon.stub();
+      const cacheAdapterStub = {
+        reset: reset,
+      };
+      const EventRegistry = new EventEmitter();
+      linkRedirectRepository = createLinkRedirectRepository({
+        cacheAdapter: cacheAdapterStub,
+        EventRegistry,
+      });
+
+      EventRegistry.emit('site.changed');
+      sinon.assert.calledOnce(reset);
+    });
+  });
 });

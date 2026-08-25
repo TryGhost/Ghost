@@ -12,174 +12,194 @@ const UnsubscribeRouter = require('./unsubscribe-router');
 const routingEvents = require('./events');
 
 class RouterManager {
-    constructor({registry}) {
-        this.registry = registry;
-        this.siteRouter = null;
-        /**
-         * @type {UrlService}
-         */
-        this.urlService = null;
+  constructor({ registry }) {
+    this.registry = registry;
+    this.siteRouter = null;
+    /**
+     * @type {UrlService}
+     */
+    this.urlService = null;
+  }
+
+  ownsResource(routerId, resource) {
+    return this.urlService.ownsResource(routerId, resource);
+  }
+
+  getUrlForResource(resource, options) {
+    return this.urlService.getUrlForResource(resource, options);
+  }
+
+  routerCreated(router) {
+    routingEvents.emit('RouteRegistered', {
+      // Not every router owns a route: the static pages router has none,
+      // and taxonomies have no index route (`/tag/` does not exist).
+      path: router.route ? router.route.value : null,
+      type: router.name,
+      id: router.identifier,
+    });
+
+    // CASE: there are router types which do not generate resource urls
+    //       e.g. static route router, in this case we don't want to notify the URL service
+    if (!router.getPermalinks()) {
+      return;
     }
 
-    ownsResource(routerId, resource) {
-        return this.urlService.ownsResource(routerId, resource);
+    this.urlService.onRouterAddedType(
+      router.identifier,
+      router.filter,
+      router.getResourceType(),
+      router.getPermalinks().getValue(),
+    );
+  }
+
+  /**
+   * The `init` function will return the wrapped parent express router, and will start creating
+   * all routers if you pass `routeSettings`.
+   *
+   * CASES:
+   *   - if Ghost starts, it will first init the site app with the wrapper router and then call `start`
+   *     separately, because it could be that your blog goes into maintenance mode
+   *   - if you change your route settings, we will re-initialize routing
+   *
+   * @param {RouterConfig} options
+   * @returns {import('express').Router}
+   */
+  init({ routeSettings, urlService }) {
+    this.urlService = urlService;
+    debug('routing init', routeSettings);
+
+    this.registry.resetAllRouters();
+    this.registry.resetAllRoutes();
+
+    routingEvents.emit('RoutesReset');
+
+    this.siteRouter = new ParentRouter('SiteRouter');
+    this.registry.setRouter('siteRouter', this.siteRouter);
+
+    if (routeSettings) {
+      this.start(routeSettings);
     }
 
-    getUrlForResource(resource, options) {
-        return this.urlService.getUrlForResource(resource, options);
+    return this.siteRouter.router();
+  }
+
+  /**
+   * @description This function will create the routers based on the route settings
+   *
+   * The routers are created in a specific order. This order defines who can get a resource first or
+   * who can dominant other routers.
+   *
+   * 1. Preview + Unsubscribe Routers: Strongest inbuilt features, which you can never override.
+   * 2. Static Routes: Very strong, because you can override any urls and redirect to a static route.
+   * 3. Taxonomies: Stronger than collections, because it's an inbuilt feature.
+   * 4. Collections
+   * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
+   * 6. Internal Apps: Weakest
+   *
+   * @param {RouteSettings} routeSettings
+   */
+  start(routeSettings) {
+    debug('routing start', routeSettings);
+    const RESOURCE_CONFIG = require(`./config`);
+
+    const unsubscribeRouter = new UnsubscribeRouter();
+    this.siteRouter.mountRouter(unsubscribeRouter.router());
+    this.registry.setRouter('unsubscribeRouter', unsubscribeRouter);
+
+    if (RESOURCE_CONFIG.QUERY.email) {
+      const emailRouter = new EmailRouter(RESOURCE_CONFIG);
+      this.siteRouter.mountRouter(emailRouter.router());
+      this.registry.setRouter('emailRouter', emailRouter);
     }
 
-    routerCreated(router) {
-        routingEvents.emit('RouteRegistered', {
-            // Not every router owns a route: the static pages router has none,
-            // and taxonomies have no index route (`/tag/` does not exist).
-            path: router.route ? router.route.value : null,
-            type: router.name,
-            id: router.identifier
-        });
+    const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
+    this.siteRouter.mountRouter(previewRouter.router());
+    this.registry.setRouter('previewRouter', previewRouter);
 
-        // CASE: there are router types which do not generate resource urls
-        //       e.g. static route router, in this case we don't want to notify the URL service
-        if (!router.getPermalinks()) {
-            return;
-        }
+    for (const route of routeSettings.routes) {
+      const staticRoutesRouter = new StaticRoutesRouter(
+        route.path,
+        route,
+        this.routerCreated.bind(this),
+      );
+      this.siteRouter.mountRouter(staticRoutesRouter.router());
 
-        this.urlService.onRouterAddedType(
-            router.identifier,
-            router.filter,
-            router.getResourceType(),
-            router.getPermalinks().getValue()
-        );
+      this.registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
+    }
+
+    for (const collection of routeSettings.collections) {
+      const collectionRouter = new CollectionRouter(
+        collection.path,
+        collection,
+        RESOURCE_CONFIG,
+        this.routerCreated.bind(this),
+      );
+      this.siteRouter.mountRouter(collectionRouter.router());
+      this.registry.setRouter(collectionRouter.identifier, collectionRouter);
+    }
+
+    const staticPagesRouter = new StaticPagesRouter(RESOURCE_CONFIG, this.routerCreated.bind(this));
+    this.siteRouter.mountRouter(staticPagesRouter.router());
+
+    this.registry.setRouter('staticPagesRouter', staticPagesRouter);
+
+    for (const [key, permalink] of Object.entries(routeSettings.taxonomies)) {
+      const taxonomyRouter = new TaxonomyRouter(
+        key,
+        permalink,
+        RESOURCE_CONFIG,
+        this.routerCreated.bind(this),
+      );
+      this.siteRouter.mountRouter(taxonomyRouter.router());
+
+      this.registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
+    }
+
+    const appRouter = new ParentRouter('AppsRouter');
+    this.siteRouter.mountRouter(appRouter.router());
+
+    this.registry.setRouter('appRouter', appRouter);
+
+    debug('Routes:', this.registry.getAllRoutes());
+  }
+
+  /**
+   * This is a glue code to keep the implementation of routers away from
+   * this sort of logic. Ideally this method should not be ever called
+   * and handled completely on the URL Service layer without touching the frontend
+   * @param {Object} settingModel instance of the settings model
+   * @returns {void}
+   */
+  handleTimezoneEdit(settingModel) {
+    const newTimezone = settingModel.attributes.value;
+    const previousTimezone = settingModel._previousAttributes.value;
+
+    if (newTimezone === previousTimezone) {
+      return;
     }
 
     /**
-     * The `init` function will return the wrapped parent express router, and will start creating
-     * all routers if you pass `routeSettings`.
+     * CASE: timezone changes
      *
-     * CASES:
-     *   - if Ghost starts, it will first init the site app with the wrapper router and then call `start`
-     *     separately, because it could be that your blog goes into maintenance mode
-     *   - if you change your route settings, we will re-initialize routing
+     * If your permalink contains a date reference, we have to regenerate the urls.
      *
-     * @param {RouterConfig} options
-     * @returns {import('express').Router}
+     * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
      */
-    init({routeSettings, urlService}) {
-        this.urlService = urlService;
-        debug('routing init', routeSettings);
 
-        this.registry.resetAllRouters();
-        this.registry.resetAllRoutes();
+    // NOTE: timezone change only affects the collection router with dated permalinks
+    const collectionRouter = this.registry.getRouterByName('CollectionRouter');
+    if (
+      collectionRouter &&
+      collectionRouter
+        .getPermalinks()
+        .getValue()
+        .match(/:year|:month|:day/)
+    ) {
+      debug('handleTimezoneEdit: trigger regeneration');
 
-        routingEvents.emit('RoutesReset');
-
-        this.siteRouter = new ParentRouter('SiteRouter');
-        this.registry.setRouter('siteRouter', this.siteRouter);
-
-        if (routeSettings) {
-            this.start(routeSettings);
-        }
-
-        return this.siteRouter.router();
+      this.urlService.onRouterUpdated();
     }
-
-    /**
-     * @description This function will create the routers based on the route settings
-     *
-     * The routers are created in a specific order. This order defines who can get a resource first or
-     * who can dominant other routers.
-     *
-     * 1. Preview + Unsubscribe Routers: Strongest inbuilt features, which you can never override.
-     * 2. Static Routes: Very strong, because you can override any urls and redirect to a static route.
-     * 3. Taxonomies: Stronger than collections, because it's an inbuilt feature.
-     * 4. Collections
-     * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
-     * 6. Internal Apps: Weakest
-     *
-     * @param {RouteSettings} routeSettings
-     */
-    start(routeSettings) {
-        debug('routing start', routeSettings);
-        const RESOURCE_CONFIG = require(`./config`);
-
-        const unsubscribeRouter = new UnsubscribeRouter();
-        this.siteRouter.mountRouter(unsubscribeRouter.router());
-        this.registry.setRouter('unsubscribeRouter', unsubscribeRouter);
-
-        if (RESOURCE_CONFIG.QUERY.email) {
-            const emailRouter = new EmailRouter(RESOURCE_CONFIG);
-            this.siteRouter.mountRouter(emailRouter.router());
-            this.registry.setRouter('emailRouter', emailRouter);
-        }
-
-        const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
-        this.siteRouter.mountRouter(previewRouter.router());
-        this.registry.setRouter('previewRouter', previewRouter);
-
-        for (const route of routeSettings.routes) {
-            const staticRoutesRouter = new StaticRoutesRouter(route.path, route, this.routerCreated.bind(this));
-            this.siteRouter.mountRouter(staticRoutesRouter.router());
-
-            this.registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
-        }
-
-        for (const collection of routeSettings.collections) {
-            const collectionRouter = new CollectionRouter(collection.path, collection, RESOURCE_CONFIG, this.routerCreated.bind(this));
-            this.siteRouter.mountRouter(collectionRouter.router());
-            this.registry.setRouter(collectionRouter.identifier, collectionRouter);
-        }
-
-        const staticPagesRouter = new StaticPagesRouter(RESOURCE_CONFIG, this.routerCreated.bind(this));
-        this.siteRouter.mountRouter(staticPagesRouter.router());
-
-        this.registry.setRouter('staticPagesRouter', staticPagesRouter);
-
-        for (const [key, permalink] of Object.entries(routeSettings.taxonomies)) {
-            const taxonomyRouter = new TaxonomyRouter(key, permalink, RESOURCE_CONFIG, this.routerCreated.bind(this));
-            this.siteRouter.mountRouter(taxonomyRouter.router());
-
-            this.registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
-        }
-
-        const appRouter = new ParentRouter('AppsRouter');
-        this.siteRouter.mountRouter(appRouter.router());
-
-        this.registry.setRouter('appRouter', appRouter);
-
-        debug('Routes:', this.registry.getAllRoutes());
-    }
-
-    /**
-     * This is a glue code to keep the implementation of routers away from
-     * this sort of logic. Ideally this method should not be ever called
-     * and handled completely on the URL Service layer without touching the frontend
-     * @param {Object} settingModel instance of the settings model
-     * @returns {void}
-     */
-    handleTimezoneEdit(settingModel) {
-        const newTimezone = settingModel.attributes.value;
-        const previousTimezone = settingModel._previousAttributes.value;
-
-        if (newTimezone === previousTimezone) {
-            return;
-        }
-
-        /**
-         * CASE: timezone changes
-         *
-         * If your permalink contains a date reference, we have to regenerate the urls.
-         *
-         * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
-         */
-
-        // NOTE: timezone change only affects the collection router with dated permalinks
-        const collectionRouter = this.registry.getRouterByName('CollectionRouter');
-        if (collectionRouter && collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
-            debug('handleTimezoneEdit: trigger regeneration');
-
-            this.urlService.onRouterUpdated();
-        }
-    }
+  }
 }
 
 module.exports = RouterManager;

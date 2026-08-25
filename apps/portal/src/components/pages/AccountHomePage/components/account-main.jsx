@@ -7,18 +7,18 @@ import ContinueGiftSubscriptionBanner from './continue-gift-subscription-banner'
 import AccountActions from './account-actions';
 
 const AccountMain = () => {
-    return (
-        <div className='gh-portal-content gh-portal-account-main'>
-            <CloseButton />
-            <UserHeader />
-            <section className='gh-portal-account-data'>
-                <AccountWelcome />
-                <ContinueGiftSubscriptionBanner />
-                <ContinueSubscriptionButton />
-                <AccountActions />
-            </section>
-        </div>
-    );
+  return (
+    <div className="gh-portal-content gh-portal-account-main">
+      <CloseButton />
+      <UserHeader />
+      <section className="gh-portal-account-data">
+        <AccountWelcome />
+        <ContinueGiftSubscriptionBanner />
+        <ContinueSubscriptionButton />
+        <AccountActions />
+      </section>
+    </div>
+  );
 };
 
 export default AccountMain;

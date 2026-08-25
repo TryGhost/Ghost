@@ -1,21 +1,46 @@
-const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject, nullable} = matchers;
-const {queryStringToken} = regexes;
+const {
+  agentProvider,
+  mockManager,
+  fixtureManager,
+  matchers,
+  regexes,
+} = require('../../utils/e2e-framework');
+const {
+  anyContentVersion,
+  anyEtag,
+  anyObjectId,
+  anyUuid,
+  anyISODateTime,
+  anyISODate,
+  anyString,
+  anyArray,
+  anyLocationFor,
+  anyContentLength,
+  anyErrorId,
+  anyObject,
+  nullable,
+} = matchers;
+const { queryStringToken } = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
-const {assertExists, assertArrayContainsDeep, assertObjectMatches, assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
+const {
+  assertExists,
+  assertArrayContainsDeep,
+  assertObjectMatches,
+  assertArrayMatchesWithoutOrder,
+} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
-const {mockSystemTime} = require('../../utils/clock-utils');
+const { mockSystemTime } = require('../../utils/clock-utils');
 
 const testUtils = require('../../utils');
 
 const Papa = require('papaparse');
 
 const models = require('../../../core/server/models');
-const {knex} = require('../../../core/server/data/db');
+const { knex } = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlServiceUtils = require('../../utils/url-service-utils');
@@ -23,181 +48,188 @@ const urlUtils = require('../../../core/shared/url-utils').default;
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
+const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
-const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('../../utils/email-verification-utils');
+const {
+  setupEmailVerificationUtils,
+  restoreEmailVerificationUtils,
+} = require('../../utils/email-verification-utils');
 
-async function assertMemberEvents({eventType, memberId, asserts}) {
-    const events = await models[eventType].where('member_id', memberId).fetchAll();
-    const eventsJSON = events.map(e => e.toJSON());
-    assertArrayMatchesWithoutOrder(eventsJSON, asserts);
+async function assertMemberEvents({ eventType, memberId, asserts }) {
+  const events = await models[eventType].where('member_id', memberId).fetchAll();
+  const eventsJSON = events.map((e) => e.toJSON());
+  assertArrayMatchesWithoutOrder(eventsJSON, asserts);
 }
 
 async function assertSubscription(subscriptionId, asserts) {
-    // eslint-disable-next-line dot-notation
-    const subscription = await models['StripeCustomerSubscription'].where('subscription_id', subscriptionId).fetch({require: true});
+  // eslint-disable-next-line dot-notation
+  const subscription = await models['StripeCustomerSubscription']
+    .where('subscription_id', subscriptionId)
+    .fetch({ require: true });
 
-    // We use the native toJSON to prevent calling the overriden serialize method
-    assertObjectMatches(
-        models.Base.Model.prototype.serialize.call(subscription),
-        asserts
-    );
+  // We use the native toJSON to prevent calling the overriden serialize method
+  assertObjectMatches(models.Base.Model.prototype.serialize.call(subscription), asserts);
 }
 
 async function getPaidProduct() {
-    return await models.Product.findOne({type: 'paid'});
+  return await models.Product.findOne({ type: 'paid' });
 }
 
 async function getOtherPaidProduct() {
-    return (await models.Product.findAll({type: 'paid'})).models[0];
+  return (await models.Product.findAll({ type: 'paid' })).models[0];
 }
 
 async function getNewsletters() {
-    return (await models.Newsletter.findAll({filter: 'status:active'})).models;
+  return (await models.Newsletter.findAll({ filter: 'status:active' })).models;
 }
 
 async function createMember(data) {
-    const member = await models.Member.add({
-        name: '',
-        email_disabled: false,
-        ...data
-    });
+  const member = await models.Member.add({
+    name: '',
+    email_disabled: false,
+    ...data,
+  });
 
-    return member;
+  return member;
 }
 
 async function createGiftMember(data) {
-    const member = await createMember({
-        ...data,
-        status: 'gift'
-    });
-    await models.MemberStatusEvent.add({
-        member_id: member.id,
-        from_status: null,
-        to_status: 'gift'
-    });
-    return member;
+  const member = await createMember({
+    ...data,
+    status: 'gift',
+  });
+  await models.MemberStatusEvent.add({
+    member_id: member.id,
+    from_status: null,
+    to_status: 'gift',
+  });
+  return member;
 }
 
-async function createStripeCustomerWithSubscription(member, customerId, subscriptionId, {status = 'active', cancelAtPeriodEnd = false} = {}) {
-    const now = new Date();
+async function createStripeCustomerWithSubscription(
+  member,
+  customerId,
+  subscriptionId,
+  { status = 'active', cancelAtPeriodEnd = false } = {},
+) {
+  const now = new Date();
 
-    await knex('members_stripe_customers').insert({
-        id: ObjectId().toHexString(),
-        member_id: member.id,
-        customer_id: customerId,
-        email: member.get('email'),
-        created_at: now,
-        updated_at: now
-    });
+  await knex('members_stripe_customers').insert({
+    id: ObjectId().toHexString(),
+    member_id: member.id,
+    customer_id: customerId,
+    email: member.get('email'),
+    created_at: now,
+    updated_at: now,
+  });
 
-    await knex('members_stripe_customers_subscriptions').insert({
-        id: ObjectId().toHexString(),
-        customer_id: customerId,
-        subscription_id: subscriptionId,
-        status,
-        cancel_at_period_end: cancelAtPeriodEnd,
-        current_period_end: now,
-        start_date: now,
-        created_at: now,
-        updated_at: now,
-        plan_id: 'plan_test',
-        plan_nickname: 'Test plan',
-        plan_interval: 'month',
-        plan_amount: 500,
-        plan_currency: 'usd'
-    });
+  await knex('members_stripe_customers_subscriptions').insert({
+    id: ObjectId().toHexString(),
+    customer_id: customerId,
+    subscription_id: subscriptionId,
+    status,
+    cancel_at_period_end: cancelAtPeriodEnd,
+    current_period_end: now,
+    start_date: now,
+    created_at: now,
+    updated_at: now,
+    plan_id: 'plan_test',
+    plan_nickname: 'Test plan',
+    plan_interval: 'month',
+    plan_amount: 500,
+    plan_currency: 'usd',
+  });
 }
 
 async function deleteMembersWithStripeData(emails, customerIds) {
-    await knex('members_stripe_customers_subscriptions').whereIn('customer_id', customerIds).del();
-    await knex('members_stripe_customers').whereIn('customer_id', customerIds).del();
-    await knex('members').whereIn('email', emails).del();
+  await knex('members_stripe_customers_subscriptions').whereIn('customer_id', customerIds).del();
+  await knex('members_stripe_customers').whereIn('customer_id', customerIds).del();
+  await knex('members').whereIn('email', emails).del();
 }
 
 const newsletterSnapshot = {
-    id: anyObjectId
+  id: anyObjectId,
 };
 
 const attributionSnapshot = {
-    id: null
+  id: null,
 };
 
 const subscriptionSnapshot = {
+  id: anyString,
+  start_date: anyString,
+  current_period_end: anyString,
+  price: {
     id: anyString,
-    start_date: anyString,
-    current_period_end: anyString,
-    price: {
-        id: anyString,
-        price_id: anyObjectId,
-        tier: {
-            id: anyString,
-            tier_id: anyObjectId
-        }
+    price_id: anyObjectId,
+    tier: {
+      id: anyString,
+      tier_id: anyObjectId,
     },
-    plan: {
-        id: anyString
-    },
-    customer: {
-        id: anyString
-    }
+  },
+  plan: {
+    id: anyString,
+  },
+  customer: {
+    id: anyString,
+  },
 };
 
 const tierSnapshot = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime,
-    monthly_price_id: anyString,
-    yearly_price_id: anyString
+  id: anyObjectId,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
+  monthly_price_id: anyString,
+  yearly_price_id: anyString,
 };
 
 const subscriptionSnapshotWithTier = {
-    ...subscriptionSnapshot,
-    tier: tierSnapshot
+  ...subscriptionSnapshot,
+  tier: tierSnapshot,
 };
 
 function buildMemberWithoutIncludesSnapshot(options) {
-    return {
-        id: anyObjectId,
-        uuid: anyUuid,
-        created_at: anyISODateTime,
-        updated_at: anyISODateTime,
-        newsletters: new Array(options.newsletters).fill(newsletterSnapshot)
-    };
-}
-
-function buildMemberWithIncludesSnapshot(options) {
-    return {
-        id: anyObjectId,
-        uuid: anyUuid,
-        created_at: anyISODateTime,
-        updated_at: anyISODateTime,
-        attribution: attributionSnapshot,
-        newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
-        subscriptions: anyArray,
-        current_subscription: nullable(anyObject),
-        labels: anyArray,
-        unsubscribe_url: anyString
-    };
-}
-
-const tierMatcher = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime,
-    monthly_price_id: anyObjectId,
-    yearly_price_id: anyObjectId
-};
-
-const memberMatcherShallowIncludes = {
+  return {
     id: anyObjectId,
     uuid: anyUuid,
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
+    newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
+  };
+}
+
+function buildMemberWithIncludesSnapshot(options) {
+  return {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    attribution: attributionSnapshot,
+    newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
     subscriptions: anyArray,
     current_subscription: nullable(anyObject),
     labels: anyArray,
-    unsubscribe_url: anyString
+    unsubscribe_url: anyString,
+  };
+}
+
+const tierMatcher = {
+  id: anyObjectId,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
+  monthly_price_id: anyObjectId,
+  yearly_price_id: anyObjectId,
+};
+
+const memberMatcherShallowIncludes = {
+  id: anyObjectId,
+  uuid: anyUuid,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
+  subscriptions: anyArray,
+  current_subscription: nullable(anyObject),
+  labels: anyArray,
+  unsubscribe_url: anyString,
 };
 
 /**
@@ -207,19 +239,19 @@ const memberMatcherShallowIncludes = {
  * @returns
  */
 const buildMemberMatcherShallowIncludesWithTiers = (tiersCount, newsletterCount) => {
-    const matcher = {
-        ...memberMatcherShallowIncludes
-    };
+  const matcher = {
+    ...memberMatcherShallowIncludes,
+  };
 
-    if (tiersCount !== undefined) {
-        matcher.tiers = new Array(tiersCount).fill(tierMatcher);
-    }
+  if (tiersCount !== undefined) {
+    matcher.tiers = new Array(tiersCount).fill(tierMatcher);
+  }
 
-    if (newsletterCount !== undefined) {
-        matcher.newsletters = new Array(newsletterCount).fill(newsletterSnapshot);
-    }
+  if (newsletterCount !== undefined) {
+    matcher.newsletters = new Array(newsletterCount).fill(newsletterSnapshot);
+  }
 
-    return matcher;
+  return matcher;
 };
 
 /**
@@ -242,4116 +274,4583 @@ const buildMemberMatcherShallowIncludesWithTiers = (tiersCount, newsletterCount)
  * @returns {Promise<object>} The created member
  */
 const createMemberThroughApi = async (options) => {
-    const {
-        member,
-        agent,
-        tiersCount = 0,
-        newsletterCount = 0,
-        queryParam
-    } = options;
+  const { member, agent, tiersCount = 0, newsletterCount = 0, queryParam } = options;
 
-    const endpoint = queryParam ? `/members/?${queryParam}` : '/members/';
+  const endpoint = queryParam ? `/members/?${queryParam}` : '/members/';
 
-    const {body} = await agent
-        .post(endpoint)
-        .body({members: [member]})
-        .expectStatus(201)
-        .matchBodySnapshot({
-            members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(tiersCount, newsletterCount))
-        })
-        .matchHeaderSnapshot({
-            'content-version': anyContentVersion,
-            etag: anyEtag,
-            location: anyLocationFor('members')
-        });
+  const { body } = await agent
+    .post(endpoint)
+    .body({ members: [member] })
+    .expectStatus(201)
+    .matchBodySnapshot({
+      members: new Array(1).fill(
+        buildMemberMatcherShallowIncludesWithTiers(tiersCount, newsletterCount),
+      ),
+    })
+    .matchHeaderSnapshot({
+      'content-version': anyContentVersion,
+      etag: anyEtag,
+      location: anyLocationFor('members'),
+    });
 
-    return body.members[0];
+  return body.members[0];
 };
 
 let agent;
 
 describe('Members API without Stripe', function () {
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init();
-        await agent.loginAsOwner();
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init();
+    await agent.loginAsOwner();
 
-        await agent
-            .delete('/settings/stripe/connect/')
-            .expectStatus(204);
-    });
+    await agent.delete('/settings/stripe/connect/').expectStatus(204);
+  });
 
-    beforeEach(function () {
-        mockManager.mockMail();
-    });
+  beforeEach(function () {
+    mockManager.mockMail();
+  });
 
-    afterEach(function () {
-        mockManager.restore();
-    });
+  afterEach(function () {
+    mockManager.restore();
+  });
 
-    it('Add should fail when comped flag is passed in but Stripe is not enabled', async function () {
-        const newMember = {
-            email: 'memberTestAdd@test.com',
-            comped: true
-        };
+  it('Add should fail when comped flag is passed in but Stripe is not enabled', async function () {
+    const newMember = {
+      email: 'memberTestAdd@test.com',
+      comped: true,
+    };
 
-        await agent
-            .post(`members/`)
-            .body({members: [newMember]})
-            .expectStatus(422)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
+    await agent
+      .post(`members/`)
+      .body({ members: [newMember] })
+      .expectStatus(422)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
 });
 
 // Tests specific for member attribution
 describe('Members API - member attribution', function () {
-    const signupAttributions = [];
+  const signupAttributions = [];
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments');
-        await agent.loginAsOwner();
-        // This is required so that the only members in this test are created by this test, and not from fixtures.
-        await models.Member.query().del();
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments');
+    await agent.loginAsOwner();
+    // This is required so that the only members in this test are created by this test, and not from fixtures.
+    await models.Member.query().del();
+  });
+
+  beforeEach(function () {
+    mockManager.mockStripe();
+    mockManager.mockMail();
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('Can read member attributed to a post', async function () {
+    const id = fixtureManager.get('posts', 0).id;
+    const post = await models.Post.where('id', id).fetch({ require: true });
+
+    // Set the attribution for this member manually
+    const member = await membersService.api.members.create({
+      email: 'member-attributed-to-post@test.com',
+      attribution: memberAttributionService.attributionBuilder.build({
+        id,
+        url: '/out-of-date/',
+        type: 'post',
+        referrerSource: null,
+        referrerMedium: null,
+        referrerUrl: null,
+      }),
     });
 
-    beforeEach(function () {
-        mockManager.mockStripe();
-        mockManager.mockMail();
-    });
+    const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', { absolute: true });
 
-    afterEach(function () {
-        mockManager.restore();
-    });
-
-    it('Can read member attributed to a post', async function () {
-        const id = fixtureManager.get('posts', 0).id;
-        const post = await models.Post.where('id', id).fetch({require: true});
-
-        // Set the attribution for this member manually
-        const member = await membersService.api.members.create({
-            email: 'member-attributed-to-post@test.com',
-            attribution: memberAttributionService.attributionBuilder.build({
-                id,
-                url: '/out-of-date/',
-                type: 'post',
-                referrerSource: null,
-                referrerMedium: null,
-                referrerUrl: null
-            })
+    await agent
+      .get(`/members/${member.id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.deepEqual(body.members[0].attribution, {
+          id: post.id,
+          url: absoluteUrl,
+          type: 'post',
+          title: post.get('title'),
+          referrer_source: null,
+          referrer_medium: null,
+          referrer_url: null,
         });
+        signupAttributions.push(body.members[0].attribution);
+      });
+  });
 
-        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true});
+  it('Can read member attributed to a page', async function () {
+    const id = fixtureManager.get('posts', 5).id;
+    const post = await models.Post.where('id', id).fetch({ require: true });
 
-        await agent
-            .get(`/members/${member.id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expect(({body}) => {
-                assert.deepEqual(body.members[0].attribution, {
-                    id: post.id,
-                    url: absoluteUrl,
-                    type: 'post',
-                    title: post.get('title'),
-                    referrer_source: null,
-                    referrer_medium: null,
-                    referrer_url: null
-                });
-                signupAttributions.push(body.members[0].attribution);
-            });
+    // Set the attribution for this member manually
+    const member = await membersService.api.members.create({
+      email: 'member-attributed-to-page@test.com',
+      attribution: memberAttributionService.attributionBuilder.build({
+        id,
+        url: '/out-of-date/',
+        type: 'page',
+        referrerSource: null,
+        referrerMedium: null,
+        referrerUrl: null,
+      }),
     });
 
-    it('Can read member attributed to a page', async function () {
-        const id = fixtureManager.get('posts', 5).id;
-        const post = await models.Post.where('id', id).fetch({require: true});
+    const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', { absolute: true });
 
-        // Set the attribution for this member manually
-        const member = await membersService.api.members.create({
-            email: 'member-attributed-to-page@test.com',
-            attribution: memberAttributionService.attributionBuilder.build({
-                id,
-                url: '/out-of-date/',
-                type: 'page',
-                referrerSource: null,
-                referrerMedium: null,
-                referrerUrl: null
-            })
+    await agent
+      .get(`/members/${member.id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.deepEqual(body.members[0].attribution, {
+          id: post.id,
+          url: absoluteUrl,
+          type: 'page',
+          title: post.get('title'),
+          referrer_source: null,
+          referrer_medium: null,
+          referrer_url: null,
         });
+        signupAttributions.push(body.members[0].attribution);
+      });
+  });
 
-        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true});
+  it('Can read member attributed to a tag', async function () {
+    const id = fixtureManager.get('tags', 0).id;
+    const tag = await models.Tag.where('id', id).fetch({ require: true });
 
-        await agent
-            .get(`/members/${member.id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expect(({body}) => {
-                assert.deepEqual(body.members[0].attribution, {
-                    id: post.id,
-                    url: absoluteUrl,
-                    type: 'page',
-                    title: post.get('title'),
-                    referrer_source: null,
-                    referrer_medium: null,
-                    referrer_url: null
-                });
-                signupAttributions.push(body.members[0].attribution);
-            });
+    // Set the attribution for this member manually
+    const member = await membersService.api.members.create({
+      email: 'member-attributed-to-tag@test.com',
+      attribution: memberAttributionService.attributionBuilder.build({
+        id,
+        url: '/out-of-date/',
+        type: 'tag',
+        referrerSource: null,
+        referrerMedium: null,
+        referrerUrl: null,
+      }),
     });
 
-    it('Can read member attributed to a tag', async function () {
-        const id = fixtureManager.get('tags', 0).id;
-        const tag = await models.Tag.where('id', id).fetch({require: true});
+    const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', { absolute: true });
 
-        // Set the attribution for this member manually
-        const member = await membersService.api.members.create({
-            email: 'member-attributed-to-tag@test.com',
-            attribution: memberAttributionService.attributionBuilder.build({
-                id,
-                url: '/out-of-date/',
-                type: 'tag',
-                referrerSource: null,
-                referrerMedium: null,
-                referrerUrl: null
-            })
+    await agent
+      .get(`/members/${member.id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.deepEqual(body.members[0].attribution, {
+          id: tag.id,
+          url: absoluteUrl,
+          type: 'tag',
+          title: tag.get('name'),
+          referrer_source: null,
+          referrer_medium: null,
+          referrer_url: null,
         });
+        signupAttributions.push(body.members[0].attribution);
+      });
+  });
 
-        const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true});
+  it('Can read member attributed to an author', async function () {
+    const id = fixtureManager.get('users', 0).id;
+    const author = await models.User.where('id', id).fetch({ require: true });
 
-        await agent
-            .get(`/members/${member.id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expect(({body}) => {
-                assert.deepEqual(body.members[0].attribution, {
-                    id: tag.id,
-                    url: absoluteUrl,
-                    type: 'tag',
-                    title: tag.get('name'),
-                    referrer_source: null,
-                    referrer_medium: null,
-                    referrer_url: null
-                });
-                signupAttributions.push(body.members[0].attribution);
-            });
+    // Set the attribution for this member manually
+    const member = await membersService.api.members.create({
+      email: 'member-attributed-to-author@test.com',
+      attribution: memberAttributionService.attributionBuilder.build({
+        id,
+        url: '/out-of-date/',
+        type: 'author',
+        referrerSource: null,
+        referrerMedium: null,
+        referrerUrl: null,
+      }),
     });
 
-    it('Can read member attributed to an author', async function () {
-        const id = fixtureManager.get('users', 0).id;
-        const author = await models.User.where('id', id).fetch({require: true});
+    const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', { absolute: true });
 
-        // Set the attribution for this member manually
-        const member = await membersService.api.members.create({
-            email: 'member-attributed-to-author@test.com',
-            attribution: memberAttributionService.attributionBuilder.build({
-                id,
-                url: '/out-of-date/',
-                type: 'author',
-                referrerSource: null,
-                referrerMedium: null,
-                referrerUrl: null
-            })
+    await agent
+      .get(`/members/${member.id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.deepEqual(body.members[0].attribution, {
+          id: author.id,
+          url: absoluteUrl,
+          type: 'author',
+          title: author.get('name'),
+          referrer_source: null,
+          referrer_medium: null,
+          referrer_url: null,
         });
+        signupAttributions.push(body.members[0].attribution);
+      });
+  });
 
-        const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true});
-
-        await agent
-            .get(`/members/${member.id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expect(({body}) => {
-                assert.deepEqual(body.members[0].attribution, {
-                    id: author.id,
-                    url: absoluteUrl,
-                    type: 'author',
-                    title: author.get('name'),
-                    referrer_source: null,
-                    referrer_medium: null,
-                    referrer_url: null
-                });
-                signupAttributions.push(body.members[0].attribution);
-            });
+  it('Can read member attributed to an url', async function () {
+    // Set the attribution for this member manually
+    const member = await membersService.api.members.create({
+      email: 'member-attributed-to-url@test.com',
+      attribution: memberAttributionService.attributionBuilder.build({
+        id: null,
+        url: '/a-static-page/',
+        type: 'url',
+        referrerSource: null,
+        referrerMedium: null,
+        referrerUrl: null,
+      }),
     });
 
-    it('Can read member attributed to an url', async function () {
-        // Set the attribution for this member manually
-        const member = await membersService.api.members.create({
-            email: 'member-attributed-to-url@test.com',
-            attribution: memberAttributionService.attributionBuilder.build({
-                id: null,
-                url: '/a-static-page/',
-                type: 'url',
-                referrerSource: null,
-                referrerMedium: null,
-                referrerUrl: null
-            })
+    const absoluteUrl = urlUtils.createUrl('/a-static-page/', true);
+
+    await agent
+      .get(`/members/${member.id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.deepEqual(body.members[0].attribution, {
+          id: null,
+          url: absoluteUrl,
+          type: 'url',
+          title: '/a-static-page/',
+          referrer_source: null,
+          referrer_medium: null,
+          referrer_url: null,
         });
+        signupAttributions.push(body.members[0].attribution);
+      });
+  });
 
-        const absoluteUrl = urlUtils.createUrl('/a-static-page/', true);
-
-        await agent
-            .get(`/members/${member.id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expect(({body}) => {
-                assert.deepEqual(body.members[0].attribution, {
-                    id: null,
-                    url: absoluteUrl,
-                    type: 'url',
-                    title: '/a-static-page/',
-                    referrer_source: null,
-                    referrer_medium: null,
-                    referrer_url: null
-                });
-                signupAttributions.push(body.members[0].attribution);
-            });
-    });
-
-    // Activity feed
-    it('Returns sign up attributions of all types in activity feed', async function () {
-        // Check activity feed
-        await agent
-            .get(`/members/events/?filter=type:signup_event`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                events: new Array(signupAttributions.length).fill({
-                    type: anyString,
-                    data: anyObject
-                })
-            })
-            .expect(({body}) => {
-                assert.equal(body.events.find(e => e.type !== 'signup_event'), undefined);
-                assertArrayContainsDeep(body.events.map(e => e.data.attribution), signupAttributions);
-            });
-    });
+  // Activity feed
+  it('Returns sign up attributions of all types in activity feed', async function () {
+    // Check activity feed
+    await agent
+      .get(`/members/events/?filter=type:signup_event`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        events: new Array(signupAttributions.length).fill({
+          type: anyString,
+          data: anyObject,
+        }),
+      })
+      .expect(({ body }) => {
+        assert.equal(
+          body.events.find((e) => e.type !== 'signup_event'),
+          undefined,
+        );
+        assertArrayContainsDeep(
+          body.events.map((e) => e.data.attribution),
+          signupAttributions,
+        );
+      });
+  });
 });
 
 describe('Members API', function () {
-    let newsletters;
-    let emailMockReceiver;
+  let newsletters;
+  let emailMockReceiver;
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
-        await agent.loginAsOwner();
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init(
+      'posts',
+      'newsletters',
+      'members:newsletters',
+      'comments',
+      'redirects',
+      'clicks',
+    );
+    await agent.loginAsOwner();
 
-        newsletters = await getNewsletters();
+    newsletters = await getNewsletters();
+  });
+
+  beforeEach(function () {
+    mockManager.mockStripe();
+    emailMockReceiver = mockManager.mockMail();
+    sinon
+      .stub(settingsHelpers, 'createUnsubscribeUrl')
+      .returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
+  });
+
+  afterEach(function () {
+    settingsCache.set('email_verification_required', { value: false });
+    mockManager.restore();
+  });
+
+  // List Members
+
+  it('Can browse', async function () {
+    await agent
+      .get('/members/')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse with limit', async function () {
+    await agent
+      .get('/members/?limit=3')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse with more than maximum allowed limit', async function () {
+    await agent
+      .get('/members/?limit=300')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse with limit=all', async function () {
+    await agent
+      .get('/members/?limit=all')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse with filter', async function () {
+    await agent
+      .get('/members/?filter=label:label-1')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can filter members with active subscriptions across multiple Stripe customers', async function () {
+    const emails = [
+      'multiple-active-stripe-customers@example.com',
+      'same-active-stripe-customer@example.com',
+      'trialing-stripe-customers@example.com',
+      'cancelling-stripe-customers@example.com',
+    ];
+    const customerIds = [
+      'cus_matching_1',
+      'cus_matching_2',
+      'cus_same_1',
+      'cus_trialing_1',
+      'cus_trialing_2',
+      'cus_cancelling_1',
+      'cus_cancelling_2',
+    ];
+
+    try {
+      const matchingMember = await createMember({
+        email: emails[0],
+        status: 'free',
+      });
+      await createStripeCustomerWithSubscription(
+        matchingMember,
+        'cus_matching_1',
+        'sub_matching_1',
+      );
+      await createStripeCustomerWithSubscription(
+        matchingMember,
+        'cus_matching_2',
+        'sub_matching_2',
+      );
+
+      const sameCustomerMember = await createMember({
+        email: emails[1],
+        status: 'free',
+      });
+      await createStripeCustomerWithSubscription(sameCustomerMember, 'cus_same_1', 'sub_same_1');
+      await knex('members_stripe_customers_subscriptions').insert({
+        id: ObjectId().toHexString(),
+        customer_id: 'cus_same_1',
+        subscription_id: 'sub_same_2',
+        status: 'active',
+        current_period_end: new Date(),
+        start_date: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
+        plan_id: 'plan_test',
+        plan_nickname: 'Test plan',
+        plan_interval: 'month',
+        plan_amount: 500,
+        plan_currency: 'usd',
+      });
+
+      const trialingMember = await createMember({
+        email: emails[2],
+        status: 'free',
+      });
+      await createStripeCustomerWithSubscription(
+        trialingMember,
+        'cus_trialing_1',
+        'sub_trialing_1',
+        { status: 'trialing' },
+      );
+      await createStripeCustomerWithSubscription(
+        trialingMember,
+        'cus_trialing_2',
+        'sub_trialing_2',
+        { status: 'trialing' },
+      );
+
+      const cancellingMember = await createMember({
+        email: emails[3],
+        status: 'free',
+      });
+      await createStripeCustomerWithSubscription(
+        cancellingMember,
+        'cus_cancelling_1',
+        'sub_cancelling_1',
+      );
+      await createStripeCustomerWithSubscription(
+        cancellingMember,
+        'cus_cancelling_2',
+        'sub_cancelling_2',
+        { cancelAtPeriodEnd: true },
+      );
+
+      const filter = encodeURIComponent('count.active_stripe_customers:>1');
+      const res = await agent
+        .get(`/members/?filter=${filter}&limit=1&fields=id,email&order=id`)
+        .expectStatus(200);
+
+      assert.equal(res.body.meta.pagination.total, 1);
+      assert.equal(res.body.members.length, 1);
+      assert.equal(res.body.members[0].email, emails[0]);
+
+      const combinedFilter = encodeURIComponent(
+        `count.active_stripe_customers:>1+email:'${emails[1]}'`,
+      );
+      const combinedRes = await agent
+        .get(`/members/?filter=${combinedFilter}&fields=id,email`)
+        .expectStatus(200);
+
+      assert.equal(combinedRes.body.meta.pagination.total, 0);
+
+      const orFilter = encodeURIComponent(`count.active_stripe_customers:>1,email:'${emails[1]}'`);
+      const orRes = await agent
+        .get(`/members/?filter=${orFilter}&fields=id,email`)
+        .expectStatus(200);
+
+      assert.equal(orRes.body.meta.pagination.total, 2);
+      assert.deepEqual(
+        orRes.body.members.map((member) => member.email).sort(),
+        [emails[0], emails[1]].sort(),
+      );
+    } finally {
+      await deleteMembersWithStripeData(emails, customerIds);
+    }
+  });
+
+  it('Can bulk edit members with active subscriptions across multiple Stripe customers filter', async function () {
+    const emails = [
+      'bulk-multiple-active-stripe-customers@example.com',
+      'bulk-single-active-stripe-customer@example.com',
+    ];
+    const customerIds = ['cus_bulk_matching_1', 'cus_bulk_matching_2', 'cus_bulk_single_1'];
+    const label = await models.Label.add({ name: 'bulk-multiple-active-stripe-customers' });
+
+    try {
+      const matchingMember = await createMember({
+        email: emails[0],
+        status: 'free',
+      });
+      await createStripeCustomerWithSubscription(
+        matchingMember,
+        'cus_bulk_matching_1',
+        'sub_bulk_matching_1',
+      );
+      await createStripeCustomerWithSubscription(
+        matchingMember,
+        'cus_bulk_matching_2',
+        'sub_bulk_matching_2',
+      );
+
+      const singleCustomerMember = await createMember({
+        email: emails[1],
+        status: 'free',
+      });
+      await createStripeCustomerWithSubscription(
+        singleCustomerMember,
+        'cus_bulk_single_1',
+        'sub_bulk_single_1',
+      );
+
+      const filter = encodeURIComponent('count.active_stripe_customers:>1');
+      await agent
+        .put(`/members/bulk/?filter=${filter}`)
+        .body({
+          bulk: {
+            action: 'addLabel',
+            meta: {
+              label: {
+                id: label.id,
+              },
+            },
+          },
+        })
+        .expectStatus(200)
+        .matchBodySnapshot({
+          bulk: {
+            meta: {
+              stats: {
+                successful: 1,
+                unsuccessful: 0,
+              },
+              unsuccessfulData: [],
+              errors: [],
+            },
+          },
+        });
+
+      const updatedMatchingMember = await models.Member.findOne(
+        { id: matchingMember.id },
+        { withRelated: 'labels' },
+      );
+      const updatedSingleCustomerMember = await models.Member.findOne(
+        { id: singleCustomerMember.id },
+        { withRelated: 'labels' },
+      );
+
+      assert(updatedMatchingMember.related('labels').models.some((model) => model.id === label.id));
+      assert.equal(
+        updatedSingleCustomerMember.related('labels').models.some((model) => model.id === label.id),
+        false,
+      );
+    } finally {
+      await deleteMembersWithStripeData(emails, customerIds);
+    }
+  });
+
+  it('Returns a bad request for non-numeric active Stripe customer count filters', async function () {
+    const nullFilter = encodeURIComponent('count.active_stripe_customers:null');
+    await agent.get(`/members/?filter=${nullFilter}`).expectStatus(400);
+
+    const stringFilter = encodeURIComponent("count.active_stripe_customers:'abc'");
+    await agent.get(`/members/?filter=${stringFilter}`).expectStatus(400);
+  });
+
+  it('Can filter by signup attribution', async function () {
+    await agent
+      .get('/members/?filter=signup:' + fixtureManager.get('posts', 0).id)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can filter by conversion attribution', async function () {
+    await agent
+      .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse with search', async function () {
+    await agent
+      .get('/members/?search=member1')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can filter by paid status', async function () {
+    await agent
+      .get('/members/?filter=status:paid')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can filter by tier id', async function () {
+    const products = await getPaidProduct();
+    await agent
+      .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can filter by subscription status for member with concurrent active and canceled subscriptions', async function () {
+    // Case 5: Member cancels, then re-subscribes before the cancellation period ends.
+    // They now have an active + canceled subscription concurrently.
+    // The subscription status filter should resolve to the "current" (best) subscription only.
+    const email = 'concurrent-sub-filter-test@example.com';
+
+    const customer = stripeMocker.createCustomer({ email });
+    const price1 = await stripeMocker.getPriceForTier('default-product', 'month');
+    const price2 = await stripeMocker.getPriceForTier('default-product', 'year');
+
+    // Create two active subscriptions (simulates re-subscribe before period end)
+    await stripeMocker.createSubscription({ customer, price: price1 });
+    const subscription2 = await stripeMocker.createSubscription({ customer, price: price2 });
+    await DomainEvents.allSettled();
+
+    // Cancel one subscription — member still has the other active one
+    await stripeMocker.updateSubscription({
+      id: subscription2.id,
+      status: 'canceled',
+      cancel_at_period_end: false,
+      canceled_at: Date.now() / 1000,
+    });
+    await DomainEvents.allSettled();
+
+    // Verify the member has one active and one canceled subscription via the API
+    const { body: memberBody } = await agent
+      .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+      .expectStatus(200);
+
+    assert.equal(memberBody.members.length, 1, 'Member should exist');
+    const memberSubscriptions = memberBody.members[0].subscriptions;
+    assert.equal(memberSubscriptions.length, 2, 'Member should have 2 subscriptions');
+    const subStatuses = new Set(memberSubscriptions.map((s) => s.status));
+    assert.ok(subStatuses.has('active'), 'One subscription should be active');
+    assert.ok(subStatuses.has('canceled'), 'One subscription should be canceled');
+
+    const activeSub = memberSubscriptions.find((s) => s.status === 'active');
+    const canceledSub = memberSubscriptions.find((s) => s.status === 'canceled');
+
+    // The whole point of the fix: the API surfaces the ACTIVE subscription as
+    // the resolved current one, not the canceled one. Assert the actual
+    // resolved object, not just that the field exists.
+    const currentSubscription = memberBody.members[0].current_subscription;
+    assert.ok(
+      currentSubscription,
+      'current_subscription should be populated for a member with subscriptions',
+    );
+    assert.equal(
+      currentSubscription.id,
+      activeSub.id,
+      'current_subscription should resolve to the active subscription',
+    );
+    assert.equal(
+      currentSubscription.status,
+      'active',
+      'current_subscription should be active, not canceled',
+    );
+    assert.notEqual(
+      currentSubscription.id,
+      canceledSub.id,
+      'current_subscription must not be the canceled subscription',
+    );
+
+    const memberId = memberBody.members[0].id;
+
+    // Filter by subscriptions.status:active should find this member
+    const { body: activeBody } = await agent
+      .get(`/members/?filter=subscriptions.status:active`)
+      .expectStatus(200);
+
+    const activeEmails = activeBody.members.map((m) => m.email);
+    assert.ok(
+      activeEmails.includes(email),
+      'Member with active+canceled subs should appear in subscriptions.status:active filter',
+    );
+
+    // Filter by subscriptions.status:canceled should NOT find this member
+    // because the resolved/current subscription is active (active beats canceled)
+    const { body: canceledBody } = await agent
+      .get(`/members/?filter=subscriptions.status:canceled`)
+      .expectStatus(200);
+
+    const canceledEmails = canceledBody.members.map((m) => m.email);
+    assert.ok(
+      !canceledEmails.includes(email),
+      'Member with active+canceled subs should NOT appear in subscriptions.status:canceled filter',
+    );
+
+    // Clean up: remove the test member so subsequent tests aren't affected
+    await agent.delete(`/members/${memberId}/`).expectStatus(204);
+  });
+
+  it('Re-resolves the current subscription when a member re-subscribes after cancelling', async function () {
+    // Exercises the lookup-table UPDATE path: a member whose only sub is
+    // canceled resolves to that canceled sub, then re-subscribes and the
+    // resolved current subscription must flip to the new active one — moving
+    // them out of the canceled filter and into the active filter.
+    const email = 'resub-after-cancel@example.com';
+
+    const customer = stripeMocker.createCustomer({ email });
+    const monthlyPrice = await stripeMocker.getPriceForTier('default-product', 'month');
+
+    // Subscribe, then cancel — the member's only subscription is now canceled
+    const firstSubscription = await stripeMocker.createSubscription({
+      customer,
+      price: monthlyPrice,
+    });
+    await DomainEvents.allSettled();
+    await stripeMocker.updateSubscription({
+      id: firstSubscription.id,
+      status: 'canceled',
+      cancel_at_period_end: false,
+      canceled_at: Date.now() / 1000,
+    });
+    await DomainEvents.allSettled();
+
+    // The resolved current subscription is the canceled one (their only sub)
+    let { body: memberBody } = await agent
+      .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+      .expectStatus(200);
+    const memberId = memberBody.members[0].id;
+    assert.equal(
+      memberBody.members[0].current_subscription.status,
+      'canceled',
+      'current_subscription should be the canceled sub when it is the only one',
+    );
+
+    let { body: canceledBody } = await agent
+      .get(`/members/?filter=subscriptions.status:canceled`)
+      .expectStatus(200);
+    assert.ok(
+      canceledBody.members.map((m) => m.email).includes(email),
+      'member should be in the canceled filter while their only sub is canceled',
+    );
+
+    // Re-subscribe — a new active subscription on the same customer
+    const yearlyPrice = await stripeMocker.getPriceForTier('default-product', 'year');
+    await stripeMocker.createSubscription({ customer, price: yearlyPrice });
+    await DomainEvents.allSettled();
+
+    // The resolved current subscription must now flip to the new active sub
+    ({ body: memberBody } = await agent
+      .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+      .expectStatus(200));
+    const newActiveSub = memberBody.members[0].subscriptions.find((s) => s.status === 'active');
+    assert.ok(newActiveSub, 'member should now have an active subscription');
+    assert.equal(
+      memberBody.members[0].current_subscription.id,
+      newActiveSub.id,
+      'current_subscription should flip to the new active subscription',
+    );
+    assert.equal(memberBody.members[0].current_subscription.status, 'active');
+
+    // ...and the member leaves the canceled filter and enters the active filter
+    ({ body: canceledBody } = await agent
+      .get(`/members/?filter=subscriptions.status:canceled`)
+      .expectStatus(200));
+    assert.ok(
+      !canceledBody.members.map((m) => m.email).includes(email),
+      'member should no longer be in the canceled filter after re-subscribing',
+    );
+
+    const { body: activeBody } = await agent
+      .get(`/members/?filter=subscriptions.status:active`)
+      .expectStatus(200);
+    assert.ok(
+      activeBody.members.map((m) => m.email).includes(email),
+      'member should be in the active filter after re-subscribing',
+    );
+
+    // Clean up: remove the test member so subsequent tests aren't affected
+    await agent.delete(`/members/${memberId}/`).expectStatus(204);
+  });
+
+  it('Can filter using contains operators', async function () {
+    await agent
+      .get(`/members/?filter=name:~'Venkman'`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 0)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can ignore any unknown includes', async function () {
+    await agent
+      .get('/members/?filter=status:paid&include=emailRecipients')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can order by email_open_rate', async function () {
+    await agent
+      .get('members/?order=email_open_rate%20desc')
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        etag: anyEtag,
+        'content-length': anyContentLength,
+        'content-version': anyContentVersion,
+      })
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+        ],
+      })
+      .expect(({ body }) => {
+        const { members } = body;
+        assert.equal(
+          members[0].email_open_rate > members[1].email_open_rate,
+          true,
+          'Expected the first member to have a greater open rate than the second.',
+        );
+      });
+
+    await agent
+      .get('members/?order=email_open_rate%20asc')
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        etag: anyEtag,
+        'content-length': anyContentLength,
+        'content-version': anyContentVersion,
+      })
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+        ],
+      })
+      .expect(({ body }) => {
+        const { members } = body;
+        assert.equal(
+          members[0].email_open_rate < members[1].email_open_rate,
+          true,
+          'Expected the first member to have a smaller open rate than the second.',
+        );
+      });
+  });
+
+  it('Search by case-insensitive name egg receives member with name Mr Egg', async function () {
+    await agent
+      .get('members/?search=egg')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function () {
+    await agent
+      .get('members/?search=MEMBER2')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Search for paid members retrieves member with email paid@test.com', async function () {
+    await agent
+      .get('members/?search=egon&paid=true')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Search for non existing member returns empty result set', async function () {
+    await agent
+      .get('members/?search=do_not_exist')
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        members: [],
+      });
+  });
+
+  // Read a member
+
+  it('Can read', async function () {
+    await agent
+      .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can read and include email_recipients', async function () {
+    await agent
+      .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can read and include tiers', async function () {
+    await agent
+      .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can read a member with an active gift subscription', async function () {
+    const member = await createGiftMember({ email: 'gift-member-api-shape@test.com' });
+    const paidProduct = await getPaidProduct();
+    let gift;
+
+    try {
+      await models.Member.edit(
+        {
+          products: [{ id: paidProduct.id }],
+        },
+        { id: member.id },
+      );
+
+      const giftAmount = 1500;
+      const giftCurrency = 'eur';
+      const giftCadence = 'month';
+
+      gift = await models.Gift.add({
+        token: `gift-admin-shape-${member.id}`,
+        buyer_email: 'gift-buyer@test.com',
+        buyer_member_id: null,
+        redeemer_member_id: member.id,
+        tier_id: paidProduct.id,
+        cadence: giftCadence,
+        duration: 1,
+        currency: giftCurrency,
+        amount: giftAmount,
+        stripe_checkout_session_id: `cs_admin_shape_${member.id}`,
+        stripe_payment_intent_id: `pi_admin_shape_${member.id}`,
+        consumes_at: new Date('2099-01-01T00:00:00.000Z'),
+        expires_at: new Date('2099-01-01T00:00:00.000Z'),
+        status: 'redeemed',
+        purchased_at: new Date(),
+        redeemed_at: new Date(),
+        consumed_at: null,
+        expired_at: null,
+        refunded_at: null,
+      });
+
+      const { body: readBody } = await agent.get(`/members/${member.id}/`).expectStatus(200);
+
+      assert.equal(readBody.members[0].status, 'gift');
+      assert.equal(
+        readBody.members[0].subscriptions.length,
+        1,
+        'Gift member should expose a single synthetic subscription',
+      );
+
+      const readSub = readBody.members[0].subscriptions[0];
+      assert.equal(readSub.plan.nickname, 'Gift subscription');
+      assert.equal(readSub.price.nickname, 'Gift subscription');
+      assert.equal(readSub.plan.amount, giftAmount);
+      assert.equal(readSub.plan.currency, giftCurrency);
+      assert.equal(readSub.plan.interval, giftCadence);
+      assert.equal(readSub.price.amount, giftAmount);
+      assert.equal(readSub.price.currency, giftCurrency);
+      assert.equal(readSub.price.interval, giftCadence);
+
+      const { body: browseBody } = await agent
+        .get(`/members/?filter=${encodeURIComponent(`id:${member.id}`)}`)
+        .expectStatus(200);
+
+      const browsedMember = browseBody.members.find((m) => m.id === member.id);
+      assert.ok(browsedMember, 'Gift member should appear in the browse response');
+
+      const browseSub = browsedMember.subscriptions[0];
+      assert.equal(browseSub.plan.nickname, 'Gift subscription');
+      assert.equal(browseSub.price.nickname, 'Gift subscription');
+      assert.equal(browseSub.plan.amount, giftAmount);
+      assert.equal(browseSub.plan.currency, giftCurrency);
+      assert.equal(browseSub.plan.interval, giftCadence);
+      assert.equal(browseSub.price.amount, giftAmount);
+      assert.equal(browseSub.price.currency, giftCurrency);
+      assert.equal(browseSub.price.interval, giftCadence);
+    } finally {
+      // Avoid leaking this fixture into later tests that count members.
+      // Gift.destroy is blocked by the model — fall back to a raw delete.
+      if (gift) {
+        await knex('gifts').where({ id: gift.id }).del();
+      }
+      await models.Member.destroy({ id: member.id });
+    }
+  });
+
+  // Create a member
+
+  it('Can add', async function () {
+    const member = {
+      name: 'test',
+      email: 'memberTestAdd@test.com',
+      note: 'test note',
+      newsletters: [],
+      labels: ['test-label'],
+    };
+
+    const newMember = await createMemberThroughApi({ member, agent });
+
+    // Cannot add same member twice
+    const loggingStub = sinon.stub(logging, 'warn');
+    await agent
+      .post(`/members/`)
+      .body({ members: [member] })
+      .expectStatus(422);
+    sinon.assert.calledOnce(loggingStub);
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+  });
+
+  it('Can add and send a signup confirmation email', async function () {
+    const member = {
+      name: 'Send Me Confirmation',
+      email: 'member_getting_confirmation@test.com',
+      newsletters: [newsletters[0], newsletters[1]],
+    };
+
+    // Set site title to something with a special character to ensure subject line doesn't get escaped
+    // Refs https://github.com/TryGhost/Team/issues/2895
+    await agent
+      .put('/settings/')
+      .body({
+        settings: [
+          {
+            key: 'title',
+            value: "Ghost's Test Site",
+          },
+        ],
+      })
+      .expectStatus(200);
+
+    const { body } = await agent
+      .post('/members/?send_email=true&email_type=signup')
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithoutIncludesSnapshot({
+            newsletters: 2,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyString,
+      });
+
+    const newMember = body.members[0];
+
+    emailMockReceiver
+      .assertSentEmailCount(1)
+      .matchHTMLSnapshot([
+        {
+          pattern: queryStringToken('token'),
+          replacement: 'token=REPLACED_TOKEN',
+        },
+      ])
+      .matchPlaintextSnapshot([
+        {
+          pattern: queryStringToken('token'),
+          replacement: 'token=REPLACED_TOKEN',
+        },
+      ])
+      .matchMetadataSnapshot();
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
     });
 
-    beforeEach(function () {
-        mockManager.mockStripe();
-        emailMockReceiver = mockManager.mockMail();
-        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[1].id,
+        },
+      ],
     });
 
-    afterEach(function () {
-        settingsCache.set('email_verification_required', {value: false});
-        mockManager.restore();
+    // @TODO: do we really need to delete this member here?
+    await agent
+      .delete(`members/${body.members[0].id}/`)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expectStatus(204);
+
+    // There should be no MemberSubscribeEvent remaining.
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [],
     });
 
-    // List Members
+    // Reset the site title to the default
+    await agent
+      .put('/settings/')
+      .body({
+        settings: [
+          {
+            key: 'title',
+            value: 'Ghost',
+          },
+        ],
+      })
+      .expectStatus(200);
+  });
 
-    it('Can browse', async function () {
+  it('Does not send a signup email when email verification is required', async function () {
+    mockManager.mockSetting('email_verification_required', true);
+
+    const member = {
+      name: 'Do not Send Me Confirmation',
+      email: 'member_not_getting_confirmation@test.com',
+      newsletters: [newsletters[0], newsletters[1]],
+    };
+
+    const { body } = await agent
+      .post('/members/?send_email=true&email_type=signup')
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithoutIncludesSnapshot({
+            newsletters: 2,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyString,
+      });
+
+    const newMember = body.members[0];
+
+    emailMockReceiver.assertSentEmailCount(0);
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[1].id,
+        },
+      ],
+    });
+
+    // @TODO: do we really need to delete this member here?
+    await agent
+      .delete(`members/${body.members[0].id}/`)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expectStatus(204);
+
+    // There should be no MemberSubscribeEvent remaining.
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+  });
+
+  it('Add should fail when passing incorrect email_type query parameter', async function () {
+    const newMember = {
+      name: 'test',
+      email: 'memberTestAdd@test.com',
+    };
+
+    const statusEventsBefore = await models.MemberStatusEvent.findAll();
+
+    sinon.stub(logging, 'error');
+    await agent
+      .post(`members/?send_email=true&email_type=lel`)
+      .body({ members: [newMember] })
+      .expectStatus(422)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+
+    const statusEvents = await models.MemberStatusEvent.findAll();
+    assert.equal(
+      statusEvents.models.length,
+      statusEventsBefore.models.length,
+      'No MemberStatusEvent should have been added after failing to create a subscription.',
+    );
+  });
+
+  // Edit a member
+
+  it('Can add complimentary subscription (out of date)', async function () {
+    const stripeService = require('../../../core/server/services/stripe');
+    const fakePrice = {
+      id: 'price_1',
+      product: '',
+      active: true,
+      nickname: 'Complimentary',
+      unit_amount: 0,
+      currency: 'usd',
+      type: 'recurring',
+      recurring: {
+        interval: 'year',
+      },
+    };
+    const fakeSubscription = {
+      id: 'sub_1',
+      customer: 'cus_1',
+      status: 'active',
+      cancel_at_period_end: false,
+      metadata: {},
+      current_period_end: Date.now() / 1000,
+      start_date: Date.now() / 1000,
+      plan: fakePrice,
+      items: {
+        data: [
+          {
+            price: fakePrice,
+          },
+        ],
+      },
+    };
+    sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
+      return {
+        id: 'cus_1',
+        email: data.email,
+      };
+    });
+    sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
+    sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
+    sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+    sinon.stub(stripeService.api, 'getCustomer').resolves({
+      id: 'cus_1',
+      invoice_settings: {
+        default_payment_method: null,
+      },
+    });
+    const initialMember = {
+      name: 'Name',
+      email: 'compedtest@test.com',
+      newsletters: [newsletters[0]],
+    };
+
+    const compedPayload = {
+      comped: true,
+    };
+
+    const newMember = await createMemberThroughApi({
+      member: initialMember,
+      agent,
+      tiersCount: 0,
+      newsletterCount: 1,
+    });
+
+    await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [compedPayload] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+        {
+          from_status: 'free',
+          to_status: 'comped',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+  });
+
+  it('Can create a comped member with labels via API', async function () {
+    const stripeService = require('../../../core/server/services/stripe');
+    const fakePrice = {
+      id: 'price_1',
+      product: '',
+      active: true,
+      nickname: 'Complimentary',
+      unit_amount: 0,
+      currency: 'usd',
+      type: 'recurring',
+      recurring: {
+        interval: 'year',
+      },
+    };
+    const fakeSubscription = {
+      id: 'sub_1',
+      customer: 'cus_1',
+      status: 'active',
+      cancel_at_period_end: false,
+      metadata: {},
+      current_period_end: Date.now() / 1000,
+      start_date: Date.now() / 1000,
+      plan: fakePrice,
+      items: {
+        data: [
+          {
+            price: fakePrice,
+          },
+        ],
+      },
+    };
+    sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
+      return {
+        id: 'cus_1',
+        email: data.email,
+      };
+    });
+    sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
+    sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
+    sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+    sinon.stub(stripeService.api, 'getCustomer').resolves({
+      id: 'cus_1',
+      invoice_settings: {
+        default_payment_method: null,
+      },
+    });
+
+    const newMember = {
+      name: 'Comped with Labels',
+      email: 'comped-with-labels@test.com',
+      comped: true,
+      labels: [{ name: 'VIP' }, { name: 'Complimentary' }],
+      newsletters: [newsletters[0]],
+    };
+
+    const member = await createMemberThroughApi({
+      member: newMember,
+      agent,
+      tiersCount: 1,
+      newsletterCount: 1,
+    });
+    assert.equal(member.status, 'comped', 'Member should have comped status');
+    assert.equal(member.labels.length, 2, 'Member should have 2 labels');
+    assert.ok(
+      member.labels.find((l) => l.name === 'VIP'),
+      'Member should have VIP label',
+    );
+    assert.ok(
+      member.labels.find((l) => l.name === 'Complimentary'),
+      'Member should have Complimentary label',
+    );
+  });
+
+  it('Can add complimentary subscription by assigning a product to a member', async function () {
+    const initialMember = {
+      name: 'Name',
+      email: 'compedtest2@test.com',
+      newsletters: [newsletters[0]],
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [initialMember] })
+      .expectStatus(201);
+
+    const newMember = body.members[0];
+    assert.equal(newMember.status, 'free', 'A new member should have the free status');
+
+    const product = await getPaidProduct();
+
+    const compedPayload = {
+      id: newMember.id,
+      email: newMember.email,
+      tiers: [
+        {
+          id: product.id,
+        },
+      ],
+    };
+
+    const { body: body2 } = await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [compedPayload] })
+      .expectStatus(200);
+
+    const updatedMember = body2.members[0];
+    assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
+    assert.equal(updatedMember.tiers.length, 1, 'The member should have one product');
+    assert.equal(
+      updatedMember.subscriptions.length,
+      1,
+      'The member should have one synthetic complimentary subscription',
+    );
+    assert.equal(
+      updatedMember.subscriptions[0].tier.id,
+      product.id,
+      'The subscription should point at the assigned tier',
+    );
+    assert.equal(
+      updatedMember.subscriptions[0].plan.nickname,
+      'Complimentary',
+      'The subscription plan should be marked as complimentary',
+    );
+    assert.equal(
+      updatedMember.subscriptions[0].price.nickname,
+      'Complimentary',
+      'The subscription price should be marked as complimentary',
+    );
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+        {
+          from_status: 'free',
+          to_status: 'comped',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberPaidSubscriptionEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+  });
+
+  it('Can end a complimentary subscription by removing a product from a member', async function () {
+    const product = await getPaidProduct();
+    const initialMember = {
+      name: 'Name',
+      email: 'compedtest3@test.com',
+      newsletters: [newsletters[0]],
+      tiers: [
+        {
+          id: product.id,
+        },
+      ],
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [initialMember] })
+      .expectStatus(201);
+
+    const newMember = body.members[0];
+    assert.equal(newMember.status, 'comped', 'The new member should have the comped status');
+    assert.equal(newMember.tiers.length, 1, 'The member should have 1 product');
+
+    // Remove it
+    const removePayload = {
+      id: newMember.id,
+      email: newMember.email,
+      tiers: [],
+    };
+
+    const { body: body2 } = await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [removePayload] })
+      .expectStatus(200);
+
+    const updatedMember = body2.members[0];
+    assert.equal(updatedMember.status, 'free', 'The member should have the free status');
+    assert.equal(updatedMember.tiers.length, 0, 'The member should have 0 tiers');
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'comped',
+        },
+        {
+          from_status: 'comped',
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberPaidSubscriptionEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+  });
+
+  it('Can create a new member with a product (complimentary)', async function () {
+    const product = await getPaidProduct();
+    const initialMember = {
+      name: 'Name',
+      email: 'compedtest4@test.com',
+      subscribed: true,
+      newsletters: [newsletters[0]],
+      tiers: [
+        {
+          id: product.id,
+        },
+      ],
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [initialMember] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: new Array(1).fill({
+          id: anyObjectId,
+          uuid: anyUuid,
+          created_at: anyISODateTime,
+          updated_at: anyISODateTime,
+          labels: anyArray,
+          subscriptions: anyArray,
+          current_subscription: nullable(anyObject),
+          tiers: new Array(1).fill({
+            id: anyObjectId,
+            monthly_price_id: anyObjectId,
+            yearly_price_id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+          }),
+          newsletters: new Array(1).fill(newsletterSnapshot),
+        }),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+
+    const newMember = body.members[0];
+    assert.equal(
+      newMember.status,
+      'comped',
+      'The newly imported member should have the comped status',
+    );
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'comped',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberPaidSubscriptionEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+  });
+
+  it('Can create a member with an existing complimentary subscription', async function () {
+    const fakePrice = {
+      id: 'price_1',
+      product: '',
+      active: true,
+      nickname: 'Complimentary',
+      unit_amount: 0,
+      currency: 'usd',
+      type: 'recurring',
+      recurring: {
+        interval: 'year',
+      },
+    };
+
+    const fakeSubscription = {
+      id: 'sub_2',
+      customer: 'cus_1234',
+      status: 'active',
+      cancel_at_period_end: false,
+      metadata: {},
+      current_period_end: Date.now() / 1000 + 1000,
+      start_date: Date.now() / 1000,
+      plan: fakePrice,
+      items: {
+        data: [
+          {
+            price: fakePrice,
+          },
+        ],
+      },
+    };
+
+    const fakeCustomer = {
+      id: 'cus_1234',
+      name: 'Test Member',
+      email: 'create-member-comped-test@email.com',
+      subscriptions: {
+        type: 'list',
+        data: [fakeSubscription],
+      },
+    };
+    stripeMocker.customers.push(fakeCustomer);
+    stripeMocker.subscriptions.push(fakeSubscription);
+    stripeMocker.prices.push(fakePrice);
+
+    const initialMember = {
+      name: fakeCustomer.name,
+      email: fakeCustomer.email,
+      subscribed: true,
+      newsletters: [newsletters[0]],
+      stripe_customer_id: fakeCustomer.id,
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [initialMember] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: new Array(1).fill({
+          id: anyObjectId,
+          uuid: anyUuid,
+          created_at: anyISODateTime,
+          updated_at: anyISODateTime,
+          labels: anyArray,
+          subscriptions: anyArray,
+          current_subscription: nullable(anyObject),
+          tiers: new Array(1).fill(tierMatcher),
+          newsletters: new Array(1).fill(newsletterSnapshot),
+        }),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+
+    const newMember = body.members[0];
+    assert.equal(newMember.status, 'comped', 'The created member should have the comped status');
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+        {
+          from_status: 'free',
+          to_status: 'comped',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberPaidSubscriptionEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          mrr_delta: 0,
+        },
+      ],
+    });
+  });
+
+  let memberWithPaidSubscription;
+
+  it('Can create a member with an existing paid subscription', async function () {
+    const fakePrice = {
+      id: 'price_1',
+      product: 'product_1234',
+      active: true,
+      nickname: 'Paid',
+      unit_amount: 1200,
+      currency: 'usd',
+      type: 'recurring',
+      recurring: {
+        interval: 'year',
+      },
+    };
+
+    const fakeSubscription = {
+      id: 'sub_987623',
+      customer: 'cus_12345',
+      status: 'active',
+      cancel_at_period_end: false,
+      metadata: {},
+      current_period_end: Date.now() / 1000 + 1000,
+      start_date: Date.now() / 1000,
+      plan: fakePrice,
+      items: {
+        data: [
+          {
+            id: 'item_123',
+            price: fakePrice,
+          },
+        ],
+      },
+    };
+
+    const fakeCustomer = {
+      id: 'cus_12345',
+      name: 'Test Member',
+      email: 'create-member-paid-test@email.com',
+      subscriptions: {
+        type: 'list',
+        data: [fakeSubscription],
+      },
+    };
+
+    stripeMocker.customers.push(fakeCustomer);
+    stripeMocker.subscriptions.push(fakeSubscription);
+    stripeMocker.prices.push(fakePrice);
+
+    const initialMember = {
+      name: fakeCustomer.name,
+      email: fakeCustomer.email,
+      subscribed: true,
+      newsletters: [newsletters[0]],
+      stripe_customer_id: fakeCustomer.id,
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [initialMember] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: new Array(1).fill({
+          id: anyObjectId,
+          uuid: anyUuid,
+          created_at: anyISODateTime,
+          updated_at: anyISODateTime,
+          labels: anyArray,
+          subscriptions: anyArray,
+          current_subscription: nullable(anyObject),
+          tiers: new Array(1).fill(tierMatcher),
+          newsletters: new Array(1).fill(newsletterSnapshot),
+        }),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+
+    const newMember = body.members[0];
+
+    assert.equal(newMember.status, 'paid', 'The created member should have the paid status');
+    assert.equal(newMember.subscriptions.length, 1, 'The member should have a single subscription');
+    assert.equal(
+      newMember.subscriptions[0].id,
+      fakeSubscription.id,
+      'The returned subscription should have an ID assigned',
+    );
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+        {
+          from_status: 'free',
+          to_status: 'paid',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberPaidSubscriptionEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          mrr_delta: 100,
+        },
+      ],
+    });
+
+    await assertSubscription(fakeSubscription.id, {
+      subscription_id: fakeSubscription.id,
+      status: 'active',
+      cancel_at_period_end: false,
+      plan_amount: 1200,
+      plan_interval: 'year',
+      plan_currency: 'usd',
+      mrr: 100,
+    });
+
+    // Save this member for the next tests
+    memberWithPaidSubscription = newMember;
+  });
+
+  it('Returns an identical member format for read, edit and browse', async function () {
+    // Check status has been updated to 'free' after cancelling
+    const { body: readBody } = await agent.get('/members/' + memberWithPaidSubscription.id + '/');
+    assert.equal(readBody.members.length, 1, 'The member was not found in read');
+    const readMember = readBody.members[0];
+
+    // Note that we explicitly need to ask to include tiers and custom fields
+    // while browsing — a read carries both without being asked
+    const { body: browseBody } = await agent.get(
+      `/members/?search=${memberWithPaidSubscription.email}&include=tiers,custom_fields`,
+    );
+    assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
+    const browseMember = browseBody.members[0];
+
+    // Ignore attribution for now
+    delete readMember.attribution;
+    for (const sub of readMember.subscriptions) {
+      delete sub.attribution;
+    }
+
+    // Ignore attribution for now
+    delete memberWithPaidSubscription.attribution;
+    for (const sub of memberWithPaidSubscription.subscriptions) {
+      delete sub.attribution;
+    }
+
+    // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
+    assert.deepEqual(
+      browseMember,
+      readMember,
+      'Browsing a member returns a different format than reading a member',
+    );
+    assert.deepEqual(
+      memberWithPaidSubscription,
+      readMember,
+      'Editing a member returns a different format than reading a member',
+    );
+  });
+
+  it('Cannot add unknown tiers to a member', async function () {
+    const memberId = testUtils.DataGenerator.Content.members[0].id;
+    const unknownProductId = 'blahblahid';
+
+    sinon.stub(logging, 'error');
+
+    await agent
+      .put(`/members/${memberId}/`)
+      .body({
+        members: [
+          {
+            tiers: [
+              {
+                id: unknownProductId,
+              },
+            ],
+          },
+        ],
+      })
+      .expectStatus(400)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
+    const product = await getOtherPaidProduct();
+
+    const compedPayload = {
+      id: memberWithPaidSubscription.id,
+      tiers: [
+        ...memberWithPaidSubscription.tiers,
+        {
+          id: product.id,
+        },
+      ],
+    };
+
+    sinon.stub(logging, 'error');
+    await agent
+      .put(`/members/${memberWithPaidSubscription.id}/`)
+      .body({ members: [compedPayload] })
+      .expectStatus(400);
+  });
+
+  it('Cannot remove non complimentary subscriptions directly from a member', async function () {
+    const compedPayload = {
+      id: memberWithPaidSubscription.id,
+      // Remove all paid subscriptions (= not allowed atm)
+      tiers: [],
+    };
+
+    sinon.stub(logging, 'error');
+    await agent
+      .put(`/members/${memberWithPaidSubscription.id}/`)
+      .body({ members: [compedPayload] })
+      .expectStatus(400);
+  });
+
+  it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function () {
+    // This tests for an edge case that shouldn't be possible, but the API should support this to resolve issues
+    // refs https://github.com/TryGhost/Team/issues/1859
+
+    // Check that the product that we are going to add is not the same as the existing one
+    const product = await getOtherPaidProduct();
+    assert.equal(memberWithPaidSubscription.tiers.length, 1);
+    assert.notEqual(memberWithPaidSubscription.tiers[0].id, product.id);
+
+    // Add it manually
+    await models.Member.edit(
+      {
+        products: [
+          ...memberWithPaidSubscription.tiers,
+          {
+            id: product.id,
+          },
+        ],
+      },
+      { id: memberWithPaidSubscription.id },
+    );
+
+    // Check status
+    const { body: body2 } = await agent
+      .get(`/members/${memberWithPaidSubscription.id}/`)
+      .expectStatus(200);
+
+    const beforeMember = body2.members[0];
+    assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
+    assert.equal(
+      beforeMember.subscriptions.length,
+      1,
+      'Only the Stripe-backed paid subscription should be returned while the member status is paid',
+    );
+    assert.equal(
+      beforeMember.subscriptions[0].tier.id,
+      memberWithPaidSubscription.tiers[0].id,
+      'The returned subscription should stay attached to the paid tier',
+    );
+
+    // Now try to remove only the complimentary one
+    const compedPayload = {
+      id: memberWithPaidSubscription.id,
+      // Remove all complimentary subscriptions
+      tiers: memberWithPaidSubscription.tiers,
+    };
+
+    const { body } = await agent
+      .put(`/members/${memberWithPaidSubscription.id}/`)
+      .body({ members: [compedPayload] })
+      .expectStatus(200);
+
+    const updatedMember = body.members[0];
+    assert.equal(updatedMember.status, 'paid', 'Member should still have the paid status');
+    assert.equal(updatedMember.tiers.length, 1, 'The member should have one product now');
+    assert.equal(
+      updatedMember.tiers[0].id,
+      memberWithPaidSubscription.tiers[0].id,
+      'The member should have the paid product',
+    );
+  });
+
+  it('Can keep tiers unchanged when modifying a paid member', async function () {
+    const compedPayload = {
+      id: memberWithPaidSubscription.id,
+      // Not changed tiers
+      tiers: [...memberWithPaidSubscription.tiers],
+    };
+
+    await agent
+      .put(`/members/${memberWithPaidSubscription.id}/`)
+      .body({ members: [compedPayload] })
+      .expectStatus(200);
+  });
+
+  it('Can edit by id', async function () {
+    const memberToChange = {
+      name: 'change me',
+      email: 'member2Change@test.com',
+      note: 'initial note',
+      newsletters: [newsletters[0]],
+    };
+
+    const memberChanged = {
+      name: 'changed',
+      email: 'cantChangeMe@test.com',
+      note: 'edited note',
+      newsletters: [],
+    };
+
+    const newMember = await createMemberThroughApi({
+      member: memberToChange,
+      agent,
+      tiersCount: 0,
+      newsletterCount: 1,
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await assertMemberEvents({
+      eventType: 'MemberEmailChangeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_email: memberToChange.email,
+          to_email: memberChanged.email,
+        },
+      ],
+    });
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+        {
+          subscribed: false,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+  });
+
+  // Internally a different error is thrown for newsletters/tiers changes
+  it('Cannot edit a non-existing id with newsletters', async function () {
+    const memberChanged = {
+      name: 'changed',
+      email: 'just-a-member@test.com',
+      newsletters: [],
+    };
+
+    await agent
+      .put(`/members/${ObjectId().toHexString()}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(404)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyUuid,
+            context: anyString,
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Cannot edit a non-existing id', async function () {
+    const memberChanged = {
+      name: 'changed',
+      email: 'just-a-member@test.com',
+    };
+
+    await agent
+      .put(`/members/${ObjectId().toHexString()}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(404)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyUuid,
+            context: anyString,
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can subscribe to a newsletter', async function () {
+    const clock = mockSystemTime(Date.now());
+    const memberToChange = {
+      name: 'change me',
+      email: 'member3change@test.com',
+      newsletters: [newsletters[0]],
+    };
+
+    const memberChanged = {
+      newsletters: [newsletters[1]],
+    };
+
+    const newMember = await createMemberThroughApi({
+      member: memberToChange,
+      agent,
+      tiersCount: 0,
+      newsletterCount: 1,
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+
+    // Wait 5 seconds to guarantee event ordering in the DB
+    clock.tick(5000);
+
+    await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[1].id,
+        },
+        {
+          subscribed: false,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+
+    clock.tick(5000);
+
+    // Check activity feed
+    const { body: eventsBody } = await agent
+      .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    const events = eventsBody.events;
+
+    // The order will be different in each test because two newsletter_events have the same created_at timestamp. And events are ordered by created_at desc, id desc (id will be different each time).
+    assertArrayMatchesWithoutOrder(events, [
+      {
+        type: 'newsletter_event',
+        data: {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[1].id,
+          newsletter: {
+            id: newsletters[1].id,
+          },
+        },
+      },
+      {
+        type: 'newsletter_event',
+        data: {
+          subscribed: false,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+          newsletter: {
+            id: newsletters[0].id,
+          },
+        },
+      },
+      {
+        type: 'signup_event',
+      },
+      {
+        type: 'newsletter_event',
+        data: {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+          newsletter: {
+            id: newsletters[0].id,
+          },
+        },
+      },
+    ]);
+
+    clock.restore();
+  });
+
+  it('Subscribes to default newsletters', async function () {
+    const filtered = newsletters.filter((n) => n.get('subscribe_on_signup'));
+    assert(
+      filtered.length > 0,
+      'There should be at least one newsletter with subscribe on signup for this test to work',
+    );
+
+    const memberToCreate = {
+      name: 'create me',
+      email: 'member2create@test.com',
+    };
+
+    const newMember = await createMemberThroughApi({
+      member: memberToCreate,
+      agent,
+      tiersCount: 0,
+      newsletterCount: 2,
+    });
+    assert.equal(newMember.newsletters[0].id, filtered[0].id);
+    assert.equal(newMember.newsletters[1].id, filtered[1].id);
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: filtered.map((n) => {
+        return {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: n.id,
+        };
+      }),
+    });
+  });
+
+  it('Can add a subscription', async function () {
+    const memberId = testUtils.DataGenerator.Content.members[0].id;
+
+    // Get the stripe price ID of the default price for month
+    const price = await stripeMocker.getPriceForTier('default-product', 'month');
+
+    await agent
+      .post(`/members/${memberId}/subscriptions/`)
+      .body({
+        stripe_price_id: price.id,
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill({
+          id: anyObjectId,
+          uuid: anyUuid,
+          created_at: anyISODateTime,
+          updated_at: anyISODateTime,
+          labels: anyArray,
+          subscriptions: [subscriptionSnapshotWithTier],
+          current_subscription: nullable(anyObject),
+          newsletters: new Array(1).fill(newsletterSnapshot),
+          tiers: [tierSnapshot],
+        }),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    // Check member read with a subscription
+    await agent
+      .get(`/members/${memberId}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill({
+          id: anyObjectId,
+          uuid: anyUuid,
+          created_at: anyISODateTime,
+          updated_at: anyISODateTime,
+          labels: anyArray,
+          subscriptions: [subscriptionSnapshotWithTier],
+          current_subscription: nullable(anyObject),
+          newsletters: new Array(1).fill(newsletterSnapshot),
+          tiers: [tierSnapshot],
+        }),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('can change the email address', async function () {
+    const memberToChange = {
+      name: 'Jon Snow',
+      email: 'jon.snow@test.com',
+      newsletters: [],
+    };
+
+    const memberChanged = {
+      email: 'aegon.targaryen@test.com',
+    };
+
+    // Create member
+    const newMember = await createMemberThroughApi({
+      member: memberToChange,
+      agent,
+      tiersCount: 0,
+      newsletterCount: 0,
+    });
+
+    // Update email address
+    await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0)),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    // Check member events
+    await assertMemberEvents({
+      eventType: 'MemberEmailChangeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_email: 'jon.snow@test.com',
+          to_email: 'aegon.targaryen@test.com',
+        },
+      ],
+    });
+
+    // Check activity feed
+    const { body: eventsBody } = await agent
+      .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    const events = eventsBody.events;
+
+    assertArrayMatchesWithoutOrder(events, [
+      {
+        type: 'email_change_event',
+        data: {
+          from_email: 'jon.snow@test.com',
+          to_email: 'aegon.targaryen@test.com',
+        },
+      },
+      {
+        type: 'signup_event',
+      },
+    ]);
+  });
+
+  describe('email_disabled', function () {
+    const testMemberId = '6543c13c13575e086a06b222';
+    const suppressedEmail = 'suppressed@email.com';
+    const okEmail = 'ok@email.com';
+
+    let testMember;
+    let suppression;
+
+    beforeEach(async function () {
+      testMember = await models.Member.add({
+        id: testMemberId,
+        email: okEmail,
+        name: 'Test Member 123',
+        email_disabled: false,
+      });
+      suppression = await models.Suppression.add({
+        email: suppressedEmail,
+        reason: 'bounce',
+      });
+    });
+
+    afterEach(async function () {
+      // Delete member & suppression
+      await models.Member.destroy({ id: testMember.id });
+      await models.Suppression.destroy({ id: suppression.id });
+    });
+
+    it('Updates the email_disabled field when a member email is updated', async function () {
+      // Now update the email address of the test member to suppressed email
+      await agent
+        .put(`/members/${testMember.id}/`)
+        .body({ members: [{ email: suppressedEmail }] })
+        .expectStatus(200);
+
+      // email_disabled should be true
+      await testMember.refresh();
+      assert.equal(testMember.get('email_disabled'), true);
+
+      // Now update the email address of that member to a non-suppressed email
+      await agent
+        .put(`/members/${testMember.id}/`)
+        .body({ members: [{ email: okEmail }] })
+        .expectStatus(200);
+
+      // email_disabled should be false
+      await testMember.refresh();
+      assert.equal(testMember.get('email_disabled'), false);
+    });
+  });
+
+  describe('deleteEmailSuppression', function () {
+    it('Can delete email suppression for a member', async function () {
+      const suppressedMember = await models.Member.add({
+        email: 'suppression-test@email.com',
+        name: 'Suppression Test',
+        email_disabled: true,
+      });
+
+      const suppression = await models.Suppression.add({
+        email: 'suppression-test@email.com',
+        reason: 'bounce',
+      });
+
+      try {
         await agent
-            .get('/members/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+          .delete(`/members/${suppressedMember.id}/suppression`)
+          .expectStatus(204)
+          .matchBodySnapshot()
+          .matchHeaderSnapshot({
+            'content-version': anyContentVersion,
+            etag: anyEtag,
+          });
 
-    it('Can browse with limit', async function () {
-        await agent
-            .get('/members/?limit=3')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+        await suppressedMember.refresh();
+        assert.equal(suppressedMember.get('email_disabled'), false);
 
-    it('Can browse with more than maximum allowed limit', async function () {
-        await agent
-            .get('/members/?limit=300')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can browse with limit=all', async function () {
-        await agent
-            .get('/members/?limit=all')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can browse with filter', async function () {
-        await agent
-            .get('/members/?filter=label:label-1')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can filter members with active subscriptions across multiple Stripe customers', async function () {
-        const emails = [
-            'multiple-active-stripe-customers@example.com',
-            'same-active-stripe-customer@example.com',
-            'trialing-stripe-customers@example.com',
-            'cancelling-stripe-customers@example.com'
-        ];
-        const customerIds = ['cus_matching_1', 'cus_matching_2', 'cus_same_1', 'cus_trialing_1', 'cus_trialing_2', 'cus_cancelling_1', 'cus_cancelling_2'];
-
+        const suppressionRecord = await models.Suppression.findOne({
+          email: 'suppression-test@email.com',
+        });
+        assert.equal(suppressionRecord, null);
+      } finally {
+        await models.Member.destroy({ id: suppressedMember.id });
         try {
-            const matchingMember = await createMember({
-                email: emails[0],
-                status: 'free'
-            });
-            await createStripeCustomerWithSubscription(matchingMember, 'cus_matching_1', 'sub_matching_1');
-            await createStripeCustomerWithSubscription(matchingMember, 'cus_matching_2', 'sub_matching_2');
-
-            const sameCustomerMember = await createMember({
-                email: emails[1],
-                status: 'free'
-            });
-            await createStripeCustomerWithSubscription(sameCustomerMember, 'cus_same_1', 'sub_same_1');
-            await knex('members_stripe_customers_subscriptions').insert({
-                id: ObjectId().toHexString(),
-                customer_id: 'cus_same_1',
-                subscription_id: 'sub_same_2',
-                status: 'active',
-                current_period_end: new Date(),
-                start_date: new Date(),
-                created_at: new Date(),
-                updated_at: new Date(),
-                plan_id: 'plan_test',
-                plan_nickname: 'Test plan',
-                plan_interval: 'month',
-                plan_amount: 500,
-                plan_currency: 'usd'
-            });
-
-            const trialingMember = await createMember({
-                email: emails[2],
-                status: 'free'
-            });
-            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_1', 'sub_trialing_1', {status: 'trialing'});
-            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_2', 'sub_trialing_2', {status: 'trialing'});
-
-            const cancellingMember = await createMember({
-                email: emails[3],
-                status: 'free'
-            });
-            await createStripeCustomerWithSubscription(cancellingMember, 'cus_cancelling_1', 'sub_cancelling_1');
-            await createStripeCustomerWithSubscription(cancellingMember, 'cus_cancelling_2', 'sub_cancelling_2', {cancelAtPeriodEnd: true});
-
-            const filter = encodeURIComponent('count.active_stripe_customers:>1');
-            const res = await agent
-                .get(`/members/?filter=${filter}&limit=1&fields=id,email&order=id`)
-                .expectStatus(200);
-
-            assert.equal(res.body.meta.pagination.total, 1);
-            assert.equal(res.body.members.length, 1);
-            assert.equal(res.body.members[0].email, emails[0]);
-
-            const combinedFilter = encodeURIComponent(`count.active_stripe_customers:>1+email:'${emails[1]}'`);
-            const combinedRes = await agent
-                .get(`/members/?filter=${combinedFilter}&fields=id,email`)
-                .expectStatus(200);
-
-            assert.equal(combinedRes.body.meta.pagination.total, 0);
-
-            const orFilter = encodeURIComponent(`count.active_stripe_customers:>1,email:'${emails[1]}'`);
-            const orRes = await agent
-                .get(`/members/?filter=${orFilter}&fields=id,email`)
-                .expectStatus(200);
-
-            assert.equal(orRes.body.meta.pagination.total, 2);
-            assert.deepEqual(orRes.body.members.map(member => member.email).sort(), [emails[0], emails[1]].sort());
-        } finally {
-            await deleteMembersWithStripeData(emails, customerIds);
+          await models.Suppression.destroy({ id: suppression.id });
+        } catch (e) {
+          // Suppression was already deleted by the endpoint
         }
+      }
     });
 
-    it('Can bulk edit members with active subscriptions across multiple Stripe customers filter', async function () {
-        const emails = [
-            'bulk-multiple-active-stripe-customers@example.com',
-            'bulk-single-active-stripe-customer@example.com'
-        ];
-        const customerIds = ['cus_bulk_matching_1', 'cus_bulk_matching_2', 'cus_bulk_single_1'];
-        const label = await models.Label.add({name: 'bulk-multiple-active-stripe-customers'});
-
-        try {
-            const matchingMember = await createMember({
-                email: emails[0],
-                status: 'free'
-            });
-            await createStripeCustomerWithSubscription(matchingMember, 'cus_bulk_matching_1', 'sub_bulk_matching_1');
-            await createStripeCustomerWithSubscription(matchingMember, 'cus_bulk_matching_2', 'sub_bulk_matching_2');
-
-            const singleCustomerMember = await createMember({
-                email: emails[1],
-                status: 'free'
-            });
-            await createStripeCustomerWithSubscription(singleCustomerMember, 'cus_bulk_single_1', 'sub_bulk_single_1');
-
-            const filter = encodeURIComponent('count.active_stripe_customers:>1');
-            await agent
-                .put(`/members/bulk/?filter=${filter}`)
-                .body({bulk: {
-                    action: 'addLabel',
-                    meta: {
-                        label: {
-                            id: label.id
-                        }
-                    }
-                }})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    bulk: {
-                        meta: {
-                            stats: {
-                                successful: 1,
-                                unsuccessful: 0
-                            },
-                            unsuccessfulData: [],
-                            errors: []
-                        }
-                    }
-                });
-
-            const updatedMatchingMember = await models.Member.findOne({id: matchingMember.id}, {withRelated: 'labels'});
-            const updatedSingleCustomerMember = await models.Member.findOne({id: singleCustomerMember.id}, {withRelated: 'labels'});
-
-            assert(updatedMatchingMember.related('labels').models.some(model => model.id === label.id));
-            assert.equal(updatedSingleCustomerMember.related('labels').models.some(model => model.id === label.id), false);
-        } finally {
-            await deleteMembersWithStripeData(emails, customerIds);
-        }
-    });
-
-    it('Returns a bad request for non-numeric active Stripe customer count filters', async function () {
-        const nullFilter = encodeURIComponent('count.active_stripe_customers:null');
-        await agent
-            .get(`/members/?filter=${nullFilter}`)
-            .expectStatus(400);
-
-        const stringFilter = encodeURIComponent('count.active_stripe_customers:\'abc\'');
-        await agent
-            .get(`/members/?filter=${stringFilter}`)
-            .expectStatus(400);
-    });
-
-    it('Can filter by signup attribution', async function () {
-        await agent
-            .get('/members/?filter=signup:' + fixtureManager.get('posts', 0).id)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can filter by conversion attribution', async function () {
-        await agent
-            .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can browse with search', async function () {
-        await agent
-            .get('/members/?search=member1')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can filter by paid status', async function () {
-        await agent
-            .get('/members/?filter=status:paid')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can filter by tier id', async function () {
-        const products = await getPaidProduct();
-        await agent
-            .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can filter by subscription status for member with concurrent active and canceled subscriptions', async function () {
-        // Case 5: Member cancels, then re-subscribes before the cancellation period ends.
-        // They now have an active + canceled subscription concurrently.
-        // The subscription status filter should resolve to the "current" (best) subscription only.
-        const email = 'concurrent-sub-filter-test@example.com';
-
-        const customer = stripeMocker.createCustomer({email});
-        const price1 = await stripeMocker.getPriceForTier('default-product', 'month');
-        const price2 = await stripeMocker.getPriceForTier('default-product', 'year');
-
-        // Create two active subscriptions (simulates re-subscribe before period end)
-        await stripeMocker.createSubscription({customer, price: price1});
-        const subscription2 = await stripeMocker.createSubscription({customer, price: price2});
-        await DomainEvents.allSettled();
-
-        // Cancel one subscription — member still has the other active one
-        await stripeMocker.updateSubscription({
-            id: subscription2.id,
-            status: 'canceled',
-            cancel_at_period_end: false,
-            canceled_at: Date.now() / 1000
-        });
-        await DomainEvents.allSettled();
-
-        // Verify the member has one active and one canceled subscription via the API
-        const {body: memberBody} = await agent
-            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
-            .expectStatus(200);
-
-        assert.equal(memberBody.members.length, 1, 'Member should exist');
-        const memberSubscriptions = memberBody.members[0].subscriptions;
-        assert.equal(memberSubscriptions.length, 2, 'Member should have 2 subscriptions');
-        const subStatuses = new Set(memberSubscriptions.map(s => s.status));
-        assert.ok(subStatuses.has('active'), 'One subscription should be active');
-        assert.ok(subStatuses.has('canceled'), 'One subscription should be canceled');
-
-        const activeSub = memberSubscriptions.find(s => s.status === 'active');
-        const canceledSub = memberSubscriptions.find(s => s.status === 'canceled');
-
-        // The whole point of the fix: the API surfaces the ACTIVE subscription as
-        // the resolved current one, not the canceled one. Assert the actual
-        // resolved object, not just that the field exists.
-        const currentSubscription = memberBody.members[0].current_subscription;
-        assert.ok(currentSubscription, 'current_subscription should be populated for a member with subscriptions');
-        assert.equal(currentSubscription.id, activeSub.id, 'current_subscription should resolve to the active subscription');
-        assert.equal(currentSubscription.status, 'active', 'current_subscription should be active, not canceled');
-        assert.notEqual(currentSubscription.id, canceledSub.id, 'current_subscription must not be the canceled subscription');
-
-        const memberId = memberBody.members[0].id;
-
-        // Filter by subscriptions.status:active should find this member
-        const {body: activeBody} = await agent
-            .get(`/members/?filter=subscriptions.status:active`)
-            .expectStatus(200);
-
-        const activeEmails = activeBody.members.map(m => m.email);
-        assert.ok(activeEmails.includes(email), 'Member with active+canceled subs should appear in subscriptions.status:active filter');
-
-        // Filter by subscriptions.status:canceled should NOT find this member
-        // because the resolved/current subscription is active (active beats canceled)
-        const {body: canceledBody} = await agent
-            .get(`/members/?filter=subscriptions.status:canceled`)
-            .expectStatus(200);
-
-        const canceledEmails = canceledBody.members.map(m => m.email);
-        assert.ok(!canceledEmails.includes(email), 'Member with active+canceled subs should NOT appear in subscriptions.status:canceled filter');
-
-        // Clean up: remove the test member so subsequent tests aren't affected
-        await agent
-            .delete(`/members/${memberId}/`)
-            .expectStatus(204);
-    });
-
-    it('Re-resolves the current subscription when a member re-subscribes after cancelling', async function () {
-        // Exercises the lookup-table UPDATE path: a member whose only sub is
-        // canceled resolves to that canceled sub, then re-subscribes and the
-        // resolved current subscription must flip to the new active one — moving
-        // them out of the canceled filter and into the active filter.
-        const email = 'resub-after-cancel@example.com';
-
-        const customer = stripeMocker.createCustomer({email});
-        const monthlyPrice = await stripeMocker.getPriceForTier('default-product', 'month');
-
-        // Subscribe, then cancel — the member's only subscription is now canceled
-        const firstSubscription = await stripeMocker.createSubscription({customer, price: monthlyPrice});
-        await DomainEvents.allSettled();
-        await stripeMocker.updateSubscription({
-            id: firstSubscription.id,
-            status: 'canceled',
-            cancel_at_period_end: false,
-            canceled_at: Date.now() / 1000
-        });
-        await DomainEvents.allSettled();
-
-        // The resolved current subscription is the canceled one (their only sub)
-        let {body: memberBody} = await agent
-            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
-            .expectStatus(200);
-        const memberId = memberBody.members[0].id;
-        assert.equal(memberBody.members[0].current_subscription.status, 'canceled', 'current_subscription should be the canceled sub when it is the only one');
-
-        let {body: canceledBody} = await agent
-            .get(`/members/?filter=subscriptions.status:canceled`)
-            .expectStatus(200);
-        assert.ok(canceledBody.members.map(m => m.email).includes(email), 'member should be in the canceled filter while their only sub is canceled');
-
-        // Re-subscribe — a new active subscription on the same customer
-        const yearlyPrice = await stripeMocker.getPriceForTier('default-product', 'year');
-        await stripeMocker.createSubscription({customer, price: yearlyPrice});
-        await DomainEvents.allSettled();
-
-        // The resolved current subscription must now flip to the new active sub
-        ({body: memberBody} = await agent
-            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
-            .expectStatus(200));
-        const newActiveSub = memberBody.members[0].subscriptions.find(s => s.status === 'active');
-        assert.ok(newActiveSub, 'member should now have an active subscription');
-        assert.equal(memberBody.members[0].current_subscription.id, newActiveSub.id, 'current_subscription should flip to the new active subscription');
-        assert.equal(memberBody.members[0].current_subscription.status, 'active');
-
-        // ...and the member leaves the canceled filter and enters the active filter
-        ({body: canceledBody} = await agent
-            .get(`/members/?filter=subscriptions.status:canceled`)
-            .expectStatus(200));
-        assert.ok(!canceledBody.members.map(m => m.email).includes(email), 'member should no longer be in the canceled filter after re-subscribing');
-
-        const {body: activeBody} = await agent
-            .get(`/members/?filter=subscriptions.status:active`)
-            .expectStatus(200);
-        assert.ok(activeBody.members.map(m => m.email).includes(email), 'member should be in the active filter after re-subscribing');
-
-        // Clean up: remove the test member so subsequent tests aren't affected
-        await agent
-            .delete(`/members/${memberId}/`)
-            .expectStatus(204);
-    });
-
-    it('Can filter using contains operators', async function () {
-        await agent
-            .get(`/members/?filter=name:~'Venkman'`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 0))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can ignore any unknown includes', async function () {
-        await agent
-            .get('/members/?filter=status:paid&include=emailRecipients')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can order by email_open_rate', async function () {
-        await agent
-            .get('members/?order=email_open_rate%20desc')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyContentLength,
-                'content-version': anyContentVersion
-            })
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
-                ]
-            })
-            .expect(({body}) => {
-                const {members} = body;
-                assert.equal(members[0].email_open_rate > members[1].email_open_rate, true, 'Expected the first member to have a greater open rate than the second.');
-            });
-
-        await agent
-            .get('members/?order=email_open_rate%20asc')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyContentLength,
-                'content-version': anyContentVersion
-            })
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
-                ]
-            })
-            .expect(({body}) => {
-                const {members} = body;
-                assert.equal(members[0].email_open_rate < members[1].email_open_rate, true, 'Expected the first member to have a smaller open rate than the second.');
-            });
-    });
-
-    it('Search by case-insensitive name egg receives member with name Mr Egg', async function () {
-        await agent
-            .get('members/?search=egg')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function () {
-        await agent
-            .get('members/?search=MEMBER2')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Search for paid members retrieves member with email paid@test.com', async function () {
-        await agent
-            .get('members/?search=egon&paid=true')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Search for non existing member returns empty result set', async function () {
-        await agent
-            .get('members/?search=do_not_exist')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                members: []
-            });
-    });
-
-    // Read a member
-
-    it('Can read', async function () {
-        await agent
-            .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can read and include email_recipients', async function () {
-        await agent
-            .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can read and include tiers', async function () {
-        await agent
-            .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can read a member with an active gift subscription', async function () {
-        const member = await createGiftMember({email: 'gift-member-api-shape@test.com'});
-        const paidProduct = await getPaidProduct();
-        let gift;
-
-        try {
-            await models.Member.edit({
-                products: [{id: paidProduct.id}]
-            }, {id: member.id});
-
-            const giftAmount = 1500;
-            const giftCurrency = 'eur';
-            const giftCadence = 'month';
-
-            gift = await models.Gift.add({
-                token: `gift-admin-shape-${member.id}`,
-                buyer_email: 'gift-buyer@test.com',
-                buyer_member_id: null,
-                redeemer_member_id: member.id,
-                tier_id: paidProduct.id,
-                cadence: giftCadence,
-                duration: 1,
-                currency: giftCurrency,
-                amount: giftAmount,
-                stripe_checkout_session_id: `cs_admin_shape_${member.id}`,
-                stripe_payment_intent_id: `pi_admin_shape_${member.id}`,
-                consumes_at: new Date('2099-01-01T00:00:00.000Z'),
-                expires_at: new Date('2099-01-01T00:00:00.000Z'),
-                status: 'redeemed',
-                purchased_at: new Date(),
-                redeemed_at: new Date(),
-                consumed_at: null,
-                expired_at: null,
-                refunded_at: null
-            });
-
-            const {body: readBody} = await agent
-                .get(`/members/${member.id}/`)
-                .expectStatus(200);
-
-            assert.equal(readBody.members[0].status, 'gift');
-            assert.equal(readBody.members[0].subscriptions.length, 1, 'Gift member should expose a single synthetic subscription');
-
-            const readSub = readBody.members[0].subscriptions[0];
-            assert.equal(readSub.plan.nickname, 'Gift subscription');
-            assert.equal(readSub.price.nickname, 'Gift subscription');
-            assert.equal(readSub.plan.amount, giftAmount);
-            assert.equal(readSub.plan.currency, giftCurrency);
-            assert.equal(readSub.plan.interval, giftCadence);
-            assert.equal(readSub.price.amount, giftAmount);
-            assert.equal(readSub.price.currency, giftCurrency);
-            assert.equal(readSub.price.interval, giftCadence);
-
-            const {body: browseBody} = await agent
-                .get(`/members/?filter=${encodeURIComponent(`id:${member.id}`)}`)
-                .expectStatus(200);
-
-            const browsedMember = browseBody.members.find(m => m.id === member.id);
-            assert.ok(browsedMember, 'Gift member should appear in the browse response');
-
-            const browseSub = browsedMember.subscriptions[0];
-            assert.equal(browseSub.plan.nickname, 'Gift subscription');
-            assert.equal(browseSub.price.nickname, 'Gift subscription');
-            assert.equal(browseSub.plan.amount, giftAmount);
-            assert.equal(browseSub.plan.currency, giftCurrency);
-            assert.equal(browseSub.plan.interval, giftCadence);
-            assert.equal(browseSub.price.amount, giftAmount);
-            assert.equal(browseSub.price.currency, giftCurrency);
-            assert.equal(browseSub.price.interval, giftCadence);
-        } finally {
-            // Avoid leaking this fixture into later tests that count members.
-            // Gift.destroy is blocked by the model — fall back to a raw delete.
-            if (gift) {
-                await knex('gifts').where({id: gift.id}).del();
-            }
-            await models.Member.destroy({id: member.id});
-        }
-    });
-
-    // Create a member
-
-    it('Can add', async function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestAdd@test.com',
-            note: 'test note',
-            newsletters: [],
-            labels: ['test-label']
-        };
-
-        const newMember = await createMemberThroughApi({member, agent});
-
-        // Cannot add same member twice
-        const loggingStub = sinon.stub(logging, 'warn');
-        await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(422);
-        sinon.assert.calledOnce(loggingStub);
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }
-            ]
-        });
-    });
-
-    it('Can add and send a signup confirmation email', async function () {
-        const member = {
-            name: 'Send Me Confirmation',
-            email: 'member_getting_confirmation@test.com',
-            newsletters: [
-                newsletters[0],
-                newsletters[1]
-            ]
-        };
-
-        // Set site title to something with a special character to ensure subject line doesn't get escaped
-        // Refs https://github.com/TryGhost/Team/issues/2895
-        await agent.put('/settings/')
-            .body({
-                settings: [
-                    {
-                        key: 'title',
-                        value: 'Ghost\'s Test Site'
-                    }
-                ]
-            })
-            .expectStatus(200);
-
-        const {body} = await agent
-            .post('/members/?send_email=true&email_type=signup')
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithoutIncludesSnapshot({
-                        newsletters: 2
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyString
-            });
-
-        const newMember = body.members[0];
-
-        emailMockReceiver
-            .assertSentEmailCount(1)
-            .matchHTMLSnapshot([{
-                pattern: queryStringToken('token'),
-                replacement: 'token=REPLACED_TOKEN'
-            }])
-            .matchPlaintextSnapshot([{
-                pattern: queryStringToken('token'),
-                replacement: 'token=REPLACED_TOKEN'
-            }])
-            .matchMetadataSnapshot();
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                },
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[1].id
-                }
-            ]
-        });
-
-        // @TODO: do we really need to delete this member here?
-        await agent
-            .delete(`members/${body.members[0].id}/`)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expectStatus(204);
-
-        // There should be no MemberSubscribeEvent remaining.
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-
-        // Reset the site title to the default
-        await agent.put('/settings/')
-            .body({
-                settings: [
-                    {
-                        key: 'title',
-                        value: 'Ghost'
-                    }
-                ]
-            })
-            .expectStatus(200);
-    });
-
-    it('Does not send a signup email when email verification is required', async function () {
-        mockManager.mockSetting('email_verification_required', true);
-
-        const member = {
-            name: 'Do not Send Me Confirmation',
-            email: 'member_not_getting_confirmation@test.com',
-            newsletters: [
-                newsletters[0],
-                newsletters[1]
-            ]
-        };
-
-        const {body} = await agent
-            .post('/members/?send_email=true&email_type=signup')
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithoutIncludesSnapshot({
-                        newsletters: 2
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyString
-            });
-
-        const newMember = body.members[0];
-
-        emailMockReceiver
-            .assertSentEmailCount(0);
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                },
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[1].id
-                }
-            ]
-        });
-
-        // @TODO: do we really need to delete this member here?
-        await agent
-            .delete(`members/${body.members[0].id}/`)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expectStatus(204);
-
-        // There should be no MemberSubscribeEvent remaining.
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-    });
-
-    it('Add should fail when passing incorrect email_type query parameter', async function () {
-        const newMember = {
-            name: 'test',
-            email: 'memberTestAdd@test.com'
-        };
-
-        const statusEventsBefore = await models.MemberStatusEvent.findAll();
-
-        sinon.stub(logging, 'error');
-        await agent
-            .post(`members/?send_email=true&email_type=lel`)
-            .body({members: [newMember]})
-            .expectStatus(422)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-
-        const statusEvents = await models.MemberStatusEvent.findAll();
-        assert.equal(statusEvents.models.length, statusEventsBefore.models.length, 'No MemberStatusEvent should have been added after failing to create a subscription.');
-    });
-
-    // Edit a member
-
-    it('Can add complimentary subscription (out of date)', async function () {
-        const stripeService = require('../../../core/server/services/stripe');
-        const fakePrice = {
-            id: 'price_1',
-            product: '',
-            active: true,
-            nickname: 'Complimentary',
-            unit_amount: 0,
-            currency: 'usd',
-            type: 'recurring',
-            recurring: {
-                interval: 'year'
-            }
-        };
-        const fakeSubscription = {
-            id: 'sub_1',
-            customer: 'cus_1',
-            status: 'active',
-            cancel_at_period_end: false,
-            metadata: {},
-            current_period_end: Date.now() / 1000,
-            start_date: Date.now() / 1000,
-            plan: fakePrice,
-            items: {
-                data: [{
-                    price: fakePrice
-                }]
-            }
-        };
-        sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
-            return {
-                id: 'cus_1',
-                email: data.email
-            };
-        });
-        sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
-        sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
-        sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
-        sinon.stub(stripeService.api, 'getCustomer').resolves({
-            id: 'cus_1',
-            invoice_settings: {
-                default_payment_method: null
-            }
-        });
-        const initialMember = {
-            name: 'Name',
-            email: 'compedtest@test.com',
-            newsletters: [newsletters[0]]
-        };
-
-        const compedPayload = {
-            comped: true
-        };
-
-        const newMember = await createMemberThroughApi({
-            member: initialMember,
-            agent,
-            tiersCount: 0,
-            newsletterCount: 1
-        });
-
-        await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [{
-                from_status: null,
-                to_status: 'free'
-            }, {
-                from_status: 'free',
-                to_status: 'comped'
-            }]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin',
-                newsletter_id: newsletters[0].id
-            }]
-        });
-    });
-
-    it('Can create a comped member with labels via API', async function () {
-        const stripeService = require('../../../core/server/services/stripe');
-        const fakePrice = {
-            id: 'price_1',
-            product: '',
-            active: true,
-            nickname: 'Complimentary',
-            unit_amount: 0,
-            currency: 'usd',
-            type: 'recurring',
-            recurring: {
-                interval: 'year'
-            }
-        };
-        const fakeSubscription = {
-            id: 'sub_1',
-            customer: 'cus_1',
-            status: 'active',
-            cancel_at_period_end: false,
-            metadata: {},
-            current_period_end: Date.now() / 1000,
-            start_date: Date.now() / 1000,
-            plan: fakePrice,
-            items: {
-                data: [{
-                    price: fakePrice
-                }]
-            }
-        };
-        sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
-            return {
-                id: 'cus_1',
-                email: data.email
-            };
-        });
-        sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
-        sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
-        sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
-        sinon.stub(stripeService.api, 'getCustomer').resolves({
-            id: 'cus_1',
-            invoice_settings: {
-                default_payment_method: null
-            }
-        });
-
-        const newMember = {
-            name: 'Comped with Labels',
-            email: 'comped-with-labels@test.com',
-            comped: true,
-            labels: [{name: 'VIP'}, {name: 'Complimentary'}],
-            newsletters: [newsletters[0]]
-        };
-
-        const member = await createMemberThroughApi({
-            member: newMember,
-            agent,
-            tiersCount: 1,
-            newsletterCount: 1
-        });
-        assert.equal(member.status, 'comped', 'Member should have comped status');
-        assert.equal(member.labels.length, 2, 'Member should have 2 labels');
-        assert.ok(member.labels.find(l => l.name === 'VIP'), 'Member should have VIP label');
-        assert.ok(member.labels.find(l => l.name === 'Complimentary'), 'Member should have Complimentary label');
-    });
-
-    it('Can add complimentary subscription by assigning a product to a member', async function () {
-        const initialMember = {
-            name: 'Name',
-            email: 'compedtest2@test.com',
-            newsletters: [newsletters[0]]
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201);
-
-        const newMember = body.members[0];
-        assert.equal(newMember.status, 'free', 'A new member should have the free status');
-
-        const product = await getPaidProduct();
-
-        const compedPayload = {
-            id: newMember.id,
-            email: newMember.email,
-            tiers: [
-                {
-                    id: product.id
-                }
-            ]
-        };
-
-        const {body: body2} = await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(200);
-
-        const updatedMember = body2.members[0];
-        assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
-        assert.equal(updatedMember.tiers.length, 1, 'The member should have one product');
-        assert.equal(
-            updatedMember.subscriptions.length,
-            1,
-            'The member should have one synthetic complimentary subscription'
-        );
-        assert.equal(
-            updatedMember.subscriptions[0].tier.id,
-            product.id,
-            'The subscription should point at the assigned tier'
-        );
-        assert.equal(
-            updatedMember.subscriptions[0].plan.nickname,
-            'Complimentary',
-            'The subscription plan should be marked as complimentary'
-        );
-        assert.equal(
-            updatedMember.subscriptions[0].price.nickname,
-            'Complimentary',
-            'The subscription price should be marked as complimentary'
-        );
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                },
-                {
-                    from_status: 'free',
-                    to_status: 'comped'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin',
-                newsletter_id: newsletters[0].id
-            }]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberPaidSubscriptionEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-    });
-
-    it('Can end a complimentary subscription by removing a product from a member', async function () {
-        const product = await getPaidProduct();
-        const initialMember = {
-            name: 'Name',
-            email: 'compedtest3@test.com',
-            newsletters: [newsletters[0]],
-            tiers: [
-                {
-                    id: product.id
-                }
-            ]
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201);
-
-        const newMember = body.members[0];
-        assert.equal(newMember.status, 'comped', 'The new member should have the comped status');
-        assert.equal(newMember.tiers.length, 1, 'The member should have 1 product');
-
-        // Remove it
-        const removePayload = {
-            id: newMember.id,
-            email: newMember.email,
-            tiers: []
-        };
-
-        const {body: body2} = await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [removePayload]})
-            .expectStatus(200);
-
-        const updatedMember = body2.members[0];
-        assert.equal(updatedMember.status, 'free', 'The member should have the free status');
-        assert.equal(updatedMember.tiers.length, 0, 'The member should have 0 tiers');
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'comped'
-                },
-                {
-                    from_status: 'comped',
-                    to_status: 'free'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberPaidSubscriptionEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-    });
-
-    it('Can create a new member with a product (complimentary)', async function () {
-        const product = await getPaidProduct();
-        const initialMember = {
-            name: 'Name',
-            email: 'compedtest4@test.com',
-            subscribed: true,
-            newsletters: [newsletters[0]],
-            tiers: [
-                {
-                    id: product.id
-                }
-            ]
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    tiers: new Array(1).fill({
-                        id: anyObjectId,
-                        monthly_price_id: anyObjectId,
-                        yearly_price_id: anyObjectId,
-                        created_at: anyISODateTime,
-                        updated_at: anyISODateTime
-                    }),
-                    newsletters: new Array(1).fill(newsletterSnapshot)
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
-        assert.equal(newMember.status, 'comped', 'The newly imported member should have the comped status');
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [{
-                from_status: null,
-                to_status: 'comped'
-            }]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin'
-            }]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberPaidSubscriptionEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-    });
-
-    it('Can create a member with an existing complimentary subscription', async function () {
-        const fakePrice = {
-            id: 'price_1',
-            product: '',
-            active: true,
-            nickname: 'Complimentary',
-            unit_amount: 0,
-            currency: 'usd',
-            type: 'recurring',
-            recurring: {
-                interval: 'year'
-            }
-        };
-
-        const fakeSubscription = {
-            id: 'sub_2',
-            customer: 'cus_1234',
-            status: 'active',
-            cancel_at_period_end: false,
-            metadata: {},
-            current_period_end: Date.now() / 1000 + 1000,
-            start_date: Date.now() / 1000,
-            plan: fakePrice,
-            items: {
-                data: [{
-                    price: fakePrice
-                }]
-            }
-        };
-
-        const fakeCustomer = {
-            id: 'cus_1234',
-            name: 'Test Member',
-            email: 'create-member-comped-test@email.com',
-            subscriptions: {
-                type: 'list',
-                data: [fakeSubscription]
-            }
-        };
-        stripeMocker.customers.push(fakeCustomer);
-        stripeMocker.subscriptions.push(fakeSubscription);
-        stripeMocker.prices.push(fakePrice);
-
-        const initialMember = {
-            name: fakeCustomer.name,
-            email: fakeCustomer.email,
-            subscribed: true,
-            newsletters: [newsletters[0]],
-            stripe_customer_id: fakeCustomer.id
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    tiers: new Array(1).fill(tierMatcher),
-                    newsletters: new Array(1).fill(newsletterSnapshot)
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
-        assert.equal(newMember.status, 'comped', 'The created member should have the comped status');
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                },
-                {
-                    from_status: 'free',
-                    to_status: 'comped'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberPaidSubscriptionEvent',
-            memberId: newMember.id,
-            asserts: [{
-                mrr_delta: 0
-            }]
-        });
-    });
-
-    let memberWithPaidSubscription;
-
-    it('Can create a member with an existing paid subscription', async function () {
-        const fakePrice = {
-            id: 'price_1',
-            product: 'product_1234',
-            active: true,
-            nickname: 'Paid',
-            unit_amount: 1200,
-            currency: 'usd',
-            type: 'recurring',
-            recurring: {
-                interval: 'year'
-            }
-        };
-
-        const fakeSubscription = {
-            id: 'sub_987623',
-            customer: 'cus_12345',
-            status: 'active',
-            cancel_at_period_end: false,
-            metadata: {},
-            current_period_end: Date.now() / 1000 + 1000,
-            start_date: Date.now() / 1000,
-            plan: fakePrice,
-            items: {
-                data: [{
-                    id: 'item_123',
-                    price: fakePrice
-                }]
-            }
-        };
-
-        const fakeCustomer = {
-            id: 'cus_12345',
-            name: 'Test Member',
-            email: 'create-member-paid-test@email.com',
-            subscriptions: {
-                type: 'list',
-                data: [fakeSubscription]
-            }
-        };
-
-        stripeMocker.customers.push(fakeCustomer);
-        stripeMocker.subscriptions.push(fakeSubscription);
-        stripeMocker.prices.push(fakePrice);
-
-        const initialMember = {
-            name: fakeCustomer.name,
-            email: fakeCustomer.email,
-            subscribed: true,
-            newsletters: [newsletters[0]],
-            stripe_customer_id: fakeCustomer.id
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    tiers: new Array(1).fill(tierMatcher),
-                    newsletters: new Array(1).fill(newsletterSnapshot)
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
-
-        assert.equal(newMember.status, 'paid', 'The created member should have the paid status');
-        assert.equal(newMember.subscriptions.length, 1, 'The member should have a single subscription');
-        assert.equal(newMember.subscriptions[0].id, fakeSubscription.id, 'The returned subscription should have an ID assigned');
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }, {
-                    from_status: 'free',
-                    to_status: 'paid'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin'
-            }]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberPaidSubscriptionEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    mrr_delta: 100
-                }
-            ]
-        });
-
-        await assertSubscription(fakeSubscription.id, {
-            subscription_id: fakeSubscription.id,
-            status: 'active',
-            cancel_at_period_end: false,
-            plan_amount: 1200,
-            plan_interval: 'year',
-            plan_currency: 'usd',
-            mrr: 100
-        });
-
-        // Save this member for the next tests
-        memberWithPaidSubscription = newMember;
-    });
-
-    it('Returns an identical member format for read, edit and browse', async function () {
-        // Check status has been updated to 'free' after cancelling
-        const {body: readBody} = await agent.get('/members/' + memberWithPaidSubscription.id + '/');
-        assert.equal(readBody.members.length, 1, 'The member was not found in read');
-        const readMember = readBody.members[0];
-
-        // Note that we explicitly need to ask to include tiers and custom fields
-        // while browsing — a read carries both without being asked
-        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers,custom_fields`);
-        assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
-        const browseMember = browseBody.members[0];
-
-        // Ignore attribution for now
-        delete readMember.attribution;
-        for (const sub of readMember.subscriptions) {
-            delete sub.attribution;
-        }
-
-        // Ignore attribution for now
-        delete memberWithPaidSubscription.attribution;
-        for (const sub of memberWithPaidSubscription.subscriptions) {
-            delete sub.attribution;
-        }
-
-        // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
-        assert.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
-        assert.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
-    });
-
-    it('Cannot add unknown tiers to a member', async function () {
-        const memberId = testUtils.DataGenerator.Content.members[0].id;
-        const unknownProductId = 'blahblahid';
-
-        sinon.stub(logging, 'error');
-
-        await agent
-            .put(`/members/${memberId}/`)
-            .body({
-                members: [{
-                    tiers: [{
-                        id: unknownProductId
-                    }]
-                }]
-            })
-            .expectStatus(400)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
-        const product = await getOtherPaidProduct();
-
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            tiers: [
-                ...memberWithPaidSubscription.tiers,
-                {
-                    id: product.id
-                }
-            ]
-        };
-
-        sinon.stub(logging, 'error');
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(400);
-    });
-
-    it('Cannot remove non complimentary subscriptions directly from a member', async function () {
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Remove all paid subscriptions (= not allowed atm)
-            tiers: []
-        };
-
-        sinon.stub(logging, 'error');
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(400);
-    });
-
-    it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function () {
-        // This tests for an edge case that shouldn't be possible, but the API should support this to resolve issues
-        // refs https://github.com/TryGhost/Team/issues/1859
-
-        // Check that the product that we are going to add is not the same as the existing one
-        const product = await getOtherPaidProduct();
-        assert.equal(memberWithPaidSubscription.tiers.length, 1);
-        assert.notEqual(memberWithPaidSubscription.tiers[0].id, product.id);
-
-        // Add it manually
-        await models.Member.edit({
-            products: [
-                ...memberWithPaidSubscription.tiers,
-                {
-                    id: product.id
-                }
-            ]
-        }, {id: memberWithPaidSubscription.id});
-
-        // Check status
-        const {body: body2} = await agent
-            .get(`/members/${memberWithPaidSubscription.id}/`)
-            .expectStatus(200);
-
-        const beforeMember = body2.members[0];
-        assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
-        assert.equal(
-            beforeMember.subscriptions.length,
-            1,
-            'Only the Stripe-backed paid subscription should be returned while the member status is paid'
-        );
-        assert.equal(
-            beforeMember.subscriptions[0].tier.id,
-            memberWithPaidSubscription.tiers[0].id,
-            'The returned subscription should stay attached to the paid tier'
-        );
-
-        // Now try to remove only the complimentary one
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Remove all complimentary subscriptions
-            tiers: memberWithPaidSubscription.tiers
-        };
-
-        const {body} = await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(200);
-
-        const updatedMember = body.members[0];
-        assert.equal(updatedMember.status, 'paid', 'Member should still have the paid status');
-        assert.equal(updatedMember.tiers.length, 1, 'The member should have one product now');
-        assert.equal(updatedMember.tiers[0].id, memberWithPaidSubscription.tiers[0].id, 'The member should have the paid product');
-    });
-
-    it('Can keep tiers unchanged when modifying a paid member', async function () {
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Not changed tiers
-            tiers: [...memberWithPaidSubscription.tiers]
-        };
-
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(200);
-    });
-
-    it('Can edit by id', async function () {
-        const memberToChange = {
-            name: 'change me',
-            email: 'member2Change@test.com',
-            note: 'initial note',
-            newsletters: [
-                newsletters[0]
-            ]
-        };
-
-        const memberChanged = {
-            name: 'changed',
-            email: 'cantChangeMe@test.com',
-            note: 'edited note',
-            newsletters: []
-        };
-
-        const newMember = await createMemberThroughApi({
-            member: memberToChange,
-            agent,
-            tiersCount: 0,
-            newsletterCount: 1
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin',
-                newsletter_id: newsletters[0].id
-            }]
-        });
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [{
-                from_status: null,
-                to_status: 'free'
-            }]
-        });
-
-        await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await assertMemberEvents({
-            eventType: 'MemberEmailChangeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                from_email: memberToChange.email,
-                to_email: memberChanged.email
-            }]
-        });
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }, {
-                    subscribed: false,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }
-            ]
-        });
-    });
-
-    // Internally a different error is thrown for newsletters/tiers changes
-    it('Cannot edit a non-existing id with newsletters', async function () {
-        const memberChanged = {
-            name: 'changed',
-            email: 'just-a-member@test.com',
-            newsletters: []
-        };
-
-        await agent
-            .put(`/members/${ObjectId().toHexString()}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(404)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyUuid,
-                    context: anyString
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Cannot edit a non-existing id', async function () {
-        const memberChanged = {
-            name: 'changed',
-            email: 'just-a-member@test.com'
-        };
-
-        await agent
-            .put(`/members/${ObjectId().toHexString()}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(404)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyUuid,
-                    context: anyString
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can subscribe to a newsletter', async function () {
-        const clock = mockSystemTime(Date.now());
-        const memberToChange = {
-            name: 'change me',
-            email: 'member3change@test.com',
-            newsletters: [
-                newsletters[0]
-            ]
-        };
-
-        const memberChanged = {
-            newsletters: [
-                newsletters[1]
-            ]
-        };
-
-        const newMember = await createMemberThroughApi({
-            member: memberToChange,
-            agent,
-            tiersCount: 0,
-            newsletterCount: 1
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin',
-                newsletter_id: newsletters[0].id
-            }]
-        });
-
-        // Wait 5 seconds to guarantee event ordering in the DB
-        clock.tick(5000);
-
-        await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }, {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[1].id
-                }, {
-                    subscribed: false,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }
-            ]
-        });
-
-        clock.tick(5000);
-
-        // Check activity feed
-        const {body: eventsBody} = await agent
-            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        const events = eventsBody.events;
-
-        // The order will be different in each test because two newsletter_events have the same created_at timestamp. And events are ordered by created_at desc, id desc (id will be different each time).
-        assertArrayMatchesWithoutOrder(events, [
+    it('Returns 404 for non-existent member', async function () {
+      await agent
+        .delete('/members/abcd1234abcd1234abcd1234/suppression')
+        .expectStatus(404)
+        .matchBodySnapshot({
+          errors: [
             {
-                type: 'newsletter_event',
-                data: {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[1].id,
-                    newsletter: {
-                        id: newsletters[1].id
-                    }
-                }
+              id: anyUuid,
             },
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+    });
+
+    it('Returns 500 when suppression removal fails', async function () {
+      const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
+      const removeEmailStub = sinon.stub(emailSuppressionList, 'removeEmail').resolves(false);
+
+      const suppressedMember = await models.Member.add({
+        email: 'suppression-fail-test@email.com',
+        name: 'Suppression Fail Test',
+        email_disabled: true,
+      });
+
+      try {
+        await agent
+          .delete(`/members/${suppressedMember.id}/suppression`)
+          .expectStatus(500)
+          .matchBodySnapshot({
+            errors: [
+              {
+                id: anyUuid,
+              },
+            ],
+          })
+          .matchHeaderSnapshot({
+            'content-version': anyContentVersion,
+            etag: anyEtag,
+          });
+
+        // Verify email_disabled was NOT changed since the operation failed
+        await suppressedMember.refresh();
+        assert.equal(suppressedMember.get('email_disabled'), true);
+      } finally {
+        removeEmailStub.restore();
+        await models.Member.destroy({ id: suppressedMember.id });
+      }
+    });
+  });
+
+  // Log out
+  it('Can log out', async function () {
+    const member = await createMember({
+      name: 'test',
+      email: 'member-log-out-test@test.com',
+    });
+
+    const startTransientId = member.get('transient_id');
+
+    await agent
+      .delete(`/members/${member.id}/sessions/`)
+      .expectStatus(204)
+      .matchBodySnapshot()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await member.refresh();
+    assert.notEqual(
+      member.get('transient_id'),
+      startTransientId,
+      'The transient_id should have changed',
+    );
+  });
+
+  // Delete a member
+
+  it('Can destroy', async function () {
+    const member = {
+      name: 'test',
+      email: 'memberTestDestroy@test.com',
+    };
+
+    const newMember = await createMemberThroughApi({
+      member,
+      agent,
+      tiersCount: 0,
+      newsletterCount: 2,
+    });
+
+    await agent
+      .delete(`/members/${newMember.id}`)
+      .expectStatus(204)
+      .expectEmptyBody()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await agent
+      .get(`/members/${newMember.id}/`)
+      .expectStatus(404)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyUuid,
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Cannot delete a non-existent member', async function () {
+    await agent
+      .delete('/members/abcd1234abcd1234abcd1234')
+      .expectStatus(404)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyUuid,
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  // Export members to CSV
+
+  it('Can export CSV', async function () {
+    const res = await agent
+      .get(`/members/upload/?limit=all`)
+      .expectStatus(200)
+      .expectEmptyBody() // express-test body parsing doesn't support CSV
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-disposition': anyString,
+      });
+
+    assert.match(
+      res.text,
+      /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
+    );
+
+    const csv = Papa.parse(res.text, { header: true });
+    assertExists(csv.data.find((row) => row.name === 'Mr Egg'));
+    assertExists(csv.data.find((row) => row.name === 'Winston Zeddemore'));
+    assertExists(csv.data.find((row) => row.name === 'Ray Stantz'));
+    assertExists(csv.data.find((row) => row.email === 'member2@test.com'));
+    assertExists(csv.data.find((row) => row.tiers.length > 0));
+    assertExists(csv.data.find((row) => row.labels.length > 0));
+  });
+
+  it('Can export a filtered CSV', async function () {
+    const res = await agent
+      .get(`/members/upload/?search=Egg`)
+      .expectStatus(200)
+      .expectEmptyBody() // express-test body parsing doesn't support CSV
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-disposition': anyString,
+      });
+
+    assert.match(
+      res.text,
+      /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
+    );
+
+    const csv = Papa.parse(res.text, { header: true });
+    assertExists(csv.data.find((row) => row.name === 'Mr Egg'));
+    assert.equal(
+      csv.data.find((row) => row.name === 'Egon Spengler'),
+      undefined,
+    );
+    assert.equal(
+      csv.data.find((row) => row.name === 'Ray Stantz'),
+      undefined,
+    );
+    assert.equal(
+      csv.data.find((row) => row.email === 'member2@test.com'),
+      undefined,
+    );
+    // note that this member doesn't have tiers
+    assertExists(csv.data.find((row) => row.labels.length > 0));
+  });
+
+  it('Can delete a member without cancelling Stripe Subscription', async function () {
+    let subscriptionCanceled = false;
+    mockManager.restore();
+    nock('https://api.stripe.com')
+      .persist()
+      .delete(/v1\/.*/)
+      .reply((uri) => {
+        const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
+
+        if (match && resource === 'subscriptions') {
+          subscriptionCanceled = true;
+          return [
+            200,
             {
-                type: 'newsletter_event',
-                data: {
-                    subscribed: false,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id,
-                    newsletter: {
-                        id: newsletters[0].id
-                    }
-                }
+              id,
+              status: 'canceled',
             },
+          ];
+        }
+
+        return [500];
+      });
+
+    // @TODO This is wrong because it changes the state for the rest of the tests
+    // We need to add a member via a fixture and then remove them OR work out how
+    // to reapply fixtures before each test
+    const memberToDelete = fixtureManager.get('members', 2);
+
+    await agent
+      .delete(`members/${memberToDelete.id}/`)
+      .expectStatus(204)
+      .expectEmptyBody()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
+  });
+
+  it('Can delete a member while cancelling Stripe Subscription', async function () {
+    let subscriptionCanceled = false;
+    mockManager.restore();
+    nock('https://api.stripe.com')
+      .persist()
+      .delete(/v1\/.*/)
+      .reply((uri) => {
+        const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
+
+        if (match && resource === 'subscriptions') {
+          subscriptionCanceled = true;
+          return [
+            200,
             {
-                type: 'signup_event'
+              id,
+              status: 'canceled',
             },
+          ];
+        }
+
+        return [500];
+      });
+
+    // @TODO This is wrong because it changes the state for the rest of the tests
+    // We need to add a member via a fixture and then remove them OR work out how
+    // to reapply fixtures before each test
+    const memberToDelete = fixtureManager.get('members', 3);
+
+    await agent
+      .delete(`members/${memberToDelete.id}/?cancel=true`)
+      .expectStatus(204)
+      .expectEmptyBody()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    assert.equal(subscriptionCanceled, true, 'expected subscription to be canceled');
+  });
+
+  // Get stats
+
+  it('Can fetch member counts stats', async function () {
+    await createGiftMember({ email: 'gift-member@test.com' });
+
+    await agent
+      .get(`/members/stats/count/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        data: [
+          {
+            date: anyISODate,
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Errors when fetching stats with unknown days param value', async function () {
+    sinon.stub(logging, 'error');
+    await agent
+      .get('members/stats/?days=nope')
+      .expectStatus(422)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+          },
+        ],
+      });
+  });
+
+  it('Can filter on newsletter slug', async function () {
+    await agent
+      .get('/members/?filter=newsletters:weekly-newsletter')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+          buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can filter on tier slug', async function () {
+    await agent
+      .get('/members/?include=tiers&filter=tier:default-product')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+          buildMemberMatcherShallowIncludesWithTiers(1, 0),
+          buildMemberMatcherShallowIncludesWithTiers(1, 2),
+          buildMemberMatcherShallowIncludesWithTiers(1, 1),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  // Edit a member
+  it('Can add and edit with custom newsletters', async function () {
+    // Add custom newsletter list to new member
+    const member = {
+      name: 'test newsletter',
+      email: 'memberTestAddNewsletter2@test.com',
+      note: 'test note',
+      subscribed: false,
+      labels: ['test-label'],
+      newsletters: [{ id: testUtils.DataGenerator.Content.newsletters[1].id }],
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(1).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+
+    const memberId = body.members[0].id;
+    const editedMember = {
+      newsletters: [{ id: testUtils.DataGenerator.Content.newsletters[0].id }],
+    };
+
+    // Edit newsletter list for member
+    await agent
+      .put(`/members/${memberId}`)
+      .body({ members: [editedMember] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(1).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    sinon.stub(logging, 'error');
+    await agent
+      .post(`/members/`)
+      .body({ members: [member] })
+      .expectStatus(422);
+  });
+
+  it("Setting subscribed when editing a member won't reset to default newsletters", async function () {
+    // First check that this newsletter is off by default, or this test would not make sense
+    const newsletter = await models.Newsletter.findOne(
+      { id: testUtils.DataGenerator.Content.newsletters[0].id },
+      { require: true },
+    );
+    assert.equal(
+      newsletter.get('subscribe_on_signup'),
+      false,
+      'This test expects the newsletter to be off by default',
+    );
+
+    // Add custom newsletter list to new member
+    const member = {
+      name: 'test newsletter',
+      email: 'memberTestChangeSubscribedAttribute@test.com',
+      newsletters: [
+        {
+          id: testUtils.DataGenerator.Content.newsletters[0].id, // This is off by default
+        },
+        {
+          id: testUtils.DataGenerator.Content.newsletters[1].id,
+        },
+      ],
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(2).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+
+    const memberId = body.members[0].id;
+
+    const editedMember = {
+      subscribed: true, // no change
+    };
+
+    // Edit member
+    const { body: body2 } = await agent
+      .put(`/members/${memberId}`)
+      .body({ members: [editedMember] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(2).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+    const changedMember = body2.members[0];
+    assert.equal(changedMember.newsletters.length, 2);
+    assert.ok(
+      changedMember.newsletters.find(
+        (n) => n.id === testUtils.DataGenerator.Content.newsletters[0].id,
+      ),
+      'The member is still subscribed for a newsletter that is off by default',
+    );
+    assert.ok(
+      changedMember.newsletters.find(
+        (n) => n.id === testUtils.DataGenerator.Content.newsletters[1].id,
+      ),
+      'The member is still subscribed for the newsletter it subscribed to',
+    );
+  });
+
+  it('Adding newsletters to member with no subscriptions works even with subscribed false', async function () {
+    // Add member with no subscriptions
+    const member = {
+      name: 'test newsletter',
+      email: 'memberAddNewsletterSubscribed@test.com',
+      newsletters: [],
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(0).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+
+    const memberId = body.members[0].id;
+
+    const editedMember = {
+      subscribed: false,
+      newsletters: [
+        {
+          id: testUtils.DataGenerator.Content.newsletters[0].id,
+        },
+      ],
+    };
+
+    // Edit member
+    const { body: body2 } = await agent
+      .put(`/members/${memberId}`)
+      .body({ members: [editedMember] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(1).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+    const changedMember = body2.members[0];
+    assert.equal(changedMember.newsletters.length, 1);
+    assert.ok(
+      changedMember.newsletters.find(
+        (n) => n.id === testUtils.DataGenerator.Content.newsletters[0].id,
+      ),
+      'The member should be subscribed to the newsletter',
+    );
+  });
+
+  it('Updating member data without newsletters does not change newsletters', async function () {
+    // check that this newsletter is archived, or this test would not make sense
+    const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+    const archivedNewsletter = await models.Newsletter.findOne(
+      { id: archivedNewsletterId },
+      { require: true },
+    );
+    assert.equal(
+      archivedNewsletter.get('status'),
+      'archived',
+      'This test expects the newsletter to be archived',
+    );
+
+    const member = await models.Member.findOne(
+      { id: testUtils.DataGenerator.Content.members[5].id },
+      { withRelated: ['newsletters'] },
+    );
+    const memberNewsletters = member.related('newsletters').models;
+    // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
+    //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
+    // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+    assert.equal(
+      memberNewsletters.length,
+      2,
+      'This test expects the member to have two newsletter subscriptions',
+    );
+
+    const memberId = member.get('id');
+    const editedMember = {
+      id: memberId,
+      name: 'new name',
+    };
+
+    // edit member
+    const { body } = await agent
+      .put(`/members/${memberId}`)
+      .body({ members: [editedMember] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: Array(1).fill(newsletterSnapshot),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    const changedMember = body.members[0];
+    assert.equal(changedMember.newsletters.length, 1); // the api only returns active newsletters
+    assert.ok(
+      changedMember.newsletters.find(
+        (n) => n.id === testUtils.DataGenerator.Content.newsletters[1].id,
+      ),
+      'The member is still subscribed to an active newsletter',
+    );
+
+    const changedMemberFromDb = await models.Member.findOne(
+      { id: testUtils.DataGenerator.Content.members[5].id },
+      { withRelated: ['newsletters'] },
+    );
+    assert.ok(
+      changedMemberFromDb
+        .related('newsletters')
+        .models.find((n) => n.id === testUtils.DataGenerator.Content.newsletters[2].id),
+      'The member is still subscribed to the archived newsletter it subscribed to',
+    );
+  });
+
+  it('Updating newsletter subscriptions does not unsubscribe member from archived newsletter', async function () {
+    // check that this newsletter is archived, or this test would not make sense
+    const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+    const archivedNewsletter = await models.Newsletter.findOne(
+      { id: archivedNewsletterId },
+      { require: true },
+    );
+    assert.equal(
+      archivedNewsletter.get('status'),
+      'archived',
+      'This test expects the newsletter to be archived',
+    );
+
+    const member = await models.Member.findOne(
+      { id: testUtils.DataGenerator.Content.members[5].id },
+      { withRelated: ['newsletters'] },
+    );
+    const memberNewsletters = member.related('newsletters').models;
+    // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
+    //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
+    // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+    assert.equal(
+      memberNewsletters.length,
+      2,
+      'This test expects the member to have two newsletter subscriptions',
+    );
+
+    // remove active newsletter subscriptions
+    const memberId = member.get('id');
+    const editedMember = {
+      newsletters: [],
+    };
+
+    // edit member
+    const { body } = await agent
+      .put(`/members/${memberId}`)
+      .body({ members: [editedMember] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          {
+            id: anyObjectId,
+            uuid: anyUuid,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
+            labels: anyArray,
+            newsletters: new Array(0),
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    const changedMember = body.members[0];
+    assert.equal(changedMember.newsletters.length, 0); // the api only returns active newsletters, so this member should have none
+
+    const changedMemberFromDb = await models.Member.findOne(
+      { id: testUtils.DataGenerator.Content.members[5].id },
+      { withRelated: ['newsletters'] },
+    );
+    assert.ok(
+      changedMemberFromDb
+        .related('newsletters')
+        .models.find((n) => n.id === testUtils.DataGenerator.Content.newsletters[2].id),
+      'The member is still subscribed to the archived newsletter it subscribed to',
+    );
+  });
+
+  it('Can add and send a signup confirmation email (old)', async function () {
+    const filteredNewsletters = newsletters.filter((n) => n.get('subscribe_on_signup'));
+    assert(
+      filteredNewsletters.length > 0,
+      'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true',
+    );
+
+    const member = {
+      name: 'Send Me Confirmation',
+      email: 'member_getting_confirmation_old@test.com',
+      // Mapped to subscribe_on_signup newsletters
+      subscribed: true,
+    };
+
+    const { body } = await agent
+      .post('/members/?send_email=true&email_type=signup')
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithoutIncludesSnapshot({
+            newsletters: filteredNewsletters.length,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyString,
+      });
+
+    const newMember = body.members[0];
+
+    mockManager.assert.sentEmail({
+      subject: '🙌 Complete your sign up to Ghost!',
+      to: 'member_getting_confirmation_old@test.com',
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: filteredNewsletters.map((n) => {
+        return {
+          subscribed: true,
+          newsletter_id: n.id,
+          source: 'admin',
+        };
+      }),
+    });
+
+    // @TODO: do we really need to delete this member here?
+    await agent
+      .delete(`members/${body.members[0].id}/`)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expectStatus(204);
+
+    // There should be no MemberSubscribeEvent remaining.
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+  });
+
+  it('Can add a member that is not subscribed (old)', async function () {
+    const filteredNewsletters = newsletters.filter((n) => n.get('subscribe_on_signup'));
+    assert(
+      filteredNewsletters.length > 0,
+      'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true',
+    );
+
+    const member = {
+      name: 'Send Me Confirmation',
+      email: 'member_getting_confirmation_old_2@test.com',
+      // Mapped to empty newsletters
+      subscribed: false,
+    };
+
+    const { body } = await agent
+      .post('/members/?send_email=true&email_type=signup')
+      .body({ members: [member] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithoutIncludesSnapshot({
+            newsletters: 0,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyString,
+      });
+
+    const newMember = body.members[0];
+
+    mockManager.assert.sentEmail({
+      subject: '🙌 Complete your sign up to Ghost!',
+      to: 'member_getting_confirmation_old_2@test.com',
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+  });
+
+  it('Can unsubscribe by setting (old) subscribed property to false', async function () {
+    const memberToChange = {
+      name: 'change me',
+      email: 'member2unsusbcribeold@test.com',
+      note: 'initial note',
+      newsletters: [newsletters[0]],
+    };
+
+    const memberChanged = {
+      subscribed: false,
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [memberToChange] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithIncludesSnapshot({
+            newsletters: 1,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+    const newMember = body.members[0];
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithIncludesSnapshot({
+            newsletters: 0,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+        {
+          subscribed: false,
+          source: 'admin',
+          newsletter_id: newsletters[0].id,
+        },
+      ],
+    });
+  });
+
+  it('Can subscribe by setting (old) subscribed property to true', async function () {
+    const filteredNewsletters = newsletters.filter((n) => n.get('subscribe_on_signup'));
+    assert(
+      filteredNewsletters.length > 0,
+      'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true',
+    );
+
+    const memberToChange = {
+      name: 'change me',
+      email: 'member2subscribe@test.com',
+      note: 'initial note',
+      newsletters: [],
+    };
+
+    const memberChanged = {
+      subscribed: true,
+    };
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [memberToChange] })
+      .expectStatus(201)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithIncludesSnapshot({
+            newsletters: 0,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+        location: anyLocationFor('members'),
+      });
+    const newMember = body.members[0];
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: [],
+    });
+    await assertMemberEvents({
+      eventType: 'MemberStatusEvent',
+      memberId: newMember.id,
+      asserts: [
+        {
+          from_status: null,
+          to_status: 'free',
+        },
+      ],
+    });
+
+    await agent
+      .put(`/members/${newMember.id}/`)
+      .body({ members: [memberChanged] })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        members: [
+          buildMemberWithIncludesSnapshot({
+            newsletters: filteredNewsletters.length,
+          }),
+        ],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await assertMemberEvents({
+      eventType: 'MemberSubscribeEvent',
+      memberId: newMember.id,
+      asserts: filteredNewsletters.map((n) => {
+        return {
+          subscribed: true,
+          source: 'admin',
+          newsletter_id: n.id,
+        };
+      }),
+    });
+  });
+
+  describe('Email verification trigger', function () {
+    beforeEach(async function () {
+      agent = await agentProvider.getAdminAPIAgent();
+      await fixtureManager.init(
+        'posts',
+        'newsletters',
+        'members:newsletters',
+        'comments',
+        'redirects',
+        'clicks',
+      );
+      await agent.loginAsOwner();
+
+      newsletters = await getNewsletters();
+    });
+
+    afterEach(async function () {
+      await restoreEmailVerificationUtils();
+    });
+
+    it('Can add a member and trigger host email verification limits', async function () {
+      const { webhookSecret, receivedWebhookRequests } = await setupEmailVerificationUtils({
+        adminThreshold: 1,
+      });
+
+      assert.equal(
+        settingsCache.get('email_verification_required'),
+        false,
+        'Before import: email verification should NOT be required',
+      );
+
+      const member = {
+        name: 'pass webhook verification',
+        email: 'memberPassWebhookVerification@test.com',
+      };
+
+      const passVerificationMember = await createMemberThroughApi({
+        member,
+        agent,
+        tiersCount: 0,
+        newsletterCount: 2,
+      });
+
+      await DomainEvents.allSettled();
+
+      assert.equal(
+        settingsCache.get('email_verification_required'),
+        false,
+        'After one import: Email verification should NOT be required',
+      );
+
+      const memberFailLimit = {
+        name: 'fail webhook verification',
+        email: 'memberFailWebhookVerification@test.com',
+      };
+
+      const triggerVerificationMember = await createMemberThroughApi({
+        member: memberFailLimit,
+        agent,
+        tiersCount: 0,
+        newsletterCount: 2,
+      });
+
+      await DomainEvents.allSettled();
+
+      // Crossing the admin threshold must flip email verification on.
+      //
+      // The verification trigger and the members_created_events writer are
+      // two independent MemberCreatedEvent subscribers (VerificationTrigger
+      // and EventStorage) with no ordering guarantee between them. When the
+      // trigger's count query beats EventStorage's insert, it misses the
+      // row for the member that just crossed the threshold, undercounts by
+      // one, and fires one member creation late instead of on the boundary.
+      // This is a known, low-impact off-by-one with no user-facing effect
+      // (the next member creation re-counts and triggers). See BER-3507.
+      //
+      // To stay deterministic the test adds a second member past the
+      // boundary: by the time its event is handled the two earlier members'
+      // rows are guaranteed committed, so the trigger reliably counts past
+      // the threshold however the race landed. This member only needs to
+      // emit a MemberCreatedEvent, so it skips the response-body snapshot.
+      //
+      // TODO: once the trigger no longer depends on a sibling subscriber's
+      // write (e.g. it counts signup events excluding the current member,
+      // then adds a deterministic +1), restore the precise assertion:
+      // create exactly one member past the threshold, assert verification
+      // triggered on that member, and assert the webhook reported
+      // amountTriggered === 2.
+      const { body: recoveryMemberBody } = await agent
+        .post('/members/')
+        .body({
+          members: [
             {
-                type: 'newsletter_event',
-                data: {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id,
-                    newsletter: {
-                        id: newsletters[0].id
-                    }
-                }
-            }
-        ]);
-
-        clock.restore();
-    });
-
-    it('Subscribes to default newsletters', async function () {
-        const filtered = newsletters.filter(n => n.get('subscribe_on_signup'));
-        assert(filtered.length > 0, 'There should be at least one newsletter with subscribe on signup for this test to work');
-
-        const memberToCreate = {
-            name: 'create me',
-            email: 'member2create@test.com'
-        };
-
-        const newMember = await createMemberThroughApi({
-            member: memberToCreate,
-            agent,
-            tiersCount: 0,
-            newsletterCount: 2
-        });
-        assert.equal(newMember.newsletters[0].id, filtered[0].id);
-        assert.equal(newMember.newsletters[1].id, filtered[1].id);
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: filtered.map((n) => {
-                return {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: n.id
-                };
-            })
-        });
-    });
-
-    it('Can add a subscription', async function () {
-        const memberId = testUtils.DataGenerator.Content.members[0].id;
-
-        // Get the stripe price ID of the default price for month
-        const price = await stripeMocker.getPriceForTier('default-product', 'month');
-
-        await agent
-            .post(`/members/${memberId}/subscriptions/`)
-            .body({
-                stripe_price_id: price.id
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: [subscriptionSnapshotWithTier],
-                    current_subscription: nullable(anyObject),
-                    newsletters: new Array(1).fill(newsletterSnapshot),
-                    tiers: [tierSnapshot]
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        // Check member read with a subscription
-        await agent
-            .get(`/members/${memberId}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: [subscriptionSnapshotWithTier],
-                    current_subscription: nullable(anyObject),
-                    newsletters: new Array(1).fill(newsletterSnapshot),
-                    tiers: [tierSnapshot]
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('can change the email address', async function () {
-        const memberToChange = {
-            name: 'Jon Snow',
-            email: 'jon.snow@test.com',
-            newsletters: []
-        };
-
-        const memberChanged = {
-            email: 'aegon.targaryen@test.com'
-        };
-
-        // Create member
-        const newMember = await createMemberThroughApi({
-            member: memberToChange,
-            agent,
-            tiersCount: 0,
-            newsletterCount: 0
-        });
-
-        // Update email address
-        await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        // Check member events
-        await assertMemberEvents({
-            eventType: 'MemberEmailChangeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_email: 'jon.snow@test.com',
-                    to_email: 'aegon.targaryen@test.com'
-                }
-            ]
-        });
-
-        // Check activity feed
-        const {body: eventsBody} = await agent
-            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        const events = eventsBody.events;
-
-        assertArrayMatchesWithoutOrder(events, [
-            {
-                type: 'email_change_event',
-                data: {
-                    from_email: 'jon.snow@test.com',
-                    to_email: 'aegon.targaryen@test.com'
-                }
+              name: 'fail webhook verification recovery',
+              email: 'memberFailWebhookVerificationRecovery@test.com',
             },
-            {
-                type: 'signup_event'
-            }
-        ]);
+          ],
+        })
+        .expectStatus(201);
+      const recoveryMember = recoveryMemberBody.members[0];
+
+      await DomainEvents.allSettled();
+
+      assert.equal(
+        settingsCache.get('email_verification_required'),
+        true,
+        'After exceeding limit: Email verification should be required',
+      );
+
+      emailMockReceiver.assertSentEmailCount(
+        0,
+        'No verification email to be sent when webhook verification is enabled',
+      );
+
+      // Verification triggers at most once: once email_verification_required
+      // is set, later member creations short-circuit, so exactly one webhook
+      // is sent regardless of which member crossed the boundary.
+      const matchingRequests = receivedWebhookRequests.filter((request) => {
+        return (
+          request.body.type === 'mock_verification_event' &&
+          request.body.siteId === '1' &&
+          request.body.threshold === 1 &&
+          request.body.method === 'admin'
+        );
+      });
+
+      assert.equal(
+        matchingRequests.length,
+        1,
+        'Expected exactly one verification webhook to be sent',
+      );
+
+      const matchingRequest = matchingRequests[0];
+
+      // amountTriggered is the member count observed when verification fired.
+      // It is past the threshold (1); the exact value (2 or 3) depends on the
+      // off-by-one race described above.
+      assert.ok(
+        matchingRequest.body.amountTriggered >= 2,
+        'Expected the webhook to report a member count past the threshold',
+      );
+
+      const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp'])
+        ? matchingRequest.headers['x-ghost-request-timestamp'][0]
+        : matchingRequest.headers['x-ghost-request-timestamp'];
+      const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature'])
+        ? matchingRequest.headers['x-ghost-signature'][0]
+        : matchingRequest.headers['x-ghost-signature'];
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
+        .digest('base64');
+
+      assert.ok(
+        requestTimestamp,
+        'Expected the verification webhook request to include a timestamp header',
+      );
+      assert.equal(
+        requestSignature,
+        expectedSignature,
+        'Expected the verification webhook request to be signed',
+      );
+
+      await agent.delete(`/members/${passVerificationMember.id}`);
+      await agent.delete(`/members/${triggerVerificationMember.id}`);
+      await agent.delete(`/members/${recoveryMember.id}`);
     });
-
-    describe('email_disabled', function () {
-        const testMemberId = '6543c13c13575e086a06b222';
-        const suppressedEmail = 'suppressed@email.com';
-        const okEmail = 'ok@email.com';
-
-        let testMember;
-        let suppression;
-
-        beforeEach(async function () {
-            testMember = await models.Member.add({id: testMemberId, email: okEmail, name: 'Test Member 123', email_disabled: false});
-            suppression = await models.Suppression.add({
-                email: suppressedEmail,
-                reason: 'bounce'
-            });
-        });
-
-        afterEach(async function () {
-            // Delete member & suppression
-            await models.Member.destroy({id: testMember.id});
-            await models.Suppression.destroy({id: suppression.id});
-        });
-
-        it('Updates the email_disabled field when a member email is updated', async function () {
-            // Now update the email address of the test member to suppressed email
-            await agent
-                .put(`/members/${testMember.id}/`)
-                .body({members: [{email: suppressedEmail}]})
-                .expectStatus(200);
-
-            // email_disabled should be true
-            await testMember.refresh();
-            assert.equal(testMember.get('email_disabled'), true);
-
-            // Now update the email address of that member to a non-suppressed email
-            await agent
-                .put(`/members/${testMember.id}/`)
-                .body({members: [{email: okEmail}]})
-                .expectStatus(200);
-
-            // email_disabled should be false
-            await testMember.refresh();
-            assert.equal(testMember.get('email_disabled'), false);
-        });
-    });
-
-    describe('deleteEmailSuppression', function () {
-        it('Can delete email suppression for a member', async function () {
-            const suppressedMember = await models.Member.add({
-                email: 'suppression-test@email.com',
-                name: 'Suppression Test',
-                email_disabled: true
-            });
-
-            const suppression = await models.Suppression.add({
-                email: 'suppression-test@email.com',
-                reason: 'bounce'
-            });
-
-            try {
-                await agent
-                    .delete(`/members/${suppressedMember.id}/suppression`)
-                    .expectStatus(204)
-                    .matchBodySnapshot()
-                    .matchHeaderSnapshot({
-                        'content-version': anyContentVersion,
-                        etag: anyEtag
-                    });
-
-                await suppressedMember.refresh();
-                assert.equal(suppressedMember.get('email_disabled'), false);
-
-                const suppressionRecord = await models.Suppression.findOne({email: 'suppression-test@email.com'});
-                assert.equal(suppressionRecord, null);
-            } finally {
-                await models.Member.destroy({id: suppressedMember.id});
-                try {
-                    await models.Suppression.destroy({id: suppression.id});
-                } catch (e) {
-                    // Suppression was already deleted by the endpoint
-                }
-            }
-        });
-
-        it('Returns 404 for non-existent member', async function () {
-            await agent
-                .delete('/members/abcd1234abcd1234abcd1234/suppression')
-                .expectStatus(404)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyUuid
-                    }]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-        });
-
-        it('Returns 500 when suppression removal fails', async function () {
-            const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
-            const removeEmailStub = sinon.stub(emailSuppressionList, 'removeEmail').resolves(false);
-
-            const suppressedMember = await models.Member.add({
-                email: 'suppression-fail-test@email.com',
-                name: 'Suppression Fail Test',
-                email_disabled: true
-            });
-
-            try {
-                await agent
-                    .delete(`/members/${suppressedMember.id}/suppression`)
-                    .expectStatus(500)
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    })
-                    .matchHeaderSnapshot({
-                        'content-version': anyContentVersion,
-                        etag: anyEtag
-                    });
-
-                // Verify email_disabled was NOT changed since the operation failed
-                await suppressedMember.refresh();
-                assert.equal(suppressedMember.get('email_disabled'), true);
-            } finally {
-                removeEmailStub.restore();
-                await models.Member.destroy({id: suppressedMember.id});
-            }
-        });
-    });
-
-    // Log out
-    it('Can log out', async function () {
-        const member = await createMember({
-            name: 'test',
-            email: 'member-log-out-test@test.com'
-        });
-
-        const startTransientId = member.get('transient_id');
-
-        await agent
-            .delete(`/members/${member.id}/sessions/`)
-            .expectStatus(204)
-            .matchBodySnapshot()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await member.refresh();
-        assert.notEqual(member.get('transient_id'), startTransientId, 'The transient_id should have changed');
-    });
-
-    // Delete a member
-
-    it('Can destroy', async function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestDestroy@test.com'
-        };
-
-        const newMember = await createMemberThroughApi({
-            member,
-            agent,
-            tiersCount: 0,
-            newsletterCount: 2
-        });
-
-        await agent
-            .delete(`/members/${newMember.id}`)
-            .expectStatus(204)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await agent
-            .get(`/members/${newMember.id}/`)
-            .expectStatus(404)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyUuid
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Cannot delete a non-existent member', async function () {
-        await agent
-            .delete('/members/abcd1234abcd1234abcd1234')
-            .expectStatus(404)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyUuid
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    // Export members to CSV
-
-    it('Can export CSV', async function () {
-        const res = await agent
-            .get(`/members/upload/?limit=all`)
-            .expectStatus(200)
-            .expectEmptyBody() // express-test body parsing doesn't support CSV
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-disposition': anyString
-            });
-
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
-
-        const csv = Papa.parse(res.text, {header: true});
-        assertExists(csv.data.find(row => row.name === 'Mr Egg'));
-        assertExists(csv.data.find(row => row.name === 'Winston Zeddemore'));
-        assertExists(csv.data.find(row => row.name === 'Ray Stantz'));
-        assertExists(csv.data.find(row => row.email === 'member2@test.com'));
-        assertExists(csv.data.find(row => row.tiers.length > 0));
-        assertExists(csv.data.find(row => row.labels.length > 0));
-    });
-
-    it('Can export a filtered CSV', async function () {
-        const res = await agent
-            .get(`/members/upload/?search=Egg`)
-            .expectStatus(200)
-            .expectEmptyBody() // express-test body parsing doesn't support CSV
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-disposition': anyString
-            });
-
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
-
-        const csv = Papa.parse(res.text, {header: true});
-        assertExists(csv.data.find(row => row.name === 'Mr Egg'));
-        assert.equal(csv.data.find(row => row.name === 'Egon Spengler'), undefined);
-        assert.equal(csv.data.find(row => row.name === 'Ray Stantz'), undefined);
-        assert.equal(csv.data.find(row => row.email === 'member2@test.com'), undefined);
-        // note that this member doesn't have tiers
-        assertExists(csv.data.find(row => row.labels.length > 0));
-    });
-
-    it('Can delete a member without cancelling Stripe Subscription', async function () {
-        let subscriptionCanceled = false;
-        mockManager.restore();
-        nock('https://api.stripe.com')
-            .persist()
-            .delete(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
-
-                if (match && resource === 'subscriptions') {
-                    subscriptionCanceled = true;
-                    return [200, {
-                        id,
-                        status: 'canceled'
-                    }];
-                }
-
-                return [500];
-            });
-
-        // @TODO This is wrong because it changes the state for the rest of the tests
-        // We need to add a member via a fixture and then remove them OR work out how
-        // to reapply fixtures before each test
-        const memberToDelete = fixtureManager.get('members', 2);
-
-        await agent
-            .delete(`members/${memberToDelete.id}/`)
-            .expectStatus(204)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
-    });
-
-    it('Can delete a member while cancelling Stripe Subscription', async function () {
-        let subscriptionCanceled = false;
-        mockManager.restore();
-        nock('https://api.stripe.com')
-            .persist()
-            .delete(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
-
-                if (match && resource === 'subscriptions') {
-                    subscriptionCanceled = true;
-                    return [200, {
-                        id,
-                        status: 'canceled'
-                    }];
-                }
-
-                return [500];
-            });
-
-        // @TODO This is wrong because it changes the state for the rest of the tests
-        // We need to add a member via a fixture and then remove them OR work out how
-        // to reapply fixtures before each test
-        const memberToDelete = fixtureManager.get('members', 3);
-
-        await agent
-            .delete(`members/${memberToDelete.id}/?cancel=true`)
-            .expectStatus(204)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        assert.equal(subscriptionCanceled, true, 'expected subscription to be canceled');
-    });
-
-    // Get stats
-
-    it('Can fetch member counts stats', async function () {
-        await createGiftMember({email: 'gift-member@test.com'});
-
-        await agent
-            .get(`/members/stats/count/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                data: [{
-                    date: anyISODate
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Errors when fetching stats with unknown days param value', async function () {
-        sinon.stub(logging, 'error');
-        await agent
-            .get('members/stats/?days=nope')
-            .expectStatus(422)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('Can filter on newsletter slug', async function () {
-        await agent
-            .get('/members/?filter=newsletters:weekly-newsletter')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can filter on tier slug', async function () {
-        await agent
-            .get('/members/?include=tiers&filter=tier:default-product')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 0),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 2),
-                    buildMemberMatcherShallowIncludesWithTiers(1, 1)
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    // Edit a member
-    it('Can add and edit with custom newsletters', async function () {
-        // Add custom newsletter list to new member
-        const member = {
-            name: 'test newsletter',
-            email: 'memberTestAddNewsletter2@test.com',
-            note: 'test note',
-            subscribed: false,
-            labels: ['test-label'],
-            newsletters: [{id: testUtils.DataGenerator.Content.newsletters[1].id}]
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(1).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const memberId = body.members[0].id;
-        const editedMember = {
-            newsletters: [{id: testUtils.DataGenerator.Content.newsletters[0].id}]
-        };
-
-        // Edit newsletter list for member
-        await agent
-            .put(`/members/${memberId}`)
-            .body({members: [editedMember]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(1).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        sinon.stub(logging, 'error');
-        await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(422);
-    });
-
-    it('Setting subscribed when editing a member won\'t reset to default newsletters', async function () {
-        // First check that this newsletter is off by default, or this test would not make sense
-        const newsletter = await models.Newsletter.findOne({id: testUtils.DataGenerator.Content.newsletters[0].id}, {require: true});
-        assert.equal(newsletter.get('subscribe_on_signup'), false, 'This test expects the newsletter to be off by default');
-
-        // Add custom newsletter list to new member
-        const member = {
-            name: 'test newsletter',
-            email: 'memberTestChangeSubscribedAttribute@test.com',
-            newsletters: [
-                {
-                    id: testUtils.DataGenerator.Content.newsletters[0].id // This is off by default
-                },
-                {
-                    id: testUtils.DataGenerator.Content.newsletters[1].id
-                }
-            ]
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(2).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const memberId = body.members[0].id;
-
-        const editedMember = {
-            subscribed: true // no change
-        };
-
-        // Edit member
-        const {body: body2} = await agent
-            .put(`/members/${memberId}`)
-            .body({members: [editedMember]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(2).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-        const changedMember = body2.members[0];
-        assert.equal(changedMember.newsletters.length, 2);
-        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member is still subscribed for a newsletter that is off by default');
-        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed for the newsletter it subscribed to');
-    });
-
-    it('Adding newsletters to member with no subscriptions works even with subscribed false', async function () {
-        // Add member with no subscriptions
-        const member = {
-            name: 'test newsletter',
-            email: 'memberAddNewsletterSubscribed@test.com',
-            newsletters: []
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(0).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const memberId = body.members[0].id;
-
-        const editedMember = {
-            subscribed: false,
-            newsletters: [
-                {
-                    id: testUtils.DataGenerator.Content.newsletters[0].id
-                }
-            ]
-        };
-
-        // Edit member
-        const {body: body2} = await agent
-            .put(`/members/${memberId}`)
-            .body({members: [editedMember]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(1).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-        const changedMember = body2.members[0];
-        assert.equal(changedMember.newsletters.length, 1);
-        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member should be subscribed to the newsletter');
-    });
-
-    it('Updating member data without newsletters does not change newsletters', async function () {
-        // check that this newsletter is archived, or this test would not make sense
-        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
-        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
-        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
-
-        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
-        const memberNewsletters = member.related('newsletters').models;
-        // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
-        //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
-        // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
-        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
-
-        const memberId = member.get('id');
-        const editedMember = {
-            id: memberId,
-            name: 'new name'
-        };
-
-        // edit member
-        const {body} = await agent
-            .put(`/members/${memberId}`)
-            .body({members: [editedMember]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: Array(1).fill(newsletterSnapshot)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        const changedMember = body.members[0];
-        assert.equal(changedMember.newsletters.length, 1); // the api only returns active newsletters
-        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed to an active newsletter');
-
-        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
-        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
-    });
-
-    it('Updating newsletter subscriptions does not unsubscribe member from archived newsletter', async function () {
-        // check that this newsletter is archived, or this test would not make sense
-        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
-        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
-        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
-
-        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
-        const memberNewsletters = member.related('newsletters').models;
-        // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
-        //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
-        // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
-        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
-
-        // remove active newsletter subscriptions
-        const memberId = member.get('id');
-        const editedMember = {
-            newsletters: []
-        };
-
-        // edit member
-        const {body} = await agent
-            .put(`/members/${memberId}`)
-            .body({members: [editedMember]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [{
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    labels: anyArray,
-                    newsletters: new Array(0)
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        const changedMember = body.members[0];
-        assert.equal(changedMember.newsletters.length, 0); // the api only returns active newsletters, so this member should have none
-
-        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
-        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
-    });
-
-    it('Can add and send a signup confirmation email (old)', async function () {
-        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
-
-        const member = {
-            name: 'Send Me Confirmation',
-            email: 'member_getting_confirmation_old@test.com',
-            // Mapped to subscribe_on_signup newsletters
-            subscribed: true
-        };
-
-        const {body} = await agent
-            .post('/members/?send_email=true&email_type=signup')
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithoutIncludesSnapshot({
-                        newsletters: filteredNewsletters.length
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyString
-            });
-
-        const newMember = body.members[0];
-
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
-            to: 'member_getting_confirmation_old@test.com'
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: filteredNewsletters.map((n) => {
-                return {
-                    subscribed: true,
-                    newsletter_id: n.id,
-                    source: 'admin'
-                };
-            })
-        });
-
-        // @TODO: do we really need to delete this member here?
-        await agent
-            .delete(`members/${body.members[0].id}/`)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .expectStatus(204);
-
-        // There should be no MemberSubscribeEvent remaining.
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-    });
-
-    it('Can add a member that is not subscribed (old)', async function () {
-        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
-
-        const member = {
-            name: 'Send Me Confirmation',
-            email: 'member_getting_confirmation_old_2@test.com',
-            // Mapped to empty newsletters
-            subscribed: false
-        };
-
-        const {body} = await agent
-            .post('/members/?send_email=true&email_type=signup')
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithoutIncludesSnapshot({
-                        newsletters: 0
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyString
-            });
-
-        const newMember = body.members[0];
-
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
-            to: 'member_getting_confirmation_old_2@test.com'
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-    });
-
-    it('Can unsubscribe by setting (old) subscribed property to false', async function () {
-        const memberToChange = {
-            name: 'change me',
-            email: 'member2unsusbcribeold@test.com',
-            note: 'initial note',
-            newsletters: [
-                newsletters[0]
-            ]
-        };
-
-        const memberChanged = {
-            subscribed: false
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [memberToChange]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithIncludesSnapshot({
-                        newsletters: 1
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const newMember = body.members[0];
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin',
-                newsletter_id: newsletters[0].id
-            }]
-        });
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [{
-                from_status: null,
-                to_status: 'free'
-            }]
-        });
-
-        await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithIncludesSnapshot({
-                        newsletters: 0
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }, {
-                    subscribed: false,
-                    source: 'admin',
-                    newsletter_id: newsletters[0].id
-                }
-            ]
-        });
-    });
-
-    it('Can subscribe by setting (old) subscribed property to true', async function () {
-        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
-
-        const memberToChange = {
-            name: 'change me',
-            email: 'member2subscribe@test.com',
-            note: 'initial note',
-            newsletters: []
-        };
-
-        const memberChanged = {
-            subscribed: true
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [memberToChange]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithIncludesSnapshot({
-                        newsletters: 0
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const newMember = body.members[0];
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: []
-        });
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [{
-                from_status: null,
-                to_status: 'free'
-            }]
-        });
-
-        await agent
-            .put(`/members/${newMember.id}/`)
-            .body({members: [memberChanged]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [
-                    buildMemberWithIncludesSnapshot({
-                        newsletters: filteredNewsletters.length
-                    })
-                ]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: filteredNewsletters.map((n) => {
-                return {
-                    subscribed: true,
-                    source: 'admin',
-                    newsletter_id: n.id
-                };
-            })
-        });
-    });
-
-    describe('Email verification trigger', function () {
-        beforeEach(async function () {
-            agent = await agentProvider.getAdminAPIAgent();
-            await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
-            await agent.loginAsOwner();
-
-            newsletters = await getNewsletters();
-        });
-
-        afterEach(async function () {
-            await restoreEmailVerificationUtils();
-        });
-
-        it('Can add a member and trigger host email verification limits', async function () {
-            const {webhookSecret, receivedWebhookRequests} = await setupEmailVerificationUtils({
-                adminThreshold: 1
-            });
-
-            assert.equal(settingsCache.get('email_verification_required'), false, 'Before import: email verification should NOT be required');
-
-            const member = {
-                name: 'pass webhook verification',
-                email: 'memberPassWebhookVerification@test.com'
-            };
-
-            const passVerificationMember = await createMemberThroughApi({member, agent, tiersCount: 0, newsletterCount: 2});
-
-            await DomainEvents.allSettled();
-
-            assert.equal(settingsCache.get('email_verification_required'), false, 'After one import: Email verification should NOT be required');
-
-            const memberFailLimit = {
-                name: 'fail webhook verification',
-                email: 'memberFailWebhookVerification@test.com'
-            };
-
-            const triggerVerificationMember = await createMemberThroughApi({member: memberFailLimit, agent, tiersCount: 0, newsletterCount: 2});
-
-            await DomainEvents.allSettled();
-
-            // Crossing the admin threshold must flip email verification on.
-            //
-            // The verification trigger and the members_created_events writer are
-            // two independent MemberCreatedEvent subscribers (VerificationTrigger
-            // and EventStorage) with no ordering guarantee between them. When the
-            // trigger's count query beats EventStorage's insert, it misses the
-            // row for the member that just crossed the threshold, undercounts by
-            // one, and fires one member creation late instead of on the boundary.
-            // This is a known, low-impact off-by-one with no user-facing effect
-            // (the next member creation re-counts and triggers). See BER-3507.
-            //
-            // To stay deterministic the test adds a second member past the
-            // boundary: by the time its event is handled the two earlier members'
-            // rows are guaranteed committed, so the trigger reliably counts past
-            // the threshold however the race landed. This member only needs to
-            // emit a MemberCreatedEvent, so it skips the response-body snapshot.
-            //
-            // TODO: once the trigger no longer depends on a sibling subscriber's
-            // write (e.g. it counts signup events excluding the current member,
-            // then adds a deterministic +1), restore the precise assertion:
-            // create exactly one member past the threshold, assert verification
-            // triggered on that member, and assert the webhook reported
-            // amountTriggered === 2.
-            const {body: recoveryMemberBody} = await agent
-                .post('/members/')
-                .body({members: [{
-                    name: 'fail webhook verification recovery',
-                    email: 'memberFailWebhookVerificationRecovery@test.com'
-                }]})
-                .expectStatus(201);
-            const recoveryMember = recoveryMemberBody.members[0];
-
-            await DomainEvents.allSettled();
-
-            assert.equal(settingsCache.get('email_verification_required'), true, 'After exceeding limit: Email verification should be required');
-
-            emailMockReceiver.assertSentEmailCount(0, 'No verification email to be sent when webhook verification is enabled');
-
-            // Verification triggers at most once: once email_verification_required
-            // is set, later member creations short-circuit, so exactly one webhook
-            // is sent regardless of which member crossed the boundary.
-            const matchingRequests = receivedWebhookRequests.filter((request) => {
-                return request.body.type === 'mock_verification_event' &&
-                    request.body.siteId === '1' &&
-                    request.body.threshold === 1 &&
-                    request.body.method === 'admin';
-            });
-
-            assert.equal(matchingRequests.length, 1, 'Expected exactly one verification webhook to be sent');
-
-            const matchingRequest = matchingRequests[0];
-
-            // amountTriggered is the member count observed when verification fired.
-            // It is past the threshold (1); the exact value (2 or 3) depends on the
-            // off-by-one race described above.
-            assert.ok(matchingRequest.body.amountTriggered >= 2, 'Expected the webhook to report a member count past the threshold');
-
-            const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp']) ?
-                matchingRequest.headers['x-ghost-request-timestamp'][0] :
-                matchingRequest.headers['x-ghost-request-timestamp'];
-            const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature']) ?
-                matchingRequest.headers['x-ghost-signature'][0] :
-                matchingRequest.headers['x-ghost-signature'];
-            const expectedSignature = crypto.createHmac('sha256', webhookSecret)
-                .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
-                .digest('base64');
-
-            assert.ok(requestTimestamp, 'Expected the verification webhook request to include a timestamp header');
-            assert.equal(requestSignature, expectedSignature, 'Expected the verification webhook request to be signed');
-
-            await agent.delete(`/members/${passVerificationMember.id}`);
-            await agent.delete(`/members/${triggerVerificationMember.id}`);
-            await agent.delete(`/members/${recoveryMember.id}`);
-        });
-    });
+  });
 });
 
 describe('Members API Bulk operations', function () {
-    beforeEach(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('newsletters', 'members:newsletters');
-        await agent.loginAsOwner();
+  beforeEach(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('newsletters', 'members:newsletters');
+    await agent.loginAsOwner();
 
-        mockManager.mockStripe();
-        mockManager.mockMail();
-    });
+    mockManager.mockStripe();
+    mockManager.mockMail();
+  });
 
-    afterEach(function () {
-        mockManager.restore();
-    });
+  afterEach(function () {
+    mockManager.restore();
+  });
 
-    it('Can bulk unsubscribe members with filter', async function () {
-        // This member has 2 subscriptions
-        const member = fixtureManager.get('members', 4);
-        const newsletterCount = 2;
+  it('Can bulk unsubscribe members with filter', async function () {
+    // This member has 2 subscriptions
+    const member = fixtureManager.get('members', 4);
+    const newsletterCount = 2;
 
-        const model = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        assert.equal(model.relations.newsletters.models.length, newsletterCount, 'This test requires a member with 2 or more newsletters');
+    const model = await models.Member.findOne({ id: member.id }, { withRelated: 'newsletters' });
+    assert.equal(
+      model.relations.newsletters.models.length,
+      newsletterCount,
+      'This test requires a member with 2 or more newsletters',
+    );
 
-        await agent
-            .put(`/members/bulk/?filter=id:'${member.id}'`)
-            .body({bulk: {
-                action: 'unsubscribe'
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            // Should contain the count of members, not the newsletter count!
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    await agent
+      .put(`/members/bulk/?filter=id:'${member.id}'`)
+      .body({
+        bulk: {
+          action: 'unsubscribe',
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              // Should contain the count of members, not the newsletter count!
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        assert.equal(updatedModel.relations.newsletters.models.length, 0, 'This member should be unsubscribed from all newsletters');
+    const updatedModel = await models.Member.findOne(
+      { id: member.id },
+      { withRelated: 'newsletters' },
+    );
+    assert.equal(
+      updatedModel.relations.newsletters.models.length,
+      0,
+      'This member should be unsubscribed from all newsletters',
+    );
 
-        // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
-        await agent
-            .put(`/members/bulk/?filter=id:'${member.id}'`)
-            .body({bulk: {
-                action: 'unsubscribe'
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            // Should contain the count of members, not the newsletter count!
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+    // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
+    await agent
+      .put(`/members/bulk/?filter=id:'${member.id}'`)
+      .body({
+        bulk: {
+          action: 'unsubscribe',
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              // Should contain the count of members, not the newsletter count!
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
 
-    it('Can bulk unsubscribe members from specific newsletter', async function () {
-        const member = fixtureManager.get('members', 4);
-        const newsletterCount = 2;
+  it('Can bulk unsubscribe members from specific newsletter', async function () {
+    const member = fixtureManager.get('members', 4);
+    const newsletterCount = 2;
 
-        const model = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        assert.equal(model.relations.newsletters.models.length, newsletterCount, 'This test requires a member with 2 or more newsletters');
+    const model = await models.Member.findOne({ id: member.id }, { withRelated: 'newsletters' });
+    assert.equal(
+      model.relations.newsletters.models.length,
+      newsletterCount,
+      'This test requires a member with 2 or more newsletters',
+    );
 
-        await agent
-            .put(`/members/bulk/?all=true`)
-            .body({bulk: {
-                action: 'unsubscribe',
-                newsletter: model.relations.newsletters.models[0].id,
-                meta: {}
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 4,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            });
-        const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        // ensure they were unsubscribed from the single 'chosen' newsletter
-        assert.equal(updatedModel.relations.newsletters.models.length, newsletterCount - 1);
-    });
+    await agent
+      .put(`/members/bulk/?all=true`)
+      .body({
+        bulk: {
+          action: 'unsubscribe',
+          newsletter: model.relations.newsletters.models[0].id,
+          meta: {},
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 4,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      });
+    const updatedModel = await models.Member.findOne(
+      { id: member.id },
+      { withRelated: 'newsletters' },
+    );
+    // ensure they were unsubscribed from the single 'chosen' newsletter
+    assert.equal(updatedModel.relations.newsletters.models.length, newsletterCount - 1);
+  });
 
-    it('Can bulk unsubscribe members with deprecated subscribed filter', async function () {
-        await agent
-            .put(`/members/bulk/?filter=subscribed:false`)
-            .body({bulk: {
-                action: 'unsubscribe'
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 2, // We have two members who are subscribed to an inactive newsletter
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+  it('Can bulk unsubscribe members with deprecated subscribed filter', async function () {
+    await agent
+      .put(`/members/bulk/?filter=subscribed:false`)
+      .body({
+        bulk: {
+          action: 'unsubscribe',
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 2, // We have two members who are subscribed to an inactive newsletter
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
 
-    it('Can bulk unsubscribe members with deprecated subscribed filter (actual)', async function () {
-        // This member is subscribed to an inactive newsletter
-        const ignoredMember = fixtureManager.get('members', 6);
+  it('Can bulk unsubscribe members with deprecated subscribed filter (actual)', async function () {
+    // This member is subscribed to an inactive newsletter
+    const ignoredMember = fixtureManager.get('members', 6);
 
-        await agent
-            .put(`/members/bulk/?filter=subscribed:true`)
-            .body({bulk: {
-                action: 'unsubscribe'
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 6, // not 7 because members subscribed to an inactive newsletter aren't subscribed (newsletter fixture[2])
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    await agent
+      .put(`/members/bulk/?filter=subscribed:true`)
+      .body({
+        bulk: {
+          action: 'unsubscribe',
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 6, // not 7 because members subscribed to an inactive newsletter aren't subscribed (newsletter fixture[2])
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        const allMembers = await models.Member.findAll({withRelated: 'newsletters'});
-        for (const model of allMembers) {
-            if (model.id === ignoredMember.id) {
-                continue;
-            }
-            assert.equal(model.relations.newsletters.models.length, 0, 'This member should be unsubscribed from all newsletters');
-        }
-    });
+    const allMembers = await models.Member.findAll({ withRelated: 'newsletters' });
+    for (const model of allMembers) {
+      if (model.id === ignoredMember.id) {
+        continue;
+      }
+      assert.equal(
+        model.relations.newsletters.models.length,
+        0,
+        'This member should be unsubscribed from all newsletters',
+      );
+    }
+  });
 
-    it('Can bulk delete a label from members', async function () {
-        await agent
-            .put(`/members/bulk/?all=true`)
-            .body({bulk: {
-                action: 'removeLabel',
-                meta: {
-                    label: {
-                        // Note! this equals DataGenerator.Content.labels[2]
-                        // the index is different in the fixtureManager
-                        id: fixtureManager.get('labels', 1).id
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 2,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+  it('Can bulk delete a label from members', async function () {
+    await agent
+      .put(`/members/bulk/?all=true`)
+      .body({
+        bulk: {
+          action: 'removeLabel',
+          meta: {
+            label: {
+              // Note! this equals DataGenerator.Content.labels[2]
+              // the index is different in the fixtureManager
+              id: fixtureManager.get('labels', 1).id,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 2,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        await agent
-            .put(`/members/bulk/?all=true`)
-            .body({bulk: {
-                action: 'removeLabel',
-                meta: {
-                    label: {
-                        id: fixtureManager.get('labels', 0).id
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+    await agent
+      .put(`/members/bulk/?all=true`)
+      .body({
+        bulk: {
+          action: 'removeLabel',
+          meta: {
+            label: {
+              id: fixtureManager.get('labels', 0).id,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
 
-    it(`Doesn't delete labels apart from the passed label id`, async function () {
-        const member = fixtureManager.get('members', 1);
+  it(`Doesn't delete labels apart from the passed label id`, async function () {
+    const member = fixtureManager.get('members', 1);
 
-        // Manually add 2 labels to a member
-        await models.Member.edit({labels: [{name: 'first-tag'}, {name: 'second-tag'}]}, {id: member.id});
-        const model = await models.Member.findOne({id: member.id}, {withRelated: 'labels'});
-        assert.deepEqual(
-            model.relations.labels.models.map(m => m.get('name')),
-            ['first-tag', 'second-tag']
-        );
+    // Manually add 2 labels to a member
+    await models.Member.edit(
+      { labels: [{ name: 'first-tag' }, { name: 'second-tag' }] },
+      { id: member.id },
+    );
+    const model = await models.Member.findOne({ id: member.id }, { withRelated: 'labels' });
+    assert.deepEqual(
+      model.relations.labels.models.map((m) => m.get('name')),
+      ['first-tag', 'second-tag'],
+    );
 
-        const firstId = model.relations.labels.models[0].id;
-        const secondId = model.relations.labels.models[1].id;
+    const firstId = model.relations.labels.models[0].id;
+    const secondId = model.relations.labels.models[1].id;
 
-        // Delete first label only
-        await agent
-            .put(`/members/bulk/?all=true`)
-            .body({bulk: {
-                action: 'removeLabel',
-                meta: {
-                    label: {
-                        id: secondId
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    // Delete first label only
+    await agent
+      .put(`/members/bulk/?all=true`)
+      .body({
+        bulk: {
+          action: 'removeLabel',
+          meta: {
+            label: {
+              id: secondId,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'labels'});
-        assert.deepEqual(
-            updatedModel.relations.labels.models.map(m => m.id),
-            [firstId]
-        );
-    });
+    const updatedModel = await models.Member.findOne({ id: member.id }, { withRelated: 'labels' });
+    assert.deepEqual(
+      updatedModel.relations.labels.models.map((m) => m.id),
+      [firstId],
+    );
+  });
 
-    it('Can bulk delete a label from members with filters', async function () {
-        const member1 = fixtureManager.get('members', 0);
-        const member2 = fixtureManager.get('members', 1);
+  it('Can bulk delete a label from members with filters', async function () {
+    const member1 = fixtureManager.get('members', 0);
+    const member2 = fixtureManager.get('members', 1);
 
-        // Manually add 2 labels to a member
-        await models.Member.edit({labels: [{name: 'first-tag'}, {name: 'second-tag'}]}, {id: member1.id});
-        const model1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
-        assert.deepEqual(
-            model1.relations.labels.models.map(m => m.get('name')),
-            ['first-tag', 'second-tag']
-        );
+    // Manually add 2 labels to a member
+    await models.Member.edit(
+      { labels: [{ name: 'first-tag' }, { name: 'second-tag' }] },
+      { id: member1.id },
+    );
+    const model1 = await models.Member.findOne({ id: member1.id }, { withRelated: 'labels' });
+    assert.deepEqual(
+      model1.relations.labels.models.map((m) => m.get('name')),
+      ['first-tag', 'second-tag'],
+    );
 
-        const firstId = model1.relations.labels.models[0].id;
-        const secondId = model1.relations.labels.models[1].id;
+    const firstId = model1.relations.labels.models[0].id;
+    const secondId = model1.relations.labels.models[1].id;
 
-        await models.Member.edit({labels: [{name: 'first-tag'}, {name: 'second-tag'}]}, {id: member2.id});
-        const model2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
-        assert.deepEqual(
-            model2.relations.labels.models.map(m => m.id),
-            [firstId, secondId]
-        );
+    await models.Member.edit(
+      { labels: [{ name: 'first-tag' }, { name: 'second-tag' }] },
+      { id: member2.id },
+    );
+    const model2 = await models.Member.findOne({ id: member2.id }, { withRelated: 'labels' });
+    assert.deepEqual(
+      model2.relations.labels.models.map((m) => m.id),
+      [firstId, secondId],
+    );
 
-        await agent
-            .put(`/members/bulk/?filter=id:'${member1.id}'`)
-            .body({bulk: {
-                action: 'removeLabel',
-                meta: {
-                    label: {
-                        // Note! this equals DataGenerator.Content.labels[2]
-                        // the index is different in the fixtureManager
-                        id: firstId
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    await agent
+      .put(`/members/bulk/?filter=id:'${member1.id}'`)
+      .body({
+        bulk: {
+          action: 'removeLabel',
+          meta: {
+            label: {
+              // Note! this equals DataGenerator.Content.labels[2]
+              // the index is different in the fixtureManager
+              id: firstId,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        const updatedModel1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
-        assert.deepEqual(
-            updatedModel1.relations.labels.models.map(m => m.id),
-            [secondId]
-        );
+    const updatedModel1 = await models.Member.findOne(
+      { id: member1.id },
+      { withRelated: 'labels' },
+    );
+    assert.deepEqual(
+      updatedModel1.relations.labels.models.map((m) => m.id),
+      [secondId],
+    );
 
-        const updatedModel2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
-        assert.deepEqual(
-            updatedModel2.relations.labels.models.map(m => m.id),
-            [firstId, secondId]
-        );
-    });
+    const updatedModel2 = await models.Member.findOne(
+      { id: member2.id },
+      { withRelated: 'labels' },
+    );
+    assert.deepEqual(
+      updatedModel2.relations.labels.models.map((m) => m.id),
+      [firstId, secondId],
+    );
+  });
 
-    it('Can bulk add a label to members', async function () {
-        // Create a new label to add
-        const label = await models.Label.add({name: 'bulk-add-label'});
+  it('Can bulk add a label to members', async function () {
+    // Create a new label to add
+    const label = await models.Label.add({ name: 'bulk-add-label' });
 
-        await agent
-            .put('/members/bulk/?all=true')
-            .body({bulk: {
-                action: 'addLabel',
-                meta: {
-                    label: {
-                        id: label.id
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 8,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    await agent
+      .put('/members/bulk/?all=true')
+      .body({
+        bulk: {
+          action: 'addLabel',
+          meta: {
+            label: {
+              id: label.id,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 8,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        // Verify all members have the label
-        const members = await models.Member.findAll({withRelated: 'labels'});
-        for (const member of members) {
-            const labelIds = member.relations.labels.models.map(m => m.id);
-            assert(labelIds.includes(label.id));
-        }
-    });
+    // Verify all members have the label
+    const members = await models.Member.findAll({ withRelated: 'labels' });
+    for (const member of members) {
+      const labelIds = member.relations.labels.models.map((m) => m.id);
+      assert(labelIds.includes(label.id));
+    }
+  });
 
-    it('Can bulk add a label to members with filter', async function () {
-        const member1 = fixtureManager.get('members', 0);
-        const member2 = fixtureManager.get('members', 1);
+  it('Can bulk add a label to members with filter', async function () {
+    const member1 = fixtureManager.get('members', 0);
+    const member2 = fixtureManager.get('members', 1);
 
-        // Create a new label to add
-        const label = await models.Label.add({name: 'filtered-add-label'});
+    // Create a new label to add
+    const label = await models.Label.add({ name: 'filtered-add-label' });
 
-        await agent
-            .put(`/members/bulk/?filter=id:'${member1.id}'`)
-            .body({bulk: {
-                action: 'addLabel',
-                meta: {
-                    label: {
-                        id: label.id
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    await agent
+      .put(`/members/bulk/?filter=id:'${member1.id}'`)
+      .body({
+        bulk: {
+          action: 'addLabel',
+          meta: {
+            label: {
+              id: label.id,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        // Verify only member1 has the label
-        const updatedMember1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
-        assert(updatedMember1.relations.labels.models.map(m => m.id).includes(label.id));
+    // Verify only member1 has the label
+    const updatedMember1 = await models.Member.findOne(
+      { id: member1.id },
+      { withRelated: 'labels' },
+    );
+    assert(updatedMember1.relations.labels.models.map((m) => m.id).includes(label.id));
 
-        const updatedMember2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
-        assert(!updatedMember2.relations.labels.models.some(m => m.id === label.id));
-    });
+    const updatedMember2 = await models.Member.findOne(
+      { id: member2.id },
+      { withRelated: 'labels' },
+    );
+    assert(!updatedMember2.relations.labels.models.some((m) => m.id === label.id));
+  });
 
-    it('Handles duplicate labels gracefully when bulk adding', async function () {
-        const member1 = fixtureManager.get('members', 0);
+  it('Handles duplicate labels gracefully when bulk adding', async function () {
+    const member1 = fixtureManager.get('members', 0);
 
-        // Create a label and add it to member1 (using name, as member model expects)
-        const label = await models.Label.add({name: 'duplicate-label-test'});
-        await models.Member.edit({labels: [{name: 'duplicate-label-test'}]}, {id: member1.id});
+    // Create a label and add it to member1 (using name, as member model expects)
+    const label = await models.Label.add({ name: 'duplicate-label-test' });
+    await models.Member.edit({ labels: [{ name: 'duplicate-label-test' }] }, { id: member1.id });
 
-        // Verify member1 has the label
-        const beforeMember = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
-        const beforeLabelCount = beforeMember.relations.labels.models.filter(m => m.id === label.id).length;
-        assert.equal(beforeLabelCount, 1);
+    // Verify member1 has the label
+    const beforeMember = await models.Member.findOne({ id: member1.id }, { withRelated: 'labels' });
+    const beforeLabelCount = beforeMember.relations.labels.models.filter(
+      (m) => m.id === label.id,
+    ).length;
+    assert.equal(beforeLabelCount, 1);
 
-        // Try to add the same label again
-        await agent
-            .put(`/members/bulk/?filter=id:'${member1.id}'`)
-            .body({bulk: {
-                action: 'addLabel',
-                meta: {
-                    label: {
-                        id: label.id
-                    }
-                }
-            }})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                bulk: {
-                    meta: {
-                        stats: {
-                            successful: 1,
-                            unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
-                    }
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    // Try to add the same label again
+    await agent
+      .put(`/members/bulk/?filter=id:'${member1.id}'`)
+      .body({
+        bulk: {
+          action: 'addLabel',
+          meta: {
+            label: {
+              id: label.id,
+            },
+          },
+        },
+      })
+      .expectStatus(200)
+      .matchBodySnapshot({
+        bulk: {
+          meta: {
+            stats: {
+              successful: 1,
+              unsuccessful: 0,
+            },
+            unsuccessfulData: [],
+            errors: [],
+          },
+        },
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
 
-        // Verify member1 still has only one instance of the label (not duplicated)
-        const afterMember = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
-        const afterLabelCount = afterMember.relations.labels.models.filter(m => m.id === label.id).length;
-        assert.equal(afterLabelCount, 1);
-    });
+    // Verify member1 still has only one instance of the label (not duplicated)
+    const afterMember = await models.Member.findOne({ id: member1.id }, { withRelated: 'labels' });
+    const afterLabelCount = afterMember.relations.labels.models.filter(
+      (m) => m.id === label.id,
+    ).length;
+    assert.equal(afterLabelCount, 1);
+  });
 
-    it('Can bulk delete members', async function () {
-        await agent
-            .delete('/members?all=true')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                meta: {
-                    stats: {
-                        successful: 8,
-                        unsuccessful: 0
-                    },
-                    unsuccessfulIds: [],
-                    errors: []
-                }
-            });
-    });
+  it('Can bulk delete members', async function () {
+    await agent
+      .delete('/members?all=true')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        meta: {
+          stats: {
+            successful: 8,
+            unsuccessful: 0,
+          },
+          unsuccessfulIds: [],
+          errors: [],
+        },
+      });
+  });
 });

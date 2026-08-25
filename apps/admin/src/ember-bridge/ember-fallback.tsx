@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useEmberContext } from './ember-context';
 
-
 /**
  * EmberFallback component that registers itself with the EmberContext.
  * When this component is mounted, it signals that the Ember app should be shown.

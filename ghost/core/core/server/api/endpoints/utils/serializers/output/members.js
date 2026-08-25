@@ -1,30 +1,26 @@
 //@ts-check
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
-const {serialize: serializeCSV} = require('../../../../../services/members/import-export/csv');
-// The export CSV row shape and its encode live in the domain (typed against the export
-// row) rather than here, so a change to the export row is caught by the compiler.
-const {toExportCsvRow} = require('../../../../../services/members/import-export/export/exporter');
 const mappers = require('./mappers');
-const {Transform} = require('stream');
-const {createCSVStreamResponse} = require('./stream-csv-response');
+const { createCSVTransform } = require('./members-csv-transform');
+const { createCSVStreamResponse } = require('./stream-csv-response');
 module.exports = {
-    browse: createSerializer('browse', paginatedMembers),
-    read: createSerializer('read', singleMember),
-    edit: createSerializer('edit', singleMember),
-    add: createSerializer('add', singleMember),
-    destroy: createSerializer('destroy', passthrough),
+  browse: createSerializer('browse', paginatedMembers),
+  read: createSerializer('read', singleMember),
+  edit: createSerializer('edit', singleMember),
+  add: createSerializer('add', singleMember),
+  destroy: createSerializer('destroy', passthrough),
 
-    editSubscription: createSerializer('editSubscription', singleMember),
-    createSubscription: createSerializer('createSubscription', singleMember),
-    bulkDestroy: createSerializer('bulkDestroy', passthrough),
-    bulkEdit: createSerializer('bulkEdit', bulkAction),
-    exportCSV: createSerializer('exportCSV', exportCSV),
+  editSubscription: createSerializer('editSubscription', singleMember),
+  createSubscription: createSerializer('createSubscription', singleMember),
+  bulkDestroy: createSerializer('bulkDestroy', passthrough),
+  bulkEdit: createSerializer('bulkEdit', bulkAction),
+  exportCSV: createSerializer('exportCSV', exportCSV),
 
-    importCSV: createSerializer('importCSV', passthrough),
-    memberStats: createSerializer('memberStats', passthrough),
-    mrrStats: createSerializer('mrrStats', passthrough),
-    activityFeed: createSerializer('activityFeed', activityFeed)
+  importCSV: createSerializer('importCSV', passthrough),
+  memberStats: createSerializer('memberStats', passthrough),
+  mrrStats: createSerializer('mrrStats', passthrough),
+  activityFeed: createSerializer('activityFeed', activityFeed),
 };
 
 /**
@@ -37,10 +33,10 @@ module.exports = {
  * @returns {{members: SerializedMember[], meta: PageMeta}}
  */
 function paginatedMembers(page, _apiConfig, frame) {
-    return {
-        members: page.data.map(model => serializeMember(model, frame.options)),
-        meta: page.meta
-    };
+  return {
+    members: page.data.map((model) => serializeMember(model, frame.options)),
+    meta: page.meta,
+  };
 }
 
 /**
@@ -51,9 +47,9 @@ function paginatedMembers(page, _apiConfig, frame) {
  * @returns {{members: SerializedMember[]}}
  */
 function singleMember(model, _apiConfig, frame) {
-    return {
-        members: [serializeMember(model, frame.options)]
-    };
+  return {
+    members: [serializeMember(model, frame.options)],
+  };
 }
 
 /**
@@ -64,19 +60,19 @@ function singleMember(model, _apiConfig, frame) {
  * @returns {{bulk: SerializedBulkAction}}
  */
 function bulkAction(bulkActionResult, _apiConfig, frame) {
-    return {
-        bulk: {
-            action: frame.data.action,
-            meta: {
-                stats: {
-                    successful: bulkActionResult.successful,
-                    unsuccessful: bulkActionResult.unsuccessful
-                },
-                errors: bulkActionResult.errors,
-                unsuccessfulData: bulkActionResult.unsuccessfulData
-            }
-        }
-    };
+  return {
+    bulk: {
+      action: frame.data.action,
+      meta: {
+        stats: {
+          successful: bulkActionResult.successful,
+          unsuccessful: bulkActionResult.unsuccessful,
+        },
+        errors: bulkActionResult.errors,
+        unsuccessfulData: bulkActionResult.unsuccessfulData,
+      },
+    },
+  };
 }
 
 /**
@@ -84,10 +80,10 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
  * @returns {{events: any[], meta: any}}
  */
 function activityFeed(data, _apiConfig, frame) {
-    return {
-        events: data.events.map(e => mappers.activityFeedEvents(e, frame)),
-        meta: data.meta
-    };
+  return {
+    events: data.events.map((e) => mappers.activityFeedEvents(e, frame)),
+    meta: data.meta,
+  };
 }
 
 /**
@@ -97,82 +93,82 @@ function activityFeed(data, _apiConfig, frame) {
  * @returns {SerializedMember}
  */
 function serializeMember(member, options) {
-    const json = member.toJSON ? member.toJSON(options) : member;
+  const json = member.toJSON ? member.toJSON(options) : member;
 
-    const comped = json.status === 'comped';
+  const comped = json.status === 'comped';
 
-    const subscriptions = json.subscriptions || [];
+  const subscriptions = json.subscriptions || [];
 
-    const serialized = {
-        id: json.id,
-        uuid: json.uuid,
-        email: json.email,
-        name: json.name,
-        note: json.note,
-        geolocation: json.geolocation,
-        subscribed: json.subscribed,
-        created_at: json.created_at,
-        updated_at: json.updated_at,
-        labels: json.labels,
-        subscriptions: subscriptions,
-        avatar_image: json.avatar_image,
-        comped: comped,
-        email_count: json.email_count,
-        email_opened_count: json.email_opened_count,
-        email_open_rate: json.email_open_rate,
-        email_recipients: json.email_recipients,
-        status: json.status,
-        last_seen_at: json.last_seen_at,
-        attribution: serializeAttribution(json.attribution),
-        enable_comment_notifications: json.enable_comment_notifications,
-        enable_updates_and_announcements: json.enable_updates_and_announcements,
-        unsubscribe_url: json.unsubscribe_url,
-        can_comment: json.can_comment,
-        commenting: json.commenting
-    };
+  const serialized = {
+    id: json.id,
+    uuid: json.uuid,
+    email: json.email,
+    name: json.name,
+    note: json.note,
+    geolocation: json.geolocation,
+    subscribed: json.subscribed,
+    created_at: json.created_at,
+    updated_at: json.updated_at,
+    labels: json.labels,
+    subscriptions: subscriptions,
+    avatar_image: json.avatar_image,
+    comped: comped,
+    email_count: json.email_count,
+    email_opened_count: json.email_opened_count,
+    email_open_rate: json.email_open_rate,
+    email_recipients: json.email_recipients,
+    status: json.status,
+    last_seen_at: json.last_seen_at,
+    attribution: serializeAttribution(json.attribution),
+    enable_comment_notifications: json.enable_comment_notifications,
+    enable_updates_and_announcements: json.enable_updates_and_announcements,
+    unsubscribe_url: json.unsubscribe_url,
+    can_comment: json.can_comment,
+    commenting: json.commenting,
+  };
 
-    if (json.products) {
-        serialized.tiers = json.products;
+  if (json.products) {
+    serialized.tiers = json.products;
+  }
+
+  // Present on a read whenever the flag is on; absent otherwise, and absent on
+  // browse. An empty object is a member with no values set.
+  if (json.custom_fields) {
+    serialized.custom_fields = json.custom_fields;
+  }
+
+  serialized.current_subscription = json.current_subscription || null;
+
+  // Rename subscriptions.price.product to subscriptions.price.tier
+  for (const subscription of serialized.subscriptions) {
+    if (!subscription.price) {
+      continue;
     }
 
-    // Present on a read whenever the flag is on; absent otherwise, and absent on
-    // browse. An empty object is a member with no values set.
-    if (json.custom_fields) {
-        serialized.custom_fields = json.custom_fields;
+    if (!subscription.price.tier && subscription.price.product) {
+      subscription.price.tier = subscription.price.product;
+
+      if (!subscription.price.tier.tier_id) {
+        subscription.price.tier.tier_id = subscription.price.tier.product_id;
+      }
+      delete subscription.price.tier.product_id;
     }
+    subscription.attribution = serializeAttribution(subscription.attribution);
+    delete subscription.price.product;
+  }
 
-    serialized.current_subscription = json.current_subscription || null;
+  serialized.email_suppression = json.email_suppression;
 
-    // Rename subscriptions.price.product to subscriptions.price.tier
-    for (const subscription of serialized.subscriptions) {
-        if (!subscription.price) {
-            continue;
-        }
+  if (json.newsletters) {
+    serialized.newsletters = serializeNewsletters(json.newsletters);
+  }
+  // override the `subscribed` param to mean "subscribed to any active newsletter"
+  serialized.subscribed = false;
+  if (Array.isArray(serialized.newsletters) && serialized.newsletters.length > 0) {
+    serialized.subscribed = true;
+  }
 
-        if (!subscription.price.tier && subscription.price.product) {
-            subscription.price.tier = subscription.price.product;
-
-            if (!subscription.price.tier.tier_id) {
-                subscription.price.tier.tier_id = subscription.price.tier.product_id;
-            }
-            delete subscription.price.tier.product_id;
-        }
-        subscription.attribution = serializeAttribution(subscription.attribution);
-        delete subscription.price.product;
-    }
-
-    serialized.email_suppression = json.email_suppression;
-
-    if (json.newsletters) {
-        serialized.newsletters = serializeNewsletters(json.newsletters);
-    }
-    // override the `subscribed` param to mean "subscribed to any active newsletter"
-    serialized.subscribed = false;
-    if (Array.isArray(serialized.newsletters) && serialized.newsletters.length > 0) {
-        serialized.subscribed = true;
-    }
-
-    return serialized;
+  return serialized;
 }
 
 /**
@@ -181,7 +177,7 @@ function serializeMember(member, options) {
  * @returns Data
  */
 function passthrough(data) {
-    return data;
+  return data;
 }
 
 /**
@@ -193,11 +189,11 @@ function passthrough(data) {
  * @returns {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => void}
  */
 function createSerializer(debugString, serialize) {
-    return function serializer(data, apiConfig, frame) {
-        debug(debugString);
-        const response = serialize(data, apiConfig, frame);
-        frame.response = response;
-    };
+  return function serializer(data, apiConfig, frame) {
+    debug(debugString);
+    const response = serialize(data, apiConfig, frame);
+    frame.response = response;
+  };
 }
 
 /**
@@ -328,76 +324,34 @@ function createSerializer(debugString, serialize) {
  */
 
 function serializeAttribution(attribution) {
-    if (!attribution) {
-        return attribution;
-    }
+  if (!attribution) {
+    return attribution;
+  }
 
-    return {
-        id: attribution?.id,
-        type: attribution?.type,
-        url: attribution?.url,
-        title: attribution?.title,
-        referrer_source: attribution?.referrerSource,
-        referrer_medium: attribution?.referrerMedium,
-        referrer_url: attribution.referrerUrl
-    };
+  return {
+    id: attribution?.id,
+    type: attribution?.type,
+    url: attribution?.url,
+    title: attribution?.title,
+    referrer_source: attribution?.referrerSource,
+    referrer_medium: attribution?.referrerMedium,
+    referrer_url: attribution.referrerUrl,
+  };
 }
 
 function serializeNewsletter(newsletter) {
-    const newsletterFields = [
-        'id',
-        'name',
-        'description',
-        'status'
-    ];
+  const newsletterFields = ['id', 'name', 'description', 'status'];
 
-    return _.pick(newsletter, newsletterFields);
+  return _.pick(newsletter, newsletterFields);
 }
 
 function serializeNewsletters(newsletters) {
-    return newsletters
-        .filter(newsletter => newsletter.status === 'active')
-        .sort((a, b) => {
-            return a.sort_order - b.sort_order;
-        })
-        .map(newsletter => serializeNewsletter(newsletter));
-}
-
-/**
- * Create a CSV Transform stream
- * @returns {Transform} Transform stream that converts objects to CSV
- */
-function createCSVTransform() {
-    // Locked in from the first row rather than declared up front: custom fields
-    // add a column per site, so the column set isn't known until a row arrives.
-    // Every row carries the same keys, so the first is representative.
-    let fields = null;
-
-    return new Transform({
-        objectMode: true,
-        transform(member, encoding, callback) {
-            try {
-                // Format the member data for CSV
-                const formattedMember = toExportCsvRow(member);
-
-                // For first chunk, include the headers
-                if (fields === null) {
-                    fields = Object.keys(formattedMember);
-                    const csv = serializeCSV([formattedMember], {columns: fields, header: true});
-                    callback(null, csv);
-                } else {
-                    // For subsequent chunks, don't include headers, just the data
-                    const csv = serializeCSV([formattedMember], {columns: fields, header: false});
-
-                    // Make sure each row starts with a newline to ensure separation between rows
-                    // Ensure consistent line endings by using explicit CR+LF sequence
-                    callback(null, '\r\n' + csv.replace(/^\r?\n+/, ''));
-                }
-            } catch (err) {
-                callback(err);
-            }
-        }
-    });
+  return newsletters
+    .filter((newsletter) => newsletter.status === 'active')
+    .sort((a, b) => {
+      return a.sort_order - b.sort_order;
+    })
+    .map((newsletter) => serializeNewsletter(newsletter));
 }
 
 /**
@@ -408,16 +362,16 @@ function createCSVTransform() {
  * @returns {Function} - A response handler that streams the CSV
  */
 function exportCSV(data) {
-    debug('exportCSV');
+  debug('exportCSV');
 
-    // The export endpoint always yields a stream (response.stream: true), so there is
-    // only ever a stream to pipe.
-    const datetime = (new Date()).toJSON().substring(0, 10);
-    const filename = data.filename || `members.${datetime}.csv`;
+  // The export endpoint always yields a stream (response.stream: true), so there is
+  // only ever a stream to pipe.
+  const datetime = new Date().toJSON().substring(0, 10);
+  const filename = data.filename || `members.${datetime}.csv`;
 
-    return createCSVStreamResponse({
-        source: data.data,
-        transform: createCSVTransform(),
-        filename
-    });
+  return createCSVStreamResponse({
+    source: data.data,
+    transform: createCSVTransform(),
+    filename,
+  });
 }

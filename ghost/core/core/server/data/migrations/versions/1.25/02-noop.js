@@ -1,6 +1,6 @@
-const {createTransactionalMigration} = require('../../utils');
+const { createTransactionalMigration } = require('../../utils');
 
 module.exports = createTransactionalMigration(
-    async function up() {},
-    async function down() {}
+  async function up() {},
+  async function down() {},
 );

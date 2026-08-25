@@ -1,74 +1,76 @@
 import {
-    PostAnalyticsGrowthPage,
-    PostAnalyticsOverviewPage,
-    PostAnalyticsPage,
-    PostAnalyticsWebTrafficPage
+  PostAnalyticsGrowthPage,
+  PostAnalyticsOverviewPage,
+  PostAnalyticsPage,
+  PostAnalyticsWebTrafficPage,
 } from '@/admin-pages';
-import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {createPostFactory} from '@/data-factory';
-import {expect, test} from '@/helpers/playwright';
+import { SettingsService } from '@/helpers/services/settings/settings-service';
+import { createPostFactory } from '@/data-factory';
+import { expect, test } from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
-    test.beforeEach(async ({page}) => {
-        const postFactory = createPostFactory(page.request);
-        const post = await postFactory.create({
-            title: 'Post analytics overview test',
-            status: 'published'
-        });
-
-        const postAnalyticsOverviewPage = new PostAnalyticsOverviewPage(page);
-        await postAnalyticsOverviewPage.gotoForPost(post.id);
+  test.beforeEach(async ({ page }) => {
+    const postFactory = createPostFactory(page.request);
+    const post = await postFactory.create({
+      title: 'Post analytics overview test',
+      status: 'published',
     });
 
-    test('empty page with all tabs', async ({page}) => {
-        const postAnalyticsPage = new PostAnalyticsPage(page);
+    const postAnalyticsOverviewPage = new PostAnalyticsOverviewPage(page);
+    await postAnalyticsOverviewPage.gotoForPost(post.id);
+  });
 
-        await expect(postAnalyticsPage.overviewButton).toBeVisible();
-        await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
-        await expect(postAnalyticsPage.growthButton).toBeVisible();
-    });
+  test('empty page with all tabs', async ({ page }) => {
+    const postAnalyticsPage = new PostAnalyticsPage(page);
 
-    test('empty page - overview - web performance - view more', async ({page}) => {
-        const postAnalyticsPage = new PostAnalyticsPage(page);
-        await postAnalyticsPage.webPerformanceSection.viewMoreButton.click();
+    await expect(postAnalyticsPage.overviewButton).toBeVisible();
+    await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
+    await expect(postAnalyticsPage.growthButton).toBeVisible();
+  });
 
-        const postAnalyticsWebTrafficPage = new PostAnalyticsWebTrafficPage(page);
-        await expect(postAnalyticsWebTrafficPage.body).toContainText('No visitors in the last 30 days');
-    });
+  test('empty page - overview - web performance - view more', async ({ page }) => {
+    const postAnalyticsPage = new PostAnalyticsPage(page);
+    await postAnalyticsPage.webPerformanceSection.viewMoreButton.click();
 
-    test('empty page - overview - growth', async ({page}) => {
-        const postAnalyticsPage = new PostAnalyticsPage(page);
+    const postAnalyticsWebTrafficPage = new PostAnalyticsWebTrafficPage(page);
+    await expect(postAnalyticsWebTrafficPage.body).toContainText('No visitors in the last 30 days');
+  });
 
-        await expect(postAnalyticsPage.growthSection.card).toContainText('Free members');
-        await expect(postAnalyticsPage.growthSection.card).toContainText('0');
-    });
+  test('empty page - overview - growth', async ({ page }) => {
+    const postAnalyticsPage = new PostAnalyticsPage(page);
 
-    test('empty page - overview - growth - view more', async ({page}) => {
-        const postAnalyticsPage = new PostAnalyticsPage(page);
-        await postAnalyticsPage.growthSection.viewMoreButton.click();
+    await expect(postAnalyticsPage.growthSection.card).toContainText('Free members');
+    await expect(postAnalyticsPage.growthSection.card).toContainText('0');
+  });
 
-        const postAnalyticsGrowthPage = new PostAnalyticsGrowthPage(page);
-        await expect(postAnalyticsGrowthPage.topSourcesCard).toContainText('No sources data available');
-    });
+  test('empty page - overview - growth - view more', async ({ page }) => {
+    const postAnalyticsPage = new PostAnalyticsPage(page);
+    await postAnalyticsPage.growthSection.viewMoreButton.click();
 
-    test('growth tab and section - hidden when member sources tracking disabled', async ({page}) => {
-        const settingsService = new SettingsService(page.request);
-        const postAnalyticsPage = new PostAnalyticsPage(page);
+    const postAnalyticsGrowthPage = new PostAnalyticsGrowthPage(page);
+    await expect(postAnalyticsGrowthPage.topSourcesCard).toContainText('No sources data available');
+  });
 
-        await expect(postAnalyticsPage.growthButton).toBeVisible();
-        await expect(postAnalyticsPage.growthSection.card).toBeVisible();
+  test('growth tab and section - hidden when member sources tracking disabled', async ({
+    page,
+  }) => {
+    const settingsService = new SettingsService(page.request);
+    const postAnalyticsPage = new PostAnalyticsPage(page);
 
-        try {
-            await settingsService.setMembersTrackSources(false);
-            await page.reload();
+    await expect(postAnalyticsPage.growthButton).toBeVisible();
+    await expect(postAnalyticsPage.growthSection.card).toBeVisible();
 
-            await expect(postAnalyticsPage.growthButton).toBeHidden();
-            await expect(postAnalyticsPage.growthSection.card).toBeHidden();
-            await expect(postAnalyticsPage.overviewButton).toBeVisible();
-            await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
-        } finally {
-            await settingsService.setMembersTrackSources(true);
-            await page.reload();
-        }
-    });
+    try {
+      await settingsService.setMembersTrackSources(false);
+      await page.reload();
+
+      await expect(postAnalyticsPage.growthButton).toBeHidden();
+      await expect(postAnalyticsPage.growthSection.card).toBeHidden();
+      await expect(postAnalyticsPage.overviewButton).toBeVisible();
+      await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
+    } finally {
+      await settingsService.setMembersTrackSources(true);
+      await page.reload();
+    }
+  });
 });

@@ -1,214 +1,266 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const sinon = require('sinon');
 const urlService = require('../../../../core/server/services/url');
 const authorsHelper = require('../../../../core/frontend/helpers/authors');
 const testUtils = require('../../../utils');
 
 describe('{{authors}} helper', function () {
-    let urlServiceGetUrlForResourceStub;
+  let urlServiceGetUrlForResourceStub;
 
-    beforeEach(function () {
-        urlServiceGetUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
-    });
+  beforeEach(function () {
+    urlServiceGetUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
+  });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+  afterEach(function () {
+    sinon.restore();
+  });
 
-    it('can return string with authors', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'Michael'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'Thomas'})
-        ];
+  it('can return string with authors', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'Michael' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'Thomas' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { autolink: 'false' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), 'Michael, Thomas');
-    });
+    assert.equal(String(rendered), 'Michael, Thomas');
+  });
 
-    it('can return string with authors with special chars', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'John O\'Nolan'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'AB=CD`EF'})
-        ];
+  it('can return string with authors with special chars', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: "John O'Nolan" }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'AB=CD`EF' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { autolink: 'false' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), 'John O&#x27;Nolan, AB&#x3D;CD&#x60;EF');
-    });
+    assert.equal(String(rendered), 'John O&#x27;Nolan, AB&#x3D;CD&#x60;EF');
+  });
 
-    it('can use a different separator', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'haunted'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
-        ];
+  it('can use a different separator', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'haunted' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'ghost' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {separator: '|', autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call(
+      { authors: authors },
+      { hash: { separator: '|', autolink: 'false' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), 'haunted|ghost');
-    });
+    assert.equal(String(rendered), 'haunted|ghost');
+  });
 
-    it('can add a single prefix to multiple authors', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'haunted'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
-        ];
+  it('can add a single prefix to multiple authors', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'haunted' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'ghost' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {prefix: 'on ', autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call(
+      { authors: authors },
+      { hash: { prefix: 'on ', autolink: 'false' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), 'on haunted, ghost');
-    });
+    assert.equal(String(rendered), 'on haunted, ghost');
+  });
 
-    it('can add a single suffix to multiple authors', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'haunted'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
-        ];
+  it('can add a single suffix to multiple authors', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'haunted' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'ghost' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {suffix: ' forever', autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call(
+      { authors: authors },
+      { hash: { suffix: ' forever', autolink: 'false' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), 'haunted, ghost forever');
-    });
+    assert.equal(String(rendered), 'haunted, ghost forever');
+  });
 
-    it('can add a prefix and suffix to multiple authors', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'haunted'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
-        ];
+  it('can add a prefix and suffix to multiple authors', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'haunted' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'ghost' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {suffix: ' forever', prefix: 'on ', autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call(
+      { authors: authors },
+      { hash: { suffix: ' forever', prefix: 'on ', autolink: 'false' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), 'on haunted, ghost forever');
-    });
+    assert.equal(String(rendered), 'on haunted, ghost forever');
+  });
 
-    it('can add a prefix and suffix with HTML', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'haunted'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
-        ];
+  it('can add a prefix and suffix with HTML', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'haunted' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'ghost' }),
+    ];
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call(
+      { authors: authors },
+      { hash: { suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '&hellip; haunted, ghost &bull;');
-    });
+    assert.equal(String(rendered), '&hellip; haunted, ghost &bull;');
+  });
 
-    it('does not add prefix or suffix if no authors exist', function () {
-        const rendered = authorsHelper.call({}, {hash: {prefix: 'on ', suffix: ' forever', autolink: 'false'}});
-        assertExists(rendered);
+  it('does not add prefix or suffix if no authors exist', function () {
+    const rendered = authorsHelper.call(
+      {},
+      { hash: { prefix: 'on ', suffix: ' forever', autolink: 'false' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '');
-    });
+    assert.equal(String(rendered), '');
+  });
 
-    it('can autolink authors to author pages', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
-        ];
+  it('can autolink authors to author pages', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url 1');
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url 2');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[0].id }))
+      .returns('author url 1');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[1].id }))
+      .returns('author url 2');
 
-        const rendered = authorsHelper.call({authors: authors});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url 1">foo</a>, <a href="author url 2">bar</a>');
-    });
+    assert.equal(
+      String(rendered),
+      '<a href="author url 1">foo</a>, <a href="author url 2">bar</a>',
+    );
+  });
 
-    it('can limit no. authors output to 1', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
-        ];
+  it('can limit no. authors output to 1', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url 1');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[0].id }))
+      .returns('author url 1');
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {limit: '1'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { limit: '1' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url 1">foo</a>');
-    });
+    assert.equal(String(rendered), '<a href="author url 1">foo</a>');
+  });
 
-    it('can list authors from a specified no.', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
-        ];
+  it('can list authors from a specified no.', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url 2');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[1].id }))
+      .returns('author url 2');
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { from: '2' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url 2">bar</a>');
-    });
+    assert.equal(String(rendered), '<a href="author url 2">bar</a>');
+  });
 
-    it('can list authors to a specified no.', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
-        ];
+  it('can list authors to a specified no.', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[0].id }))
+      .returns('author url');
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {to: '1'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { to: '1' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url">foo</a>');
-    });
+    assert.equal(String(rendered), '<a href="author url">foo</a>');
+  });
 
-    it('can list authors in a range', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
-        ];
+  it('can list authors in a range', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'baz', slug: 'baz' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url 2');
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[2].id})).returns('author url 3');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[1].id }))
+      .returns('author url 2');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[2].id }))
+      .returns('author url 3');
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', to: '3'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { from: '2', to: '3' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url 2">bar</a>, <a href="author url 3">baz</a>');
-    });
+    assert.equal(
+      String(rendered),
+      '<a href="author url 2">bar</a>, <a href="author url 3">baz</a>',
+    );
+  });
 
-    it('can limit no. authors and output from 2', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
-        ];
+  it('can limit no. authors and output from 2', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'baz', slug: 'baz' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url x');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[1].id }))
+      .returns('author url x');
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', limit: '1'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call({ authors: authors }, { hash: { from: '2', limit: '1' } });
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url x">bar</a>');
-    });
+    assert.equal(String(rendered), '<a href="author url x">bar</a>');
+  });
 
-    it('can list authors in a range (ignore limit)', function () {
-        const authors = [
-            testUtils.DataGenerator.forKnex.createUser({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'}),
-            testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
-        ];
+  it('can list authors in a range (ignore limit)', function () {
+    const authors = [
+      testUtils.DataGenerator.forKnex.createUser({ name: 'foo', slug: 'foo-bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'bar', slug: 'bar' }),
+      testUtils.DataGenerator.forKnex.createUser({ name: 'baz', slug: 'baz' }),
+    ];
 
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url a');
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url b');
-        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[2].id})).returns('author url c');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[0].id }))
+      .returns('author url a');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[1].id }))
+      .returns('author url b');
+    urlServiceGetUrlForResourceStub
+      .withArgs(sinon.match({ id: authors[2].id }))
+      .returns('author url c');
 
-        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '1', to: '3', limit: '2'}});
-        assertExists(rendered);
+    const rendered = authorsHelper.call(
+      { authors: authors },
+      { hash: { from: '1', to: '3', limit: '2' } },
+    );
+    assertExists(rendered);
 
-        assert.equal(String(rendered), '<a href="author url a">foo</a>, <a href="author url b">bar</a>, <a href="author url c">baz</a>');
-    });
+    assert.equal(
+      String(rendered),
+      '<a href="author url a">foo</a>, <a href="author url b">bar</a>, <a href="author url c">baz</a>',
+    );
+  });
 });

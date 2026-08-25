@@ -8,30 +8,27 @@ const OffersModule = require('./offers-module');
 let redirectManager;
 
 module.exports = {
-    async init() {
-        redirectManager = new DynamicRedirectManager({
-            permanentMaxAge: config.get('caching:customRedirects:maxAge'),
-            getSubdirectoryURL: (pathname) => {
-                return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
-            }
-        });
-        const repository = new OfferBookshelfRepository(
-            models.Offer,
-            models.OfferRedemption
-        );
-        const offersModule = OffersModule.create({
-            redirectManager,
-            repository
-        });
+  async init() {
+    redirectManager = new DynamicRedirectManager({
+      permanentMaxAge: config.get('caching:customRedirects:maxAge'),
+      getSubdirectoryURL: (pathname) => {
+        return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+      },
+    });
+    const repository = new OfferBookshelfRepository(models.Offer, models.OfferRedemption);
+    const offersModule = OffersModule.create({
+      redirectManager,
+      repository,
+    });
 
-        this.api = offersModule.api;
+    this.api = offersModule.api;
 
-        await offersModule.init();
-    },
+    await offersModule.init();
+  },
 
-    api: null,
+  api: null,
 
-    get middleware() {
-        return redirectManager.handleRequest;
-    }
+  get middleware() {
+    return redirectManager.handleRequest;
+  },
 };

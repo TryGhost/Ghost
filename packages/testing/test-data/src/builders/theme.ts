@@ -1,4 +1,4 @@
-import {createBuilder} from "../factory";
+import { createBuilder } from '../factory';
 
 /**
  * Ghost Admin API theme resource, as returned by the browse (`/themes/`),
@@ -11,48 +11,48 @@ import {createBuilder} from "../factory";
  * consumed by any admin client.
  */
 export interface ThemePackage {
+  name?: string;
+  description?: string;
+  version?: string;
+  author?: {
     name?: string;
-    description?: string;
-    version?: string;
-    author?: {
-        name?: string;
-    };
+  };
 }
 
 export interface Theme {
-    name: string;
-    package: ThemePackage;
-    active: boolean;
-    templates: unknown[];
-    /** gscan problems surfaced by install/activate flows and the admin sidebar's theme-error banner. */
-    errors: unknown[];
-    warnings: unknown[];
+  name: string;
+  package: ThemePackage;
+  active: boolean;
+  templates: unknown[];
+  /** gscan problems surfaced by install/activate flows and the admin sidebar's theme-error banner. */
+  errors: unknown[];
+  warnings: unknown[];
 }
 
 /** Defaults to an inactive casper — override `active` (and `name`) as needed. */
 export const theme = createBuilder<Theme>(() => ({
-    name: "casper",
-    package: {
-        name: "casper",
-        description: "A clean, minimal default theme for the Ghost publishing platform",
-        version: "5.4.10",
-        author: {
-            name: "Ghost Foundation"
-        }
+  name: 'casper',
+  package: {
+    name: 'casper',
+    description: 'A clean, minimal default theme for the Ghost publishing platform',
+    version: '5.4.10',
+    author: {
+      name: 'Ghost Foundation',
     },
-    active: false,
-    templates: [],
-    errors: [],
-    warnings: []
+  },
+  active: false,
+  templates: [],
+  errors: [],
+  warnings: [],
 }));
 
 export interface ThemesResponse {
-    themes: Theme[];
+  themes: Theme[];
 }
 
 /** `/themes/` browse envelope (no pagination meta, unlike most browse endpoints). */
 function themesListResponse(themes: Theme[]): ThemesResponse {
-    return {themes};
+  return { themes };
 }
 
 /**
@@ -61,19 +61,19 @@ function themesListResponse(themes: Theme[]): ThemesResponse {
  * by name and flip `active` per test.
  */
 export function defaultThemesResponse(): ThemesResponse {
-    return themesListResponse([
-        theme(),
-        theme({
-            name: "edition",
-            package: {
-                name: "edition",
-                description: "A clean, minimal newsletter theme for the Ghost publishing platform",
-                version: "1.0.0",
-                author: {
-                    name: "Ghost Foundation"
-                }
-            },
-            active: true
-        })
-    ]);
+  return themesListResponse([
+    theme(),
+    theme({
+      name: 'edition',
+      package: {
+        name: 'edition',
+        description: 'A clean, minimal newsletter theme for the Ghost publishing platform',
+        version: '1.0.0',
+        author: {
+          name: 'Ghost Foundation',
+        },
+      },
+      active: true,
+    }),
+  ]);
 }

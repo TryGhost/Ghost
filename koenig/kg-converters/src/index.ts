@@ -1,1 +1,1 @@
-export {lexicalToMobiledoc, mobiledocToLexical} from './kg-converters.js';
+export { lexicalToMobiledoc, mobiledocToLexical } from './kg-converters.js';

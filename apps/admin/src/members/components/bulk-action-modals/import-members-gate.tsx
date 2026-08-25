@@ -1,13 +1,13 @@
-import {ImportMembersModal as BaselineImportMembersModal} from '@/members/components/bulk-action-modals/import-members-modal';
-import {ImportMembersModal as CustomFieldsImportMembersModal} from '@/members/components/bulk-action-modals/import-members/custom-fields/import-members-modal';
-import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
-import type {ImportResponse} from '@/members/components/bulk-action-modals/import-members/state';
+import { ImportMembersModal as BaselineImportMembersModal } from '@/members/components/bulk-action-modals/import-members-modal';
+import { ImportMembersModal as CustomFieldsImportMembersModal } from '@/members/components/bulk-action-modals/import-members/custom-fields/import-members-modal';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import type { ImportResponse } from '@/members/components/bulk-action-modals/import-members/state';
 
 interface ImportMembersGateProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onComplete?: (importResponse?: ImportResponse) => void;
-    onClose?: (importResponse?: ImportResponse) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onComplete?: (importResponse?: ImportResponse) => void;
+  onClose?: (importResponse?: ImportResponse) => void;
 }
 
 /**
@@ -24,12 +24,12 @@ interface ImportMembersGateProps {
  * to one, until the flag goes and the baseline is deleted.
  */
 export function ImportMembersGate(props: ImportMembersGateProps) {
-    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
 
-    if (customFieldsEnabled) {
-        return <CustomFieldsImportMembersModal {...props} />;
-    }
-    return <BaselineImportMembersModal {...props} />;
+  if (customFieldsEnabled) {
+    return <CustomFieldsImportMembersModal {...props} />;
+  }
+  return <BaselineImportMembersModal {...props} />;
 }
 
 export default ImportMembersGate;

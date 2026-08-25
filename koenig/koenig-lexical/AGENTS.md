@@ -1,26 +1,17 @@
-# Koenig Lexical Test Guide
+# Koenig Lexical agent guidance
 
-## Test Commands
+Read the [`README.md`](./README.md), especially its development, testing, and
+editor-integration sections, before changing this package.
 
-### Unit Tests
-```bash
-pnpm test:unit          # Run unit tests once
-pnpm test:unit:watch    # Run unit tests in watch mode
-```
+## Required workflow
 
-### Acceptance Tests (Playwright)
-```bash
-pnpm test:acceptance           # Run Playwright tests (headless, list reporter)
-pnpm test:acceptance:quiet     # Minimal output, failures only
-pnpm test:acceptance:headed    # Run with browser UI visible
-pnpm test:acceptance:report    # Run with HTML report
-pnpm test:slowmo               # Slow motion + UI
-```
-
-### All Tests
-```bash
-pnpm test               # Run unit + acceptance tests, then lint
-```
+- Always use `pnpm`.
+- These Playwright tests are package-level acceptance tests. Ghost's browser
+  E2E suite lives in the repository-level `e2e/` workspace.
+- Use `pnpm test:unit:watch` for focused unit-test development and
+  `pnpm test:acceptance:quiet` when concise acceptance-test output is useful.
+- Run the relevant focused tests while iterating, then run `pnpm test` and
+  `pnpm lint` before submitting changes.
 
 ## AI-Friendly Testing
 
@@ -31,30 +22,8 @@ The test runner has been configured to work well with AI agents:
 - **Clean exit**: Tests complete without hanging processes or opening browsers
 - **Clear output**: List reporter provides clear pass/fail information
 
-## Human-Friendly Testing
-
-For debugging and development:
-
-- Use `pnpm test:acceptance:headed` to see the browser UI
-- Use `pnpm test:acceptance:report` to generate an HTML report
-- Use `pnpm test:slowmo` for slow-motion debugging
-
-## Environment Variables
-
-- `PLAYWRIGHT_HEADED=true` - Show browser UI
-- `PLAYWRIGHT_HTML_REPORT=true` - Generate HTML report
-- `PLAYWRIGHT_SLOWMO=100` - Slow motion delay (ms)
-
-## Test Structure
-
-- `test/unit/` - Unit tests (Vitest)
-- `test/e2e/` - Package-level acceptance tests (Playwright,
-  `test:acceptance` target); Ghost's end-to-end suite lives in the repository's
-  top-level `e2e/` directory
-- `test/utils/` - Shared test utilities
-
-## Development Workflow
-
-1. Run unit tests during development: `pnpm test:unit:watch`
-2. Run acceptance tests before committing: `pnpm test:acceptance`
-3. Use headed mode for debugging: `pnpm test:acceptance:headed`
+- Use `pnpm test:acceptance:headed`, `pnpm test:acceptance --ui`, or
+  `pnpm test:slowmo` only when interactive debugging is useful; do not leave a
+  browser or report server running after validation.
+- Update the README when the package's shared commands or testing workflow
+  changes; do not duplicate that guidance here.
