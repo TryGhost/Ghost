@@ -171,12 +171,6 @@ const SignupOptions: React.FC<{
           />
         </Field>
 
-        <GiftPromotionField
-          localSettings={localSettings}
-          settingKey="portal_signup_gift_promotion"
-          updateSetting={updateSetting}
-        />
-
         <FieldSet>
           <FieldLegend variant="label">Available tiers</FieldLegend>
           <FieldGroup data-slot="checkbox-group">
@@ -277,6 +271,12 @@ const SignupOptions: React.FC<{
             />
           </Field>
         )}
+
+        <GiftPromotionField
+          localSettings={localSettings}
+          settingKey="portal_signup_gift_promotion"
+          updateSetting={updateSetting}
+        />
       </FieldGroup>
     </div>
   );
