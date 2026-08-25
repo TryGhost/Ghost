@@ -1,14 +1,15 @@
 const errors = require('@tryghost/errors');
+const ExternalMediaInlinerJob = require('./external-media-inliner-job').default;
 
 class MediaInlinerService {
   #inliner;
-  #jobsService;
+  #getJobsService;
   #logging;
   #debug;
 
-  constructor({ inliner, jobsService, logging, debug }) {
+  constructor({ inliner, getJobsService, logging, debug }) {
     this.#inliner = inliner;
-    this.#jobsService = jobsService;
+    this.#getJobsService = getJobsService;
     this.#logging = logging;
     this.#debug = debug;
   }
@@ -25,31 +26,8 @@ class MediaInlinerService {
 
     this.#debug('[Inliner] Starting media inlining job for domains: ', domains);
 
-    // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
-    //        limited to migrational, so there is no expectations for site's availability etc.
     this.#logging.info('[Background Job] external-media-inliner queued');
-    await this.#jobsService.addJob({
-      name: 'external-media-inliner',
-      job: async (data) => {
-        const startedAt = Date.now();
-        this.#logging.info('[Background Job] external-media-inliner started');
-        try {
-          const result = await this.inline(data.domains);
-          this.#logging.info(
-            `[Background Job] external-media-inliner completed in ${Date.now() - startedAt}ms`,
-          );
-          return result;
-        } catch (err) {
-          this.#logging.error(
-            err,
-            `[Background Job] external-media-inliner failed after ${Date.now() - startedAt}ms`,
-          );
-          throw err;
-        }
-      },
-      data: { domains },
-      offloaded: false,
-    });
+    await this.#getJobsService().dispatch(new ExternalMediaInlinerJob({ domains }));
 
     return {
       status: 'success',
@@ -67,7 +45,6 @@ module.exports = {
     const MediaInliner = require('./external-media-inliner');
     const logging = require('@tryghost/logging');
     const models = require('../../models');
-    const jobsService = require('../jobs');
     const adapterManager = require('../../services/adapter-manager').default;
 
     const mediaStorage = adapterManager.getAdapter('storage:media');
@@ -96,7 +73,7 @@ module.exports = {
 
     instance = new MediaInlinerService({
       inliner: mediaInliner,
-      jobsService,
+      getJobsService: () => require('../jobs-service').getInstance(),
       logging,
       debug,
     });
