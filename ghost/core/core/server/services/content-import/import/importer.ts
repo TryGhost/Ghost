@@ -7,7 +7,11 @@ import buildPostData, {
   type PostData,
 } from './post-data';
 import type { PostImportRow } from './row';
+import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
+import type { PreparedImportSource } from './source';
+
+export type { ImportRequest } from './schema';
 
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -16,11 +20,6 @@ const tpl = require('@tryghost/tpl');
 // The CSV is parsed inside the request (the uploaded temp file is deleted when the
 // response is sent); the parsed rows are handed to an in-process background job
 // that writes one post per row.
-
-export interface ImportRequest {
-  filePath: string;
-  mapping?: Record<string, string>;
-}
 
 // The id is what a completion report will be looked up by.
 export interface ImportAccepted {
@@ -41,6 +40,7 @@ export interface PostsRepository {
 export type FailureReporter = (error: unknown) => void;
 
 type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PostImportRow[]>;
+type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
@@ -62,6 +62,7 @@ const MAX_POSTS = 100;
 
 interface ImporterDeps {
   readRows: ReadRows;
+  prepareSource?: PrepareSource;
   posts: PostsRepository;
   // A getter so the heavy html->lexical require resolves once per run
   getHtmlToLexical: () => HtmlToLexical;
@@ -85,6 +86,7 @@ function buildImportTagNames(runId: string, timezone: string, now: Date): string
 
 class ContentCSVImporter {
   private _readRows: ReadRows;
+  private _prepareSource: PrepareSource;
   private _posts: PostsRepository;
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
@@ -99,6 +101,7 @@ class ContentCSVImporter {
 
   constructor({
     readRows,
+    prepareSource = async ({ filePath }) => ({ filePath, cleanup: async () => {} }),
     posts,
     getHtmlToLexical,
     getMarkdownToHtml,
@@ -112,6 +115,7 @@ class ContentCSVImporter {
     now = () => new Date(),
   }: ImporterDeps) {
     this._readRows = readRows;
+    this._prepareSource = prepareSource;
     this._posts = posts;
     this._getHtmlToLexical = getHtmlToLexical;
     this._getMarkdownToHtml = getMarkdownToHtml;
@@ -126,10 +130,12 @@ class ContentCSVImporter {
   }
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
+    const source = await this._prepareSource(request);
     let rows: PostImportRow[];
     try {
-      rows = await this._readRows(request.filePath, request.mapping);
+      rows = await this._readRows(source.filePath, request.mapping);
     } catch (error) {
+      await this.cleanupSource(source.cleanup);
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),
         err: error,
@@ -139,6 +145,7 @@ class ContentCSVImporter {
     // Temporary while import state is held in memory: the durable job
     // system milestone removes the cap.
     if (rows.length > MAX_POSTS) {
+      await this.cleanupSource(source.cleanup);
       throw new errors.ValidationError({
         message: tpl(messages.tooManyPosts, { max: MAX_POSTS }),
       });
@@ -149,11 +156,17 @@ class ContentCSVImporter {
     this._store.create(runId, rows.length);
 
     logLifecycle('queued');
-    this._addJob({
-      job: () => this.runImportJob(runId, importTagNames, rows),
-      offloaded: false,
-      name: 'content-import',
-    });
+    try {
+      this._addJob({
+        job: () => this.runImportJob(runId, importTagNames, rows, source),
+        offloaded: false,
+        name: 'content-import',
+      });
+    } catch (error) {
+      this._store.fail(runId, messageOf(error));
+      await this.cleanupSource(source.cleanup);
+      throw error;
+    }
 
     return { importId: runId, total: rows.length };
   }
@@ -164,6 +177,7 @@ class ContentCSVImporter {
     runId: string,
     importTagNames: string[],
     rows: PostImportRow[],
+    source: PreparedImportSource,
   ): Promise<void> {
     const startedAt = Date.now();
     logLifecycle('started');
@@ -172,6 +186,11 @@ class ContentCSVImporter {
     let failed = false;
 
     try {
+      if (source.assets) {
+        await source.assets.store();
+        source.assets.rewriteRows(rows);
+      }
+
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
@@ -267,6 +286,7 @@ class ContentCSVImporter {
       this._report(error);
       this._store.fail(runId, messageOf(error));
     } finally {
+      await this.cleanupSource(source.cleanup);
       const outcome = failed ? 'failed after' : 'completed in';
       logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
     }
@@ -283,6 +303,14 @@ class ContentCSVImporter {
           err: firstFailure,
         }),
       );
+    }
+  }
+
+  private async cleanupSource(cleanup: () => Promise<void>): Promise<void> {
+    try {
+      await cleanup();
+    } catch (error) {
+      this._report(error);
     }
   }
 }
