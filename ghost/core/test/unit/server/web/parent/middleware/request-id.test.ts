@@ -1,9 +1,10 @@
-const assert = require('node:assert/strict');
-const express = require('express');
-const request = require('supertest');
-const validator = require('@tryghost/validator');
-
-const requestId = require('../../../../../../core/server/web/parent/middleware/request-id');
+import assert from 'node:assert/strict';
+import express from 'express';
+import request from 'supertest';
+// @ts-expect-error This module lacks type definitions.
+import validator from '@tryghost/validator';
+// @ts-expect-error This module lacks type definitions.
+import requestId from '../../../../../../core/server/web/parent/middleware/request-id';
 
 describe('Request ID middleware', function () {
   const app = express();
