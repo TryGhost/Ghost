@@ -17,6 +17,7 @@ const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
 const { cardAssets } = require('../../core/frontend/services/assets-minification');
+const ghostVersion = require('@tryghost/version');
 const origCache = _.cloneDeep(settingsCache);
 
 function assertCorrectFrontendHeaders(res) {
@@ -595,7 +596,11 @@ describe('Default Frontend routing', function () {
       await request
         .get('/private/?r=%2Fwelcome%2F')
         .expect(200)
-        .expect(assertCorrectFrontendHeaders);
+        .expect(assertCorrectFrontendHeaders)
+        .expect((res) => {
+          const $ = cheerio.load(res.text);
+          assert.equal($('meta[name="generator"]').attr('content'), `Ghost ${ghostVersion.safe}`);
+        });
     });
 
     it('should redirect, NOT 404 for private route with extra path', async function () {
