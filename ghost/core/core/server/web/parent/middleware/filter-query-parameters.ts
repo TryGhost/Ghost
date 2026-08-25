@@ -50,7 +50,7 @@ const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: Reado
   return removed;
 };
 
-export const filterRequestTarget = (requestTarget: string): FilterResult => {
+const filterRequestTarget = (requestTarget: string): FilterResult => {
   const { pathname, searchParams } = splitRequestTarget(requestTarget);
   const contentApiRequest = CONTENT_API_PATH_PATTERN.test(pathname);
   const bypass = searchParams.get('force_params') === 'true';

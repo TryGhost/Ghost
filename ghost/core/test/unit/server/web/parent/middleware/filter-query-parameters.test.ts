@@ -5,10 +5,7 @@ import type { NextFunction, Request, Response } from 'express';
 import sinon from 'sinon';
 import request from 'supertest';
 
-import {
-  filterQueryParameters,
-  filterRequestTarget,
-} from '../../../../../../core/server/web/parent/middleware/filter-query-parameters';
+import { filterQueryParameters } from '../../../../../../core/server/web/parent/middleware/filter-query-parameters';
 
 describe('Middleware: filterQueryParameters', function () {
   function createApp() {
@@ -31,109 +28,103 @@ describe('Middleware: filterQueryParameters', function () {
     sinon.restore();
   });
 
-  describe('filterRequestTarget', function () {
-    it('keeps globally allowed parameters and strips undeclared parameters', function () {
-      const result = filterRequestTarget('/r/example?step=run-step-id&m=member-id&unknown=value');
+  async function getRequestState(requestTarget: string) {
+    const response = await request(createApp()).get(requestTarget).expect(200);
+    return response.body;
+  }
 
-      assert.equal(result.requestTarget, '/r/example?step=run-step-id&m=member-id');
-      assert.deepEqual(result.removedUnknownParameters, ['unknown']);
+  describe('request filtering', function () {
+    beforeEach(function () {
+      sinon.stub(logging, 'warn');
     });
 
-    it('preserves allowed attribution parameters', function () {
-      const result = filterRequestTarget('/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
+    it('allows arbitrary parameters on exempt paths', async function () {
+      const requestTarget = '/.ghost/activitypub/inbox?utm_source=newsletter&unknown=value';
+      const state = await getRequestState(requestTarget);
 
-      assert.equal(result.requestTarget, '/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
-      assert.deepEqual(result.removedUnknownParameters, []);
+      assert.equal(state.originalUrl, requestTarget);
+      assert.deepEqual(state.query, {
+        utm_source: 'newsletter',
+        unknown: 'value',
+      });
     });
 
-    it('does not filter Admin API query parameters', function () {
-      const result = filterRequestTarget(
-        '/ghost/api/admin/posts/?utm_source=newsletter&unknown=value',
-      );
+    it('allows arbitrary parameters when force_params=true', async function () {
+      const requestTarget = '/welcome/?unknown=value&force_params=true';
+      const state = await getRequestState(requestTarget);
 
-      assert.equal(
-        result.requestTarget,
-        '/ghost/api/admin/posts/?utm_source=newsletter&unknown=value',
-      );
-      assert.deepEqual(result.removedUnknownParameters, []);
+      assert.equal(state.originalUrl, requestTarget);
+      assert.deepEqual(state.query, {
+        unknown: 'value',
+        force_params: 'true',
+      });
     });
 
-    it('allows arbitrary parameters on exempt paths', function () {
-      const result = filterRequestTarget(
-        '/.ghost/activitypub/inbox?utm_source=newsletter&unknown=value',
-      );
-
-      assert.equal(
-        result.requestTarget,
-        '/.ghost/activitypub/inbox?utm_source=newsletter&unknown=value',
-      );
-      assert.deepEqual(result.removedUnknownParameters, []);
-    });
-
-    it('allows arbitrary parameters when force_params=true', function () {
-      const result = filterRequestTarget('/welcome/?unknown=value&force_params=true');
-
-      assert.equal(result.requestTarget, '/welcome/?unknown=value&force_params=true');
-      assert.deepEqual(result.removedUnknownParameters, []);
-    });
-
-    it('applies the Content API allowlist', function () {
-      const result = filterRequestTarget(
+    it('applies the Content API allowlist', async function () {
+      const state = await getRequestState(
         '/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id',
       );
 
-      assert.equal(
-        result.requestTarget,
-        '/ghost/api/content/posts/?key=content-key&include=authors',
-      );
-      assert.deepEqual(result.removedUnknownParameters, ['m', 'unknown']);
+      assert.equal(state.originalUrl, '/ghost/api/content/posts/?key=content-key&include=authors');
+      assert.deepEqual(state.query, {
+        key: 'content-key',
+        include: 'authors',
+      });
     });
 
-    it('does not allow force_params to bypass Content API filtering', function () {
-      const result = filterRequestTarget(
+    it('does not allow force_params to bypass Content API filtering', async function () {
+      const state = await getRequestState(
         '/ghost/api/canary/content/posts/?key=content-key&force_params=true&unknown=value',
       );
 
-      assert.equal(result.requestTarget, '/ghost/api/canary/content/posts/?key=content-key');
-      assert.deepEqual(result.removedUnknownParameters, ['force_params', 'unknown']);
+      assert.equal(state.originalUrl, '/ghost/api/canary/content/posts/?key=content-key');
+      assert.deepEqual(state.query, {
+        key: 'content-key',
+      });
     });
 
-    it('preserves repeated allowed parameters', function () {
-      const result = filterRequestTarget('/members/?ids=one&ids=two&unknown=value');
+    it('preserves repeated allowed parameters', async function () {
+      const state = await getRequestState('/members/?ids=one&ids=two&unknown=value');
 
-      assert.equal(result.requestTarget, '/members/?ids=one&ids=two');
-      assert.deepEqual(result.removedUnknownParameters, ['unknown']);
+      assert.equal(state.originalUrl, '/members/?ids=one&ids=two');
+      assert.deepEqual(state.query, {
+        ids: ['one', 'two'],
+      });
     });
 
-    it('preserves admin toolbar, gift link, and automation parameters', function () {
-      const result = filterRequestTarget(
-        '/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id',
-      );
+    it('preserves admin toolbar, gift link, and automation parameters', async function () {
+      const requestTarget = '/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id';
+      const state = await getRequestState(requestTarget);
 
-      assert.equal(
-        result.requestTarget,
-        '/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id',
-      );
-      assert.deepEqual(result.removedUnknownParameters, []);
+      assert.equal(state.originalUrl, requestTarget);
+      assert.deepEqual(state.query, {
+        admin: 'true',
+        admin_toolbar: '0',
+        gift: 'unlock-token',
+        step: 'run-step-id',
+      });
     });
 
-    it('preserves notification unsubscribe and tier preview parameters', function () {
-      const result = filterRequestTarget(
-        '/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver',
-      );
+    it('preserves notification unsubscribe and tier preview parameters', async function () {
+      const requestTarget = '/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver';
+      const state = await getRequestState(requestTarget);
 
-      assert.equal(
-        result.requestTarget,
-        '/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver',
-      );
-      assert.deepEqual(result.removedUnknownParameters, []);
+      assert.equal(state.originalUrl, requestTarget);
+      assert.deepEqual(state.query, {
+        comments: '1',
+        updatesandannouncements: '1',
+        member_tier: 'silver',
+      });
     });
 
-    it('preserves fields for the frontend comments API', function () {
-      const result = filterRequestTarget('/members/api/comments/post/post-id/?fields=id%2Cpinned');
+    it('preserves fields for the frontend comments API', async function () {
+      const requestTarget = '/members/api/comments/post/post-id/?fields=id%2Cpinned';
+      const state = await getRequestState(requestTarget);
 
-      assert.equal(result.requestTarget, '/members/api/comments/post/post-id/?fields=id%2Cpinned');
-      assert.deepEqual(result.removedUnknownParameters, []);
+      assert.equal(state.originalUrl, requestTarget);
+      assert.deepEqual(state.query, {
+        fields: 'id,pinned',
+      });
     });
   });
 
@@ -163,14 +154,16 @@ describe('Middleware: filterQueryParameters', function () {
     const warn = sinon.stub(logging, 'warn');
 
     await request(createApp())
-      .get('/welcome/?utm_source=newsletter')
+      .get('/welcome/?utm_source=newsletter&ref=weekly&m=member-id')
       .expect(200)
       .expect({
-        originalUrl: '/welcome/?utm_source=newsletter',
-        url: '/welcome/?utm_source=newsletter',
+        originalUrl: '/welcome/?utm_source=newsletter&ref=weekly&m=member-id',
+        url: '/welcome/?utm_source=newsletter&ref=weekly&m=member-id',
         path: '/welcome/',
         query: {
           utm_source: 'newsletter',
+          ref: 'weekly',
+          m: 'member-id',
         },
       });
 
