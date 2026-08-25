@@ -1,17 +1,34 @@
 #!/usr/bin/env node
 
+import {execFileSync} from 'node:child_process';
+
 const endpoint = (process.env.TINYBIRD_HOST ?? 'http://localhost:7181').replace(/\/$/, '');
-const token = process.env.TINYBIRD_ADMIN_TOKEN;
-const siteUuid = process.env.SITE_UUID ?? 'automation-benchmark';
+const siteUuid = process.env.SITE_UUID ?? `automation-benchmark-${Date.now()}`;
 const runCount = Number(process.env.RUN_COUNT ?? 1_000_000);
 const stepCount = Number(process.env.STEP_COUNT ?? 5_000_000);
 const automationCount = Number(process.env.AUTOMATION_COUNT ?? 100);
-const batchSize = Number(process.env.BATCH_SIZE ?? 10_000);
+const batchSize = Number(process.env.BATCH_SIZE ?? 100_000);
 const iterations = Number(process.env.ITERATIONS ?? 5);
 
+const getToken = () => {
+    if (process.env.TINYBIRD_ADMIN_TOKEN) {
+        return process.env.TINYBIRD_ADMIN_TOKEN;
+    }
+    const contents = execFileSync('docker', [
+        'run', '--rm',
+        '-v', 'ghost-dev_shared-config:/config',
+        'alpine', 'cat', '/config/.env.tinybird'
+    ], {encoding: 'utf8'});
+    return contents.match(/^TINYBIRD_ADMIN_TOKEN=(.+)$/m)?.[1];
+};
+
+const token = getToken();
 if (!token) {
-    throw new Error('TINYBIRD_ADMIN_TOKEN is required');
+    throw new Error('Could not find Tinybird admin token. Is pnpm dev:analytics running?');
 }
+
+console.log(`site_uuid: ${siteUuid}`);
+console.log(`runs: ${runCount.toLocaleString()}, step IDs: ${stepCount.toLocaleString()}, batch size: ${batchSize.toLocaleString()}`);
 
 const postRows = async (datasource, rows) => {
     const url = new URL('/v0/events', endpoint);

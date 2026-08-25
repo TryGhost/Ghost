@@ -6,51 +6,41 @@ import {toDatabaseDate} from '../../../../../core/server/lib/db-date';
 const SITE_UUID = '00000000-0000-4000-8000-000000000001';
 
 async function createDatabase(): Promise<Knex> {
-    const knex = createKnex({
-        client: 'better-sqlite3',
-        connection: {filename: ':memory:'},
-        useNullAsDefault: true
-    });
-    await knex.schema.createTable('automation_analytics_outbox', (table) => {
+    const knex = createKnex({client: 'better-sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
+    await knex.schema.createTable('automation_runs', (table) => {
         table.text('id').primary();
-        table.text('payload').notNullable();
+        table.text('automation_id').notNullable();
         table.text('created_at').notNullable();
-        table.text('available_at').notNullable();
-        table.text('locked_at');
-        table.text('locked_by');
-        table.index(['available_at', 'locked_at', 'created_at']);
+        table.text('updated_at').notNullable();
+    });
+    await knex.schema.createTable('automation_run_steps', (table) => {
+        table.text('id').primary();
+        table.text('automation_run_id').notNullable();
+        table.text('automation_action_revision_id').notNullable();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('ready_at').notNullable();
+        table.text('started_at');
+        table.text('finished_at');
+        table.text('status').notNullable();
+        table.integer('step_attempts').notNullable();
     });
     return knex;
 }
 
-function config(tinybird?: object) {
+function config(tinybird?: object, analyticsUrl?: string) {
     return {
         get(key: string) {
-            return key === 'tinybird' ? tinybird : undefined;
+            if (key === 'tinybird') {
+                return tinybird;
+            }
+            return key === 'analytics:url' ? analyticsUrl : undefined;
         }
     };
 }
 
 function logging() {
-    return {
-        errors: [] as unknown[],
-        error(error: unknown) {
-            this.errors.push(error);
-        }
-    };
-}
-
-async function waitFor(condition: () => boolean | Promise<boolean>, description: string): Promise<void> {
-    const deadline = Date.now() + 2000;
-    while (Date.now() < deadline) {
-        if (await condition()) {
-            return;
-        }
-        await new Promise((resolve) => {
-            setTimeout(resolve, 10);
-        });
-    }
-    throw new Error(`Timed out waiting for ${description}`);
+    return {error() {}};
 }
 
 describe('AutomationAnalyticsService', function () {
@@ -64,126 +54,105 @@ describe('AutomationAnalyticsService', function () {
         await knex.destroy();
     });
 
-    it('always stores sanitized transaction batches, even without Tinybird config', async function () {
-        const service = new AutomationAnalyticsService({
-            knex,
-            siteUuid: SITE_UUID,
-            config: config(),
-            logging: logging()
-        });
-        const now = toDatabaseDate(new Date('2026-08-20T10:00:00.000Z'));
-
-        await knex.transaction(async (trx) => {
-            await service.enqueue(trx, {
-                runs: [{id: 'run-1', automation_id: 'automation-1', created_at: now, updated_at: now}],
-                steps: [{
-                    id: 'step-1',
-                    automation_run_id: 'run-1',
-                    automation_action_revision_id: 'revision-1',
-                    created_at: now,
-                    updated_at: now,
-                    ready_at: now,
-                    started_at: null,
-                    finished_at: null,
-                    status: 'pending',
-                    step_attempts: 0
-                }]
-            });
-        });
-
-        const row = await knex('automation_analytics_outbox').first();
-        const payload = JSON.parse(row.payload);
-        assert.equal(service.isConfigured(), false);
-        assert.equal(payload.runs[0].site_uuid, SITE_UUID);
-        assert.equal(payload.runs[0].version, 1);
-        assert.equal(payload.steps[0].version, 1);
-        assert.equal(payload.runs[0].member_id, undefined);
-        assert.equal(payload.runs[0].member_email, undefined);
-    });
-
-    it('publishes each datasource with acknowledgement and deletes successful batches', async function () {
-        const requests: Array<{url: URL, body: string}> = [];
+    it('syncs rows newer than Tinybird watermarks through traffic analytics', async function () {
+        const requests: Array<{url: URL; body?: any; authorization?: string}> = [];
         const fetchImpl = async (input: URL | RequestInfo, init?: RequestInit) => {
-            requests.push({url: new URL(input.toString()), body: String(init?.body ?? '')});
+            const url = new URL(input.toString());
+            requests.push({
+                url,
+                body: init?.body ? JSON.parse(String(init.body)) : undefined,
+                authorization: new Headers(init?.headers).get('Authorization') ?? undefined
+            });
+            if (url.pathname.endsWith('api_automation_sync_watermarks.json')) {
+                return new Response(JSON.stringify({data: [{runs_updated_at: '2026-08-20 10:00:00', steps_updated_at: null}]}), {status: 200});
+            }
             return new Response('{}', {status: 202});
         };
+        const oldDate = toDatabaseDate(new Date('2026-08-20T09:00:00.000Z'));
+        const newDate = toDatabaseDate(new Date('2026-08-20T11:00:00.000Z'));
+        await knex('automation_runs').insert([
+            {id: 'old-run', automation_id: 'automation-1', created_at: oldDate, updated_at: oldDate},
+            {id: 'new-run', automation_id: 'automation-1', created_at: newDate, updated_at: newDate}
+        ]);
+        await knex('automation_run_steps').insert({
+            id: 'step-1', automation_run_id: 'new-run', automation_action_revision_id: 'revision-1',
+            created_at: newDate, updated_at: newDate, ready_at: newDate, started_at: null,
+            finished_at: newDate, status: 'finished', step_attempts: 1
+        });
         const service = new AutomationAnalyticsService({
             knex,
             siteUuid: SITE_UUID,
-            config: config({endpoint: 'https://tinybird.example', adminToken: 'admin-token'}),
+            config: config({endpoint: 'https://tinybird.example', adminToken: 'token'}, 'https://analytics.example'),
             logging: logging(),
             fetchImpl
         });
-        const now = toDatabaseDate(new Date('2026-08-20T10:00:00.000Z'));
-        await knex.transaction(async (trx) => {
-            await service.enqueue(trx, {
-                runs: [{id: 'run-1', automation_id: 'automation-1', created_at: now, updated_at: now}],
-                steps: [{
-                    id: 'step-1',
-                    automation_run_id: 'run-1',
-                    automation_action_revision_id: 'revision-1',
-                    created_at: now,
-                    updated_at: now,
-                    ready_at: now,
-                    started_at: now,
-                    finished_at: now,
-                    status: 'finished',
-                    step_attempts: 1
-                }]
-            });
-        });
 
-        service.start();
-        await waitFor(async () => Number((await knex('automation_analytics_outbox').count({count: '*'}).first())?.count) === 0, 'outbox delivery');
-        await service.stop();
+        await service.sync();
 
-        assert.deepEqual(requests.map(request => request.url.searchParams.get('name')), ['automation_runs', 'automation_run_steps']);
-        assert(requests.every(request => request.url.searchParams.get('wait') === 'true'));
-        assert.equal(JSON.parse(requests[1].body).version, 2);
+        const ingestion = requests.filter(request => request.url.origin === 'https://analytics.example');
+        assert.deepEqual(ingestion.map(request => request.body.datasource), ['automation_runs', 'automation_run_steps']);
+        assert(ingestion.every(request => request.authorization === 'Bearer token'));
+        assert.deepEqual(ingestion[0].body.events.map((event: any) => event.id), ['new-run']);
+        assert.equal(ingestion[1].body.events[0].status, 'finished');
+        assert.equal(BigInt(ingestion[1].body.events[0].version) % 2n, 1n);
+        assert.equal(ingestion[1].body.events[0].member_email, undefined);
     });
 
-    it('leaves failed batches available for retry', async function () {
-        const logger = logging();
+    it('uses 1000-row traffic analytics batches', async function () {
+        const now = toDatabaseDate(new Date('2026-08-20T11:00:00.000Z'));
+        await knex.batchInsert('automation_runs', Array.from({length: 1001}, (_, index) => ({
+            id: String(index).padStart(24, '0'), automation_id: 'automation-1', created_at: now, updated_at: now
+        })), 100);
+        const batchSizes: number[] = [];
         const service = new AutomationAnalyticsService({
             knex,
             siteUuid: SITE_UUID,
-            config: config({endpoint: 'https://tinybird.example', adminToken: 'admin-token'}),
-            logging: logger,
-            fetchImpl: async () => new Response('unavailable', {status: 503})
-        });
-        const now = toDatabaseDate(new Date());
-        await knex.transaction(async (trx) => {
-            await service.enqueue(trx, {
-                runs: [{id: 'run-1', automation_id: 'automation-1', created_at: now, updated_at: now}],
-                steps: []
-            });
-        });
-
-        service.start();
-        await waitFor(() => logger.errors.length === 1, 'failed delivery');
-        await service.stop();
-
-        const row = await knex('automation_analytics_outbox').first();
-        assert(row);
-        assert.equal(row.locked_at, null);
-        assert.equal(row.locked_by, null);
-        assert(fromDatabaseDateForTest(row.available_at) > new Date());
-    });
-
-    it('fetches browse stats from Tinybird', async function () {
-        const service = new AutomationAnalyticsService({
-            knex,
-            siteUuid: SITE_UUID,
-            config: config({endpoint: 'https://tinybird.example/', adminToken: 'admin-token'}),
+            config: config({endpoint: 'https://tinybird.example', adminToken: 'token'}, 'https://analytics.example'),
             logging: logging(),
-            fetchImpl: async input => new Response(JSON.stringify({
-                data: [{
-                    automation_id: 'automation-1',
-                    last_run_created_at: '2026-08-20 10:00:00',
-                    total_run_count: '12',
-                    in_progress_run_count: 3
-                }]
-            }), {status: 200, headers: {'Content-Type': 'application/json'}})
+            fetchImpl: async (input, init) => {
+                const url = new URL(input.toString());
+                if (url.pathname.endsWith('api_automation_sync_watermarks.json')) {
+                    return new Response('{"data":[{"runs_updated_at":null,"steps_updated_at":null}]}', {status: 200});
+                }
+                batchSizes.push(JSON.parse(String(init?.body)).events.length);
+                return new Response('{}', {status: 202});
+            }
+        });
+
+        await service.sync();
+
+        assert.deepEqual(batchSizes, [1000, 1]);
+    });
+
+    it('does not sync without both Tinybird and traffic analytics config', async function () {
+        let requestCount = 0;
+        const service = new AutomationAnalyticsService({
+            knex,
+            siteUuid: SITE_UUID,
+            config: config({endpoint: 'https://tinybird.example', adminToken: 'token'}),
+            logging: logging(),
+            fetchImpl: async () => {
+                requestCount += 1;
+                return new Response('{}');
+            }
+        });
+
+        await service.sync();
+
+        assert.equal(service.isConfigured(), true);
+        assert.equal(requestCount, 0);
+    });
+
+    it('fetches browse stats directly from Tinybird', async function () {
+        const service = new AutomationAnalyticsService({
+            knex,
+            siteUuid: SITE_UUID,
+            config: config({endpoint: 'https://tinybird.example/', adminToken: 'token'}),
+            logging: logging(),
+            fetchImpl: async () => new Response(JSON.stringify({data: [{
+                automation_id: 'automation-1', last_run_created_at: '2026-08-20 10:00:00',
+                total_run_count: '12', in_progress_run_count: 3
+            }]}), {status: 200})
         });
 
         const stats = await service.fetchStats();
@@ -194,37 +163,4 @@ describe('AutomationAnalyticsService', function () {
             in_progress_run_count: 3
         });
     });
-
-    it('uses existing Tinybird Local stats config', async function () {
-        let requestedUrl: URL | undefined;
-        const service = new AutomationAnalyticsService({
-            knex,
-            siteUuid: SITE_UUID,
-            config: config({
-                stats: {
-                    id: 'configured-site',
-                    local: {
-                        enabled: true,
-                        endpoint: 'http://tinybird-local:7181',
-                        token: 'local-token'
-                    }
-                }
-            }),
-            logging: logging(),
-            fetchImpl: async (input) => {
-                requestedUrl = new URL(input.toString());
-                return new Response('{"data": []}', {status: 200});
-            }
-        });
-
-        await service.fetchStats();
-
-        assert.equal(service.isConfigured(), true);
-        assert.equal(requestedUrl?.origin, 'http://tinybird-local:7181');
-        assert.equal(requestedUrl?.searchParams.get('site_uuid'), 'configured-site');
-    });
 });
-
-function fromDatabaseDateForTest(value: string): Date {
-    return new Date(`${value.replace(' ', 'T')}Z`);
-}

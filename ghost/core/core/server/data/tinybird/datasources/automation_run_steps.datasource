@@ -10,7 +10,7 @@ SCHEMA >
     `finished_at` Nullable(DateTime) `json:$.finished_at`,
     `status` LowCardinality(String) `json:$.status`,
     `step_attempts` UInt32 `json:$.step_attempts`,
-    `version` UInt8 `json:$.version`
+    `version` UInt64 `json:$.version`
 
 ENGINE "ReplacingMergeTree"
 ENGINE_PARTITION_KEY ""

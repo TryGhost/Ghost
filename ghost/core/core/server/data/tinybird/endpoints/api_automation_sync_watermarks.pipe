@@ -1,0 +1,18 @@
+TOKEN "stats_page" READ
+
+NODE automation_sync_watermarks
+SQL >
+%
+    select
+        (
+            select maxOrNull(updated_at)
+            from automation_runs final
+            where site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Site UUID", required=True)}}
+        ) as runs_updated_at,
+        (
+            select maxOrNull(updated_at)
+            from automation_run_steps final
+            where site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Site UUID", required=True)}}
+        ) as steps_updated_at
+
+TYPE ENDPOINT

@@ -1,0 +1,11 @@
+- name: automation_sync_watermarks
+  description: Returns latest synchronized timestamps for each automation datasource
+  parameters: site_uuid=mock_site_uuid
+  expected_result: |
+    {"runs_updated_at":"2026-08-20 12:00:00","steps_updated_at":"2026-08-20 12:03:00"}
+
+- name: automation_sync_watermarks_empty
+  description: Returns null timestamps for a site without automation data
+  parameters: site_uuid=empty-site
+  expected_result: |
+    {"runs_updated_at":null,"steps_updated_at":null}

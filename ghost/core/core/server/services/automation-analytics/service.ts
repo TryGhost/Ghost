@@ -1,41 +1,23 @@
-import crypto from 'node:crypto';
-import ObjectId from 'bson-objectid';
 import type {Knex} from 'knex';
-import {toDatabaseDate} from '../../lib/db-date';
-import {TinybirdAutomationAnalyticsClient} from './tinybird-client';
+import {toDatabaseDate, type DatabaseDate} from '../../lib/db-date';
+import {TinybirdAutomationAnalyticsClient, TrafficAnalyticsClient} from './tinybird-client';
 import type {
     AutomationAnalytics,
-    AutomationAnalyticsSyncBatch,
     AutomationBrowseStats,
     AutomationRunSnapshot,
     AutomationRunStepSnapshot,
     TinybirdAutomationRun,
-    TinybirdAutomationRunStep,
-    TinybirdAutomationSyncBatch
+    TinybirdAutomationRunStep
 } from './types';
 
 const errors = require('@tryghost/errors');
 
-const OUTBOX_TABLE = 'automation_analytics_outbox';
-const POLL_INTERVAL_MS = 1000;
-const RETRY_DELAY_MS = 5000;
-const STALE_LOCK_MS = 5 * 60 * 1000;
-const CLAIM_LIMIT = 10;
+const SYNC_INTERVAL_MS = 15000;
+const SYNC_BATCH_SIZE = 1000;
+const FIRST_SYNC_DATE = '1970-01-01 00:00:00' as DatabaseDate;
 
-type Config = {
-    get(key: string): unknown;
-};
-
-type Logging = {
-    error(error: unknown, message?: string): void;
-};
-
-type OutboxRow = {
-    id: string;
-    payload: string;
-    locked_by: string;
-};
-
+type Config = {get(key: string): unknown};
+type Logging = {error(error: unknown, message?: string): void};
 type AutomationAnalyticsServiceOptions = {
     knex: Knex;
     siteUuid: string;
@@ -43,70 +25,60 @@ type AutomationAnalyticsServiceOptions = {
     logging: Logging;
     fetchImpl?: typeof fetch;
 };
+type SyncableTable = 'automation_runs' | 'automation_run_steps';
+type SyncRow = AutomationRunSnapshot | AutomationRunStepSnapshot;
 
 export class AutomationAnalyticsService implements AutomationAnalytics {
     readonly #knex: Knex;
     readonly #siteUuid: string;
     readonly #logging: Logging;
-    readonly #client: TinybirdAutomationAnalyticsClient | null;
+    readonly #tinybirdClient: TinybirdAutomationAnalyticsClient | null;
+    readonly #trafficAnalyticsClient: TrafficAnalyticsClient | null;
     #timer: ReturnType<typeof setTimeout> | null = null;
-    #pollPromise: Promise<void> | null = null;
+    #syncPromise: Promise<void> | null = null;
     #stopped = true;
 
     constructor({knex, siteUuid, config, logging, fetchImpl}: AutomationAnalyticsServiceOptions) {
         this.#knex = knex;
-        this.#siteUuid = siteUuid;
         this.#logging = logging;
 
         const tinybirdConfig = config.get('tinybird') as Record<string, any> | undefined;
         const statsConfig = tinybirdConfig?.stats;
-        const endpoint = tinybirdConfig?.endpoint ?? (
+        const tinybirdEndpoint = tinybirdConfig?.endpoint ?? (
             statsConfig?.local?.enabled ? statsConfig.local.endpoint : statsConfig?.endpoint
         );
         const token = tinybirdConfig?.adminToken ?? (
             statsConfig?.local?.enabled ? statsConfig.local.token : statsConfig?.token
         );
-        this.#client = endpoint && token ? new TinybirdAutomationAnalyticsClient({
-            endpoint,
+        this.#siteUuid = statsConfig?.id ?? siteUuid;
+        this.#tinybirdClient = tinybirdEndpoint && token ? new TinybirdAutomationAnalyticsClient({
+            endpoint: tinybirdEndpoint,
             token,
-            siteUuid: statsConfig?.id ?? siteUuid,
+            siteUuid: this.#siteUuid,
+            fetchImpl
+        }) : null;
+
+        const trafficAnalyticsEndpoint = config.get('analytics:url');
+        this.#trafficAnalyticsClient = typeof trafficAnalyticsEndpoint === 'string' && trafficAnalyticsEndpoint ? new TrafficAnalyticsClient({
+            endpoint: trafficAnalyticsEndpoint,
+            token,
             fetchImpl
         }) : null;
     }
 
     isConfigured(): boolean {
-        return Boolean(this.#client);
-    }
-
-    async enqueue(trx: Knex.Transaction, batch: AutomationAnalyticsSyncBatch): Promise<void> {
-        if (!batch.runs.length && !batch.steps.length) {
-            return;
-        }
-
-        const payload: TinybirdAutomationSyncBatch = {
-            runs: batch.runs.map(run => this.#buildRun(run)),
-            steps: batch.steps.map(step => this.#buildStep(step))
-        };
-        const now = toDatabaseDate(new Date());
-        await trx(OUTBOX_TABLE).insert({
-            id: ObjectId().toHexString(),
-            payload: JSON.stringify(payload),
-            created_at: now,
-            available_at: now,
-            locked_at: null,
-            locked_by: null
-        });
+        return Boolean(this.#tinybirdClient);
     }
 
     async fetchStats(): Promise<Map<string, AutomationBrowseStats>> {
-        if (!this.#client) {
+        if (!this.#tinybirdClient) {
             throw new errors.InternalServerError({message: 'Tinybird automation analytics is not configured'});
         }
-        return await this.#client.fetchStats();
+        return await this.#tinybirdClient.fetchStats();
     }
 
     start(): void {
-        if (!this.#client || !this.#stopped) {
+        if (!this.#tinybirdClient || !this.#trafficAnalyticsClient || !this.#stopped) {
             return;
         }
         this.#stopped = false;
@@ -119,7 +91,76 @@ export class AutomationAnalyticsService implements AutomationAnalytics {
             clearTimeout(this.#timer);
             this.#timer = null;
         }
-        await this.#pollPromise;
+        await this.#syncPromise;
+    }
+
+    async sync(): Promise<void> {
+        if (!this.#tinybirdClient || !this.#trafficAnalyticsClient) {
+            return;
+        }
+        const watermarks = await this.#tinybirdClient.fetchSyncWatermarks();
+        const cutoff = toDatabaseDate(new Date());
+        await this.#syncTable('automation_runs', watermarks.runs_updated_at ?? FIRST_SYNC_DATE, cutoff);
+        await this.#syncTable('automation_run_steps', watermarks.steps_updated_at ?? FIRST_SYNC_DATE, cutoff);
+    }
+
+    #schedule(delay: number): void {
+        if (this.#stopped) {
+            return;
+        }
+        this.#timer = setTimeout(() => {
+            this.#timer = null;
+            this.#syncPromise = this.sync().catch((error) => {
+                this.#logging.error(error, 'Failed to sync automation analytics');
+            }).finally(() => {
+                this.#syncPromise = null;
+                this.#schedule(SYNC_INTERVAL_MS);
+            });
+        }, delay);
+        this.#timer.unref?.();
+    }
+
+    async #syncTable(table: SyncableTable, watermark: DatabaseDate, cutoff: DatabaseDate): Promise<void> {
+        let lastUpdatedAt: DatabaseDate | null = null;
+        let lastId: string | null = null;
+
+        while (true) {
+            const query = this.#knex(table)
+                .select(this.#columnsFor(table))
+                .where('updated_at', '>=', watermark)
+                .andWhere('updated_at', '<=', cutoff)
+                .orderBy('updated_at')
+                .orderBy('id')
+                .limit(SYNC_BATCH_SIZE);
+
+            if (lastUpdatedAt && lastId) {
+                query.andWhere((builder) => {
+                    builder.where('updated_at', '>', lastUpdatedAt)
+                        .orWhere((sameTimestamp) => {
+                            sameTimestamp.where('updated_at', lastUpdatedAt).andWhere('id', '>', lastId);
+                        });
+                });
+            }
+
+            const rows = await query as SyncRow[];
+            if (!rows.length) {
+                return;
+            }
+            const events = table === 'automation_runs' ?
+                (rows as AutomationRunSnapshot[]).map(row => this.#buildRun(row)) :
+                (rows as AutomationRunStepSnapshot[]).map(row => this.#buildStep(row));
+            await this.#trafficAnalyticsClient!.ingest(table, events);
+
+            const lastRow = rows.at(-1)!;
+            lastUpdatedAt = lastRow.updated_at;
+            lastId = lastRow.id;
+        }
+    }
+
+    #columnsFor(table: SyncableTable): string[] {
+        return table === 'automation_runs' ?
+            ['id', 'automation_id', 'created_at', 'updated_at'] :
+            ['id', 'automation_run_id', 'automation_action_revision_id', 'created_at', 'updated_at', 'ready_at', 'started_at', 'finished_at', 'status', 'step_attempts'];
     }
 
     #buildRun(run: AutomationRunSnapshot): TinybirdAutomationRun {
@@ -134,91 +175,23 @@ export class AutomationAnalyticsService implements AutomationAnalytics {
     }
 
     #buildStep(step: AutomationRunStepSnapshot): TinybirdAutomationRunStep {
+        const updatedAt = toDatabaseDate(step.updated_at);
+        const terminalOffset = step.status === 'pending' ? 0n : 1n;
+        const version = (BigInt(new Date(`${updatedAt.replace(' ', 'T')}Z`).getTime()) * 1000n) +
+            (BigInt(step.step_attempts) * 2n) + terminalOffset;
         return {
             site_uuid: this.#siteUuid,
             id: step.id,
             automation_run_id: step.automation_run_id,
             automation_action_revision_id: step.automation_action_revision_id,
             created_at: toDatabaseDate(step.created_at),
-            updated_at: toDatabaseDate(step.updated_at),
+            updated_at: updatedAt,
             ready_at: toDatabaseDate(step.ready_at),
             started_at: step.started_at === null ? null : toDatabaseDate(step.started_at),
             finished_at: step.finished_at === null ? null : toDatabaseDate(step.finished_at),
             status: step.status,
             step_attempts: step.step_attempts,
-            version: step.status === 'pending' ? 1 : 2
+            version: version.toString()
         };
-    }
-
-    #schedule(delay: number): void {
-        if (this.#stopped) {
-            return;
-        }
-        this.#timer = setTimeout(() => {
-            this.#timer = null;
-            this.#pollPromise = this.#poll().finally(() => {
-                this.#pollPromise = null;
-                this.#schedule(POLL_INTERVAL_MS);
-            });
-        }, delay);
-        this.#timer.unref?.();
-    }
-
-    async #poll(): Promise<void> {
-        const now = new Date();
-        const staleLockCutoff = new Date(now.getTime() - STALE_LOCK_MS);
-        const candidateIds = await this.#knex(OUTBOX_TABLE)
-            .select('id')
-            .where('available_at', '<=', toDatabaseDate(now))
-            .where((builder) => {
-                builder.whereNull('locked_at').orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
-            })
-            .orderBy(['available_at', 'created_at', 'id'])
-            .limit(CLAIM_LIMIT);
-
-        for (const candidate of candidateIds) {
-            if (this.#stopped) {
-                return;
-            }
-            const row = await this.#claim(candidate.id, now, staleLockCutoff);
-            if (row) {
-                await this.#publish(row);
-            }
-        }
-    }
-
-    async #claim(id: string, now: Date, staleLockCutoff: Date): Promise<OutboxRow | null> {
-        const lockId = crypto.randomUUID();
-        const changed = await this.#knex(OUTBOX_TABLE)
-            .where('id', id)
-            .where('available_at', '<=', toDatabaseDate(now))
-            .where((builder) => {
-                builder.whereNull('locked_at').orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
-            })
-            .update({
-                locked_at: toDatabaseDate(now),
-                locked_by: lockId
-            });
-        if (!changed) {
-            return null;
-        }
-        return await this.#knex(OUTBOX_TABLE).where({id, locked_by: lockId}).first() ?? null;
-    }
-
-    async #publish(row: OutboxRow): Promise<void> {
-        try {
-            const batch = JSON.parse(row.payload) as TinybirdAutomationSyncBatch;
-            await this.#client?.ingest(batch);
-            await this.#knex(OUTBOX_TABLE).where({id: row.id, locked_by: row.locked_by}).del();
-        } catch (error) {
-            this.#logging.error(error, 'Failed to publish automation analytics batch');
-            await this.#knex(OUTBOX_TABLE)
-                .where({id: row.id, locked_by: row.locked_by})
-                .update({
-                    available_at: toDatabaseDate(new Date(Date.now() + RETRY_DELAY_MS)),
-                    locked_at: null,
-                    locked_by: null
-                });
-        }
     }
 }

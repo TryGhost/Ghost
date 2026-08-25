@@ -1,6 +1,6 @@
 import type {Knex} from 'knex';
 import {AutomationAnalyticsService} from './service';
-import type {AutomationAnalyticsSyncBatch, AutomationBrowseStats} from './types';
+import type {AutomationBrowseStats} from './types';
 
 const {knex} = require('../../data/db') as {knex: Knex};
 const config = require('../../../shared/config');
@@ -33,11 +33,11 @@ export function isConfigured(): boolean {
     return service?.isConfigured() ?? false;
 }
 
-export async function enqueue(trx: Knex.Transaction, batch: AutomationAnalyticsSyncBatch): Promise<void> {
+export async function sync(): Promise<void> {
     if (!service) {
         throw new errors.InternalServerError({message: 'Automation analytics service is not initialized'});
     }
-    await service.enqueue(trx, batch);
+    await service.sync();
 }
 
 export async function fetchStats(): Promise<Map<string, AutomationBrowseStats>> {
@@ -47,4 +47,4 @@ export async function fetchStats(): Promise<Map<string, AutomationBrowseStats>> 
     return await service.fetchStats();
 }
 
-export type {AutomationAnalytics, AutomationAnalyticsSyncBatch, AutomationBrowseStats, AutomationRunStepSnapshot} from './types';
+export type {AutomationAnalytics, AutomationBrowseStats} from './types';

@@ -89,6 +89,7 @@
     "tb:install": "curl https://tinybird.co | sh",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
+    "benchmark:automation-stats": "node ghost/core/core/server/data/tinybird/scripts/benchmark-automation-stats.mjs",
     "release": "node scripts/release.js"
   },
   "devDependencies": {

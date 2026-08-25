@@ -5,7 +5,7 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.336@sha256:13ca3b62c1334fba8fc3c9486290ef42d1f8fb6c628e19dd75356f30cea9733d
+    image: ${TRAFFIC_ANALYTICS_IMAGE:-ghost/traffic-analytics:1.0.336@sha256:13ca3b62c1334fba8fc3c9486290ef42d1f8fb6c628e19dd75356f30cea9733d}
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
@@ -92,4 +92,3 @@ volumes:
   shared-config:
   tinybird-clickhouse:
   tinybird-metadata:
-

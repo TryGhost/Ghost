@@ -34,6 +34,12 @@ if [ -f /mnt/shared-config/.env.tinybird ]; then
     else
         echo "WARNING: TINYBIRD_TRACKER_TOKEN not found in /mnt/shared-config/.env.tinybird" >&2
     fi
+    if [ -n "${TINYBIRD_ADMIN_TOKEN:-}" ]; then
+        export TINYBIRD_EVENTS_TOKEN="$TINYBIRD_ADMIN_TOKEN"
+        echo "Tinybird events token configured successfully"
+    else
+        echo "WARNING: TINYBIRD_ADMIN_TOKEN not found in /mnt/shared-config/.env.tinybird" >&2
+    fi
 else
     echo "WARNING: /mnt/shared-config/.env.tinybird file not found - Tinybird tracking may not work" >&2
 fi

@@ -1,4 +1,3 @@
-import type {Knex} from 'knex';
 import type {DatabaseDate} from '../../lib/db-date';
 
 export type AutomationRunSnapshot = {
@@ -21,11 +20,6 @@ export type AutomationRunStepSnapshot = {
     step_attempts: number;
 };
 
-export type AutomationAnalyticsSyncBatch = {
-    runs: AutomationRunSnapshot[];
-    steps: AutomationRunStepSnapshot[];
-};
-
 export type AutomationBrowseStats = {
     last_run_created_at: Date | null;
     total_run_count: number;
@@ -33,10 +27,14 @@ export type AutomationBrowseStats = {
 };
 
 export interface AutomationAnalytics {
-    enqueue(trx: Knex.Transaction, batch: AutomationAnalyticsSyncBatch): Promise<void>;
     isConfigured(): boolean;
     fetchStats(): Promise<Map<string, AutomationBrowseStats>>;
 }
+
+export type AutomationSyncWatermarks = {
+    runs_updated_at: DatabaseDate | null;
+    steps_updated_at: DatabaseDate | null;
+};
 
 export type TinybirdAutomationRun = {
     site_uuid: string;
@@ -59,10 +57,5 @@ export type TinybirdAutomationRunStep = {
     finished_at: string | null;
     status: string;
     step_attempts: number;
-    version: 1 | 2;
-};
-
-export type TinybirdAutomationSyncBatch = {
-    runs: TinybirdAutomationRun[];
-    steps: TinybirdAutomationRunStep[];
+    version: string;
 };

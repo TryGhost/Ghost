@@ -25,7 +25,7 @@ import type {
 import {fromDatabaseDate, toDatabaseDate, type DatabaseDate} from '../../lib/db-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
-import type {AutomationAnalytics, AutomationRunStepSnapshot} from '../automation-analytics';
+import type {AutomationAnalytics} from '../automation-analytics';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
@@ -251,8 +251,7 @@ export function createDatabaseAutomationsRepository({
                 await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
 
                 if (updatedAutomation.status === 'inactive') {
-                    const cancelledSteps = await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
-                    await automationAnalytics?.enqueue(trx, {runs: [], steps: cancelledSteps});
+                    await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
                 }
 
                 return await buildAutomation(trx, updatedAutomation);
@@ -266,8 +265,7 @@ export function createDatabaseAutomationsRepository({
         }): Promise<void> {
             return await knex.transaction(trx => trigger(trx, {
                 ...options,
-                fakeWaitHoursMultiplier,
-                automationAnalytics
+                fakeWaitHoursMultiplier
             }));
         },
 
@@ -281,20 +279,12 @@ export function createDatabaseAutomationsRepository({
         async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
             return await knex.transaction(trx => finishStepAndEnqueueNext(trx, {
                 step,
-                fakeWaitHoursMultiplier,
-                automationAnalytics
+                fakeWaitHoursMultiplier
             }));
         },
 
         async markStepTerminal(step: AutomationStepToRun, status: AutomationStepTerminalStatus): Promise<boolean> {
-            return await knex.transaction(async (trx) => {
-                const didUpdate = await markStepTerminal(trx, step, status);
-                if (didUpdate) {
-                    const updatedStep = await loadRunStepSnapshot(trx, step.id);
-                    await automationAnalytics?.enqueue(trx, {runs: [], steps: updatedStep ? [updatedStep] : []});
-                }
-                return didUpdate;
-            });
+            return await knex.transaction(trx => markStepTerminal(trx, step, status));
         },
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
@@ -577,14 +567,12 @@ async function trigger(trx: Knex.Transaction, options: Readonly<{
     memberId: string;
     memberStatus: 'free' | 'paid';
     fakeWaitHoursMultiplier: number | null;
-    automationAnalytics?: AutomationAnalytics;
 }>): Promise<void> {
     const {
         memberEmail,
         memberId,
         memberStatus,
-        fakeWaitHoursMultiplier,
-        automationAnalytics
+        fakeWaitHoursMultiplier
     } = options;
 
     const firstAction = await findFirstActionRevision(trx, memberStatus);
@@ -607,15 +595,11 @@ async function trigger(trx: Knex.Transaction, options: Readonly<{
     };
 
     await trx('automation_runs').insert(run);
-    const step = await insertRunStep(trx, {
+    await insertRunStep(trx, {
         automationRunId: run.id,
         automationActionRevisionId: firstAction.automation_action_revision_id,
         now,
         readyAt
-    });
-    await automationAnalytics?.enqueue(trx, {
-        runs: [run],
-        steps: [step]
     });
 }
 
@@ -629,23 +613,17 @@ async function insertRunStep(trx: Knex.Transaction, {
     automationActionRevisionId: string;
     now: Date;
     readyAt: Date;
-}>): Promise<AutomationRunStepSnapshot> {
+}>): Promise<void> {
     const nowString = toDatabaseDate(now);
 
-    const step: AutomationRunStepSnapshot = {
+    await trx('automation_run_steps').insert({
         id: ObjectId().toHexString(),
         created_at: nowString,
         updated_at: nowString,
         automation_run_id: automationRunId,
         automation_action_revision_id: automationActionRevisionId,
-        ready_at: toDatabaseDate(readyAt),
-        started_at: null,
-        finished_at: null,
-        status: 'pending',
-        step_attempts: 0
-    };
-    await trx('automation_run_steps').insert(step);
-    return step;
+        ready_at: toDatabaseDate(readyAt)
+    });
 }
 
 async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<{
@@ -841,13 +819,11 @@ async function finishStepAndEnqueueNext(
     options: Readonly<{
         step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
         fakeWaitHoursMultiplier: number | null;
-        automationAnalytics?: AutomationAnalytics;
     }>
 ): Promise<Date | null> {
     const {
         step,
-        fakeWaitHoursMultiplier,
-        automationAnalytics
+        fakeWaitHoursMultiplier
     } = options;
 
     const didFinish = await markStepTerminal(trx, step, 'finished');
@@ -855,33 +831,24 @@ async function finishStepAndEnqueueNext(
         return null;
     }
 
-    const finishedStep = await loadRunStepSnapshot(trx, step.id);
-
     if (!await isRunAutomationActive(trx, step.automation_run_id)) {
-        await automationAnalytics?.enqueue(trx, {runs: [], steps: finishedStep ? [finishedStep] : []});
         return null;
     }
 
     const next = await findNextActionRevision(trx, step.action_id);
 
     if (!next) {
-        await automationAnalytics?.enqueue(trx, {runs: [], steps: finishedStep ? [finishedStep] : []});
         return null;
     }
 
     const now = new Date();
     const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
 
-    const nextStep = await insertRunStep(trx, {
+    await insertRunStep(trx, {
         automationRunId: step.automation_run_id,
         automationActionRevisionId: next.automation_action_revision_id,
         now,
         readyAt: nextReadyAt
-    });
-
-    await automationAnalytics?.enqueue(trx, {
-        runs: [],
-        steps: [...(finishedStep ? [finishedStep] : []), nextStep]
     });
 
     return nextReadyAt;
@@ -971,37 +938,9 @@ async function cancelCancelablePendingStepsForAutomation(
     trx: Knex.Transaction,
     automationId: string,
     now: Readonly<Date>
-): Promise<AutomationRunStepSnapshot[]> {
+): Promise<void> {
     const nowString = toDatabaseDate(now);
     const staleLockCutoff = toDatabaseDate(getStaleLockCutoff(now));
-
-    const candidates: AutomationRunStepSnapshot[] = await trx('automation_run_steps')
-        .select(
-            'id',
-            'automation_run_id',
-            'automation_action_revision_id',
-            'created_at',
-            'updated_at',
-            'ready_at',
-            'started_at',
-            'finished_at',
-            'status',
-            'step_attempts'
-        )
-        .where('status', 'pending')
-        .whereIn('automation_run_id', trx('automation_runs')
-            .select('id')
-            .where('automation_id', automationId))
-        .where((builder) => {
-            builder
-                .whereNull('locked_by')
-                .orWhere('locked_at', '<', staleLockCutoff);
-        })
-        .forUpdate();
-
-    if (!candidates.length) {
-        return [];
-    }
 
     await trx('automation_run_steps')
         .update({
@@ -1020,13 +959,6 @@ async function cancelCancelablePendingStepsForAutomation(
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', staleLockCutoff);
         });
-
-    return candidates.map(step => ({
-        ...step,
-        status: 'automation disabled',
-        finished_at: nowString,
-        updated_at: nowString
-    }));
 }
 
 async function isStepRunAutomationActive(trx: Knex.Transaction, stepId: string): Promise<boolean> {
@@ -1095,25 +1027,6 @@ async function updateStep(
         .where('locked_by', step.locked_by);
     /* eslint-enable camelcase */
     return changes >= 1;
-}
-
-async function loadRunStepSnapshot(trx: Knex.Transaction, stepId: string): Promise<AutomationRunStepSnapshot | null> {
-    const row = await trx('automation_run_steps')
-        .select(
-            'id',
-            'automation_run_id',
-            'automation_action_revision_id',
-            'created_at',
-            'updated_at',
-            'ready_at',
-            'started_at',
-            'finished_at',
-            'status',
-            'step_attempts'
-        )
-        .where('id', stepId)
-        .first();
-    return row ?? null;
 }
 
 async function loadAutomation(trx: Knex.Transaction, automationId: string): Promise<AutomationRow | null> {
