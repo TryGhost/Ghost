@@ -613,6 +613,31 @@ describe('Posts Importer API', function () {
     assert.equal(two.get('updated_at').toISOString(), '2024-06-15T18:45:00.000Z');
   });
 
+  it('Skips existing post slugs when the same CSV is imported again', async function () {
+    await agent.loginAsOwner();
+
+    const duplicateCsvPath = await csvFile(
+      'posts-import-deduplication.csv',
+      'title,slug,html\n' +
+        'CSV deduplication check,csv-deduplication-check,<p>Only one copy</p>\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', duplicateCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+    await agent.post('posts/upload/').attach('postsfile', duplicateCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const { data: posts } = await models.Post.findPage({
+      filter: "slug:'csv-deduplication-check'",
+      status: 'all',
+      limit: 'all',
+    });
+
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].get('title'), 'CSV deduplication check');
+    assert.match(posts[0].get('html'), /Only one copy/);
+  });
+
   it('Imports public posts even when the site default visibility is paid', async function () {
     mockManager.mockSetting('default_content_visibility', 'paid');
     await agent.loginAsOwner();

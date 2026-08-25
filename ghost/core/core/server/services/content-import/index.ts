@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import ContentCSVImporter, { type ImportAccepted, type FailureReporter } from './import/importer';
+import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
 import { importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
@@ -43,9 +44,7 @@ function makeImporter(): ContentCSVImporter {
   return new ContentCSVImporter({
     readRows: readPostRows,
     prepareSource: prepareImportSource,
-    posts: {
-      create: (data, options) => models.Post.add(data, options),
-    },
+    posts: new BookshelfPostsRepository(models),
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,

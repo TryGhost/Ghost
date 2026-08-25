@@ -7,6 +7,7 @@ import buildPostData, {
   type PostData,
 } from './post-data';
 import type { PostImportRow } from './row';
+import type { CreatedPost, PostsRepository } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
@@ -25,15 +26,6 @@ const tpl = require('@tryghost/tpl');
 export interface ImportAccepted {
   importId: string;
   total: number;
-}
-
-export interface CreatedPost {
-  id: string;
-  toJSON(): Record<string, unknown>;
-}
-
-export interface PostsRepository {
-  create(data: PostData, options: object): Promise<CreatedPost>;
 }
 
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
@@ -194,7 +186,6 @@ class ContentCSVImporter {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
-      let attemptedWrites = 0;
       let successfulWrites = 0;
       let failedWrites = 0;
       let firstWriteFailure: unknown;
@@ -221,7 +212,6 @@ class ContentCSVImporter {
           throw error;
         }
 
-        attemptedWrites += 1;
         let post: CreatedPost;
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:
@@ -230,10 +220,22 @@ class ContentCSVImporter {
           // it, one reason status is never 'scheduled'). Pinned by
           // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
           // model layer mutates it.
-          post = await this._posts.create(data, {
+          const result = await this._posts.write(data, {
             importing: true,
             context: { internal: true },
           });
+
+          if (result.status === 'skipped') {
+            this._store.record(runId, {
+              line,
+              title: row.title,
+              status: 'skipped',
+              reason: result.reason,
+            });
+            continue;
+          }
+
+          post = result.post;
           successfulWrites += 1;
         } catch (error) {
           if (failedWrites === 0) {
@@ -266,7 +268,7 @@ class ContentCSVImporter {
         this._store.record(runId, outcome);
       }
 
-      if (attemptedWrites > 0 && successfulWrites === 0 && failedWrites === attemptedWrites) {
+      if (failedWrites > 0 && successfulWrites === 0) {
         this._report(
           new errors.InternalServerError({
             message: tpl(messages.allWritesFailed, {

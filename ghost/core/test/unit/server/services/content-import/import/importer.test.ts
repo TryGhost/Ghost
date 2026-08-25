@@ -19,6 +19,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const reported: unknown[] = [];
   const jobs: Array<{ name: string; offloaded: boolean; job: () => Promise<void> }> = [];
   const createFailures = new Map<string, unknown>();
+  const duplicateSlugs = new Set<string>();
   const urlFailures = new Map<string, unknown>();
   const store = new ImportRunStore();
   let converterResolutions = 0;
@@ -41,14 +42,23 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const deps = {
     readRows: async () => rows,
     posts: {
-      create: async (data: PostData, options: object) => {
+      write: async (data: PostData, options: object) => {
         const failure = createFailures.get(data.title);
         if (failure) {
           throw failure;
         }
+        if (duplicateSlugs.has(data.slug)) {
+          return {
+            status: 'skipped' as const,
+            reason: `A post with the slug "${data.slug}" already exists.`,
+          };
+        }
         created.push({ data, options });
         const id = `post_${created.length}`;
-        return { id, toJSON: () => ({ id, slug: `slug-${created.length}` }) };
+        return {
+          status: 'created' as const,
+          post: { id, toJSON: () => ({ id, slug: `slug-${created.length}` }) },
+        };
       },
     },
     getHtmlToLexical: () => htmlToLexicalFactory(),
@@ -107,6 +117,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     reported,
     jobs,
     createFailures,
+    duplicateSlugs,
     urlFailures,
     store,
     setHtmlToLexicalFactory,
@@ -481,6 +492,49 @@ describe('ContentCSVImporter', function () {
     });
   });
 
+  it('records an existing slug as skipped without treating it as a failed write', async function () {
+    const h = harness([row('Duplicate'), row('Created')]);
+    h.duplicateSlugs.add('duplicate');
+
+    await h.run();
+
+    assert.deepEqual(
+      h.created.map((call) => call.data.title),
+      ['Created'],
+    );
+    assert.deepEqual(h.reported, []);
+    assert.deepEqual(h.store.get('run_test')?.rows, [
+      {
+        line: 2,
+        title: 'Duplicate',
+        status: 'skipped',
+        reason: 'A post with the slug "duplicate" already exists.',
+      },
+      {
+        line: 3,
+        title: 'Created',
+        status: 'created',
+        postId: 'post_1',
+        url: 'https://example.com/post_1/',
+      },
+    ]);
+  });
+
+  it('completes without reporting when every row is an existing slug', async function () {
+    const h = harness([row('First'), row('Second')]);
+    h.duplicateSlugs.add('first');
+    h.duplicateSlugs.add('second');
+
+    await h.run();
+
+    assert.equal(h.created.length, 0);
+    assert.deepEqual(h.reported, []);
+    assert.deepEqual(
+      h.store.get('run_test')?.rows.map((outcome) => outcome.status),
+      ['skipped', 'skipped'],
+    );
+  });
+
   it('reports once when every attempted write fails', async function () {
     const h = harness([row('First'), row('Second')]);
     h.createFailures.set('First', new Error('first insert failed'));
@@ -504,6 +558,19 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(
       h.store.get('run_test')?.rows.map((outcome) => outcome.status),
       ['failed', 'failed'],
+    );
+  });
+
+  it('uses the singular post noun when the only attempted write fails', async function () {
+    const h = harness([row('Only')]);
+    h.createFailures.set('Only', new Error('only insert failed'));
+
+    await h.run();
+
+    assert.equal(h.reported.length, 1);
+    assert.equal(
+      (h.reported[0] as Error).message,
+      'Content import failed to write all 1 attempted post.',
     );
   });
 
