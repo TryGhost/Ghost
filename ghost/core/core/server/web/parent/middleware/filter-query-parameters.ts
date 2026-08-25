@@ -18,6 +18,7 @@ const EXEMPT_PATH_PATTERNS = [
   /\/\.well-known(?:\/|$)/,
   /\/socket\.io(?:\/|$)/,
 ];
+const MAX_LOGGED_PARAMETERS = 10;
 
 type FilterResult = {
   requestTarget: string;
@@ -103,9 +104,15 @@ export function filterQueryParameters(req: Request, _res: Response, next: NextFu
   }
 
   if (result.removedUnknownParameters.length > 0) {
-    const strippedParameters = result.removedUnknownParameters.map(encodeURIComponent).join(', ');
+    const strippedParameters = result.removedUnknownParameters
+      .slice(0, MAX_LOGGED_PARAMETERS)
+      .map(encodeURIComponent)
+      .join(', ');
+    const omittedParameterCount = result.removedUnknownParameters.length - MAX_LOGGED_PARAMETERS;
+    const omittedParameters =
+      omittedParameterCount > 0 ? `, and ${omittedParameterCount} more` : '';
     logging.warn(
-      `[query-parameter-filter] Stripped undeclared query parameter(s) from ${req.path}: ${strippedParameters}`,
+      `[query-parameter-filter] Stripped undeclared query parameter(s) from ${req.path}: ${strippedParameters}${omittedParameters}`,
     );
   }
 

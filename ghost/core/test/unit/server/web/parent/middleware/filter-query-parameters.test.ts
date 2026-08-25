@@ -150,6 +150,21 @@ describe('Middleware: filterQueryParameters', function () {
     );
   });
 
+  it('limits the number of stripped parameter names in warning logs', async function () {
+    const warn = sinon.stub(logging, 'warn');
+    const query = Array.from(
+      { length: 12 },
+      (_, index) => `unknown_${String.fromCharCode(97 + index)}=value`,
+    ).join('&');
+
+    await request(createApp()).get(`/example?${query}`).expect(200);
+
+    sinon.assert.calledOnceWithExactly(
+      warn,
+      '[query-parameter-filter] Stripped undeclared query parameter(s) from /example: unknown_a, unknown_b, unknown_c, unknown_d, unknown_e, unknown_f, unknown_g, unknown_h, unknown_i, unknown_j, and 2 more',
+    );
+  });
+
   it('does not warn when all parameters are allowed', async function () {
     const warn = sinon.stub(logging, 'warn');
 
