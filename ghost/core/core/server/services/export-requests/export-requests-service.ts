@@ -10,7 +10,6 @@ const config = require('../../../shared/config');
 type ExportRequestBody = {
   type: 'export';
   siteId: string;
-  requestedBy: string;
   components: AsyncExportComponents;
 };
 
@@ -48,19 +47,13 @@ export class ExportRequestsService {
   /**
    * Requests an async export archive from the configured host service.
    * The host service generates the archive in the background and emails a
-   * download link to `requestedBy`.
+   * download link to the site owner.
    *
    * The webhook is a shared channel that dispatches on the `type` field of
    * the event envelope, and the receiver is fire-and-forget (it always
    * responds 200) — a 2xx means "delivered", not "validated".
    */
-  async requestArchive({
-    components,
-    requestedBy,
-  }: {
-    components: AsyncExportComponents;
-    requestedBy: string;
-  }): Promise<void> {
+  async requestArchive({ components }: { components: AsyncExportComponents }): Promise<void> {
     const { webhookUrl, webhookSecret, siteId } = this.#readExportRequestConfig();
 
     if (typeof webhookUrl !== 'string' || webhookUrl.length === 0) {
@@ -93,7 +86,6 @@ export class ExportRequestsService {
     const payload: ExportRequestBody = {
       type: 'export',
       siteId: normalizedSiteId,
-      requestedBy,
       components,
     };
 

@@ -128,7 +128,9 @@ describe('Migration tools export', () => {
     await section.getByRole('button', { name: 'Export data' }).click();
 
     const dialog = page.getByRole('dialog');
-    await expect.element(dialog.getByText('sent to you by email', { exact: false })).toBeVisible();
+    await expect
+      .element(dialog.getByText('emailed to the site owner', { exact: false }))
+      .toBeVisible();
     await expect.element(dialog.getByText('Media files', { exact: true })).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -175,7 +177,9 @@ describe('Migration tools export', () => {
     // Non-idempotent request: the dialog must not be dismissible while pending
     await expect.element(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await userEvent.keyboard('{Escape}');
-    await expect.element(dialog.getByText('sent to you by email', { exact: false })).toBeVisible();
+    await expect
+      .element(dialog.getByText('emailed to the site owner', { exact: false }))
+      .toBeVisible();
 
     releaseRequest();
     await expect.element(dialog.getByText('Exporting data', { exact: false })).toBeVisible();

@@ -26,7 +26,6 @@ const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
-const models = require('../../models');
 const { exportRequestsService } = require('../../services/export-requests/export-requests-service');
 
 const postsService = getPostServiceInstance();
@@ -111,23 +110,6 @@ function createSiteExporter() {
   });
 }
 
-/**
- * Resolves the delivery email server-side from the authenticated user —
- * never trust an email supplied in the request body.
- */
-async function resolveRequestedBy(frame) {
-  if (frame.user && frame.user.get) {
-    return frame.user.get('email');
-  }
-
-  if (frame.options.context.user) {
-    const user = await models.User.findOne({ id: frame.options.context.user });
-    return user && user.get('email');
-  }
-
-  return null;
-}
-
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'exports',
@@ -210,15 +192,7 @@ const controller = {
         components[key] = frame.data.components[key] === true;
       }
 
-      const requestedBy = await resolveRequestedBy(frame);
-
-      if (!requestedBy) {
-        throw new errors.NoPermissionError({
-          message: 'Export requests require an authenticated staff user',
-        });
-      }
-
-      await exportRequestsService.requestArchive({ components, requestedBy });
+      await exportRequestsService.requestArchive({ components });
     },
   },
 };

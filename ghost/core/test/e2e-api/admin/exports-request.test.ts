@@ -95,7 +95,6 @@ describe('Exports API: archive requests', function () {
       assert.deepEqual(captured.body, {
         type: 'export',
         siteId: SITE_ID,
-        requestedBy: fixtureManager.get('users', 0).email,
         components: {
           content: true,
           members: true,
@@ -126,7 +125,7 @@ describe('Exports API: archive requests', function () {
       assert.equal(captured.headers['x-ghost-signature'], expectedSignature);
     });
 
-    it('Ignores an email supplied in the request body', async function () {
+    it('Does not forward an email supplied in the request body', async function () {
       configureArchiveHost();
       const captured = mockArchiveHost();
 
@@ -136,7 +135,7 @@ describe('Exports API: archive requests', function () {
         .expectStatus(202);
 
       assert.ok(captured.body, 'Expected an outbound request to the archive host');
-      assert.equal(captured.body.requestedBy, fixtureManager.get('users', 0).email);
+      assert.equal(captured.body.requestedBy, undefined);
     });
 
     it('Returns 404 when no archive host is configured', async function () {

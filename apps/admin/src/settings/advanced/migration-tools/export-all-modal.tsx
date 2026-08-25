@@ -16,7 +16,6 @@ import {
   useRequestExport,
   type SiteExportComponent,
 } from '@tryghost/admin-x-framework/api/exports';
-import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 export type ExportMode = 'sync' | 'async';
@@ -79,7 +78,6 @@ const ExportAllModal: React.FC<{
   onOpenChange: (open: boolean) => void;
   mode: ExportMode;
 }> = ({ open, onOpenChange, mode }) => {
-  const { data: currentUser } = useCurrentUser();
   const { mutateAsync: requestExport, isPending: isRequestingExport } = useRequestExport();
   const handleError = useHandleError();
   const [phase, setPhase] = useState<ExportPhase>('select');
@@ -93,7 +91,6 @@ const ExportAllModal: React.FC<{
   const resetTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const abortRef = useRef<AbortController>();
 
-  const email = currentUser?.email;
   const visibleComponents = EXPORT_COMPONENTS.filter(
     (component) => mode === 'async' || !component.asyncOnly,
   );
@@ -170,7 +167,7 @@ const ExportAllModal: React.FC<{
               <DialogTitle>Export data</DialogTitle>
               <DialogDescription>
                 {mode === 'async' ? (
-                  'Choose what to include. Your export will be prepared in the background and a download link sent to you by email.'
+                  'Choose what to include. Your export will be prepared in the background and a download link emailed to the site owner.'
                 ) : (
                   <>
                     Your export will be downloaded as a single zip file. Images, videos and files
@@ -235,8 +232,7 @@ const ExportAllModal: React.FC<{
               </DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              A link to download your data will be sent to your email{' '}
-              <span className="font-medium text-foreground">{email}</span> once the export is
+              A link to download your data will be emailed to the site owner once the export is
               complete. The link will be valid for 7 days. You can now close this window.
             </DialogDescription>
             <DialogFooter className="sm:justify-end">

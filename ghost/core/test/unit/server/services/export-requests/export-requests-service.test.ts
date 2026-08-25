@@ -53,7 +53,6 @@ describe('ExportRequestsService', function () {
     await assert.rejects(
       service.requestArchive({
         components: allComponents,
-        requestedBy: 'owner@example.com',
       }),
       (error: any) => {
         assert.equal(error.errorType, 'NotFoundError');
@@ -83,7 +82,6 @@ describe('ExportRequestsService', function () {
     await assert.rejects(
       service.requestArchive({
         components: allComponents,
-        requestedBy: 'owner@example.com',
       }),
       (error: any) => {
         assert.equal(error.errorType, 'IncorrectUsageError');
@@ -118,7 +116,6 @@ describe('ExportRequestsService', function () {
     await assert.rejects(
       service.requestArchive({
         components: allComponents,
-        requestedBy: 'owner@example.com',
       }),
       (error: any) => {
         assert.equal(error.errorType, 'IncorrectUsageError');
@@ -150,7 +147,6 @@ describe('ExportRequestsService', function () {
 
     await service.requestArchive({
       components: allComponents,
-      requestedBy: 'owner@example.com',
     });
 
     assert.equal(JSON.parse(requestOptions.body).siteId, '12345');
@@ -177,7 +173,6 @@ describe('ExportRequestsService', function () {
 
     await service.requestArchive({
       components: allComponents,
-      requestedBy: 'owner@example.com',
     });
 
     assert.equal(requestUrl, webhookUrl);
@@ -191,7 +186,6 @@ describe('ExportRequestsService', function () {
     assert.deepEqual(parsedBody, {
       type: 'export',
       siteId: '12345',
-      requestedBy: 'owner@example.com',
       components: {
         content: true,
         members: true,
@@ -247,15 +241,14 @@ describe('ExportRequestsService', function () {
 
       await service.requestArchive({
         components: allComponents,
-        requestedBy: 'owner@example.com',
       });
 
       assert.equal(capturedTimestamp, '1700000000000');
       assert.equal(
         capturedBody,
-        '{"type":"export","siteId":"12345","requestedBy":"owner@example.com","components":{"content":true,"members":true,"analytics":true,"themes":true,"routes":true,"media":false}}',
+        '{"type":"export","siteId":"12345","components":{"content":true,"members":true,"analytics":true,"themes":true,"routes":true,"media":false}}',
       );
-      assert.equal(capturedSignature, '657rQR/oodu1YtgfAvcaNsK05BbKGFPtTalagMFxqpc=');
+      assert.equal(capturedSignature, 'wVSf9NNJV/v5vnjx1zclb7HhiE7O4T7iE/EWT1BWr3g=');
     } finally {
       nowSpy.mockRestore();
     }
@@ -279,7 +272,6 @@ describe('ExportRequestsService', function () {
     await assert.rejects(
       service.requestArchive({
         components: allComponents,
-        requestedBy: 'owner@example.com',
       }),
       (error: any) => {
         assert.equal(error.statusCode, 502);
