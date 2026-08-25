@@ -19,33 +19,18 @@ const EXEMPT_PATH_PATTERNS = [
   /\/socket\.io(?:\/|$)/,
 ];
 const MAX_LOGGED_PARAMETERS = 10;
+const REQUEST_URL_BASE = 'http://ignored.example';
 
 type FilterResult = {
   requestTarget: string;
   removedUnknownParameters: string[];
 };
 
-const splitRequestTarget = (requestTarget: string) => {
-  const queryStart = requestTarget.indexOf('?');
-
-  if (queryStart === -1) {
-    return { pathname: requestTarget, searchParams: new URLSearchParams() };
-  }
-
-  return {
-    pathname: requestTarget.slice(0, queryStart),
-    searchParams: new URLSearchParams(requestTarget.slice(queryStart + 1)),
-  };
-};
-
 const replaceQueryString = (requestTarget: string, filteredRequestTarget: string) => {
-  const queryStart = requestTarget.indexOf('?');
-  const pathname = queryStart === -1 ? requestTarget : requestTarget.slice(0, queryStart);
-  const filteredQueryStart = filteredRequestTarget.indexOf('?');
+  const requestUrl = new URL(requestTarget, REQUEST_URL_BASE);
+  const filteredUrl = new URL(filteredRequestTarget, REQUEST_URL_BASE);
 
-  return filteredQueryStart === -1
-    ? pathname
-    : `${pathname}${filteredRequestTarget.slice(filteredQueryStart)}`;
+  return `${requestUrl.pathname}${filteredUrl.search}`;
 };
 
 const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: ReadonlySet<string>) => {
@@ -62,7 +47,7 @@ const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: Reado
 };
 
 const filterRequestTarget = (requestTarget: string): FilterResult => {
-  const { pathname, searchParams } = splitRequestTarget(requestTarget);
+  const { pathname, searchParams } = new URL(requestTarget, REQUEST_URL_BASE);
   const contentApiRequest = CONTENT_API_PATH_PATTERN.test(pathname);
   const bypass = searchParams.get('force_params') === 'true';
   const exemptPath = EXEMPT_PATH_PATTERNS.some((pattern) => pattern.test(pathname));

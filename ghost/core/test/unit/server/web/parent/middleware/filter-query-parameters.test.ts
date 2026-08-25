@@ -237,7 +237,7 @@ describe('Middleware: filterQueryParameters', function () {
         url = value;
       },
       get query() {
-        return Object.fromEntries(new URLSearchParams(url.split('?')[1] || ''));
+        return Object.fromEntries(new URL(url, 'http://ignored.example').searchParams);
       },
     };
     const next = sinon.spy();
