@@ -49,7 +49,7 @@ async function copyFetchResponse(fetchResponse: globalThis.Response, res: Respon
  * Only public entries ever render as markdown without payment; gated entries
  * stay html (or preview / 402 on an explicit `.md` URL).
  */
-export function isPublic(entry: Entry): boolean {
+function isPublic(entry: Entry): boolean {
   return entry.visibility === 'public';
 }
 
