@@ -1246,6 +1246,32 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
         overflow: visible;
     }
 
+    /* Hide the card/email preview on mobile so that the gifting form is
+       visible */
+    .gh-portal-content.gift .gh-portal-gift-checkout-right {
+        display: none;
+    }
+
+    /* Setting this back to the brand colour because without the brandcolour
+       background the close button disappears on white. */
+    .gh-portal-popup-container.full-size.gift .gh-portal-closeicon,
+    .gh-portal-popup-container.full-size.gift .gh-portal-closeicon:hover {
+        color: var(--brandcolor) !important;
+    }
+
+    .gh-portal-content.gift .gh-portal-closeicon-container {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        top: 12px;
+        right: 12px;
+    }
+
+    html[dir="rtl"] .gh-portal-content.gift .gh-portal-closeicon-container {
+        right: unset;
+        left: 12px;
+    }
+
     .gh-portal-gift-checkout-right-panel {
         padding: 56px 24px 32px;
         border-radius: 0 0 32px 32px;
@@ -1256,19 +1282,18 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     }
 
     .gh-portal-content.gift .gh-portal-btn-site-title-back {
-        top: 16px;
-        left: 16px;
+        align-items: center;
+        height: 40px;
+        top: 12px;
+        left: 24px;
     }
 
     html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
-        right: 16px;
+        right: 24px;
         left: unset;
     }
 
-    /* The back button no longer takes part in the flow, so the delivery step
-       reserves the room it used to occupy. Only that step — the plan step's
-       button is hidden unless there's a page behind the gift page. */
-    .gh-portal-gift-checkout-left[data-step='delivery'] {
+    .gh-portal-content.gift .gh-portal-gift-checkout-left {
         padding-top: 64px;
     }
 
