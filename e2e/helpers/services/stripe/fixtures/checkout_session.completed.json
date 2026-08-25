@@ -1,5 +1,5 @@
 {
-  "id": "cs_test_a1YnnBBjnCdOg0U3Vsen6LEWYp9JkPdeTqBnP0ZriFhZsoNpAufR9uaUmZ",
+  "id": "cs_test_a1BZS9tua8DNQPNiyWU0vOOHJgrC3CteT1RkZlNO1knK0Ez7KiZ2phprgY",
   "object": "checkout.session",
   "adaptive_pricing": {
     "enabled": true
@@ -19,7 +19,7 @@
     "background_color": "#ffffff",
     "border_style": "rounded",
     "button_color": "#0074d4",
-    "display_name": "Example Publication",
+    "display_name": "Counterproof Collective",
     "font_family": "default",
     "icon": null,
     "logo": null
@@ -28,23 +28,23 @@
   "client_reference_id": null,
   "client_secret": null,
   "collected_information": {
-    "business_name": "Example Company Ltd",
+    "business_name": "Testing Co",
     "individual_name": null,
     "shipping_details": {
       "address": {
         "city": "London",
         "country": "GB",
-        "line1": "Apartment 1",
-        "line2": "1 Example Street",
-        "postal_code": "EC1A 1AA",
+        "line1": "Flat 10",
+        "line2": "1C Bethwin Road",
+        "postal_code": "SE5 0SG",
         "state": null
       },
-      "name": "Jamie Example"
+      "name": "Test Tester"
     }
   },
   "consent": null,
   "consent_collection": null,
-  "created": 1787091163,
+  "created": 1787267225,
   "currency": "usd",
   "currency_conversion": null,
   "custom_fields": [
@@ -59,7 +59,7 @@
         "default_value": null,
         "maximum_length": null,
         "minimum_length": null,
-        "value": "These are delivery notes"
+        "value": "Some example delivery notes."
       },
       "type": "text"
     }
@@ -70,22 +70,22 @@
     "submit": null,
     "terms_of_service_acceptance": null
   },
-  "customer": "cus_V67VaSsCShqIuI",
+  "customer": "cus_V6spNElFR59wgr",
   "customer_account": null,
   "customer_creation": "always",
   "customer_details": {
     "address": {
       "city": "London",
       "country": "GB",
-      "line1": "Apartment 1",
-      "line2": "1 Example Street",
-      "postal_code": "EC1A 1AA",
+      "line1": "Flat 10",
+      "line2": "1C Bethwin Road",
+      "postal_code": "SE5 0SG",
       "state": null
     },
-    "business_name": "Example Company Ltd",
-    "email": "member@example.com",
+    "business_name": "Testing Co",
+    "email": "test@example.com",
     "individual_name": null,
-    "name": "Example Company Ltd",
+    "name": "Testing Co",
     "phone": null,
     "tax_exempt": "none",
     "tax_ids": [
@@ -97,9 +97,9 @@
   },
   "customer_email": null,
   "discounts": [],
-  "expires_at": 1787177562,
+  "expires_at": 1787353625,
   "integration_identifier": null,
-  "invoice": "in_1U5vGmCvhsRvBqJ0YdYrEKnB",
+  "invoice": "in_1U6f47CvhsRvBqJ0cSDraiS4",
   "invoice_creation": null,
   "livemode": false,
   "locale": null,
@@ -113,7 +113,7 @@
   "payment_link": null,
   "payment_method_collection": "always",
   "payment_method_configuration_details": {
-    "id": "pmc_000000000000000000000000",
+    "id": "pmc_1SAoFrCvhsRvBqJ0uYiAIPaH",
     "parent": null
   },
   "payment_method_options": {
@@ -138,13 +138,13 @@
     "address": {
       "city": "London",
       "country": "GB",
-      "line1": "Apartment 1",
-      "line2": "1 Example Street",
-      "postal_code": "EC1A 1AA",
+      "line1": "Flat 10",
+      "line2": "1C Bethwin Road",
+      "postal_code": "SE5 0SG",
       "state": null
     },
     "carrier": null,
-    "name": "Jamie Example",
+    "name": "Test Tester",
     "phone": null,
     "tracking_number": null
   },
@@ -155,7 +155,7 @@
   "shipping_rate": null,
   "status": "complete",
   "submit_type": null,
-  "subscription": "sub_1U5vGmCvhsRvBqJ0Asiwj5Es",
+  "subscription": "sub_1U6f47CvhsRvBqJ0RXvtkYnc",
   "success_url": "https://example.com/success",
   "tax_id_collection": {
     "enabled": true,

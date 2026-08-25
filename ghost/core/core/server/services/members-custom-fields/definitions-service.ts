@@ -3,10 +3,10 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { CustomField } from './models';
-import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { FieldTypeSchema, type FieldType } from '@tryghost/custom-field-types';
 import { customFieldCodec } from './codec';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
-import { activeFields, inFieldOrder } from './queries';
+import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
 import { mintableKey } from './key';
 import { type RecordCustomFieldAction, type RequestContext } from './actions';
 
@@ -136,17 +136,17 @@ export class CustomFieldDefinitionsService {
    * Typed off `activeFields` so the builder keeps the table's row type: every caller
    * hands over a query against the definitions table, whatever it has narrowed.
    */
-  private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
+  private async list(query: DefinitionQuery): Promise<CustomField[]> {
     const rows = await inFieldOrder(query).select('*');
     return rows.map((row) => z.decode(customFieldCodec, row));
   }
 
   async read(key: string): Promise<CustomField> {
-    const row = await this.knex(TABLE).where('key', key).first();
-    if (!row) {
+    const [field] = await this.list(fieldByKey(this.knex, key));
+    if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
-    return z.decode(customFieldCodec, row);
+    return field;
   }
 
   /**
@@ -201,13 +201,11 @@ export class CustomFieldDefinitionsService {
         for (const [index, field] of fields.entries()) {
           await this.assertNameAvailable(trx, field.name);
           const key = await this.mintKey(trx, bases[index]);
-          await trx(TABLE).insert({
-            id: new ObjectID().toHexString(),
+          await this.insertField(trx, {
             key,
             name: field.name,
             type: field.type,
-            sort_order: firstSortOrder + index,
-            created_at: new Date(),
+            sortOrder: firstSortOrder + index,
           });
           keys.push(key);
         }
@@ -228,7 +226,68 @@ export class CustomFieldDefinitionsService {
     // Logged after the commit: the action log is a separate Bookshelf write
     // outside this transaction, so recording inside it would leave orphaned
     // "added" entries for fields a rollback never created.
-    for (const field of created) {
+    await this.recordCreated(context, created);
+    return created;
+  }
+
+  /**
+   * Given an executor it joins that transaction; given none it opens its own. Unlike
+   * `add`, the key is stated rather than minted from the name, and a name already taken
+   * is numbered rather than refused.
+   *
+   * The field is returned rather than logged: the history writes on its own connection,
+   * which a single-connection pool would deadlock against an open transaction.
+   */
+  async addOne(
+    wanted: { key: string; name: string; type: FieldType },
+    { executor = this.knex }: { executor?: Knex } = {},
+  ): Promise<CustomField> {
+    const write = async (db: Knex) => {
+      await this.assertWithinLimit(db, 1);
+
+      const taken = await db(TABLE).where('key', wanted.key).first();
+      const key = taken ? await this.mintKey(db, wanted.key) : wanted.key;
+
+      await this.insertField(db, {
+        key,
+        name: await this.freeName(db, wanted.name),
+        type: wanted.type,
+        sortOrder: await this.nextSortOrder(db),
+      });
+      const [created] = await this.readMany(db, [key]);
+      return created;
+    };
+
+    // knex's marker for a transactor: join it rather than nesting a savepoint under it.
+    return executor.isTransaction ? write(executor) : executor.transaction(write);
+  }
+
+  private async insertField(
+    db: Knex,
+    field: { key: string; name: string; type: FieldType; sortOrder: number },
+  ): Promise<void> {
+    await db(TABLE).insert({
+      id: new ObjectID().toHexString(),
+      key: field.key,
+      name: field.name,
+      type: field.type,
+      sort_order: field.sortOrder,
+      created_at: new Date(),
+    });
+  }
+
+  /** `read` for a caller that is deciding rather than serving: absent is an answer. */
+  async findByKey(
+    key: string,
+    { executor = this.knex }: { executor?: Knex } = {},
+  ): Promise<CustomField | null> {
+    const row = await executor(TABLE).where('key', key).first();
+    return row ? z.decode(customFieldCodec, row) : null;
+  }
+
+  /** The same entry `add` writes. Only the caller knows its transaction committed. */
+  async recordCreated(context: RequestContext, fields: CustomField[]): Promise<void> {
+    for (const field of fields) {
       await this.recordAction({
         context,
         verb: 'create',
@@ -236,7 +295,24 @@ export class CustomFieldDefinitionsService {
         details: { primary_name: field.name, key: field.key },
       });
     }
-    return created;
+  }
+
+  private async freeName(db: Knex, wanted: string): Promise<string> {
+    const names: string[] = await db(TABLE).where('name', 'like', `${wanted}%`).pluck('name');
+    const taken = new Set(names.map((name) => name.toLowerCase()));
+    if (!taken.has(wanted.toLowerCase())) {
+      return wanted;
+    }
+    for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
+      const candidate = `${wanted} (${suffix})`;
+      if (!taken.has(candidate.toLowerCase())) {
+        return candidate;
+      }
+    }
+    throw new errors.ValidationError({
+      message: `Could not find a free name for ${wanted}. Rename or remove the fields using it.`,
+      property: 'name',
+    });
   }
 
   /**

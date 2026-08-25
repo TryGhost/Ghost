@@ -1,4 +1,4 @@
-import { provision, stripeClient } from './provision-stripe-environment.ts';
+import { asSessionCreateParams, provision, stripeClient } from './provision-stripe-environment.ts';
 
 /**
  * Measures the checkout constraints the fake Stripe server enforces.
@@ -30,7 +30,7 @@ const field = (overrides: Record<string, unknown> = {}) => ({
 
 async function probe(name: string, params: Record<string, unknown>): Promise<void> {
   try {
-    await stripe.checkout.sessions.create(params as Stripe.Checkout.SessionCreateParams);
+    await stripe.checkout.sessions.create(asSessionCreateParams(params));
     log(`  ACCEPTED  ${name}`);
   } catch (error) {
     log(`  REJECTED  ${name}`);
@@ -81,6 +81,41 @@ async function main(): Promise<void> {
   await probe('shipping_address_collection without allowed_countries', {
     ...base,
     shipping_address_collection: {},
+  });
+
+  // Collecting for a member who already has a Stripe customer, which is every signed-in
+  // checkout: a free member upgrading, or anyone buying a second time. Ghost sends the
+  // collection parameters and no `customer_update`, because it reads what was collected
+  // off the completed session rather than off the customer. Stripe may still require the
+  // pair — it does for automatic tax, which is why `_applyAutomaticTaxSessionOptions` sets
+  // `customer_update` only when there is a customer. If it does here too, then turning
+  // shipping on breaks checkout for exactly the members most likely to buy, and every test
+  // we have would miss it: they all check out anonymously.
+  const customer = await stripe.customers.create({ email: `probe-${Date.now()}@example.com` });
+  const withCustomer = { ...base, customer: customer.id };
+  const shipping = { allowed_countries: ['GB'] };
+
+  log('');
+  await probe('shipping_address_collection with customer, no customer_update', {
+    ...withCustomer,
+    shipping_address_collection: shipping,
+  });
+  await probe('shipping_address_collection with customer and customer_update', {
+    ...withCustomer,
+    shipping_address_collection: shipping,
+    customer_update: { shipping: 'auto' },
+  });
+  await probe('tax_id_collection with customer, no customer_update', {
+    ...withCustomer,
+    tax_id_collection: { enabled: true },
+  });
+  await probe('phone_number_collection with customer, no customer_update', {
+    ...withCustomer,
+    phone_number_collection: { enabled: true },
+  });
+  await probe('custom_fields with customer, no customer_update', {
+    ...withCustomer,
+    custom_fields: [field()],
   });
 
   log('\nEach REJECTED message is the string the fake server should return.');

@@ -434,6 +434,20 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  // Admin sends `?include=` on resources that have relations to load. This one has none,
+  // so the parameter has nothing to act on — which is a request that returns a definition,
+  // not a request that got something wrong.
+  describe('Asking for relations', function () {
+    it('ignores an include, rather than failing on it', async function () {
+      const field = await createField({ name: 'T-shirt size' });
+
+      const { body } = await agent.get('members/custom_fields/?include=bindings').expectStatus(200);
+
+      assert.equal(body.members_custom_fields[0].key, field.key);
+      assert.equal('bindings' in body.members_custom_fields[0], false);
+    });
+  });
+
   describe('Creating several definitions at once', function () {
     it('creates every definition in the request, in order', async function () {
       const { body } = await agent
@@ -1436,6 +1450,46 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(rows.length, 1);
     });
 
+    // The record has to be made at the moment of the write; nothing can reconstruct it
+    // later. What reads it is a separate question — this pins only that it is written,
+    // and that it names where the value currently held came from rather than the first.
+    // Provenance is observable nowhere else yet, so this reads the columns directly. What
+    // it pins is the outcome: every part records who wrote it, and a re-write says who
+    // wrote what is there now rather than who wrote it first.
+    it('records who wrote each value, and re-records it on every write', async function () {
+      const field = await createField({ name: 'Postal address', type: 'address' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: { line1: '1 High Street', city: 'London' } });
+
+      const writersOf = async () =>
+        models.Base.knex('members_custom_field_values')
+          .where('member_id', memberId)
+          .orderBy('path')
+          .select('path', 'written_by_type');
+
+      assert.deepEqual(await writersOf(), [
+        { path: 'city', written_by_type: 'user' },
+        { path: 'line1', written_by_type: 'user' },
+      ]);
+
+      // The owner made both writes, so every part names them rather than only the
+      // first, and the id resolves back to the actual person.
+      const [{ written_by_id: actor }] = await models.Base.knex('members_custom_field_values')
+        .where('member_id', memberId)
+        .select('written_by_id');
+      assert.ok(actor, 'the writer is identified, not merely named');
+
+      await setValues(memberId, { [field.key]: { city: 'Bristol' } });
+      assert.deepEqual(
+        await writersOf(),
+        [
+          { path: 'city', written_by_type: 'user' },
+          { path: 'line1', written_by_type: 'user' },
+        ],
+        'a re-write keeps naming who wrote what is there now',
+      );
+    });
+
     it("drops a field's values when the field is permanently deleted", async function () {
       const field = await createField({ name: 'Favourite topic' });
       const memberId = await createMember();
@@ -2193,14 +2247,30 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  // The flag governs whether a publisher can set custom fields up, not whether the rest of
+  // Ghost may ask what they are. Admin reads this list to draw screens it renders either
+  // way, and a site that has never enabled the flag has no fields, so the honest answer is
+  // an empty list. Every route that changes something stays behind the flag.
   describe('Flag disabled', function () {
     beforeEach(function () {
       mockManager.restore();
       mockManager.mockLabsDisabled('membersCustomFields');
     });
 
-    it('404s the definitions endpoint', async function () {
-      await agent.get('members/custom_fields/').expectStatus(404);
+    it('serves the definitions endpoint, with nothing on it', async function () {
+      const { body } = await agent.get('members/custom_fields/').expectStatus(200);
+      assert.deepEqual(body.members_custom_fields, []);
+    });
+
+    it('404s a read of a field that does not exist, rather than hiding the route', async function () {
+      await agent.get('members/custom_fields/company/').expectStatus(404);
+    });
+
+    it('404s the create endpoint', async function () {
+      await agent
+        .post('members/custom_fields/')
+        .body({ members_custom_fields: [{ name: 'Company', type: 'short_text' }] })
+        .expectStatus(404);
     });
 
     it('404s the reorder endpoint', async function () {
@@ -2208,6 +2278,17 @@ describe('Member Custom Fields Admin API', function () {
         .put('members/custom_fields/')
         .body({ members_custom_fields: [{ key: 'company' }] })
         .expectStatus(404);
+    });
+
+    it('404s the edit endpoint', async function () {
+      await agent
+        .put('members/custom_fields/company/')
+        .body({ members_custom_fields: [{ name: 'Employer' }] })
+        .expectStatus(404);
+    });
+
+    it('404s the delete endpoint', async function () {
+      await agent.delete('members/custom_fields/company/').expectStatus(404);
     });
   });
 });

@@ -138,3 +138,13 @@ if (process.argv[1]?.endsWith('provision-stripe-environment.ts')) {
     process.exit(1);
   });
 }
+
+/**
+ * The pinned Stripe SDK is older than several of the Checkout parameters these scripts
+ * send, so its types refuse what the API accepts. That gap is the reason the captures and
+ * the probe exist at all, and it cannot be closed without moving off the pinned version.
+ * Casting only the parameters keeps the rest of each request typechecked.
+ */
+export function asSessionCreateParams(params: unknown): Stripe.Checkout.SessionCreateParams {
+  return params as Stripe.Checkout.SessionCreateParams;
+}

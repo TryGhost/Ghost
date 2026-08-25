@@ -1230,8 +1230,10 @@ jobs:
       # Asserts the fake Stripe server against responses captured from Stripe, and
       # that it refuses the requests Stripe refuses. Needs no Ghost, no Docker and
       # no browser, so it does not belong in the e2e matrix that waits on the image.
+      # Run through nx so the target pulls in its own build, which typechecks the
+      # capture scripts and builds what they import.
       - name: Check Stripe fixtures
-        run: pnpm --filter @tryghost/e2e test:fixtures
+        run: pnpm nx run @tryghost/e2e:test:unit
 
       - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'

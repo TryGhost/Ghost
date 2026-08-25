@@ -2152,6 +2152,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
+      '@tryghost/custom-field-types':
+        specifier: workspace:*
+        version: link:../packages/custom-field-types
       '@tryghost/debug':
         specifier: 'catalog:'
         version: 2.3.9(supports-color@10.2.2)
@@ -2200,6 +2203,9 @@ importers:
       stripe:
         specifier: 8.222.0
         version: 8.222.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.12
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

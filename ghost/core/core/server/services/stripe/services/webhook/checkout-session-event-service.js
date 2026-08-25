@@ -422,6 +422,11 @@ module.exports = class CheckoutSessionEventService {
       }
     }
 
+    // After the subscription work, and deliberately not part of it: a value the member
+    // gave us for free must never be able to fail the webhook. A throw here would make
+    // Stripe retry the event and risk doing the payment work twice.
+    await this.writeCollectedFields(member.id, session);
+
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
         session.metadata?.ghostSignupContext
@@ -438,6 +443,38 @@ module.exports = class CheckoutSessionEventService {
         // Direct checkout flows do not have a pre-checkout sign-in path.
         this.deps.sendSignupEmail(customer.email);
       }
+    }
+  }
+
+  /**
+   * Reading the session is this service's to know; where a port lands is a binding, so no
+   * field key reaches this code.
+   *
+   * Nothing here may be fatal: a throw fails the webhook, which makes Stripe retry it and
+   * risks doing the payment work twice.
+   *
+   * @param {string} memberId
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async writeCollectedFields(memberId, session) {
+    try {
+      const labs = require('../../../../../shared/labs');
+      if (!labs.isSet('membersCustomFields')) {
+        return;
+      }
+
+      // Stamped at create time. A session predating this feature carries none.
+      const tierId = session.metadata?.ghostTierId;
+      if (!tierId) {
+        return;
+      }
+
+      const { bindings } = require('../../../members-custom-fields');
+      const { collectedByPort } = require('../checkout/completed-session');
+
+      await bindings.writeCollected(memberId, tierId, collectedByPort.parse(session));
+    } catch (err) {
+      logging.error(err);
     }
   }
 };

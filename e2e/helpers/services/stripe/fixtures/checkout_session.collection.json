@@ -1,5 +1,5 @@
 {
-  "id": "cs_test_a1rlcaFrJ6rRmefuR84dmcYIZC8Wba50apdgswVRAL9rQW5tWhcFePiEHu",
+  "id": "cs_test_a1x0bgEIkVCwnGDl3sbDcHplHRhK4DGw3GtdMBiUkeqoMBQ1GFkFPKTgtV",
   "object": "checkout.session",
   "adaptive_pricing": {
     "enabled": true
@@ -30,10 +30,26 @@
   "collected_information": null,
   "consent": null,
   "consent_collection": null,
-  "created": 1787146482,
+  "created": 1787267115,
   "currency": "usd",
   "currency_conversion": null,
-  "custom_fields": [],
+  "custom_fields": [
+    {
+      "key": "delivery_notes",
+      "label": {
+        "custom": "Delivery notes",
+        "type": "custom"
+      },
+      "optional": true,
+      "text": {
+        "default_value": null,
+        "maximum_length": null,
+        "minimum_length": null,
+        "value": null
+      },
+      "type": "text"
+    }
+  ],
   "custom_text": {
     "after_submit": null,
     "shipping_address": null,
@@ -46,7 +62,7 @@
   "customer_details": null,
   "customer_email": null,
   "discounts": [],
-  "expires_at": 1787232882,
+  "expires_at": 1787353515,
   "integration_identifier": null,
   "invoice": null,
   "invoice_creation": null,
@@ -93,6 +109,10 @@
   "submit_type": null,
   "subscription": null,
   "success_url": "https://example.com/success",
+  "tax_id_collection": {
+    "enabled": true,
+    "required": "never"
+  },
   "total_details": {
     "amount_discount": 0,
     "amount_shipping": 0,

@@ -1064,6 +1064,83 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
+  // Where a source sends what it collected. The source is who collects, the port is that
+  // source's own name for the thing, and the destination is the publisher's field, which
+  // they can repoint without the source knowing.
+  //
+  // A second kind of source becomes a `source_type` beside a widened id. What it must not
+  // become is a second table holding destinations.
+  members_custom_field_bindings: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    port: { type: 'string', maxlength: 191, nullable: false },
+    // Indexed rather than unique: several sources landing in one field is expected.
+    custom_field_key: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      references: 'members_custom_fields.key',
+      cascadeDelete: true,
+    },
+    // Whether the source is writing through this binding right now. Beside the
+    // destination, not on the tier, so nothing can hold a different opinion about either.
+    // Kept when collection stops, so the row still records where this source sends this
+    // port. A question's binding is never inactive: it is removed instead.
+    active: { type: 'boolean', nullable: false, defaultTo: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+    '@@UNIQUE_CONSTRAINTS@@': [
+      { columns: ['product_id', 'port'], indexName: 'members_custom_field_bindings_unique' },
+    ],
+    '@@INDEXES@@': [['custom_field_key']],
+  },
+  // How a tier's checkout question is asked. Where the answer lands is the binding it
+  // hangs off.
+  products_checkout_fields: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    binding_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      unique: true,
+      references: 'members_custom_field_bindings.id',
+      cascadeDelete: true,
+    },
+    sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    // Processors cap a label far shorter than a field name may be. Null asks under the
+    // field's own name.
+    label: { type: 'string', maxlength: 191, nullable: true },
+    optional: { type: 'boolean', nullable: false, defaultTo: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The options a tier's collection needs, and the one thing it collects without keeping.
+  // Whether it collects anything it *does* keep is the binding above.
+  products_checkout_config: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      unique: true,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    // ISO 3166-1 alpha-2, comma-joined. A processor will not render an address form
+    // without them, and a wrong code fails the session create.
+    shipping_allowed_countries: { type: 'string', maxlength: 2000, nullable: true },
+    // Stripe keeps a tax number against the customer it invoices, so there is no
+    // destination to bind and nothing to record but whether to ask.
+    tax_number_collect: { type: 'boolean', nullable: false, defaultTo: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
   members_custom_field_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The field's stable key, not its id: a value is addressed by key everywhere it
@@ -1096,6 +1173,37 @@ module.exports = {
     // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
     // exactly is worth more than the schema restating what the write path enforces.
     value_text: { type: 'text', maxlength: 65535, nullable: true },
+    // How this value arrived: typed through the Admin API, read out of an imported
+    // CSV, or collected by Stripe at checkout. Recorded per leaf at the moment of the
+    // write, because it cannot be reconstructed afterwards, and re-stamped on every
+    // write, so it names where the value currently held came from rather than where
+    // the first one did.
+    //
+    // The path a value took, not the person who operated it: who edited a member's
+    // fields is already recorded as an action. Nullable because rows written before
+    // this column existed have a source nobody can recover, and a default would assert
+    // one we would be inventing.
+    //
+    // Open rather than a list: a binding names its own writer, and enumerating them
+    // here would be the one place every new integration had to be added to. Nothing
+    // writes these rows through a model, so the write path is what holds the rule.
+
+    // Who wrote the value that is here now.
+    //
+    // Shaped like `actions`: a type and an id, no foreign key. A type because not every
+    // write comes through a binding — a person edits a member's fields, an import reads a
+    // file — and an id so the writer can be resolved back rather than merely named. A
+    // binding id resolves to the tier, the port and the field it routed into, which is
+    // everything worth knowing about how a value got here.
+    //
+    // No foreign key, because provenance has to outlive its cause: that a value arrived
+    // through a tier's shipping port stays true after someone deletes that binding, even
+    // though it stops being joinable.
+    //
+    // Both nullable. Rows written before these columns existed have a writer nobody can
+    // recover, and an import has no id to give until runs are tracked.
+    written_by_type: { type: 'string', maxlength: 50, nullable: true },
+    written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
     // Named, because the name knex derives from the table and all three columns

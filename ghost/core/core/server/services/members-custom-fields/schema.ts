@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { FieldTypeSchema } from '@tryghost/custom-field-types';
-import { DbDate } from '../../lib/db-date';
+import { DbDate } from '../../lib/db-types/date';
+import { DbBoolean } from '../../lib/db-types/boolean';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -27,6 +28,25 @@ type CustomFieldRank = { sort_order: number };
 
 type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 
+/**
+ * How a value arrived, not who caused it: who edited a member's fields is already an
+ * action, and Stripe is not a person. Open rather than a closed list, so a new integration
+ * does not have to be added to a central enumeration.
+ */
+export const WRITTEN_BY = {
+  binding: 'binding',
+  user: 'user',
+  integration: 'integration',
+  import: 'import',
+} as const;
+
+export const WrittenBy = z.object({
+  type: z.string(),
+  /** Absent for a writer with no identity to give: an import, until runs are tracked. */
+  id: z.string().nullable(),
+});
+export type WrittenBy = z.infer<typeof WrittenBy>;
+
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
@@ -37,6 +57,9 @@ export const DbCustomFieldValue = z.object({
   // Nullable like the column, though nothing here writes a null: a part with no value
   // has no row.
   value_text: z.string().nullable(),
+  // Nullable only for rows written before the columns existed; every write states a type.
+  written_by_type: z.string().nullable(),
+  written_by_id: z.string().nullable(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
@@ -56,6 +79,18 @@ export const DbCustomFieldLeaf = z.object({
   value_text: z.string(),
 });
 
+export const DbCustomFieldBinding = z.object({
+  id: z.string(),
+  product_id: z.string(),
+  port: z.string(),
+  custom_field_key: z.string(),
+  active: DbBoolean,
+  created_at: DbDate,
+  updated_at: DbDate.nullable(),
+});
+
+type CustomFieldBindingRow = z.infer<typeof DbCustomFieldBinding>;
+
 declare module 'knex/types/tables' {
   interface Tables {
     members_custom_fields: Knex.CompositeTableType<
@@ -69,6 +104,15 @@ declare module 'knex/types/tables' {
       CustomFieldValueRow,
       Omit<z.input<typeof DbCustomFieldValue>, 'updated_at'>,
       Partial<CustomFieldValueRow>
+    >;
+    members_custom_field_bindings: Knex.CompositeTableType<
+      CustomFieldBindingRow,
+      // `updated_at` is set on insert as well as update: a binding is a setting, and
+      // "when was this last stated" is the same question whichever way it got there.
+      // `active` is DB-defaulted to true, so an insert may leave it out.
+      Omit<z.input<typeof DbCustomFieldBinding>, 'active'> &
+        Partial<Pick<z.input<typeof DbCustomFieldBinding>, 'active'>>,
+      Partial<CustomFieldBindingRow>
     >;
   }
 }

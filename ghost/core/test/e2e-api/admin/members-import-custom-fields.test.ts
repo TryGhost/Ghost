@@ -347,6 +347,32 @@ describe('Members import — custom fields', function () {
     );
   });
 
+  // Recorded at the moment of the write because it cannot be reconstructed afterwards.
+  // Asserted per row, since that is the granularity a write touches.
+  it('records that the import wrote each value', async function () {
+    const key = await createField('Shipping Address', 'address');
+    const email = 'cf-import-source@example.com';
+    const columns = ['line1', 'city'].map((sub) => `custom_fields.${key}.${sub}`).join(',');
+
+    await importCSV(`email,${columns}\n${email},1 High Street,London\n`);
+
+    const member = await findMember(email);
+    const writers: Array<{ written_by_type: string; written_by_id: string | null }> =
+      await models.Base.knex('members_custom_field_values')
+        .where('member_id', member.id)
+        .orderBy('path')
+        .select('written_by_type', 'written_by_id');
+
+    // An import has no id to give until runs are tracked, so it names its kind only.
+    assert.deepEqual(
+      writers.map(({ written_by_type: type, written_by_id: id }) => ({ type, id })),
+      [
+        { type: 'import', id: null },
+        { type: 'import', id: null },
+      ],
+    );
+  });
+
   // A composite can still be invalid, and when it is the whole row fails like any other.
   it('fails a row whose address has a malformed sub-field', async function () {
     const key = await createField('Shipping Address', 'address');
