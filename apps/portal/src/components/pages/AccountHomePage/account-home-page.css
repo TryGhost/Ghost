@@ -202,3 +202,7 @@ footer.gh-portal-account-footer {
     justify-content: flex-start;
   }
 }
+
+.gh-portal-gift-card {
+  margin-top: 16px;
+}

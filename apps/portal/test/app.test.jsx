@@ -388,7 +388,7 @@ describe('App', function () {
 
   test('parses a valid preview hash', () => {
     window.location.hash =
-      '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false&previewTheme=dark';
+      '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false&signupGiftPromotion=true&accountGiftPromotion=false&previewTheme=dark';
 
     const app = new App({ siteUrl: 'http://example.com' });
     const data = app.fetchPreviewData();
@@ -399,6 +399,22 @@ describe('App', function () {
     expect(data.site.portal_plans).toContain('monthly');
     expect(data.site.portal_plans).not.toContain('yearly');
     expect(data.site.portal_signup_checkbox_required).toBe(false);
+    expect(data.site.portal_signup_gift_promotion).toBe(true);
+    expect(data.site.portal_account_gift_promotion).toBe(false);
+    expect(data.site.preview_theme).toBe('dark');
+  });
+
+  test('ignores invalid gift promotion preview values without dropping other overrides', () => {
+    window.location.hash =
+      '#/portal/preview?button=true&signupGiftPromotion=%7BINVALID&accountGiftPromotion=%22yes%22&previewTheme=dark';
+
+    const app = new App({ siteUrl: 'http://example.com' });
+    const data = app.fetchPreviewData();
+
+    expect(data.showPopup).toBe(true);
+    expect(data.site.portal_button).toBe(true);
+    expect(data.site.portal_signup_gift_promotion).toBeUndefined();
+    expect(data.site.portal_account_gift_promotion).toBeUndefined();
     expect(data.site.preview_theme).toBe('dark');
   });
 });

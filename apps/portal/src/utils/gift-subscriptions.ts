@@ -29,11 +29,16 @@ interface Product {
 }
 
 // the slice of Portal's site data that gift purchasing reads
-interface Site {
+export interface Site {
   paid_members_enabled?: boolean;
   portal_plans?: PortalPlan[];
   portal_products?: string[];
   products?: Product[];
+  labs?: {
+    giftSubCustomization?: boolean;
+  };
+  portal_signup_gift_promotion?: boolean;
+  portal_account_gift_promotion?: boolean;
 }
 
 function getPriceForDuration(product: Product, duration: GiftDuration): Price | null {
@@ -117,6 +122,22 @@ export function getAvailableGiftDurations({ site }: { site: Site | null }): Gift
   return GIFT_DURATION_CATALOGUE.filter(
     (duration) => getGiftProducts({ site, duration }).length > 0,
   );
+}
+
+export function isGiftCustomizationEnabled({ site }: { site: Site | null }): boolean {
+  return site?.labs?.giftSubCustomization === true;
+}
+
+function canShowGiftPromotion({ site }: { site: Site | null }): boolean {
+  return isGiftCustomizationEnabled({ site }) && getAvailableGiftDurations({ site }).length > 0;
+}
+
+export function canShowSignupGiftPromotion({ site }: { site: Site | null }): boolean {
+  return site?.portal_signup_gift_promotion === true && canShowGiftPromotion({ site });
+}
+
+export function canShowAccountGiftPromotion({ site }: { site: Site | null }): boolean {
+  return site?.portal_account_gift_promotion === true && canShowGiftPromotion({ site });
 }
 
 export function getActiveGiftDuration({

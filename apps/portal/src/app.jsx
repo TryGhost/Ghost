@@ -49,6 +49,16 @@ const safeDecodeURIComponent = (value) => {
   }
 };
 
+const parseBooleanQueryParam = (value) => {
+  if (value === 'true') {
+    return true;
+  }
+  if (value === 'false') {
+    return false;
+  }
+  return undefined;
+};
+
 const staleGiftRedemptionRequestResult = {
   staleGiftRedemptionRequest: true,
 };
@@ -485,6 +495,16 @@ export default class App extends React.Component {
         data.site.portal_button = JSON.parse(value);
       } else if (key === 'name') {
         data.site.portal_name = JSON.parse(value);
+      } else if (key === 'signupGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_signup_gift_promotion = enabled;
+        }
+      } else if (key === 'accountGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_account_gift_promotion = enabled;
+        }
       } else if (key === 'isFree' && JSON.parse(value)) {
         allowedPlans.push('free');
       } else if (key === 'isMonthly' && JSON.parse(value)) {

@@ -25,6 +25,7 @@ import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { interceptAnchorClicks } from '../../utils/links';
 import { sanitizeHtml } from '../../utils/sanitize-html';
 import { t } from '../../utils/i18n';
+import { canShowSignupGiftPromotion } from '../../utils/gift-subscriptions';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -104,10 +105,16 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
 
 .gh-portal-signup-message {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     color: var(--grey4);
     font-size: 1.5rem;
     margin: 4px 0 0;
+}
+
+.gh-portal-signup-message-separator {
+    margin: 0 8px;
+    color: var(--grey9);
 }
 
 .gh-portal-signup-message,
@@ -704,8 +711,10 @@ class SignupPage extends React.Component {
     return null;
   }
 
-  renderLoginMessage() {
-    const { brandColor, doAction } = this.context;
+  renderLoginMessage({ showGiftPromotion = true } = {}) {
+    const { brandColor, doAction, site } = this.context;
+    const canPromoteGift = showGiftPromotion && canShowSignupGiftPromotion({ site });
+
     return (
       <div>
         {this.renderFreeTrialMessage()}
@@ -720,6 +729,23 @@ class SignupPage extends React.Component {
           >
             <span>{t('Sign in')}</span>
           </button>
+          {canPromoteGift && (
+            <>
+              <span aria-hidden="true" className="gh-portal-signup-message-separator">
+                &middot;
+              </span>
+              <div>{t('Buying for someone else?')}</div>
+              <button
+                data-test-button="gift-switch"
+                data-testid="gift-switch"
+                className="gh-portal-btn gh-portal-btn-link"
+                style={{ color: brandColor }}
+                onClick={() => doAction('switchPage', { page: 'gift', lastPage: 'signup' })}
+              >
+                <span>{t('Gift a membership')}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -817,7 +843,7 @@ class SignupPage extends React.Component {
           >
             {t('This site only accepts paid members.')}
           </p>
-          {this.renderLoginMessage()}
+          {this.renderLoginMessage({ showGiftPromotion: false })}
         </div>
       </section>
     );
@@ -833,7 +859,7 @@ class SignupPage extends React.Component {
           >
             {t('This site is invite-only, contact the owner for access.')}
           </p>
-          {this.renderLoginMessage()}
+          {this.renderLoginMessage({ showGiftPromotion: false })}
         </div>
       </section>
     );
