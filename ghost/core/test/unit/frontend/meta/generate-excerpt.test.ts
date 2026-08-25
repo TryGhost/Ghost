@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const generateExcerpt = require('../../../../core/frontend/meta/generate-excerpt');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import generateExcerpt from '../../../../core/frontend/meta/generate-excerpt';
 
 describe('generateExcerpt', function () {
   it('should fallback to 50 words if not specified', function () {
