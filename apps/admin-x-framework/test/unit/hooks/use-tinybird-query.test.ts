@@ -1,15 +1,6 @@
-import { renderHook } from '@testing-library/react';
-import { useTinybirdQuery } from '../../../src/hooks/use-tinybird-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-
-vi.mock('@tinybirdco/charts', () => ({
-  useQuery: vi.fn(),
-}));
-
-vi.mock('../../../src/utils/stats-config', () => ({
-  getStatEndpointUrl: vi.fn(),
-}));
 
 vi.mock('../../../src/hooks/use-tinybird-token', () => ({
   useTinybirdToken: vi.fn(),
@@ -19,372 +10,268 @@ vi.mock('../../../src/api/settings', () => ({
   useWebAnalyticsEnabled: vi.fn(),
 }));
 
+import { fetchTinybirdPipe, useTinybirdQuery } from '../../../src/hooks/use-tinybird-query';
 import { useTinybirdToken } from '../../../src/hooks/use-tinybird-token';
 import { useWebAnalyticsEnabled } from '../../../src/api/settings';
-import { getStatEndpointUrl } from '../../../src/utils/stats-config';
-import { useQuery } from '@tinybirdco/charts';
 
-const mockUseQuery = vi.mocked(useQuery);
 const mockUseTinybirdToken = vi.mocked(useTinybirdToken);
-const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
 const mockUseWebAnalyticsEnabled = vi.mocked(useWebAnalyticsEnabled);
+
+const statsConfig = { id: 'site-1', endpoint: 'https://tinybird.example.com' };
+const PIPE_URL = 'https://tinybird.example.com/v0/pipes/api_test.json';
+
+const rows = [{ visits: 42 }];
+const meta = [{ name: 'visits', type: 'UInt64' }];
+
+const okResponse = (body: unknown = { data: rows, meta }) => ({
+  ok: true,
+  status: 200,
+  statusText: 'OK',
+  json: async () => body,
+  text: async () => JSON.stringify(body),
+});
+
+const errorResponse = (status: number, body = '') => ({
+  ok: false,
+  status,
+  statusText: 'Error',
+  json: async () => ({}),
+  text: async () => body,
+});
+
+const tokenState = (overrides: Partial<ReturnType<typeof useTinybirdToken>> = {}) => ({
+  token: 'token-a' as string | undefined,
+  isLoading: false,
+  error: null,
+  refetch: vi.fn().mockResolvedValue('token-a'),
+  ...overrides,
+});
 
 describe('useTinybirdQuery', () => {
   let queryClient: QueryClient;
   let wrapper: React.FC<{ children: React.ReactNode }>;
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  const renderQuery = (options: Partial<Parameters<typeof useTinybirdQuery>[0]> = {}) =>
+    renderHook(
+      () =>
+        useTinybirdQuery({
+          statsConfig,
+          endpoint: 'api_test',
+          params: { site_uuid: 'site-1' },
+          ...options,
+        }),
+      { wrapper },
+    );
 
   beforeEach(() => {
     queryClient = new QueryClient();
     wrapper = ({ children }) =>
       React.createElement(QueryClientProvider, { client: queryClient }, children);
-    mockUseTinybirdToken.mockReturnValue({
-      token: undefined,
-      isLoading: true,
-      error: null,
-      refetch: vi.fn(),
-    });
-    mockUseQuery.mockReturnValue({
-      data: null,
-      loading: false,
-      error: null,
-      meta: null,
-      statistics: null,
-      endpoint: 'https://api.example.com/test',
-      token: undefined,
-      refresh: vi.fn(),
-    });
-    mockGetStatEndpointUrl.mockImplementation(
-      (_config: any, endpoint: any) => `https://api.example.com/${endpoint}`,
-    );
+    fetchMock = vi.fn().mockResolvedValue(okResponse());
+    vi.stubGlobal('fetch', fetchMock);
+    mockUseTinybirdToken.mockReturnValue(tokenState());
     mockUseWebAnalyticsEnabled.mockReturnValue(true);
   });
 
   afterEach(() => {
+    queryClient.clear();
+    vi.unstubAllGlobals();
     vi.clearAllMocks();
   });
 
-  it('should return data, meta, loading, and error', () => {
-    const { result } = renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
+  it('fetches the pipe with params and a bearer token and returns data and meta', async () => {
+    const { result } = renderQuery();
 
-    expect(result.current.data).toBeDefined();
-    expect(result.current.loading).toBeDefined();
-    expect(result.current.error).toBeDefined();
-  });
-
-  it('should set the endpoint to undefined if the token is not loaded', () => {
-    // This prevents an initial 403 error by waiting for the token to load before making the request
-    mockUseTinybirdToken.mockReturnValue({
-      token: undefined,
-      isLoading: true,
-      error: null,
-      refetch: vi.fn(),
+    await waitFor(() => {
+      expect(result.current.data).toEqual(rows);
     });
-
-    renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
-
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        endpoint: undefined,
-      }),
-    );
-  });
-
-  it('should not fetch a token or query Tinybird when disabled', () => {
-    const mockError = new Error('Token error');
-    mockUseTinybirdToken.mockReturnValue({
-      token: 'mock-token',
-      isLoading: true,
-      error: mockError,
-      refetch: vi.fn(),
-    });
-    mockUseQuery.mockReturnValue({
-      data: [{ visits: 1 }],
-      loading: true,
-      error: 'Query error',
-      meta: [{ name: 'visits', type: 'UInt64' }],
-      statistics: null,
-      endpoint: 'https://api.example.com/test',
-      token: 'mock-token',
-      refresh: vi.fn(),
-    });
-
-    const { result } = renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-          enabled: false,
-        }),
-      { wrapper },
-    );
-
-    expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
-    expect(mockGetStatEndpointUrl).not.toHaveBeenCalled();
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        endpoint: undefined,
-        token: undefined,
-      }),
-    );
+    expect(result.current.meta).toEqual(meta);
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(result.current.data).toBe(null);
-    expect(result.current.meta).toBe(null);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${PIPE_URL}?site_uuid=site-1`);
+    expect(init.headers).toEqual({ Authorization: 'Bearer token-a' });
+    expect(init.credentials).toBe('omit');
   });
 
-  it('should not fetch a token or query Tinybird without statsConfig', () => {
-    renderHook(
-      () =>
-        useTinybirdQuery({
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
+  it('appends the version suffix from statsConfig to the pipe name', async () => {
+    const { result } = renderQuery({ statsConfig: { ...statsConfig, version: 'v2' } });
 
-    expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
-    expect(mockGetStatEndpointUrl).not.toHaveBeenCalled();
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        endpoint: undefined,
-        token: undefined,
-      }),
-    );
-  });
-
-  it('should call useQuery with the correct token', () => {
-    mockUseTinybirdToken.mockReturnValue({
-      token: 'mock-token',
-      isLoading: false,
-      error: null,
-      refetch: vi.fn(),
+    await waitFor(() => {
+      expect(result.current.data).toEqual(rows);
     });
-
-    renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
-
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        token: 'mock-token',
-      }),
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'https://tinybird.example.com/v0/pipes/api_test_v2.json?site_uuid=site-1',
     );
   });
 
-  it('should call useQuery with the correct endpoint once the token is loaded', () => {
-    mockUseTinybirdToken.mockReturnValue({
-      token: 'mock-token',
-      isLoading: false,
-      error: null,
-      refetch: vi.fn(),
-    });
-
-    renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
-
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        endpoint: 'https://api.example.com/test',
-      }),
-    );
-  });
-
-  it('should return loading state that includes token loading', () => {
-    mockUseTinybirdToken.mockReturnValue({
-      token: 'mock-token',
-      isLoading: true,
-      error: null,
-      refetch: vi.fn(),
-    });
-
-    const { result } = renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
+  it('reports loading and does not fetch until the token has loaded', async () => {
+    mockUseTinybirdToken.mockReturnValue(tokenState({ token: undefined, isLoading: true }));
+    const { result, rerender } = renderQuery();
 
     expect(result.current.loading).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    mockUseTinybirdToken.mockReturnValue(tokenState());
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(rows);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should pass the correct params to useQuery', () => {
-    mockUseTinybirdToken.mockReturnValue({
-      token: 'mock-token',
-      isLoading: false,
-      error: null,
-      refetch: vi.fn(),
-    });
+  it('does not fetch a token or query Tinybird when disabled', () => {
+    const { result } = renderQuery({ enabled: false });
 
-    renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: { test: 'test' },
-        }),
-      { wrapper },
-    );
-
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        params: { test: 'test' },
-      }),
-    );
+    expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.current).toEqual({ data: null, meta: null, loading: false, error: null });
   });
 
-  it('handles errors from useQuery', () => {
-    const mockError = 'Network error';
-    mockUseQuery.mockReturnValue({
-      data: null,
-      loading: false,
-      error: mockError,
-      meta: null,
-      statistics: null,
-      endpoint: 'https://api.example.com/test',
-      token: undefined,
-      refresh: vi.fn(),
-    });
+  it('does not fetch a token or query Tinybird without statsConfig', () => {
+    const { result } = renderQuery({ statsConfig: undefined });
 
-    const { result } = renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
-
-    expect(result.current.error).toBe(mockError);
+    expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.current).toEqual({ data: null, meta: null, loading: false, error: null });
   });
 
-  it('should return the error from useQuery if the token query has an error', () => {
-    const mockError = new Error('Token error');
-    mockUseTinybirdToken.mockReturnValue({
-      token: undefined,
-      isLoading: false,
-      error: mockError,
-      refetch: vi.fn(),
-    });
+  it('noops when the web analytics kill-switch is off', () => {
+    mockUseWebAnalyticsEnabled.mockReturnValue(false);
 
-    const { result } = renderHook(
-      () =>
-        useTinybirdQuery({
-          statsConfig: { id: '123' },
-          endpoint: 'test',
-          params: {},
-        }),
-      { wrapper },
-    );
+    const { result } = renderQuery();
 
-    expect(result.current.error).toBe(mockError);
+    expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.current).toEqual({ data: null, meta: null, loading: false, error: null });
   });
 
-  describe('web analytics gate', () => {
-    it('noops without a per-call flag when web analytics is disabled', () => {
-      mockUseWebAnalyticsEnabled.mockReturnValue(false);
-      mockUseTinybirdToken.mockReturnValue({
-        token: 'mock-token',
-        isLoading: false,
-        error: null,
-        refetch: vi.fn(),
-      });
-      mockUseQuery.mockReturnValue({
-        data: [{ visits: 1 }],
-        loading: true,
-        error: 'Query error',
-        meta: [{ name: 'visits', type: 'UInt64' }],
-        statistics: null,
-        endpoint: 'https://api.example.com/test',
-        token: 'mock-token',
-        refresh: vi.fn(),
-      });
+  it('keeps the cached result when the token rotates', async () => {
+    const { result, rerender } = renderQuery();
 
-      // enabled defaults to true and statsConfig/endpoint are provided —
-      // only the kill-switch should suppress the query.
-      const { result } = renderHook(
-        () =>
-          useTinybirdQuery({
-            statsConfig: { id: '123' },
-            endpoint: 'test',
-            params: {},
-          }),
-        { wrapper },
-      );
+    await waitFor(() => {
+      expect(result.current.data).toEqual(rows);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
-      expect(mockGetStatEndpointUrl).not.toHaveBeenCalled();
-      expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
-      expect(mockUseQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          endpoint: undefined,
-          token: undefined,
-        }),
-      );
-      expect(result.current.data).toBe(null);
-      expect(result.current.meta).toBe(null);
-      expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe(null);
+    // Rotate the token: same query key, so no refetch and no data reset.
+    mockUseTinybirdToken.mockReturnValue(tokenState({ token: 'token-b' }));
+    rerender();
+
+    expect(result.current.data).toEqual(rows);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the current token when refetching after a rotation', async () => {
+    const { result, rerender } = renderQuery();
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(rows);
     });
 
-    it('queries normally when web analytics is enabled', () => {
-      mockUseWebAnalyticsEnabled.mockReturnValue(true);
-      mockUseTinybirdToken.mockReturnValue({
-        token: 'mock-token',
-        isLoading: false,
-        error: null,
-        refetch: vi.fn(),
-      });
+    mockUseTinybirdToken.mockReturnValue(tokenState({ token: 'token-b' }));
+    rerender();
 
-      renderHook(
-        () =>
-          useTinybirdQuery({
-            statsConfig: { id: '123' },
-            endpoint: 'test',
-            params: {},
-          }),
-        { wrapper },
-      );
-
-      expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: true });
-      expect(mockUseQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          endpoint: 'https://api.example.com/test',
-          token: 'mock-token',
-        }),
-      );
+    await act(async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tinybird'] });
     });
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+    expect(fetchMock.mock.calls[1][1].headers).toEqual({ Authorization: 'Bearer token-b' });
+  });
+
+  it('polls at the configured refetchInterval', async () => {
+    renderQuery({ refetchInterval: 30 });
+
+    await waitFor(() => {
+      expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it('surfaces request failures as errors without retrying', async () => {
+    fetchMock.mockResolvedValue(errorResponse(500, 'pipe exploded'));
+
+    const { result } = renderQuery();
+
+    await waitFor(() => {
+      expect(result.current.error).toBeInstanceOf(Error);
+    });
+    expect(result.current.error?.message).toBe('Tinybird request failed (500): pipe exploded');
+    expect(result.current.data).toBe(null);
+    expect(result.current.loading).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('surfaces the token query error', () => {
+    const tokenError = new Error('Token error');
+    mockUseTinybirdToken.mockReturnValue(tokenState({ token: undefined, error: tokenError }));
+
+    const { result } = renderQuery();
+
+    expect(result.current.error).toBe(tokenError);
+    expect(result.current.loading).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('fetchTinybirdPipe', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it('refreshes the token and retries once on a 403', async () => {
+    fetchMock.mockResolvedValueOnce(errorResponse(403)).mockResolvedValueOnce(okResponse());
+    const refreshToken = vi.fn().mockResolvedValue('token-b');
+
+    const result = await fetchTinybirdPipe({ url: PIPE_URL, token: 'token-a', refreshToken });
+
+    expect(result).toEqual({ data: rows, meta });
+    expect(refreshToken).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][1].headers).toEqual({ Authorization: 'Bearer token-b' });
+  });
+
+  it('does not retry when the refreshed token is unchanged', async () => {
+    fetchMock.mockResolvedValue(errorResponse(403, 'forbidden'));
+    const refreshToken = vi.fn().mockResolvedValue('token-a');
+
+    await expect(
+      fetchTinybirdPipe({ url: PIPE_URL, token: 'token-a', refreshToken }),
+    ).rejects.toThrow('Tinybird request failed (403): forbidden');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not retry when no fresh token is available', async () => {
+    fetchMock.mockResolvedValue(errorResponse(401));
+    const refreshToken = vi.fn().mockResolvedValue(undefined);
+
+    await expect(
+      fetchTinybirdPipe({ url: PIPE_URL, token: 'token-a', refreshToken }),
+    ).rejects.toThrow('Tinybird request failed (401): Error');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refresh the token for non-auth failures', async () => {
+    fetchMock.mockResolvedValue(errorResponse(500, 'boom'));
+    const refreshToken = vi.fn();
+
+    await expect(
+      fetchTinybirdPipe({ url: PIPE_URL, token: 'token-a', refreshToken }),
+    ).rejects.toThrow('Tinybird request failed (500): boom');
+    expect(refreshToken).not.toHaveBeenCalled();
   });
 });
