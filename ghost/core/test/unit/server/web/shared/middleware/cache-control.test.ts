@@ -1,6 +1,5 @@
 import express, { type Express } from 'express';
 import request from 'supertest';
-// @ts-expect-error This module lacks type definitions.
 import { cacheControl } from '../../../../../../core/server/web/shared/middleware/cache-control';
 
 describe('Cache-Control middleware', function () {
