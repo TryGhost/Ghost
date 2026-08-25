@@ -1,7 +1,7 @@
-const assert = require('node:assert/strict');
-const path = require('path');
-
-const EmailContentGenerator = require('../../../../../core/server/services/lib/email-content-generator');
+import assert from 'node:assert/strict';
+import * as path from 'node:path';
+// @ts-expect-error This module lacks type definitions.
+import EmailContentGenerator from '../../../../../core/server/services/lib/email-content-generator';
 
 describe('Mail: EmailContentGenerator', function () {
   it('generate welcome', async function () {
