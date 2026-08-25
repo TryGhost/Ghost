@@ -66,7 +66,7 @@ export async function prepareImportSource(
       });
     }
 
-    if (dataFiles.length > 1) {
+    if (dataFiles.length > 1 || entries.some(isUnsupportedCompetingDataFile)) {
       throw new errors.ValidationError({
         message:
           'ZIP files cannot contain CSV, JSON, or Markdown import files together. Keep only the CSV file and try again.',
@@ -127,6 +127,29 @@ export function isDataFile(fileName: string): boolean {
 
 function extensionOf(fileName: string): string {
   return path.posix.extname(fileName).toLowerCase();
+}
+
+function isUnsupportedCompetingDataFile(fileName: string): boolean {
+  const extension = extensionOf(fileName);
+  if (extension === '.csv' || !DATA_EXTENSIONS.has(extension)) {
+    return false;
+  }
+
+  const parts = fileName.split('/').filter(Boolean);
+  if (parts.length === 0 || isMetadata(parts) || isFileAttachment(parts)) {
+    return false;
+  }
+
+  return !isDataFile(fileName);
+}
+
+function isFileAttachment(parts: string[]): boolean {
+  const assetParts = ['content', 'files'].includes(parts[0]) ? [...parts] : parts.slice(1);
+  if (assetParts[0] === 'content') {
+    assetParts.shift();
+  }
+
+  return assetParts.length > 1 && assetParts[0] === 'files';
 }
 
 function isMetadata(parts: string[]): boolean {

@@ -14,6 +14,8 @@ describe('content import archive', () => {
       archive.file('posts.CSV', 'title\nHello');
       archive.file('content/images/large.jpg', new Uint8Array([1, 2, 3]));
       archive.file('content/files/attachment.csv', 'download,only');
+      archive.file('content/files/attachment.json', '{"download":true}');
+      archive.file('content/files/attachment.md', '# Download');
     });
 
     await expect(inspectImportArchive(file)).resolves.toEqual({
@@ -84,6 +86,28 @@ describe('content import archive', () => {
     await expect(inspectImportArchive(file)).rejects.toThrow(
       'cannot contain CSV, JSON, or Markdown import files together',
     );
+  });
+
+  it.each(['export/2024/ghost.json', 'export/2024/posts.md'])(
+    'rejects CSV mixed with deeply nested import data at %s',
+    async (competingName) => {
+      const file = await zipFile('posts.zip', (archive) => {
+        archive.file('posts.csv', 'title\nOne');
+        archive.file(competingName, 'competing import');
+      });
+
+      await expect(inspectImportArchive(file)).rejects.toThrow(
+        'cannot contain CSV, JSON, or Markdown import files together',
+      );
+    },
+  );
+
+  it('keeps a JSON-only ZIP on the legacy import path regardless of nesting', async () => {
+    const file = await zipFile('export.zip', (archive) => {
+      archive.file('export/2024/ghost.json', '{}');
+    });
+
+    await expect(inspectImportArchive(file)).resolves.toEqual({ type: 'legacy' });
   });
 
   it('rejects content split between the root and a wrapper directory', async () => {

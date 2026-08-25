@@ -104,6 +104,8 @@ describe('content import source', function () {
       'export/content/images/photo.jpg': 'image',
       'export/content/media/movie.mp4': 'media',
       'export/content/files/attachment.csv': 'download,only',
+      'export/content/files/attachment.json': '{"download":true}',
+      'export/content/files/attachment.md': '# Download',
       '.DS_Store': 'metadata',
     });
 
@@ -112,11 +114,15 @@ describe('content import source', function () {
     assert.equal(await fs.readFile(source.filePath, 'utf8'), 'title\nWrapped');
     assert.deepEqual(source.assets?.files.map((file) => file.originalPath).sort(), [
       'content/files/attachment.csv',
+      'content/files/attachment.json',
+      'content/files/attachment.md',
       'content/images/photo.jpg',
       'content/media/movie.mp4',
     ]);
     assert.deepEqual(source.assets?.files.map((file) => file.newPath).sort(), [
       '/content/files/attachment.csv',
+      '/content/files/attachment.json',
+      '/content/files/attachment.md',
       '/content/images/photo.jpg',
       '/content/media/movie.mp4',
     ]);
@@ -213,17 +219,24 @@ describe('content import source', function () {
   });
 
   it('rejects a data CSV mixed with JSON or Markdown data', async function () {
-    for (const competingName of ['posts.json', 'posts.md', 'posts.markdown']) {
+    for (const competingName of [
+      'posts.json',
+      'posts.md',
+      'posts.markdown',
+      'export/2024/ghost.json',
+      'export/2024/posts.md',
+    ]) {
+      const archiveName = `${competingName.replaceAll('/', '-')}.zip`;
       const zipPath = await archive(
         {
           'posts.csv': 'title\nPost',
           [competingName]: 'competing import',
         },
-        `${competingName}.zip`,
+        archiveName,
       );
 
       await assert.rejects(
-        prepareImportSource({ filePath: zipPath, fileName: `${competingName}.zip` }),
+        prepareImportSource({ filePath: zipPath, fileName: archiveName }),
         /cannot contain CSV, JSON, or Markdown import files together/,
       );
       await fs.remove(path.join(directory, 'contents'));

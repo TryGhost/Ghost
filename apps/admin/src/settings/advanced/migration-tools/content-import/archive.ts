@@ -34,7 +34,7 @@ export async function inspectImportArchive(file: File): Promise<ImportArchiveCon
     );
   }
 
-  if (dataFiles.length > 1) {
+  if (dataFiles.length > 1 || files.some(isUnsupportedCompetingDataFile)) {
     throw new ImportArchiveError(
       'ZIP files cannot contain CSV, JSON, or Markdown import files together. Keep only the CSV file and try again.',
     );
@@ -92,14 +92,28 @@ function isUnsupportedDataCSV(entry: JSZip.JSZipObject): boolean {
   }
 
   const parts = entry.name.split('/').filter(Boolean);
-  if (parts.length === 0 || isMetadata(parts) || isCSVAttachment(parts)) {
+  if (parts.length === 0 || isMetadata(parts) || isFileAttachment(parts)) {
     return false;
   }
 
   return !isDataFile(entry);
 }
 
-function isCSVAttachment(parts: string[]): boolean {
+function isUnsupportedCompetingDataFile(entry: JSZip.JSZipObject): boolean {
+  const extension = extensionOf(entry.name);
+  if (entry.dir || extension === 'csv' || !DATA_EXTENSIONS.has(extension)) {
+    return false;
+  }
+
+  const parts = entry.name.split('/').filter(Boolean);
+  if (parts.length === 0 || isMetadata(parts) || isFileAttachment(parts)) {
+    return false;
+  }
+
+  return !isDataFile(entry);
+}
+
+function isFileAttachment(parts: string[]): boolean {
   const assetParts = ['content', 'files'].includes(parts[0]) ? [...parts] : parts.slice(1);
   if (assetParts[0] === 'content') {
     assetParts.shift();

@@ -401,6 +401,22 @@ describe('Posts Importer API', function () {
         },
         reason: /could not be parsed as a CSV file/,
       },
+      {
+        name: 'deeply-nested-json.zip',
+        files: {
+          'posts.csv': 'title\nCSV post\n',
+          'export/2024/ghost.json': '{}',
+        },
+        reason: /cannot contain CSV, JSON, or Markdown import files together/,
+      },
+      {
+        name: 'deeply-nested-markdown.zip',
+        files: {
+          'posts.csv': 'title\nCSV post\n',
+          'export/2024/posts.md': '# Markdown post',
+        },
+        reason: /cannot contain CSV, JSON, or Markdown import files together/,
+      },
     ];
 
     for (const testCase of cases) {
