@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const getCreatorTwitterUrl = require('../../../../core/frontend/meta/creator-url');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import getCreatorTwitterUrl from '../../../../core/frontend/meta/creator-url';
 
 describe('getCreatorTwitterUrl', function () {
   it('should return author twitter url if post and has url', function () {
