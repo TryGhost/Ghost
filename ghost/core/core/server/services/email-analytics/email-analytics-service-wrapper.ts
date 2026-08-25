@@ -155,7 +155,18 @@ export class EmailAnalyticsServiceWrapper {
       `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`,
     ].join(' | ');
 
-    logging.info(logMessage);
+    logging.info(
+      {
+        system: {
+          event: 'job.completed',
+          job_type: this.#backgroundJobName,
+          task: jobType,
+          event_count: eventCount,
+          duration_ms: totalDurationMs,
+        },
+      },
+      logMessage,
+    );
 
     // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
     if (jobType === 'latest-opened') {

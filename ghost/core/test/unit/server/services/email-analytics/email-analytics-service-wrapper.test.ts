@@ -110,7 +110,27 @@ describe('EmailAnalyticsServiceWrapper', function () {
 
     sinon.assert.calledWith(
       infoLog,
+      sinon.match.object,
       sinon.match('[Background Job] email-analytics-gift-fetch-latest processed'),
+    );
+  });
+
+  it('tags job completions with the fields the email analytics alert queries', function () {
+    const infoLog = sinon.stub(logging, 'info');
+
+    logLatestOpenedJob('newsletters');
+
+    sinon.assert.calledWith(
+      infoLog,
+      sinon.match({
+        system: {
+          event: 'job.completed',
+          job_type: 'email-analytics-fetch-latest',
+          task: 'latest-opened',
+          event_count: 10,
+        },
+      }),
+      sinon.match('[Background Job] email-analytics-fetch-latest processed'),
     );
   });
 
