@@ -89,7 +89,7 @@ const filterRequestTarget = (requestTarget: string): FilterResult => {
  * This middleware is enabled by the root pnpm dev Docker Compose configuration.
  */
 export function filterQueryParameters(req: Request, _res: Response, next: NextFunction) {
-  const requestTarget = req.originalUrl || req.url;
+  const requestTarget = req.originalUrl;
   const result = filterRequestTarget(requestTarget);
 
   if (result.requestTarget !== requestTarget) {
