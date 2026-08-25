@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const getKeywords = require('../../../../core/frontend/meta/keywords');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import getKeywords from '../../../../core/frontend/meta/keywords';
 
 describe('getKeywords', function () {
   afterEach(function () {
