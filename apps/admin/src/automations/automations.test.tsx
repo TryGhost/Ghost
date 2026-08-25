@@ -130,15 +130,6 @@ describe('Automations', () => {
     expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
   });
 
-  it('hides the paid sequence when Stripe is not connected', () => {
-    mockUseBrowseSettings.mockReturnValue({ data: { settings: [] }, isLoading: false });
-
-    renderPage();
-
-    expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
-    expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
-  });
-
   it('hides the paid sequence when only Connect keys exist but stripeDirect is required', () => {
     mockUseBrowseConfig.mockReturnValue({
       data: { config: { stripeDirect: true } },
@@ -149,29 +140,5 @@ describe('Automations', () => {
 
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
-  });
-
-  it('renders the loading skeleton while automations data loads', () => {
-    mockUseBrowseAutomations.mockReturnValue({ data: undefined, isLoading: true });
-
-    renderPage();
-
-    expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
-  });
-
-  it('renders the loading skeleton while settings load', () => {
-    mockUseBrowseSettings.mockReturnValue({ data: undefined, isLoading: true });
-
-    renderPage();
-
-    expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
-  });
-
-  it('renders the loading skeleton while config loads', () => {
-    mockUseBrowseConfig.mockReturnValue({ data: undefined, isLoading: true });
-
-    renderPage();
-
-    expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
   });
 });

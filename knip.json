@@ -45,7 +45,11 @@
         "src/utils/get-site-timezone.ts",
         "src/vite.ts",
         "src/playwright.ts",
-        "src/test/*.{ts,tsx}"
+        "src/test/acceptance.ts",
+        "src/test/hook-testing-utils.ts",
+        "src/test/render.tsx",
+        "src/test/setup.ts",
+        "src/test/test-utils.tsx"
       ]
     },
     "apps/comments-ui": {

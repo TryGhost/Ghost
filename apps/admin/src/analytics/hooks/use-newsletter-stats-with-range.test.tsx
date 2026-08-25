@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { TestWrapper } from '@tryghost/admin-x-framework/test/test-utils';
+import { TestWrapper } from '@test-utils/fixtures/query-client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getExpectedDateRange, setupDateMocking } from '@test-utils/analytics/date-testing-utils';
 import { setupStatsAppMocks } from '@test-utils/analytics/test-helpers';

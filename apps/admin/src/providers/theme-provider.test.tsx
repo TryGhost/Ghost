@@ -8,7 +8,7 @@ import type {
   UpdateUserRequestBody,
   UsersResponseType,
 } from '@tryghost/admin-x-framework/api/users';
-import { mockUser } from '@test-utils/factories';
+import { staffUser } from '@tryghost/test-data';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import { useUserPreferences } from '@/hooks/user-preferences';
@@ -17,6 +17,8 @@ import { useThemeContext } from './theme-context';
 
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
+
+const mockUser = staffUser();
 
 const themeContextTest = baseTest.extend<{
   server: SetupServer;
