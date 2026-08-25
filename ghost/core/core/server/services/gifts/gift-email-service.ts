@@ -16,6 +16,7 @@ interface TransactionalMailer {
     html: string;
     text: string;
     from: string;
+    replyTo: string;
     forceTextContent: boolean;
     tags?: string[];
     trackOpens?: boolean;
@@ -31,6 +32,7 @@ interface BulkMailer {
       html: string;
       plaintext: string;
       from: string;
+      replyTo: string;
       tags: string[];
       disable_tracking: boolean;
     },
@@ -101,6 +103,7 @@ export class GiftEmailService {
   private readonly settingsCache: SettingsCache;
   private readonly urlUtils: UrlUtils;
   private readonly getFromAddress: () => string;
+  private readonly getReplyToAddress: () => string;
   private readonly blogIcon: BlogIcon;
   private readonly renderer: GiftEmailRenderer;
   private readonly t: Translate;
@@ -111,6 +114,7 @@ export class GiftEmailService {
     settingsCache,
     urlUtils,
     getFromAddress,
+    getReplyToAddress,
     blogIcon,
     t,
   }: {
@@ -119,6 +123,7 @@ export class GiftEmailService {
     settingsCache: SettingsCache;
     urlUtils: UrlUtils;
     getFromAddress: () => string;
+    getReplyToAddress: () => string;
     blogIcon: BlogIcon;
     t: Translate;
   }) {
@@ -127,6 +132,7 @@ export class GiftEmailService {
     this.settingsCache = settingsCache;
     this.urlUtils = urlUtils;
     this.getFromAddress = getFromAddress;
+    this.getReplyToAddress = getReplyToAddress;
     this.blogIcon = blogIcon;
     this.t = t;
 
@@ -216,6 +222,7 @@ export class GiftEmailService {
       html,
       text,
       from: this.getFromAddress(),
+      replyTo: this.getReplyToAddress(),
       forceTextContent: true,
       disableTracking: true,
     });
@@ -268,6 +275,7 @@ export class GiftEmailService {
       html,
       text,
       from: this.getFromAddress(),
+      replyTo: this.getReplyToAddress(),
       forceTextContent: true,
       disableTracking: true,
     });
@@ -307,6 +315,7 @@ export class GiftEmailService {
       html,
       text,
       from: this.getFromAddress(),
+      replyTo: this.getReplyToAddress(),
       forceTextContent: true,
     });
   }
@@ -362,6 +371,7 @@ export class GiftEmailService {
         html,
         text,
         from: this.getFromAddress(),
+        replyTo: this.getReplyToAddress(),
         forceTextContent: true,
         tags: [GIFT_DELIVERY_EMAIL_TAG],
         disableTracking: true,
@@ -376,6 +386,7 @@ export class GiftEmailService {
         html,
         plaintext: text,
         from: this.getFromAddress(),
+        replyTo: this.getReplyToAddress(),
         tags: [GIFT_DELIVERY_EMAIL_TAG],
         disable_tracking: true,
       },
