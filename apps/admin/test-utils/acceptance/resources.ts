@@ -18,10 +18,17 @@ import {
   type StaffRole,
   type StaffUser,
   type Tag,
+  type Theme,
   type Tier,
 } from '@tryghost/test-data';
 
-import { record418, registerAdminApiHandler, registerRoute } from './worker';
+import {
+  fakeAdminEndpoint,
+  record418,
+  registerAdminApiHandler,
+  registerRoute,
+  type EndpointCapture,
+} from './worker';
 
 export interface BrowseQuery {
   /** Full request URL, for raw assertions on encoding. */
@@ -59,6 +66,8 @@ export type ResourceSemantics<TEntity> =
 export interface ResourceOptions<TEntity> {
   /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
+  /** Envelope key when it differs from the path segment (e.g. 'members/custom_fields' → members_custom_fields). */
+  envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
   skip?: (apiPath: string) => boolean;
@@ -114,7 +123,12 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
  *     trivial behaviors; filter components outside `covers` respond 418
  *     instead of silently serving the full world.
  */
-export function defineResource<TEntity>({ resource, semantics, skip }: ResourceOptions<TEntity>) {
+export function defineResource<TEntity>({
+  resource,
+  envelopeKey = resource,
+  semantics,
+  skip,
+}: ResourceOptions<TEntity>) {
   return function fakeResource(respondWith: RespondWith<TEntity>): ResourceCapture {
     const requests: BrowseQuery[] = [];
 
@@ -152,7 +166,7 @@ export function defineResource<TEntity>({ resource, semantics, skip }: ResourceO
       }
 
       return HttpResponse.json(
-        browseResponse(resource, matching, {
+        browseResponse(envelopeKey, matching, {
           page: query.page,
           limit: query.limit,
         }),
@@ -208,6 +222,22 @@ const membersResource = defineResource<Member>({
   // Leave the sidebar count probe to the boot table so it never pollutes
   // `lastRequest` assertions.
   skip: (apiPath) => apiPath === MEMBER_COUNT_PROBE_PATH,
+});
+
+/**
+ * Member custom-field DEFINITIONS fake (passthrough): serves the declared
+ * field definitions (`@tryghost/admin-x-framework/api/member-custom-fields`
+ * shape) for every browse — the plain read and Settings' archived-inclusive
+ * `?filter=status:[active,archived]` variant alike; assert the outgoing
+ * filter, not served subsets. Values ride the member read payload, and the
+ * create/edit/reorder/delete mutations are one-off endpoints — declare those
+ * with `fakeAdminEndpoint`. A spec observing the list grow across a create
+ * declares that growth itself via the function form (`() => fields`).
+ */
+export const fakeMemberCustomFields = defineResource({
+  resource: 'members/custom_fields',
+  envelopeKey: 'members_custom_fields',
+  semantics: { kind: 'passthrough' },
 });
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
@@ -299,10 +329,29 @@ export const fakeRoles = defineResource<StaffRole>({
 const themesResource = defineResource({ resource: 'themes', semantics: { kind: 'passthrough' } });
 /** Themes list fake (passthrough): installed/active state is declared by the spec. */
 export const fakeThemes = themesResource;
+
+/**
+ * Successful theme-archive upload fake: POST /themes/upload/ answers with the
+ * declared themes (gscan errors/warnings included, via the `theme` builder)
+ * and captures every upload request. Error statuses and the
+ * `?copy_settings_from=` variant carry bespoke response semantics — declare
+ * those with `fakeAdminEndpoint`.
+ */
+export function fakeThemeUpload(themes: Theme[]): EndpointCapture {
+  return fakeAdminEndpoint('POST', '/themes/upload/', { themes });
+}
+
 const automatedEmailsResource = defineResource({
   resource: 'automated_emails',
   semantics: { kind: 'passthrough' },
 });
+/**
+ * Automated-emails list fake (passthrough): serves the declared rows
+ * (`@tryghost/admin-x-framework/api/automated-emails` shape) for the browse.
+ * The row mutations and the design/senders/preview/verifications subpaths are
+ * one-off endpoints — declare those with `fakeAdminEndpoint`.
+ */
+export const fakeAutomatedEmails = automatedEmailsResource;
 const recommendationsResource = defineResource({
   resource: 'recommendations',
   semantics: { kind: 'passthrough' },

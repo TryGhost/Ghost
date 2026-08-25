@@ -1117,6 +1117,18 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
+      # Vitest Browser Mode apps (e.g. apps/admin) save failure screenshots
+      # into __screenshots__/ directories next to the specs, not a
+      # playwright-report; upload them so failures are debuggable from CI.
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ${{ steps.app_name.outputs.name }}-failure-screenshots
+          path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
+          if-no-files-found: ignore
+          retention-days: 30
+
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:

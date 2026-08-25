@@ -14,7 +14,6 @@ import {
   siteResponse,
   type SitePreviewCapture,
 } from '@test-utils/acceptance';
-import * as sel from '@tryghost/test-data/selectors/settings';
 import { settingsScreen } from '@/settings/settings.screen';
 
 const previewHtml = '<html><head><style></style></head><body>preview</body></html>';
@@ -76,13 +75,13 @@ describe('Design settings', () => {
 
     const modal = settingsScreen.designModal();
     await expect(homepagePreview).toHaveRequestedPreview({ custom: '{}' });
-    await modal.getByTestId(sel.designToolbar).getByRole('tab', { name: 'Post' }).click();
+    await settingsScreen.designToolbar().getByRole('tab', { name: 'Post' }).click();
     await expect(postPreview!).toHaveRequestedPreview({ custom: '{}' });
 
     await modal.getByRole('radio', { name: 'Mobile' }).click();
-    await expect.element(modal.getByTestId(sel.previewMobile)).toBeVisible();
+    await expect.element(settingsScreen.previewMobile()).toBeVisible();
     await modal.getByRole('radio', { name: 'Desktop' }).click();
-    await expect(modal.getByTestId(sel.previewMobile)).toHaveCount(0);
+    await expect(settingsScreen.previewMobile()).toHaveCount(0);
   });
 
   it('confirms before discarding unsaved brand changes', async () => {
@@ -91,7 +90,7 @@ describe('Design settings', () => {
     await renderAdminApp('/settings/design/edit');
 
     const modal = settingsScreen.designModal();
-    const color = modal.getByTestId(sel.accentColorPicker);
+    const color = settingsScreen.accentColorPicker();
     await color.getByRole('button').click();
     await page.getByRole('textbox', { name: 'Hex color' }).fill('#cd5786');
     await expect(homepagePreview).toHaveRequestedPreview({ c: '#cd5786' });
@@ -109,12 +108,12 @@ describe('Design settings', () => {
     await renderAdminApp('/settings/design/edit');
 
     const modal = settingsScreen.designModal();
-    const color = modal.getByTestId(sel.accentColorPicker);
+    const color = settingsScreen.accentColorPicker();
     await color.getByRole('button').click();
     await page.getByRole('textbox', { name: 'Hex color' }).fill('#cd5786');
 
     await expect(homepagePreview).toHaveRequestedPreview({ c: '#cd5786' });
-    await expect.element(modal.getByTestId(sel.toggleUnsplashButton)).toBeVisible();
+    await expect.element(settingsScreen.toggleUnsplashButton()).toBeVisible();
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect(settingsApi).toHaveEditedSettings([{ key: 'accent_color', value: '#cd5786' }]);
   });
@@ -198,7 +197,7 @@ describe('Design settings', () => {
     await renderAdminApp('/settings/design/edit');
 
     const modal = settingsScreen.designModal();
-    await modal.getByTestId(sel.toggleUnsplashButton).click();
+    await settingsScreen.toggleUnsplashButton().click();
     const galleryImage = page.getByAltText(unsplashPhoto.alt_description);
     await expect.element(galleryImage).toBeVisible();
 
@@ -236,12 +235,11 @@ describe('Design settings', () => {
     const { homepagePreview } = fakeDesignWorld();
     await renderAdminApp('/settings/design/edit');
 
-    const modal = settingsScreen.designModal();
     await expect(homepagePreview).toHaveRequestedPreview({ custom: '{}' });
-    const tabs = modal.getByTestId(sel.designSettingTabs);
+    const tabs = settingsScreen.designSettingTabs();
     await expect(tabs.getByRole('tab', { name: 'Brand' })).toHaveCount(0);
     await expect(tabs.getByRole('tab', { name: 'Theme' })).toHaveCount(0);
-    await expect.element(tabs.getByTestId(sel.accentColorPicker)).toBeVisible();
+    await expect.element(tabs.accentColorPicker()).toBeVisible();
   });
 
   it('hides conditional settings and sends their hidden preview value', async () => {
@@ -290,12 +288,11 @@ describe('Design settings', () => {
       },
     });
 
-    const modal = settingsScreen.designModal();
-    await expect.element(modal.getByTestId(sel.headingFontSelect)).toHaveTextContent(/Cardo/);
-    await expect.element(modal.getByTestId(sel.bodyFontSelect)).toHaveTextContent(/Inter/);
-    await modal.getByTestId(sel.headingFontSelect).click();
+    await expect.element(settingsScreen.headingFontSelect()).toHaveTextContent(/Cardo/);
+    await expect.element(settingsScreen.bodyFontSelect()).toHaveTextContent(/Inter/);
+    await settingsScreen.headingFontSelect().click();
     await settingsScreen.selectOption('Theme default').click();
-    await modal.getByTestId(sel.bodyFontSelect).click();
+    await settingsScreen.bodyFontSelect().click();
     await settingsScreen.selectOption('Theme default').click();
 
     await expect(homepagePreview).toHaveRequestedPreview({ hf: '', bf: '' });

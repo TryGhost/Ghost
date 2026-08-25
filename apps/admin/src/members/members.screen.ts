@@ -2,7 +2,9 @@ import { page } from 'vitest/browser';
 import {
   addFilterButton,
   filterButton,
+  membersActions,
   membersListItem,
+  newMemberLink,
   noResultsText,
   searchLabel,
   showAllButton,
@@ -14,11 +16,12 @@ export const membersScreen = {
   memberRows: () => page.getByTestId(membersListItem),
   memberRow: (name: string) => page.getByTestId(membersListItem).filter({ hasText: name }),
   link: (name: string) => page.getByRole('link', { name, exact: true }),
+  newMemberLink: () => page.getByRole('link', { name: newMemberLink }),
   searchInput: () => page.getByLabelText(searchLabel),
   noResults: () => page.getByText(noResultsText),
   showAllButton: () => page.getByRole('button', { name: showAllButton }),
   emptyState: () => page.getByText('Start building your audience'),
-  actionsButton: () => page.getByTestId('members-actions'),
+  actionsButton: () => page.getByTestId(membersActions),
   dialog: () => page.getByRole('dialog'),
   menuItem: (name: string | RegExp) => page.getByRole('menuitem', { name }),
 
