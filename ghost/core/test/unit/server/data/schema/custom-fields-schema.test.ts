@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import { FIELD_TYPE_IDS } from '@tryghost/custom-field-types';
 import { FIELD_STATUS } from '../../../../../core/server/services/members-custom-fields/schema';
 // @ts-expect-error This module lacks type definitions.
