@@ -170,7 +170,10 @@ export const DatePickerStyles = `
         color: var(--grey7);
     }
 
+    /* Sizing the cell keeps every row a row tall whether or not it has
+       anything in it. */
     .gh-portal-datepicker-day {
+        height: 30px;
         padding: 0;
     }
 
@@ -221,8 +224,11 @@ export const DatePickerStyles = `
         opacity: 0.92;
     }
 
-    .gh-portal-datepicker-disabled .gh-portal-datepicker-day-button,
     .gh-portal-datepicker-outside .gh-portal-datepicker-day-button {
+        color: var(--grey8);
+    }
+
+    .gh-portal-datepicker-disabled .gh-portal-datepicker-day-button {
         color: var(--grey8);
         cursor: default;
     }
@@ -336,8 +342,7 @@ const DatePicker = ({
 
   const weekStartsOn = useMemo(() => getWeekStart(locale), [locale]);
 
-  // Measures after render in the portal host's coordinate space — the
-  // calendar's height varies by month.
+  // Measures after render in the portal host's coordinate space.
   const position = useCallback(() => {
     const field = fieldRef.current;
     const target = getPopoverHost(field);
@@ -354,9 +359,12 @@ const DatePicker = ({
     const spaceAbove = visible ? rect.top - visible.top : 0;
     const flip = spaceBelow < height + POPOVER_GAP && spaceAbove > spaceBelow;
 
+    // translateY rather than a measured height, so a flipped box hangs from
+    // the field's top edge and grows away from it.
     setPopoverStyle({
-      top: flip ? rect.top - host.top - height - POPOVER_GAP : rect.bottom - host.top + POPOVER_GAP,
+      top: flip ? rect.top - host.top - POPOVER_GAP : rect.bottom - host.top + POPOVER_GAP,
       right: host.right - rect.right,
+      transform: flip ? 'translateY(-100%)' : undefined,
     });
   }, []);
 
@@ -476,6 +484,9 @@ const DatePicker = ({
                 ...(maxDate ? [{ after: maxDate }] : []),
               ]}
               endMonth={maxDate}
+              // Six rows every month, so paging can't change the height the
+              // placement above was measured from.
+              fixedWeeks
               formatters={{
                 formatCaption: (date) => formats.monthCaption.format(date),
                 formatWeekdayName: (date) => formats.weekday.format(date),
@@ -483,9 +494,9 @@ const DatePicker = ({
               }}
               mode="single"
               selected={selected}
+              showOutsideDays
               startMonth={minDate}
               weekStartsOn={weekStartsOn}
-              onMonthChange={position}
               onSelect={handleSelect}
             />
           </div>,
