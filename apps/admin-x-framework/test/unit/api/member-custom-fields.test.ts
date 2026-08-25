@@ -7,8 +7,8 @@ import {
 } from '../../../src/api/member-custom-fields';
 
 // Compile-time cases: the build failing is the assertion. Each `@ts-expect-error` fails the
-// build if the case it names stops being an error. Declared on one line each, because the
-// directive only covers the line below it and a spread literal reports on its inner line.
+// build if the case it names stops being an error. Directives sit immediately above the
+// property where TypeScript reports the error.
 const composite = { line1: 'a', line2: 'b', city: 'c', state: 'd', postal_code: 'e', country: 'f' };
 
 const labelled: FieldTypePresentation<'address'> = {
@@ -17,27 +17,27 @@ const labelled: FieldTypePresentation<'address'> = {
   subFields: composite,
 };
 
-// @ts-expect-error a composite missing one of the parts its value schema declares
 const missingPart: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
+  // @ts-expect-error a composite missing one of the parts its value schema declares
   subFields: { line1: 'a', line2: 'b', city: 'c', state: 'd', country: 'f' },
 };
 
-// @ts-expect-error a composite naming a part its value schema does not declare
 const unknownPart: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
+  // @ts-expect-error a composite naming a part its value schema does not declare
   subFields: { ...composite, county: 'g' },
 };
 
 // @ts-expect-error a composite with no part labels at all
 const unlabelled: FieldTypePresentation<'address'> = { label: 'Address', input: 'address' };
 
-// @ts-expect-error a type whose value is one thing has no parts to name
 const scalarWithParts: FieldTypePresentation<'short_text'> = {
   label: 'Short text',
   input: 'text',
+  // @ts-expect-error a type whose value is one thing has no parts to name
   subFields: { line1: 'a' },
 };
 
