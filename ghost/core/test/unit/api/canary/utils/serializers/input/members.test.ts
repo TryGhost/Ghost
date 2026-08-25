@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import serializers from '../../../../../../../core/server/api/endpoints/utils/serializers';
 
 describe('Unit: endpoints/utils/serializers/input/members', function () {
   describe('all', function () {
