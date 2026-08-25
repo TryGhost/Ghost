@@ -694,6 +694,9 @@ export default class AccountPlanPage extends React.Component {
   onBack() {
     if (this.state.showConfirmation) {
       this.cancelConfirmPage();
+    } else if (this.context.lastPage === 'accountPlan') {
+      // Returning from gift checkout leaves lastPage pointing back to this page.
+      this.context.doAction('switchPage', { page: 'accountHome' });
     } else {
       this.context.doAction('back');
     }

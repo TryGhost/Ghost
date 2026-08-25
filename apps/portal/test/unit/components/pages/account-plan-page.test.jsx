@@ -150,6 +150,14 @@ describe('Account Plan Page', () => {
     });
   });
 
+  test('returns to account home after returning from gift checkout', () => {
+    const { getByRole, mockDoActionFn } = customSetup({ lastPage: 'accountPlan' });
+
+    fireEvent.click(getByRole('button', { name: 'Back' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', { page: 'accountHome' });
+  });
+
   test.each([
     {
       label: 'the setting is disabled',
