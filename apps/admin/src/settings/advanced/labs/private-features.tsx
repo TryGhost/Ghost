@@ -73,12 +73,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Navigation icons & visibility',
-    description:
-      'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
-    flag: 'navigationIcons',
-  },
-  {
     title: 'React tag details',
     description:
       'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
