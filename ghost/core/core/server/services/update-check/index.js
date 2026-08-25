@@ -2,7 +2,8 @@ const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
-const jobsService = require('../jobs');
+const UpdateCheckJob = require('./jobs/update-check-job').default;
+const UpdateCheckBootJob = require('./jobs/update-check-boot-job').default;
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
@@ -66,7 +67,7 @@ module.exports = async ({
   await updateChecker.check();
 };
 
-module.exports.scheduleRecurringJobs = () => {
+module.exports.scheduleRecurringJobs = async (classBasedJobs) => {
   // use a random seconds/minutes/hours value to avoid spikes to the update service API
   const s = Math.floor(Math.random() * 60); // 0-59
   const m = Math.floor(Math.random() * 60); // 0-59
@@ -74,17 +75,10 @@ module.exports.scheduleRecurringJobs = () => {
 
   const at = `${s} ${m} ${h} * * *`;
   logging.info(`[Background Job] update-check scheduled at ${at}`);
-  jobsService.addJob({
-    at, // Every day
-    job: require('path').resolve(__dirname, 'run-update-check.js'),
-    name: 'update-check',
-  });
+  await classBasedJobs.scheduleRecurring(new UpdateCheckJob(), { cron: at });
 };
 
-module.exports.scheduleBootJob = () => {
+module.exports.scheduleBootJob = async (classBasedJobs) => {
   logging.info('[Background Job] update-check-boot queued');
-  jobsService.addJob({
-    job: require('path').resolve(__dirname, 'run-update-check.js'),
-    name: 'update-check-boot',
-  });
+  await classBasedJobs.dispatch(new UpdateCheckBootJob());
 };

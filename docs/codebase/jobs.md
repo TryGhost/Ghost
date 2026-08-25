@@ -17,7 +17,7 @@ events.
 
 Existing examples include:
 
-- Update checks, which run in a worker on a schedule.
+- Gift reminders, which run in a worker on a schedule.
 - Imports, which run as inline jobs.
 - Email analytics, which uses scheduled worker jobs.
 
@@ -32,8 +32,7 @@ first request.
 ## Testing
 
 Tests for the jobs wrapper live in
-`ghost/core/test/unit/server/services/jobs/`, with update-check integration
-coverage in `ghost/core/test/integration/jobs/`. Tests should cover the job's
+`ghost/core/test/unit/server/services/jobs/`. Tests should cover the job's
 result and failure behavior.
 
 ## Scheduling

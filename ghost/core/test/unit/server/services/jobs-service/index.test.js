@@ -1,16 +1,25 @@
+/* global vi */
+
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const jobsService = require('../../../../../core/server/services/jobs-service');
-const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+let jobsService;
+let adapterManager;
 
 describe('jobs-service wrapper', function () {
+  // The wrapper holds its instance in module state, and the unit project shares
+  // modules across files, so reload it per test. Otherwise whether the
+  // uninitialised cases below hold depends on some other file's init().
+  beforeEach(function () {
+    vi.resetModules();
+    jobsService = require('../../../../../core/server/services/jobs-service');
+    adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+  });
+
   afterEach(function () {
     sinon.restore();
   });
 
-  // These two run before any init() in this file, so the module singleton is
-  // still undefined.
   it('shutdown before init resolves without constructing a service', async function () {
     await assert.doesNotReject(() => jobsService.shutdown());
   });

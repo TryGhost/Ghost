@@ -526,10 +526,16 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
-  const updateCheck = require('./server/services/update-check');
-  updateCheck.scheduleRecurringJobs();
-  if (config.get('updateCheck:forceUpdate')) {
-    updateCheck.scheduleBootJob();
+  try {
+    const updateCheck = require('./server/services/update-check');
+    const classBasedJobs = require('./server/services/jobs-service').getInstance();
+    await updateCheck.scheduleRecurringJobs(classBasedJobs);
+    if (config.get('updateCheck:forceUpdate')) {
+      await updateCheck.scheduleBootJob(classBasedJobs);
+    }
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
