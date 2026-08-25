@@ -73,7 +73,7 @@ export function newsletterAddressing(slug?: string): PlainAddressing {
 
         let named: string | undefined;
         let negated = false;
-        let hasEmailDisabled = false;
+        let disabled: number | undefined;
 
         for (const child of children) {
           const raw = child[SLUG_ATTRIBUTE];
@@ -91,11 +91,19 @@ export function newsletterAddressing(slug?: string): PlainAddressing {
           }
 
           if (typeof child[EMAIL_DISABLED] === 'number') {
-            hasEmailDisabled = true;
+            disabled = child[EMAIL_DISABLED];
           }
         }
 
-        if (!named || !hasEmailDisabled) {
+        // The pair means the pair. "Subscribed" is written as being on the list and not
+        // bounced, joined by and; "unsubscribed" is the denial of exactly that, joined by
+        // or. Any other arrangement of the same three parts says something else — being
+        // on the list *or* having bounced is a wider set of members than being on it —
+        // so it is left unread rather than answered for.
+        const subscribed = !negated && join === 'and' && disabled === 0;
+        const unsubscribed = negated && join === 'or' && disabled === 1;
+
+        if (!named || (!subscribed && !unsubscribed)) {
           continue;
         }
 
@@ -104,7 +112,7 @@ export function newsletterAddressing(slug?: string): PlainAddressing {
           predicate: {
             field: `${KEY_PREFIX}${named}`,
             operator: 'is',
-            values: [negated ? 'unsubscribed' : 'subscribed'],
+            values: [subscribed ? 'subscribed' : 'unsubscribed'],
           },
         };
       }
