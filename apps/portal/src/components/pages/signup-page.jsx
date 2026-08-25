@@ -2,6 +2,7 @@ import React from 'react';
 import ActionButton from '../common/action-button';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
+import SignupGiftPromotion from '../common/signup-gift-promotion';
 import SiteTitleBackButton from '../common/site-title-back-button';
 import NewsletterSelectionPage from './newsletter-selection-page';
 import ProductsSection from '../common/products-section';
@@ -25,7 +26,6 @@ import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { interceptAnchorClicks } from '../../utils/links';
 import { sanitizeHtml } from '../../utils/sanitize-html';
 import { t } from '../../utils/i18n';
-import { canShowSignupGiftPromotion } from '../../utils/gift-subscriptions';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -712,8 +712,7 @@ class SignupPage extends React.Component {
   }
 
   renderLoginMessage({ showGiftPromotion = true } = {}) {
-    const { brandColor, doAction, site } = this.context;
-    const canPromoteGift = showGiftPromotion && canShowSignupGiftPromotion({ site });
+    const { brandColor, doAction } = this.context;
 
     return (
       <div>
@@ -729,23 +728,7 @@ class SignupPage extends React.Component {
           >
             <span>{t('Sign in')}</span>
           </button>
-          {canPromoteGift && (
-            <>
-              <span aria-hidden="true" className="gh-portal-signup-message-separator">
-                &middot;
-              </span>
-              <div>{t('Buying for someone else?')}</div>
-              <button
-                data-test-button="gift-switch"
-                data-testid="gift-switch"
-                className="gh-portal-btn gh-portal-btn-link"
-                style={{ color: brandColor }}
-                onClick={() => doAction('switchPage', { page: 'gift', lastPage: 'signup' })}
-              >
-                <span>{t('Gift a membership')}</span>
-              </button>
-            </>
-          )}
+          {showGiftPromotion && <SignupGiftPromotion lastPage="signup" showSeparator={true} />}
         </div>
       </div>
     );

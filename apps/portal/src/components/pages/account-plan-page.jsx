@@ -3,6 +3,7 @@ import AppContext from '../../app-context';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
+import SignupGiftPromotion from '../common/signup-gift-promotion';
 import { MultipleProductsPlansSection } from '../common/plans-section';
 import { getDateString } from '../../utils/date-time';
 import {
@@ -467,6 +468,7 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
 
 // For free members
 const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout }) => {
+  const { member } = useContext(AppContext);
   // const {action, brandColor} = useContext(AppContext);
   // const isRunning = ['checkoutPlan:running'].includes(action);
   let singlePlanClass = '';
@@ -484,6 +486,9 @@ const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout 
           onPlanCheckout={onPlanCheckout}
         />
       </div>
+      {!isPaidMember({ member }) && (
+        <SignupGiftPromotion className="gh-portal-signup-message" lastPage="accountPlan" />
+      )}
       {/* <ActionButton
                 onClick={e => onPlanCheckout(e)}
                 isRunning={isRunning}
