@@ -1,6 +1,6 @@
-const sinon = require('sinon');
-
-const { registerHelper, shouldCompileToExpected } = require('./utils/handlebars');
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
 
 describe('Search helper', function () {
   beforeAll(function () {
