@@ -1,14 +1,16 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
 import type {StepPickerType} from '@/automations/components/canvas/step-picker';
+import {AutomationCanvasControls} from '@/automations/components/canvas/controls';
+import {CANVAS_ZOOM_CONFIG} from '@/automations/components/canvas/use-canvas-viewport';
 import {Background, BackgroundVariant, BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
-import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
-import {CANVAS_SURFACE, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerSummary} from '@/automations/proto/shared/trigger-config';
+import {CANVAS_HUD_INSET, CANVAS_SURFACE, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, type StepKind, formatWait, orderActions, panTranslateExtent, stepKindIcon, useCenteredColumn, useMeasuredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter, EmailStatsInline} from './email-analytics';
 import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
@@ -24,39 +26,6 @@ const splitWait = (hours: number): {amount: number; unit: 'days' | 'hours'} => (
     hours % 24 === 0 ? {amount: hours / 24, unit: 'days'} : {amount: hours, unit: 'hours'}
 );
 const waitToHours = (amount: number, unit: 'days' | 'hours'): number => (unit === 'days' ? amount * 24 : amount);
-
-// Height a node's always-visible inline edit form adds (estimated — tune to the
-// rendered form since node Y-positions are laid out manually). No Delete here — that
-// moved to the hover overflow menu. Email: subject + edit-content; wait: duration row.
-const EMAIL_FORM_HEIGHT = 330;
-// The future concept's inline analytics: bars take more room than the three-column
-// number strip they replace, and the top-links list adds its own block when opened.
-// Estimated the same way every height in this file is — tune against the render.
-const INLINE_ANALYTICS_EXTRA = 76;
-const INLINE_LINKS_HEIGHT = 190;
-const WAIT_FORM_HEIGHT = 112;
-
-// The trigger card is the trigger select (same single-row shape as the wait form)
-// plus a labelled block of chips for exit criteria, and another for tiers once the
-// paid trigger discloses it. A block is the gap above it, its label, and one row
-// of chips; exit criteria wrap to a second row once the paid trigger adds its
-// third (and longest) criterion.
-const TRIGGER_FIELD_BLOCK = 84;
-const TRIGGER_CHIP_ROW = 34;
-const triggerFormHeight = (config: TriggerConfig, locked: boolean): number => {
-    // Locked, everything below the select goes — the card is the header and the
-    // disabled select, the same single-row shape as the wait form.
-    if (locked) {
-        return WAIT_FORM_HEIGHT;
-    }
-    const paid = config.type === 'paid_subscription_starts';
-    const extraCriteriaRows = availableCriteria(config).length > 2 ? 1 : 0;
-    return WAIT_FORM_HEIGHT
-        + TRIGGER_FIELD_BLOCK
-        + (extraCriteriaRows * TRIGGER_CHIP_ROW)
-        + (paid ? TRIGGER_FIELD_BLOCK : 0);
-};
-
 
 // Dashed circular "insert step" button, matched to the real add-step-edge.
 // CANVAS_SURFACE: these read as an empty slot cut out of the canvas, so they take
@@ -352,6 +321,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
 
     const ordered = orderActions(draft);
 
+    // Card heights are read back from the render, so nothing here has to know what
+    // a card contains — see useMeasuredColumn.
+    const {onNodesChange, layout} = useMeasuredColumn();
+
     const insert = (anchor: InsertActionAnchor, kind: 'email' | 'wait') => {
         onChange(kind === 'email' ? insertSendEmailAction({detail: draft, anchor}) : insertWaitAction({detail: draft, anchor}));
     };
@@ -363,21 +336,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
         : null;
 
     const {nodes, edges, contentBottom} = useMemo(() => {
-        // Height-aware layout: trigger, then each action (email nodes carry a stats
-        // footer), then the tail button. Even visible gaps regardless of node height.
-        const heights = [REGULAR_NODE_HEIGHT + (onTriggerConfigChange ? triggerFormHeight(triggerConfig ?? DEFAULT_TRIGGER_CONFIG, triggerLocked) : TRIGGER_SUMMARY_HEIGHT)];
-        ordered.forEach((action) => {
-            // Every editable node shows its inline form, so all carry the form height.
-            if (action.type !== 'send_email') {
-                heights.push(REGULAR_NODE_HEIGHT + WAIT_FORM_HEIGHT);
-                return;
-            }
-            const inlineExtra = inlineAnalytics && action.stats ? INLINE_ANALYTICS_EXTRA : 0;
-            const linksExtra = inlineAnalytics && linksOpenId === action.id ? INLINE_LINKS_HEIGHT : 0;
-            heights.push(REGULAR_NODE_HEIGHT + EMAIL_FORM_HEIGHT + inlineExtra + linksExtra);
-        });
-        heights.push(TAIL_NODE_HEIGHT);
-        const ys = stackNodeY(heights);
+        // The column, top to bottom: trigger, each action in flow order, then the
+        // tail button. Order is the only thing the layout needs — heights come back
+        // measured, so an email card growing an analytics block or a links list
+        // moves the cards below it without anything here being told.
+        const {ys, bottom} = layout(['__trigger__', ...ordered.map(action => action.id), '__tail__']);
 
         const built: Node[] = [];
         built.push({
@@ -463,11 +426,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
                 }
             });
         }
-        // Bottom edge of the tail node — drives the pan bound below.
-        const bottom = ys.length ? ys[ys.length - 1] + heights[heights.length - 1] : 0;
-
         return {nodes: built, edges: builtEdges, contentBottom: bottom};
-    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange, triggerLocked, inlineAnalytics, linksOpenId]);
+    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange, triggerLocked, inlineAnalytics, linksOpenId, layout]);
 
     const translateExtent = useMemo(
         () => panTranslateExtent(contentBottom, size),
@@ -482,8 +442,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
                     className={REACT_FLOW_THEME}
                     edges={edges}
                     edgeTypes={edgeTypes}
-                    maxZoom={1}
-                    minZoom={0.5}
+                    maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+                    minZoom={CANVAS_ZOOM_CONFIG.minZoom}
                     nodes={nodes}
                     nodesConnectable={false}
                     nodesDraggable={false}
@@ -505,11 +465,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
                         }
                         setSelectedId(node.id);
                     }}
+                    onNodesChange={onNodesChange}
                     // Doesn't dismiss the analytics sheet — that's a deliberate read,
                     // closed from its own control or Escape.
                     onPaneClick={() => setSelectedId(null)}
                 >
                     <Background variant={BackgroundVariant.Dots} />
+                    {/* The shipping canvas's own controls, imported rather than
+                        rebuilt: zoom out / zoom level menu / zoom in, docked
+                        bottom-left of the flow. It reads the viewport off
+                        useReactFlow, so it only needs to be inside ReactFlow —
+                        and it disables its buttons against CANVAS_ZOOM_CONFIG,
+                        which is why the bounds above come from there too rather
+                        than staying hardcoded to the same numbers. */}
+                    <AutomationCanvasControls style={CANVAS_HUD_INSET} />
                 </ReactFlow>
             </div>
 

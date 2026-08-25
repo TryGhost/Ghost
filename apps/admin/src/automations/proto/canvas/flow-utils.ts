@@ -1,6 +1,6 @@
 import {type CSSProperties, type ElementType, useCallback, useEffect, useRef, useState} from 'react';
 import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import type {ReactFlowInstance} from '@xyflow/react';
+import type {NodeChange, ReactFlowInstance} from '@xyflow/react';
 import {LucideIcon} from '@tryghost/shade/utils';
 
 // Shared flow helpers + scaffolding, kept out of the canvas component files so
@@ -56,7 +56,27 @@ export const CANVAS_SURFACE = 'bg-background';
 // 500 puts the lines at the dots' own stop, which in practice reads stronger
 // than the dots because a continuous stroke carries colour that 1px pattern
 // circles can't. If it proves out it's a fix the real canvas wants too.
-export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-500)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+// Dots and edges don't change with the canvas fill — only the fill does — so they
+// live apart and both themes below share them verbatim.
+const CANVAS_MARKS = '[--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-500)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+
+export const REACT_FLOW_THEME = `[--xy-background-color:var(--color-grey-50)] dark:[--xy-background-color:var(--background)] ${CANVAS_MARKS}`;
+
+// Reviewing one member's run: the canvas takes a blue cast, so the mode is stated
+// by the surface itself rather than only by chrome drawn on top of it. Tinting
+// rather than darkening — a member's run is a state to be in, not a dimming of what
+// surrounds it, and the blue ties the field to the blue the current step already
+// carries on its card border.
+//
+// Light and dark are named separately because the palette doesn't flip: blue-50 is
+// the faintest wash at the light end, blue-950 the nearest equivalent at the dark
+// end. Both are one stop softer than the first pass, which read as a mode you'd been
+// dropped into rather than a tint over the one you were already in.
+//
+// Applied as a whole theme rather than layered over the default: two arbitrary
+// properties setting the same variable on one element resolve by stylesheet order,
+// not by class order, so overriding a var this way isn't reliable.
+export const REACT_FLOW_THEME_REVIEW = `[--xy-background-color:var(--color-blue-50)] dark:[--xy-background-color:var(--color-blue-950)] ${CANVAS_MARKS}`;
 
 // Column layout — a single vertical stack of fixed-width nodes. Node y-positions
 // are derived from each node's *rendered height* plus a constant visible gap, so
@@ -69,25 +89,75 @@ export const NODE_WIDTH = 400;
 // across every pair.
 export const NODE_VISUAL_GAP = 112;
 
-// Approximate rendered heights, used only to keep the *visible* gap uniform. If a
-// node's body layout changes, retune these. (The real canvas hardcodes the same
-// way — see REGULAR_NODE_HEIGHT / EMAIL_NODE_WITH_STATS_HEIGHT there.)
-export const REGULAR_NODE_HEIGHT = 72; // trigger / wait / email header only
-export const TRIGGER_SUMMARY_HEIGHT = 44; // trigger node's one-line config summary
-export const STATS_FOOTER_HEIGHT = 64; // email node's 3-metric stats footer
-export const DETAIL_FOOTER_HEIGHT = 36; // read-only run-detail footer (single line)
-export const TERMINAL_NODE_HEIGHT = 40; // read-only "Complete" pill
-export const TAIL_NODE_HEIGHT = 48; // editable "add step" tail button
+// Only used for the first frame, before anything has been measured. Any value
+// works — it's replaced the moment React Flow reports a real one.
+const UNMEASURED_NODE_HEIGHT = 200;
 
-// Cumulative top-Y for a vertical stack of nodes with the given rendered heights,
-// keeping NODE_VISUAL_GAP of visible space between each consecutive pair.
-export const stackNodeY = (heights: number[], gap: number = NODE_VISUAL_GAP): number[] => {
-    let cursor = 0;
-    return heights.map((height) => {
-        const y = cursor;
-        cursor += height + gap;
-        return y;
-    });
+// Lays the column out from MEASURED node heights rather than estimated ones.
+//
+// Both canvases position nodes by hand, because the thing they're keeping constant
+// is the *visible gap* between cards — and a gap can only be constant if you know
+// how tall each card is. That used to mean a constant per card shape, summed by a
+// per-canvas nodeHeight(): a base, plus the email preview, plus the stats footer,
+// plus the inline analytics block, plus the links block when open. Every one of
+// them an estimate of a rendered height, and every card change silently invalidated
+// a few. The bug they produce is always the same and always invisible in review —
+// the card is fine, the space under it is wrong.
+//
+// React Flow already measures every node it renders (v12 keeps dimensions in its
+// own store) and reports each measurement through onNodesChange. So the heights
+// don't have to be predicted at all: let the cards render at whatever height their
+// content needs, read it back, and stack from that. Card layouts can then change —
+// or grow a variable number of conditions, or a whole new step kind — with no
+// layout constant to retune, because there aren't any.
+//
+// Safe against feedback loops: card width is fixed (NODE_CARD_SHELL), so a card's
+// height never depends on where it was placed. Measure → reposition → re-measure
+// yields the same height and the loop settles on the second pass.
+export const useMeasuredColumn = () => {
+    const [heights, setHeights] = useState<Record<string, number>>({});
+
+    // The canvas owns positions; React Flow owns sizes. Every other kind of change
+    // it offers here (position, selection, removal) is something we drive from the
+    // draft instead, so dimensions are all we take.
+    const onNodesChange = useCallback((changes: NodeChange[]) => {
+        setHeights((current) => {
+            let next = current;
+            for (const change of changes) {
+                if (change.type !== 'dimensions' || !change.dimensions) {
+                    continue;
+                }
+                const height = Math.round(change.dimensions.height);
+                // Bail on an unchanged height so a re-measure that agrees with the
+                // last one doesn't produce a new object and re-run the layout.
+                if (!height || current[change.id] === height) {
+                    continue;
+                }
+                if (next === current) {
+                    next = {...current};
+                }
+                next[change.id] = height;
+            }
+            return next;
+        });
+    }, []);
+
+    // Node order in, top-Y per node out — plus the bottom edge of the last card,
+    // which is what the pan bound needs. Ids are the only input: whatever a card
+    // renders, its height is already known by the time this runs.
+    const layout = useCallback((ids: string[]) => {
+        const measured = ids.map(id => heights[id] ?? UNMEASURED_NODE_HEIGHT);
+        let cursor = 0;
+        const ys = measured.map((height) => {
+            const y = cursor;
+            cursor += height + NODE_VISUAL_GAP;
+            return y;
+        });
+        const bottom = measured.length ? ys[ys.length - 1] + measured[measured.length - 1] : 0;
+        return {ys, bottom};
+    }, [heights]);
+
+    return {onNodesChange, layout};
 };
 
 // The three editable step kinds share one icon per kind across both canvases.
@@ -217,3 +287,20 @@ export function panTranslateExtent(
         [Math.max(NODE_WIDTH, visRight) + PAN_SLACK_X, Math.max(contentBottom, visBottom) + marginY]
     ];
 }
+
+// Where floating chrome sits inside the canvas: 24px off the sides and the bottom,
+// 16px off the top. The horizontal figure comes from the pane beside it (px-6), so
+// chrome on the canvas lines up with chrome in the panel rather than each carrying
+// its own margin.
+//
+// The bottom is 24 rather than 16 on purpose. At the top the chrome has a header
+// sitting immediately above it, which reads as the boundary and gives the eye
+// somewhere to stop; at the bottom there's nothing but the edge of the canvas, and
+// the same 16px left the controls looking dropped against it. Matching the sides is
+// what makes that corner look deliberate.
+//
+// The zoom controls need it as px because React Flow positions their panel with
+// inline styles — see AutomationCanvasControls, which now takes the inset rather
+// than fixing it. Everything else on the canvas expresses the same numbers as
+// Tailwind (top-4 / left-6).
+export const CANVAS_HUD_INSET = {bottom: 24, left: 24};

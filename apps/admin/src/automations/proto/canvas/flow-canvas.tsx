@@ -1,5 +1,7 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
+import {AutomationCanvasControls} from '@/automations/components/canvas/controls';
+import {CANVAS_ZOOM_CONFIG} from '@/automations/components/canvas/use-canvas-viewport';
 import {Background, BackgroundVariant, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {Button} from '@tryghost/shade/components';
@@ -8,18 +10,13 @@ import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock'
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerLabel, triggerReviewLabel, triggerSummary} from '@/automations/proto/shared/trigger-config';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {CANVAS_HUD_INSET, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REACT_FLOW_THEME_REVIEW, type StepKind, formatWait, orderActions, panTranslateExtent, stepKindIcon, useCenteredColumn, useMeasuredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
 import {EmailPreview} from './email-preview';
 import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
 import {exitReasonLabel, toRealClock} from '@/automations/proto/shared/member-runs';
-
-// Height the email preview (subject + body sheet) adds to a read/run email node, on
-// top of the header. Footer (stats or run detail) is added separately. Estimated —
-// mirrors the edit canvas's EMAIL_FORM_HEIGHT so Y-layout stays clear of overlap.
-const EMAIL_PREVIEW_HEIGHT = 260;
 
 // Shade's own date + time formatters, in the site's timezone — the same pairing
 // the post analytics header uses ("12 Jun 2025 at 7:09pm"). This was a raw
@@ -230,6 +227,9 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
         ? {actionId: analyticsAction.id, subject: analyticsAction.data.email_subject || 'Untitled', stats: analyticsAction.stats}
         : null;
 
+    // Card heights are read back from the render — see useMeasuredColumn.
+    const {onNodesChange, layout} = useMeasuredColumn();
+
     const {nodes, edges, contentBottom} = useMemo(() => {
         const ordered = orderActions(automation);
         const stepByAction = new Map((selectedRun?.steps ?? []).map(s => [s.action_id, s]));
@@ -330,20 +330,11 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
             state: terminalState
         }});
 
-        // Height of a node = base + email preview (email only) + footer. Focused
-        // cards carry no footer any more — run state lives in the header — so the
-        // only footer left is the unfocused email's stats row.
-        const nodeHeight = (data: FlowNodeData): number => {
-            if (data.kind === 'terminal') {
-                return TERMINAL_NODE_HEIGHT;
-            }
-            const preview = data.kind === 'email' ? EMAIL_PREVIEW_HEIGHT : 0;
-            // The trigger's config summary only shows while no run is in focus.
-            const summary = (!focused && data.kind === 'trigger' && data.summary) ? TRIGGER_SUMMARY_HEIGHT : 0;
-            const footer = !focused && data.stats ? STATS_FOOTER_HEIGHT : 0;
-            return REGULAR_NODE_HEIGHT + preview + summary + footer;
-        };
-        const ys = stackNodeY(descriptors.map(d => nodeHeight(d.data)));
+        // Measured, not derived: what a card carries — an email preview, the
+        // trigger's config summary, a stats footer, the exit event's reason line —
+        // no longer has to be mirrored in a height function that goes stale every
+        // time one of those changes shape.
+        const {ys, bottom} = layout(descriptors.map(d => d.id));
         const built: Node[] = descriptors.map((descriptor, i) => ({
             id: descriptor.id,
             type: 'flowStep',
@@ -382,11 +373,8 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
             });
         }
 
-        // Bottom edge of the last node — drives the pan bound below.
-        const bottom = ys.length ? ys[ys.length - 1] + nodeHeight(descriptors[descriptors.length - 1].data) : 0;
-
         return {nodes: built, edges: builtEdges, contentBottom: bottom};
-    }, [automation, selectedRun, focused, triggerConfig, analyticsActionId]);
+    }, [automation, selectedRun, focused, triggerConfig, analyticsActionId, layout]);
 
     const translateExtent = useMemo(
         () => panTranslateExtent(contentBottom, size, leftInset),
@@ -398,10 +386,10 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
         <div className="relative size-full">
             <div ref={canvasRef} className="size-full">
             <ReactFlow
-                className={REACT_FLOW_THEME}
+                className={focused ? REACT_FLOW_THEME_REVIEW : REACT_FLOW_THEME}
                 edges={edges}
-                maxZoom={1}
-                minZoom={0.5}
+                maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+                minZoom={CANVAS_ZOOM_CONFIG.minZoom}
                 nodes={nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
@@ -412,8 +400,17 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
                 panOnDrag
                 panOnScroll
                 onInit={onInit}
+                onNodesChange={onNodesChange}
             >
                 <Background variant={BackgroundVariant.Dots} />
+                {/* The shipping canvas's own controls, imported rather than
+                    rebuilt: zoom out / zoom level menu / zoom in, docked
+                    bottom-left of the flow. It reads the viewport off
+                    useReactFlow, so it only needs to be inside ReactFlow —
+                    and it disables its buttons against CANVAS_ZOOM_CONFIG,
+                    which is why the bounds above come from there too rather
+                    than staying hardcoded to the same numbers. */}
+                <AutomationCanvasControls style={CANVAS_HUD_INSET} />
             </ReactFlow>
             </div>
 
