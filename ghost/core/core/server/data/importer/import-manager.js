@@ -14,7 +14,7 @@ const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils').default;
 const { GhostMailer } = require('../../services/mail');
 const jobManager = require('../../services/jobs');
-const ImportArchive = require('./import-archive');
+const ImportArchive = require('./import-archive').default;
 const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
 
 const { emailTemplate } = require('./email-template');

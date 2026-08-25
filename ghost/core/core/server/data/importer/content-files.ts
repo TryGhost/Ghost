@@ -1,11 +1,14 @@
-const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils').default;
+import config from '../../../shared/config';
+import urlUtils from '../../../shared/url-utils';
+
+// Keep adapter loading on the existing CommonJS path so the configured adapter
+// and its base class share the same module instance during the legacy /db/ import.
 const adapterManager = require('../../services/adapter-manager').default;
 const ImageHandler = require('./handlers/image');
 const ImporterContentFileHandler = require('./handlers/importer-content-file-handler');
 const ContentFileImporter = require('./importers/content-file-importer');
 
-function createContentFileHandlers() {
+export function createContentFileHandlers() {
   const mediaStorage = adapterManager.getAdapter('storage:media');
   const fileStorage = adapterManager.getAdapter('storage:files');
 
@@ -33,7 +36,7 @@ function createContentFileHandlers() {
   ];
 }
 
-function createContentFileImporters() {
+export function createContentFileImporters() {
   return [
     new ContentFileImporter({
       type: 'images',
@@ -49,8 +52,3 @@ function createContentFileImporters() {
     }),
   ];
 }
-
-module.exports = {
-  createContentFileHandlers,
-  createContentFileImporters,
-};

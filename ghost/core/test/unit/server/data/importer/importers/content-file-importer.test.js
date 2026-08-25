@@ -17,6 +17,7 @@ describe('ContentFileImporter', function () {
     assert.equal(imageImporter.type, 'images');
     assert.equal(imageImporter.preProcess instanceof Function, true);
     assert.equal(imageImporter.doImport instanceof Function, true);
+    assert.equal(imageImporter.rollback instanceof Function, true);
   });
 
   it('does preprocess posts, users and tags correctly', function () {
@@ -98,6 +99,29 @@ describe('ContentFileImporter', function () {
     assert.doesNotMatch(JSON.stringify(post), /content\/content/);
   });
 
+  it('rewrites a short post path when the archive path is canonical', function () {
+    const imageImporter = new ContentFileImporter({ type: 'images', store: {} });
+    const inputData = {
+      images: [
+        {
+          originalPath: 'content/images/image.jpg',
+          newPath: '/content/images/image-1.jpg',
+        },
+      ],
+      data: {
+        data: {
+          posts: [{ html: '<img src="/images/image.jpg">' }],
+          tags: [],
+          users: [],
+        },
+      },
+    };
+
+    const output = imageImporter.preProcess(inputData);
+
+    assert.equal(output.data.data.posts[0].html, '<img src="/content/images/image-1.jpg">');
+  });
+
   it('does import the images correctly', async function () {
     const inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
     const storageApi = {
@@ -130,6 +154,7 @@ describe('ContentFileImporter', function () {
 
   it('waits for every asset write to settle before reporting a storage failure', async function () {
     let finishSecondWrite;
+    const remove = sinon.stub().resolves();
     const storageApi = {
       save: sinon
         .stub()
@@ -138,9 +163,11 @@ describe('ContentFileImporter', function () {
         .onSecondCall()
         .returns(
           new Promise((resolve) => {
-            finishSecondWrite = resolve;
+            finishSecondWrite = () => resolve('/content/images/two.jpg');
           }),
         ),
+      urlToPath: sinon.stub().returns('two.jpg'),
+      delete: remove,
     };
     const importer = new ContentFileImporter({ type: 'images', store: storageApi });
     const importPromise = importer.doImport([
@@ -160,6 +187,37 @@ describe('ContentFileImporter', function () {
 
     await assert.rejects(importPromise, /first write failed/);
     sinon.assert.calledTwice(storageApi.save);
+    sinon.assert.calledOnceWithExactly(remove, 'two.jpg', undefined);
+  });
+
+  it('reports when a partially stored batch cannot be completely rolled back', async function () {
+    const storageFailure = new Error('first write failed');
+    const rollbackFailure = new Error('delete failed');
+    const storageApi = {
+      save: sinon
+        .stub()
+        .onFirstCall()
+        .rejects(storageFailure)
+        .onSecondCall()
+        .resolves('/content/images/two.jpg'),
+      urlToPath: sinon.stub().returns('nested/two.jpg'),
+      delete: sinon.stub().rejects(rollbackFailure),
+    };
+    const importer = new ContentFileImporter({ type: 'images', store: storageApi });
+
+    await assert.rejects(
+      importer.doImport([
+        { name: 'one.jpg', targetDir: '/images' },
+        { name: 'two.jpg', targetDir: '/images' },
+      ]),
+      (error) => {
+        assert.equal(error.message, 'Asset storage failed and rollback was incomplete.');
+        assert.equal(error.cause, storageFailure);
+        assert.deepEqual(error.errors, [storageFailure, rollbackFailure]);
+        return true;
+      },
+    );
+    sinon.assert.calledOnceWithExactly(storageApi.delete, 'two.jpg', 'nested');
   });
 
   describe('doImport with CDN storage', function () {

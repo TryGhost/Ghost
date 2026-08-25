@@ -56,6 +56,16 @@ describe('content import archive', () => {
     await expect(inspectImportArchive(json)).resolves.toEqual({ type: 'legacy' });
   });
 
+  it('rejects a data CSV nested below more than one wrapper directory', async () => {
+    const file = await zipFile('posts.zip', (archive) => {
+      archive.file('export/2024/posts.csv', 'title\nToo deep');
+    });
+
+    await expect(inspectImportArchive(file)).rejects.toThrow(
+      'CSV files must be at the ZIP root or inside one wrapper directory',
+    );
+  });
+
   it('rejects multiple data CSV files', async () => {
     const file = await zipFile('posts.zip', (archive) => {
       archive.file('one.csv', 'title\nOne');

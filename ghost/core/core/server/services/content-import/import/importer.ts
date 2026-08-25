@@ -7,6 +7,7 @@ import buildPostData, {
   type PostData,
 } from './post-data';
 import type { PostImportRow } from './row';
+import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 
@@ -17,12 +18,6 @@ const tpl = require('@tryghost/tpl');
 // The CSV is parsed inside the request (the uploaded temp file is deleted when the
 // response is sent); the parsed rows are handed to an in-process background job
 // that writes one post per row.
-
-export interface ImportRequest {
-  filePath: string;
-  fileName: string;
-  mapping?: Record<string, string>;
-}
 
 // The id is what a completion report will be looked up by.
 export interface ImportAccepted {

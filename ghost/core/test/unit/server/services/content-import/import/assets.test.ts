@@ -109,6 +109,26 @@ describe('content import assets', function () {
     sinon.assert.notCalled(loadFile);
   });
 
+  it('returns no batch when there is no importer for a supported asset group', async function () {
+    const loadFile = sinon.stub().resolves([]);
+    const batch = await prepareAssetBatch(
+      {
+        getFiles: () => [
+          { name: 'content/images/photo.jpg', path: '/tmp/content/images/photo.jpg' },
+        ],
+      },
+      '/tmp',
+      undefined,
+      {
+        handlers: [{ type: 'images', extensions: ['.jpg'], loadFile }],
+        importers: [],
+      },
+    );
+
+    assert.equal(batch, undefined);
+    sinon.assert.notCalled(loadFile);
+  });
+
   it('waits for every asset group to settle before reporting a storage failure', async function () {
     let finishMediaWrite: () => void = () => {};
     const failedWrite = new Error('image storage failed');
@@ -121,6 +141,7 @@ describe('content import assets', function () {
           doImport: async () => {
             throw failedWrite;
           },
+          rollback: sinon.stub().resolves(),
           preProcess: (data: Record<string, unknown>) => data,
         },
       },
@@ -130,9 +151,10 @@ describe('content import assets', function () {
         importer: {
           type: 'media',
           doImport: () =>
-            new Promise<void>((resolve) => {
-              finishMediaWrite = resolve;
+            new Promise<[]>((resolve) => {
+              finishMediaWrite = () => resolve([]);
             }),
+          rollback: sinon.stub().resolves(),
           preProcess: (data: Record<string, unknown>) => data,
         },
       },
@@ -150,5 +172,78 @@ describe('content import assets', function () {
 
     finishMediaWrite();
     await assert.rejects(storePromise, /image storage failed/);
+  });
+
+  it('rolls back successful asset groups when another group fails', async function () {
+    const failedWrite = new Error('image storage failed');
+    const storedMedia = {
+      originalPath: 'content/media/movie.mp4',
+      newPath: '/content/media/movie.mp4',
+      stored: '/content/media/movie.mp4',
+    };
+    const rollbackMedia = sinon.stub().resolves();
+    const batch = new PreparedAssetBatch([
+      {
+        type: 'images',
+        files: [],
+        importer: {
+          type: 'images',
+          doImport: async () => {
+            throw failedWrite;
+          },
+          rollback: sinon.stub().resolves(),
+          preProcess: (data: Record<string, unknown>) => data,
+        },
+      },
+      {
+        type: 'media',
+        files: [],
+        importer: {
+          type: 'media',
+          doImport: async () => [storedMedia],
+          rollback: rollbackMedia,
+          preProcess: (data: Record<string, unknown>) => data,
+        },
+      },
+    ]);
+
+    await assert.rejects(batch.store(), (error: unknown) => error === failedWrite);
+    sinon.assert.calledOnceWithExactly(rollbackMedia, [storedMedia]);
+  });
+
+  it('preserves storage and rollback failures when rollback is incomplete', async function () {
+    const failedWrite = new Error('image storage failed');
+    const failedRollback = new Error('media rollback failed');
+    const batch = new PreparedAssetBatch([
+      {
+        type: 'images',
+        files: [],
+        importer: {
+          type: 'images',
+          doImport: async () => {
+            throw failedWrite;
+          },
+          rollback: sinon.stub().resolves(),
+          preProcess: (data: Record<string, unknown>) => data,
+        },
+      },
+      {
+        type: 'media',
+        files: [],
+        importer: {
+          type: 'media',
+          doImport: async () => [],
+          rollback: sinon.stub().rejects(failedRollback),
+          preProcess: (data: Record<string, unknown>) => data,
+        },
+      },
+    ]);
+
+    await assert.rejects(batch.store(), (error: unknown) => {
+      assert.ok(error instanceof AggregateError);
+      assert.equal(error.cause, failedWrite);
+      assert.deepEqual(error.errors, [failedWrite, failedRollback]);
+      return true;
+    });
   });
 });

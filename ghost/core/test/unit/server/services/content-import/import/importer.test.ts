@@ -159,6 +159,18 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import completed in \d+ms$/);
   });
 
+  it('uses the current time by default when one is not injected', async function () {
+    const h = harness([row('Default clock')]);
+    const { now: _now, ...deps } = h.deps;
+    const importer = new ContentCSVImporter(deps);
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await h.jobs[0].job();
+
+    assert.ok(h.store.get('run_test')?.startedAt instanceof Date);
+    assert.ok(h.store.get('run_test')?.finishedAt instanceof Date);
+  });
+
   it('keeps lifecycle logging best-effort', async function () {
     const h = harness();
     infoLog.throws(new Error('Logging unavailable'));
@@ -600,6 +612,37 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.failureReason, 'converter unavailable');
     assert.ok(h.store.get('run_test')?.finishedAt instanceof Date);
     sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import failed after \d+ms$/);
+  });
+
+  it('stops the run for an unexpected row-processing failure', async function () {
+    const failure = new Error('unexpected row failure');
+    const badRow = row('Bad row');
+    Object.defineProperty(badRow, 'html', {
+      get() {
+        throw failure;
+      },
+    });
+    const h = harness([badRow, row('Never reached')]);
+
+    await h.run();
+
+    assert.deepEqual(h.reported, [failure]);
+    assert.equal(h.created.length, 0);
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.equal(h.store.get('run_test')?.failureReason, 'unexpected row failure');
+  });
+
+  it('uses a safe reason when a run-level failure has no message', async function () {
+    const h = harness();
+    h.setHtmlToLexicalFactory(() => {
+      throw {};
+    });
+
+    await h.run();
+
+    assert.deepEqual(h.reported, [{}]);
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.equal(h.store.get('run_test')?.failureReason, 'Unknown error');
   });
 
   it('keeps a successfully written post created when its URL cannot be resolved', async function () {

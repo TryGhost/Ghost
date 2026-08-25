@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const path = require('node:path');
 let replaceImage;
 let preProcessPosts;
 let preProcessTags;
@@ -10,7 +11,9 @@ replaceImage = function (markdown, image) {
   }
 
   const originalPaths = [image.originalPath];
-  if (!image.originalPath.startsWith('content/')) {
+  if (image.originalPath.startsWith('content/')) {
+    originalPaths.push(image.originalPath.slice('content/'.length));
+  } else {
     originalPaths.unshift(`content/${image.originalPath}`);
   }
 
@@ -146,10 +149,47 @@ class ContentFileImporter {
 
     const failure = results.find((result) => result.status === 'rejected');
     if (failure) {
+      const storedFiles = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      );
+      try {
+        await this.rollback(storedFiles);
+      } catch (rollbackFailure) {
+        // AggregateError is the native error for preserving both storage failures;
+        // it is not a GhostError and therefore does not accept an options object.
+        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+        throw new AggregateError(
+          [failure.reason, rollbackFailure],
+          'Asset storage failed and rollback was incomplete.',
+          { cause: failure.reason },
+        );
+      }
       throw failure.reason;
     }
 
     return results.map((result) => result.value);
+  }
+
+  /**
+   * @param {{stored: string}[]} storedFiles
+   * @returns {Promise<void>}
+   */
+  async rollback(storedFiles) {
+    const store = this.#store;
+    const results = await Promise.allSettled(
+      storedFiles.map(function (storedFile) {
+        const storedPath = store.urlToPath(storedFile.stored);
+        const targetDir = path.posix.dirname(storedPath);
+        return store.delete(
+          path.posix.basename(storedPath),
+          targetDir === '.' ? undefined : targetDir,
+        );
+      }),
+    );
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure) {
+      throw failure.reason;
+    }
   }
 }
 

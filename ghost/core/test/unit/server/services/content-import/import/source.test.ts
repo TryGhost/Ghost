@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
-import { prepareImportSource } from '../../../../../../core/server/services/content-import/import/source';
+import {
+  isDataFile,
+  prepareImportSource,
+} from '../../../../../../core/server/services/content-import/import/source';
 
 const { compress } = require('@tryghost/zip');
 
@@ -39,6 +42,18 @@ describe('content import source', function () {
     assert.equal(source.filePath, filePath);
     await source.cleanup();
     assert.equal(await fs.pathExists(filePath), true);
+  });
+
+  it('classifies only root and single-wrapper import data files', function () {
+    assert.equal(isDataFile('posts.csv'), true);
+    assert.equal(isDataFile('export/posts.JSON'), true);
+    assert.equal(isDataFile('export/posts.markdown'), true);
+    assert.equal(isDataFile(''), false);
+    assert.equal(isDataFile('readme.txt'), false);
+    assert.equal(isDataFile('__MACOSX/posts.csv'), false);
+    assert.equal(isDataFile('export/._posts.csv'), false);
+    assert.equal(isDataFile('export/data/posts.csv'), false);
+    assert.equal(isDataFile('content/files/attachment.csv'), false);
   });
 
   it('extracts one case-insensitive root CSV and cleans up its directory', async function () {
@@ -143,6 +158,15 @@ describe('content import source', function () {
     await assert.rejects(
       prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' }),
       /only one CSV file/,
+    );
+  });
+
+  it('rejects a CSV nested more deeply than one wrapper directory', async function () {
+    const zipPath = await archive({ 'export/data/posts.csv': 'title\nNested' });
+
+    await assert.rejects(
+      prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' }),
+      /Invalid zip file structure/i,
     );
   });
 

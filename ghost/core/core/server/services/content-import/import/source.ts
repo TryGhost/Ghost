@@ -1,10 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { globSync } from 'glob';
+import ImportArchive from '../../../data/importer/import-archive';
 import { prepareAssetBatch, type ImportAssetBatch } from './assets';
 
 const errors = require('@tryghost/errors');
-const ImportArchive = require('../../../data/importer/import-archive');
 
 const DATA_EXTENSIONS = new Set(['.csv', '.json', '.md', '.markdown']);
 

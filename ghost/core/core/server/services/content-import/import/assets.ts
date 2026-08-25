@@ -1,9 +1,8 @@
 import type { PostImportRow } from './row';
-
-const {
+import {
   createContentFileHandlers,
   createContentFileImporters,
-} = require('../../../data/importer/content-files');
+} from '../../../data/importer/content-files';
 
 type AssetType = 'images' | 'media' | 'files';
 
@@ -13,6 +12,12 @@ export interface PreparedAsset {
   originalPath: string;
   newPath: string;
   targetDir: string;
+}
+
+interface StoredAsset {
+  originalPath: string;
+  newPath: string;
+  stored: string;
 }
 
 interface AssetHandler {
@@ -26,7 +31,8 @@ interface AssetHandler {
 
 interface AssetImporter {
   type: AssetType;
-  doImport(files: PreparedAsset[]): Promise<unknown>;
+  doImport(files: PreparedAsset[]): Promise<StoredAsset[]>;
+  rollback(files: StoredAsset[]): Promise<void>;
   preProcess(importData: Record<string, unknown>): Record<string, unknown>;
 }
 
@@ -68,6 +74,24 @@ export class PreparedAssetBatch implements ImportAssetBatch {
     );
     const failure = results.find((result) => result.status === 'rejected');
     if (failure) {
+      const rollbackResults = await Promise.allSettled(
+        results.flatMap((result, index) =>
+          result.status === 'fulfilled' ? [this.groups[index].importer.rollback(result.value)] : [],
+        ),
+      );
+      const rollbackFailures = rollbackResults.flatMap((result) =>
+        result.status === 'rejected' ? [result.reason] : [],
+      );
+      if (rollbackFailures.length > 0) {
+        // AggregateError is the native error for preserving storage and rollback
+        // failures; unlike GhostError it takes an iterable before its options.
+        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+        throw new AggregateError(
+          [failure.reason, ...rollbackFailures],
+          'Asset storage failed and rollback was incomplete.',
+          { cause: failure.reason },
+        );
+      }
       throw failure.reason;
     }
   }

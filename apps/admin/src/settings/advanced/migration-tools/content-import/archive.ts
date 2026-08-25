@@ -18,6 +18,12 @@ export async function inspectImportArchive(file: File): Promise<ImportArchiveCon
   const dataFiles = files.filter(isDataFile);
   const csvFiles = dataFiles.filter((entry) => extensionOf(entry.name) === 'csv');
 
+  if (files.some(isUnsupportedDataCSV)) {
+    throw new ImportArchiveError(
+      'CSV files must be at the ZIP root or inside one wrapper directory.',
+    );
+  }
+
   if (csvFiles.length === 0) {
     return { type: 'legacy' };
   }
@@ -78,6 +84,28 @@ function isDataFile(entry: JSZip.JSZipObject): boolean {
   }
 
   return parts.length === 2;
+}
+
+function isUnsupportedDataCSV(entry: JSZip.JSZipObject): boolean {
+  if (entry.dir || extensionOf(entry.name) !== 'csv') {
+    return false;
+  }
+
+  const parts = entry.name.split('/').filter(Boolean);
+  if (parts.length === 0 || isMetadata(parts) || isCSVAttachment(parts)) {
+    return false;
+  }
+
+  return !isDataFile(entry);
+}
+
+function isCSVAttachment(parts: string[]): boolean {
+  const assetParts = ['content', 'files'].includes(parts[0]) ? [...parts] : parts.slice(1);
+  if (assetParts[0] === 'content') {
+    assetParts.shift();
+  }
+
+  return assetParts.length > 1 && assetParts[0] === 'files';
 }
 
 function extensionOf(fileName: string): string {
