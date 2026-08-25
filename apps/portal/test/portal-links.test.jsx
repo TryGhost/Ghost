@@ -7,6 +7,10 @@ import {
 import { appRender, fireEvent, waitFor, within } from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 import { toDateValue } from '../src/utils/date-time';
+import {
+  GIFT_FORM_STATE_KEY,
+  createGiftFormState,
+} from '../src/components/pages/beta-gift/form-state';
 
 const defaultGiftResponse = {
   gifts: [
@@ -98,6 +102,7 @@ const setup = async ({
 
 describe('Portal Data links:', () => {
   beforeEach(() => {
+    window.sessionStorage.clear();
     // Mock global fetch
     vi.spyOn(window, 'fetch').mockImplementation((url) => {
       if (url.includes('send-magic-link')) {
@@ -467,6 +472,53 @@ describe('Portal Data links:', () => {
       ).toBeInTheDocument();
     });
 
+    test('opens a completed personalized gift at the delivery step', async () => {
+      const site = {
+        ...FixtureSite.singleTier.basic,
+        labs: { giftSubCustomization: true },
+      };
+      const productId = site.products.find((product) => product.type === 'paid').id;
+      const draft = createGiftFormState({ buyerName: 'Jamie' });
+      draft.plan.selectedDuration = 1;
+      draft.plan.selectedProductId = productId;
+      draft.plan.completed = true;
+      draft.delivery.emailDraft.recipientEmail = 'recipient@example.com';
+      draft.delivery.emailDraft.recipientName = 'Taylor';
+      draft.delivery.emailDraft.message = 'Enjoy!';
+      window.sessionStorage.setItem(GIFT_FORM_STATE_KEY, JSON.stringify(draft));
+      window.location.hash = '#/portal/gift/delivery';
+
+      let { popupFrame, ...utils } = await setup({ site, showPopup: false });
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      const popupDocument = popupFrame.contentDocument;
+
+      expect(within(popupDocument).getByLabelText("Recipient's email")).toHaveValue(
+        'recipient@example.com',
+      );
+      expect(within(popupDocument).getByLabelText("Recipient's name")).toHaveValue('Taylor');
+      expect(within(popupDocument).getByLabelText('Optional message')).toHaveValue('Enjoy!');
+    });
+
+    test('clears a personalized gift draft when Escape closes Portal', async () => {
+      window.location.hash = '#/portal/gift';
+      const site = {
+        ...FixtureSite.singleTier.basic,
+        labs: { giftSubCustomization: true },
+      };
+      let { popupFrame, ...utils } = await setup({ site, showPopup: false });
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      const popupDocument = popupFrame.contentDocument;
+      fireEvent.change(within(popupDocument).getByLabelText('Your name'), {
+        target: { value: 'Jamie' },
+      });
+      expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).not.toBeNull();
+
+      fireEvent.keyUp(popupDocument.body, { key: 'Escape' });
+
+      await waitFor(() => expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument());
+      expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBeNull();
+    });
+
     test('does not open when Stripe is disconnected', async () => {
       window.location.hash = '#/portal/gift';
 
@@ -625,6 +677,7 @@ describe('Portal Data links:', () => {
       window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email`;
       window.location.hash = '';
       window.location.pathname = '/';
+      window.sessionStorage.setItem(GIFT_FORM_STATE_KEY, 'saved-draft');
 
       let { popupFrame, triggerButtonFrame, ...utils } = await setup({
         site,
@@ -644,6 +697,7 @@ describe('Portal Data links:', () => {
 
       const duration = within(popupFrame.contentDocument).queryByText('1 year');
       expect(duration).toBeInTheDocument();
+      expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBeNull();
     });
 
     test('opens gift success page with scheduled delivery wording for a future date', async () => {
@@ -696,6 +750,7 @@ describe('Portal Data links:', () => {
       window.location.search = '?stripe=gift-purchase-success';
       window.location.hash = '';
       window.location.pathname = '/';
+      window.sessionStorage.setItem(GIFT_FORM_STATE_KEY, 'saved-draft');
 
       let { popupFrame, triggerButtonFrame } = await setup({
         site: FixtureSite.singleTier.basic,
@@ -704,6 +759,7 @@ describe('Portal Data links:', () => {
 
       expect(triggerButtonFrame).toBeInTheDocument();
       expect(popupFrame).not.toBeInTheDocument();
+      expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBe('saved-draft');
     });
   });
 

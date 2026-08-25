@@ -294,6 +294,7 @@ describe('Portal API gift checkout', () => {
       type: 'gift',
       tierId: 'tier_123',
       duration: 3,
+      cancelUrl: 'https://example.com/#/portal/gift/delivery',
     });
     expect(body).not.toHaveProperty('cadence');
   });

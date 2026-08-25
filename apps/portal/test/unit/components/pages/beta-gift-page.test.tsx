@@ -1,5 +1,9 @@
-import { fireEvent, render } from '../../../utils/test-utils';
+import { fireEvent, render, waitFor } from '../../../utils/test-utils';
 import BetaGiftPage from '../../../../src/components/pages/beta-gift-page';
+import {
+  GIFT_FORM_STATE_KEY,
+  createGiftFormState,
+} from '../../../../src/components/pages/beta-gift/form-state';
 import {
   getPriceData,
   getProductData,
@@ -38,6 +42,11 @@ function setup(site: SiteData, overrideContext: Record<string, unknown> = {}) {
 }
 
 describe('BetaGiftPage', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.history.replaceState(null, '', '/');
+  });
+
   test('preserves focus on the checkout action when moving to delivery', () => {
     const site = buildSite({ labs: { giftSubCustomization: true } });
     const { getByLabelText, getByRole } = setup(site);
@@ -68,6 +77,164 @@ describe('BetaGiftPage', () => {
     expect(container.querySelector('.gh-portal-gift-email-lede')).toContainHTML(
       `<strong>${durationLabel}</strong>`,
     );
+  });
+
+  test('returns an incomplete direct delivery route to the plan step', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { getByRole, queryByLabelText } = setup(site, {
+      pageData: { giftStep: 'delivery' },
+    });
+
+    expect(getByRole('heading', { name: 'Gift a membership' })).toBeInTheDocument();
+    expect(queryByLabelText("Recipient's email")).not.toBeInTheDocument();
+    expect(window.location.hash).toBe('#/portal/gift');
+  });
+
+  test('creates a plan history entry before navigating an internal flow to delivery', async () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    window.history.pushState(null, '', '#/portal/signup');
+    const { getByLabelText, getByRole } = setup(site, { lastPage: 'signup' });
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    expect(window.location.hash).toBe('#/portal/gift/delivery');
+
+    window.history.back();
+
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/gift'));
+
+    window.history.back();
+
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/signup'));
+  });
+
+  test('preserves the original fragment when navigating through the gift form', async () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    window.history.pushState(null, '', '/post#comments');
+    const { getByLabelText, getByRole } = setup(site);
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    expect(window.location.hash).toBe('#/portal/gift/delivery');
+
+    window.history.back();
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/gift'));
+
+    window.history.back();
+    await waitFor(() => expect(window.location.hash).toBe('#comments'));
+  });
+
+  test('restores the internal entry route when leaving the plan', async () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    window.history.pushState(null, '', '#/portal/signup');
+    const { getByLabelText, getByRole, mockDoActionFn } = setup(site, { lastPage: 'signup' });
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.click(getByRole('button', { name: /Back/ }));
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/gift'));
+    fireEvent.click(getByRole('button', { name: /Back/ }));
+
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/signup'));
+    expect(mockDoActionFn).toHaveBeenCalledWith('back');
+
+    window.history.back();
+    await waitFor(() => expect(window.location.hash).toBe(''));
+  });
+
+  test('restores the Account Plans route when leaving the plan', async () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    window.history.pushState(null, '', '#/portal/account/plans');
+    const { getByLabelText, getByRole, mockDoActionFn } = setup(site, {
+      lastPage: 'accountPlan',
+    });
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.click(getByRole('button', { name: /Back/ }));
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/gift'));
+    fireEvent.click(getByRole('button', { name: /Back/ }));
+
+    await waitFor(() => expect(window.location.hash).toBe('#/portal/account/plans'));
+    expect(mockDoActionFn).toHaveBeenCalledWith('back');
+  });
+
+  test('dispatches the shared close action when the form is closed', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { getByLabelText, getByRole, mockDoActionFn } = setup(site);
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).not.toBeNull();
+
+    fireEvent.click(getByRole('button', { name: 'Close popup' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
+  });
+
+  test('keeps the form usable when session storage is unavailable', () => {
+    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('Storage disabled');
+    });
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('Storage disabled');
+    });
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+
+    const { getByLabelText } = setup(site);
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+
+    expect(getByLabelText('Your name')).toHaveValue('Jamie');
+    getItemSpy.mockRestore();
+    setItemSpy.mockRestore();
+  });
+
+  test('restores delivery details after the page remounts', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const firstRender = setup(site);
+
+    fireEvent.click(firstRender.getByRole('radio', { name: '3 months' }));
+    fireEvent.change(firstRender.getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(firstRender.getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.change(firstRender.getByLabelText("Recipient's name"), {
+      target: { value: 'Taylor' },
+    });
+    fireEvent.change(firstRender.getByLabelText("Recipient's email"), {
+      target: { value: 'recipient@example.com' },
+    });
+    fireEvent.change(firstRender.getByLabelText('Optional message'), {
+      target: { value: 'Enjoy!' },
+    });
+    firstRender.unmount();
+
+    const restoredRender = setup(site, { pageData: { giftStep: 'delivery' } });
+
+    expect(restoredRender.container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent(
+      'Jamie has gifted you a 3-month Premium membership to The Blueprint',
+    );
+    expect(restoredRender.getByLabelText("Recipient's name")).toHaveValue('Taylor');
+    expect(restoredRender.getByLabelText("Recipient's email")).toHaveValue('recipient@example.com');
+    expect(restoredRender.getByLabelText('Optional message')).toHaveValue('Enjoy!');
+  });
+
+  test('returns an expired signed-in draft to the visible buyer email field', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const productId = site.products[0].id;
+    const draft = createGiftFormState({ buyerName: 'Jamie' });
+    draft.plan.selectedDuration = 1;
+    draft.plan.selectedProductId = productId;
+    draft.plan.completed = true;
+    draft.delivery.method = 'link';
+    window.sessionStorage.setItem(GIFT_FORM_STATE_KEY, JSON.stringify(draft));
+
+    const { getByLabelText, getByRole, getByText } = setup(site, {
+      member: null,
+      pageData: { giftStep: 'delivery' },
+    });
+
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(getByLabelText('Your email')).toBeInTheDocument();
+    expect(getByText('Enter your email address')).toBeInTheDocument();
   });
 
   test('offers the full fixed-duration catalogue and updates the price and request', () => {

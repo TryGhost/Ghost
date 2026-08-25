@@ -728,7 +728,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       const cancelUrlObj = window.location.href.startsWith(siteUrlObj.href)
         ? new URL(window.location.href)
         : new URL(siteUrl);
-      cancelUrlObj.hash = '#/portal/gift';
+      cancelUrlObj.hash = duration === undefined ? '#/portal/gift' : '#/portal/gift/delivery';
 
       const body = {
         identity,
