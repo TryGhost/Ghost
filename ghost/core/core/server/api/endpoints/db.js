@@ -125,7 +125,7 @@ const controller = {
       },
     },
     async query(frame) {
-      return mediaInliner.api.startMediaInliner(frame.data.domains);
+      return mediaInliner.service.startMediaInliner(frame.data.domains);
     },
   },
 
