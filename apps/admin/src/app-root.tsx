@@ -10,17 +10,12 @@ import App from './app.tsx';
 import { routes } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
-import { fetchKoenigLexical } from './utils/fetch-koenig-lexical';
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
 
   return (
-    <ShadeApp
-      className="shade-admin"
-      darkMode={resolvedTheme === 'dark'}
-      fetchKoenigLexical={fetchKoenigLexical}
-    >
+    <ShadeApp className="shade-admin" darkMode={resolvedTheme === 'dark'}>
       <App />
     </ShadeApp>
   );

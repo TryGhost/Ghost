@@ -17,7 +17,7 @@ import {
 import { STATS_DEFAULT_SOURCE_ICON_URL } from '@/shared/analytics/constants';
 import { createFilter } from '@tryghost/shade/patterns';
 import { getScrollParent } from '@tryghost/shade/utils';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from '@/shared/analytics/audience';
 import { ANALYTICS_FILTER_FIELDS, useFilterParams } from '@/shared/analytics/use-filter-params';
 import { useAnalytics } from '@/analytics/providers/analytics-context';

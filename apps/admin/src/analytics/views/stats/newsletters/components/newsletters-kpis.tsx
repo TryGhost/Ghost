@@ -22,11 +22,11 @@ import {
 import {
   LucideIcon,
   Recharts,
+  calculateYAxisWidth,
   formatDisplayDate,
   formatNumber,
   formatPercentage,
 } from '@tryghost/shade/utils';
-import { calculateYAxisWidth } from '@tryghost/shade/app';
 import {
   getEffectiveChartRange,
   getPeriodText,

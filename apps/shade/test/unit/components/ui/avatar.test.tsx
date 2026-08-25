@@ -52,6 +52,27 @@ describe('Avatar Components', () => {
     );
   });
 
+  it('renders the initials prop in the default fallback', () => {
+    render(<Avatar data-testid="avatar" initials="JD" />);
+    const avatar = screen.getByTestId('avatar');
+
+    assert.equal(avatar.textContent, 'JD', 'Should render the initials');
+    const fallback = avatar.querySelector('span');
+    assert.ok(fallback, 'Fallback should be rendered');
+    assert.ok(
+      fallback.getAttribute('style')?.includes('background-color'),
+      'Initials fallback should have a deterministic background color',
+    );
+  });
+
+  it('renders a user icon fallback when no initials are given', () => {
+    render(<Avatar data-testid="avatar" />);
+    const avatar = screen.getByTestId('avatar');
+
+    assert.equal(avatar.textContent, '', 'Should not render any text');
+    assert.ok(avatar.querySelector('svg'), 'Should render the user icon');
+  });
+
   it('verifies Avatar component can accept children', () => {
     render(
       <Avatar data-testid="avatar">
@@ -91,5 +112,15 @@ describe('Avatar Components', () => {
 
     // Just verify that the component renders without crashing
     assert.ok(container, 'Component renders without crashing');
+  });
+
+  it('seeds the fallback color from colorSeed when provided, else the initials', () => {
+    const { rerender, container } = render(<Avatar initials="JD" />);
+    const seededByInitials = container.querySelector('[style]')?.getAttribute('style');
+    rerender(<Avatar colorSeed="Jane Doe" initials="JD" />);
+    const seededByName = container.querySelector('[style]')?.getAttribute('style');
+    expect(seededByInitials).toBeTruthy();
+    expect(seededByName).toBeTruthy();
+    expect(seededByName).not.toBe(seededByInitials);
   });
 });

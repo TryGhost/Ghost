@@ -19,8 +19,7 @@ import {
 } from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { centsToDollars } from '@tryghost/shade/app';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import {
   usePaidMembersEnabled,
   useWebAnalyticsEnabled,
