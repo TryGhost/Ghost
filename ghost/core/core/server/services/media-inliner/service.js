@@ -1,4 +1,67 @@
+const errors = require('@tryghost/errors');
+
+class MediaInlinerService {
+  #inliner;
+  #jobsService;
+  #logging;
+  #debug;
+
+  constructor({ inliner, jobsService, logging, debug }) {
+    this.#inliner = inliner;
+    this.#jobsService = jobsService;
+    this.#logging = logging;
+    this.#debug = debug;
+  }
+
+  async inline(domains) {
+    return this.#inliner.inline(domains);
+  }
+
+  async startMediaInliner(domains) {
+    if (!domains || !domains.length) {
+      // default domains to inline from if none are provided
+      domains = ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'];
+    }
+
+    this.#debug('[Inliner] Starting media inlining job for domains: ', domains);
+
+    // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
+    //        limited to migrational, so there is no expectations for site's availability etc.
+    this.#logging.info('[Background Job] external-media-inliner queued');
+    await this.#jobsService.addJob({
+      name: 'external-media-inliner',
+      job: async (data) => {
+        const startedAt = Date.now();
+        this.#logging.info('[Background Job] external-media-inliner started');
+        try {
+          const result = await this.inline(data.domains);
+          this.#logging.info(
+            `[Background Job] external-media-inliner completed in ${Date.now() - startedAt}ms`,
+          );
+          return result;
+        } catch (err) {
+          this.#logging.error(
+            err,
+            `[Background Job] external-media-inliner failed after ${Date.now() - startedAt}ms`,
+          );
+          throw err;
+        }
+      },
+      data: { domains },
+      offloaded: false,
+    });
+
+    return {
+      status: 'success',
+    };
+  }
+}
+
+let instance;
+
 module.exports = {
+  MediaInlinerService,
+
   async init() {
     const debug = require('@tryghost/debug')('mediaInliner');
     const MediaInliner = require('./external-media-inliner');
@@ -31,45 +94,24 @@ module.exports = {
       },
     });
 
+    instance = new MediaInlinerService({
+      inliner: mediaInliner,
+      jobsService,
+      logging,
+      debug,
+    });
+
     this.api = {
-      startMediaInliner: async (domains) => {
-        if (!domains || !domains.length) {
-          // default domains to inline from if none are provided
-          domains = ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'];
-        }
-
-        debug('[Inliner] Starting media inlining job for domains: ', domains);
-
-        // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
-        //        limited to migrational, so there is no expectations for site's availability etc.
-        logging.info('[Background Job] external-media-inliner queued');
-        await jobsService.addJob({
-          name: 'external-media-inliner',
-          job: async (data) => {
-            const startedAt = Date.now();
-            logging.info('[Background Job] external-media-inliner started');
-            try {
-              const result = await mediaInliner.inline(data.domains);
-              logging.info(
-                `[Background Job] external-media-inliner completed in ${Date.now() - startedAt}ms`,
-              );
-              return result;
-            } catch (err) {
-              logging.error(
-                err,
-                `[Background Job] external-media-inliner failed after ${Date.now() - startedAt}ms`,
-              );
-              throw err;
-            }
-          },
-          data: { domains },
-          offloaded: false,
-        });
-
-        return {
-          status: 'success',
-        };
-      },
+      startMediaInliner: (domains) => instance.startMediaInliner(domains),
     };
+  },
+
+  getInstance() {
+    if (!instance) {
+      throw new errors.IncorrectUsageError({
+        message: 'Media inliner service used before init(). Call init() from boot first.',
+      });
+    }
+    return instance;
   },
 };
