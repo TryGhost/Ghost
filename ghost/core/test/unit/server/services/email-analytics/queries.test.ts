@@ -214,8 +214,8 @@ describe('Email analytics queries', function () {
   describe('getLastJobRunTimestamp', function () {
     it('prefers finished timestamp over started timestamp', async function () {
       await insertJob({
-        started_at: '2026-08-11T10:00:00.000Z',
-        finished_at: '2026-08-11T11:00:00.000Z',
+        started_at: new Date('2026-08-11T10:00:00.000Z'),
+        finished_at: new Date('2026-08-11T11:00:00.000Z'),
       });
 
       const result = await queries.getLastJobRunTimestamp('email-analytics-scheduled');
@@ -225,7 +225,7 @@ describe('Email analytics queries', function () {
     });
 
     it('falls back to started timestamp', async function () {
-      await insertJob({ started_at: '2026-08-11T10:00:00.000Z' });
+      await insertJob({ started_at: new Date('2026-08-11T10:00:00.000Z') });
 
       const result = await queries.getLastJobRunTimestamp('email-analytics-scheduled');
 
