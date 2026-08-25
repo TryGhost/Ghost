@@ -39,6 +39,6 @@ const QueryParameterPolicySchema = z.object({
 
 type QueryParameterPolicy = z.infer<typeof QueryParameterPolicySchema>;
 
-export function validateQueryParameterPolicy(value: unknown): QueryParameterPolicy {
+export function parseQueryParameterPolicy(value: unknown): QueryParameterPolicy {
   return QueryParameterPolicySchema.parse(value);
 }

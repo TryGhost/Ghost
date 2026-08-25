@@ -1,4 +1,4 @@
 import manifest from './policy.json';
-import { validateQueryParameterPolicy } from './schema';
+import { parseQueryParameterPolicy } from './schema';
 
-export const queryParameterPolicy = validateQueryParameterPolicy(manifest);
+export const queryParameterPolicy = parseQueryParameterPolicy(manifest);

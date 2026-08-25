@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { validateQueryParameterPolicy } from '../core/server/web/query-parameter-policy/schema';
+import { parseQueryParameterPolicy } from '../core/server/web/query-parameter-policy/schema';
 
 const POLICY_PATH = path.resolve(
   __dirname,
@@ -24,7 +24,7 @@ async function main() {
   }
 
   const manifest = JSON.parse(await readFile(POLICY_PATH, 'utf8'));
-  const policy = validateQueryParameterPolicy(manifest);
+  const policy = parseQueryParameterPolicy(manifest);
   const outputPath = path.resolve(values.output);
 
   await mkdir(path.dirname(outputPath), { recursive: true });

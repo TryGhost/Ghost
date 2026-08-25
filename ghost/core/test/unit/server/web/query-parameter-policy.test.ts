@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { queryParameterPolicy } from '../../../../core/server/web/query-parameter-policy';
-import { validateQueryParameterPolicy } from '../../../../core/server/web/query-parameter-policy/schema';
+import { parseQueryParameterPolicy } from '../../../../core/server/web/query-parameter-policy/schema';
 
 const validPolicy = () => ({
   schemaVersion: 1,
@@ -17,7 +17,7 @@ describe('Query parameter policy', function () {
   });
 
   it('returns a normalized policy', function () {
-    const policy = validateQueryParameterPolicy({
+    const policy = parseQueryParameterPolicy({
       ...validPolicy(),
       ignored: true,
       public: [{ name: 'gift', reason: 'Gift-link unlock token', ignored: true }],
@@ -61,12 +61,12 @@ describe('Query parameter policy', function () {
       /Duplicate parameter name.*filter/,
     ],
   ])('rejects %s', function (_description, policy, error) {
-    assert.throws(() => validateQueryParameterPolicy(policy), error);
+    assert.throws(() => parseQueryParameterPolicy(policy), error);
   });
 
   it('allows the same name in both lists', function () {
     const sharedEntry = { name: 'filter', reason: 'Filters resources' };
-    const policy = validateQueryParameterPolicy({
+    const policy = parseQueryParameterPolicy({
       schemaVersion: 1,
       public: [sharedEntry],
       contentApi: [sharedEntry],
