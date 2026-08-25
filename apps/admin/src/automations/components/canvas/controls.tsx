@@ -7,7 +7,26 @@ import {CANVAS_ZOOM_CONFIG} from './use-canvas-viewport';
 
 const VIEWPORT_ANIMATION_DURATION = 180;
 
-export const AutomationCanvasControls: React.FC = () => {
+interface AutomationCanvasControlsProps {
+    /**
+     * Where the control sits in the canvas, as an inset from the bottom-left
+     * corner: {bottom, left} in px.
+     *
+     * The component used to decide this for itself, and nothing outside it could
+     * change its mind. React Flow gives every panel `margin: 15px` plus corner
+     * offsets on two-class selectors (`.react-flow__panel.bottom`), so a caller's
+     * Tailwind class loses on specificity, and the inline style this used to carry
+     * beat everything regardless. Between them the control was fixed at 39px from
+     * each edge with no way to move it — which meant it could only ever live in one
+     * canvas, and a second one wanting it elsewhere would have to fork it.
+     *
+     * Both the margin and the offsets are now zeroed here, so whatever a canvas
+     * passes IS the true inset. Nothing is assumed about the corner.
+     */
+    style?: React.CSSProperties;
+}
+
+export const AutomationCanvasControls: React.FC<AutomationCanvasControlsProps> = ({style}) => {
     const [open, setOpen] = useState(false);
     const {fitView, zoomIn, zoomOut, zoomTo} = useReactFlow();
     const {zoom} = useViewport();
@@ -31,7 +50,7 @@ export const AutomationCanvasControls: React.FC = () => {
             showFitView={false}
             showInteractive={false}
             showZoom={false}
-            style={{bottom: 24, left: 24}}
+            style={{margin: 0, bottom: 0, left: 0, ...style}}
         >
             <Button
                 aria-label='Zoom out'
