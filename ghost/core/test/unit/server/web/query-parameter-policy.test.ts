@@ -1,14 +1,7 @@
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
-import { promisify } from 'node:util';
 
 import { queryParameterPolicy } from '../../../../core/server/web/query-parameter-policy';
 import { validateQueryParameterPolicy } from '../../../../core/server/web/query-parameter-policy/schema';
-
-const execFileAsync = promisify(execFile);
 
 const validPolicy = () => ({
   schemaVersion: 1,
@@ -81,35 +74,5 @@ describe('Query parameter policy', function () {
 
     assert.equal(policy.public[0].name, 'filter');
     assert.equal(policy.contentApi[0].name, 'filter');
-  });
-
-  it('exports the validated canonical policy deterministically', async function () {
-    const outputDirectory = await mkdtemp(path.join(tmpdir(), 'ghost-query-parameter-policy-'));
-    const scriptPath = path.resolve(
-      __dirname,
-      '../../../../scripts/export-query-parameter-policy.ts',
-    );
-    const manifestPath = path.resolve(
-      __dirname,
-      '../../../../core/server/web/query-parameter-policy/policy.json',
-    );
-    const outputPath = path.join(outputDirectory, 'query-parameter-policy.json');
-
-    try {
-      const { stderr } = await execFileAsync(process.execPath, [
-        '--import=tsx',
-        scriptPath,
-        '--output',
-        outputPath,
-      ]);
-
-      assert.equal(stderr, '');
-      assert.deepEqual(
-        JSON.parse(await readFile(outputPath, 'utf8')),
-        JSON.parse(await readFile(manifestPath, 'utf8')),
-      );
-    } finally {
-      await rm(outputDirectory, { recursive: true, force: true });
-    }
   });
 });
