@@ -25,11 +25,15 @@ Defaults target **Base mainnet** (`eip155:8453`) with real USDC settlement via t
 
 Supported values are validated at boot:
 
+- `enabled`: defaults to `true` — the x402 rail rides along whenever machine payments is enabled. Set to `false` to keep the x402 rail off (and its `@x402/*` modules out of the process) while MPP stays on.
 - `network`: `eip155:8453` (Base mainnet) or `eip155:84532` (Base Sepolia)
 - `stripeNetwork`: `base`
 - `facilitatorUrl`: HTTPS URL; mainnet cannot use the x402.org testnet facilitator
 
-Invalid x402 config disables the rail at boot (MPP continues to work).
+The `@x402/*` runtime modules load lazily on the first real x402 challenge, not
+at boot — so a site that never receives an x402 payment never pays the import
+cost, and toggling machine payments on at runtime needs no restart. Invalid x402
+config disables the rail at boot (MPP continues to work).
 
 For local development against the x402.org testnet facilitator, override in `config.local.json`:
 

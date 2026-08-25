@@ -208,7 +208,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
     );
   });
 
-  it('defaults x402 enabled to false when omitted', function () {
+  it('defaults x402 enabled to true so it rides along with machine payments', function () {
     assert.deepEqual(
       parseX402Config({
         network: 'eip155:8453',
@@ -216,7 +216,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
         facilitatorUrl: 'https://facilitator.xpay.sh',
       }),
       {
-        enabled: false,
+        enabled: true,
         network: 'eip155:8453',
         stripeNetwork: 'base',
         facilitatorUrl: 'https://facilitator.xpay.sh',
@@ -357,7 +357,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       );
     });
 
-    it('initializes runtime modules and facilitator at boot', async function () {
+    it('defers runtime module loading until the first challenge, then caches it', async function () {
       let runtimeLoads = 0;
       const adapter = createX402Adapter({
         runtimeFactory: () => {
@@ -368,9 +368,15 @@ describe('Unit: server/services/machine-payments/adapters', function () {
 
       assert.equal(await adapter.init(), true);
       assert.equal(adapter.isReady, true);
-      assert.equal(runtimeLoads, 1);
+      assert.equal(runtimeLoads, 0);
 
       await adapter.challenge(new Request('http://example.com/a.md'), terms);
+      assert.equal(runtimeLoads, 1);
+
+      await adapter.challenge(new Request('http://example.com/b.md'), {
+        ...terms,
+        url: 'http://example.com/b.md',
+      });
       assert.equal(runtimeLoads, 1);
     });
 
