@@ -1,7 +1,7 @@
 {
   "name": "@ghost-internal/i18n-review",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
   "description": "Internal CI tool that posts an advisory draft review on Ghost translation PRs.",
   "type": "module",
   "main": "index.js",

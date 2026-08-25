@@ -1,4 +1,4 @@
-import {cn} from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 /**
  * Shared visual recipe for input-like surfaces (Input, Textarea, InputGroup, Select trigger).
@@ -33,32 +33,32 @@ import {cn} from '@/lib/utils';
  *   )} />
  */
 export const inputSurfaceClasses = {
-    base: 'rounded-md border border-control-border bg-control-surface transition-colors',
-    focusSelf:
-        'focus-visible:outline-hidden focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
-    focusWithin:
-        'has-[:focus-visible]:outline-hidden has-[:focus-visible]:border-focus-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring/25',
-    invalidSelf:
-        'aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40',
-    invalidWithin:
-        'has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40',
-    disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50',
-    disabledFieldSelf:
-        'disabled:bg-control-disabled-surface disabled:text-muted-foreground disabled:opacity-100 disabled:hover:bg-control-disabled-surface'
+  base: 'rounded-md border border-control-border bg-control-surface transition-colors',
+  focusSelf:
+    'focus-visible:outline-hidden focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
+  focusWithin:
+    'has-[:focus-visible]:outline-hidden has-[:focus-visible]:border-focus-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring/25',
+  invalidSelf:
+    'aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40',
+  invalidWithin:
+    'has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40',
+  disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50',
+  disabledFieldSelf:
+    'disabled:bg-control-disabled-surface disabled:text-muted-foreground disabled:opacity-100 disabled:hover:bg-control-disabled-surface',
 } as const;
 
 export function inputSurface(mode: 'self' | 'within' = 'self') {
-    if (mode === 'self') {
-        return cn(
-            inputSurfaceClasses.base,
-            inputSurfaceClasses.focusSelf,
-            inputSurfaceClasses.invalidSelf,
-            inputSurfaceClasses.disabledSelf
-        );
-    }
+  if (mode === 'self') {
     return cn(
-        inputSurfaceClasses.base,
-        inputSurfaceClasses.focusWithin,
-        inputSurfaceClasses.invalidWithin
+      inputSurfaceClasses.base,
+      inputSurfaceClasses.focusSelf,
+      inputSurfaceClasses.invalidSelf,
+      inputSurfaceClasses.disabledSelf,
     );
+  }
+  return cn(
+    inputSurfaceClasses.base,
+    inputSurfaceClasses.focusWithin,
+    inputSurfaceClasses.invalidWithin,
+  );
 }

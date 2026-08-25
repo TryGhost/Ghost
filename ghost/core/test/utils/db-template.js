@@ -9,7 +9,10 @@ const db = require('../../core/server/data/db');
 const schemaModule = require('../../core/server/data/schema');
 const schemaTables = Object.keys(schemaModule.tables);
 const schemaViews = schemaModule.views || {};
-const {deriveMySQLTemplateDatabase, deriveSQLiteTemplateFilename} = require('./db-template-paths');
+const {
+  deriveMySQLTemplateDatabase,
+  deriveSQLiteTemplateFilename,
+} = require('./db-template-paths');
 
 // A migrated + seeded database is expensive to build (full knex-migrator init:
 // create every table, record all ~120 versioned migrations as applied, and
@@ -46,13 +49,14 @@ const {deriveMySQLTemplateDatabase, deriveSQLiteTemplateFilename} = require('./d
 const TEMPLATE_ENV_VAR = 'GHOST_TEST_DB_TEMPLATE_READY';
 
 const getResetTables = () => {
-    return schemaTables.concat(['migrations']);
+  return schemaTables.concat(['migrations']);
 };
 
 // Client detection from config (NOT db.knex) for the build/teardown paths, which
 // run in globalSetup where touching db.knex would bind Ghost's singleton
 // connection to a template location.
-const configuredClientIsSQLite = () => ['sqlite3', 'better-sqlite3'].includes(config.get('database:client'));
+const configuredClientIsSQLite = () =>
+  ['sqlite3', 'better-sqlite3'].includes(config.get('database:client'));
 
 /**
  * Whether the shared template has been built for this run (published by
@@ -60,7 +64,7 @@ const configuredClientIsSQLite = () => ['sqlite3', 'better-sqlite3'].includes(co
  * @returns {boolean}
  */
 const hasTemplate = () => {
-    return process.env[TEMPLATE_ENV_VAR] === '1';
+  return process.env[TEMPLATE_ENV_VAR] === '1';
 };
 
 /**
@@ -71,7 +75,7 @@ const hasTemplate = () => {
  * @returns {string}
  */
 const getForkTemplateDatabase = () => {
-    return deriveMySQLTemplateDatabase(config.get('database:connection:database'));
+  return deriveMySQLTemplateDatabase(config.get('database:connection:database'));
 };
 
 /**
@@ -82,7 +86,7 @@ const getForkTemplateDatabase = () => {
  * @returns {string}
  */
 const getForkTemplateFilename = () => {
-    return deriveSQLiteTemplateFilename(config.get('database:connection:filename'));
+  return deriveSQLiteTemplateFilename(config.get('database:connection:filename'));
 };
 
 /**
@@ -92,21 +96,21 @@ const getForkTemplateFilename = () => {
  * knex-migrator's createDatabaseIfNotExist.
  */
 const ensureForkDatabaseExists = async () => {
-    const connectionConfig = config.get('database:connection');
-    const {database, ...connectionWithoutDb} = connectionConfig;
-    const admin = knex({
-        client: config.get('database:client'),
-        connection: connectionWithoutDb
-    });
-    try {
-        // CHARACTER SET only (no explicit collation), matching knex-migrator's
-        // createDatabaseIfNotExist. Table collations come from the template via
-        // the replayed CREATE TABLE DDL, so the DB default here is not load-bearing.
-        const charset = connectionConfig.charset || 'utf8mb4';
-        await admin.raw('CREATE DATABASE IF NOT EXISTS ?? CHARACTER SET ??', [database, charset]);
-    } finally {
-        await admin.destroy();
-    }
+  const connectionConfig = config.get('database:connection');
+  const { database, ...connectionWithoutDb } = connectionConfig;
+  const admin = knex({
+    client: config.get('database:client'),
+    connection: connectionWithoutDb,
+  });
+  try {
+    // CHARACTER SET only (no explicit collation), matching knex-migrator's
+    // createDatabaseIfNotExist. Table collations come from the template via
+    // the replayed CREATE TABLE DDL, so the DB default here is not load-bearing.
+    const charset = connectionConfig.charset || 'utf8mb4';
+    await admin.raw('CREATE DATABASE IF NOT EXISTS ?? CHARACTER SET ??', [database, charset]);
+  } finally {
+    await admin.destroy();
+  }
 };
 
 /**
@@ -119,55 +123,55 @@ const ensureForkDatabaseExists = async () => {
  * @param {{mysqlBase?: string, sqliteBase?: string}} base the run's base DB identifier, un-suffixed
  */
 const buildTemplate = async (base) => {
-    if (configuredClientIsSQLite()) {
-        // Build the template .db file at a path that can't collide with any
-        // per-fork `pool_N.db` (deriveSQLiteTemplateFilename appends a `-template`
-        // marker no fork uses). Remove any stale file first — knex-migrator's
-        // reset drops tables but not the file, and a leftover from a previous run
-        // could carry the wrong schema (mirrors db-utils' sqlite reset, which
-        // fs.remove()s before init).
-        const templateFile = deriveSQLiteTemplateFilename(base.sqliteBase);
-        debug(`Building shared sqlite DB template at ${templateFile}`);
-        for (const suffix of ['', '-journal', '-wal', '-shm']) {
-            await fs.remove(`${templateFile}${suffix}`);
-        }
-
-        // Point Ghost's config at the template file so the KnexMigrator built
-        // below (which reads config.get('database') via MigratorConfig.js) targets
-        // it. We replace the whole `database:connection` node rather than the
-        // `:filename` leaf: CI exports `database__connection__filename` to the main
-        // process where globalSetup runs (see ci.yml), and nconf's env layer
-        // shadows a leaf set when an object-level get reads the node — so a leaf
-        // set would silently build the template into the base file. Setting the
-        // object node overrides the env layer. (The mysql path sets a leaf safely:
-        // its db NAME is not exported to the main process — vitest-setup-db.ts sets
-        // it per fork — so there is no env node to shadow it.)
-        config.set('database:connection', {
-            ...config.get('database:connection'),
-            filename: templateFile
-        });
-        const knexMigrator = new KnexMigrator({knexMigratorFilePath: path.join(__dirname, '../..')});
-        await knexMigrator.reset({force: true});
-        await knexMigrator.init();
-
-        process.env[TEMPLATE_ENV_VAR] = '1';
-        debug('Shared sqlite DB template ready');
-        return;
+  if (configuredClientIsSQLite()) {
+    // Build the template .db file at a path that can't collide with any
+    // per-fork `pool_N.db` (deriveSQLiteTemplateFilename appends a `-template`
+    // marker no fork uses). Remove any stale file first — knex-migrator's
+    // reset drops tables but not the file, and a leftover from a previous run
+    // could carry the wrong schema (mirrors db-utils' sqlite reset, which
+    // fs.remove()s before init).
+    const templateFile = deriveSQLiteTemplateFilename(base.sqliteBase);
+    debug(`Building shared sqlite DB template at ${templateFile}`);
+    for (const suffix of ['', '-journal', '-wal', '-shm']) {
+      await fs.remove(`${templateFile}${suffix}`);
     }
 
-    debug('Building shared DB template');
-    config.set('database:connection:database', deriveMySQLTemplateDatabase(base.mysqlBase));
-
-    // Construct after the override so MigratorConfig.js captures the template
-    // location. reset({force}) drops the template DB (DROP DATABASE, tolerating
-    // "does not exist"); init recreates, migrates, and seeds — exactly db-utils'
-    // forceReinit.
-    const knexMigrator = new KnexMigrator({knexMigratorFilePath: path.join(__dirname, '../..')});
-    await knexMigrator.reset({force: true});
+    // Point Ghost's config at the template file so the KnexMigrator built
+    // below (which reads config.get('database') via MigratorConfig.js) targets
+    // it. We replace the whole `database:connection` node rather than the
+    // `:filename` leaf: CI exports `database__connection__filename` to the main
+    // process where globalSetup runs (see ci.yml), and nconf's env layer
+    // shadows a leaf set when an object-level get reads the node — so a leaf
+    // set would silently build the template into the base file. Setting the
+    // object node overrides the env layer. (The mysql path sets a leaf safely:
+    // its db NAME is not exported to the main process — vitest-setup-db.ts sets
+    // it per fork — so there is no env node to shadow it.)
+    config.set('database:connection', {
+      ...config.get('database:connection'),
+      filename: templateFile,
+    });
+    const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
+    await knexMigrator.reset({ force: true });
     await knexMigrator.init();
 
     process.env[TEMPLATE_ENV_VAR] = '1';
-    debug('Shared DB template ready');
+    debug('Shared sqlite DB template ready');
+    return;
+  }
+
+  debug('Building shared DB template');
+  config.set('database:connection:database', deriveMySQLTemplateDatabase(base.mysqlBase));
+
+  // Construct after the override so MigratorConfig.js captures the template
+  // location. reset({force}) drops the template DB (DROP DATABASE, tolerating
+  // "does not exist"); init recreates, migrates, and seeds — exactly db-utils'
+  // forceReinit.
+  const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
+  await knexMigrator.reset({ force: true });
+  await knexMigrator.init();
+
+  process.env[TEMPLATE_ENV_VAR] = '1';
+  debug('Shared DB template ready');
 };
 
 /**
@@ -193,75 +197,81 @@ const buildTemplate = async (base) => {
  * NOT copy the template file over the connection (the previously-reverted approach).
  */
 const restoreFromTemplateSQLite = async () => {
-    const templateFile = getForkTemplateFilename();
-    debug(`Restoring fork sqlite DB ${config.get('database:connection:filename')} from template ${templateFile}`);
+  const templateFile = getForkTemplateFilename();
+  debug(
+    `Restoring fork sqlite DB ${config.get('database:connection:filename')} from template ${templateFile}`,
+  );
 
-    // ATTACH on a missing file silently creates an empty DB, which would surface
-    // later as a baffling "no such table: template.<t>" mid-restore. Fail loudly
-    // up front instead if the template (built by globalSetup) is not where the
-    // fork derived it should be — a path-derivation drift between build and restore.
-    if (!fs.existsSync(templateFile)) {
-        throw new Error(`sqlite DB template not found at ${templateFile} (built by vitest globalSetup)`);
-    }
+  // ATTACH on a missing file silently creates an empty DB, which would surface
+  // later as a baffling "no such table: template.<t>" mid-restore. Fail loudly
+  // up front instead if the template (built by globalSetup) is not where the
+  // fork derived it should be — a path-derivation drift between build and restore.
+  if (!fs.existsSync(templateFile)) {
+    throw new Error(
+      `sqlite DB template not found at ${templateFile} (built by vitest globalSetup)`,
+    );
+  }
 
-    // Pin one connection: ATTACH/DETACH and the schema replay must all run on the
-    // same connection, and it must be the live pool's so db.knex sees the result.
-    const connection = await db.knex.client.acquireConnection();
-    const run = (sql, bindings) => db.knex.raw(sql, bindings || []).connection(connection);
+  // Pin one connection: ATTACH/DETACH and the schema replay must all run on the
+  // same connection, and it must be the live pool's so db.knex sees the result.
+  const connection = await db.knex.client.acquireConnection();
+  const run = (sql, bindings) => db.knex.raw(sql, bindings || []).connection(connection);
 
+  try {
+    await run('ATTACH DATABASE ? AS template', [templateFile]);
+
+    // Every schema object with a CREATE statement, in creation order. Auto
+    // objects (sqlite_autoindex_*) have NULL sql and so are excluded — they
+    // are recreated implicitly when their table's DDL replays. sqlite_sequence
+    // carries non-null DDL but is reserved/auto-created, so skip it here; its
+    // counters are copied with the row data below.
+    const objects = (
+      await run(
+        'SELECT type, name, sql FROM template.sqlite_master WHERE sql IS NOT NULL ORDER BY rowid',
+      )
+    ).filter((object) => object.name !== 'sqlite_sequence');
+
+    // Disable FK enforcement so tables load in any order and a table's FK can
+    // reference one not yet populated. Replaying the template's exact CREATE
+    // TABLE DDL (rather than a column-only copy) preserves its foreign keys,
+    // making the restore byte-faithful to a fresh init — the same faithfulness
+    // the mysql path needs.
+    await run('PRAGMA foreign_keys = OFF');
     try {
-        await run('ATTACH DATABASE ? AS template', [templateFile]);
+      for (const object of objects) {
+        await run(object.sql);
+      }
 
-        // Every schema object with a CREATE statement, in creation order. Auto
-        // objects (sqlite_autoindex_*) have NULL sql and so are excluded — they
-        // are recreated implicitly when their table's DDL replays. sqlite_sequence
-        // carries non-null DDL but is reserved/auto-created, so skip it here; its
-        // counters are copied with the row data below.
-        const objects = (await run(
-            'SELECT type, name, sql FROM template.sqlite_master WHERE sql IS NOT NULL ORDER BY rowid'
-        )).filter(object => object.name !== 'sqlite_sequence');
+      // Copy EVERY table the template holds, derived from its sqlite_master
+      // rather than getResetTables(): that list omits knex-migrator's own
+      // `migrations_lock`, whose released-lock row (locked=0) Ghost's boot
+      // requires — an empty lock table reads as "migration in progress" and
+      // boot dies with MigrationsAreLockedError. This also picks up
+      // `sqlite_sequence` (the AUTOINCREMENT counters, auto-created with the
+      // first AUTOINCREMENT table above) so inserts continue exactly where the
+      // template left off. Using the template's own table set keeps the copy
+      // complete and faithful by construction.
+      const dataTables = (
+        await run('SELECT name FROM template.sqlite_master WHERE type = ?', ['table'])
+      ).map((row) => row.name);
 
-        // Disable FK enforcement so tables load in any order and a table's FK can
-        // reference one not yet populated. Replaying the template's exact CREATE
-        // TABLE DDL (rather than a column-only copy) preserves its foreign keys,
-        // making the restore byte-faithful to a fresh init — the same faithfulness
-        // the mysql path needs.
-        await run('PRAGMA foreign_keys = OFF');
-        try {
-            for (const object of objects) {
-                await run(object.sql);
-            }
-
-            // Copy EVERY table the template holds, derived from its sqlite_master
-            // rather than getResetTables(): that list omits knex-migrator's own
-            // `migrations_lock`, whose released-lock row (locked=0) Ghost's boot
-            // requires — an empty lock table reads as "migration in progress" and
-            // boot dies with MigrationsAreLockedError. This also picks up
-            // `sqlite_sequence` (the AUTOINCREMENT counters, auto-created with the
-            // first AUTOINCREMENT table above) so inserts continue exactly where the
-            // template left off. Using the template's own table set keeps the copy
-            // complete and faithful by construction.
-            const dataTables = (await run(
-                'SELECT name FROM template.sqlite_master WHERE type = ?', ['table']
-            )).map(row => row.name);
-
-            for (const table of dataTables) {
-                await run('DELETE FROM ??', [table]);
-                await run('INSERT INTO ?? SELECT * FROM template.??', [table, table]);
-            }
-        } finally {
-            await run('PRAGMA foreign_keys = ON');
-        }
+      for (const table of dataTables) {
+        await run('DELETE FROM ??', [table]);
+        await run('INSERT INTO ?? SELECT * FROM template.??', [table, table]);
+      }
     } finally {
-        // Always detach before releasing the connection — an error mid-restore must
-        // not return a connection still attached to the template back to the pool.
-        try {
-            await run('DETACH DATABASE template');
-        } catch (e) {
-            // nothing attached (ATTACH may have failed)
-        }
-        await db.knex.client.releaseConnection(connection);
+      await run('PRAGMA foreign_keys = ON');
     }
+  } finally {
+    // Always detach before releasing the connection — an error mid-restore must
+    // not return a connection still attached to the template back to the pool.
+    try {
+      await run('DETACH DATABASE template');
+    } catch (e) {
+      // nothing attached (ATTACH may have failed)
+    }
+    await db.knex.client.releaseConnection(connection);
+  }
 };
 
 /**
@@ -273,58 +283,61 @@ const restoreFromTemplateSQLite = async () => {
  * helper above).
  */
 const restoreFromTemplate = async () => {
-    if (configuredClientIsSQLite()) {
-        return restoreFromTemplateSQLite();
+  if (configuredClientIsSQLite()) {
+    return restoreFromTemplateSQLite();
+  }
+
+  const templateDb = getForkTemplateDatabase();
+  debug('Restoring fork DB from template');
+
+  const tables = getResetTables();
+
+  // The fork's per-process database does not exist yet on first provision (the
+  // non-template path would have it created by knex-migrator init's
+  // createDatabaseIfNotExist). db.knex is bound to it, so a query would fail
+  // with ER_BAD_DB_ERROR — create it first via a short-lived db-less connection
+  // (mirrors knex-migrator's own approach), then run the copy.
+  await ensureForkDatabaseExists();
+
+  // Fresh fork DB: create each table from the template and bulk-copy its rows.
+  // Foreign key checks are disabled so tables can be loaded in any order (and so
+  // a table's FK can reference one created later in the sequence).
+  //
+  // We replay the template's `SHOW CREATE TABLE` DDL rather than `CREATE TABLE
+  // ... LIKE`: LIKE copies columns and indexes but DROPS foreign key constraints
+  // (a documented MySQL behaviour), so a LIKE-restored fork loses all ~96 FKs a
+  // fresh knex-migrator init creates. That breaks FK-dependent tests — orphaned
+  // inserts that should 422 succeed, and `ON DELETE CASCADE` no longer prunes
+  // child rows (e.g. deleting members leaves stale members_* events behind),
+  // surfacing as extra rows in attribution / activity-feed snapshots. The DDL
+  // string is unqualified, so replaying it on the fork's connection creates the
+  // table in the fork DB; its FK REFERENCES resolve to the fork's own copies.
+  // This makes the restore byte-faithful to a fresh init.
+  await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;');
+  try {
+    for (const table of tables) {
+      const [[{ 'Create Table': createTableSql }]] = await db.knex.raw('SHOW CREATE TABLE ??.??', [
+        templateDb,
+        table,
+      ]);
+      await db.knex.schema.dropTableIfExists(table);
+      await db.knex.raw(createTableSql);
+      await db.knex.raw('INSERT INTO ?? SELECT * FROM ??.??', [table, templateDb, table]);
     }
+  } finally {
+    await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
+  }
 
-    const templateDb = getForkTemplateDatabase();
-    debug('Restoring fork DB from template');
-
-    const tables = getResetTables();
-
-    // The fork's per-process database does not exist yet on first provision (the
-    // non-template path would have it created by knex-migrator init's
-    // createDatabaseIfNotExist). db.knex is bound to it, so a query would fail
-    // with ER_BAD_DB_ERROR — create it first via a short-lived db-less connection
-    // (mirrors knex-migrator's own approach), then run the copy.
-    await ensureForkDatabaseExists();
-
-    // Fresh fork DB: create each table from the template and bulk-copy its rows.
-    // Foreign key checks are disabled so tables can be loaded in any order (and so
-    // a table's FK can reference one created later in the sequence).
-    //
-    // We replay the template's `SHOW CREATE TABLE` DDL rather than `CREATE TABLE
-    // ... LIKE`: LIKE copies columns and indexes but DROPS foreign key constraints
-    // (a documented MySQL behaviour), so a LIKE-restored fork loses all ~96 FKs a
-    // fresh knex-migrator init creates. That breaks FK-dependent tests — orphaned
-    // inserts that should 422 succeed, and `ON DELETE CASCADE` no longer prunes
-    // child rows (e.g. deleting members leaves stale members_* events behind),
-    // surfacing as extra rows in attribution / activity-feed snapshots. The DDL
-    // string is unqualified, so replaying it on the fork's connection creates the
-    // table in the fork DB; its FK REFERENCES resolve to the fork's own copies.
-    // This makes the restore byte-faithful to a fresh init.
-    await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;');
-    try {
-        for (const table of tables) {
-            const [[{'Create Table': createTableSql}]] = await db.knex.raw('SHOW CREATE TABLE ??.??', [templateDb, table]);
-            await db.knex.schema.dropTableIfExists(table);
-            await db.knex.raw(createTableSql);
-            await db.knex.raw('INSERT INTO ?? SELECT * FROM ??.??', [table, templateDb, table]);
-        }
-    } finally {
-        await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
-    }
-
-    // The table copy above only covers base tables; views are not in
-    // getResetTables (the existing snapshot path relies on init() having created
-    // them once). Recreate them here from the schema definitions, exactly as
-    // migrations/init/1-create-tables.js does — through commands.createViewOrReplace
-    // so the fork's views get the same SQL SECURITY INVOKER as a fully-migrated one
-    // (a plain knex createViewOrReplace would default to DEFINER on MySQL). (sqlite
-    // copies views as part of the sqlite_master replay above, so this is mysql-only.)
-    for (const [name, sql] of Object.entries(schemaViews)) {
-        await schemaModule.commands.createViewOrReplace(name, sql, db.knex);
-    }
+  // The table copy above only covers base tables; views are not in
+  // getResetTables (the existing snapshot path relies on init() having created
+  // them once). Recreate them here from the schema definitions, exactly as
+  // migrations/init/1-create-tables.js does — through commands.createViewOrReplace
+  // so the fork's views get the same SQL SECURITY INVOKER as a fully-migrated one
+  // (a plain knex createViewOrReplace would default to DEFINER on MySQL). (sqlite
+  // copies views as part of the sqlite_master replay above, so this is mysql-only.)
+  for (const [name, sql] of Object.entries(schemaViews)) {
+    await schemaModule.commands.createViewOrReplace(name, sql, db.knex);
+  }
 };
 
 /**
@@ -335,38 +348,38 @@ const restoreFromTemplate = async () => {
  * @param {{mysqlBase?: string, sqliteBase?: string}} base the run's base DB id
  */
 const dropTemplate = async (base) => {
-    if (configuredClientIsSQLite()) {
-        // knex-migrator's reset drops tables but not the file; delete the template
-        // file (+ sidecars) outright.
-        try {
-            const templateFile = deriveSQLiteTemplateFilename(base.sqliteBase);
-            for (const suffix of ['', '-journal', '-wal', '-shm']) {
-                await fs.remove(`${templateFile}${suffix}`);
-            }
-        } catch (err) {
-            debug(`Failed to drop sqlite template (ignored): ${err.message}`);
-        }
-        return;
-    }
+  if (configuredClientIsSQLite()) {
+    // knex-migrator's reset drops tables but not the file; delete the template
+    // file (+ sidecars) outright.
     try {
-        // Point config at the template and let knex-migrator reset({force}) drop
-        // that database — reusing the same connection path build used, so we never
-        // bind Ghost's singleton db.knex to a template.
-        config.set('database:connection:database', deriveMySQLTemplateDatabase(base.mysqlBase));
-        const knexMigrator = new KnexMigrator({knexMigratorFilePath: path.join(__dirname, '../..')});
-        await knexMigrator.reset({force: true});
+      const templateFile = deriveSQLiteTemplateFilename(base.sqliteBase);
+      for (const suffix of ['', '-journal', '-wal', '-shm']) {
+        await fs.remove(`${templateFile}${suffix}`);
+      }
     } catch (err) {
-        debug(`Failed to drop template (ignored): ${err.message}`);
+      debug(`Failed to drop sqlite template (ignored): ${err.message}`);
     }
+    return;
+  }
+  try {
+    // Point config at the template and let knex-migrator reset({force}) drop
+    // that database — reusing the same connection path build used, so we never
+    // bind Ghost's singleton db.knex to a template.
+    config.set('database:connection:database', deriveMySQLTemplateDatabase(base.mysqlBase));
+    const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
+    await knexMigrator.reset({ force: true });
+  } catch (err) {
+    debug(`Failed to drop template (ignored): ${err.message}`);
+  }
 };
 
 module.exports = {
-    TEMPLATE_ENV_VAR,
-    deriveMySQLTemplateDatabase,
-    deriveSQLiteTemplateFilename,
-    configuredClientIsSQLite,
-    hasTemplate,
-    buildTemplate,
-    restoreFromTemplate,
-    dropTemplate
+  TEMPLATE_ENV_VAR,
+  deriveMySQLTemplateDatabase,
+  deriveSQLiteTemplateFilename,
+  configuredClientIsSQLite,
+  hasTemplate,
+  buildTemplate,
+  restoreFromTemplate,
+  dropTemplate,
 };

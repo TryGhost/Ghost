@@ -1,3 +1,3 @@
-import {createKoenigVitestConfig} from '../vitest.shared';
+import { createKoenigVitestConfig } from '../vitest.shared';
 
 export default createKoenigVitestConfig();

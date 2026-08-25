@@ -3,58 +3,65 @@ const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 
 class SlackNotificationsServiceWrapper {
-    /** @type {import('./slack-notifications-service')} */
-    #api;
+  /** @type {import('./slack-notifications-service')} */
+  #api;
 
-    /**
-     *
-     * @param {object} deps
-     * @param {string} deps.siteUrl
-     * @param {boolean} deps.isEnabled
-     * @param {URL} deps.webhookUrl
-     * @param {number} deps.minThreshold
-     *
-     * @returns {import('./slack-notifications-service')}
-     */
-    static create({siteUrl, isEnabled, webhookUrl, minThreshold}) {
-        const SlackNotificationsService = require('./slack-notifications-service');
-        const SlackNotifications = require('./slack-notifications');
+  /**
+   *
+   * @param {object} deps
+   * @param {string} deps.siteUrl
+   * @param {boolean} deps.isEnabled
+   * @param {URL} deps.webhookUrl
+   * @param {number} deps.minThreshold
+   *
+   * @returns {import('./slack-notifications-service')}
+   */
+  static create({ siteUrl, isEnabled, webhookUrl, minThreshold }) {
+    const SlackNotificationsService = require('./slack-notifications-service');
+    const SlackNotifications = require('./slack-notifications');
 
-        const slackNotifications = new SlackNotifications({
-            webhookUrl,
-            siteUrl,
-            logging
-        });
+    const slackNotifications = new SlackNotifications({
+      webhookUrl,
+      siteUrl,
+      logging,
+    });
 
-        return new SlackNotificationsService({
-            DomainEvents,
-            logging,
-            config: {
-                isEnabled,
-                webhookUrl,
-                minThreshold
-            },
-            slackNotifications
-        });
+    return new SlackNotificationsService({
+      DomainEvents,
+      logging,
+      config: {
+        isEnabled,
+        webhookUrl,
+        minThreshold,
+      },
+      slackNotifications,
+    });
+  }
+
+  init() {
+    if (this.#api) {
+      // Prevent creating duplicate DomainEvents subscribers
+      return;
     }
 
-    init() {
-        if (this.#api) {
-            // Prevent creating duplicate DomainEvents subscribers
-            return;
-        }
+    const hostSettings = config.get('hostSettings');
+    const urlUtils = require('../../../shared/url-utils').default;
+    const siteUrl = urlUtils.getSiteUrl();
+    const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
+    const webhookUrl = hostSettings?.milestones?.url;
+    const minThreshold = hostSettings?.milestones?.minThreshold
+      ? parseInt(hostSettings.milestones.minThreshold)
+      : 0;
 
-        const hostSettings = config.get('hostSettings');
-        const urlUtils = require('../../../shared/url-utils').default;
-        const siteUrl = urlUtils.getSiteUrl();
-        const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
-        const webhookUrl = hostSettings?.milestones?.url;
-        const minThreshold = hostSettings?.milestones?.minThreshold ? parseInt(hostSettings.milestones.minThreshold) : 0;
+    this.#api = SlackNotificationsServiceWrapper.create({
+      siteUrl,
+      isEnabled,
+      webhookUrl,
+      minThreshold,
+    });
 
-        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl, minThreshold});
-
-        this.#api.subscribeEvents();
-    }
+    this.#api.subscribeEvents();
+  }
 }
 
 module.exports = new SlackNotificationsServiceWrapper();

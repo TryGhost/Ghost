@@ -1,6 +1,6 @@
 # How to get support for Ghost 👨‍👩‍👧‍👦
 
-For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
+For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)** 🚑.
 
 Please **_do not_** raise an issue on GitHub.
 

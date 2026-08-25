@@ -1,14 +1,17 @@
 {
   "name": "@tryghost/kg-clean-basic-html",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "description": "Sanitises and normalises the basic HTML snippets used in Ghost's editor cards",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "koenig/kg-clean-basic-html"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -20,6 +23,9 @@
       "require": "./build/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -29,25 +35,19 @@
     "lint": "eslint . --cache",
     "posttest": "pnpm lint"
   },
-  "engines": {
-    "node": "^22.13.1 || ^24.0.0"
-  },
-  "files": [
-    "build"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
+  },
+  "engines": {
+    "node": "^22.13.1 || ^24.0.0"
   }
 }

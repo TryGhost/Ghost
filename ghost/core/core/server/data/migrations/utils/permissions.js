@@ -3,11 +3,12 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
-const {createTransactionalMigration, combineTransactionalMigrations} = require('./migrations');
+const { createTransactionalMigration, combineTransactionalMigrations } = require('./migrations');
 const MIGRATION_USER = 1;
 
 const messages = {
-    permissionRoleActionError: 'Cannot {action} permission({permission}) with role({role}) - {resource} does not exist'
+  permissionRoleActionError:
+    'Cannot {action} permission({permission}) with role({role}) - {resource} does not exist',
 };
 
 /**
@@ -15,39 +16,41 @@ const messages = {
  * @param {PermissionConfig} config
  */
 async function addPermissionHelper(connection, config) {
-    const existingPermission = await connection('permissions').where({
-        name: config.name,
-        action_type: config.action,
-        object_type: config.object
-    }).first();
+  const existingPermission = await connection('permissions')
+    .where({
+      name: config.name,
+      action_type: config.action,
+      object_type: config.object,
+    })
+    .first();
 
-    if (existingPermission) {
-        logging.warn(`Permission for ${config.action}:${config.object} already added`);
-        return;
-    }
+  if (existingPermission) {
+    logging.warn(`Permission for ${config.action}:${config.object} already added`);
+    return;
+  }
 
-    logging.info(`Adding permission for ${config.action}:${config.object}`);
+  logging.info(`Adding permission for ${config.action}:${config.object}`);
 
-    const date = connection.raw('CURRENT_TIMESTAMP');
+  const date = connection.raw('CURRENT_TIMESTAMP');
 
-    const data = {
-        id: ObjectId().toHexString(),
-        name: config.name,
-        action_type: config.action,
-        object_type: config.object,
-        created_at: date,
-        updated_at: date
-    };
+  const data = {
+    id: ObjectId().toHexString(),
+    name: config.name,
+    action_type: config.action,
+    object_type: config.object,
+    created_at: date,
+    updated_at: date,
+  };
 
-    if (await connection.schema.hasColumn('permissions', 'created_by')) {
-        data.created_by = MIGRATION_USER;
-    }
+  if (await connection.schema.hasColumn('permissions', 'created_by')) {
+    data.created_by = MIGRATION_USER;
+  }
 
-    if (await connection.schema.hasColumn('permissions', 'updated_by')) {
-        data.updated_by = MIGRATION_USER;
-    }
+  if (await connection.schema.hasColumn('permissions', 'updated_by')) {
+    data.updated_by = MIGRATION_USER;
+  }
 
-    await connection('permissions').insert(data);
+  await connection('permissions').insert(data);
 }
 
 /**
@@ -55,23 +58,27 @@ async function addPermissionHelper(connection, config) {
  * @param {PermissionConfig} config
  */
 async function removePermissionHelper(connection, config) {
-    const existingPermission = await connection('permissions').where({
-        name: config.name,
-        action_type: config.action,
-        object_type: config.object
-    }).first();
+  const existingPermission = await connection('permissions')
+    .where({
+      name: config.name,
+      action_type: config.action,
+      object_type: config.object,
+    })
+    .first();
 
-    if (!existingPermission) {
-        logging.warn(`Permission for ${config.action}:${config.object} already removed`);
-        return;
-    }
+  if (!existingPermission) {
+    logging.warn(`Permission for ${config.action}:${config.object} already removed`);
+    return;
+  }
 
-    logging.info(`Removing permission for ${config.action}:${config.object}`);
+  logging.info(`Removing permission for ${config.action}:${config.object}`);
 
-    await connection('permissions').where({
-        action_type: config.action,
-        object_type: config.object
-    }).del();
+  await connection('permissions')
+    .where({
+      action_type: config.action,
+      object_type: config.object,
+    })
+    .del();
 }
 
 /**
@@ -82,14 +89,14 @@ async function removePermissionHelper(connection, config) {
  * @returns {Migration}
  */
 function addPermission(config) {
-    return createTransactionalMigration(
-        async function up(connection) {
-            await addPermissionHelper(connection, config);
-        },
-        async function down(connection) {
-            await removePermissionHelper(connection, config);
-        }
-    );
+  return createTransactionalMigration(
+    async function up(connection) {
+      await addPermissionHelper(connection, config);
+    },
+    async function down(connection) {
+      await removePermissionHelper(connection, config);
+    },
+  );
 }
 
 /**
@@ -100,14 +107,14 @@ function addPermission(config) {
  * @returns {Migration}
  */
 function removePermission(config) {
-    return createTransactionalMigration(
-        async function up(connection) {
-            await removePermissionHelper(connection, config);
-        },
-        async function down(connection) {
-            await addPermissionHelper(connection, config);
-        }
-    );
+  return createTransactionalMigration(
+    async function up(connection) {
+      await removePermissionHelper(connection, config);
+    },
+    async function down(connection) {
+      await addPermissionHelper(connection, config);
+    },
+  );
 }
 
 /**
@@ -115,52 +122,60 @@ function removePermission(config) {
  * @param {PermissionRoleConfig} config
  */
 async function addPermissionToRoleHelper(connection, config) {
-    const permission = await connection('permissions').where({
-        name: config.permission
-    }).first();
+  const permission = await connection('permissions')
+    .where({
+      name: config.permission,
+    })
+    .first();
 
-    if (!permission) {
-        throw new errors.InternalServerError({
-            message: tpl(messages.permissionRoleActionError, {
-                action: 'add',
-                permission: config.permission,
-                role: config.role,
-                resource: 'permission'
-            })
-        });
-    }
-
-    const role = await connection('roles').where({
-        name: config.role
-    }).first();
-
-    if (!role) {
-        throw new errors.InternalServerError({
-            message: tpl(messages.permissionRoleActionError, {
-                action: 'add',
-                permission: config.permission,
-                role: config.role,
-                resource: 'role'
-            })
-        });
-    }
-
-    const existingRelation = await connection('permissions_roles').where({
-        permission_id: permission.id,
-        role_id: role.id
-    }).first();
-
-    if (existingRelation) {
-        logging.warn(`Adding permission(${config.permission}) to role(${config.role}) - already exists`);
-        return;
-    }
-
-    logging.info(`Adding permission(${config.permission}) to role(${config.role})`);
-    await connection('permissions_roles').insert({
-        id: ObjectId().toHexString(),
-        permission_id: permission.id,
-        role_id: role.id
+  if (!permission) {
+    throw new errors.InternalServerError({
+      message: tpl(messages.permissionRoleActionError, {
+        action: 'add',
+        permission: config.permission,
+        role: config.role,
+        resource: 'permission',
+      }),
     });
+  }
+
+  const role = await connection('roles')
+    .where({
+      name: config.role,
+    })
+    .first();
+
+  if (!role) {
+    throw new errors.InternalServerError({
+      message: tpl(messages.permissionRoleActionError, {
+        action: 'add',
+        permission: config.permission,
+        role: config.role,
+        resource: 'role',
+      }),
+    });
+  }
+
+  const existingRelation = await connection('permissions_roles')
+    .where({
+      permission_id: permission.id,
+      role_id: role.id,
+    })
+    .first();
+
+  if (existingRelation) {
+    logging.warn(
+      `Adding permission(${config.permission}) to role(${config.role}) - already exists`,
+    );
+    return;
+  }
+
+  logging.info(`Adding permission(${config.permission}) to role(${config.role})`);
+  await connection('permissions_roles').insert({
+    id: ObjectId().toHexString(),
+    permission_id: permission.id,
+    role_id: role.id,
+  });
 }
 
 /**
@@ -168,39 +183,53 @@ async function addPermissionToRoleHelper(connection, config) {
  * @param {PermissionRoleConfig} config
  */
 async function removePermissionFromRoleHelper(connection, config) {
-    const permission = await connection('permissions').where({
-        name: config.permission
-    }).first();
+  const permission = await connection('permissions')
+    .where({
+      name: config.permission,
+    })
+    .first();
 
-    if (!permission) {
-        logging.warn(`Removing permission(${config.permission}) from role(${config.role}) - Permission not found.`);
-        return;
-    }
+  if (!permission) {
+    logging.warn(
+      `Removing permission(${config.permission}) from role(${config.role}) - Permission not found.`,
+    );
+    return;
+  }
 
-    const role = await connection('roles').where({
-        name: config.role
-    }).first();
+  const role = await connection('roles')
+    .where({
+      name: config.role,
+    })
+    .first();
 
-    if (!role) {
-        logging.warn(`Removing permission(${config.permission}) from role(${config.role}) - Role not found.`);
-        return;
-    }
+  if (!role) {
+    logging.warn(
+      `Removing permission(${config.permission}) from role(${config.role}) - Role not found.`,
+    );
+    return;
+  }
 
-    const existingRelation = await connection('permissions_roles').where({
-        permission_id: permission.id,
-        role_id: role.id
-    }).first();
+  const existingRelation = await connection('permissions_roles')
+    .where({
+      permission_id: permission.id,
+      role_id: role.id,
+    })
+    .first();
 
-    if (!existingRelation) {
-        logging.warn(`Removing permission(${config.permission}) from role(${config.role}) - already removed`);
-        return;
-    }
+  if (!existingRelation) {
+    logging.warn(
+      `Removing permission(${config.permission}) from role(${config.role}) - already removed`,
+    );
+    return;
+  }
 
-    logging.info(`Removing permission(${config.permission}) from role(${config.role})`);
-    await connection('permissions_roles').where({
-        permission_id: permission.id,
-        role_id: role.id
-    }).del();
+  logging.info(`Removing permission(${config.permission}) from role(${config.role})`);
+  await connection('permissions_roles')
+    .where({
+      permission_id: permission.id,
+      role_id: role.id,
+    })
+    .del();
 }
 
 /**
@@ -211,14 +240,14 @@ async function removePermissionFromRoleHelper(connection, config) {
  * @returns {Migration}
  */
 function addPermissionToRole(config) {
-    return createTransactionalMigration(
-        async function up(connection) {
-            await addPermissionToRoleHelper(connection, config);
-        },
-        async function down(connection) {
-            await removePermissionFromRoleHelper(connection, config);
-        }
-    );
+  return createTransactionalMigration(
+    async function up(connection) {
+      await addPermissionToRoleHelper(connection, config);
+    },
+    async function down(connection) {
+      await removePermissionFromRoleHelper(connection, config);
+    },
+  );
 }
 
 /**
@@ -229,14 +258,14 @@ function addPermissionToRole(config) {
  * @returns {Migration}
  */
 function removePermissionFromRole(config) {
-    return createTransactionalMigration(
-        async function up(connection) {
-            await removePermissionFromRoleHelper(connection, config);
-        },
-        async function down(connection) {
-            await addPermissionToRoleHelper(connection, config);
-        }
-    );
+  return createTransactionalMigration(
+    async function up(connection) {
+      await removePermissionFromRoleHelper(connection, config);
+    },
+    async function down(connection) {
+      await addPermissionToRoleHelper(connection, config);
+    },
+  );
 }
 
 /**
@@ -248,10 +277,10 @@ function removePermissionFromRole(config) {
  * @returns {Migration}
  */
 function addPermissionWithRoles(config, roles) {
-    return combineTransactionalMigrations(
-        addPermission(config),
-        ...roles.map((role => addPermissionToRole({permission: config.name, role})))
-    );
+  return combineTransactionalMigrations(
+    addPermission(config),
+    ...roles.map((role) => addPermissionToRole({ permission: config.name, role })),
+  );
 }
 
 /**
@@ -263,18 +292,18 @@ function addPermissionWithRoles(config, roles) {
  * @returns {Migration}
  */
 function createRemovePermissionMigration(config, roles) {
-    return combineTransactionalMigrations(
-        ...roles.map((role => removePermissionFromRole({permission: config.name, role}))),
-        removePermission(config)
-    );
+  return combineTransactionalMigrations(
+    ...roles.map((role) => removePermissionFromRole({ permission: config.name, role })),
+    removePermission(config),
+  );
 }
 
 module.exports = {
-    addPermission,
-    addPermissionToRole,
-    removePermissionFromRole,
-    addPermissionWithRoles,
-    createRemovePermissionMigration
+  addPermission,
+  addPermissionToRole,
+  removePermissionFromRole,
+  addPermissionWithRoles,
+  createRemovePermissionMigration,
 };
 
 /**

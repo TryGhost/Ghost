@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "embeddedLanguageFormatting": "off",
+  "ignorePatterns": [
+    "**/build/**",
+    "**/built/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/*.min.*",
+    "**/*.hbs",
+    "**/*.html",
+    "**/test/**/fixtures/**",
+    "**/__snapshots__/**",
+    "apps/ember-admin/**",
+    "koenig/kg-default-nodes/**",
+    "koenig/kg-lexical-html-renderer/**",
+    "koenig/kg-simplemde/debug/**",
+    "koenig/koenig-lexical/**",
+    "packages/i18n/locales/**"
+  ]
+}

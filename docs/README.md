@@ -76,6 +76,7 @@ adding translatable product copy, see the
 
 Codebase guides explain how the main systems fit together:
 
+- [Runtime architecture](codebase/runtime-architecture.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)
@@ -84,15 +85,25 @@ Codebase guides explain how the main systems fit together:
 - [Post analytics](codebase/post-analytics.md)
 - [Site UUID](codebase/site-uuid.md)
 - [Stripe flows](codebase/stripe-flows.md)
+- [Theme compatibility](codebase/theme-compatibility.md)
 
 Practice and contributor guides explain how to make and verify changes:
 
 - [API design](practices/api-design.md)
 - [Database migrations](practices/database-migrations.md)
+- [Browser E2E testing](contributing/e2e-testing.md)
+- [Codebase documentation](contributing/documentation.md)
 - [Email testing](contributing/testing-email.md)
 - [Error handling](practices/error-handling.md)
+- [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
 - [Performance testing](contributing/performance-testing.md)
+- [Testing development URLs and devices](contributing/testing-development-urls.md)
+
+Reference guides provide tables and other information to look up while working
+on Ghost:
+
+- [Node.js compatibility](reference/node-compatibility.md)
 
 ### Finding Issues to Work On
 
@@ -112,9 +123,9 @@ For more detail, see the [contribution workflow](contributing/workflow.md).
 
 ### Testing
 
-Use `pnpm check` as the default one-stop command for linting and testing. Add
-tests at the closest layer to the behavior you changed. Browser end-to-end tests
-and Ember Admin tests run separately from `pnpm check`.
+Use `pnpm check` as the default one-stop command for formatting checks, linting,
+and testing. Add tests at the closest layer to the behavior you changed. Browser
+end-to-end tests and Ember Admin tests run separately from `pnpm check`.
 
 For more detail, see the [testing guide](contributing/testing.md) including how
 to choose a test suite, run focused tests, and use the separate browser and

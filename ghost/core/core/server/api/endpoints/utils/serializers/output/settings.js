@@ -12,14 +12,14 @@ const mappers = require('./mappers');
  * @returns {*}
  */
 function settingsFilter(settings, filter) {
-    let filteredGroups = filter ? filter.split(',') : [];
-    return _.filter(settings, (setting) => {
-        if (filteredGroups.length > 0) {
-            return _.includes(filteredGroups, setting.group);
-        }
+  let filteredGroups = filter ? filter.split(',') : [];
+  return _.filter(settings, (setting) => {
+    if (filteredGroups.length > 0) {
+      return _.includes(filteredGroups, setting.group);
+    }
 
-        return true;
-    });
+    return true;
+  });
 }
 
 /**
@@ -30,38 +30,41 @@ function settingsFilter(settings, filter) {
  * @param {Frame} frame
  */
 function serializeSettings(models, apiConfig, frame) {
-    let filteredSettings;
+  let filteredSettings;
 
-    // If this is public, we already have the right data, we just need to add an Array wrapper
-    if (utils.isContentAPI(frame)) {
-        filteredSettings = models;
+  // If this is public, we already have the right data, we just need to add an Array wrapper
+  if (utils.isContentAPI(frame)) {
+    filteredSettings = models;
 
-        // Change the returned icon location to use a resized version, to prevent serving giant icon files
-        const icon = filteredSettings.icon;
-        if (icon) {
-            filteredSettings.icon = filteredSettings.icon.replace(/\/content\/images\//, '/content/images/size/w256h256/');
-        }
-    } else {
-        filteredSettings = _.values(settingsFilter(models, frame.options.group));
-
-        // Change the returned icon location to use a resized version, to prevent serving giant icon files
-        // in admin
-        const icon = filteredSettings.find(setting => setting.key === 'icon');
-        if (icon && icon.value) {
-            icon.value = icon.value.replace(/\/content\/images\//, '/content/images/size/w256h256/');
-        }
+    // Change the returned icon location to use a resized version, to prevent serving giant icon files
+    const icon = filteredSettings.icon;
+    if (icon) {
+      filteredSettings.icon = filteredSettings.icon.replace(
+        /\/content\/images\//,
+        '/content/images/size/w256h256/',
+      );
     }
+  } else {
+    filteredSettings = _.values(settingsFilter(models, frame.options.group));
 
-    frame.response = {
-        settings: mappers.settings(filteredSettings),
-        meta: models.meta ?? {}
+    // Change the returned icon location to use a resized version, to prevent serving giant icon files
+    // in admin
+    const icon = filteredSettings.find((setting) => setting.key === 'icon');
+    if (icon && icon.value) {
+      icon.value = icon.value.replace(/\/content\/images\//, '/content/images/size/w256h256/');
+    }
+  }
+
+  frame.response = {
+    settings: mappers.settings(filteredSettings),
+    meta: models.meta ?? {},
+  };
+
+  if (frame.options.group) {
+    frame.response.meta.filters = {
+      group: frame.options.group,
     };
-
-    if (frame.options.group) {
-        frame.response.meta.filters = {
-            group: frame.options.group
-        };
-    }
+  }
 }
 
 /**
@@ -72,7 +75,7 @@ function serializeSettings(models, apiConfig, frame) {
  * @returns Data
  */
 function passthrough(data) {
-    return data;
+  return data;
 }
 
 /**
@@ -84,18 +87,18 @@ function passthrough(data) {
  * @param {Frame} frame
  */
 function serializeData(data, apiConfig, frame) {
-    frame.response = data;
+  frame.response = data;
 }
 
 module.exports = {
-    browse: serializeSettings,
-    read: serializeSettings,
-    edit: serializeSettings,
-    regenerateAccessCode: serializeSettings,
-    verifyKeyUpdate: serializeSettings,
+  browse: serializeSettings,
+  read: serializeSettings,
+  edit: serializeSettings,
+  regenerateAccessCode: serializeSettings,
+  verifyKeyUpdate: serializeSettings,
 
-    download: serializeData,
-    upload: serializeData,
+  download: serializeData,
+  upload: serializeData,
 
-    validateMembersEmailUpdate: passthrough
+  validateMembersEmailUpdate: passthrough,
 };

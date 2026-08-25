@@ -37,17 +37,42 @@ first; ordinary pull requests target `main`.
 
 Add or update automated tests when behavior changes. Run the most focused checks
 for the code you touched, following the README beside that workspace. Before
-handing off a change, use the repository's one-stop lint and test command:
+handing off a change, use the repository's one-stop formatting, lint, and test
+command:
 
 ```bash
 pnpm check
 ```
 
-`pnpm check` runs `pnpm lint` followed by `pnpm test`. It does not include the
-browser E2E suite or Ember Admin tests, so run those separately when the affected
-area requires them. CI uses the Nx affected graph and path filters to select the
-relevant lint, unit, integration, acceptance, build, and browser-test jobs for a
-pull request.
+`pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
+not include the browser E2E suite or Ember Admin tests, so run those separately
+when the affected area requires them. CI uses the Nx affected graph and path
+filters to select the relevant lint, unit, integration, acceptance, build, and
+browser-test jobs for a pull request.
+
+## Formatting
+
+Source formatting is owned by [Oxfmt](https://oxc.rs/docs/guide/usage/formatter),
+configured in the root `.oxfmtrc.json`: Oxfmt defaults plus single quotes, with
+embedded-language formatting disabled so string contents are never rewritten.
+CI rejects unformatted code, and the pre-commit hook formats staged files
+automatically, so there is usually nothing to do. To format manually:
+
+```bash
+pnpm format path/to/file.ts
+```
+
+`pnpm format` with no arguments formats the whole repository, and
+`pnpm format:check` reports without writing. Do not add per-package formatter
+configuration; the root config is the only one.
+
+The one-time repository reformat is listed in `.git-blame-ignore-revs`. GitHub's
+blame view skips it automatically, and `pnpm setup` configures local Git to use
+the file. For an existing checkout, rerun `pnpm setup` or run once:
+
+```bash
+git config --local blame.ignoreRevsFile .git-blame-ignore-revs
+```
 
 ## Record package release intent
 
@@ -63,6 +88,10 @@ Choose patch, minor, or major according to the package's public compatibility
 impact. The summary becomes the changelog entry, so describe the result for the
 package's consumers.
 
+A package `README.md` is included when the package is published, so changing it
+requires a release. Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`,
+changelogs, and files under a package's `docs/` directory does not.
+
 If a changed publishable package genuinely requires no release—for example, a
 test-only or internal tooling change—record that explicitly:
 
@@ -76,35 +105,7 @@ not affect a publishable package do not need one.
 
 ## Commit Messages
 
-We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
-
-- **1st line:** Max 80 character summary
-   - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
-   - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
-- **2nd line:** [Always blank]
-- **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
-- **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
-
-If your change is **user-facing** please prepend the first line of your commit with **an emoji key**. If the commit is for an alpha feature, no emoji is needed. We are following [gitmoji](https://gitmoji.carloscuesta.me/).
-
-**Main emojis we are using:**
-
-- ✨ Feature
-- 🎨 Improvement / change
-- 🐛 Bug Fix
-- 🌐 i18n (translation) submissions  [[See Translating Ghost docs for more detail](translating-ghost.md)]
-- 💡 Anything else flagged to users or whoever is writing release notes
-
-Good commit message examples: [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e) and [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
-
-**Bumping @tryghost dependencies**
-
-When bumping `@tryghost/*` dependencies, the first line should follow the above format and say what has changed, not say what has been bumped.
-
-There is no need to include what modules have changed in the commit message, as this is _very_ clear from the contents of the commit. The commit should focus on surfacing the underlying changes from the dependencies - what actually changed as a result of this dependency bump?
-
-[Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
-
+Follow the canonical [commit message guidelines](../../.github/CONTRIBUTING.md#commit-messages).
 
 ## Publish the branch
 

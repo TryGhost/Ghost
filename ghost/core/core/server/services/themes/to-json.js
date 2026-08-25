@@ -17,32 +17,32 @@ const settingsCache = require('../../../shared/settings-cache');
  * @return {}
  */
 module.exports = function toJSON(name, themeErrors) {
-    let themeResult;
-    let toFilter;
+  let themeResult;
+  let toFilter;
 
-    if (!name) {
-        toFilter = themeList.getAll();
-        themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
-    } else {
-        toFilter = {
-            [name]: themeList.get(name)
-        };
+  if (!name) {
+    toFilter = themeList.getAll();
+    themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
+  } else {
+    toFilter = {
+      [name]: themeList.get(name),
+    };
 
-        themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
+    themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
 
-        if (themeErrors && themeErrors.warnings.length) {
-            themeResult[0].warnings = _.cloneDeep(themeErrors.warnings);
-        }
-
-        if (themeErrors && themeErrors.errors.length) {
-            themeResult[0].errors = _.cloneDeep(themeErrors.errors);
-        }
+    if (themeErrors && themeErrors.warnings.length) {
+      themeResult[0].warnings = _.cloneDeep(themeErrors.warnings);
     }
 
-    // CASE: if you want a JSON response for a single theme, which is not active.
-    if (_.find(themeResult, {active: true}) && bridge.getActiveTheme()) {
-        _.find(themeResult, {active: true}).templates = bridge.getActiveTheme().customTemplates;
+    if (themeErrors && themeErrors.errors.length) {
+      themeResult[0].errors = _.cloneDeep(themeErrors.errors);
     }
+  }
 
-    return {themes: themeResult};
+  // CASE: if you want a JSON response for a single theme, which is not active.
+  if (_.find(themeResult, { active: true }) && bridge.getActiveTheme()) {
+    _.find(themeResult, { active: true }).templates = bridge.getActiveTheme().customTemplates;
+  }
+
+  return { themes: themeResult };
 };

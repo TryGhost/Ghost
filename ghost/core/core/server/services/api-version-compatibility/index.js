@@ -9,10 +9,10 @@ const ghostVersion = require('@tryghost/version');
  * @param {import('express').NextFunction} next
  */
 module.exports.contentVersion = function apiVersionCompatibilityContentVersion(req, res, next) {
-    res.header('Content-Version', `v${ghostVersion.safe}`);
-    res.vary('Accept-Version');
+  res.header('Content-Version', `v${ghostVersion.safe}`);
+  res.vary('Accept-Version');
 
-    next();
+  next();
 };
 
 module.exports.versionRewrites = require('./mw-version-rewrites');

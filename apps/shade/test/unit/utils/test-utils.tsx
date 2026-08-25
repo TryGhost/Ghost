@@ -1,29 +1,23 @@
-import React, {ReactElement} from 'react';
-import {render, RenderOptions} from '@testing-library/react';
+import React, { ReactElement } from 'react';
+import { render, RenderOptions } from '@testing-library/react';
 
 // Global HTML typings needed for tests
 declare global {
-    interface HTMLElement {
-        className: string;
-    }
+  interface HTMLElement {
+    className: string;
+  }
 }
 
 // Add any providers that components need wrapped around them for testing
-function AllTheProviders({children}: {children: React.ReactNode}) {
-    return (
-        <>
-            {children}
-        </>
-    );
+function AllTheProviders({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
 
-const customRender = (
-    ui: ReactElement,
-    options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, {wrapper: AllTheProviders, ...options});
+const customRender = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
+  render(ui, { wrapper: AllTheProviders, ...options });
 
 // re-export everything
 export * from '@testing-library/react';
 
 // override render method
-export {customRender as render}; 
+export { customRender as render };

@@ -1,3 +1,3 @@
-const {removeSetting} = require('../../utils');
+const { removeSetting } = require('../../utils');
 
 module.exports = removeSetting('captcha_enabled');

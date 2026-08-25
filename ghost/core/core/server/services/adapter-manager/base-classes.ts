@@ -1,11 +1,12 @@
-import {StorageBase} from 'ghost-storage-base';
-import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
-import {SSOBase} from '@tryghost/adapter-base-sso';
-import {CacheBase} from '@tryghost/adapter-base-cache';
-import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
-import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
+import { StorageBase } from 'ghost-storage-base';
+import { SchedulingBase } from '@tryghost/adapter-base-scheduling';
+import { SSOBase } from '@tryghost/adapter-base-sso';
+import { CacheBase } from '@tryghost/adapter-base-cache';
+import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
+import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
+import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 
-import type {BaseClassMap} from './adapter-manager';
+import type { BaseClassMap } from './adapter-manager';
 
 const EmailProviderBase = require('../../adapters/email/email-provider-base');
 
@@ -15,11 +16,12 @@ const EmailProviderBase = require('../../adapters/email/email-provider-base');
  * keep this the only place the mapping is declared.
  */
 export const baseClasses = {
-    storage: StorageBase,
-    scheduling: SchedulingBase,
-    sso: SSOBase,
-    cache: CacheBase,
-    email: EmailProviderBase,
-    redirects: RedirectsStoreBase,
-    'route-settings': RouteSettingsStoreBase
+  storage: StorageBase,
+  scheduling: SchedulingBase,
+  sso: SSOBase,
+  cache: CacheBase,
+  email: EmailProviderBase,
+  redirects: RedirectsStoreBase,
+  'route-settings': RouteSettingsStoreBase,
+  jobs: JobsBackendBase,
 } satisfies BaseClassMap;

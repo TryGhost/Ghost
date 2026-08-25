@@ -1,9 +1,9 @@
 import React from 'react';
-import {Inline} from '@/components/primitives';
-import {cn} from '@/lib/utils';
+import { Inline } from '@/components/primitives';
+import { cn } from '@/lib/utils';
 
 type FilterBarProps = React.PropsWithChildren & {
-    className?: string;
+  className?: string;
 };
 
 /**
@@ -17,22 +17,22 @@ type FilterBarProps = React.PropsWithChildren & {
  *     <Button variant="ghost">Save view</Button>
  *   </FilterBar>
  */
-function FilterBar({className, children}: FilterBarProps) {
-    if (React.Children.count(children) === 0) {
-        return null;
-    }
+function FilterBar({ className, children }: FilterBarProps) {
+  if (React.Children.count(children) === 0) {
+    return null;
+  }
 
-    return (
-        <Inline
-            align='start'
-            className={cn('w-full', className)}
-            data-slot='filter-bar'
-            gap='sm'
-            justify='between'
-        >
-            {children}
-        </Inline>
-    );
+  return (
+    <Inline
+      align="start"
+      className={cn('w-full', className)}
+      data-slot="filter-bar"
+      gap="sm"
+      justify="between"
+    >
+      {children}
+    </Inline>
+  );
 }
 
-export {FilterBar};
+export { FilterBar };

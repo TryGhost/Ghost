@@ -3,33 +3,34 @@ const DEFAULT_EMAIL_DESIGN_SETTING_SLUG = 'default-automated-email';
 const MEMBER_WELCOME_EMAIL_LOG_KEY = '[MEMBER-WELCOME-EMAIL]';
 
 const MEMBER_WELCOME_EMAIL_SLUGS = {
-    free: 'member-welcome-email-free',
-    paid: 'member-welcome-email-paid'
+  free: 'member-welcome-email-free',
+  paid: 'member-welcome-email-paid',
 } as const;
 
 const MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES = {
-    free: ['free'],
-    paid: ['paid', 'gift']
+  free: ['free'],
+  paid: ['paid', 'gift'],
 } as const;
 
 const MEMBER_WELCOME_EMAIL_TAG = 'member-welcome-email';
 const AUTOMATION_EMAIL_TAG = 'automation-email';
 
 const MESSAGES = {
-    NO_MEMBER_WELCOME_EMAIL: 'No member welcome email found',
-    INVALID_LEXICAL_STRUCTURE: 'Member welcome email has invalid content structure',
-    MISSING_EMAIL_CONTENT: 'Email content is required to send a test email',
-    MISSING_EMAIL_SUBJECT: 'Email subject is required to send a test email',
-    MISSING_RECIPIENT_EMAIL: 'Cannot send welcome email: no recipient email address available',
-    memberWelcomeEmailInactive: (memberStatus: string) => `Member welcome email for "${memberStatus}" members is inactive`
+  NO_MEMBER_WELCOME_EMAIL: 'No member welcome email found',
+  INVALID_LEXICAL_STRUCTURE: 'Member welcome email has invalid content structure',
+  MISSING_EMAIL_CONTENT: 'Email content is required to send a test email',
+  MISSING_EMAIL_SUBJECT: 'Email subject is required to send a test email',
+  MISSING_RECIPIENT_EMAIL: 'Cannot send welcome email: no recipient email address available',
+  memberWelcomeEmailInactive: (memberStatus: string) =>
+    `Member welcome email for "${memberStatus}" members is inactive`,
 } as const;
 
 export {
-    AUTOMATION_EMAIL_TAG,
-    DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
-    MEMBER_WELCOME_EMAIL_LOG_KEY,
-    MEMBER_WELCOME_EMAIL_TAG,
-    MEMBER_WELCOME_EMAIL_SLUGS,
-    MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
-    MESSAGES
+  AUTOMATION_EMAIL_TAG,
+  DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
+  MEMBER_WELCOME_EMAIL_LOG_KEY,
+  MEMBER_WELCOME_EMAIL_TAG,
+  MEMBER_WELCOME_EMAIL_SLUGS,
+  MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
+  MESSAGES,
 };

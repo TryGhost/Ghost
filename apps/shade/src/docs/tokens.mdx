@@ -53,12 +53,12 @@ In light mode all three flatten to near-white, so borders and shadows carry the 
 
 Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.
 
-| Token | Use for |
-| --- | --- |
-| `--interactive-hover` | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all. |
-| `--button-hover` | Outline / dropdown `Button` hover. Currently aliased to `--interactive-hover`; kept separate so the button surface can diverge later. |
-| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark). |
-| `--table-row-hover` | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell). |
+| Token                          | Use for                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `--interactive-hover`          | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all.                                                  |
+| `--button-hover`               | Outline / dropdown `Button` hover. Currently aliased to `--interactive-hover`; kept separate so the button surface can diverge later. |
+| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark).                                       |
+| `--table-row-hover`            | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell).            |
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 

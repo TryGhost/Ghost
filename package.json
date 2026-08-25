@@ -1,31 +1,11 @@
 {
   "name": "ghost-monorepo",
   "version": "0.0.0-private",
-  "description": "The professional publishing platform",
   "private": true,
-  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
-  "engines": {
-    "node": "^22.23.1"
-  },
-  "devEngines": {
-    "runtime": {
-      "name": "node",
-      "version": "22.23.1",
-      "onFail": "download"
-    }
-  },
-  "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
+  "description": "The professional publishing platform",
   "license": "MIT",
-  "monorepo": {
-    "public": false,
-    "internalPackages": true,
-    "repo": "https://github.com/TryGhost/Ghost",
-    "scope": "@tryghost"
-  },
-  "eslintIgnore": [
-    "**/node_modules/**"
-  ],
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "scripts": {
     "archive": "pnpm nx run ghost:archive",
     "build:production": "pnpm nx run ghost:build:tsc && pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
@@ -46,7 +26,7 @@
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "setup": "pnpm install && git submodule update --init --recursive",
+    "setup": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
     "migrate:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator migrate",
     "rollback:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator rollback",
     "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
@@ -63,11 +43,16 @@
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:docs",
+    "lint:agent-guidance": "node scripts/check-agent-guidance.js",
     "lint:agent-skills": "node scripts/check-agent-skill-links.js",
+    "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
+    "lint:markdown": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 markdownlint-cli2 --config .markdownlint-cli2.jsonc",
     "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
     "lint:packages": "node scripts/check-internal-packages.js",
-    "lint:docs": "pnpm lint:agent-skills",
-    "check": "pnpm lint && pnpm test",
+    "lint:docs": "pnpm lint:agent-skills && pnpm lint:agent-guidance && pnpm lint:markdown && pnpm lint:doc-links",
+    "format": "node scripts/format.js",
+    "format:check": "oxfmt --check",
+    "check": "pnpm format:check && pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
@@ -95,12 +80,36 @@
     "husky": "9.1.7",
     "knip": "catalog:",
     "lint-staged": "catalog:",
+    "markdownlint-cli2": "catalog:",
     "nx": "23.1.1",
+    "oxfmt": "catalog:",
+    "remark-cli": "catalog:",
+    "remark-validate-links": "catalog:",
     "rimraf": "6.1.3",
     "secretlint": "catalog:",
     "shell-quote": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "eslintIgnore": [
+    "**/node_modules/**"
+  ],
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "22.23.1",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": "^22.23.1"
+  },
+  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
+  "monorepo": {
+    "public": false,
+    "internalPackages": true,
+    "repo": "https://github.com/TryGhost/Ghost",
+    "scope": "@tryghost"
   },
   "nx": {
     "includedScripts": [],

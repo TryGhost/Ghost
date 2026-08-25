@@ -1,72 +1,98 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const Gravatar = require('../../../../../core/server/lib/image/gravatar');
 
 describe('lib/image: gravatar', function () {
-    const gravatarUrl = 'https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}';
+  const gravatarUrl = 'https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}';
 
-    it('can build a gravatar url', function () {
-        const gravatar = new Gravatar({config: {
-            isPrivacyDisabled: () => false,
-            get: (config) => {
-                return config === 'gravatar' ? {
-                    url: gravatarUrl
-                } : null;
-            }
-        }, request: () => {}});
-
-        assert.equal(gravatar.url('exists@example.com', {
-            size: 180,
-            rating: 'r'
-        }), 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank');
+  it('can build a gravatar url', function () {
+    const gravatar = new Gravatar({
+      config: {
+        isPrivacyDisabled: () => false,
+        get: (config) => {
+          return config === 'gravatar'
+            ? {
+                url: gravatarUrl,
+              }
+            : null;
+        },
+      },
+      request: () => {},
     });
 
-    it('can successfully lookup a gravatar url', async function () {
-        const gravatar = new Gravatar({config: {
-            isPrivacyDisabled: () => false,
-            get: (config) => {
-                return config === 'gravatar' ? {
-                    url: gravatarUrl
-                } : null;
-            }
-        }, request: () => {}});
+    assert.equal(
+      gravatar.url('exists@example.com', {
+        size: 180,
+        rating: 'r',
+      }),
+      'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank',
+    );
+  });
 
-        const result = await gravatar.lookup({email: 'exists@example.com'});
-        assertExists(result);
-        assertExists(result.image);
-        assert.equal(result.image, 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
+  it('can successfully lookup a gravatar url', async function () {
+    const gravatar = new Gravatar({
+      config: {
+        isPrivacyDisabled: () => false,
+        get: (config) => {
+          return config === 'gravatar'
+            ? {
+                url: gravatarUrl,
+              }
+            : null;
+        },
+      },
+      request: () => {},
     });
 
-    it('can handle a non existant gravatar', async function () {
-        const gravatar = new Gravatar({config: {
-            isPrivacyDisabled: () => false,
-            get: (config) => {
-                return config === 'gravatar' ? {
-                    url: gravatarUrl
-                } : null;
-            }
-        }, request: () => {
-            return Promise.reject({statusCode: 404});
-        }});
+    const result = await gravatar.lookup({ email: 'exists@example.com' });
+    assertExists(result);
+    assertExists(result.image);
+    assert.equal(
+      result.image,
+      'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp',
+    );
+  });
 
-        const result = await gravatar.lookup({email: 'invalid@example.com'});
-        assertExists(result);
-        assert.equal(result.image, undefined);
+  it('can handle a non existant gravatar', async function () {
+    const gravatar = new Gravatar({
+      config: {
+        isPrivacyDisabled: () => false,
+        get: (config) => {
+          return config === 'gravatar'
+            ? {
+                url: gravatarUrl,
+              }
+            : null;
+        },
+      },
+      request: () => {
+        return Promise.reject({ statusCode: 404 });
+      },
     });
 
-    it('will timeout', function () {
-        const delay = 42;
-        const gravatar = new Gravatar({config: {
-            isPrivacyDisabled: () => false,
-            get: (config) => {
-                return config === 'gravatar' ? {
-                    url: gravatarUrl
-                } : null;
-            }
-        }, request: (url, options) => {
-            assert.equal(options.timeout.request, delay);
-        }});
+    const result = await gravatar.lookup({ email: 'invalid@example.com' });
+    assertExists(result);
+    assert.equal(result.image, undefined);
+  });
 
-        gravatar.lookup({email: 'exists@example.com'}, delay);
+  it('will timeout', function () {
+    const delay = 42;
+    const gravatar = new Gravatar({
+      config: {
+        isPrivacyDisabled: () => false,
+        get: (config) => {
+          return config === 'gravatar'
+            ? {
+                url: gravatarUrl,
+              }
+            : null;
+        },
+      },
+      request: (url, options) => {
+        assert.equal(options.timeout.request, delay);
+      },
     });
+
+    gravatar.lookup({ email: 'exists@example.com' }, delay);
+  });
 });

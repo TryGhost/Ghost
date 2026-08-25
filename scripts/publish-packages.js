@@ -1,9 +1,9 @@
-import {parseArgs} from 'node:util';
-import {$} from 'execa';
+import { parseArgs } from 'node:util';
+import { $ } from 'execa';
 import camelcaseKeys from 'camelcase-keys';
 
-import {ROOT_DIR} from './lib/constants.js';
-import {getWorkspace, getPublishablePackages} from './lib/pnpm.js';
+import { ROOT_DIR } from './lib/constants.js';
+import { getWorkspace, getPublishablePackages } from './lib/pnpm.js';
 
 /**
  * publish-packages.js — publish the workspace's public packages to npm.
@@ -33,18 +33,18 @@ import {getWorkspace, getPublishablePackages} from './lib/pnpm.js';
 // comma-separated to keep the multi-package capability of --package (npm names
 // can't contain commas).
 const envPackages = (process.env.PUBLISH_PACKAGE || '')
-    .split(',')
-    .map(name => name.trim())
-    .filter(Boolean);
+  .split(',')
+  .map((name) => name.trim())
+  .filter(Boolean);
 
-const {values} = parseArgs({
-    options: {
-        'dry-run': {type: 'boolean', default: process.env.PUBLISH_DRY_RUN === 'true'},
-        package: {type: 'string', multiple: true, default: envPackages},
-    },
+const { values } = parseArgs({
+  options: {
+    'dry-run': { type: 'boolean', default: process.env.PUBLISH_DRY_RUN === 'true' },
+    package: { type: 'string', multiple: true, default: envPackages },
+  },
 });
 
-const {dryRun, package: packageFilter} = camelcaseKeys(values);
+const { dryRun, package: packageFilter } = camelcaseKeys(values);
 
 const PUBLISH_BRANCH = 'main';
 
@@ -64,40 +64,44 @@ const PUBLISH_BRANCH = 'main';
  * need fetch-depth: 0 on a repo this size.
  */
 async function assertCommitOnPublishBranch() {
-    const repository = process.env.GITHUB_REPOSITORY;
-    const sha = process.env.GITHUB_SHA;
+  const repository = process.env.GITHUB_REPOSITORY;
+  const sha = process.env.GITHUB_SHA;
 
-    if (!repository || !sha) {
-        console.log(`Not running in GitHub Actions — skipping the "on ${PUBLISH_BRANCH}" check`);
-        return;
-    }
+  if (!repository || !sha) {
+    console.log(`Not running in GitHub Actions — skipping the "on ${PUBLISH_BRANCH}" check`);
+    return;
+  }
 
-    const headers = {
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28'
-    };
-    if (process.env.GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-    }
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
 
-    // per_page=1 because only the `status` field matters — don't page in the
-    // full commit list for a tag that sits well behind the branch tip.
-    const url = `https://api.github.com/repos/${repository}/compare/${PUBLISH_BRANCH}...${sha}?per_page=1`;
-    const response = await fetch(url, {headers, signal: AbortSignal.timeout(10_000)});
+  // per_page=1 because only the `status` field matters — don't page in the
+  // full commit list for a tag that sits well behind the branch tip.
+  const url = `https://api.github.com/repos/${repository}/compare/${PUBLISH_BRANCH}...${sha}?per_page=1`;
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(10_000) });
 
-    if (!response.ok) {
-        throw new Error(`Could not compare ${sha} against ${PUBLISH_BRANCH}: ${response.status} ${response.statusText}`);
-    }
+  if (!response.ok) {
+    throw new Error(
+      `Could not compare ${sha} against ${PUBLISH_BRANCH}: ${response.status} ${response.statusText}`,
+    );
+  }
 
-    // Comparing main...<sha>: "identical" means the commit is the branch tip,
-    // "behind" means it's an earlier commit on the branch. "ahead"/"diverged"
-    // mean it never landed on main.
-    const {status} = await response.json();
-    if (status !== 'identical' && status !== 'behind') {
-        throw new Error(`Refusing to publish: ${sha} is not on ${PUBLISH_BRANCH} (compare status: ${status})`);
-    }
+  // Comparing main...<sha>: "identical" means the commit is the branch tip,
+  // "behind" means it's an earlier commit on the branch. "ahead"/"diverged"
+  // mean it never landed on main.
+  const { status } = await response.json();
+  if (status !== 'identical' && status !== 'behind') {
+    throw new Error(
+      `Refusing to publish: ${sha} is not on ${PUBLISH_BRANCH} (compare status: ${status})`,
+    );
+  }
 
-    console.log(`${sha.slice(0, 8)} is on ${PUBLISH_BRANCH}`);
+  console.log(`${sha.slice(0, 8)} is on ${PUBLISH_BRANCH}`);
 }
 
 await assertCommitOnPublishBranch();
@@ -106,21 +110,21 @@ const workspace = await getWorkspace();
 let packages = await getPublishablePackages(workspace);
 
 if (packageFilter.length > 0) {
-    const wanted = new Set(packageFilter);
-    const missing = [...wanted].filter(name => !packages.some(p => p.name === name));
-    if (missing.length > 0) {
-        throw new Error(`Unknown or non-publishable package(s): ${missing.join(', ')}`);
-    }
-    packages = packages.filter(entry => wanted.has(entry.name));
+  const wanted = new Set(packageFilter);
+  const missing = [...wanted].filter((name) => !packages.some((p) => p.name === name));
+  if (missing.length > 0) {
+    throw new Error(`Unknown or non-publishable package(s): ${missing.join(', ')}`);
+  }
+  packages = packages.filter((entry) => wanted.has(entry.name));
 }
 
-const names = packages.map(p => p.name);
+const names = packages.map((p) => p.name);
 if (names.length === 0) {
-    console.log('No publishable packages selected');
-    process.exit(0);
+  console.log('No publishable packages selected');
+  process.exit(0);
 }
 
-const pnpm = $({cwd: ROOT_DIR, stdio: 'inherit'});
+const pnpm = $({ cwd: ROOT_DIR, stdio: 'inherit' });
 
 // `pnpm publish` only tars existing build output, so build the selected packages
 // first (mirrors how the Ghost archive builds its component closure before
@@ -128,9 +132,9 @@ const pnpm = $({cwd: ROOT_DIR, stdio: 'inherit'});
 // pulls in each package's workspace deps too, and `run build` runs in dependency
 // order and skips packages without a build script (e.g. kg-simplemde).
 if (!dryRun) {
-    const buildFilters = names.flatMap(name => ['--filter', `${name}...`]);
-    console.log(`Building ${names.length} package(s) before publish...`);
-    await pnpm`pnpm ${buildFilters} run build`;
+  const buildFilters = names.flatMap((name) => ['--filter', `${name}...`]);
+  console.log(`Building ${names.length} package(s) before publish...`);
+  await pnpm`pnpm ${buildFilters} run build`;
 }
 
 // Publish the exact set (no `...` — the workspace deps pulled in for the build
@@ -145,9 +149,16 @@ if (!dryRun) {
 // Passing the flag makes it a hard requirement instead — it also short-circuits
 // the visibility lookup. Needs `id-token: write` and a CI provider sigstore
 // recognises, so a local non-dry-run publish will fail here by design.
-const publishFilters = names.flatMap(name => ['--filter', name]);
-const publishArgs = ['publish', ...publishFilters, '--access', 'public', '--provenance', '--no-git-checks'];
+const publishFilters = names.flatMap((name) => ['--filter', name]);
+const publishArgs = [
+  'publish',
+  ...publishFilters,
+  '--access',
+  'public',
+  '--provenance',
+  '--no-git-checks',
+];
 if (dryRun) {
-    publishArgs.push('--dry-run');
+  publishArgs.push('--dry-run');
 }
 await pnpm`pnpm ${publishArgs}`;

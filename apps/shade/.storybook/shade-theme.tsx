@@ -1,37 +1,37 @@
-import {create} from 'storybook/theming/create';
+import { create } from 'storybook/theming/create';
 
 export default create({
-    base: 'light',
-      // Typography
-    fontBase: '"Inter", sans-serif',
-    fontCode: 'monospace',
+  base: 'light',
+  // Typography
+  fontBase: '"Inter", sans-serif',
+  fontCode: 'monospace',
 
-    brandTitle: 'Ghost | Shade',
-    brandUrl: 'https://ghost.org',
-    brandTarget: '_self',
+  brandTitle: 'Ghost | Shade',
+  brandUrl: 'https://ghost.org',
+  brandTarget: '_self',
 
-    //
-    colorPrimary: '#30CF43',
-    colorSecondary: '#15171A',
+  //
+  colorPrimary: '#30CF43',
+  colorSecondary: '#15171A',
 
-    // UI
-    appBg: '#ffffff',
-    appContentBg: '#ffffff',
-    appBorderColor: '#EBEEF0',
-    appBorderRadius: 0,
+  // UI
+  appBg: '#ffffff',
+  appContentBg: '#ffffff',
+  appBorderColor: '#EBEEF0',
+  appBorderRadius: 0,
 
-    // Text colors
-    textColor: '#15171A',
-    textInverseColor: '#ffffff',
+  // Text colors
+  textColor: '#15171A',
+  textInverseColor: '#ffffff',
 
-    // Toolbar default and active colors
-    barTextColor: '#9E9E9E',
-    barSelectedColor: '#15171A',
-    barBg: '#ffffff',
+  // Toolbar default and active colors
+  barTextColor: '#9E9E9E',
+  barSelectedColor: '#15171A',
+  barBg: '#ffffff',
 
-    // Form colors
-    inputBg: '#ffffff',
-    inputBorder: '#15171A',
-    inputTextColor: '#15171A',
-    inputBorderRadius: 2,
+  // Form colors
+  inputBg: '#ffffff',
+  inputBorder: '#15171A',
+  inputTextColor: '#15171A',
+  inputBorderRadius: 2,
 });

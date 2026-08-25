@@ -1,8 +1,13 @@
 /// <reference types="vite/client" />
 
-declare module '@tryghost/limit-service'
-declare module '@tryghost/nql'
-declare module '@tryghost/string' {
-    export function slugify(string: string, options?: {requiredChangesOnly?: boolean}): string;
+interface ImportMetaEnv {
+  readonly GHOST_BUILD_VERSION?: string;
 }
-declare module '@tryghost/koenig-lexical'
+
+declare module '@tryghost/nql' {
+  export default function nql(query: string): { queryJSON: (data: unknown) => boolean };
+}
+declare module '@tryghost/string' {
+  export function slugify(string: string, options?: { requiredChangesOnly?: boolean }): string;
+}
+declare module '@tryghost/koenig-lexical';

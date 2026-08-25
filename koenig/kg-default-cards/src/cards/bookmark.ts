@@ -1,31 +1,31 @@
 import juice from 'juice';
 import {
-    absoluteToRelative,
-    relativeToAbsolute,
-    htmlAbsoluteToRelative,
-    htmlRelativeToAbsolute,
-    htmlToTransformReady,
-    toTransformReady
+  absoluteToRelative,
+  relativeToAbsolute,
+  htmlAbsoluteToRelative,
+  htmlRelativeToAbsolute,
+  htmlToTransformReady,
+  toTransformReady,
 } from '@tryghost/url-utils/lib/utils/index.js';
-import {hbs, dedent} from '../utils/index.js';
-import type {Card} from '../types.js';
+import { hbs, dedent } from '../utils/index.js';
+import type { Card } from '../types.js';
 
 let template: Handlebars.TemplateDelegate | undefined;
 
 const bookmarkCard: Card = {
-    name: 'bookmark',
-    type: 'dom',
+  name: 'bookmark',
+  type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
-        const metadata = payload.metadata as Record<string, unknown> | undefined;
-        if (!metadata || !payload.url || !(metadata as Record<string, unknown>).title) {
-            return dom.createTextNode('');
-        }
+  render({ payload, env: { dom }, options = {} }) {
+    const metadata = payload.metadata as Record<string, unknown> | undefined;
+    if (!metadata || !payload.url || !(metadata as Record<string, unknown>).title) {
+      return dom.createTextNode('');
+    }
 
-        if (!template) {
-            // Outlook template has inline styles because it appears as a comment to
-            // DOM-based tools like `juice` meaning stylesheets don't get inlined
-            const outlookHtml = `
+    if (!template) {
+      // Outlook template has inline styles because it appears as a comment to
+      // DOM-based tools like `juice` meaning stylesheets don't get inlined
+      const outlookHtml = `
                 <style>
                     .kg-bookmark-card--outlook {
                         margin: 0;
@@ -106,10 +106,10 @@ const bookmarkCard: Card = {
                 </table>
                 <div class="kg-bookmark-spacer--outlook">&nbsp;</div>
             `;
-            const juicedOutlookHtml = juice(outlookHtml);
+      const juicedOutlookHtml = juice(outlookHtml);
 
-            // NOTE: Publisher and author classes are swapped for theme backwards-compatibility.
-            template = hbs`
+      // NOTE: Publisher and author classes are swapped for theme backwards-compatibility.
+      template = hbs`
                 {{#if isEmail}}<!--[if !mso !vml]-->{{/if}}
                 <figure class="kg-card kg-bookmark-card{{#if caption}} kg-card-hascaption{{/if}}">
                     <a class="kg-bookmark-container" href="{{url}}">
@@ -139,60 +139,86 @@ const bookmarkCard: Card = {
                     <![endif]-->
                 {{/if}}
             `;
-        }
-
-        const templateData = Object.assign({}, payload, {isEmail: options.target === 'email'});
-
-        return dom.createRawHTMLSection(dedent(template(templateData)));
-    },
-
-    absoluteToRelative(payload, options) {
-        if (payload.url) {
-            payload.url = payload.url && absoluteToRelative(payload.url as string, options.siteUrl, options);
-        }
-        const metadata = payload.metadata as Record<string, string> | undefined;
-        if (metadata) {
-            ['url', 'icon', 'thumbnail'].forEach((attr) => {
-                if (metadata[attr]) {
-                    metadata[attr] = absoluteToRelative(metadata[attr], options.siteUrl, options);
-                }
-            });
-        }
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption as string, options.siteUrl, options);
-        return payload;
-    },
-
-    relativeToAbsolute(payload, options) {
-        if (payload.url) {
-            payload.url = payload.url && relativeToAbsolute(payload.url as string, options.siteUrl, options.itemUrl ?? '', options);
-        }
-        const metadata = payload.metadata as Record<string, string> | undefined;
-        if (metadata) {
-            ['url', 'icon', 'thumbnail'].forEach((attr) => {
-                if (metadata[attr]) {
-                    metadata[attr] = relativeToAbsolute(metadata[attr], options.siteUrl, options.itemUrl ?? '', options);
-                }
-            });
-        }
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption as string, options.siteUrl, options.itemUrl ?? '', options);
-        return payload;
-    },
-
-    toTransformReady(payload, options) {
-        if (payload.url) {
-            payload.url = payload.url && toTransformReady(payload.url as string, options.siteUrl, options.itemUrl, options);
-        }
-        const metadata = payload.metadata as Record<string, string> | undefined;
-        if (metadata) {
-            ['url', 'icon', 'thumbnail'].forEach((attr) => {
-                if (metadata[attr]) {
-                    metadata[attr] = toTransformReady(metadata[attr], options.siteUrl, options.itemUrl, options);
-                }
-            });
-        }
-        payload.caption = payload.caption && htmlToTransformReady(payload.caption as string, options.siteUrl, options.itemUrl, options);
-        return payload;
     }
+
+    const templateData = Object.assign({}, payload, { isEmail: options.target === 'email' });
+
+    return dom.createRawHTMLSection(dedent(template(templateData)));
+  },
+
+  absoluteToRelative(payload, options) {
+    if (payload.url) {
+      payload.url =
+        payload.url && absoluteToRelative(payload.url as string, options.siteUrl, options);
+    }
+    const metadata = payload.metadata as Record<string, string> | undefined;
+    if (metadata) {
+      ['url', 'icon', 'thumbnail'].forEach((attr) => {
+        if (metadata[attr]) {
+          metadata[attr] = absoluteToRelative(metadata[attr], options.siteUrl, options);
+        }
+      });
+    }
+    payload.caption =
+      payload.caption &&
+      htmlAbsoluteToRelative(payload.caption as string, options.siteUrl, options);
+    return payload;
+  },
+
+  relativeToAbsolute(payload, options) {
+    if (payload.url) {
+      payload.url =
+        payload.url &&
+        relativeToAbsolute(payload.url as string, options.siteUrl, options.itemUrl ?? '', options);
+    }
+    const metadata = payload.metadata as Record<string, string> | undefined;
+    if (metadata) {
+      ['url', 'icon', 'thumbnail'].forEach((attr) => {
+        if (metadata[attr]) {
+          metadata[attr] = relativeToAbsolute(
+            metadata[attr],
+            options.siteUrl,
+            options.itemUrl ?? '',
+            options,
+          );
+        }
+      });
+    }
+    payload.caption =
+      payload.caption &&
+      htmlRelativeToAbsolute(
+        payload.caption as string,
+        options.siteUrl,
+        options.itemUrl ?? '',
+        options,
+      );
+    return payload;
+  },
+
+  toTransformReady(payload, options) {
+    if (payload.url) {
+      payload.url =
+        payload.url &&
+        toTransformReady(payload.url as string, options.siteUrl, options.itemUrl, options);
+    }
+    const metadata = payload.metadata as Record<string, string> | undefined;
+    if (metadata) {
+      ['url', 'icon', 'thumbnail'].forEach((attr) => {
+        if (metadata[attr]) {
+          metadata[attr] = toTransformReady(
+            metadata[attr],
+            options.siteUrl,
+            options.itemUrl,
+            options,
+          );
+        }
+      });
+    }
+    payload.caption =
+      payload.caption &&
+      htmlToTransformReady(payload.caption as string, options.siteUrl, options.itemUrl, options);
+    return payload;
+  },
 };
 
 export default bookmarkCard;

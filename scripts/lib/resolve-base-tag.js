@@ -1,4 +1,4 @@
-import {execSync} from 'node:child_process';
+import { execSync } from 'node:child_process';
 import semver from 'semver';
 
 /**
@@ -13,17 +13,17 @@ import semver from 'semver';
  * @returns {{tag: string, isPrerelease: boolean}}
  */
 export function resolveBaseTag(version, repoDir) {
-    if (semver.prerelease(version)) {
-        const tag = execSync(
-            `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude 'v*-*' HEAD`,
-            {cwd: repoDir, encoding: 'utf8'}
-        ).trim();
+  if (semver.prerelease(version)) {
+    const tag = execSync(
+      `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude 'v*-*' HEAD`,
+      { cwd: repoDir, encoding: 'utf8' },
+    ).trim();
 
-        return {tag, isPrerelease: true};
-    }
+    return { tag, isPrerelease: true };
+  }
 
-    return {
-        tag: `v${version}`,
-        isPrerelease: false
-    };
+  return {
+    tag: `v${version}`,
+    isPrerelease: false,
+  };
 }

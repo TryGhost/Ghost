@@ -12,30 +12,32 @@ const errorHandler = require('@tryghost/mw-error-handler');
  * @returns {import('express').Application}
  */
 module.exports = function setupApiApp() {
-    debug('Content API setup start');
-    const apiApp = express('content api');
+  debug('Content API setup start');
+  const apiApp = express('content api');
 
-    // API middleware
+  // API middleware
 
-    // @NOTE: req.body is undefined if we don't use this parser, this can trouble if components rely on req.body being present
-    apiApp.use(bodyParser.json({limit: '50mb'}));
+  // @NOTE: req.body is undefined if we don't use this parser, this can trouble if components rely on req.body being present
+  apiApp.use(bodyParser.json({ limit: '50mb' }));
 
-    // Query parsing
-    apiApp.use(boolParser());
+  // Query parsing
+  apiApp.use(boolParser());
 
-    // Content API should allow public caching
-    apiApp.use(shared.middleware.cacheControl('public', {
-        maxAge: config.get('caching:contentAPI:maxAge')
-    }));
+  // Content API should allow public caching
+  apiApp.use(
+    shared.middleware.cacheControl('public', {
+      maxAge: config.get('caching:contentAPI:maxAge'),
+    }),
+  );
 
-    // Routing
-    apiApp.use(routes());
+  // Routing
+  apiApp.use(routes());
 
-    // API error handling
-    apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(errorHandler.handleJSONResponse(sentry));
+  // API error handling
+  apiApp.use(errorHandler.resourceNotFound);
+  apiApp.use(errorHandler.handleJSONResponse(sentry));
 
-    debug('Content API setup end');
+  debug('Content API setup end');
 
-    return apiApp;
+  return apiApp;
 };

@@ -12,8 +12,9 @@ From the repository root, run:
 pnpm check
 ```
 
-This is the default one-stop command for linting and testing. It runs
-`pnpm lint` followed by `pnpm test` across the monorepo.
+This is the default one-stop command for formatting checks, linting, and
+testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test` across
+the monorepo.
 
 `pnpm check` does not run the Playwright browser end-to-end suite or Ember
 Admin's test suite. Run those separately when your change affects those areas.
@@ -35,13 +36,18 @@ Put tests as close as possible to the code and behavior under test:
   framework and command vary by app, so use that workspace's
   `test:acceptance` target.
 - **Browser E2E tests** use Playwright to cover complete journeys across Ghost
-  Admin and the public site. They live in `e2e/`.
+  Admin and the public site. They live in `e2e/`. See
+  [Writing Browser E2E Tests](e2e-testing.md) for conventions and examples.
 - **Ember Admin tests** cover the legacy Ember application in
   `apps/ember-admin/` and run through Ember Exam via Nx.
 
 When a regression crosses several layers, prefer a focused test at the lowest
 layer that proves the fix. Add a broader acceptance or browser E2E test when the
 integration between layers is itself the behavior being protected.
+
+For physical-device testing and URL configurations such as HTTPS,
+subdirectories, or a separate Admin origin, see
+[Testing development URLs and devices](testing-development-urls.md).
 
 ## Run Focused Tests
 
@@ -112,16 +118,19 @@ pnpm dev
 pnpm test:e2e
 ```
 
-Run a specific file or match a test title by passing Playwright arguments:
+Run a specific file or match a test title by passing Playwright arguments. For
+example, the first command runs the existing Admin sign-in test:
 
 ```bash
-pnpm test:e2e tests/admin/posts.spec.ts
+pnpm test:e2e tests/admin/signin.test.ts
 pnpm test:e2e --grep "publish a post"
 ```
 
 Use `pnpm test:e2e:debug` for Ghost E2E debug logs. See the
-[browser E2E guide](../../e2e/README.md) for infrastructure modes, test
-isolation, fixtures, selectors, and debugging.
+[E2E workspace README](../../e2e/README.md) for infrastructure modes, test
+isolation, fixtures, and debugging, and
+[Writing Browser E2E Tests](e2e-testing.md) for test conventions, selectors,
+and Page Objects.
 
 ## Run Ember Admin Tests
 

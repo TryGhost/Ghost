@@ -7,60 +7,64 @@ const urlUtils = require('../../core/shared/url-utils').default;
 const defaultSandbox = sinon.createSandbox();
 
 const getInstance = (options) => {
-    const opts = {
-        getSubdir: config.getSubdir,
-        getSiteUrl: config.getSiteUrl,
-        getAdminUrl: config.getAdminUrl,
-        slugs: options.slugs,
-        redirectCacheMaxAge: options.redirectCacheMaxAge,
-        baseApiPath: '/ghost/api',
-        assetBaseUrls: options.assetBaseUrls
-    };
+  const opts = {
+    getSubdir: config.getSubdir,
+    getSiteUrl: config.getSiteUrl,
+    getAdminUrl: config.getAdminUrl,
+    slugs: options.slugs,
+    redirectCacheMaxAge: options.redirectCacheMaxAge,
+    baseApiPath: '/ghost/api',
+    assetBaseUrls: options.assetBaseUrls,
+  };
 
-    return new UrlUtils(opts);
+  return new UrlUtils(opts);
 };
 
 const stubUrlUtils = (options, sandbox) => {
-    const stubInstance = getInstance(options);
-    const classPropNames = Object.getOwnPropertyNames(Object.getPrototypeOf(urlUtils))
-        .filter(name => name !== 'constructor');
+  const stubInstance = getInstance(options);
+  const classPropNames = Object.getOwnPropertyNames(Object.getPrototypeOf(urlUtils)).filter(
+    (name) => name !== 'constructor',
+  );
 
-    classPropNames.forEach((key) => {
-        if (typeof urlUtils[key] === 'function') {
-            sandbox.stub(urlUtils, key).callsFake(function () {
-                return stubInstance[key](...arguments);
-            });
-        } else {
-            sandbox.stub(urlUtils, key).get(function () {
-                return stubInstance[key];
-            });
-        }
-    });
+  classPropNames.forEach((key) => {
+    if (typeof urlUtils[key] === 'function') {
+      sandbox.stub(urlUtils, key).callsFake(function () {
+        return stubInstance[key](...arguments);
+      });
+    } else {
+      sandbox.stub(urlUtils, key).get(function () {
+        return stubInstance[key];
+      });
+    }
+  });
 
-    return stubInstance;
+  return stubInstance;
 };
 
 // Method for regressions tests must be used with restore method
 const stubUrlUtilsFromConfig = () => {
-    const options = {
-        slugs: config.get('slugs').protected,
-        redirectCacheMaxAge: config.get('caching:301:maxAge'),
-        baseApiPath: '/ghost/api'
-    };
+  const options = {
+    slugs: config.get('slugs').protected,
+    redirectCacheMaxAge: config.get('caching:301:maxAge'),
+    baseApiPath: '/ghost/api',
+  };
 
-    return stubUrlUtils(options, defaultSandbox);
+  return stubUrlUtils(options, defaultSandbox);
 };
 
 const restore = async () => {
-    defaultSandbox.restore();
-    // eslint-disable-next-line no-console
-    await configUtils.restore().catch(console.error);
+  defaultSandbox.restore();
+  // eslint-disable-next-line no-console
+  await configUtils.restore().catch(console.error);
 };
 
 const stubUrlUtilsWithCdn = (options, sandbox = defaultSandbox) => {
-    return stubUrlUtils({
-        assetBaseUrls: options.assetBaseUrls
-    }, sandbox);
+  return stubUrlUtils(
+    {
+      assetBaseUrls: options.assetBaseUrls,
+    },
+    sandbox,
+  );
 };
 
 module.exports.stubUrlUtilsFromConfig = stubUrlUtilsFromConfig;

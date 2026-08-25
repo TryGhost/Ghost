@@ -27,8 +27,15 @@ export default class NavigationSettings extends Transform {
             settingsArray = deserialized.map((item) => {
                 let label = item.label.trim();
                 let url = item.url.trim();
+                let icon = item.icon && item.icon.trim();
+                let visibility = item.visibility || 'public';
 
-                return {label, url};
+                return {
+                    label,
+                    url,
+                    ...(icon ? {icon} : {}),
+                    ...(visibility !== 'public' ? {visibility} : {})
+                };
             }).compact();
         } else {
             settingsArray = [];
