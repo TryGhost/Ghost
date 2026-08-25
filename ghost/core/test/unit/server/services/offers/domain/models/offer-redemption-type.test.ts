@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-
-const OfferRedemptionType = require('../../../../../../../core/server/services/offers/domain/models/offer-redemption-type');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import OfferRedemptionType from '../../../../../../../core/server/services/offers/domain/models/offer-redemption-type';
 
 describe('OfferRedemptionType', function () {
   describe('OfferRedemptionType.create factory', function () {
