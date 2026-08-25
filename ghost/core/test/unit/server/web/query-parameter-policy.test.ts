@@ -50,7 +50,7 @@ describe('Query parameter policy', function () {
     [
       'an invalid parameter name',
       { ...validPolicy(), public: [{ name: 'not valid&', reason: 'Invalid' }] },
-      /must not contain whitespace or query-string separators/,
+      /must only contain letters, underscores, and hyphens/,
     ],
     [
       'an empty reason',

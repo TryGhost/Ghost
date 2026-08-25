@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-const INVALID_NAME_CHARACTERS = /[\s&=?#]/;
+const ALLOWED_NAME_CHARACTERS = /^[A-Za-z_-]+$/;
 
 const QueryParameterPolicyEntrySchema = z.object({
   name: z
     .string()
     .min(1, { error: 'Parameter names must be nonempty.' })
-    .refine((name) => !INVALID_NAME_CHARACTERS.test(name), {
-      error: 'Parameter names must not contain whitespace or query-string separators.',
+    .regex(ALLOWED_NAME_CHARACTERS, {
+      error: 'Parameter names must only contain letters, underscores, and hyphens.',
     }),
   reason: z
     .string()
