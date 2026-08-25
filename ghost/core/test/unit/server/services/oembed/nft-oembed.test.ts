@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const NFTOEmbedProvider = require('../../../../../core/server/services/oembed/nft-oembed-provider');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import NFTOEmbedProvider from '../../../../../core/server/services/oembed/nft-oembed-provider';
 
 describe('NFTOEmbedProvider', function () {
   it('Can support requests for OpenSea Ethereum NTFs', async function () {
