@@ -1,9 +1,9 @@
-const assert = require('node:assert/strict');
-
-const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import MemoryCache from '../../../../../core/server/adapters/cache/MemoryCache';
 
 describe('In Memory Cache Adapter', function () {
-  let memoryCache;
+  let memoryCache = new MemoryCache();
 
   beforeEach(function () {
     memoryCache = new MemoryCache();
