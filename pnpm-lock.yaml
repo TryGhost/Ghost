@@ -198,6 +198,9 @@ catalogs:
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
+    '@types/express-brute':
+      specifier: 1.0.6
+      version: 1.0.6
     '@types/jsdom':
       specifier: 30.0.0
       version: 30.0.0
@@ -2750,6 +2753,9 @@ importers:
       '@types/express':
         specifier: 'catalog:'
         version: 4.17.25
+      '@types/express-brute':
+        specifier: 'catalog:'
+        version: 1.0.6
       '@types/fs-extra':
         specifier: 11.0.4
         version: 11.0.4
@@ -9698,6 +9704,9 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/express-brute@1.0.6':
+    resolution: {integrity: sha512-yKVX0N9dTR4CNSMEMlSLfNkDgkNws2DMfRJZD6EsqZbtpDp4wAPSLo6N2e+c4OMPC72q2V82YWDtvYUCmBfvvA==}
 
   '@types/express-serve-static-core@4.19.8':
     resolution: {integrity: sha512-02S5fmqeoKzVZCHPZid4b8JH2eM5HzQLZWN2FohQEy/0eXTq8VXZfSN6Pcr3F6N9R/vNrj7cpgbhjie6m/1tCA==}
@@ -29509,6 +29518,10 @@ snapshots:
       '@types/estree': 1.0.9
 
   '@types/estree@1.0.9': {}
+
+  '@types/express-brute@1.0.6':
+    dependencies:
+      '@types/express': 4.17.25
 
   '@types/express-serve-static-core@4.19.8':
     dependencies:
