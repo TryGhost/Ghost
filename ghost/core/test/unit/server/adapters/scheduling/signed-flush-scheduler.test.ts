@@ -1,16 +1,14 @@
 import assert from 'node:assert/strict';
 import logging from '@tryghost/logging';
 import sinon from 'sinon';
-import { GiftFlushScheduler } from '../../../../../core/server/services/gifts/gift-flush-scheduler';
+import { SignedFlushScheduler } from '../../../../../core/server/adapters/scheduling/signed-flush-scheduler';
 import { AutoFillingMap } from '../../../../../core/server/lib/auto-filling-map';
 import type {
   InternalApiKey,
   InternalIntegrationSlug,
 } from '../../../../../core/server/services/internal-keys';
 
-// Use real signing and URL helpers; stub only cross-domain collaborators.
-// Test secrets are 64-char hex so getSignedAdminToken (which decodes via
-// Buffer.from(secret, 'hex')) treats them as distinct signing keys.
+// Use distinct 64-character hex secrets because token signing decodes them as hex.
 const HEX_CURRENT = 'aa'.repeat(32);
 const HEX_OLD = '55'.repeat(32);
 
@@ -36,20 +34,20 @@ function buildDeps(
       run: sinon.stub(),
     },
     internalKeys,
-    endpoint: 'flush_deliveries' as const,
+    endpoint: ['gifts', 'flush_deliveries'],
     name: 'gift_delivery',
     findScheduledTimes: sinon.stub<[], Promise<number[]>>().resolves(overrides.pending ?? []),
   };
 }
 
-describe('GiftFlushScheduler', function () {
+describe('SignedFlushScheduler', function () {
   afterEach(function () {
     sinon.restore();
   });
 
   it('registers itself with the adapter on construction', function () {
     const deps = buildDeps();
-    new GiftFlushScheduler(deps);
+    new SignedFlushScheduler(deps);
 
     sinon.assert.calledOnce(deps.adapter.register);
     assert.equal(typeof deps.adapter.register.firstCall.firstArg.rescheduleAll, 'function');
@@ -58,7 +56,7 @@ describe('GiftFlushScheduler', function () {
   describe('scheduleAt', function () {
     it('arms a flush callback just past the given time, signed with the current key', async function () {
       const deps = buildDeps();
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
       const time = Date.now() + 60_000;
 
       await scheduler.scheduleAt(time);
@@ -74,8 +72,8 @@ describe('GiftFlushScheduler', function () {
     });
 
     it('targets the configured endpoint', async function () {
-      const deps = { ...buildDeps(), endpoint: 'flush_reminders' as const };
-      const scheduler = new GiftFlushScheduler(deps);
+      const deps = { ...buildDeps(), endpoint: ['gifts', 'flush_reminders'] };
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.scheduleAt(Date.now() + 60_000);
 
@@ -85,7 +83,7 @@ describe('GiftFlushScheduler', function () {
 
     it('does not arm an already-due time', async function () {
       const deps = buildDeps();
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.scheduleAt(Date.now() - 1);
 
@@ -94,7 +92,7 @@ describe('GiftFlushScheduler', function () {
 
     it('arms one batch flush for repeat schedules of the same time', async function () {
       const deps = buildDeps();
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
       const time = Date.now() + 60_000;
 
       await scheduler.scheduleAt(time, { deliveryId: 'delivery_1' });
@@ -105,7 +103,7 @@ describe('GiftFlushScheduler', function () {
 
     it('deduplicates times within the same persisted database second', async function () {
       const deps = buildDeps();
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
       const second = Math.floor((Date.now() + 60_000) / 1000) * 1000;
 
       await scheduler.scheduleAt(second + 123);
@@ -117,7 +115,7 @@ describe('GiftFlushScheduler', function () {
 
     it('does not let synchronous job construction failures escape', async function () {
       const deps = { ...buildDeps(), apiUrl: 'not a url' };
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
       const logError = sinon.stub(logging, 'error');
 
       await scheduler.scheduleAt(Date.now() + 60_000);
@@ -129,7 +127,7 @@ describe('GiftFlushScheduler', function () {
     it('retries after a synchronous adapter failure', async function () {
       const deps = buildDeps();
       deps.adapter.schedule.onFirstCall().throws(new Error('adapter failed'));
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
       sinon.stub(logging, 'error');
       const time = Date.now() + 60_000;
 
@@ -147,7 +145,7 @@ describe('GiftFlushScheduler', function () {
       const rejection = Promise.reject(new Error('Transient key failure'));
       rejection.catch(() => {});
       failingKeys.set('ghost-scheduler', rejection);
-      const scheduler = new GiftFlushScheduler({ ...deps, internalKeys: failingKeys });
+      const scheduler = new SignedFlushScheduler({ ...deps, internalKeys: failingKeys });
       const time = Date.now() + 60_000;
 
       await scheduler.scheduleAt(time);
@@ -164,7 +162,7 @@ describe('GiftFlushScheduler', function () {
     it('re-signs every pending time under the current key', async function () {
       const pending = [Date.now() + 30_000, Date.now() + 60_000];
       const deps = buildDeps({ pending, currentKey: { id: 'k', secret: HEX_CURRENT } });
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
 
@@ -186,7 +184,7 @@ describe('GiftFlushScheduler', function () {
     it('unschedules stale old-key jobs during rotation', async function () {
       // Non-bootstrap unscheduling tombstones the stale callback.
       const deps = buildDeps({ pending: [Date.now() + 30_000] });
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
 
@@ -198,9 +196,10 @@ describe('GiftFlushScheduler', function () {
       const time = Math.floor((Date.now() + 30_000) / 1000) * 1000;
       const deps = {
         ...buildDeps({ pending: [time] }),
-        endpoint: 'flush_reminders' as const,
+        endpoint: ['gifts', 'flush_reminders'],
+        legacyDelaysMs: [0],
       };
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
 
@@ -213,7 +212,7 @@ describe('GiftFlushScheduler', function () {
     it('does not tombstone the replacement during boot rebuilds', async function () {
       // Boot reuses the current-key URL, so unscheduling must use bootstrap mode.
       const deps = buildDeps({ pending: [Date.now() + 30_000] });
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll();
 
@@ -230,7 +229,7 @@ describe('GiftFlushScheduler', function () {
     it('rebuilds duplicate pending times as one job', async function () {
       const time = Date.now() + 30_000;
       const deps = buildDeps({ pending: [time, time] });
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
 
@@ -239,7 +238,7 @@ describe('GiftFlushScheduler', function () {
 
     it('skips times that have already passed', async function () {
       const deps = buildDeps({ pending: [Date.now() - 1] });
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
 
@@ -249,7 +248,7 @@ describe('GiftFlushScheduler', function () {
 
     it('is a no-op when nothing is pending', async function () {
       const deps = buildDeps({ pending: [] });
-      const scheduler = new GiftFlushScheduler(deps);
+      const scheduler = new SignedFlushScheduler(deps);
 
       await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
 

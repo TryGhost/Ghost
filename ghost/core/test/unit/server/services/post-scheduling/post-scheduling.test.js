@@ -7,6 +7,7 @@ const events = require('../../../../../core/server/lib/common/events');
 const SchedulingDefault =
   require('../../../../../core/server/adapters/scheduling/scheduling-default').default;
 const urlUtils = require('../../../../../core/shared/url-utils').default;
+const { getSignedAdminToken } = require('../../../../../core/server/adapters/scheduling/utils');
 const PostScheduling =
   require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
@@ -71,20 +72,23 @@ describe('PostScheduling', function () {
       });
 
       sinon.assert.calledOnce(adapter.schedule);
-      assert.equal(adapter.schedule.args[0][0].time, moment(post.get('published_at')).valueOf());
-      assert(
-        adapter.schedule.args[0][0].url.startsWith(
-          urlUtils.urlJoin(
-            'http://scheduler.local:1111/',
-            'schedules',
-            'posts',
-            post.get('id'),
-            '?token=',
-          ),
-        ),
-      );
-      assert.equal(adapter.schedule.args[0][0].extra.httpMethod, 'PUT');
-      assert.equal(adapter.schedule.args[0][0].extra.oldTime, null);
+      const job = adapter.schedule.args[0][0];
+      const signedAdminToken = getSignedAdminToken({
+        publishedAt: post.get('published_at'),
+        apiUrl: 'http://scheduler.local:1111/',
+        key: { id: 'integrationUniqueId', secret: 'aaaa' },
+      });
+      const callbackUrl = `${urlUtils.urlJoin(
+        'http://scheduler.local:1111/',
+        'schedules',
+        'posts',
+        post.get('id'),
+      )}/?token=${signedAdminToken}`;
+
+      assert.equal(job.time, moment(post.get('published_at')).valueOf());
+      assert.equal(job.url, callbackUrl);
+      assert.equal(job.extra.httpMethod, 'PUT');
+      assert.equal(job.extra.oldTime, null);
     });
   });
 

@@ -7,8 +7,8 @@ import type {
 } from './gift-delivery-bookshelf-repository';
 import type { GiftDeliveryData } from './gift-delivery-schema';
 import type { GiftCadence } from './gift-schema';
-import type { GiftFlushScheduler } from './gift-flush-scheduler';
 import type { Gift } from './gift';
+import type { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 import { GIFT_DELIVERY_STALE_AFTER_MS } from './constants';
 
@@ -77,7 +77,7 @@ interface GiftDeliveryServiceDeps {
   giftEmailAnalytics: {
     schedule(): Promise<void>;
   };
-  giftDeliveryScheduler: Pick<GiftFlushScheduler, 'scheduleAt' | 'rescheduleAll'>;
+  giftDeliveryScheduler: Pick<SignedFlushScheduler, 'scheduleAt' | 'rescheduleAll'>;
 }
 
 export interface GiftDeliveryRecoveryResult {

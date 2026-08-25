@@ -11,7 +11,7 @@ import type {
   GiftRepository,
 } from './gift-bookshelf-repository';
 import type { GiftDeliveryDispatchResult, GiftDeliveryService } from './gift-delivery-service';
-import type { GiftFlushScheduler } from './gift-flush-scheduler';
+import type { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
 import { GiftCadenceSchema, type GiftCadence } from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {
@@ -181,7 +181,7 @@ interface GiftServiceDeps {
   tiersService: TiersService;
   giftEmailService: GiftEmailService;
   staffServiceEmails: StaffServiceEmails;
-  giftReminderScheduler: Pick<GiftFlushScheduler, 'scheduleAt'>;
+  giftReminderScheduler: Pick<SignedFlushScheduler, 'scheduleAt'>;
   checkoutAdapter: {
     getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
     createSession(data: GiftCheckoutSession): Promise<{ id: string; url: string }>;
