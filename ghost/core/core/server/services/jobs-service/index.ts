@@ -31,5 +31,7 @@ export function shutdown(options?: JobsShutdownOptions): Promise<void> {
   if (!instance) {
     return Promise.resolve();
   }
-  return instance.shutdown(options);
+  const current = instance;
+  instance = undefined;
+  return current.shutdown(options);
 }

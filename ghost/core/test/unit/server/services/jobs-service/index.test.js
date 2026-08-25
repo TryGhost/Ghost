@@ -37,4 +37,20 @@ describe('jobs-service wrapper', function () {
       'getInstance returns the instance built by init',
     );
   });
+
+  it('getInstance throws again after shutdown', async function () {
+    const fakeBackend = {
+      requiredFns: ['start', 'enqueue', 'scheduleRecurring', 'shutdown'],
+      start() {},
+      enqueue() {},
+      scheduleRecurring() {},
+      async shutdown() {},
+    };
+    sinon.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(fakeBackend);
+    jobsService.init();
+
+    await jobsService.shutdown();
+
+    assert.throws(() => jobsService.getInstance(), /used before init/);
+  });
 });
