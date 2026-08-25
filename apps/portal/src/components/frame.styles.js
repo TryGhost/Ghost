@@ -25,7 +25,7 @@ import { TipsAndDonationsSuccessStyle } from './pages/support-success';
 import { GiftRedemptionStyles } from './pages/gift-redemption-page';
 import { BetaGiftRedemptionStyles } from './pages/beta-gift-redemption-page';
 import { GiftPageStyles } from './pages/gift-page';
-import { BetaGiftPageStyles } from './pages/beta-gift-page';
+import { BetaGiftPageStyles } from './pages/beta-gift-page.styles';
 import { GiftSuccessStyle } from './pages/gift-success-page';
 import { BetaGiftSuccessStyle } from './pages/beta-gift-success-page';
 import { TipsAndDonationsErrorStyle } from './pages/support-error';

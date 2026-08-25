@@ -38,6 +38,19 @@ function setup(site: SiteData, overrideContext: Record<string, unknown> = {}) {
 }
 
 describe('BetaGiftPage', () => {
+  test('preserves focus on the checkout action when moving to delivery', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { getByRole } = setup(site);
+    const continueButton = getByRole('button', { name: 'Continue to delivery details' });
+
+    continueButton.focus();
+    fireEvent.click(continueButton);
+
+    const paymentButton = getByRole('button', { name: 'Continue to payment' });
+    expect(paymentButton).toBe(continueButton);
+    expect(paymentButton).toHaveFocus();
+  });
+
   test.each([
     { pickerLabel: '1 month', durationLabel: '1-month' },
     { pickerLabel: '3 months', durationLabel: '3-month' },
