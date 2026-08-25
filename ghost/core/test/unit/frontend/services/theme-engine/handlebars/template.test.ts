@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../../utils/assertions');
-const errors = require('@tryghost/errors');
-const { hbs, templates } = require('../../../../../../core/frontend/services/handlebars');
+import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
+import { assertExists } from '../../../../../utils/assertions';
+// @ts-expect-error This module lacks type definitions.
+import { hbs, templates } from '../../../../../../core/frontend/services/handlebars';
 
 describe('Helpers Template', function () {
   it('can execute a template', function () {
