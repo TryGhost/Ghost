@@ -1,7 +1,9 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const routing = require('../../../../core/frontend/services/routing');
-const getRssUrl = require('../../../../core/frontend/meta/rss-url');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import routing from '../../../../core/frontend/services/routing';
+// @ts-expect-error This module lacks type definitions.
+import getRssUrl from '../../../../core/frontend/meta/rss-url';
 
 describe('getRssUrl', function () {
   beforeEach(function () {
