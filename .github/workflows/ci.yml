@@ -239,6 +239,7 @@ jobs:
           if [[ "${{ env.IS_TAG }}" != 'true' && "${{ steps.changed.outputs.any-code }}" != 'true' ]]; then
             echo 'affected_projects=[]' >> "$GITHUB_OUTPUT"
             echo 'affected_projects_str=' >> "$GITHUB_OUTPUT"
+            echo 'typecheck_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
             echo 'affected_playwright_projects=[]' >> "$GITHUB_OUTPUT"
@@ -258,6 +259,9 @@ jobs:
           # string list for use in run-many commands
           AFFECTED_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
           echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+
+          TYPECHECK_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --withTarget test:types --sep=, | tr -d '\n')
+          echo "typecheck_projects_str=$TYPECHECK_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
           if [[ "${{ steps.changed.outputs.unit-test-globals }}" == 'true' ]]; then
@@ -294,6 +298,7 @@ jobs:
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
@@ -725,6 +730,39 @@ jobs:
             git diff
             exit 1
           fi
+
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_typecheck:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.typecheck_projects_str != ''
+    name: Typecheck
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1000
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck projects
+        run: pnpm nx run-many -t test:types -p "${{ needs.job_setup.outputs.typecheck_projects_str }}"
+        env:
+          FORCE_COLOR: 0
+          NX_SKIP_LOG_GROUPING: true
 
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -2259,6 +2297,7 @@ jobs:
         job_docker,
         job_ghost-cli,
         job_admin-tests,
+        job_typecheck,
         job_unit-tests,
         job_acceptance-tests,
         job_legacy-tests,
@@ -2282,7 +2321,7 @@ jobs:
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
   publish_public_apps:
-    needs: [job_setup, job_lint, job_unit-tests, job_build_e2e_public_apps]
+    needs: [job_setup, job_lint, job_typecheck, job_unit-tests, job_build_e2e_public_apps]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     # Serialize per-app publishes so two quick main merges can't both compute the
@@ -2293,11 +2332,13 @@ jobs:
       group: publish-public-app-${{ matrix.package_name }}
       cancel-in-progress: false
     if: |
-      github.event_name != 'pull_request'
+      always()
+      && github.event_name != 'pull_request'
       && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_setup.result == 'success'
       && needs.job_lint.result == 'success'
+      && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
       && needs.job_unit-tests.result == 'success'
       && needs.job_build_e2e_public_apps.result == 'success'
       && needs.job_setup.outputs.publish_public_apps_matrix != '[]'

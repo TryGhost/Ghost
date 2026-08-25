@@ -55,6 +55,7 @@
     "format:check": "oxfmt --check",
     "check": "pnpm format:check && pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
+    "test:types": "pnpm nx run-many -t test:types",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
     "test:e2e": "pnpm --filter @tryghost/e2e test",

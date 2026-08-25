@@ -41,6 +41,10 @@
       "cache": true,
       "dependsOn": ["build"]
     },
+    "test:types": {
+      "cache": true,
+      "dependsOn": ["^build"]
+    },
     "test:ci:*": {
       "cache": true,
       "inputs": ["default", "^default"]
