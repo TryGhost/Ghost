@@ -3,8 +3,7 @@ import express from 'express';
 import request from 'supertest';
 // @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
-// @ts-expect-error This module lacks type definitions.
-import requestId from '../../../../../../core/server/web/parent/middleware/request-id';
+import { requestId } from '../../../../../../core/server/web/parent/middleware/request-id';
 
 describe('Request ID middleware', function () {
   const app = express();
