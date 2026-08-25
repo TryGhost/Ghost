@@ -13,14 +13,6 @@ describe('promisePool', function () {
     }
   });
 
-  it('returns results in task order', async function () {
-    const tasks = times(100, (i) => () => (i % 2 ? Promise.resolve(i) : i));
-
-    const results = await promisePool(tasks, 2);
-
-    assert.deepEqual(results, times(100));
-  });
-
   it('limits concurrency', async function () {
     let running = 0;
     let maxRunning = 0;
@@ -39,9 +31,9 @@ describe('promisePool', function () {
   });
 
   it('rejects if a task fails', async function () {
-    const finalTask = sinon.stub().returns(3);
+    const finalTask = sinon.stub().resolves();
     const tasks = [
-      () => Promise.resolve(1),
+      () => Promise.resolve(),
       () => Promise.reject(new Error('Task failed')),
       finalTask,
     ];
