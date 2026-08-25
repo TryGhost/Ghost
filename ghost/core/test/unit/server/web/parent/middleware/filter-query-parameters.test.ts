@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import logging from '@tryghost/logging';
 import express from 'express';
-import type { NextFunction, Request, Response } from 'express';
 import sinon from 'sinon';
 import request from 'supertest';
 
@@ -203,29 +202,41 @@ describe('Middleware: filterQueryParameters', function () {
       });
   });
 
-  it('supports a getter-only query property', function () {
-    let url = '/r/example?step=run-step-id&unknown=value';
-    const req = {
-      originalUrl: url,
-      path: '/r/example',
-      get url() {
-        return url;
-      },
-      set url(value: string) {
-        url = value;
-      },
-      get query() {
-        return Object.fromEntries(new URL(url, 'http://ignored.example').searchParams);
-      },
-    };
-    const next = sinon.spy();
+  // We can remove this test once we upgrade to Express 5.
+  it('supports a getter-only query property, which is the case in Express 5', async function () {
+    const app = express();
     sinon.stub(logging, 'warn');
 
-    filterQueryParameters(req as unknown as Request, {} as Response, next as NextFunction);
+    // Simulates [Express 5's `req.query`][0].
+    // [0]: https://github.com/expressjs/express/blob/a3714473feb3d2908add734d340e7755fd85e0a3/lib/request.js#L230
+    app.use((req, _res, next) => {
+      const originalQuery = req.query;
+      Object.defineProperty(req, 'query', {
+        get: () => originalQuery,
+      });
+      next();
+    });
+    app.use(filterQueryParameters);
+    app.use((req, res) => {
+      res.json({
+        originalUrl: req.originalUrl,
+        url: req.url,
+        path: req.path,
+        query: req.query,
+      });
+    });
 
-    assert.equal(req.originalUrl, '/r/example?step=run-step-id');
-    assert.equal(req.url, '/r/example?step=run-step-id');
-    assert.deepEqual(req.query, { step: 'run-step-id' });
-    sinon.assert.calledOnce(next);
+    await request(app)
+      .get('/r/example?step=run-step-id&m=member-id&unknown=value')
+      .expect(200)
+      .expect({
+        originalUrl: '/r/example?step=run-step-id&m=member-id',
+        url: '/r/example?step=run-step-id&m=member-id',
+        path: '/r/example',
+        query: {
+          step: 'run-step-id',
+          m: 'member-id',
+        },
+      });
   });
 });
