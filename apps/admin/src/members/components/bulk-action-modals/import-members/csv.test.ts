@@ -38,6 +38,7 @@ describe('csv helpers', () => {
         name: 'Alice',
         email: 'bad@example.com',
         subscribed: true,
+        complimentary_plan: false,
         labels: [{ name: 'vip' }, { name: 'gold' }],
         error: 'Invalid email, "quote"',
       },
@@ -50,6 +51,20 @@ describe('csv helpers', () => {
     expect(output.split('\n')[1]).toContain('"true"');
     expect(output).not.toContain('[object Object]');
     expect(output).toContain('"Invalid email, ""quote"""');
+  });
+
+  it('does not invent subscription columns when the source omitted them', () => {
+    const output = unparseErrorCSV([
+      {
+        email: 'a@example.com',
+        labels: [],
+        error: 'nope',
+      },
+    ]);
+
+    const [header] = output.split('\r\n');
+    expect(header).not.toContain('subscribed_to_emails');
+    expect(header).not.toContain('complimentary_plan');
   });
 
   it('drops malformed label entries instead of crashing the download', () => {

@@ -71,13 +71,18 @@ function toExportErrorRow(row: RawErrorRow): Record<string, string> {
     email: cell(row.email),
     name: cell(row.name),
     note: cell(row.note),
-    subscribed_to_emails: cell(row.subscribed),
-    complimentary_plan: cell(row.complimentary_plan),
+    ...(row.subscribed !== undefined ? { subscribed_to_emails: cell(row.subscribed) } : {}),
+    ...(row.complimentary_plan !== undefined
+      ? { complimentary_plan: cell(row.complimentary_plan) }
+      : {}),
     stripe_customer_id: cell(row.stripe_customer_id),
     created_at: cell(row.created_at),
     labels: joinNames(row.labels),
   };
 
+  // An absent subscription column must stay absent. The importer treats a present
+  // blank subscribed_to_emails cell as true, so inventing this column would change
+  // subscription state when the error report is re-uploaded.
   if (row.newsletters !== undefined) {
     shaped.newsletters = joinNames(row.newsletters);
   }
