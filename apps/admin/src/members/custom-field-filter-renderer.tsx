@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import {
-  CUSTOM_FIELDS_PREFIX,
   CUSTOM_FIELD_OPERATORS,
   CUSTOM_FIELD_SET_OPERATORS,
 } from './member-fields';
@@ -8,7 +7,7 @@ import { FilterSegmentInput, FilterSegmentSelect } from '@tryghost/shade/pattern
 import { createOperatorOptions } from '@/shared/filters';
 import {
   memberCustomFieldParts,
-  useBrowseMemberCustomFieldsIncludingArchived,
+  useBrowseMemberFieldsIncludingArchived,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { CustomRendererProps } from '@tryghost/shade/patterns';
 
@@ -28,12 +27,18 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   readOnly,
 }) => {
   // Include-archived so an archived composite field's pill can still resolve its parts
-  // and show which one the saved segment filters on.
-  const { data } = useBrowseMemberCustomFieldsIncludingArchived();
-  const definitions = data?.members_custom_fields ?? [];
+  // and show which one the saved segment filters on. Every namespace, because the pill
+  // is for whichever field the filter names.
+  const { data } = useBrowseMemberFieldsIncludingArchived();
+  const definitions = data?.members_fields ?? [];
 
-  const fieldKey = (field.key ?? '').slice(CUSTOM_FIELDS_PREFIX.length);
-  const definition = definitions.find((candidate) => candidate.key === fieldKey);
+  // The dropdown key is `<namespace>.<key>`, so the field is found by both: a key names
+  // a different field in each namespace.
+  const [namespace, ...rest] = (field.key ?? '').split('.');
+  const fieldKey = rest.join('.');
+  const definition = definitions.find(
+    (candidate) => candidate.key === fieldKey && candidate.namespace === namespace,
+  );
   // The shared catalog decides which parts a type has and what they are called; a scalar
   // field has none. Its keys are the ones the predicate carries.
   const parts = definition

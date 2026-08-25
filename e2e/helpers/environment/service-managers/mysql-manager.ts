@@ -236,6 +236,41 @@ export class MySQLManager {
     debug('Stripe settings updated in database');
   }
 
+  /**
+   * Declare a member field in a namespace, by writing the row a feature that owns one
+   * would write.
+   *
+   * There is deliberately no API for this: a field outside the publisher's namespace is
+   * declared by whatever owns it, and the publisher's own endpoint refuses to touch it.
+   * Until something provisions one, a test that needs a namespace to exist states it the
+   * only way anything does — as a row.
+   */
+  async declareMemberField(
+    database: string,
+    field: { namespace: string; key: string; name: string; type?: string },
+  ): Promise<string> {
+    const id = Math.random().toString(16).slice(2).padEnd(24, '0').slice(0, 24);
+    const type = field.type ?? 'short_text';
+    const values = [
+      `'${id}'`,
+      `'${field.namespace}'`,
+      `'${field.key}'`,
+      `'${field.name}'`,
+      `'${type}'`,
+      `'active'`,
+      '0',
+      'NOW()',
+    ].join(', ');
+
+    await this.exec(
+      `mysql -uroot -proot -e "INSERT INTO \\\`${database}\\\`.members_custom_fields ` +
+        `(id, namespace, \\\`key\\\`, name, type, status, sort_order, created_at) ` +
+        `VALUES (${values});"`,
+    );
+
+    return id;
+  }
+
   private async exec(command: string) {
     const container = this.docker.getContainer(this.containerName);
     return await this.execInContainer(container, command);
