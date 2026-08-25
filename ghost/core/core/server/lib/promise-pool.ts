@@ -20,7 +20,8 @@ export const promisePool = async (
 
   const taskIterator = tasks.values();
 
-  const workers = Array(maxConcurrency)
+  const concurrency = Math.min(maxConcurrency, tasks.length);
+  const workers = Array(concurrency)
     .fill(taskIterator)
     .map(async (workerIterator) => {
       for (const task of workerIterator) {
