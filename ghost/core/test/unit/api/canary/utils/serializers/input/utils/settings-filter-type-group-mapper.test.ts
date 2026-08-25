@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const mapper = require('../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/settings-filter-type-group-mapper');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import mapper from '../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/settings-filter-type-group-mapper';
 
 describe('Unit: endpoints/utils/serializers/input/utils/settings-type-group-mapper', function () {
   describe('browse', function () {
