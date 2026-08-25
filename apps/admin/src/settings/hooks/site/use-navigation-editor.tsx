@@ -26,12 +26,12 @@ export type EditableItem = NavigationItem & { id: string; errors: NavigationItem
 
 const hasTextValue = (value?: string) => Boolean(value && !value.match(/^\s*$/));
 const hasNewItem = (newItem: NavigationItem) =>
-  Boolean(hasTextValue(newItem.label) || newItem.url !== '/' || hasTextValue(newItem.icon));
+  Boolean(hasTextValue(newItem.label) || newItem.url || hasTextValue(newItem.icon));
 
 export type NavigationEditor = {
   items: EditableItem[];
   updateItem: (id: string, item: Partial<NavigationItem>) => void;
-  addItem: () => void;
+  addItem: (overrides?: Partial<NavigationItem>) => void;
   removeItem: (id: string) => void;
   moveItem: (activeId: string, overId?: string) => void;
   newItem: EditableItem;
@@ -72,7 +72,9 @@ const useNavigationEditor = ({
   const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
     items: editableItems,
     setItems: setNavigationItems,
-    blank: { url: '/', label: '', icon: '', visibility: 'public', errors: {} },
+    // Blank rather than '/' so the URL field starts empty and the suggestion
+    // dropdown is the obvious way in, instead of prefilling the site root
+    blank: { url: '', label: '', icon: '', visibility: 'public', errors: {} },
     canAddNewItem: hasNewItem,
   });
 
@@ -116,17 +118,22 @@ const useNavigationEditor = ({
   };
 
   const updateItem = (id: string, item: Partial<NavigationItem>) => {
-    const currentItem = list.items.find((current) => current.id === id)!;
-    list.updateItem(id, mergeItemUpdates(currentItem.item, item));
+    list.updateItem(id, (current) => mergeItemUpdates(current, item));
   };
 
-  const addItem = () => {
-    const errors = validateItem(list.newItem);
+  // `overrides` let a caller submit a value it has just committed but which
+  // hasn't flushed into `list.newItem` yet — pressing Enter in the URL field
+  // commits and adds within a single event.
+  const addItem = (overrides?: Partial<NavigationItem>) => {
+    const candidate = { ...list.newItem, ...overrides };
+    const errors = validateItem(candidate);
 
     if (Object.values(errors).some((message) => message)) {
-      list.setNewItem({ ...list.newItem, errors });
+      list.setNewItem({ ...candidate, errors });
     } else {
-      list.addItem();
+      // Pass the merged object down so the added item is exactly what
+      // was validated — a second independent merge could drift
+      list.addItem(candidate);
     }
   };
 
@@ -140,12 +147,20 @@ const useNavigationEditor = ({
 
   const newItemId = 'new';
 
+  // Functional updates throughout: clearing an error often lands in the same
+  // event as the change that fixed it (picking a suggestion commits the URL
+  // and clears in one go), and a snapshot-based merge would revert the URL
   const clearError = (id: string, key: keyof NavigationItem) => {
     if (id === newItemId) {
-      list.setNewItem({ ...list.newItem, errors: { ...list.newItem.errors, [key]: undefined } });
+      list.setNewItem((current) => ({
+        ...current,
+        errors: { ...current.errors, [key]: undefined },
+      }));
     } else {
-      const currentItem = list.items.find((current) => current.id === id)!.item;
-      list.updateItem(id, { ...currentItem, errors: { ...currentItem.errors, [key]: undefined } });
+      list.updateItem(id, (current) => ({
+        ...current,
+        errors: { ...current.errors, [key]: undefined },
+      }));
     }
   };
 
@@ -158,7 +173,7 @@ const useNavigationEditor = ({
     moveItem,
 
     newItem: { ...list.newItem, id: newItemId },
-    setNewItem: (item) => list.setNewItem(mergeItemUpdates(list.newItem, item)),
+    setNewItem: (item) => list.setNewItem((current) => mergeItemUpdates(current, item)),
 
     clearError,
     validate: () => {

@@ -16,6 +16,7 @@ export {
   fakeOffers,
   fakePosts,
   fakeRoles,
+  fakeSearchIndex,
   fakeSettingsScreens,
   fakeTags,
   fakeThemes,
@@ -30,6 +31,8 @@ export type {
   ResourceOptions,
   ResourceSemantics,
   RespondWith,
+  SearchIndexEntry,
+  SearchIndexKind,
 } from './resources';
 export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint, fakeSitePreview } from './worker';
 export type {

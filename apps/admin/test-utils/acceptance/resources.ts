@@ -319,6 +319,52 @@ export const fakeActions = defineResource<Omit<Action, 'context'> & { context: s
   semantics: { kind: 'passthrough' },
 });
 
+const SEARCH_INDEX_KINDS = ['posts', 'pages'] as const;
+
+export type SearchIndexKind = (typeof SEARCH_INDEX_KINDS)[number];
+
+/** A search-index row as the navigation URL suggestions read it. */
+export interface SearchIndexEntry {
+  id: string;
+  url: string;
+  title: string;
+  status: string;
+}
+
+/**
+ * Search-index fake (passthrough) for the `/search-index/<kind>/` endpoints
+ * the navigation URL suggestions read.
+ *
+ * Faithful by construction: the real endpoints ignore `filter` and `limit`
+ * and always serve the whole index (the client filters what it got), so
+ * there is no query behavior here to re-implement.
+ */
+export function fakeSearchIndex(
+  world: Partial<Record<SearchIndexKind, SearchIndexEntry[]>> = {},
+): void {
+  for (const kind of SEARCH_INDEX_KINDS) {
+    registerRoute('GET', `/search-index/${kind}/?…`);
+  }
+
+  registerAdminApiHandler((request, apiPath) => {
+    if (request.method !== 'GET') {
+      return undefined;
+    }
+
+    const kind = SEARCH_INDEX_KINDS.find(
+      (candidate) =>
+        apiPath === `/search-index/${candidate}/` ||
+        apiPath.startsWith(`/search-index/${candidate}/?`),
+    );
+
+    if (!kind) {
+      return undefined;
+    }
+
+    return HttpResponse.json(browseResponse(kind, world[kind] ?? [], { limit: 'all' }));
+  });
+}
+
 /**
  * Declares the world the settings area's page chrome reads at mount — every
  * settings group renders on one page, so this covers the requests ALL
@@ -342,6 +388,8 @@ export function fakeSettingsScreens(): void {
   automatedEmailsResource([]);
   recommendationsResource([]);
   integrationsResource([]);
+  // The navigation modal's URL suggestions
+  fakeSearchIndex();
 
   // Two endpoints defineResource can't express:
   //  - /incoming_recommendations/ responds under the `recommendations` key
