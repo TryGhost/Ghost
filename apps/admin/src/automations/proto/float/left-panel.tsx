@@ -75,25 +75,25 @@ const RANGE_OPTIONS: {value: string; label: string}[] = [
 
 type EnrichedRun = {run: AutomationRun; status: StatusKey};
 
-export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId, onSelectMember, onCollapse}) => {
+export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId, onSelectMember, reserveToggle = false, flat = false}) => {
     const {automation, metrics, runs} = scenario;
     const [range, setRange] = useState('all');
     const [query, setQuery] = useState('');
-    // Search starts collapsed to an icon (the timeframe earns the space more
-    // often); opening it takes over the header row rather than adding a second
-    // control the eye has to skip.
+    // Phase 1: search starts collapsed to an icon (the timeframe earns the space
+    // more often); opening it takes over the header row, swapping out the title,
+    // rather than adding a second control the eye has to skip.
+    //
+    // Future never uses this — its search is mounted open — so the state is inert
+    // there rather than conditional. searchShown is the one thing the strip reads.
     const [searchOpen, setSearchOpen] = useState(false);
+    const searchShown = flat || searchOpen;
+
     const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
     // Why someone left, filtered separately from the status. Deliberately not a
     // fourth status card: the three statuses are mutually exclusive outcomes, and
     // a failure is a REASON for exiting rather than a different kind of exit.
     // Selecting one implies Exited early, so it doesn't need the card as well.
     const [exitFilter, setExitFilter] = useState<ExitReason | null>(null);
-    // Opening search takes over the top strip, so the screen needs to know to get
-    // the automation title out of the way.
-    const toggleSearch = (open: boolean) => {
-        setSearchOpen(open);
-    };
     // The summary (Total entries + chart) answers "how many are entering, over
     // time", and only the timeframe changes that. Searching or filtering by exit
     // reason narrows the list beneath it and leaves it untouched — so while either
@@ -183,41 +183,90 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                 baseline. Outside the scroll container either way, so they stay put. */}
             <Inline
                 align="center"
-                className="shrink-0 px-6 pt-4 pb-3"
+                // Flat: no top padding. The strip used to sit under a bordered header
+                // that closed the space above it, so 16px read as the gap between two
+                // regions; with the border gone there's nothing for it to be a gap
+                // between and it reads as the page failing to start. The header's own
+                // vertical centring already leaves air above the field.
+                // No justify. It used to be 'between', which worked while the strip
+                // held exactly two children (whatever leads, then the controls). The
+                // toggle's placeholder makes three, and 'between' spread all three —
+                // parking the title in the middle of the pane. Whichever child leads
+                // grows instead (flex-1 below), which pins the controls right without
+                // the layout caring how many children there are.
+                className={cn('shrink-0 px-6 pb-3', flat ? 'pt-0' : 'pt-4')}
                 gap="sm"
-                justify={searchOpen ? 'end' : 'between'}
             >
-                {/* The pane is a region of its own under the header bar, so it says
-                    what it is. */}
-                {!searchOpen && (
-                    <Inline align="center" className="min-w-0" gap="sm">
-                        {/* The collapse control leads the title it collapses, so the
-                            pane's name and the way to dismiss it are one gesture apart.
-                            Same PanelLeft that reopens it from the canvas, so the
-                            glyph means "this panel" in both directions. */}
-                        {onCollapse && (
-                            <Button aria-label="Hide performance" className="-ml-2" size="icon" type="button" variant="ghost" onClick={onCollapse}>
-                                <LucideIcon.PanelLeft strokeWidth={2} />
-                            </Button>
-                        )}
-                        <Text size="lg" weight="semibold">Performance</Text>
+                {/* Phase 1 titles the pane: it's a region of its own beneath a bordered
+                    header, and the rule above it makes it a distinct thing that should
+                    say what it is. Future drops the title — under a flat header the pane
+                    heading became a third stacked heading in the top-left corner, after
+                    the screen's header and the canvas toggle, each restarting the page a
+                    little lower; and with nothing else in that column, naming it was
+                    restating context rather than adding any. */}
+                {/* An invisible twin of the pane toggle, holding its place. The real one
+                    is painted on the row outside this pane, so that collapsing takes the
+                    pane out from under a button that never moves; this reserves the
+                    footprint so whatever leads the strip starts clear of it.
+
+                    A sibling of both the title and the search field, not a child of the
+                    title's group. The toggle is still sitting there when search takes
+                    the strip over, so the space has to be held in BOTH states — nested
+                    inside the title it disappeared along with it, and the open search
+                    field ran straight under the button.
+
+                    The same component rather than a sized box, so the space can't drift
+                    from the thing standing in it. aria-hidden and out of the tab order —
+                    the real button carries both. */}
+                {reserveToggle && (
+                    <Button className="invisible -ml-2" size="icon" tabIndex={-1} type="button" variant="ghost" aria-hidden>
+                        <LucideIcon.PanelLeft strokeWidth={2} />
+                    </Button>
+                )}
+                {!flat && !searchOpen && (
+                    <Inline align="center" className="min-w-0 flex-1" gap="sm">
+                        {/* One stop below the automation name in the header (text-md
+                            to its text-lg): this names a region within that automation,
+                            so it reads as the level beneath it. */}
+                        <Text size="md" weight="semibold">Performance</Text>
                     </Inline>
                 )}
                 {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
                     strip, overflows it once the gap and buttons are counted, and flex
                     resolves that by shrinking the siblings — so the icon buttons squash
                     below 36px and appear to jump width as search opens. */}
-                {searchOpen && (
+                {searchShown && (
                     <InputGroup className="min-w-0 flex-1">
                         <InputGroupAddon>
                             <LucideIcon.Search />
                         </InputGroupAddon>
+                        {/* autoFocus in phase 1 only, and it's the mount that does it:
+                            there the field appears because you pressed the magnifying
+                            glass, so focus is the point. Future mounts it on load, where
+                            taking focus would be taking it from wherever the reader was. */}
                         <InputGroupInput
+                            autoFocus={!flat}
                             placeholder="Search members…"
                             value={query}
-                            autoFocus
                             onChange={e => setQuery(e.target.value)}
                         />
+                        {/* Future only. Phase 1's close button already clears on the way
+                            out; with no close button to lean on, clearing belongs to the
+                            field itself — and only while there's something to clear, so
+                            the strip stays a search box and a funnel at rest. */}
+                        {flat && query && (
+                            <InputGroupAddon align="inline-end">
+                                <Button
+                                    aria-label="Clear search"
+                                    size="icon"
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setQuery('')}
+                                >
+                                    <LucideIcon.X strokeWidth={2} />
+                                </Button>
+                            </InputGroupAddon>
+                        )}
                     </InputGroup>
                 )}
                 {/* Same 8px the header bar puts between its own buttons, so every
@@ -226,7 +275,9 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                     separating them and a gap spaced them twice — matching the header
                     won out.) */}
                 <Inline align="center" className="shrink-0" gap="sm">
-                    {searchOpen ? (
+                    {/* Phase 1's search toggle. Future has no equivalent — its field is
+                        always there, so there's nothing to open and nothing to close. */}
+                    {!flat && (searchOpen ? (
                         <Button
                             aria-label="Close search"
                             size="icon"
@@ -234,16 +285,16 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                             variant="ghost"
                             onClick={() => {
                                 setQuery('');
-                                toggleSearch(false);
+                                setSearchOpen(false);
                             }}
                         >
                             <LucideIcon.X strokeWidth={2} />
                         </Button>
                     ) : (
-                        <Button aria-label="Search members" size="icon" type="button" variant="ghost" onClick={() => toggleSearch(true)}>
+                        <Button aria-label="Search members" size="icon" type="button" variant="ghost" onClick={() => setSearchOpen(true)}>
                             <LucideIcon.Search strokeWidth={2} />
                         </Button>
-                    )}
+                    ))}
                     {/* A plain filter button rather than a labelled timeframe control: the
                         timeframe is one of several things we'll want to filter on, and this
                         is the affordance the rest of Ghost already uses — the funnel from
@@ -422,7 +473,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({scenario, selectedMemberId,
                     an unconditional rule would hang above the table as a stray line.
                     Stuck, it marks where the pinned chrome ends and the scrolling
                     rows begin. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'border-b border-border-default pb-4')}>
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 px-6', flat ? 'bg-background' : 'bg-surface-elevated', stuck && 'border-b border-border-default pb-4')}>
                     <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                         <div className="overflow-hidden">
                             <div className="flex gap-2">

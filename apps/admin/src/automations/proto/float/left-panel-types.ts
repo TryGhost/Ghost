@@ -5,8 +5,13 @@ export interface LeftPanelProps {
     scenario: AutomationScenario;
     selectedMemberId: string | null;
     onSelectMember: (runId: string | null) => void;
-    // Collapses the pane. The control sits at the far right of the pane's own
-    // header row — it belongs to the pane it hides, rather than floating on the
-    // canvas beside it.
-    onCollapse?: () => void;
+    // Hold the pane toggle's footprint open ahead of the title. The button itself
+    // isn't ours — it's positioned on the row that holds both the pane and the
+    // canvas, so it can stay put while the pane slides out from under it — but the
+    // title still has to start where it would if the button were in flow here.
+    reserveToggle?: boolean;
+    // The pane is sitting on the page background rather than on its own elevated
+    // surface. Only its sticky bar cares: that bar has to be opaque to occlude the
+    // list scrolling under it, so it needs to name whatever is actually behind it.
+    flat?: boolean;
 }

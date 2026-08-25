@@ -11,11 +11,14 @@ import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
 // 'phase-1' — what the first release covers. Editing works the way the shipping
 //   editor already works: changes are held until you save or publish, and
 //   leaving with unsaved work warns that it'll be lost. The trigger is fixed
-//   once the automation exists, so its card renders locked.
+//   once the automation exists, so its card renders locked. Chrome stays docked:
+//   header, pane and canvas are three abutting surfaces separated by rules.
 //
 // 'future' — where it's heading. Edits autosave into a draft, so the question
 //   becomes which changes are live rather than whether they're saved, and the
 //   header carries the unpublished-changes review. The trigger becomes editable.
+//   Chrome flattens: header and pane sit unbordered on the page and the canvas
+//   becomes an inset window, so the flow is the only bounded object on screen.
 //
 // Sub-slots can be registered alongside this one when a specific piece needs its
 // own comparison (see proto-variants.ts) — the machinery never assumed a single

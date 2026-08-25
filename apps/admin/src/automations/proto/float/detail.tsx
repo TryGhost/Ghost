@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
@@ -21,40 +22,6 @@ import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 type LiveStatus = 'active' | 'inactive';
 type SaveState = 'saved' | 'saving';
 
-// Every control in this screen's floating chrome sits directly on the canvas, and
-// Shade's outline variant is bg-transparent — the dot grid reads straight through
-// it, so the button looks like a hole rather than a thing. An opaque surface is
-// all that's needed; no shadow, because no button in Ghost carries one. Elevation
-// here is the border plus the fact that it's opaque over a textured canvas.
-
-// One rail button. `active` highlights it while its flyout is open. forwardRef
-// is required (not optional) whenever one of these is a Radix trigger with
-// `asChild`, which clones its child and attaches a ref — a plain function
-// component would silently drop it. Kept even though no rail button is currently
-// a trigger: the ⋯ menu that was is coming back.
-interface RailButtonProps extends React.ComponentPropsWithoutRef<'button'> {
-    icon: React.ElementType;
-    label: string;
-    active?: boolean;
-}
-
-// `...rest` is essential for the same case: Radix clones the trigger and injects
-// the handlers that actually open the menu (onPointerDown/onKeyDown) plus
-// aria-*/data-state. Forwarding only the ref isn't enough — those props must be
-// spread onto the real <Button> too.
-const RailButton = React.forwardRef<HTMLButtonElement, RailButtonProps>(({icon: Icon, label, active, ...rest}, ref) => (
-    <Button
-        ref={ref}
-        aria-label={label}
-        className={cn(active && 'bg-muted')}
-        size="icon"
-        variant="ghost"
-        {...rest}
-    >
-        <Icon strokeWidth={2} />
-    </Button>
-));
-RailButton.displayName = 'RailButton';
 
 // Turn-on / turn-off confirmations. Structure and weight come from the shipped
 // editor (plain AlertDialog, non-destructive confirm, same shape of sentence);
@@ -183,6 +150,12 @@ const AutomationFloat: React.FC = () => {
     const isPhaseOne = useProtoVariant(PHASE_SLOT) === 'phase-1';
     // Phase 1 fixes the trigger once the automation exists.
     const triggerLocked = isPhaseOne;
+
+    // Future flattens the screen's chrome: the header loses its rule and fill and
+    // the pane loses its border, leaving the canvas as the one bounded object —
+    // an inset window on an otherwise plain page. Phase 1 keeps the docked
+    // arrangement, where header, pane and canvas are three abutting slabs.
+    const flatChrome = !isPhaseOne;
     // The canvas is always editable, so hiding the pane is the user's call.
     const [paneCollapsed, setPaneCollapsed] = useState(false);
 
@@ -459,16 +432,14 @@ const AutomationFloat: React.FC = () => {
         // flex-col in both variants: the docked header is a row above the pane and
         // canvas, and with no header the same column collapses to just that row.
         <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background" data-testid="float-detail">
-            {/* onTogglePane is phase 1 only: future moves that control onto the pane
-                itself, leading the Performance title, and floats it over the canvas
-                once the pane is away. */}
+            {/* The header never carries the pane control in either release — its left
+                is the back arrow, the title and its status, full stop. */}
             <HeaderBar
                 actions={chromeActions}
-                paneCollapsed={paneCollapsed}
+                flat={flatChrome}
                 status={liveStatus}
                 title={automation.name}
                 onBack={goBack}
-                onTogglePane={isPhaseOne ? () => setPaneCollapsed(!paneCollapsed) : undefined}
             />
             <div className="relative flex min-h-0 flex-1 overflow-hidden">
             {/* Left pane docked flush to the edge. On entering edit it slides off the
@@ -481,23 +452,75 @@ const AutomationFloat: React.FC = () => {
                 content panels flanking the canvas, so they're the same step of the
                 ladder. This was on the --sidebar-* family, which is for the app's
                 global nav — it happened to match in dark and diverged in light. */}
-            <aside className={cn('relative flex w-[480px] shrink-0 flex-col overflow-hidden border-r border-border-default bg-surface-elevated transition-[margin] duration-150 ease-out', paneHidden ? '-ml-[480px]' : 'ml-0')}>
+            <aside className={cn(
+                // Collapses by WIDTH, not by sliding out on a negative margin. Both
+                // animate the same 480px, but a slide takes the pane's contents with
+                // it — the title and its controls travelled left and passed under the
+                // toggle on their way out, which read as the pane escaping rather than
+                // closing. Narrowing holds every child exactly where it is and lets
+                // overflow-hidden wipe them from the right as the canvas edge advances,
+                // so nothing moves that isn't supposed to.
+                //
+                // This only works because the child below is pinned to w-[480px]: left
+                // to itself the content would reflow as the pane narrowed, wrapping the
+                // title and crushing the table for the length of the animation.
+                'relative flex shrink-0 flex-col overflow-hidden transition-[width] duration-150 ease-out',
+                // Docked: a content panel flanking the canvas, so it takes the same
+                // step of the ladder as the right-hand analytics sheet. Flat: it
+                // stops being a panel at all — page content on the page's own
+                // background, with only its own px-6 holding it off the canvas
+                // window beside it. No rule, because there are no longer two
+                // surfaces meeting that would need one.
+                flatChrome ? 'bg-background' : 'border-r border-border-default bg-surface-elevated',
+                // border-r goes with the width: at w-0 a rule would still paint, a
+                // stray hairline down the left of the canvas.
+                paneHidden ? 'w-0 border-r-0' : 'w-[480px]'
+            )}>
                 {/* onCollapse is future only — that release puts the toggle on the
                     pane, beside its title. Phase 1 drives the same state from the
                     header bar, so its pane doesn't carry a control of its own. */}
-                <LeftPanel
-                    scenario={scenario}
-                    selectedMemberId={selectedMemberId}
-                    onCollapse={isPhaseOne ? undefined : () => setPaneCollapsed(true)}
-                    onSelectMember={setSelectedMemberId}
-                />
+                {/* Pinned to the pane's full width so it never reflows while the
+                    aside narrows around it — see the note above. */}
+                <div className="flex min-h-0 w-[480px] flex-1 flex-col">
+                    <LeftPanel
+                        flat={flatChrome}
+                        reserveToggle={isPhaseOne}
+                        scenario={scenario}
+                        selectedMemberId={selectedMemberId}
+                        onSelectMember={setSelectedMemberId}
+                    />
+                </div>
             </aside>
 
             {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
                 centres within its own region — no left-inset hack needed. Same fill as
                 REACT_FLOW_THEME paints inside it, so the region and the flow's own
                 background can't disagree at the edges. */}
-            <div className={cn('relative min-w-0 flex-1 overflow-hidden', CANVAS_SURFACE)}>
+            <div className={cn(
+                'relative min-w-0 flex-1 overflow-hidden',
+                CANVAS_SURFACE,
+                // Flat chrome makes this the only bounded thing on screen, so it
+                // reads as an object: inset from the page, with a radius closing
+                // the shape.
+                //
+                // Right and bottom only. The gaps above and to the left are
+                // already paid for — the header's own height sets the one, the
+                // pane's px-6 sets the other — so margins there stacked a second
+                // gutter on top of a gutter that was already the right size.
+                //
+                // Margin rather than padding on the row, so collapsing the pane
+                // slides the window leftward to the page edge instead of dragging
+                // a gutter along with it.
+                //
+                // The border runs all four sides even though only two of them are
+                // inset. In light the flow's grey-50 fill would delimit the window
+                // on its own, but in dark that fill and the page background are the
+                // same token by design — so without a rule there'd be nothing but
+                // the dot pattern marking where the canvas ends. Carrying it on the
+                // flush edges too keeps the window one closed shape rather than
+                // something that fades out where it meets the header and pane.
+                flatChrome && 'mr-3 mb-3 rounded-xl border border-border-default'
+            )}>
                 {/* Both canvases stay mounted and crossfade on mode change. No remount
                     means the incoming flow is already centred — no first-frame node flash.
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
@@ -505,68 +528,181 @@ const AutomationFloat: React.FC = () => {
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
                     <FlowCanvas automation={publishedFlow} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
                 </div>
-                {/* Reviewing a member: the whole canvas takes an inset frame, stating
+                {/* Reviewing a member: the canvas takes an inset frame, stating
                     "you're inside this member's run" once at region scale instead of
-                    leaving it to card states. grey-800 rather than a colour — the
-                    frame marks a mode, not a status, and the blues/greens inside it
-                    keep their meanings. (No semantic token this dark exists: muted
-                    tops out at gray-100 and the next semantic stop is surface-inverse,
-                    i.e. black — so the frame and its tab sit on the palette grey,
-                    which stays near L53% in both modes.) An overlay rather than a
-                    border on the region itself, so entering review doesn't shift the
-                    canvas by the frame width (2px — 4px was tried and read heavy). */}
+                    leaving it to card states.
+
+                    A hairline now, and blue rather than grey-800. The frame used to be
+                    the only thing carrying the mode, so it had to be heavy enough to
+                    be seen against an unchanged canvas; the tinted fill behind it says
+                    that now, and the frame's job shrank to closing the tinted field.
+                    One stop off the fill in each mode (blue-100 on blue-50, blue-900
+                    on blue-950) so it reads as the edge of that surface rather than a
+                    rule drawn across it. The dark: variant is the usual palette
+                    exception — these stops are fixed values, so only naming both ends
+                    gets the pairing right in each mode.
+
+                    An overlay rather than a border on the region itself, so entering
+                    review doesn't shift the canvas by the frame width. */}
                 {selectedRun && !showEditCanvas && (
-                    <div className="pointer-events-none absolute inset-0 z-10 border-2 border-grey-800" />
+                    <div className={cn('pointer-events-none absolute inset-0 z-10 border border-blue-100 dark:border-blue-900', flatChrome && 'rounded-xl')} />
                 )}
 
-                {/* Future: the pane's own toggle collapses with it, so the way back
-                    floats on the canvas where the pane used to start. Phase 1 keeps a
-                    permanent toggle in the header bar and never needs this. */}
-                {!isPhaseOne && paneCollapsed && (
-                    <div className="absolute top-4 left-4 z-20">
-                        <Button
-                            aria-label="Show performance"
-                            className="bg-surface-elevated shadow-sm"
-                            size="icon"
-                            type="button"
-                            variant="outline"
-                            onClick={() => setPaneCollapsed(false)}
-                        >
-                            <LucideIcon.PanelLeft strokeWidth={2} />
-                        </Button>
+                {/* One top-left cluster, not two things at the same coordinates: the
+                    pane toggle (future's — phase 1's is anchored to the row below) and
+                    the member button can both be present at once, so they sit in a row
+                    and neither has to know about the other.
+
+                    top-4 left-6 is the HUD inset every floating thing on this canvas
+                    uses: 16px from the top and bottom edges, 24px from the sides. Taken
+                    from the pane beside it (pt-4 / px-6), so chrome on the canvas lines
+                    up with chrome in the panel instead of each carrying its own
+                    margin. */}
+                {(!isPhaseOne || (selectedRun && !showEditCanvas)) && (
+                    <div className="absolute top-4 left-6 z-20">
+                        <Inline align="center" gap="sm">
+                            {/* Phase 1's toggle is anchored to the row, not to this
+                                cluster — and once the pane collapses the canvas starts at
+                                x=0, so the two land on the same 16/16 and the member
+                                button ends up underneath it.
+
+                                An empty box of the toggle's exact footprint (size-9 is
+                                what Shade's size="icon" resolves to) stands in for it, so
+                                the Inline's own gap does the spacing and the member
+                                button sits off the toggle by the same distance it does in
+                                future. Nothing to keep in sync but the size token.
+
+                                Only while collapsed: with the pane open the toggle is
+                                480px away over the pane, and reserving space here would
+                                indent the member button against nothing. */}
+                            {isPhaseOne && paneCollapsed && (
+                                <div className="-ml-2 size-9 shrink-0" aria-hidden />
+                            )}
+                            {/* Future's pane toggle, in both directions. It used to be
+                                two controls — one leading the pane's title to close it,
+                                one floating here to bring it back — which meant the way
+                                out and the way in lived in different places and the pane
+                                carried chrome ahead of its own heading.
+
+                                One button on the canvas instead: it stays put, and the
+                                pane stays a clean column of content. Phase 1 keeps its
+                                permanent toggle in the header bar and never renders this.
+
+                                Ghost, with no surface of its own: this is chrome for
+                                getting the pane out of the way, not an object on the
+                                canvas, and an opaque fill here made it compete with the
+                                member button beside it. The label carries the state for
+                                screen readers, since one glyph serves both directions.
+
+                                Future only. Phase 1's toggle is anchored to the row
+                                instead (below) so that it can hold still while the pane
+                                slides; here the button belongs to the canvas and travels
+                                with it. */}
+                            {!isPhaseOne && (
+                                <Button
+                                    aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
+                                    aria-pressed={!paneCollapsed}
+                                    // A ghost icon button is a 36px box around a 16px
+                                    // glyph, so sitting its BOX on the 24px inset would
+                                    // put the mark itself 10px further in than every
+                                    // bordered thing beside it. -ml-2 pulls the box back
+                                    // so the glyph lands on the inset — the same trick,
+                                    // and the same value, the pane uses on its own
+                                    // leading button.
+                                    className="-ml-2"
+                                    size="icon"
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setPaneCollapsed(!paneCollapsed)}
+                                >
+                                    <LucideIcon.PanelLeft strokeWidth={2} />
+                                </Button>
+                            )}
+                            {/* Who you're looking at, and the way out, as one control:
+                                clicking the member's name closes their run. This replaced
+                                a bare X in the canvas's top-right, which said nothing
+                                about whose run it was — you could see you were inside
+                                something without being told what, and the only thing
+                                naming the member was a highlighted row in a pane you
+                                might have collapsed.
+
+                                Same outline-on-surface-elevated chrome as the button
+                                beside it, so the two read as one cluster of canvas
+                                controls rather than two kinds of thing. The close icon
+                                leads, because what the control DOES should be read
+                                before whose name it carries.
+
+                                aria-label rather than the bare name, since "Marcus Chen"
+                                doesn't say what pressing it does; it contains the visible
+                                text, so the label-in-name rule still holds. */}
+                            {selectedRun && !showEditCanvas && (
+                                <Button
+                                    aria-label={`Close ${selectedRun.member.name}'s run`}
+                                    // h-9 to match the icon buttons it lines up with —
+                                    // the pane toggle beside it and the search/filter
+                                    // pair in the pane's own strip are all size="icon",
+                                    // which Shade resolves to size-9 (36px), while a
+                                    // default button is h-(--control-height) at 32px. Four
+                                    // pixels short read as a different class of control
+                                    // sitting on the same row. cn's twMerge drops the
+                                    // variant's own height in favour of this one.
+                                    className="h-9 bg-surface-elevated shadow-sm"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setSelectedMemberId(null)}
+                                >
+                                    <LucideIcon.X strokeWidth={2} />
+                                    {selectedRun.member.name}
+                                </Button>
+                            )}
+                        </Inline>
                     </div>
                 )}
 
-                {/* Reviewing a member: their profile chip floats over the canvas, with
-                    the way out built in. Selection was previously only reversible from
-                    the list (click the row again) — nothing on the canvas said whose
-                    run this was or offered an exit, so the mode read as sticky.
-
-                    A profile (avatar + name + email), not a caption like "Ada's
-                    progress": a caption narrates the mode in system voice, while
-                    showing the member makes the canvas self-evidently their journey —
-                    and it's the exact shape Ghost renders a member in everywhere else,
-                    so it reads as a member pinned to the canvas rather than new
-                    chrome. Same initials-avatar recipe as the newsletter feedback
-                    list (stringToHslColor + initials fallback). */}
-                {/* The way out of the run — a bare close floating in the canvas's
-                    top-right. The frame plus the highlighted row carry "whose run
-                    this is" on their own; a labelled tab was tried here (Figma's
-                    following indicator, in miniature) and read as too much chrome
-                    for the job. Docked header only: under floating chrome this
-                    corner belongs to the lifecycle cluster, which appends the same
-                    close instead. */}
-                {selectedRun && !showEditCanvas && (
-                    <div className="absolute top-4 right-4 z-20">
-                        <RailButton icon={LucideIcon.X} label="Close member view" onClick={() => setSelectedMemberId(null)} />
-                    </div>
-                )}
 
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
                     <EditCanvas draft={draftFlow} inlineAnalytics={!isPhaseOne} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
             </div>
+
+            {/* Phase 1's pane toggle, anchored to the ROW rather than to either side of
+                it — the one thing in this layout that doesn't belong to the pane or the
+                canvas, because its whole job is to survive the boundary moving between
+                them.
+
+                Inside the pane it would slide away with the pane. On the canvas it
+                would appear at the canvas's own left edge — 480px in while the pane is
+                still open — and then ride leftward as the pane collapsed, which is the
+                flash this replaced. Anchored here it is simply always at 16/16 of the
+                row: the pane's px-6 less its -ml-2 horizontally, its pt-4 under a 64px
+                header vertically. The pane collapses out from under a button that never
+                moves, and the same press sends it back.
+
+                z-30 clears the pane's own sticky bars at z-20. The pane holds an
+                invisible twin of this button in flow (see reserveToggle) so the
+                Performance title starts where it would if this one were really there. */}
+            {isPhaseOne && (
+                <div className="absolute top-4 left-6 z-30">
+                    <Button
+                        aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
+                        aria-pressed={!paneCollapsed}
+                        // -ml-2, as everywhere else a ghost icon button meets the inset:
+                        // the box pulls back so the glyph sits on 24px. Net effect is the
+                        // box at 16px, which is also exactly where the pane's own leading
+                        // button sits — so this still lands on the pixels the pane's
+                        // button occupied, now for a stated reason rather than a
+                        // coincidence of two different numbers.
+                        className="-ml-2"
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setPaneCollapsed(!paneCollapsed)}
+                    >
+                        <LucideIcon.PanelLeft strokeWidth={2} />
+                    </Button>
+                </div>
+            )}
 
             </div>
 
