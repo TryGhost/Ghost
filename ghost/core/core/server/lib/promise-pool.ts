@@ -12,10 +12,10 @@ const validateMaxConcurrency = (maxConcurrency: number) => {
 /**
  * Run promise-returning tasks with a bounded level of concurrency.
  */
-export async function promisePool<Result>(
+export const promisePool = async <Result>(
   tasks: Array<() => Promisable<Result>>,
   maxConcurrency: number,
-): Promise<Result[]> {
+): Promise<Result[]> => {
   validateMaxConcurrency(maxConcurrency);
 
   const taskIterator = tasks.entries();
@@ -31,4 +31,4 @@ export async function promisePool<Result>(
 
   await Promise.all(workers);
   return results;
-}
+};
