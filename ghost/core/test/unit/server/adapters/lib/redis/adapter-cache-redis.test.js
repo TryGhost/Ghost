@@ -517,6 +517,61 @@ describe('Adapter Cache Redis', function () {
       assert.equal(value, 'new value');
       assert.equal(cacheStub.set.args[0][0], `testing-prefix:${PREFIX_HASH}key-here`);
     });
+
+    it('passes the configured ttl on every write', async function () {
+      const cacheStub = createCacheStub();
+      const cache = new RedisCache({ cache: cacheStub, ttl: 900 });
+
+      await cache.set('key-here', 'new value');
+
+      assert.deepEqual(cacheStub.set.args[0], [
+        `${PREFIX_HASH}key-here`,
+        'new value',
+        { ttl: 900 },
+      ]);
+    });
+
+    it('omits the ttl option when no ttl is configured', async function () {
+      const cacheStub = createCacheStub();
+      const cache = new RedisCache({ cache: cacheStub });
+
+      await cache.set('key-here', 'new value');
+
+      assert.deepEqual(cacheStub.set.args[0], [`${PREFIX_HASH}key-here`, 'new value']);
+    });
+
+    it("applies each adapter's own ttl when two adapters share one store", async function () {
+      // With reuseConnection (the default) every Redis cache adapter shares
+      // one store, whose store-level ttl is whatever the first-instantiated
+      // adapter was configured with. Each adapter must therefore pass its
+      // own ttl per write rather than rely on the store default.
+      const sharedStub = createCacheStub();
+      const imageSizesCache = new RedisCache({ cache: sharedStub, ttl: 604800 });
+      const postsPublicCache = new RedisCache({ cache: sharedStub, ttl: 900 });
+
+      await imageSizesCache.set('image-key', 'image value');
+      await postsPublicCache.set('post-key', 'post value');
+
+      assert.deepEqual(sharedStub.set.args[0][2], { ttl: 604800 });
+      assert.deepEqual(sharedStub.set.args[1][2], { ttl: 900 });
+    });
+
+    it('passes the configured ttl when populating the cache after a read miss', async function () {
+      const cacheStub = createCacheStub();
+      cacheStub.get.resolves(null);
+      const cache = new RedisCache({ cache: cacheStub, ttl: 900 });
+      const fetchData = sinon.stub().resolves('fetched value');
+
+      const value = await cache.get('key-here', fetchData);
+      await flushMicrotasks();
+
+      assert.equal(value, 'fetched value');
+      assert.deepEqual(cacheStub.set.args[0], [
+        `${PREFIX_HASH}key-here`,
+        'fetched value',
+        { ttl: 900 },
+      ]);
+    });
   });
 
   describe('reset', function () {

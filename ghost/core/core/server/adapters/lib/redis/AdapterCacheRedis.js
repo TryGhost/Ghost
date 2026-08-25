@@ -166,6 +166,23 @@ class AdapterCacheRedis extends CacheBase {
   }
 
   /**
+   * Write through cache-manager with this adapter's own TTL. The TTL must be
+   * passed per-call: with `reuseConnection` (the default) every Redis cache
+   * adapter in the process shares one store, and the store-level TTL is
+   * whatever the first-instantiated adapter was configured with — so relying
+   * on it would silently apply that adapter's TTL to every feature.
+   *
+   * @param {string} internalKey
+   * @param {*} value
+   */
+  async _cacheSet(internalKey, value) {
+    if (typeof this.ttl === 'number') {
+      return await this.cache.set(internalKey, value, { ttl: this.ttl });
+    }
+    return await this.cache.set(internalKey, value);
+  }
+
+  /**
    *
    * @param {string} internalKey
    */
@@ -311,7 +328,7 @@ class AdapterCacheRedis extends CacheBase {
           .then(async (data) => {
             try {
               debug('set', internalKey);
-              await this.cache.set(internalKey, data);
+              await this._cacheSet(internalKey, data);
             } catch (err) {
               this._metric('cache-error', { operation: 'set' });
               logging.error(err);
@@ -343,7 +360,7 @@ class AdapterCacheRedis extends CacheBase {
     try {
       const internalKey = await this._buildKey(key);
       debug('set', internalKey);
-      return await this.cache.set(internalKey, value);
+      return await this._cacheSet(internalKey, value);
     } catch (err) {
       this._metric('cache-error', { operation: 'set' });
       logging.error(err);
