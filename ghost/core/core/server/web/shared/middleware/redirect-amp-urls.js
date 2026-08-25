@@ -33,4 +33,4 @@ function redirectAmpUrls(req, res, next) {
   return urlUtils.redirect301(res, redirectPath);
 }
 
-module.exports = redirectAmpUrls;
+exports.redirectAmpUrls = redirectAmpUrls;

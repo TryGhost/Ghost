@@ -1,7 +1,7 @@
 import express, {type Express} from 'express';
 import request from 'supertest';
 // @ts-expect-error This module lacks type definitions.
-import redirectAmpUrls from '../../../../../../core/server/web/shared/middleware/redirect-amp-urls.js';
+import {redirectAmpUrls} from '../../../../../../core/server/web/shared/middleware/redirect-amp-urls.js';
 
 describe('Middleware: redirectAmpUrls', function () {
     const createApp = (): Express => {
