@@ -4,14 +4,25 @@ import { ConfirmationProvider } from '@/settings/providers/confirmation-provider
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import JSZip from 'jszip';
 
-const { mockImportContent, mockImportContentCSV, mockUseFeatureFlag, mockHandleError } = vi.hoisted(
-  () => ({
-    mockImportContent: vi.fn(),
-    mockImportContentCSV: vi.fn(),
-    mockUseFeatureFlag: vi.fn(),
-    mockHandleError: vi.fn(),
-  }),
-);
+const {
+  mockImportContent,
+  mockImportContentCSV,
+  mockUseFeatureFlag,
+  mockHandleError,
+  mockToastError,
+} = vi.hoisted(() => ({
+  mockImportContent: vi.fn(),
+  mockImportContentCSV: vi.fn(),
+  mockUseFeatureFlag: vi.fn(),
+  mockHandleError: vi.fn(),
+  mockToastError: vi.fn(),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: mockToastError,
+  },
+}));
 
 vi.mock('@tryghost/admin-x-framework/api/db', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/db')>(
@@ -256,11 +267,12 @@ describe('UniversalImportModal', () => {
     });
     await dropFile(file);
 
-    await waitFor(() => expect(mockHandleError).toHaveBeenCalledWith(expect.any(Error)));
-    expect(mockHandleError.mock.calls[0][0]).toHaveProperty(
-      'message',
-      expect.stringContaining('only one CSV file'),
+    await waitFor(() =>
+      expect(mockToastError).toHaveBeenCalledWith(
+        'ZIP files can contain only one CSV file. Remove the extra CSV files and try again.',
+      ),
     );
+    expect(mockHandleError).not.toHaveBeenCalled();
     expect(mockImportContent).not.toHaveBeenCalled();
     expect(mockImportContentCSV).not.toHaveBeenCalled();
     expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
