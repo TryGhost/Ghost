@@ -1,9 +1,8 @@
 module.exports = {
-  async init() {
+  async init({ jobsService }) {
     const MediaInliner = require('./external-media-inliner');
     const { MediaInlinerService } = require('./media-inliner-service');
     const models = require('../../models');
-    const jobsService = require('../jobs');
     const adapterManager = require('../../services/adapter-manager').default;
 
     const mediaStorage = adapterManager.getAdapter('storage:media');

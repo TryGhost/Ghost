@@ -13,6 +13,7 @@ type Processor = (envelope: { type: string; payload: string }) => Promise<void>;
 
 describe('register-job-handlers', function () {
   let deliver: Processor;
+  let mediaInliner: { inline: sinon.SinonStub };
 
   beforeEach(async function () {
     jobsService.init();
@@ -21,13 +22,23 @@ describe('register-job-handlers', function () {
       deliver = (args[0] as { processor: Processor }).processor;
     });
 
-    registerJobHandlers();
+    mediaInliner = { inline: sinon.stub().resolves() };
+    registerJobHandlers({ mediaInliner });
     await jobsService.getInstance().start();
   });
 
   afterEach(async function () {
     await jobsService.shutdown({ timeoutMs: 100 });
     sinon.restore();
+  });
+
+  it('runs the media inliner for the domains an external-media-inliner delivery carries', async function () {
+    await deliver({
+      type: 'external-media-inliner',
+      payload: '{"domains":["https://example.com"]}',
+    });
+
+    assert.deepEqual(mediaInliner.inline.firstCall.args, [['https://example.com']]);
   });
 
   // Nothing initialises the gifts service here, which is the state the guard

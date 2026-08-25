@@ -4,10 +4,15 @@ import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import cleanTokens from '../members/jobs/clean-tokens-task';
 import * as gifts from '../gifts';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
+import ExternalMediaInlinerJob from '../media-inliner/jobs/external-media-inliner-job';
 
 const logging = require('@tryghost/logging');
 
-export default function registerJobHandlers(): void {
+export interface JobHandlerDeps {
+  mediaInliner: { inline(domains: string[]): Promise<unknown> };
+}
+
+export default function registerJobHandlers({ mediaInliner }: JobHandlerDeps): void {
   const jobsService = getInstance();
   const db = require('../../data/db');
 
@@ -22,5 +27,9 @@ export default function registerJobHandlers(): void {
       });
     }
     await gifts.service.cleanup();
+  });
+
+  jobsService.handle(ExternalMediaInlinerJob, async (job) => {
+    await mediaInliner.inline(job.domains);
   });
 }

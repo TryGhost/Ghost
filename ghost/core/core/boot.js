@@ -327,7 +327,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient }) {
+async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
@@ -414,7 +414,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
     linkTracking.init(),
     emailSuppressionList.init(),
     slackNotifications.init(),
-    mediaInliner.init(),
+    mediaInliner.init({ jobsService }),
     contentImport.init(),
     donationService.init(),
     recommendationsService.init(),
@@ -653,10 +653,12 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const jobsService = require('./server/services/jobs-service');
     const service = jobsService.init();
 
-    await initServices({ ghostServer, config, prometheusClient });
+    await initServices({ ghostServer, config, prometheusClient, jobsService: service });
 
     debug('Begin: Register job handlers');
-    require('./server/services/jobs-service/register-job-handlers').default();
+    require('./server/services/jobs-service/register-job-handlers').default({
+      mediaInliner: require('./server/services/media-inliner').inliner,
+    });
     await service.start();
     debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
