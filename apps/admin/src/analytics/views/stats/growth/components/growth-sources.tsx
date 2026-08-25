@@ -21,13 +21,12 @@ import {
   TableRow,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { centsToDollars } from '@tryghost/shade/app';
 import { getFaviconDomain, getSymbol } from '@tryghost/admin-x-framework';
 import {
   useMembersTrackSources,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMrrHistory } from '@tryghost/admin-x-framework/api/stats';
 import { useTopSourcesGrowth } from '@/analytics/hooks/use-top-sources-growth';

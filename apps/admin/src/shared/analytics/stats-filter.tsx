@@ -5,7 +5,7 @@ import { Button } from '@tryghost/shade/components';
 import { type Filter, type FilterFieldConfig, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { formatQueryDate, getRangeDates } from './chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from './audience';
 import { useAnalyticsData } from './use-analytics-data';
 import { useTinybirdQuery, useWebAnalyticsEnabled } from '@tryghost/admin-x-framework';
