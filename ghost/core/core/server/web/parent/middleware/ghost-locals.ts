@@ -1,13 +1,15 @@
-const ghostVersion = require('@tryghost/version');
+import type * as express from 'express';
+// @ts-expect-error This module lacks type definitions.
+import ghostVersion from '@tryghost/version';
 
 /**
  * Expose the standard locals that every request will need to have available
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
  */
-module.exports = function ghostLocals(req, res, next) {
+export function ghostLocals(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+): void {
   // Make sure we have a locals value.
   res.locals = res.locals || {};
   // The current Ghost version
@@ -18,4 +20,4 @@ module.exports = function ghostLocals(req, res, next) {
   res.locals.relativeUrl = req.path;
 
   next();
-};
+}
