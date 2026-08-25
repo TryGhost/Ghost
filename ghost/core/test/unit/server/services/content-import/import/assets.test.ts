@@ -109,26 +109,6 @@ describe('content import assets', function () {
     sinon.assert.notCalled(loadFile);
   });
 
-  it('returns no batch when there is no importer for a supported asset group', async function () {
-    const loadFile = sinon.stub().resolves([]);
-    const batch = await prepareAssetBatch(
-      {
-        getFiles: () => [
-          { name: 'content/images/photo.jpg', path: '/tmp/content/images/photo.jpg' },
-        ],
-      },
-      '/tmp',
-      undefined,
-      {
-        handlers: [{ type: 'images', extensions: ['.jpg'], loadFile }],
-        importers: [],
-      },
-    );
-
-    assert.equal(batch, undefined);
-    sinon.assert.notCalled(loadFile);
-  });
-
   it('waits for every asset group to settle before reporting a storage failure', async function () {
     let finishMediaWrite: () => void = () => {};
     const failedWrite = new Error('image storage failed');

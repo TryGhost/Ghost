@@ -11,6 +11,8 @@ import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 
+export type { ImportRequest } from './schema';
+
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');

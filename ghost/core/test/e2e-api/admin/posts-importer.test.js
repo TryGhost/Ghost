@@ -29,6 +29,13 @@ const getImportedAssetPaths = () => [
   path.join(adapterManager.getAdapter('storage:images').storagePath, 'canonical-image.jpg'),
   path.join(adapterManager.getAdapter('storage:media').storagePath, 'canonical-media.mp4'),
   path.join(adapterManager.getAdapter('storage:files').storagePath, 'canonical-file.pdf'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'rollback-partial-one.pdf'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'rollback-partial-two.pdf'),
+  path.join(adapterManager.getAdapter('storage:images').storagePath, 'rollback-cross-image.jpg'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'rollback-cross-file.pdf'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'rollback-incomplete-one.pdf'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'rollback-incomplete-two.pdf'),
+  path.join(adapterManager.getAdapter('storage:files').storagePath, 'over-cap-guide.pdf'),
 ];
 
 const csvFile = async (name, content) => {
@@ -129,7 +136,8 @@ describe('Posts Importer API', function () {
     const csv =
       'title,html,markdown,feature_image,og_image,twitter_image\n' +
       'ZIP HTML assets,"<p><img src=""/content/images/csv-zip-photo.jpg""></p><a href=""/content/media/csv-zip-movie.mp4"">Media</a><a href=""/content/files/csv-zip-guide.pdf"">File</a>",,/content/images/csv-zip-photo.jpg,/content/images/csv-zip-photo.jpg,/content/images/csv-zip-photo.jpg\n' +
-      'ZIP Markdown assets,,"![Image](/content/images/csv-zip-photo.jpg)\n\n[Media](/content/media/csv-zip-movie.mp4)\n\n[File](/content/files/csv-zip-guide.pdf)",,,\n';
+      'ZIP Markdown assets,,"![Image](/content/images/csv-zip-photo.jpg)\n\n[Media](/content/media/csv-zip-movie.mp4)\n\n[File](/content/files/csv-zip-guide.pdf)",,,\n' +
+      'ZIP short asset path,"<p><img src=""/images/csv-zip-photo.jpg""></p>",,,,\n';
     const zipPath = await zipFile('posts-with-assets.zip', {
       'export/posts.csv': csv,
       'export/content/images/csv-zip-photo.jpg': 'image bytes',
@@ -141,7 +149,7 @@ describe('Posts Importer API', function () {
       .post('posts/upload/')
       .attach('postsfile', zipPath)
       .expectStatus(202);
-    assert.equal(body.meta.total, 2);
+    assert.equal(body.meta.total, 3);
     await jobsService.allSettled();
 
     for (const filePath of getImportedAssetPaths().slice(0, 3)) {
@@ -155,8 +163,13 @@ describe('Posts Importer API', function () {
       title: 'ZIP Markdown assets',
       status: 'all',
     });
+    const shortPathPost = await models.Post.findOne({
+      title: 'ZIP short asset path',
+      status: 'all',
+    });
     assert.ok(htmlPost);
     assert.ok(markdownPost);
+    assert.ok(shortPathPost);
     for (const assetPath of [
       '/content/images/csv-zip-photo.jpg',
       '/content/media/csv-zip-movie.mp4',
@@ -175,6 +188,7 @@ describe('Posts Importer API', function () {
         .get('twitter_image')
         .endsWith('/content/images/csv-zip-photo.jpg'),
     );
+    assert.match(shortPathPost.get('html'), /\/content\/images\/csv-zip-photo\.jpg/);
   });
 
   it('Rewrites canonical asset URLs for top-level ZIP asset directories', async function () {
@@ -197,7 +211,7 @@ describe('Posts Importer API', function () {
     assert.equal(body.meta.total, 1);
     await jobsService.allSettled();
 
-    for (const filePath of getImportedAssetPaths().slice(4)) {
+    for (const filePath of getImportedAssetPaths().slice(4, 7)) {
       assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);
     }
     const post = await models.Post.findOne(
@@ -242,6 +256,92 @@ describe('Posts Importer API', function () {
     assert.equal(post, null);
   });
 
+  it('Rolls back a stored file when another file in the same group fails', async function () {
+    await agent.loginAsOwner();
+    const fileStorage = adapterManager.getAdapter('storage:files');
+    const save = fileStorage.save.bind(fileStorage);
+    let saveCount = 0;
+    sinon.stub(fileStorage, 'save').callsFake(async (file, targetDir) => {
+      saveCount += 1;
+      if (saveCount === 2) {
+        throw new Error('second file failed');
+      }
+      return save(file, targetDir);
+    });
+    const zipPath = await zipFile('posts-with-partial-file-failure.zip', {
+      'posts.csv': 'title,html\nZIP partial file failure,<p>Must not import</p>\n',
+      'content/files/rollback-partial-one.pdf': 'first file',
+      'content/files/rollback-partial-two.pdf': 'second file',
+    });
+
+    await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'ZIP partial file failure', status: 'all' });
+    assert.equal(post, null);
+    for (const filePath of getImportedAssetPaths().slice(7, 9)) {
+      await assert.rejects(fs.stat(filePath), { code: 'ENOENT' });
+    }
+  });
+
+  it('Rolls back a successful asset group when another group fails', async function () {
+    await agent.loginAsOwner();
+    sinon
+      .stub(adapterManager.getAdapter('storage:files'), 'save')
+      .rejects(new Error('file storage failed'));
+    const zipPath = await zipFile('posts-with-cross-group-failure.zip', {
+      'posts.csv': 'title,html\nZIP cross-group failure,<p>Must not import</p>\n',
+      'content/images/rollback-cross-image.jpg': 'image bytes',
+      'content/files/rollback-cross-file.pdf': 'file bytes',
+    });
+
+    await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'ZIP cross-group failure', status: 'all' });
+    assert.equal(post, null);
+    for (const filePath of getImportedAssetPaths().slice(9, 11)) {
+      await assert.rejects(fs.stat(filePath), { code: 'ENOENT' });
+    }
+  });
+
+  it('Reports incomplete rollback without creating posts', async function () {
+    await agent.loginAsOwner();
+    const fileStorage = adapterManager.getAdapter('storage:files');
+    const save = fileStorage.save.bind(fileStorage);
+    let saveCount = 0;
+    sinon.stub(fileStorage, 'save').callsFake(async (file, targetDir) => {
+      saveCount += 1;
+      if (saveCount === 2) {
+        throw new Error('second file failed');
+      }
+      return save(file, targetDir);
+    });
+    sinon.stub(fileStorage, 'delete').rejects(new Error('rollback failed'));
+    const zipPath = await zipFile('posts-with-incomplete-rollback.zip', {
+      'posts.csv': 'title,html\nZIP incomplete rollback,<p>Must not import</p>\n',
+      'content/files/rollback-incomplete-one.pdf': 'first file',
+      'content/files/rollback-incomplete-two.pdf': 'second file',
+    });
+
+    await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'ZIP incomplete rollback', status: 'all' });
+    assert.equal(post, null);
+    const storedFiles = await Promise.all(
+      getImportedAssetPaths()
+        .slice(11, 13)
+        .map((filePath) =>
+          fs.stat(filePath).then(
+            () => true,
+            () => false,
+          ),
+        ),
+    );
+    assert.equal(storedFiles.filter(Boolean).length, 1);
+  });
+
   it('Rejects ZIPs with no data CSV, multiple data CSVs, or mixed data formats', async function () {
     await agent.loginAsOwner();
 
@@ -270,6 +370,37 @@ describe('Posts Importer API', function () {
         },
         reason: /cannot contain CSV, JSON, or Markdown import files together/,
       },
+      {
+        name: 'no-importable-content.zip',
+        files: {
+          'readme.txt': 'Nothing to import',
+        },
+        status: 415,
+        reason: /did not include any content to import/,
+      },
+      {
+        name: 'nested-data-csv.zip',
+        files: {
+          'export/data/posts.csv': 'title\nNested\n',
+        },
+        status: 415,
+        reason: /Invalid zip file structure/,
+      },
+      {
+        name: 'split-wrapper.zip',
+        files: {
+          'export/posts.csv': 'title\nWrapped\n',
+          'content/files/attachment.csv': 'download,only\n',
+        },
+        reason: /Invalid ZIP file structure/,
+      },
+      {
+        name: 'malformed-csv.zip',
+        files: {
+          'posts.csv': 'title,html\nBroken quote,"<p>never closed\n',
+        },
+        reason: /could not be parsed as a CSV file/,
+      },
     ];
 
     for (const testCase of cases) {
@@ -277,7 +408,7 @@ describe('Posts Importer API', function () {
       const { body } = await agent
         .post('posts/upload/')
         .attach('postsfile', zipPath)
-        .expectStatus(422);
+        .expectStatus(testCase.status ?? 422);
       assert.match(body.errors[0].message, testCase.reason);
     }
   });
@@ -651,14 +782,14 @@ describe('Posts Importer API', function () {
       { length: 101 },
       (_, i) => `Over cap post ${i + 1},<p>${i + 1}</p>,2025-02-01T00:00:00.000Z`,
     );
-    const overCapCsvPath = await csvFile(
-      'posts-import-over-cap.csv',
-      'title,html,published_at\n' + overCapRows.join('\n') + '\n',
-    );
+    const overCapZipPath = await zipFile('posts-import-over-cap.zip', {
+      'posts.csv': 'title,html,published_at\n' + overCapRows.join('\n') + '\n',
+      'content/files/over-cap-guide.pdf': 'must not be stored',
+    });
 
     const { body } = await agent
       .post('posts/upload/')
-      .attach('postsfile', overCapCsvPath)
+      .attach('postsfile', overCapZipPath)
       .expectStatus(422);
 
     assert.match(body.errors[0].message, /more than 100 posts/);
@@ -671,6 +802,7 @@ describe('Posts Importer API', function () {
       limit: 'all',
     });
     assert.equal(posts.length, 0, 'no posts were written from the rejected file');
+    await assert.rejects(fs.stat(getImportedAssetPaths()[13]), { code: 'ENOENT' });
   });
 
   it('Cannot upload a posts CSV when the csvContentImporter flag is disabled', async function () {

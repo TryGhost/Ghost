@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
+import { prepareAssetBatch } from '../../../core/server/services/content-import/import/assets';
 import {
   isDataFile,
   prepareImportSource,
-} from '../../../../../../core/server/services/content-import/import/source';
+} from '../../../core/server/services/content-import/import/source';
 
 const { compress } = require('@tryghost/zip');
 
@@ -54,6 +55,35 @@ describe('content import source', function () {
     assert.equal(isDataFile('export/._posts.csv'), false);
     assert.equal(isDataFile('export/data/posts.csv'), false);
     assert.equal(isDataFile('content/files/attachment.csv'), false);
+  });
+
+  it('ignores a supported asset group when no importer owns it', async function () {
+    let loadCalls = 0;
+    const batch = await prepareAssetBatch(
+      {
+        getFiles: () => [
+          { name: 'content/images/photo.jpg', path: '/tmp/content/images/photo.jpg' },
+        ],
+      },
+      '/tmp',
+      undefined,
+      {
+        handlers: [
+          {
+            type: 'images',
+            extensions: ['.jpg'],
+            loadFile: async () => {
+              loadCalls += 1;
+              return [];
+            },
+          },
+        ],
+        importers: [],
+      },
+    );
+
+    assert.equal(batch, undefined);
+    assert.equal(loadCalls, 0);
   });
 
   it('extracts one case-insensitive root CSV and cleans up its directory', async function () {
