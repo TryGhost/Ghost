@@ -728,7 +728,7 @@ describe('automations repository', function () {
     it('returns null for "last run created at" if the automation has no runs', async function () {
       const result = await repo.browse();
 
-      assert(result.data.every((automation) => automation.stats.last_run_created_at === null));
+      assert(result.data.every((automation) => automation.stats?.last_run_created_at === null));
     });
 
     it('returns the newest run creation time for the automation', async function () {
@@ -741,7 +741,7 @@ describe('automations repository', function () {
 
       const browseResult = await repo.browse();
       const automation = browseResult.data.find((candidate) => candidate.id === automationId);
-      assert(automation);
+      assert(automation?.stats);
 
       assert.deepEqual(automation.stats.last_run_created_at, latestRunCreatedAt);
     });
@@ -749,7 +749,7 @@ describe('automations repository', function () {
     it('returns zero for "total run count" if the automation has no runs', async function () {
       const result = await repo.browse();
 
-      assert(result.data.every((automation) => automation.stats.total_run_count === 0));
+      assert(result.data.every((automation) => automation.stats?.total_run_count === 0));
     });
 
     it('returns the number of runs for the automation', async function () {
@@ -766,8 +766,8 @@ describe('automations repository', function () {
       const otherAutomation = browseResult.data.find(
         (candidate) => candidate.id === otherAutomationId,
       );
-      assert(automation);
-      assert(otherAutomation);
+      assert(automation?.stats);
+      assert(otherAutomation?.stats);
 
       assert.equal(automation.stats.total_run_count, 3);
       assert.equal(otherAutomation.stats.total_run_count, 1);
@@ -776,7 +776,7 @@ describe('automations repository', function () {
     it('returns zero for "in progress run count" if the automation has no runs', async function () {
       const result = await repo.browse();
 
-      assert(result.data.every((automation) => automation.stats.in_progress_run_count === 0));
+      assert(result.data.every((automation) => automation.stats?.in_progress_run_count === 0));
     });
 
     it('returns zero for "in progress run count" if none of the runs have pending steps', async function () {
@@ -787,7 +787,7 @@ describe('automations repository', function () {
 
       const browseResult = await repo.browse();
       const automation = browseResult.data.find((candidate) => candidate.id === automationId);
-      assert(automation);
+      assert(automation?.stats);
 
       assert.equal(automation.stats.in_progress_run_count, 0);
     });
@@ -819,8 +819,8 @@ describe('automations repository', function () {
       const otherAutomation = browseResult.data.find(
         (candidate) => candidate.id === otherAutomationId,
       );
-      assert(automation);
-      assert(otherAutomation);
+      assert(automation?.stats);
+      assert(otherAutomation?.stats);
 
       assert.equal(automation.stats.in_progress_run_count, 2);
       assert.equal(otherAutomation.stats.in_progress_run_count, 1);
