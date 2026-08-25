@@ -4,12 +4,14 @@ const DATA_EXTENSIONS = new Set(['csv', 'json', 'md', 'markdown']);
 
 export type ImportArchiveContents = { type: 'legacy' } | { type: 'csv'; csv: string; name: string };
 
+export class ImportArchiveError extends Error {}
+
 export async function inspectImportArchive(file: File): Promise<ImportArchiveContents> {
   let archive: JSZip;
   try {
     archive = await JSZip.loadAsync(file);
   } catch {
-    throw new Error('Unable to read ZIP file. Please select a valid ZIP file.');
+    throw new ImportArchiveError('Unable to read ZIP file. Please select a valid ZIP file.');
   }
 
   const files = Object.values(archive.files).filter((entry) => !entry.dir);
@@ -21,13 +23,13 @@ export async function inspectImportArchive(file: File): Promise<ImportArchiveCon
   }
 
   if (csvFiles.length > 1) {
-    throw new Error(
+    throw new ImportArchiveError(
       'ZIP files can contain only one CSV file. Remove the extra CSV files and try again.',
     );
   }
 
   if (dataFiles.length > 1) {
-    throw new Error(
+    throw new ImportArchiveError(
       'ZIP files cannot contain CSV, JSON, or Markdown import files together. Keep only the CSV file and try again.',
     );
   }
@@ -53,7 +55,7 @@ function validateWrapper(files: JSZip.JSZipObject[], csv: JSZip.JSZipObject): vo
     return !isMetadata(parts) && parts[0] !== wrapper;
   });
   if (outsideWrapper) {
-    throw new Error('Invalid ZIP file structure.');
+    throw new ImportArchiveError('Invalid ZIP file structure.');
   }
 }
 

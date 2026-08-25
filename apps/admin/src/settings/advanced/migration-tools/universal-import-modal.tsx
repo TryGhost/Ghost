@@ -3,6 +3,7 @@ import { Button, Dropzone } from '@tryghost/shade/components';
 import { ExternalLink } from 'lucide-react';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { SettingsModal } from '@tryghost/shade/patterns';
+import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useImportContent } from '@tryghost/admin-x-framework/api/db';
@@ -10,7 +11,7 @@ import { useImportContentCSV } from '@tryghost/admin-x-framework/api/posts';
 import { ContentFieldMapping } from './content-import/mapping';
 import { MappingStep } from './content-import/mapping-step';
 import { columnsOf, parseCSV, readCSV } from './content-import/csv';
-import { inspectImportArchive } from './content-import/archive';
+import { ImportArchiveError, inspectImportArchive } from './content-import/archive';
 
 interface CSVImportState {
   file: File;
@@ -82,7 +83,11 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           sampleIndex: 0,
         });
       } catch (error) {
-        handleError(error);
+        if (error instanceof ImportArchiveError) {
+          toast.error(error.message);
+        } else {
+          handleError(error);
+        }
       } finally {
         setReading(false);
       }
