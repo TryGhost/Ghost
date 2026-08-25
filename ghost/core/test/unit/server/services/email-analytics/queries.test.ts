@@ -233,6 +233,15 @@ describe('Email analytics queries', function () {
       assert.equal(result.toISOString(), '2026-08-11T10:00:00.000Z');
     });
 
+    it('normalizes string timestamps to Date objects', async function () {
+      await insertJob({ started_at: '2026-08-11T10:00:00.000Z' });
+
+      const result = await queries.getLastJobRunTimestamp('email-analytics-scheduled');
+
+      assert(result instanceof Date);
+      assert.equal(result.toISOString(), '2026-08-11T10:00:00.000Z');
+    });
+
     it('returns null when job or timestamps do not exist', async function () {
       assert.equal(await queries.getLastJobRunTimestamp('email-analytics-missing'), null);
       await insertJob();

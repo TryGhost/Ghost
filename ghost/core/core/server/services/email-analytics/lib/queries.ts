@@ -157,7 +157,7 @@ export class Queries {
   async getLastJobRunTimestamp(jobName: EmailAnalyticsJobName): Promise<Date | null> {
     const jobData = await this.getJobData(jobName);
     const timestamp = jobData?.finished_at ?? jobData?.started_at ?? null;
-    if (!timestamp) {
+    if (timestamp === null) {
       return null;
     }
     // SQLite returns datetime columns as strings or numbers, so normalise to a Date to match
