@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const getModifiedDate = require('../../../../core/frontend/meta/modified-date');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import getModifiedDate from '../../../../core/frontend/meta/modified-date';
 
 describe('getModifiedDate', function () {
   it('should return updated at date as ISO 8601 from context if exists', function () {
