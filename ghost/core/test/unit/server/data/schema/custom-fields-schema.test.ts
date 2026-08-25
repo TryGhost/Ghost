@@ -1,10 +1,9 @@
-const assert = require('node:assert/strict');
-const { FIELD_TYPE_IDS } = require('@tryghost/custom-field-types');
-const {
-  FIELD_STATUS,
-} = require('../../../../../core/server/services/members-custom-fields/schema');
-
-const schema = require('../../../../../core/server/data/schema/schema');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import { FIELD_TYPE_IDS } from '@tryghost/custom-field-types';
+import { FIELD_STATUS } from '../../../../../core/server/services/members-custom-fields/schema';
+// @ts-expect-error This module lacks type definitions.
+import schema from '../../../../../core/server/data/schema/schema';
 
 // The static schema restates the field-type and status lists because it cannot import them:
 // it feeds the schema-hash integrity check and is read before the TS build. A "keep in sync"
