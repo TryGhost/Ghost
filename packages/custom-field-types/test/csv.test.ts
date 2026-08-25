@@ -197,6 +197,20 @@ describe('reading custom field values from a CSV row', function () {
     );
   });
 
+  // The sub-cells a composite occupies are the parts its value schema declares, so a
+  // column naming anything else is dropped the way a column naming no field is. A
+  // recipient's name is the one that gets written by hand: a parcel needs one, but it
+  // belongs to a field of its own rather than to the address.
+  it('drops a sub-cell that names no part of the composite', function () {
+    assert.deepEqual(
+      fieldValuesFromCsvRow([address], {
+        'custom_fields.shipping_address.name': 'Bex Jones',
+        'custom_fields.shipping_address.city': 'London',
+      }),
+      { shipping_address: { city: 'London' } },
+    );
+  });
+
   // A partial composite is read as a value (validation, run by the caller, is what
   // rejects it) rather than silently dropped like an all-blank one.
   it('reads a partial composite so its validation can fail the row', function () {
