@@ -650,11 +650,12 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
+    const jobsService = require('./server/services/jobs-service');
+    const service = jobsService.init();
+
     await initServices({ ghostServer, config, prometheusClient });
 
     debug('Begin: Register job handlers');
-    const jobsService = require('./server/services/jobs-service');
-    const service = jobsService.init();
     require('./server/services/jobs-service/register-job-handlers').default();
     await service.start();
     debug('End: Register job handlers');
