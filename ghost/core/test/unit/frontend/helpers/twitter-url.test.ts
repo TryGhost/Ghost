@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
 // Stuff we are testing
-const twitter_url = require('../../../../core/frontend/helpers/twitter_url');
+// @ts-expect-error This module lacks type definitions.
+import twitter_url from '../../../../core/frontend/helpers/twitter_url';
 
 describe('{{twitter_url}} helper', function () {
   const options = { data: { site: {} } };
