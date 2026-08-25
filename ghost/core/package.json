@@ -256,6 +256,7 @@
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/express": "catalog:",
+    "@types/express-brute": "catalog:",
     "@types/fs-extra": "11.0.4",
     "@types/js-yaml": "4.0.9",
     "@types/jsdom": "catalog:",

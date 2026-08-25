@@ -1,5 +1,7 @@
-const assert = require('node:assert/strict');
-const spamPrevention = require('../../../../../../../core/server/web/shared/middleware/api/spam-prevention');
+import assert from 'node:assert/strict';
+import ExpressBrute from 'express-brute';
+// @ts-expect-error This module lacks type definitions.
+import * as spamPrevention from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';
 
 describe('Spam Prevention', function () {
   it('exports a contentApiKey method', function () {
@@ -8,7 +10,6 @@ describe('Spam Prevention', function () {
 
   describe('contentApiKey method', function () {
     it('returns an instance of express-brute', function () {
-      const ExpressBrute = require('express-brute');
       const result = spamPrevention.contentApiKey();
 
       assert(result instanceof ExpressBrute);
