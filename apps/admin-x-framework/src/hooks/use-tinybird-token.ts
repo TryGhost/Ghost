@@ -1,5 +1,5 @@
 import { useTinybirdTokenQuery } from '../api/tinybird';
-import { useWebAnalyticsEnabled } from '../providers/app-provider';
+import { useWebAnalyticsEnabled } from '../api/settings';
 
 export interface UseTinybirdTokenResult {
   token: string | undefined;
@@ -17,7 +17,7 @@ let hasLoggedConfigWarning = false;
 
 export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
   const { enabled = true } = options;
-  // Web analytics is a global kill-switch read from context, so no call site threads it.
+  // Web analytics is a global kill-switch read from settings, so no call site threads it.
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const effectiveEnabled = enabled && webAnalyticsEnabled;
   const tinybirdQuery = useTinybirdTokenQuery({ enabled: effectiveEnabled });

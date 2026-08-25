@@ -29,7 +29,6 @@ import {
   getDefaultNewsletterIdsForNewMember,
   getEmailErrorMessage,
   getMemberEditableSlice,
-  getMemberNewslettersUiEnabled,
   isDraftInSyncWithServer,
   isValidMemberEmail,
   normalizeDraftForComparison,
@@ -38,7 +37,12 @@ import { dequal } from 'dequal';
 import { deriveMemberDetailBackPath } from './member-detail-nav';
 import { formatMemberName } from '@tryghost/shade/app';
 import { useMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import {
+  getSettingValue,
+  useBrowseSettings,
+  useNewslettersEnabled,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
@@ -545,6 +549,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
  */
 const MemberDetail: React.FC = () => {
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const newslettersEnabled = useNewslettersEnabled();
 
   if (isSettingsLoading || !settingsData?.settings) {
     return (
@@ -562,10 +568,6 @@ const MemberDetail: React.FC = () => {
     );
   }
 
-  const editorDefaultRecipients = getSettingValue<string>(
-    settingsData.settings,
-    'editor_default_email_recipients',
-  );
   const membersSignupAccess = getSettingValue<string>(
     settingsData.settings,
     'members_signup_access',
@@ -575,12 +577,10 @@ const MemberDetail: React.FC = () => {
     <MemberDetailPage
       // Hidden when the site can't sign up members or has email disabled:
       // the numbers are always zero and only add noise. Mirrors Ember.
-      engagementEnabled={membersSignupAccess !== 'none' && editorDefaultRecipients !== 'disabled'}
-      newslettersUiEnabled={getMemberNewslettersUiEnabled(editorDefaultRecipients)}
+      engagementEnabled={membersSignupAccess !== 'none' && newslettersEnabled === true}
+      newslettersUiEnabled={newslettersEnabled === true}
       // Sites without paid memberships never see subscription UI.
-      paidMembersEnabled={
-        getSettingValue<boolean>(settingsData.settings, 'paid_members_enabled') === true
-      }
+      paidMembersEnabled={paidMembersEnabled === true}
     />
   );
 };

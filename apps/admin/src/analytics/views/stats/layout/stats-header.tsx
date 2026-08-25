@@ -2,12 +2,11 @@ import React from 'react';
 import { H1 } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { Navbar, NavbarNavigation, PageMenu, PageMenuItem } from '@tryghost/shade/components';
+import { useActiveVisitors, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import {
-  useActiveVisitors,
-  useAppContext,
-  useLocation,
-  useNavigate,
-} from '@tryghost/admin-x-framework';
+  useNewslettersEnabled,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 
 interface StatsHeaderProps {
@@ -17,11 +16,12 @@ interface StatsHeaderProps {
 const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { appSettings } = useAppContext();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
+  const newslettersEnabled = useNewslettersEnabled();
   const { site, statsConfig } = useAnalyticsData();
   const { activeVisitors, isLoading: isActiveVisitorsLoading } = useActiveVisitors({
     statsConfig,
-    enabled: appSettings?.analytics?.webAnalytics ?? false,
+    enabled: webAnalyticsEnabled,
   });
   const normalizedPath = location.pathname.endsWith('/')
     ? location.pathname
@@ -40,7 +40,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
           >
             Analytics
           </H1>
-          {appSettings?.analytics.webAnalytics && (
+          {webAnalyticsEnabled && (
             <div className="flex items-center gap-2">
               {site?.url && (
                 <div className="hidden items-center gap-1.5 sm:visible! sm:flex!">
@@ -83,7 +83,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
               Overview
             </PageMenuItem>
 
-            {appSettings?.analytics.webAnalytics && (
+            {webAnalyticsEnabled && (
               <PageMenuItem
                 value="/analytics/web/"
                 onClick={() => {
@@ -94,7 +94,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
               </PageMenuItem>
             )}
 
-            {appSettings?.newslettersEnabled && (
+            {newslettersEnabled && (
               <PageMenuItem
                 value="/analytics/newsletters/"
                 onClick={() => {

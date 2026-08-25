@@ -30,7 +30,12 @@ import {
   formatNumber,
   formatPercentage,
 } from '@tryghost/shade/utils';
-import { Navigate, useAppContext, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
+import { Navigate, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
+import {
+  useEmailTrackClicks,
+  useEmailTrackOpens,
+  useNewslettersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getRangeDates } from '@tryghost/shade/app';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
@@ -78,9 +83,8 @@ const NewsletterTableRows: React.FC<{
     Boolean(shouldFetchStats),
   );
 
-  const { appSettings } = useAppContext();
-  const { emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled } =
-    appSettings?.analytics || {};
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   // Data is already sorted by the API based on sortBy
   const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
@@ -212,9 +216,8 @@ const NewsletterTableHeader: React.FC<{
     ),
     [range],
   );
-  const { appSettings } = useAppContext();
-  const { emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled } =
-    appSettings?.analytics || {};
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   return (
     <TableHeader>
@@ -288,7 +291,7 @@ TopNewslettersTable.displayName = 'TopNewslettersTable';
 const Newsletters: React.FC = () => {
   const { range, selectedNewsletterId } = useAnalytics();
   const [searchParams] = useSearchParams();
-  const { appSettings } = useAppContext();
+  const newslettersEnabled = useNewslettersEnabled();
 
   // Get the initial tab from URL search parameters
   const initialTab = searchParams.get('tab') || 'total-subscribers';
@@ -439,7 +442,9 @@ const Newsletters: React.FC = () => {
   // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
   // const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
-  if (appSettings && !appSettings.newslettersEnabled) {
+  // Hold the redirect until settings resolve: `undefined` means still loading,
+  // only a settled `false` bounces to the overview.
+  if (newslettersEnabled === false) {
     return <Navigate to="/analytics" />;
   }
 

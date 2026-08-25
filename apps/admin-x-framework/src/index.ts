@@ -6,14 +6,8 @@ export {
   useFramework,
 } from './providers/framework-provider';
 
-// App Context
-export type { AppSettings, AppContextType } from './providers/app-provider';
-export {
-  AppContext,
-  AppProvider,
-  useAppContext,
-  useWebAnalyticsEnabled,
-} from './providers/app-provider';
+// Settings selectors
+export { useWebAnalyticsEnabled } from './api/settings';
 
 // Hooks
 export { useActiveVisitors } from './hooks/use-active-visitors';

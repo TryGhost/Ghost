@@ -1,4 +1,5 @@
 import { Outlet } from '@tryghost/admin-x-framework';
+import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
@@ -6,6 +7,10 @@ import { useEmberAuthSync, useEmberDataSync } from './ember-bridge';
 
 function App() {
   const { data: currentUser } = useCurrentUser();
+  // Warm the settings cache at boot (as the removed AppProvider did): screens
+  // hold on settings, and resolving it before routes mount keeps route guards
+  // (e.g. force-upgrade) ahead of screen-level data fetches.
+  useBrowseSettings();
   useEmberAuthSync();
   useEmberDataSync();
 

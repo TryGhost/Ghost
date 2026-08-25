@@ -1,20 +1,7 @@
 import { renderHook } from '@testing-library/react';
-import { AppProvider, AppSettings } from '../../../src/providers/app-provider';
 import { useTinybirdQuery } from '../../../src/hooks/use-tinybird-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-
-const buildAppSettings = (webAnalytics: boolean): AppSettings => ({
-  paidMembersEnabled: true,
-  newslettersEnabled: true,
-  analytics: {
-    emailTrackOpens: true,
-    emailTrackClicks: true,
-    membersTrackSources: true,
-    outboundLinkTagging: true,
-    webAnalytics,
-  },
-});
 
 vi.mock('@tinybirdco/charts', () => ({
   useQuery: vi.fn(),
@@ -28,13 +15,19 @@ vi.mock('../../../src/hooks/use-tinybird-token', () => ({
   useTinybirdToken: vi.fn(),
 }));
 
+vi.mock('../../../src/api/settings', () => ({
+  useWebAnalyticsEnabled: vi.fn(),
+}));
+
 import { useTinybirdToken } from '../../../src/hooks/use-tinybird-token';
+import { useWebAnalyticsEnabled } from '../../../src/api/settings';
 import { getStatEndpointUrl } from '../../../src/utils/stats-config';
 import { useQuery } from '@tinybirdco/charts';
 
 const mockUseQuery = vi.mocked(useQuery);
 const mockUseTinybirdToken = vi.mocked(useTinybirdToken);
 const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
+const mockUseWebAnalyticsEnabled = vi.mocked(useWebAnalyticsEnabled);
 
 describe('useTinybirdQuery', () => {
   let queryClient: QueryClient;
@@ -63,6 +56,7 @@ describe('useTinybirdQuery', () => {
     mockGetStatEndpointUrl.mockImplementation(
       (_config: any, endpoint: any) => `https://api.example.com/${endpoint}`,
     );
+    mockUseWebAnalyticsEnabled.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -320,19 +314,8 @@ describe('useTinybirdQuery', () => {
   });
 
   describe('web analytics gate', () => {
-    const withAppSettings =
-      (webAnalytics: boolean): React.FC<{ children: React.ReactNode }> =>
-      ({ children }) =>
-        React.createElement(
-          QueryClientProvider,
-          { client: queryClient },
-          React.createElement(AppProvider, {
-            appSettings: buildAppSettings(webAnalytics),
-            children,
-          }),
-        );
-
     it('noops without a per-call flag when web analytics is disabled', () => {
+      mockUseWebAnalyticsEnabled.mockReturnValue(false);
       mockUseTinybirdToken.mockReturnValue({
         token: 'mock-token',
         isLoading: false,
@@ -351,7 +334,7 @@ describe('useTinybirdQuery', () => {
       });
 
       // enabled defaults to true and statsConfig/endpoint are provided —
-      // only the context flag should suppress the query.
+      // only the kill-switch should suppress the query.
       const { result } = renderHook(
         () =>
           useTinybirdQuery({
@@ -359,7 +342,7 @@ describe('useTinybirdQuery', () => {
             endpoint: 'test',
             params: {},
           }),
-        { wrapper: withAppSettings(false) },
+        { wrapper },
       );
 
       expect(mockGetStatEndpointUrl).not.toHaveBeenCalled();
@@ -377,6 +360,7 @@ describe('useTinybirdQuery', () => {
     });
 
     it('queries normally when web analytics is enabled', () => {
+      mockUseWebAnalyticsEnabled.mockReturnValue(true);
       mockUseTinybirdToken.mockReturnValue({
         token: 'mock-token',
         isLoading: false,
@@ -391,7 +375,7 @@ describe('useTinybirdQuery', () => {
             endpoint: 'test',
             params: {},
           }),
-        { wrapper: withAppSettings(true) },
+        { wrapper },
       );
 
       expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: true });

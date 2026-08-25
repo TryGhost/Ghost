@@ -20,7 +20,10 @@ import { createFilter } from '@tryghost/shade/patterns';
 import { formatQueryDate, getRangeDates, getRangeForStartDate } from '@tryghost/shade/app';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from '@/shared/analytics/audience';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  useBrowseSettings,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   POST_ANALYTICS_FILTER_FIELDS,
@@ -40,7 +43,8 @@ const Web: React.FC = () => {
   const { postId } = useParams();
   const { statsConfig, isLoading: isConfigLoading, site } = useAnalyticsData();
   const { range, setRange, post, isPostLoading } = usePostAnalytics();
-  const { appSettings } = useAppContext();
+  const { data: settingsData } = useBrowseSettings();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const containerRef = useRef<HTMLElement>(null);
 
   // Use URL-synced filter state for bookmarking and sharing. The 'post'
@@ -247,7 +251,7 @@ const Web: React.FC = () => {
   // The Web tab is hidden when analytics is off, but a direct link can still land
   // here — redirect to Overview instead of an empty "No visitors" state. Only once
   // settings have loaded, else enabled sites get bounced mid-load.
-  if (appSettings && !appSettings.analytics?.webAnalytics) {
+  if (settingsData?.settings && !webAnalyticsEnabled) {
     return <Navigate to={`/posts/analytics/${postId}`} replace />;
   }
 

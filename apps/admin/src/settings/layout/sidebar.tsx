@@ -16,7 +16,12 @@ import { Search, X } from 'lucide-react';
 import { Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
-import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import {
+  checkStripeEnabled,
+  getSettingValues,
+  useNewslettersEnabled,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
 import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
@@ -112,14 +117,15 @@ const Sidebar: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
   const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations, isPrivate, paidMembersEnabled, newslettersEnabled] = getSettingValues(
-    settings,
-    ['donations_enabled', 'is_private', 'paid_members_enabled', 'editor_default_email_recipients'],
-  ) as [boolean, boolean, boolean, string];
+  const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, [
+    'donations_enabled',
+    'is_private',
+  ]) as [boolean, boolean];
+  const paidMembersEnabled = usePaidMembersEnabled();
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
   const hasCustomFields = useFeatureFlag('membersCustomFields');
-  const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+  const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
   const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
   const visibleMembershipSearchKeywords = React.useMemo(

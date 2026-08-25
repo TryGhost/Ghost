@@ -4,16 +4,13 @@ import MailGun from './mailgun';
 import Newsletters from './newsletters';
 import React from 'react';
 import SearchableSection from '@/settings/components/searchable-section';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { useNewslettersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { searchKeywords } from './search-keywords';
 
 const EmailSettings: React.FC = () => {
-  const { settings, config } = useGlobalData();
-  const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [
-    string,
-  ];
-  const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+  const { config } = useGlobalData();
+  const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
   const visibleSearchKeywords = [
     searchKeywords.enableNewsletters,

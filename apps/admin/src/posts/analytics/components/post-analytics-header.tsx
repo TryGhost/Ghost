@@ -47,7 +47,10 @@ import {
   useActiveVisitors,
   useNavigate,
 } from '@tryghost/admin-x-framework';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  useMembersTrackSources,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -59,7 +62,8 @@ interface PostAnalyticsHeaderProps {
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
   const navigate = useNavigate();
-  const { appSettings } = useAppContext();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
+  const membersTrackSources = useMembersTrackSources();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -93,7 +97,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const { activeVisitors, isLoading: isActiveVisitorsLoading } = useActiveVisitors({
     postUuid: post?.uuid,
     statsConfig,
-    enabled: appSettings?.analytics?.webAnalytics ?? false,
+    enabled: webAnalyticsEnabled,
   });
 
   // Determine which tabs to show based on post type and settings
@@ -104,11 +108,10 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     const tabs = [];
 
     // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
-    const isPublishedOnlyWithoutWebAnalytics =
-      isPublishedOnly(post) && !appSettings?.analytics.webAnalytics;
+    const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post) && !webAnalyticsEnabled;
     if (!isPublishedOnlyWithoutWebAnalytics) {
       tabs.push('Overview');
-      if (!post.email_only && appSettings?.analytics.webAnalytics) {
+      if (!post.email_only && webAnalyticsEnabled) {
         tabs.push('Web');
       }
     }
@@ -116,12 +119,12 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
       tabs.push('Newsletter');
     }
     // Only show Growth tab if member source tracking is enabled
-    if (appSettings?.analytics.membersTrackSources) {
+    if (membersTrackSources) {
       tabs.push('Growth');
     }
 
     return tabs;
-  }, [post, appSettings?.analytics.webAnalytics, appSettings?.analytics.membersTrackSources]);
+  }, [post, webAnalyticsEnabled, membersTrackSources]);
 
   const handleDeletePost = () => {
     if (!post) {
@@ -175,7 +178,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 </BreadcrumbList>
               </Breadcrumb>
               <div className="flex w-full items-center gap-2 md:w-auto">
-                {appSettings?.analytics.webAnalytics && !post?.email_only && (
+                {webAnalyticsEnabled && !post?.email_only && (
                   <div className="mr-3 flex grow items-center gap-2 md:grow-0">
                     <div
                       className="flex items-center gap-2 text-muted-foreground"

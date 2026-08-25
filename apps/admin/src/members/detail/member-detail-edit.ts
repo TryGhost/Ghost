@@ -219,13 +219,6 @@ export function getMemberSuppressionInfo(
 }
 
 /**
- * Whether the newsletter section of the member form should render, gated on the
- * `editor_default_email_recipients` setting the same way Ember does: only
- * `'disabled'` hides it. Treating `undefined`/`null` as "show" biases for the
- * common case (sites with emails enabled see no flash) at the cost of a possible
- * flash-out on disabled sites when the setting finishes loading.
- */
-/**
  * Newsletters that Ember auto-subscribes a new member to on save. Ports
  * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
  * via `subscribe_on_signup` AND are visible to member-tier subscribers
@@ -246,12 +239,6 @@ export function getDefaultNewsletterIdsForNewMember(
   return newsletters
     .filter((nl) => nl.subscribe_on_signup === true && nl.visibility === 'members')
     .map((nl) => nl.id);
-}
-
-export function getMemberNewslettersUiEnabled(
-  editorDefaultEmailRecipients: string | null | undefined,
-): boolean {
-  return editorDefaultEmailRecipients !== 'disabled';
 }
 
 /**

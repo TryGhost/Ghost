@@ -8,7 +8,6 @@ import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
 import { routes } from './routes.tsx';
-import { AppProvider } from './providers/app-provider';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 import { fetchKoenigLexical } from './utils/fetch-koenig-lexical';
@@ -39,11 +38,9 @@ export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps 
     <StrictMode>
       <FrameworkProvider {...framework}>
         <RouterProvider prefix={'/'} routes={routes}>
-          <AppProvider>
-            <ThemeProvider>
-              <ThemedAdminApp />
-            </ThemeProvider>
-          </AppProvider>
+          <ThemeProvider>
+            <ThemedAdminApp />
+          </ThemeProvider>
         </RouterProvider>
       </FrameworkProvider>
     </StrictMode>

@@ -9,7 +9,11 @@ import StatsView from '@/analytics/views/stats/layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, { type KpiDataItem } from './components/web-kpis';
 import { Card, CardContent, NavbarActions } from '@tryghost/shade/components';
-import { Navigate, useAppContext, useTinybirdQuery } from '@tryghost/admin-x-framework';
+import { Navigate, useTinybirdQuery } from '@tryghost/admin-x-framework';
+import {
+  useBrowseSettings,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { STATS_DEFAULT_SOURCE_ICON_URL } from '@/shared/analytics/constants';
 import { createFilter } from '@tryghost/shade/patterns';
 import { getScrollParent } from '@tryghost/shade/utils';
@@ -23,8 +27,8 @@ const Web: React.FC = () => {
   const { range } = useAnalytics();
   const { statsConfig, isLoading: isConfigLoading, site } = useAnalyticsData();
   const { startDate, endDate, timezone } = getRangeDates(range);
-  const { appSettings } = useAppContext();
-  const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
+  const { data: settingsData } = useBrowseSettings();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -166,7 +170,7 @@ const Web: React.FC = () => {
   // The Web tab is hidden when analytics is off, but a direct link can still
   // land here. Wait until settings have loaded before redirecting so enabled
   // sites are not bounced to Overview during boot.
-  if (appSettings && !webAnalyticsEnabled) {
+  if (settingsData?.settings && !webAnalyticsEnabled) {
     return <Navigate to="/" />;
   }
 
