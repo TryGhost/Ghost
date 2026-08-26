@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 // @ts-expect-error This module lacks type definitions.
-import EmailSpamComplaintEvent from '../../../../core/server/models/email-spam-complaint-event';
+import models from '../../../../core/server/models';
+
+const { EmailSpamComplaintEvent } = models;
 
 describe('EmailSpamComplaintEvent', function () {
   describe('destroy', function () {

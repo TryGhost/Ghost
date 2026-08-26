@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import errors from '@tryghost/errors';
 // @ts-expect-error This module lacks type definitions.
-import { MemberSubscribeEvent } from '../../../../core/server/models/member-subscribe-event';
+import models from '../../../../core/server/models';
+
+const { MemberSubscribeEvent } = models;
 
 describe('Unit: models/MemberSubscribeEvent', function () {
   afterEach(function () {

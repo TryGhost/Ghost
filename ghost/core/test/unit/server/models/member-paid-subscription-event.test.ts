@@ -1,7 +1,8 @@
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
-import memberPaidSubscriptionEvent from '../../../../core/server/models/member-paid-subscription-event';
-const { MemberPaidSubscriptionEvent } = memberPaidSubscriptionEvent;
+import models from '../../../../core/server/models';
+
+const { MemberPaidSubscriptionEvent } = models;
 
 describe('Unit: models/MemberPaidSubscriptionEvent', function () {
   afterEach(function () {

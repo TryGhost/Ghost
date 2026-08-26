@@ -1,6 +1,8 @@
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
-import { MemberClickEvent } from '../../../../core/server/models/member-click-event';
+import models from '../../../../core/server/models';
+
+const { MemberClickEvent } = models;
 
 describe('Unit: models/MemberClickEvent', function () {
   afterEach(function () {

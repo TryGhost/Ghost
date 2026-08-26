@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import errors from '@tryghost/errors';
 // @ts-expect-error This module lacks type definitions.
-import { MemberFeedback } from '../../../../core/server/models/member-feedback';
+import models from '../../../../core/server/models';
+
+const { MemberFeedback } = models;
 
 describe('Unit: models/MemberFeedback', function () {
   afterEach(function () {

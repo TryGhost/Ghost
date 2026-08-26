@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
-import { Permission } from '../../../../core/server/models/permission';
+import models from '../../../../core/server/models';
+
+const { Permission } = models;
 // @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 

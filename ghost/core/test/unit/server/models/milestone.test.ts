@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
 // @ts-expect-error This module lacks type definitions.
-import { Milestone } from '../../../../core/server/models/milestone';
+import models from '../../../../core/server/models';
+
+const { Milestone } = models;
 
 describe('Unit: models/milestone', function () {
   describe('validation', function () {

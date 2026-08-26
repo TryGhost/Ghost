@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
-import { Newsletter } from '../../../../core/server/models/newsletter';
+import models from '../../../../core/server/models';
+
+const { Newsletter } = models;
 
 describe('Unit: models/newsletter', function () {
   afterAll(function () {
