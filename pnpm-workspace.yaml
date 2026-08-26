@@ -93,7 +93,7 @@ catalog:
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/request': 4.0.2
+  '@tryghost/request': 4.0.3
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
   '@tryghost/tpl': 2.3.9
