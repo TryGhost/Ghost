@@ -107,6 +107,8 @@ services:
       database__connection__database: ${MYSQL_DATABASE:-ghost_dev}
       server__host: 0.0.0.0
       server__port: 2368
+      # Apply Ghost(Pro)'s public query parameter allowlist in local development
+      queryParameterFiltering__enabled: '${QUERY_PARAMETER_FILTERING_ENABLED:-true}'
       mail__transport: SMTP
       mail__options__host: mailpit
       mail__options__port: 1025
