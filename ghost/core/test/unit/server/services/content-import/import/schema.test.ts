@@ -21,6 +21,10 @@ describe('content import schema', function () {
         mapping: {
           Headline: 'title',
           Body: 'html',
+          Source: 'comment_id',
+          Bylines: 'authors',
+          Emails: 'author_emails',
+          Topics: 'tags',
           Notes: '',
         },
       }),
@@ -30,6 +34,10 @@ describe('content import schema', function () {
         mapping: {
           Headline: 'title',
           Body: 'html',
+          Source: 'comment_id',
+          Bylines: 'authors',
+          Emails: 'author_emails',
+          Topics: 'tags',
           Notes: '',
         },
       },

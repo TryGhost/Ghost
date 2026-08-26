@@ -7,6 +7,7 @@ import buildPostData, {
   type PostData,
 } from './post-data';
 import type { PostImportRow } from './row';
+import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
@@ -27,15 +28,6 @@ export interface ImportAccepted {
   total: number;
 }
 
-export interface CreatedPost {
-  id: string;
-  toJSON(): Record<string, unknown>;
-}
-
-export interface PostsRepository {
-  create(data: PostData, options: object): Promise<CreatedPost>;
-}
-
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
 
@@ -47,7 +39,7 @@ const messages = {
   tooManyPosts:
     'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.',
   allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
-  urlResolutionFailed: 'Content import could not resolve a URL for {count} created {postNoun}.',
+  urlResolutionFailed: 'Content import could not resolve a URL for {count} imported {postNoun}.',
 };
 
 function logLifecycle(message: string): void {
@@ -71,7 +63,7 @@ interface ImporterDeps {
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
-  urlForPost: (post: CreatedPost) => string;
+  urlForPost: (post: WrittenPost) => string;
   newRunId: () => string;
   getTimezone: () => string;
   now?: Clock;
@@ -94,7 +86,7 @@ class ContentCSVImporter {
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
-  private _urlForPost: (post: CreatedPost) => string;
+  private _urlForPost: (post: WrittenPost) => string;
   private _newRunId: () => string;
   private _getTimezone: () => string;
   private _now: Clock;
@@ -194,7 +186,6 @@ class ContentCSVImporter {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
-      let attemptedWrites = 0;
       let successfulWrites = 0;
       let failedWrites = 0;
       let firstWriteFailure: unknown;
@@ -221,8 +212,9 @@ class ContentCSVImporter {
           throw error;
         }
 
-        attemptedWrites += 1;
-        let post: CreatedPost;
+        let post: WrittenPost;
+        let writeStatus: 'created' | 'updated';
+        let warnings: string[];
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:
           // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
@@ -230,10 +222,33 @@ class ContentCSVImporter {
           // it, one reason status is never 'scheduled'). Pinned by
           // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
           // model layer mutates it.
-          post = await this._posts.create(data, {
-            importing: true,
-            context: { internal: true },
-          });
+          const result = await this._posts.write(
+            data,
+            {
+              importing: true,
+              context: { internal: true },
+            },
+            {
+              sourceUpdatedAt: row.updated_at,
+              authorNames: row.authors,
+              authorEmails: row.author_emails,
+              tagNames: row.tags,
+            },
+          );
+
+          if (result.status === 'skipped') {
+            this._store.record(runId, {
+              line,
+              title: row.title,
+              status: 'skipped',
+              reason: result.reason,
+            });
+            continue;
+          }
+
+          post = result.post;
+          writeStatus = result.status;
+          warnings = result.warnings;
           successfulWrites += 1;
         } catch (error) {
           if (failedWrites === 0) {
@@ -252,8 +267,9 @@ class ContentCSVImporter {
         const outcome: RowOutcome = {
           line,
           title: row.title,
-          status: 'created',
+          status: writeStatus,
           postId: post.id,
+          ...(warnings.length > 0 ? { warnings } : {}),
         };
         try {
           outcome.url = this._urlForPost(post);
@@ -266,7 +282,7 @@ class ContentCSVImporter {
         this._store.record(runId, outcome);
       }
 
-      if (attemptedWrites > 0 && successfulWrites === 0 && failedWrites === attemptedWrites) {
+      if (failedWrites > 0 && successfulWrites === 0) {
         this._report(
           new errors.InternalServerError({
             message: tpl(messages.allWritesFailed, {

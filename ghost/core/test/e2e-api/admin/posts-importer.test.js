@@ -96,6 +96,34 @@ describe('Posts Importer API', function () {
       .expect(cacheInvalidateHeaderNotSet());
   });
 
+  it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {
+    const contentImportService =
+      await import('../../../core/server/services/content-import/index.ts?coverage-lifecycle');
+
+    assert.throws(
+      () => contentImportService.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
+      /Content import service used before init/,
+    );
+    contentImportService.init();
+    contentImportService.init();
+
+    assert.throws(
+      () => contentImportService.importCSV({ filePath: '', fileName: '' }),
+      (error) => {
+        assert.equal(error.errorType, 'ValidationError');
+        assert.match(error.message, /Too small/);
+        return true;
+      },
+    );
+    await assert.rejects(
+      contentImportService.importCSV({
+        filePath: path.join(tmpDir, 'missing.csv'),
+        fileName: 'missing.csv',
+      }),
+      /The file could not be parsed as a CSV file/,
+    );
+  });
+
   it('Can upload a posts CSV as Administrator', async function () {
     await agent.loginAsAdmin();
 
@@ -506,8 +534,8 @@ describe('Posts Importer API', function () {
         reason: /Invalid CSV header mapping: "constructor"/,
       },
       {
-        mapping: { First: 'title', Second: 'authors' },
-        reason: /Unknown post field mapping: "authors"/,
+        mapping: { First: 'title', Second: 'newsletter_id' },
+        reason: /Unknown post field mapping: "newsletter_id"/,
       },
       {
         mapping: { First: 'title', Second: 'title' },
@@ -613,6 +641,130 @@ describe('Posts Importer API', function () {
     assert.equal(two.get('updated_at').toISOString(), '2024-06-15T18:45:00.000Z');
   });
 
+  it('Skips existing post slugs when the same CSV is imported again', async function () {
+    await agent.loginAsOwner();
+
+    const duplicateCsvPath = await csvFile(
+      'posts-import-deduplication.csv',
+      'title,slug,html\n' +
+        'CSV deduplication check,csv-deduplication-check,<p>Only one copy</p>\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', duplicateCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+    await agent.post('posts/upload/').attach('postsfile', duplicateCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const { data: posts } = await models.Post.findPage({
+      filter: "slug:'csv-deduplication-check'",
+      status: 'all',
+      limit: 'all',
+    });
+
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].get('title'), 'CSV deduplication check');
+    assert.match(posts[0].get('html'), /Only one copy/);
+  });
+
+  it('Matches explicit CSV source IDs before falling back to slugs', async function () {
+    await agent.loginAsOwner();
+
+    const originalCsvPath = await csvFile(
+      'posts-import-source-id-original.csv',
+      'title,slug,comment_id\n' +
+        'CSV source ID original,csv-source-id-original,m5-source-id-primary\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', originalCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const comparisonCsvPath = await csvFile(
+      'posts-import-source-id-comparisons.csv',
+      'Headline,Address,Source\n' +
+        'CSV source ID duplicate,csv-source-id-different,m5-source-id-primary\n' +
+        'CSV source ID slug fallback,csv-source-id-original,m5-source-id-unmatched\n' +
+        `CSV source ID too long,csv-source-id-too-long,${'x'.repeat(51)}\n` +
+        'CSV source ID distinct,csv-source-id-distinct,m5-source-id-distinct\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[Address]', 'slug');
+    form.append('mapping[Source]', 'comment_id');
+    form.append('postsfile', await fs.readFile(comparisonCsvPath), {
+      filename: path.basename(comparisonCsvPath),
+      contentType: 'text/csv',
+    });
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const original = await models.Post.findOne({ slug: 'csv-source-id-original', status: 'all' });
+    const sourceDuplicate = await models.Post.findOne({
+      slug: 'csv-source-id-different',
+      status: 'all',
+    });
+    const tooLong = await models.Post.findOne({
+      slug: 'csv-source-id-too-long',
+      status: 'all',
+    });
+    const distinct = await models.Post.findOne({ slug: 'csv-source-id-distinct', status: 'all' });
+
+    assert.ok(original);
+    assert.equal(original.get('title'), 'CSV source ID original');
+    assert.equal(original.get('comment_id'), 'm5-source-id-primary');
+    assert.equal(sourceDuplicate, null, 'the source ID match takes precedence over its new slug');
+    assert.equal(tooLong, null, 'an invalid source ID skips only its row');
+    assert.ok(distinct, 'a valid row after the invalid source ID is still imported');
+    assert.equal(distinct.get('comment_id'), 'm5-source-id-distinct');
+  });
+
+  it('Updates matching posts only when the CSV has a newer explicit updated_at', async function () {
+    await agent.loginAsOwner();
+
+    const originalCsvPath = await csvFile(
+      'posts-import-update-originals.csv',
+      'title,slug,comment_id,updated_at\n' +
+        'CSV update original,csv-update-original,m5-update-source,2025-01-01T00:00:00.000Z\n' +
+        'CSV update slug original,csv-update-by-slug,,2025-01-01T00:00:00.000Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', originalCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const updatesCsvPath = await csvFile(
+      'posts-import-update-comparisons.csv',
+      'title,slug,comment_id,updated_at\n' +
+        'CSV update newer,csv-update-newer,m5-update-source,2025-02-01T00:00:00.000Z\n' +
+        'CSV update equal,csv-update-equal,m5-update-source,2025-02-01T01:00:00.000+01:00\n' +
+        'CSV update older,csv-update-older,m5-update-source,2025-01-31T23:59:59.999Z\n' +
+        'CSV update by slug,csv-update-by-slug,,2025-03-01T00:00:00.000Z\n' +
+        'CSV update invalid date,csv-update-invalid-date,,not-a-date\n' +
+        'CSV update after invalid,csv-update-after-invalid,,2025-04-01T00:00:00.000Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', updatesCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const newer = await models.Post.findOne({
+      comment_id: 'm5-update-source',
+      status: 'all',
+    });
+    const updatedBySlug = await models.Post.findOne({
+      slug: 'csv-update-by-slug',
+      status: 'all',
+    });
+    const invalid = await models.Post.findOne({ slug: 'csv-update-invalid-date', status: 'all' });
+    const afterInvalid = await models.Post.findOne({
+      slug: 'csv-update-after-invalid',
+      status: 'all',
+    });
+
+    assert.ok(newer);
+    assert.equal(newer.get('updated_at').toISOString(), '2025-02-01T00:00:00.000Z');
+    assert.equal(newer.get('title'), 'CSV update newer');
+    assert.ok(updatedBySlug);
+    assert.equal(updatedBySlug.get('title'), 'CSV update by slug');
+    assert.equal(updatedBySlug.get('updated_at').toISOString(), '2025-03-01T00:00:00.000Z');
+    assert.equal(invalid, null, 'an invalid updated_at skips only its row');
+    assert.ok(afterInvalid, 'a valid row after the invalid date is still imported');
+  });
+
   it('Imports public posts even when the site default visibility is paid', async function () {
     mockManager.mockSetting('default_content_visibility', 'paid');
     await agent.loginAsOwner();
@@ -687,6 +839,223 @@ describe('Posts Importer API', function () {
       'Mapped social description',
     );
     assert.match(post.get('html'), /Mapped body/);
+  });
+
+  it('Reconciles mapped CSV authors and tags with existing records', async function () {
+    await agent.loginAsOwner();
+
+    const emailAuthor = fixtureManager.get('users', 1);
+    const nameAuthor = fixtureManager.get('users', 3);
+    const tagOptions = { context: { internal: true } };
+    const exactTag = await models.Tag.add(
+      { name: 'CSV exact relation', slug: 'csv-exact-relation-stored' },
+      tagOptions,
+    );
+    const explicitSlugTag = await models.Tag.add(
+      { name: 'Stored explicit relation', slug: 'csv-explicit-relation' },
+      tagOptions,
+    );
+    const normalizedSlugTag = await models.Tag.add(
+      { name: 'Stored normalized relation', slug: 'csv-normalized-relation' },
+      tagOptions,
+    );
+    const relationsCsvPath = await csvFile(
+      'posts-import-existing-relations.csv',
+      'Headline,Bylines,Emails,Topics\n' +
+        `CSV existing relations,"${emailAuthor.name}, ${nameAuthor.name}, ${emailAuthor.name}","${emailAuthor.email.toUpperCase()}, , ${emailAuthor.email}","CSV exact relation,csv-explicit-relation,CSV normalized relation,CSV exact relation"\n`,
+    );
+    const form = new FormData();
+    for (const [header, field] of Object.entries({
+      Headline: 'title',
+      Bylines: 'authors',
+      Emails: 'author_emails',
+      Topics: 'tags',
+    })) {
+      form.append(`mapping[${header}]`, field);
+    }
+    form.append('postsfile', await fs.readFile(relationsCsvPath), {
+      filename: path.basename(relationsCsvPath),
+      contentType: 'text/csv',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'CSV existing relations', status: 'all' },
+      { withRelated: ['authors', 'tags'] },
+    );
+    assert.ok(post);
+    assert.deepEqual(
+      post.related('authors').map((author) => author.id),
+      [emailAuthor.id, nameAuthor.id],
+      'email and name-only matches retain source order and remove duplicates',
+    );
+    const importedTags = post.related('tags').models;
+    assert.deepEqual(
+      importedTags.slice(0, 3).map((tag) => tag.id),
+      [exactTag.id, explicitSlugTag.id, normalizedSlugTag.id],
+      'exact names, explicit slugs, and normalized slugs retain source order',
+    );
+    assert.equal(importedTags.length, 5);
+    assert.match(importedTags[3].get('name'), /^#Import /);
+    assert.match(importedTags[4].get('name'), /^#Import Run /);
+  });
+
+  it('Creates missing CSV authors as locked Contributors and falls back to Owner', async function () {
+    await agent.loginAsOwner();
+
+    const authorsCsvPath = await csvFile(
+      'posts-import-new-authors.csv',
+      'title,authors,author_emails\n' +
+        'CSV created contributor,"New CSV Contributor, New CSV Contributor","new-csv-contributor@example.com, new-csv-contributor@example.com"\n' +
+        'CSV missing author email,Missing CSV Email,\n' +
+        'CSV invalid author email,Invalid CSV Email,not-an-email\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', authorsCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const contributor = await models.User.findOne(
+      { email: 'new-csv-contributor@example.com', status: 'all' },
+      { withRelated: ['roles'] },
+    );
+    assert.ok(contributor);
+    assert.equal(contributor.get('status'), 'locked');
+    assert.deepEqual(
+      contributor.related('roles').map((role) => role.get('name')),
+      ['Contributor'],
+    );
+
+    const owner = await models.User.getOwnerUser();
+    const createdPost = await models.Post.findOne(
+      { title: 'CSV created contributor', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    const missingEmailPost = await models.Post.findOne(
+      { title: 'CSV missing author email', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    const invalidEmailPost = await models.Post.findOne(
+      { title: 'CSV invalid author email', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    assert.deepEqual(
+      createdPost.related('authors').map((author) => author.id),
+      [contributor.id],
+      'duplicate author inputs create and attach one Contributor',
+    );
+    for (const post of [missingEmailPost, invalidEmailPost]) {
+      assert.deepEqual(
+        post.related('authors').map((author) => author.id),
+        [owner.id],
+      );
+    }
+    assert.equal(await models.User.findOne({ slug: 'missing-csv-email', status: 'all' }), null);
+    assert.equal(await models.User.findOne({ slug: 'invalid-csv-email', status: 'all' }), null);
+  });
+
+  it('Rolls back a newly created Contributor when the post model fails', async function () {
+    await agent.loginAsOwner();
+    sinon.stub(models.Post, 'add').rejects(new Error('post model failed'));
+    const authorsCsvPath = await csvFile(
+      'posts-import-author-rollback.csv',
+      'title,authors,author_emails\n' +
+        'CSV contributor rollback,Rollback Contributor,csv-rollback-contributor@example.com\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', authorsCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    assert.equal(
+      await models.User.findOne({ email: 'csv-rollback-contributor@example.com', status: 'all' }),
+      null,
+    );
+    assert.equal(
+      await models.Post.findOne({ title: 'CSV contributor rollback', status: 'all' }),
+      null,
+    );
+  });
+
+  it('Creates missing CSV tags once and preserves their order and visibility', async function () {
+    await agent.loginAsOwner();
+
+    const firstCsvPath = await csvFile(
+      'posts-import-new-tags.csv',
+      'title,tags\n' +
+        'CSV created tags one,"New CSV Tag,#CSV Internal Tag,New CSV Tag"\n' +
+        'CSV created tags two,"#CSV Internal Tag,New CSV Tag"\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', firstCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const secondCsvPath = await csvFile(
+      'posts-import-reused-tags.csv',
+      'title,tags\nCSV reused tags,New CSV Tag\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', secondCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const publicTags = await models.Tag.findAll({ filter: "name:'New CSV Tag'" });
+    const internalTags = await models.Tag.findAll({ filter: "name:'#CSV Internal Tag'" });
+    assert.equal(publicTags.length, 1, 'later rows and imports reuse the created public tag');
+    assert.equal(internalTags.length, 1, 'duplicate inputs create one internal tag');
+    const publicTag = publicTags.at(0);
+    const internalTag = internalTags.at(0);
+    assert.equal(publicTag.get('visibility'), 'public');
+    assert.equal(internalTag.get('visibility'), 'internal');
+
+    const firstPost = await models.Post.findOne(
+      { title: 'CSV created tags one', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const secondPost = await models.Post.findOne(
+      { title: 'CSV created tags two', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const reusedPost = await models.Post.findOne(
+      { title: 'CSV reused tags', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    assert.deepEqual(
+      firstPost
+        .related('tags')
+        .models.slice(0, 2)
+        .map((tag) => tag.id),
+      [publicTag.id, internalTag.id],
+    );
+    assert.deepEqual(
+      secondPost
+        .related('tags')
+        .models.slice(0, 2)
+        .map((tag) => tag.id),
+      [internalTag.id, publicTag.id],
+    );
+    assert.equal(firstPost.related('tags').length, 4, 'the two batch tags remain attached');
+    assert.equal(secondPost.related('tags').length, 4, 'the two batch tags remain attached');
+    assert.deepEqual(
+      reusedPost
+        .related('tags')
+        .models.slice(0, 1)
+        .map((tag) => tag.id),
+      [publicTag.id],
+    );
+    assert.equal(reusedPost.related('tags').length, 3, 'a later import gets its own batch tags');
+  });
+
+  it('Rolls back a newly created tag when the post model fails', async function () {
+    await agent.loginAsOwner();
+    sinon.stub(models.Post, 'add').rejects(new Error('post model failed'));
+    const tagsCsvPath = await csvFile(
+      'posts-import-tag-rollback.csv',
+      'title,tags\nCSV tag rollback,CSV Rollback Tag\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', tagsCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    assert.equal(await models.Tag.findOne({ name: 'CSV Rollback Tag' }), null);
+    assert.equal(await models.Post.findOne({ title: 'CSV tag rollback', status: 'all' }), null);
   });
 
   it('Renders a mapped Markdown column through the post content converter', async function () {
