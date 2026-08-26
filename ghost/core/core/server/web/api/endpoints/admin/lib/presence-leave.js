@@ -1,10 +1,6 @@
 const logging = require('@tryghost/logging');
 const postPresence = require('../../../../../services/post-presence');
 
-/**
- * Explicit "I'm leaving this post" handler. Best-effort; failures never
- * error to the client.
- */
 module.exports = function presenceLeave(req, res) {
   try {
     if (req.api_key) {

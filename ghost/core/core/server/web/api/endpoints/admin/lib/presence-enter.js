@@ -3,14 +3,19 @@ const models = require('../../../../../models');
 const postPresence = require('../../../../../services/post-presence');
 const permissionsService = require('../../../../../services/permissions');
 
-/**
- * Explicit "I just opened this post in the editor" handler. Looks up
- * the post through the user's context so Ghost's permission system
- * rejects the call if the user can't read the post — that also keeps
- * a Contributor from injecting their avatar onto posts they can't
- * access. The post's author IDs are passed through so the SSE handler
- * can filter events to other Authors/Contributors.
- */
+function lookupErrorStatus(err) {
+  if (!err) {
+    return null;
+  }
+  if (err.errorType === 'NoPermissionError' || err.statusCode === 403) {
+    return 403;
+  }
+  if (err.errorType === 'NotFoundError' || err.statusCode === 404) {
+    return 404;
+  }
+  return null;
+}
+
 module.exports = async function presenceEnter(req, res) {
   try {
     if (req.api_key) {
@@ -35,15 +40,9 @@ module.exports = async function presenceEnter(req, res) {
         },
       );
     } catch (err) {
-      // Only permission failures should be reported as 403. Other
-      // failures (transient DB, etc.) are logged and treated as
-      // best-effort — never block the editor flow.
-      if (err && (err.errorType === 'NoPermissionError' || err.statusCode === 403)) {
-        res.status(403).end();
-        return;
-      }
-      if (err && (err.errorType === 'NotFoundError' || err.statusCode === 404)) {
-        res.status(404).end();
+      const status = lookupErrorStatus(err);
+      if (status) {
+        res.status(status).end();
         return;
       }
       logging.warn({ err, postId, userId: user.id }, 'presence-enter: post lookup failed');
@@ -56,7 +55,6 @@ module.exports = async function presenceEnter(req, res) {
     }
 
     const authorIds = post.related('authors').map((author) => author.get('id'));
-
     postPresence.mark(
       postId,
       {

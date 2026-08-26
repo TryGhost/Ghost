@@ -10,54 +10,52 @@ const {
 
 const KEEPALIVE_MS = 30 * 1000;
 
+const SSE_HEADERS = {
+  'Content-Type': 'text/event-stream',
+  'Cache-Control': 'no-cache, no-transform',
+  Connection: 'keep-alive',
+  'X-Accel-Buffering': 'no',
+};
+
+function withoutAuthorIds(item) {
+  const copy = { ...item };
+  delete copy.authorIds;
+  return copy;
+}
+
 function toClientEvent(event) {
-  const payload = { ...event };
-  delete payload.authorIds;
+  const payload = withoutAuthorIds(event);
   if (payload.type === PRESENCE_EVENT_TYPES.SNAPSHOT) {
-    payload.posts = payload.posts.map((post) => {
-      const clientPost = { ...post };
-      delete clientPost.authorIds;
-      return clientPost;
-    });
+    payload.posts = payload.posts.map(withoutAuthorIds);
   }
   return payload;
 }
 
-/**
- * SSE handler that streams presence events to a single admin tab.
- * Events are filtered per-subscriber so Author/Contributor only see
- * events for posts they're listed as authors on; Editor+ see all.
- */
+function openSse(res) {
+  res.writeHead(200, SSE_HEADERS);
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
+}
+
 module.exports = async function presenceStream(req, res) {
   if (req.api_key) {
     res.status(403).end();
     return;
   }
 
-  // Session middleware loads req.user without roles. Force-load
-  // them once at connect so hasElevatedPresenceAccess can resolve
-  // the user's role for per-event filtering.
-  if (req.user && typeof req.user.load === 'function') {
-    try {
+  try {
+    if (req.user && typeof req.user.load === 'function') {
       await req.user.load(['roles']);
-    } catch (err) {
-      logging.warn({ err }, 'presence-stream: failed to load user roles');
-      res.status(500).end();
-      return;
     }
+  } catch (err) {
+    logging.warn({ err }, 'presence-stream: failed to load user roles');
+    res.status(500).end();
+    return;
   }
 
   try {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
-      Connection: 'keep-alive',
-      // Disable response buffering on nginx; SSE needs to stream.
-      'X-Accel-Buffering': 'no',
-    });
-    if (typeof res.flushHeaders === 'function') {
-      res.flushHeaders();
-    }
+    openSse(res);
   } catch (err) {
     logging.warn({ err }, 'presence-stream: failed to write headers; client likely disconnected');
     return;
@@ -87,36 +85,26 @@ module.exports = async function presenceStream(req, res) {
     }
   };
 
-  // Per-subscriber permission context, captured once at connect.
-  // Elevated roles (Owner/Admin/Super Editor/Editor) receive every
-  // event. Author/Contributor only receive events for posts where
-  // their user.id appears in the event's authorIds. This is the
-  // hard filter that keeps post IDs and activity from leaking
-  // across the role boundary via the SSE stream.
   const subscriber = {
     userId: req.user && req.user.id,
     elevated: hasElevatedPresenceAccess(req.user),
   };
 
   try {
-    const filteredPosts = postPresence
+    const visiblePosts = postPresence
       .snapshot()
       .filter((post) => canReceiveEvent(subscriber, post));
-    sendEvent({ type: PRESENCE_EVENT_TYPES.SNAPSHOT, posts: filteredPosts });
+    sendEvent({ type: PRESENCE_EVENT_TYPES.SNAPSHOT, posts: visiblePosts });
   } catch (err) {
     logging.warn({ err }, 'presence-stream: failed to send initial snapshot');
   }
 
-  const forwardEvent = (event) => {
-    if (!canReceiveEvent(subscriber, event)) {
-      return;
+  const unsubscribe = postPresence.subscribe((event) => {
+    if (canReceiveEvent(subscriber, event)) {
+      sendEvent(event);
     }
-    sendEvent(event);
-  };
-  const unsubscribe = postPresence.subscribe(forwardEvent);
+  });
 
-  // Comment frames keep idle proxies from dropping the connection.
-  // EventSource ignores them on the client side.
   const keepalive = setInterval(() => sendComment('ping'), KEEPALIVE_MS);
   if (keepalive.unref) {
     keepalive.unref();

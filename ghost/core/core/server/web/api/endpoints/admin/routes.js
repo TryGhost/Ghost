@@ -26,10 +26,7 @@ module.exports = function apiRoutes() {
   router.get('/config', mw.authAdminApi, http(api.config.read));
   router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
-  // ## Presence
-  // Two-stage rate limit: per-IP before auth (loose, defense in
-  // depth against unauthenticated DoS), per-user after auth (tight,
-  // catches a runaway authenticated client).
+  // ## Presence — per-IP limiter before auth, per-user limiter after
   router.get(
     '/presence/stream',
     shared.middleware.brute.presenceIpLimiter,

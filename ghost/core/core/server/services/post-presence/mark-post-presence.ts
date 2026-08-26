@@ -1,5 +1,7 @@
 import logging from '@tryghost/logging';
-import postPresence from './index';
+import { PostPresenceService } from './post-presence-service';
+
+const postPresence = require('./index') as PostPresenceService;
 
 type StaffUser = {
   id: string;
@@ -46,19 +48,31 @@ function getPostData(post: PostLike | null | undefined): PostData | null {
   return post;
 }
 
-/**
- * Best-effort presence heartbeat fired from editor saves. Presence
- * failures must never break the parent posts/pages API response.
- */
+function authorIdsFrom(postData: PostData): { authorIds: string[] } | undefined {
+  if (!Array.isArray(postData.authors)) {
+    return undefined;
+  }
+  return {
+    authorIds: postData.authors
+      .map((author) => author?.id)
+      .filter((id): id is string => Boolean(id)),
+  };
+}
+
+function staffFromFrame(user: StaffUser) {
+  return {
+    id: user.id,
+    name: asString(user.get('name')),
+    profileImage: asNullableString(user.get('profile_image')),
+  };
+}
+
 export function markPostPresence(
   frame: ApiFrame | null | undefined,
   post: PostLike | null | undefined,
 ): void {
   try {
-    if (!frame || !frame.user || !post) {
-      return;
-    }
-    if (frame.options?.context?.api_key) {
+    if (!frame?.user || !post || frame.options?.context?.api_key) {
       return;
     }
 
@@ -67,23 +81,7 @@ export function markPostPresence(
       return;
     }
 
-    const postContext = Array.isArray(postData.authors)
-      ? {
-          authorIds: postData.authors
-            .map((author) => author?.id)
-            .filter((id): id is string => Boolean(id)),
-        }
-      : undefined;
-
-    postPresence.mark(
-      postData.id,
-      {
-        id: frame.user.id,
-        name: asString(frame.user.get('name')),
-        profileImage: asNullableString(frame.user.get('profile_image')),
-      },
-      postContext,
-    );
+    postPresence.mark(postData.id, staffFromFrame(frame.user), authorIdsFrom(postData));
   } catch (err) {
     logging.warn({ err }, 'Failed to record post presence');
   }

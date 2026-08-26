@@ -195,11 +195,7 @@ module.exports = {
     })(req, res, next);
   },
 
-  /**
-   * Per-IP defense-in-depth limiter for the editor presence routes,
-   * applied BEFORE authentication so unauthenticated DoS attempts
-   * are bounded before they hit the auth layer.
-   */
+  /** Per-IP limiter, applied before auth. */
   presenceIpLimiter(req, res, next) {
     return spamPrevention.presenceIpBlock().getMiddleware({
       ignoreIP: false,
@@ -209,12 +205,7 @@ module.exports = {
     })(req, res, next);
   },
 
-  /**
-   * Per-staff-user limiter for the editor presence routes, applied
-   * AFTER authentication so the key can use req.user.id. Generous
-   * limits so legitimate editor navigation never hits them; tight
-   * enough to bound a runaway authenticated client.
-   */
+  /** Per-staff-user limiter, applied after auth. */
   presenceLimiter(req, res, next) {
     return spamPrevention.presenceBlock().getMiddleware({
       ignoreIP: true,
@@ -225,10 +216,7 @@ module.exports = {
     })(req, res, next);
   },
 
-  /**
-   * Uses a separate key so EventSource reconnects cannot exhaust the
-   * enter/leave request budget for an editor.
-   */
+  /** Separate key so SSE reconnects do not consume enter/leave budget. */
   presenceStreamLimiter(req, res, next) {
     return spamPrevention.presenceBlock().getMiddleware({
       ignoreIP: true,

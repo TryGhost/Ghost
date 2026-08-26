@@ -2,18 +2,12 @@ import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
 import {tracked} from '@glimmer/tracking';
 
-// Wire-format event types. Must match PRESENCE_EVENT_TYPES in
-// ghost/core/core/server/services/post-presence/post-presence-service.ts
-// (no shared module across the Node/Ember boundary).
+// Must match PRESENCE_EVENT_TYPES in post-presence-service.ts
 const EVENT_TYPE_SNAPSHOT = 'snapshot';
 const EVENT_TYPE_POST = 'post';
 
 const CONNECTING_ERROR_LOG_THRESHOLD = 3;
 
-/**
- * Subscribes to a long-lived SSE stream that pushes editor presence
- * updates to the admin.
- */
 export default class PresenceService extends Service {
     @service ghostPaths;
     @service session;
@@ -38,49 +32,9 @@ export default class PresenceService extends Service {
             return;
         }
         this._source.onmessage = event => this._handleMessage(event);
-        this._source.onopen = () => {
-            // Fires on initial connect AND after EventSource auto-reconnect.
-            // Re-send the current enter so peers see the user without
-            // waiting for the next autosave heartbeat.
-            if (this._connectingErrorLogged) {
-                this._connectingErrorLogged = false;
-            }
-            this._connectingErrorCount = 0;
-            if (this._currentPostId) {
-                this._sendEnter(this._currentPostId);
-            }
-        };
-        this._source.onerror = () => {
-            // EventSource auto-reconnects on transient errors. Terminal
-            // closures (401/403/404) leave readyState === CLOSED; log
-            // those so silent presence failures are debuggable.
-            if (!this._source) {
-                return;
-            }
-            if (this._source.readyState === EventSource.CLOSED) {
-                console.warn('[presence] SSE stream closed; not reconnecting'); // eslint-disable-line no-console
-                return;
-            }
-            if (this._source.readyState === EventSource.CONNECTING) {
-                this._connectingErrorCount += 1;
-                if (this._connectingErrorCount >= CONNECTING_ERROR_LOG_THRESHOLD && !this._connectingErrorLogged) {
-                    this._connectingErrorLogged = true;
-                    console.warn('[presence] SSE reconnects are failing'); // eslint-disable-line no-console
-                }
-            }
-        };
-
-        // Pagehide covers tab/window close, where the Ember route's
-        // deactivate hook does not fire. TTL is the safety net if the
-        // beacon does not arrive.
-        this._beforeUnloadHandler = () => {
-            const postId = this._currentPostId;
-            if (!postId) {
-                return;
-            }
-            this._sendLeave(postId);
-        };
-        window.addEventListener('pagehide', this._beforeUnloadHandler);
+        this._source.onopen = () => this._onStreamOpen();
+        this._source.onerror = () => this._onStreamError();
+        this._bindPagehide();
     }
 
     stop() {
@@ -91,19 +45,11 @@ export default class PresenceService extends Service {
             this._source.close();
             this._source = null;
         }
-        if (this._beforeUnloadHandler) {
-            window.removeEventListener('pagehide', this._beforeUnloadHandler);
-            this._beforeUnloadHandler = null;
-        }
+        this._unbindPagehide();
         this._currentPostId = null;
         this._byPostId = new Map();
     }
 
-    /**
-     * The user opened a post in the editor. Sends an explicit enter so
-     * peers see the avatar (the read endpoint deliberately does not mark
-     * presence — that would have lit up analytics views too).
-     */
     enterPost(postId) {
         if (!postId) {
             return;
@@ -116,12 +62,6 @@ export default class PresenceService extends Service {
         }
         this._currentPostId = postId;
         this._sendEnter(postId);
-    }
-
-    _sendEnter(postId) {
-        const enterUrl = this.ghostPaths.url.api('presence', 'posts', postId, 'enter');
-        fetch(enterUrl, {method: 'POST', credentials: 'include', keepalive: true})
-            .catch(err => console.warn('[presence] enter failed', err)); // eslint-disable-line no-console
     }
 
     leavePost(postId) {
@@ -146,11 +86,62 @@ export default class PresenceService extends Service {
         return users.filter(user => user && user.id !== currentUserId);
     }
 
+    willDestroy() {
+        super.willDestroy();
+        this.stop();
+    }
+
+    _onStreamOpen() {
+        this._connectingErrorLogged = false;
+        this._connectingErrorCount = 0;
+        if (this._currentPostId) {
+            this._sendEnter(this._currentPostId);
+        }
+    }
+
+    _onStreamError() {
+        if (!this._source) {
+            return;
+        }
+        if (this._source.readyState === EventSource.CLOSED) {
+            console.warn('[presence] SSE stream closed; not reconnecting'); // eslint-disable-line no-console
+            return;
+        }
+        if (this._source.readyState !== EventSource.CONNECTING) {
+            return;
+        }
+        this._connectingErrorCount += 1;
+        if (this._connectingErrorCount >= CONNECTING_ERROR_LOG_THRESHOLD && !this._connectingErrorLogged) {
+            this._connectingErrorLogged = true;
+            console.warn('[presence] SSE reconnects are failing'); // eslint-disable-line no-console
+        }
+    }
+
+    _bindPagehide() {
+        this._beforeUnloadHandler = () => {
+            if (this._currentPostId) {
+                this._sendLeave(this._currentPostId);
+            }
+        };
+        window.addEventListener('pagehide', this._beforeUnloadHandler);
+    }
+
+    _unbindPagehide() {
+        if (!this._beforeUnloadHandler) {
+            return;
+        }
+        window.removeEventListener('pagehide', this._beforeUnloadHandler);
+        this._beforeUnloadHandler = null;
+    }
+
+    _sendEnter(postId) {
+        const enterUrl = this.ghostPaths.url.api('presence', 'posts', postId, 'enter');
+        fetch(enterUrl, {method: 'POST', credentials: 'include', keepalive: true})
+            .catch(err => console.warn('[presence] enter failed', err)); // eslint-disable-line no-console
+    }
+
     _sendLeave(postId) {
         const leaveUrl = this.ghostPaths.url.api('presence', 'posts', postId, 'leave');
-        // sendBeacon returns false when the UA's beacon queue is full
-        // (Firefox enforces this); fall through to fetch so the leave
-        // doesn't silently drop.
         const queued = typeof navigator !== 'undefined'
             && typeof navigator.sendBeacon === 'function'
             && navigator.sendBeacon(leaveUrl);
@@ -174,30 +165,33 @@ export default class PresenceService extends Service {
         }
 
         if (payload?.type === EVENT_TYPE_SNAPSHOT && Array.isArray(payload.posts)) {
-            const next = new Map();
-            for (const entry of payload.posts) {
-                if (entry?.postId && Array.isArray(entry.users)) {
-                    next.set(entry.postId, entry.users);
-                }
-            }
-            this._byPostId = next;
+            this._applySnapshot(payload.posts);
             return;
         }
 
         if (payload?.type === EVENT_TYPE_POST && payload.postId) {
-            const next = new Map(this._byPostId);
-            const users = Array.isArray(payload.users) ? payload.users : [];
-            if (users.length === 0) {
-                next.delete(payload.postId);
-            } else {
-                next.set(payload.postId, users);
-            }
-            this._byPostId = next;
+            this._applyPostEvent(payload);
         }
     }
 
-    willDestroy() {
-        super.willDestroy();
-        this.stop();
+    _applySnapshot(posts) {
+        const next = new Map();
+        for (const entry of posts) {
+            if (entry?.postId && Array.isArray(entry.users)) {
+                next.set(entry.postId, entry.users);
+            }
+        }
+        this._byPostId = next;
+    }
+
+    _applyPostEvent(payload) {
+        const next = new Map(this._byPostId);
+        const users = Array.isArray(payload.users) ? payload.users : [];
+        if (users.length === 0) {
+            next.delete(payload.postId);
+        } else {
+            next.set(payload.postId, users);
+        }
+        this._byPostId = next;
     }
 }
