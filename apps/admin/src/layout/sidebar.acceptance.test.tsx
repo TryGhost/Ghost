@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { StateBridge } from '@/ember-bridge';
+import { page } from 'vitest/browser';
 
 import {
   activeThemeResponse,
@@ -10,10 +11,16 @@ import {
   fakeTags,
   renderAdminApp,
   currentUserResponse,
+  configResponse,
+  staffRole,
+  staffUser,
   settingsResponse,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
+
+// The scope class is this rollout's integration contract, not visible UI.
+const hasPageChromeScope = () => document.querySelector('.admin7-page-chrome') !== null;
 
 // The site fixture's URL roots the ActivityPub API (see use-activity-pub-queries.ts).
 const UNREAD_COUNT_URL = 'http://test.com/.ghost/activitypub/v1/notifications/unread/count';
@@ -244,6 +251,190 @@ describe('Sidebar user menu', () => {
 
     await sidebarScreen.userMenuTrigger().click();
     await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('System');
+  });
+});
+
+describe('Admin page chrome boundary', () => {
+  it.each([true, false])('uses the server-computed flag (%s)', async (enabled) => {
+    // Deliberately disagree: the shell must read config, not the stored setting.
+    await renderAdminApp('/site', {
+      labs: { admin7PageChrome: !enabled },
+      boot: { browseConfig: { response: configResponse({ labs: { admin7PageChrome: enabled } }) } },
+    });
+
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+    await expect.poll(hasPageChromeScope).toBe(enabled);
+  });
+
+  it.each(['flag', 'labs'] as const)(
+    'stays off when an older backend omits %s',
+    async (missing) => {
+      const response = configResponse();
+      if (missing === 'labs') {
+        delete response.config.labs;
+      } else {
+        delete response.config.labs?.admin7PageChrome;
+      }
+      await renderAdminApp('/site', {
+        boot: { browseConfig: { response } },
+      });
+
+      await expect.element(sidebarScreen.shellNav()).toBeVisible();
+      expect(hasPageChromeScope()).toBe(false);
+    },
+  );
+
+  it('stays off while config is loading, then activates without a reload', async () => {
+    let releaseConfig: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      releaseConfig = resolve;
+    });
+    try {
+      await renderAdminApp('/site', {
+        boot: {
+          browseConfig: {
+            response: async () => {
+              await gate;
+              return configResponse({ labs: { admin7PageChrome: true } });
+            },
+          },
+        },
+      });
+      await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+      expect(hasPageChromeScope()).toBe(false);
+      releaseConfig();
+      await expect.poll(hasPageChromeScope).toBe(true);
+    } finally {
+      releaseConfig();
+    }
+  });
+
+  it.each(['Owner', 'Administrator', 'Editor', 'Super Editor', 'Author', 'Contributor'] as const)(
+    'respects the %s navigation experience',
+    async (role) => {
+      await renderAdminApp('/posts', {
+        labs: { admin7PageChrome: true },
+        boot: {
+          browseMe: { response: { users: [staffUser({ roles: [staffRole({ name: role })] })] } },
+        },
+      });
+
+      await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+      await expect.poll(hasPageChromeScope).toBe(role !== 'Contributor');
+      if (role === 'Contributor') {
+        await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+      }
+    },
+  );
+
+  it('does not use the saved sidebar collapse preference as route eligibility', async () => {
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      navigation: { expanded: { posts: true, members: true }, menu: { visible: false } },
+    });
+    await renderAdminApp('/site', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: me } },
+    });
+
+    await expect.poll(hasPageChromeScope).toBe(true);
+  });
+
+  it('removes the scope in dark mode and restores it in light mode', async () => {
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expect.poll(hasPageChromeScope).toBe(true);
+
+    await sidebarScreen.selectAppearance('dark');
+    await expect.poll(hasPageChromeScope).toBe(false);
+    await sidebarScreen.selectAppearance('light');
+    await expect.poll(hasPageChromeScope).toBe(true);
+  });
+
+  it('never activates for an initially dark user while preferences load', async () => {
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
+    let scopeWasAdded = false;
+    const observer = new MutationObserver((mutations) => {
+      scopeWasAdded ||=
+        hasPageChromeScope() ||
+        mutations.some(
+          (mutation) =>
+            mutation.type === 'attributes' && mutation.oldValue?.includes('admin7-page-chrome'),
+        );
+    });
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class'],
+      attributeOldValue: true,
+    });
+    try {
+      await renderAdminApp('/site', {
+        labs: { admin7PageChrome: true },
+        boot: { browseMe: { response: me } },
+      });
+      await expect.element(sidebarScreen.shellNav()).toBeVisible();
+      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+      expect(hasPageChromeScope()).toBe(false);
+      expect(scopeWasAdded).toBe(false);
+    } finally {
+      observer.disconnect();
+    }
+  });
+
+  it('tracks the existing desktop breakpoint in both directions', async () => {
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expect.poll(hasPageChromeScope).toBe(true);
+    try {
+      await page.viewport(800, 800);
+      await expect.poll(hasPageChromeScope).toBe(false);
+      await page.viewport(801, 800);
+      await expect.poll(hasPageChromeScope).toBe(true);
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('removes the scope in Settings and restores it on return to an eligible route', async () => {
+    // The settings app owns its request graph; this spec asserts only shell scope.
+    allowUnhandledRequests();
+    fakeTags([]);
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expect.poll(hasPageChromeScope).toBe(true);
+    await sidebarScreen.navLink('Tags').click();
+    await expect.poll(currentRoute).toBe('/tags');
+    await expect.poll(hasPageChromeScope).toBe(true);
+    await sidebarScreen.navLink('Settings').click();
+    await expect.poll(currentRoute).toMatch(/^\/settings/);
+    await expect.poll(hasPageChromeScope).toBe(false);
+
+    window.location.hash = '#/posts';
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.poll(hasPageChromeScope).toBe(true);
+  });
+
+  it('excludes the automation editor before its route content loads', async () => {
+    // The automation editor owns its request graph; this spec asserts only shell scope.
+    allowUnhandledRequests();
+    await renderAdminApp('/automations/new', {
+      labs: { admin7PageChrome: true, automations: true },
+    });
+    await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+    expect(hasPageChromeScope()).toBe(false);
+    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+  });
+
+  it('excludes the Ember editor immediately on entry and restores the scope on exit', async () => {
+    // No Ember bridge in this tier: its visibility deliberately remains true.
+    await renderAdminApp('/posts', { labs: { admin7PageChrome: true } });
+    await expect.poll(hasPageChromeScope).toBe(true);
+    window.location.hash = '#/editor/post';
+    await expect.poll(currentRoute).toBe('/editor/post');
+    await expect.poll(hasPageChromeScope).toBe(false);
+    window.location.hash = '#/posts';
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.poll(hasPageChromeScope).toBe(true);
   });
 });
 

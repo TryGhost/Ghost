@@ -43,6 +43,46 @@ Add an acceptance test for the older-backend case. The social accounts settings
 and membership tiers tests contain current examples of hiding controls until
 their supporting settings are present.
 
+### Visual rollout scopes
+
+Admin owns visual rollout decisions in its layout, not in Shade or Ember.
+`useAdminPageChromeClass` explicitly maps `admin7PageChrome` to
+`.admin7-page-chrome` on the existing React-owned `SidebarProvider` wrapper.
+Do not derive selectors from arbitrary Labs keys or place milestone classes on
+`body`. Add scoped styles through `src/index.css`, the existing CSS lane.
+
+This scope requires a server-computed enabled flag, loaded theme preferences,
+resolved light mode, desktop width (801px or wider, using Shade's `useIsMobile`),
+and navigation permitted by both the current route and the user's role.
+Contributors are excluded. Missing/loading config keeps the scope off. There
+are no visual overrides yet; the class is the boundary for subsequent changes.
+
+Route availability comes from `useAdminSidebarVisibility` (React route handles
+and Ember's visibility bridge). Keep this separate from the saved
+`navigation.menu.visible` preference: collapsing a sidebar must not disable the
+scope. The page/post editor is also excluded directly by URL so the scope is
+removed before Ember emits its fullscreen visibility change.
+
+The current ownership inventory is defined in `src/routes.tsx`:
+
+| Surface                                                           | Owner                                         | Navigation scope                                                |
+| ----------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| Members list/import/detail, Tags list, Comments, Automations list | React                                         | Eligible when navigation is available                           |
+| Analytics and post analytics                                      | React                                         | Eligible when navigation is available                           |
+| Network                                                           | Embedded ActivityPub React app                | Eligible; inner navigation is unchanged                         |
+| Tag details                                                       | React with `tagDetailsReact`; Ember otherwise | Eligible under either owner                                     |
+| Posts, Pages, View site, members activity                         | Ember                                         | Follow existing Ember navigation visibility                     |
+| Settings and automation editor                                    | React                                         | Excluded by `hideAdminSidebar`                                  |
+| Post/page editor                                                  | Ember                                         | Excluded immediately by URL and existing Ember fullscreen rules |
+| Authentication, setup, migration and hosted upgrade views         | Ember (onboarding is React)                   | Follow existing Ember navigation visibility                     |
+
+The visual flag never changes route ownership. Recheck this table against the
+route definitions and Ember navigation rules when integrating another surface.
+
+The flag is temporary: follow the [feature flag lifecycle](../../docs/practices/feature-flags.md)
+when promoting it to GA and removing the old presentation. Keep eligibility
+conditions that still define supported behavior after the rollout flag is gone.
+
 ## Development
 
 ```bash

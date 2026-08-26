@@ -11,6 +11,7 @@ import {
   settingsResponse,
   currentUserResponse,
   currentRoute,
+  configResponse,
   type StaffUser,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -37,6 +38,58 @@ function advancedSettings(overrides: Record<string, string | boolean | null>) {
 }
 
 describe('Advanced settings', () => {
+  it('offers the page chrome toggle only in developer experiments', async () => {
+    fakeSettingsScreens();
+    const response = configResponse();
+    response.config.enableDeveloperExperiments = false;
+    await renderAdminApp('/settings/labs', { boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await expect
+      .element(section.getByRole('tab', { name: 'Private features' }))
+      .not.toBeInTheDocument();
+    await expect
+      .element(section.getByRole('switch', { name: 'Admin 7 page chrome' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('saves the private page chrome flag without changing other Labs settings', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    const labs = { admin7PageChrome: false, tagsX: true };
+    const response = configResponse({ labs });
+    response.config.enableDeveloperExperiments = true;
+    await renderAdminApp('/settings/labs', { labs, boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Private features' }).click();
+    const toggle = section.getByRole('switch', { name: 'Admin 7 page chrome' });
+    await expect.element(toggle).not.toBeChecked();
+    await toggle.click();
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'labs',
+        value: String(
+          settingsResponse({ labs: { ...labs, admin7PageChrome: true } }).settings.find(
+            (setting) => setting.key === 'labs',
+          )!.value,
+        ),
+      },
+    ]);
+    await expect.element(toggle).toBeChecked();
+    await toggle.click();
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'labs',
+        value: String(
+          settingsResponse({ labs }).settings.find((setting) => setting.key === 'labs')!.value,
+        ),
+      },
+    ]);
+  });
+
   it('saves header and footer code injection', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();

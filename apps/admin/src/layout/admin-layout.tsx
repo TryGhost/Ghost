@@ -3,6 +3,7 @@ import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import { useAdminPageChromeClass } from '@/layout/use-admin-page-chrome-class';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
@@ -15,6 +16,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
   const isContributor = currentUser && isContributorUser(currentUser);
+  const pageChromeClass = useAdminPageChromeClass(
+    !!currentUser && sidebarVisible && !isContributor,
+  );
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
@@ -31,7 +35,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <SidebarProvider open={!!currentUser && sidebarVisible}>
+    <SidebarProvider className={pageChromeClass} open={!!currentUser && sidebarVisible}>
       {sidebarVisible && <AppSidebar />}
       <SidebarInset
         className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
