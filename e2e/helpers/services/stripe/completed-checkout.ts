@@ -63,8 +63,21 @@ function askedQuestions(session: RecordedStripeCheckoutSession): string[] {
   return asked.map((field) => field.key);
 }
 
+/**
+ * Whether the checkout asked for something. Shipping says so by carrying a list of
+ * countries it will deliver to; tax and phone carry an `enabled` flag instead, and a flag
+ * turned off is a question the page never rendered.
+ */
 function asks(session: RecordedStripeCheckoutSession, parameter: string): boolean {
-  return (session.request as Record<string, unknown>)[parameter] !== undefined;
+  const asked = (session.request as Record<string, unknown>)[parameter];
+
+  if (asked === undefined || asked === null) {
+    return false;
+  }
+  if (typeof asked === 'object' && 'enabled' in asked) {
+    return (asked as { enabled?: unknown }).enabled === true;
+  }
+  return true;
 }
 
 /**

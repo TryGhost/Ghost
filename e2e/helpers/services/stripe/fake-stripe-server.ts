@@ -735,7 +735,11 @@ export class FakeStripeServer extends FakeServer {
     // Stripe will not collect a tax id for a customer it may not rename. Measured, like
     // everything else here: shipping and phone collection carry no such requirement, so
     // this is specific to tax rather than a rule about collecting from a customer at all.
-    const collectsTaxId = (body.tax_id_collection as { enabled?: unknown })?.enabled;
+    // Read against `true` rather than for truthiness: form decoding delivers the flag as
+    // the string `"false"`, which is truthy, and refusing on that would refuse a checkout
+    // that had switched tax collection off.
+    const taxIdFlag = (body.tax_id_collection as { enabled?: unknown })?.enabled;
+    const collectsTaxId = taxIdFlag === true || taxIdFlag === 'true';
     const mayRename = (body.customer_update as { name?: unknown })?.name === 'auto';
     if (collectsTaxId && body.customer && !mayRename) {
       return (

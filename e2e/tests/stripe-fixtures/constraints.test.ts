@@ -127,4 +127,16 @@ test.describe('Fake Stripe - rejects what Stripe rejects', () => {
 
     expect(status).toBe(200);
   });
+
+  // Form encoding delivers the flag as a string, and `"false"` is truthy. Reading it for
+  // truthiness would refuse a checkout that asks for no tax number at all, which is the
+  // fake being stricter than Stripe rather than matching it.
+  test('tax_id_collection switched off needs nothing', async () => {
+    const { status } = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: 'false' },
+    });
+
+    expect(status).toBe(200);
+  });
 });
