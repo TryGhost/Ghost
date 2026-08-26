@@ -656,12 +656,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const jobsServiceWrapper = require('./server/services/jobs-service');
     const registerJobHandlers =
       require('./server/services/jobs-service/register-job-handlers').default;
+    const mediaInliner = require('./server/services/media-inliner');
     const db = require('./server/data/db');
     const jobsService = jobsServiceWrapper.init();
     registerJobHandlers({
       jobsService,
       db,
       logging,
+      mediaInliner: mediaInliner.getInstance(),
     });
     await jobsService.start();
     debug('End: Register job handlers');
