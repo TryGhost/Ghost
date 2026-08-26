@@ -5,13 +5,16 @@ import {
   currentRoute,
   fakeAdminStats,
   fakeAdminEndpoint,
+  fakeMembers,
   fakePosts,
   fakeTinybirdPipe,
   fakeTinybirdToken,
   post,
   renderAdminApp,
+  settingsResponse,
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
+import { membersScreen } from '@/members/members.screen';
 import { postAnalyticsScreen } from './post-analytics.screen';
 
 const POST_ID = '64d623b64676110001e897d9';
@@ -94,6 +97,35 @@ function seedPostAnalyticsWorld() {
   };
 }
 
+/**
+ * The world for a freshly published post with no activity at all: no visits,
+ * no attributed members, no link clicks — the empty states every tab shows.
+ * The post never went out as an email, so no newsletter endpoints fire.
+ */
+function seedEmptyPostAnalyticsWorld() {
+  fakePosts([
+    post({
+      id: POST_ID,
+      uuid: POST_UUID,
+      title: 'Attack of the Clones',
+      slug: 'attack-of-the-clones',
+      status: 'published',
+      visibility: 'public',
+      published_at: `${daysAgo(1)}T10:00:00.000Z`,
+      url: 'https://example.com/attack-of-the-clones/',
+    }),
+  ]);
+  fakeAdminStats.postReferrers(POST_ID);
+  fakeAdminStats.postGrowth(POST_ID);
+  fakeAdminStats.mrr();
+  fakeAdminEndpoint('GET', /^\/links\//, { links: [], meta: {} });
+  fakeTinybirdToken();
+  fakeTinybirdPipe('api_active_visitors', []);
+  fakeTinybirdPipe('api_kpis', []);
+  fakeTinybirdPipe('api_top_sources', []);
+  fakeTinybirdPipe('api_top_locations', []);
+}
+
 describe('Post analytics overview', () => {
   it('renders the seeded post with web and growth sections', async () => {
     const { postsApi } = seedPostAnalyticsWorld();
@@ -127,6 +159,57 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
     await expect.poll(() => kpisApi.requests.length).toBeGreaterThan(overviewKpiRequestCount);
     await expect.poll(() => kpisApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
+  });
+
+  it('renders every tab and zeroed sections for a post with no activity', async () => {
+    seedEmptyPostAnalyticsWorld();
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(postAnalyticsScreen.overviewTab()).toBeVisible();
+    await expect.element(postAnalyticsScreen.webTrafficTab()).toBeVisible();
+    await expect.element(postAnalyticsScreen.growthTab()).toBeVisible();
+
+    await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('Free members');
+    await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('0');
+  });
+
+  it('reaches the empty web traffic view through web performance view more', async () => {
+    seedEmptyPostAnalyticsWorld();
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
+
+    await postAnalyticsScreen.webPerformanceViewMoreButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web`);
+    // No visits at all: the web view renders its whole-view empty state.
+    await expect.element(page.getByText('No visitors in the last 30 days').first()).toBeVisible();
+  });
+
+  it('reaches the empty growth view through growth view more', async () => {
+    seedEmptyPostAnalyticsWorld();
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
+
+    await postAnalyticsScreen.growthViewMoreButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/growth`);
+    await expect
+      .element(postAnalyticsScreen.topSourcesCard())
+      .toHaveTextContent('No sources data available');
+  });
+
+  it('hides the growth tab and section when member source tracking is off', async () => {
+    seedEmptyPostAnalyticsWorld();
+    const boot = webAnalyticsBootOverrides();
+    boot.browseSettings = {
+      response: settingsResponse({
+        settings: { web_analytics_enabled: true, members_track_sources: false },
+      }),
+    };
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot });
+
+    await expect.element(postAnalyticsScreen.overviewTab()).toBeVisible();
+    await expect.element(postAnalyticsScreen.webTrafficTab()).toBeVisible();
+    await expect.element(postAnalyticsScreen.growthTab()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.growthCard()).not.toBeInTheDocument();
   });
 });
 
@@ -182,6 +265,40 @@ describe('Post analytics growth', () => {
     await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('100');
     await expect.element(page.getByText('Top sources')).toBeVisible();
     await expect.element(page.getByText('Google')).toBeVisible();
+  });
+
+  it('renders the zeroed members card and empty sources when nothing converted', async () => {
+    seedEmptyPostAnalyticsWorld();
+    await renderAdminApp(`/posts/analytics/${POST_ID}/growth`, {
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('Free members');
+    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('0');
+    await expect
+      .element(postAnalyticsScreen.topSourcesCard())
+      .toHaveTextContent('No sources data available');
+  });
+
+  it('links the members KPI to the members list filtered to this post', async () => {
+    seedEmptyPostAnalyticsWorld();
+    const membersApi = fakeMembers([]);
+    // The filter bar resolves attribution ids to post/page titles.
+    fakeAdminEndpoint('GET', /^\/pages\//, {
+      pages: [],
+      meta: { pagination: { page: 1, limit: 25, pages: 1, total: 0, next: null, prev: null } },
+    });
+    await renderAdminApp(`/posts/analytics/${POST_ID}/growth`, {
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('Free members');
+    await postAnalyticsScreen.freeMembersViewMembersButton().click();
+
+    // The members screen re-serializes the handed-over filter clauses.
+    await expect.poll(currentRoute).toMatch(/^\/members\?/);
+    await expect(membersApi).toHaveSentFilter(`conversion:-'${POST_ID}'+signup:'${POST_ID}'`);
+    await expect.element(membersScreen.noResults()).toBeVisible();
   });
 });
 
