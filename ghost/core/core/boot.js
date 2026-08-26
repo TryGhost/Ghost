@@ -490,6 +490,26 @@ async function initBackgroundServices({ config }) {
     logging.error(err);
   }
 
+  // Runs before activitypub.init for the same reason as the gift cleanup
+  // above: tokens and expired comped subscriptions would otherwise go
+  // uncleaned for the life of the process if an unrelated background
+  // service fails.
+  try {
+    const memberJobs = require('./server/services/members/jobs');
+    await memberJobs.scheduleTokenCleanupJob();
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
+    const memberJobs = require('./server/services/members/jobs');
+    await memberJobs.scheduleExpiredCompCleanupJob();
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
   const activitypub = require('./server/services/activitypub');
   await activitypub.init();
   // Load email analytics recurring jobs
@@ -500,14 +520,6 @@ async function initBackgroundServices({ config }) {
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);
-  }
-
-  try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob();
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
   }
 
   const updateCheck = require('./server/services/update-check');
@@ -658,11 +670,16 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       require('./server/services/jobs-service/register-job-handlers').default;
     const mediaInliner = require('./server/services/media-inliner');
     const db = require('./server/data/db');
+    const models = require('./server/models');
+    const events = require('./server/lib/common/events');
     const jobsService = jobsServiceWrapper.init();
     registerJobHandlers({
       jobsService,
       db,
       logging,
+      models,
+      events,
+      sentry,
       mediaInliner: mediaInliner.getInstance(),
     });
     await jobsService.start();
