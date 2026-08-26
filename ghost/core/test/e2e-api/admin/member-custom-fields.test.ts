@@ -435,6 +435,20 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  // Admin sends `?include=` on resources that have relations to load. This one has none,
+  // so the parameter has nothing to act on — which is a request that returns a definition,
+  // not a request that got something wrong.
+  describe('Asking for relations', function () {
+    it('ignores an include, rather than failing on it', async function () {
+      const field = await createField({ name: 'T-shirt size' });
+
+      const { body } = await agent.get('members/custom_fields/?include=bindings').expectStatus(200);
+
+      assert.equal(body.members_custom_fields[0].key, field.key);
+      assert.equal('bindings' in body.members_custom_fields[0], false);
+    });
+  });
+
   describe('Creating several definitions at once', function () {
     it('creates every definition in the request, in order', async function () {
       const { body } = await agent
@@ -2254,14 +2268,30 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  // The flag governs whether a publisher can set custom fields up, not whether the rest of
+  // Ghost may ask what they are. Admin reads this list to draw screens it renders either
+  // way, and a site that has never enabled the flag has no fields, so the honest answer is
+  // an empty list. Every route that changes something stays behind the flag.
   describe('Flag disabled', function () {
     beforeEach(function () {
       mockManager.restore();
       mockManager.mockLabsDisabled('membersCustomFields');
     });
 
-    it('404s the definitions endpoint', async function () {
-      await agent.get('members/custom_fields/').expectStatus(404);
+    it('serves the definitions endpoint, with nothing on it', async function () {
+      const { body } = await agent.get('members/custom_fields/').expectStatus(200);
+      assert.deepEqual(body.members_custom_fields, []);
+    });
+
+    it('404s a read of a field that does not exist, rather than hiding the route', async function () {
+      await agent.get('members/custom_fields/company/').expectStatus(404);
+    });
+
+    it('404s the create endpoint', async function () {
+      await agent
+        .post('members/custom_fields/')
+        .body({ members_custom_fields: [{ name: 'Company', type: 'short_text' }] })
+        .expectStatus(404);
     });
 
     it('404s the reorder endpoint', async function () {
@@ -2269,6 +2299,17 @@ describe('Member Custom Fields Admin API', function () {
         .put('members/custom_fields/')
         .body({ members_custom_fields: [{ key: 'company' }] })
         .expectStatus(404);
+    });
+
+    it('404s the edit endpoint', async function () {
+      await agent
+        .put('members/custom_fields/company/')
+        .body({ members_custom_fields: [{ name: 'Employer' }] })
+        .expectStatus(404);
+    });
+
+    it('404s the delete endpoint', async function () {
+      await agent.delete('members/custom_fields/company/').expectStatus(404);
     });
   });
 });

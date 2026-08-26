@@ -3,11 +3,11 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { CustomField } from './models';
-import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { FieldTypeSchema, type FieldType } from '@tryghost/custom-field-types';
 import { customFieldCodec } from './codec';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
-import { activeFields, inFieldOrder } from './queries';
-import { mintableKey } from './key';
+import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
+import { KEY_CHARACTERS, mintableKey } from './key';
 import { type RecordCustomFieldAction, type RequestContext } from './actions';
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
@@ -38,11 +38,13 @@ const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length 
 // object from JSON.parse. A key naming a member of Object.prototype reads back as
 // inherited rather than absent wherever one of those objects is indexed.
 //
-// Derived rather than listed, because the set is a consequence of how keys are
-// minted: minting lowercases and trims leading underscores, so a prototype name
-// survives only if it has neither. `constructor` is the only one.
-const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter(
-  (name) => mintableKey(name) === name,
+// Derived rather than listed, from the format a key may take rather than from how one
+// is minted: a caller can state a key instead of deriving it from a name, so what has
+// to be reserved is every prototype name a well-formed key could spell. The ones that
+// carry a capital cannot be spelled at all and need no reserving; `constructor` and
+// `__proto__` can.
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter((name) =>
+  KEY_CHARACTERS.test(name),
 );
 
 const FieldName = z
@@ -136,17 +138,17 @@ export class CustomFieldDefinitionsService {
    * Typed off `activeFields` so the builder keeps the table's row type: every caller
    * hands over a query against the definitions table, whatever it has narrowed.
    */
-  private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
+  private async list(query: DefinitionQuery): Promise<CustomField[]> {
     const rows = await inFieldOrder(query).select('*');
     return rows.map((row) => z.decode(customFieldCodec, row));
   }
 
   async read(key: string): Promise<CustomField> {
-    const row = await this.knex(TABLE).where('key', key).first();
-    if (!row) {
+    const [field] = await this.list(fieldByKey(this.knex, key));
+    if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
-    return z.decode(customFieldCodec, row);
+    return field;
   }
 
   /**
@@ -201,13 +203,11 @@ export class CustomFieldDefinitionsService {
         for (const [index, field] of fields.entries()) {
           await this.assertNameAvailable(trx, field.name);
           const key = await this.mintKey(trx, bases[index]);
-          await trx(TABLE).insert({
-            id: new ObjectID().toHexString(),
+          await this.insertField(trx, {
             key,
             name: field.name,
             type: field.type,
-            sort_order: firstSortOrder + index,
-            created_at: new Date(),
+            sortOrder: firstSortOrder + index,
           });
           keys.push(key);
         }
@@ -228,7 +228,86 @@ export class CustomFieldDefinitionsService {
     // Logged after the commit: the action log is a separate Bookshelf write
     // outside this transaction, so recording inside it would leave orphaned
     // "added" entries for fields a rollback never created.
-    for (const field of created) {
+    await this.recordCreated(context, created);
+    return created;
+  }
+
+  /**
+   * Given an executor it joins that transaction; given none it opens its own. Unlike
+   * `add`, the key is stated rather than minted from the name, and nothing about it is
+   * worked around: a caller states a key because something else already names that key,
+   * so a variant of it would be a field nothing points at.
+   *
+   * The field is returned rather than logged: the history writes on its own connection,
+   * which a single-connection pool would deadlock against an open transaction.
+   */
+  async addOne(
+    wanted: { key: string; name: string; type: FieldType },
+    { executor = this.knex }: { executor?: Knex } = {},
+  ): Promise<CustomField> {
+    // Before any database access, the way `add` mints before opening its transaction:
+    // an unusable key is a payload problem worth reporting on its own terms.
+    assertKeyUsable(wanted.key);
+
+    const write = async (db: Knex) => {
+      await this.assertWithinLimit(db, 1);
+      await this.assertKeyAvailable(db, wanted.key);
+      await this.assertNameAvailable(db, wanted.name);
+
+      await this.insertField(db, {
+        key: wanted.key,
+        name: wanted.name,
+        type: wanted.type,
+        sortOrder: await this.nextSortOrder(db),
+      });
+      const [created] = await this.readMany(db, [wanted.key]);
+      return created;
+    };
+
+    // knex's marker for a transactor: join it rather than nesting a savepoint under it.
+    return executor.isTransaction ? write(executor) : executor.transaction(write);
+  }
+
+  /**
+   * Only for a stated key. Minting picks a free one instead, so this reads as a clean 422
+   * where the unique index would read as a 500.
+   */
+  private async assertKeyAvailable(db: Knex, key: string): Promise<void> {
+    const taken = await db(TABLE).where('key', key).first();
+    if (taken) {
+      throw new errors.ValidationError({
+        message: 'A custom field with this key already exists.',
+        property: 'key',
+      });
+    }
+  }
+
+  private async insertField(
+    db: Knex,
+    field: { key: string; name: string; type: FieldType; sortOrder: number },
+  ): Promise<void> {
+    await db(TABLE).insert({
+      id: new ObjectID().toHexString(),
+      key: field.key,
+      name: field.name,
+      type: field.type,
+      sort_order: field.sortOrder,
+      created_at: new Date(),
+    });
+  }
+
+  /** `read` for a caller that is deciding rather than serving: absent is an answer. */
+  async findByKey(
+    key: string,
+    { executor = this.knex }: { executor?: Knex } = {},
+  ): Promise<CustomField | null> {
+    const row = await executor(TABLE).where('key', key).first();
+    return row ? z.decode(customFieldCodec, row) : null;
+  }
+
+  /** The same entry `add` writes. Only the caller knows its transaction committed. */
+  async recordCreated(context: RequestContext, fields: CustomField[]): Promise<void> {
+    for (const field of fields) {
       await this.recordAction({
         context,
         verb: 'create',
@@ -236,7 +315,6 @@ export class CustomFieldDefinitionsService {
         details: { primary_name: field.name, key: field.key },
       });
     }
-    return created;
   }
 
   /**
@@ -514,6 +592,37 @@ export class CustomFieldDefinitionsService {
       verb: 'delete',
       subject: field.id,
       details: { primary_name: field.name, key },
+    });
+  }
+}
+
+/**
+ * The shape a stated key has to have. Minting derives one that is usable by
+ * construction, so this is the check that path never needed: a caller stating its own
+ * key has said nothing about the format, and guarding here covers every route in
+ * rather than whichever one arrived first.
+ *
+ * The length bound is the column's own, not `mintKey`'s: that one holds back room for a
+ * `_<n>` collision suffix, and a stated key is written exactly as given and never
+ * suffixed, so the whole column is available to it.
+ */
+function assertKeyUsable(key: string): void {
+  if (!KEY_CHARACTERS.test(key)) {
+    throw new errors.ValidationError({
+      message: 'A custom field key can only contain lowercase letters, numbers and underscores.',
+      property: 'key',
+    });
+  }
+  if (key.length > MAX_KEY_LENGTH) {
+    throw new errors.ValidationError({
+      message: `A custom field key can be at most ${MAX_KEY_LENGTH} characters.`,
+      property: 'key',
+    });
+  }
+  if (RESERVED_KEYS.includes(key)) {
+    throw new errors.ValidationError({
+      message: `${key} cannot be used as a custom field key.`,
+      property: 'key',
     });
   }
 }
