@@ -41,6 +41,29 @@ describe('Event loop lag middleware', function () {
       );
     });
 
+    it('accepts numeric config supplied as strings by argv or env vars', function () {
+      // nconf layers JSON files over argv and env vars, so these arrive as
+      // strings when set via GHOST_optimization__eventLoopLag__...
+      const monitor = createLagMonitor({
+        highWaterMarkMs: '250',
+        lowWaterMarkMs: '60',
+      } as unknown as EventLoopLagConfig);
+
+      assert.equal(monitor.isOverloaded(), false);
+      monitor.stop();
+    });
+
+    it('rejects numeric config that is not a number', function () {
+      assert.throws(
+        () =>
+          createLagMonitor({
+            highWaterMarkMs: 250,
+            lowWaterMarkMs: 'soon',
+          } as unknown as EventLoopLagConfig),
+        /lowWaterMarkMs must be a finite number/,
+      );
+    });
+
     it('rejects a low water mark below the sampling resolution', function () {
       // An idle loop reports ~resolution ms of delay, so such a monitor could
       // never leave the overloaded state.
@@ -117,12 +140,36 @@ describe('Event loop lag middleware', function () {
         .expect(200);
     });
 
-    it('honours a configured exempt path pattern', async function () {
-      const app = createApp(fakeMonitor(true), { ...CONFIG, exemptPathPattern: /^\/critical\// });
+    it('honours configured exempt path prefixes', async function () {
+      const app = createApp(fakeMonitor(true), {
+        ...CONFIG,
+        exemptPathPrefixes: ['/critical/'],
+      });
 
       await request(app).get('/critical/thing').expect(200);
       // The default admin exemption is replaced, not merged.
       await request(app).get('/ghost/').expect(503);
+    });
+
+    it('accepts a single exempt prefix as a bare string', async function () {
+      // An env var can only ever supply one string, never an array.
+      const app = createApp(fakeMonitor(true), {
+        ...CONFIG,
+        exemptPathPrefixes: '/critical/',
+      });
+
+      await request(app).get('/critical/thing').expect(200);
+    });
+
+    it('rejects exempt prefixes that are not strings', function () {
+      assert.throws(
+        () =>
+          eventLoopLag(
+            { ...CONFIG, exemptPathPrefixes: [42] } as unknown as EventLoopLagConfig,
+            fakeMonitor(true),
+          ),
+        /exemptPathPrefixes must be a string or an array of strings/,
+      );
     });
   });
 });

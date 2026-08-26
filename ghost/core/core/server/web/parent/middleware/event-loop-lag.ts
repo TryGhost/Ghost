@@ -13,8 +13,50 @@ const DEFAULTS = {
   retryAfterSeconds: 5,
   // The admin client and its API. Locking the owner out of their own site
   // during an incident is worse than serving readers a little slower.
-  exemptPathPattern: /^\/ghost\//,
+  exemptPathPrefixes: ['/ghost/'],
 };
+
+/**
+ * Config reaches us through nconf, which layers JSON files over argv and env
+ * vars - so a value that is a number in config.production.json arrives as a
+ * string when it is set via GHOST_optimization__eventLoopLag__... Comparing
+ * those directly is silently wrong rather than loudly broken: '60' >= '250'
+ * is true, so an env-var-configured site would fail validation for no reason.
+ */
+function toFiniteNumber(value: unknown, name: string): number {
+  const parsed = typeof value === 'string' ? Number(value) : value;
+
+  if (typeof parsed !== 'number' || !Number.isFinite(parsed)) {
+    throw new errors.IncorrectUsageError({
+      message: `eventLoopLag ${name} must be a finite number, got ${JSON.stringify(value)}`,
+    });
+  }
+
+  return parsed;
+}
+
+/**
+ * Plain prefixes rather than a regular expression: nconf can only ever hand us
+ * JSON, so a RegExp is unreachable from config, and compiling one supplied by
+ * an operator would put an unbounded backtracking risk on the hot path of the
+ * middleware whose whole job is to protect the CPU. startsWith is also cheaper
+ * per request, and matches how max-limit-cap.js exempts endpoints.
+ */
+function toPathPrefixes(value: unknown): string[] {
+  if (value === undefined) {
+    return DEFAULTS.exemptPathPrefixes;
+  }
+
+  const prefixes = typeof value === 'string' ? [value] : value;
+
+  if (!Array.isArray(prefixes) || prefixes.some((prefix) => typeof prefix !== 'string')) {
+    throw new errors.IncorrectUsageError({
+      message: `eventLoopLag exemptPathPrefixes must be a string or an array of strings, got ${JSON.stringify(value)}`,
+    });
+  }
+
+  return prefixes;
+}
 
 export type EventLoopLagConfig = Readonly<{
   /** Lag at or above which the origin starts shedding, in ms. */
@@ -29,8 +71,8 @@ export type EventLoopLagConfig = Readonly<{
   resolutionMs?: number;
   /** Retry-After sent on shed responses, in seconds. */
   retryAfterSeconds?: number;
-  /** Paths that are never shed. */
-  exemptPathPattern?: RegExp;
+  /** Path prefixes that are never shed. Replaces the default, it does not merge. */
+  exemptPathPrefixes?: string[] | string;
 }>;
 
 export type LagMonitor = Readonly<{
@@ -51,13 +93,18 @@ export type LagMonitor = Readonly<{
  * hour ago never looks healthy again.
  */
 export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
-  const windowMs = config.sampleWindowMs ?? DEFAULTS.sampleWindowMs;
-  const percentile = config.percentile ?? DEFAULTS.percentile;
-  const resolution = config.resolutionMs ?? DEFAULTS.resolutionMs;
+  const windowMs = toFiniteNumber(
+    config.sampleWindowMs ?? DEFAULTS.sampleWindowMs,
+    'sampleWindowMs',
+  );
+  const percentile = toFiniteNumber(config.percentile ?? DEFAULTS.percentile, 'percentile');
+  const resolution = toFiniteNumber(config.resolutionMs ?? DEFAULTS.resolutionMs, 'resolutionMs');
+  const highWaterMarkMs = toFiniteNumber(config.highWaterMarkMs, 'highWaterMarkMs');
+  const lowWaterMarkMs = toFiniteNumber(config.lowWaterMarkMs, 'lowWaterMarkMs');
 
-  if (config.lowWaterMarkMs >= config.highWaterMarkMs) {
+  if (lowWaterMarkMs >= highWaterMarkMs) {
     throw new errors.IncorrectUsageError({
-      message: `eventLoopLag lowWaterMarkMs (${config.lowWaterMarkMs}) must be below highWaterMarkMs (${config.highWaterMarkMs})`,
+      message: `eventLoopLag lowWaterMarkMs (${lowWaterMarkMs}) must be below highWaterMarkMs (${highWaterMarkMs})`,
     });
   }
 
@@ -65,9 +112,9 @@ export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
   // the histogram measures how late each sample was, and a sample is never
   // early. A low water mark under the resolution can therefore never be
   // reached, and the origin would shed until it was restarted.
-  if (config.lowWaterMarkMs <= resolution) {
+  if (lowWaterMarkMs <= resolution) {
     throw new errors.IncorrectUsageError({
-      message: `eventLoopLag lowWaterMarkMs (${config.lowWaterMarkMs}) must exceed resolutionMs (${resolution}); an idle event loop reports ~${resolution}ms of delay`,
+      message: `eventLoopLag lowWaterMarkMs (${lowWaterMarkMs}) must exceed resolutionMs (${resolution}); an idle event loop reports ~${resolution}ms of delay`,
     });
   }
 
@@ -88,16 +135,16 @@ export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
     // shedding lowers lag, which immediately re-admits the traffic that raised
     // it. Flapping every window would make the CDN cache a mix of real pages
     // and 503s.
-    if (!overloaded && lagMs >= config.highWaterMarkMs) {
+    if (!overloaded && lagMs >= highWaterMarkMs) {
       overloaded = true;
       shedSinceTransition = 0;
       logging.warn(
-        `[event-loop-lag] Shedding: p${percentile} lag ${Math.round(lagMs)}ms >= ${config.highWaterMarkMs}ms`,
+        `[event-loop-lag] Shedding: p${percentile} lag ${Math.round(lagMs)}ms >= ${highWaterMarkMs}ms`,
       );
-    } else if (overloaded && lagMs <= config.lowWaterMarkMs) {
+    } else if (overloaded && lagMs <= lowWaterMarkMs) {
       overloaded = false;
       logging.info(
-        `[event-loop-lag] Recovered: p${percentile} lag ${Math.round(lagMs)}ms <= ${config.lowWaterMarkMs}ms after shedding ${shedSinceTransition} requests`,
+        `[event-loop-lag] Recovered: p${percentile} lag ${Math.round(lagMs)}ms <= ${lowWaterMarkMs}ms after shedding ${shedSinceTransition} requests`,
       );
     }
   };
@@ -140,8 +187,10 @@ export function eventLoopLag(
   config: EventLoopLagConfig,
   monitor: LagMonitor = createLagMonitor(config),
 ): RequestHandler {
-  const retryAfter = String(config.retryAfterSeconds ?? DEFAULTS.retryAfterSeconds);
-  const exemptPathPattern = config.exemptPathPattern ?? DEFAULTS.exemptPathPattern;
+  const retryAfter = String(
+    toFiniteNumber(config.retryAfterSeconds ?? DEFAULTS.retryAfterSeconds, 'retryAfterSeconds'),
+  );
+  const exemptPathPrefixes = toPathPrefixes(config.exemptPathPrefixes);
 
   const isSheddable = (req: Request) => {
     // Only idempotent reads. A shed GET costs the client a retry; a shed POST
@@ -157,7 +206,7 @@ export function eventLoopLag(
       return false;
     }
 
-    return !exemptPathPattern.test(req.path);
+    return !exemptPathPrefixes.some((prefix) => req.path.startsWith(prefix));
   };
 
   return function eventLoopLagMw(req, res, next) {
