@@ -3,24 +3,37 @@
 // per-post filtering. Author and Contributor are NOT elevated — for
 // them, the SSE handler filters events to only those for posts where
 // they're listed as an author.
-const ELEVATED_ROLES = ['Owner', 'Administrator', 'Super Editor', 'Editor'];
+const ELEVATED_ROLES = ['Owner', 'Administrator', 'Super Editor', 'Editor'] as const;
 
-function hasElevatedPresenceAccess(user) {
+export type PresenceRoleUser = {
+  hasRole?: (role: string) => boolean;
+};
+
+export type PresenceSubscriber = {
+  elevated: boolean;
+  userId: string;
+};
+
+export type PresenceFilterableEvent = {
+  authorIds?: string[] | null;
+};
+
+export function hasElevatedPresenceAccess(user: PresenceRoleUser | null | undefined): boolean {
   if (!user || typeof user.hasRole !== 'function') {
     return false;
   }
-  return ELEVATED_ROLES.some((role) => user.hasRole(role));
+  return ELEVATED_ROLES.some((role) => user.hasRole?.(role));
 }
 
 /**
  * Whether a subscriber should receive a presence event for a given
  * post. Elevated roles see everything; non-elevated only see events
  * for posts where they're listed as an author.
- *
- * @param {{elevated: boolean, userId: string}} subscriber
- * @param {{authorIds?: string[]}} event
  */
-function canReceiveEvent(subscriber, event) {
+export function canReceiveEvent(
+  subscriber: PresenceSubscriber | null | undefined,
+  event: PresenceFilterableEvent | null | undefined,
+): boolean {
   if (!subscriber) {
     return false;
   }
@@ -32,9 +45,3 @@ function canReceiveEvent(subscriber, event) {
   }
   return event.authorIds.includes(subscriber.userId);
 }
-
-module.exports = {
-  hasElevatedPresenceAccess,
-  canReceiveEvent,
-  ELEVATED_ROLES,
-};

@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
-const markPostPresence = require('../../services/post-presence/mark-post-presence');
+const { markPostPresence } = require('../../services/post-presence/mark-post-presence');
 const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 const ALLOWED_INCLUDES = [
   'tags',

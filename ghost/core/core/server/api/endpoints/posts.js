@@ -1,6 +1,6 @@
 const urlUtils = require('../../../shared/url-utils').default;
 const models = require('../../models');
-const markPostPresence = require('../../services/post-presence/mark-post-presence');
+const { markPostPresence } = require('../../services/post-presence/mark-post-presence');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');

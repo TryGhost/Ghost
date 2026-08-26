@@ -4,8 +4,12 @@ const sinon = require('sinon');
 
 const models = require('../../../../../core/server/models');
 const postPresence = require('../../../../../core/server/services/post-presence');
-const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
-const PostPresenceService = require('../../../../../core/server/services/post-presence/post-presence-service');
+const {
+  markPostPresence,
+} = require('../../../../../core/server/services/post-presence/mark-post-presence');
+const {
+  PostPresenceService,
+} = require('../../../../../core/server/services/post-presence/post-presence-service');
 const permissionsService = require('../../../../../core/server/services/permissions');
 const {
   canReceiveEvent,

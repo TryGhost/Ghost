@@ -3,7 +3,9 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const postPresence = require('../../../../../core/server/services/post-presence');
-const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
+const {
+  markPostPresence,
+} = require('../../../../../core/server/services/post-presence/mark-post-presence');
 const presenceStream = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-stream');
 
 describe('PostPresence resilience', function () {

@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const PostPresenceService = require('../../../../../core/server/services/post-presence/post-presence-service');
+const {
+  PostPresenceService,
+} = require('../../../../../core/server/services/post-presence/post-presence-service');
 
 const POST_ID = 'post-1';
 const OTHER_POST_ID = 'post-2';

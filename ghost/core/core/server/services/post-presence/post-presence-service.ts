@@ -1,57 +1,65 @@
-const { EventEmitter } = require('events');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
+import { EventEmitter } from 'events';
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 
 // Wire-format event types. Must match EVENT_TYPE_* in
-// ghost/admin/app/services/presence.js (no shared module across the
+// apps/ember-admin/app/services/presence.js (no shared module across the
 // Node/Ember boundary).
-const PRESENCE_EVENT_TYPES = Object.freeze({
+export const PRESENCE_EVENT_TYPES = Object.freeze({
   POST: 'post',
   SNAPSHOT: 'snapshot',
 });
 
-/**
- * @typedef {Object} PresenceUser
- * @property {string} id
- * @property {string} [name]
- * @property {string} [profileImage]
- */
+export type PresenceUser = {
+  id: string;
+  name?: string;
+  profileImage?: string | null;
+};
 
-/**
- * Internal record stored in `_byPostId`. `lastSeen` drives idle/TTL
- * sweeps and is not sent over the wire (see PresenceUserView).
- *
- * @typedef {Object} PresenceEntry
- * @property {string} id
- * @property {string} name
- * @property {string | null} profileImage
- * @property {number} lastSeen
- * @property {boolean} isIdle
- */
+/** Internal record. `lastSeen` drives idle/TTL sweeps and is not sent over the wire. */
+export type PresenceEntry = {
+  id: string;
+  name: string;
+  profileImage: string | null;
+  lastSeen: number;
+  isIdle: boolean;
+};
 
-/**
- * Shape sent to clients (snapshot + post events). Mirrors PresenceEntry
- * without `lastSeen`.
- *
- * @typedef {Object} PresenceUserView
- * @property {string} id
- * @property {string} name
- * @property {string | null} profileImage
- * @property {boolean} isIdle
- */
+/** Shape sent to clients (snapshot + post events). */
+export type PresenceUserView = {
+  id: string;
+  name: string;
+  profileImage: string | null;
+  isIdle: boolean;
+};
 
-/**
- * @typedef {Object} PresencePostEvent
- * @property {'post'} type
- * @property {string} postId
- * @property {PresenceUserView[]} users
- */
+export type PresencePostContext = {
+  authorIds: string[];
+};
 
-/**
- * @typedef {Object} PresenceSnapshotEvent
- * @property {'snapshot'} type
- * @property {Array<{postId: string, users: PresenceUserView[]}>} posts
- */
+export type PresencePostEvent = {
+  type: typeof PRESENCE_EVENT_TYPES.POST;
+  postId: string;
+  authorIds: string[];
+  users: PresenceUserView[];
+};
+
+export type PresenceSnapshotPost = {
+  postId: string;
+  authorIds: string[];
+  users: PresenceUserView[];
+};
+
+export type PresenceSnapshotEvent = {
+  type: typeof PRESENCE_EVENT_TYPES.SNAPSHOT;
+  posts: PresenceSnapshotPost[];
+};
+
+export type PostPresenceServiceOptions = {
+  idleMs?: number;
+  ttlMs?: number;
+  cleanupIntervalMs?: number;
+};
 
 /**
  * Tracks which staff users currently have a given post open in the
@@ -63,19 +71,20 @@ const PRESENCE_EVENT_TYPES = Object.freeze({
  *
  * State is in-process. Ghost(Pro) runs one Node process per site.
  */
-class PostPresenceService {
-  /**
-   * @param {Object} [opts]
-   * @param {number} [opts.idleMs] entries older than this without
-   *     activity are marked idle. Defaults to 90s — slightly above
-   *     Ghost's 60s force-save cadence so an actively-open editor
-   *     never flickers.
-   * @param {number} [opts.ttlMs] entries older than this are removed.
-   *     Must be greater than idleMs. Defaults to 180s.
-   * @param {number} [opts.cleanupIntervalMs] sweep cadence. Defaults
-   *     to ttlMs / 6 so transitions land within one sweep window.
-   */
-  constructor({ idleMs = 90 * 1000, ttlMs = 180 * 1000, cleanupIntervalMs } = {}) {
+export class PostPresenceService {
+  idleMs: number;
+  ttlMs: number;
+  cleanupIntervalMs: number;
+  _byPostId: Map<string, Map<string, PresenceEntry>>;
+  _postContexts: Map<string, PresencePostContext>;
+  _emitter: EventEmitter;
+  _cleanupTimer: NodeJS.Timeout | null;
+
+  constructor({
+    idleMs = 90 * 1000,
+    ttlMs = 180 * 1000,
+    cleanupIntervalMs,
+  }: PostPresenceServiceOptions = {}) {
     if (idleMs >= ttlMs) {
       throw new errors.IncorrectUsageError({
         message: 'PostPresenceService requires idleMs < ttlMs',
@@ -84,29 +93,19 @@ class PostPresenceService {
     this.idleMs = idleMs;
     this.ttlMs = ttlMs;
     this.cleanupIntervalMs = cleanupIntervalMs || Math.max(1000, Math.floor(ttlMs / 6));
-    /** @type {Map<string, Map<string, PresenceEntry>>} */
     this._byPostId = new Map();
-    /**
-     * Per-post context (currently just the post's author IDs).
-     * Carried alongside each event so the SSE handler can filter
-     * by subscriber permission without an extra DB hop.
-     * @type {Map<string, {authorIds: string[]}>}
-     */
     this._postContexts = new Map();
     this._emitter = new EventEmitter();
     this._emitter.setMaxListeners(1000);
     this._cleanupTimer = null;
   }
 
-  /**
-   * @param {(event: PresencePostEvent) => void} handler
-   */
-  subscribe(handler) {
+  subscribe(handler: (event: PresencePostEvent) => void): () => void {
     this._emitter.on('presence', handler);
     return () => this._emitter.off('presence', handler);
   }
 
-  start() {
+  start(): void {
     if (this._cleanupTimer) {
       return;
     }
@@ -116,14 +115,14 @@ class PostPresenceService {
     }
   }
 
-  stop() {
+  stop(): void {
     if (this._cleanupTimer) {
       clearInterval(this._cleanupTimer);
       this._cleanupTimer = null;
     }
   }
 
-  reset() {
+  reset(): void {
     this.stop();
     this._byPostId.clear();
     this._postContexts.clear();
@@ -140,12 +139,12 @@ class PostPresenceService {
    * subscriber sees by their permission to read the post. Callers
    * (markPostPresence on the edit path, presence-enter) are expected
    * to pass it; if omitted we keep whatever was previously stored.
-   *
-   * @param {string} postId
-   * @param {PresenceUser} user
-   * @param {{authorIds?: string[]}} [postContext]
    */
-  mark(postId, user, postContext) {
+  mark(
+    postId?: string | null,
+    user?: PresenceUser | null,
+    postContext?: { authorIds?: string[] },
+  ): void {
     if (!postId || !user || !user.id) {
       return;
     }
@@ -158,7 +157,7 @@ class PostPresenceService {
     }
 
     const now = Date.now();
-    const entries = this._byPostId.get(postId) || new Map();
+    const entries = this._byPostId.get(postId) || new Map<string, PresenceEntry>();
     const prev = entries.get(user.id);
     const wasActive = prev && !prev.isIdle && now - prev.lastSeen < this.ttlMs;
 
@@ -180,7 +179,7 @@ class PostPresenceService {
    * No-op if the user wasn't tracked, which keeps spurious beacons
    * from triggering fan-out.
    */
-  leave(postId, userId) {
+  leave(postId?: string | null, userId?: string | null): void {
     if (!postId || !userId) {
       return;
     }
@@ -200,18 +199,11 @@ class PostPresenceService {
     }
   }
 
-  /**
-   * Filters stale entries on the way out. Each post carries its
-   * authorIds so the SSE handler can filter the snapshot by the
-   * subscriber's permission.
-   *
-   * @returns {Array<{postId: string, authorIds: string[], users: PresenceUserView[]}>}
-   */
-  snapshot() {
+  snapshot(): PresenceSnapshotPost[] {
     const now = Date.now();
-    const out = [];
+    const out: PresenceSnapshotPost[] = [];
     for (const [postId, entries] of this._byPostId.entries()) {
-      const users = [];
+      const users: PresenceUserView[] = [];
       for (const entry of entries.values()) {
         if (now - entry.lastSeen < this.ttlMs) {
           users.push(this._toWireUser(entry));
@@ -224,19 +216,12 @@ class PostPresenceService {
     return out;
   }
 
-  _authorIdsFor(postId) {
+  _authorIdsFor(postId: string): string[] {
     const ctx = this._postContexts.get(postId);
     return ctx && Array.isArray(ctx.authorIds) ? ctx.authorIds.slice() : [];
   }
 
-  /**
-   * Strips `lastSeen` (internal sweep timestamp) from an entry before
-   * it goes over the wire.
-   *
-   * @param {PresenceEntry} entry
-   * @returns {PresenceUserView}
-   */
-  _toWireUser(entry) {
+  _toWireUser(entry: PresenceEntry): PresenceUserView {
     return {
       id: entry.id,
       name: entry.name,
@@ -245,8 +230,8 @@ class PostPresenceService {
     };
   }
 
-  _publish(postId, entries) {
-    const event = {
+  _publish(postId: string, entries: Map<string, PresenceEntry> | undefined): void {
+    const event: PresencePostEvent = {
       type: PRESENCE_EVENT_TYPES.POST,
       postId,
       authorIds: this._authorIdsFor(postId),
@@ -263,7 +248,7 @@ class PostPresenceService {
    * Each post is wrapped in try/catch so a single bad subscriber
    * doesn't abort the whole sweep.
    */
-  _cleanupAll() {
+  _cleanupAll(): void {
     const now = Date.now();
     for (const [postId, entries] of this._byPostId.entries()) {
       try {
@@ -285,7 +270,7 @@ class PostPresenceService {
     }
   }
 
-  _sweep(entries, now) {
+  _sweep(entries: Map<string, PresenceEntry>, now: number): boolean {
     let changed = false;
     for (const [id, entry] of entries) {
       if (!entry || typeof entry.lastSeen !== 'number') {
@@ -308,6 +293,3 @@ class PostPresenceService {
     return changed;
   }
 }
-
-module.exports = PostPresenceService;
-module.exports.PRESENCE_EVENT_TYPES = PRESENCE_EVENT_TYPES;

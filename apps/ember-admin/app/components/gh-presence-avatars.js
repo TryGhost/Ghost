@@ -21,10 +21,10 @@ export default class GhPresenceAvatars extends Component {
             const parts = name.split(/\s+/).filter(Boolean);
             const firstName = parts[0] || name;
             firstNameCounts.set(firstName, (firstNameCounts.get(firstName) || 0) + 1);
-            return {user, name, parts, firstName};
+            return {user, parts, firstName};
         });
 
-        return parsed.map(({user, name, parts, firstName}) => {
+        return parsed.map(({user, parts, firstName}) => {
             let display = firstName;
             if (firstNameCounts.get(firstName) > 1 && parts.length > 1) {
                 display = `${firstName} ${parts[parts.length - 1][0].toUpperCase()}.`;
@@ -32,7 +32,6 @@ export default class GhPresenceAvatars extends Component {
             const tooltip = display.length > 20 ? `${display.slice(0, 20)}…` : display;
             return {
                 id: user.id,
-                name,
                 firstName: display,
                 tooltipText: user.isIdle ? `${tooltip} (idle)` : tooltip,
                 profileImage: user.profileImage || null,

@@ -3,7 +3,7 @@ import fetch from 'fetch';
 import {tracked} from '@glimmer/tracking';
 
 // Wire-format event types. Must match PRESENCE_EVENT_TYPES in
-// ghost/core/core/server/services/post-presence/post-presence-service.js
+// ghost/core/core/server/services/post-presence/post-presence-service.ts
 // (no shared module across the Node/Ember boundary).
 const EVENT_TYPE_SNAPSHOT = 'snapshot';
 const EVENT_TYPE_POST = 'post';
