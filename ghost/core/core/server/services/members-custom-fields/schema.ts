@@ -27,6 +27,20 @@ type CustomFieldRank = { sort_order: number };
 
 type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 
+/**
+ * How a value arrived, not who caused it: who edited a member's fields is already an
+ * action, and Stripe is not a person. `type` is the namespace that makes `id` resolvable —
+ * `users`, `integrations`, `members_custom_field_bindings` — so the one writer that
+ * resolves in no table is the one with no id to give.
+ */
+export const WrittenBy = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('user'), id: z.string() }),
+  z.object({ type: z.literal('integration'), id: z.string() }),
+  z.object({ type: z.literal('binding'), id: z.string() }),
+  z.object({ type: z.literal('import'), id: z.null() }),
+]);
+export type WrittenBy = z.infer<typeof WrittenBy>;
+
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
@@ -37,6 +51,11 @@ export const DbCustomFieldValue = z.object({
   // Nullable like the column, though nothing here writes a null: a part with no value
   // has no row.
   value_text: z.string().nullable(),
+  // Plain columns rather than the `WrittenBy` union: the rule holds at the write
+  // boundary, so one malformed row cannot throw away a member's whole profile on read.
+  written_by_type: z.string(),
+  // Null for the one writer that resolves nowhere: an import, until runs are tracked.
+  written_by_id: z.string().nullable(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });

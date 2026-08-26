@@ -1096,6 +1096,23 @@ module.exports = {
     // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
     // exactly is worth more than the schema restating what the write path enforces.
     value_text: { type: 'text', maxlength: 65535, nullable: true },
+    // Who wrote the value that is here now.
+    //
+    // Shaped like `actions`: a type and an id, no foreign key. A type because not every
+    // write comes through a binding — a person edits a member's fields, an import reads a
+    // file — and an id so the writer can be resolved back rather than merely named. A
+    // binding id resolves to the tier, the port and the field it routed into, which is
+    // everything worth knowing about how a value got here.
+    //
+    // No foreign key, because provenance has to outlive its cause: that a value arrived
+    // through a tier's shipping port stays true after someone deletes that binding, even
+    // though it stops being joinable.
+    //
+    // The type is the namespace the id resolves in, so every row carries one. The id is
+    // nullable for the one writer that resolves in no table: an import has none to give
+    // until runs are tracked.
+    written_by_type: { type: 'string', maxlength: 50, nullable: false },
+    written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
     // Named, because the name knex derives from the table and all three columns
