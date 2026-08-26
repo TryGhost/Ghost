@@ -1,3 +1,7 @@
+const errors = require('@tryghost/errors');
+
+let instance;
+
 module.exports = {
   async init() {
     const debug = require('@tryghost/debug')('mediaInliner');
@@ -30,6 +34,8 @@ module.exports = {
         }
       },
     });
+
+    instance = mediaInliner;
 
     this.api = {
       startMediaInliner: async (domains) => {
@@ -71,5 +77,15 @@ module.exports = {
         };
       },
     };
+  },
+
+  getInstance() {
+    if (!instance) {
+      throw new errors.IncorrectUsageError({
+        message: 'Media inliner used before init(). Call init() from boot first.',
+      });
+    }
+
+    return instance;
   },
 };
