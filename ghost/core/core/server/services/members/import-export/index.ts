@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/custom-field-types/csv';
+import type { WrittenBy } from '../../members-custom-fields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -52,7 +53,7 @@ interface ImporterServices {
       applyWrite(
         memberId: string,
         plan: unknown[],
-        options: { writtenBy: { type: string; id: string | null }; executor?: Knex },
+        options: { writtenBy: WrittenBy; executor?: Knex },
       ): Promise<void>;
     };
   };
