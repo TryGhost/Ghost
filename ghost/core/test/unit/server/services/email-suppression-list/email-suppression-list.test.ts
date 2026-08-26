@@ -1,8 +1,7 @@
-const assert = require('node:assert/strict');
-const {
-  EmailSuppressionData,
-  EmailSuppressedEvent,
-} = require('../../../../../core/server/services/email-suppression-list/email-suppression-list');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import emailSuppressionList from '../../../../../core/server/services/email-suppression-list/email-suppression-list';
+const { EmailSuppressionData, EmailSuppressedEvent } = emailSuppressionList;
 
 describe('EmailSuppressionData', function () {
   it('Has null info when not suppressed', function () {

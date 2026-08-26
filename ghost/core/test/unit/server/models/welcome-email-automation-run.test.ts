@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const {
-  WelcomeEmailAutomationRun,
-} = require('../../../../core/server/models/welcome-email-automation-run');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+
+const { WelcomeEmailAutomationRun } = models;
 
 describe('Unit: models/welcome-email-automation-run', function () {
   describe('tableName', function () {

@@ -1,8 +1,11 @@
 /* eslint no-invalid-this:0 */
-const assert = require('node:assert/strict');
-const errors = require('@tryghost/errors');
-const sinon = require('sinon');
-const { Newsletter } = require('../../../../core/server/models/newsletter');
+import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+
+const { Newsletter } = models;
 
 describe('Unit: models/newsletter', function () {
   afterAll(function () {
@@ -16,7 +19,8 @@ describe('Unit: models/newsletter', function () {
           .then(function () {
             throw new Error('expected ValidationError');
           })
-          .catch(function (err) {
+          .catch(function (err: unknown) {
+            assert(Array.isArray(err));
             assert.equal(err.length, 2);
             assert.equal(err[0] instanceof errors.ValidationError, true);
             assert.equal(err[1] instanceof errors.ValidationError, true);
