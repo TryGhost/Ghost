@@ -11,6 +11,7 @@ import FileStore from '../../../../../core/server/adapters/route-settings/FileSt
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 import {buildRouteSettings} from '../../services/route-settings/route-settings-fixture';
+import {runStoreContract} from './helpers/store-contract';
 
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../../core/server/services/route-settings');
 
@@ -66,6 +67,8 @@ describe('UNIT: route-settings FileStore', function () {
         await fs.remove(basePath);
         await fs.remove(defaultsPath);
     });
+
+    runStoreContract({createStore: () => createStore()});
 
     describe('adapter contract', function () {
         it('extends RouteSettingsStoreBase and declares get/replace as required', function () {

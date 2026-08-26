@@ -30,6 +30,22 @@ describe('Posts Bulk API', function () {
     });
 
     describe('Edit', function () {
+        it('Rejects restricted filter fields without broadening the operation', async function () {
+            const featuredBefore = await models.Post.findAll({filter: 'featured:true', status: 'all'});
+
+            await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent('authors.password:abcd'))
+                .body({
+                    bulk: {
+                        action: 'feature'
+                    }
+                })
+                .expectStatus(400);
+
+            const featuredAfter = await models.Post.findAll({filter: 'featured:true', status: 'all'});
+            assert.deepEqual(featuredAfter.pluck('id'), featuredBefore.pluck('id'));
+        });
+
         it('Can feature multiple posts', async function () {
             const filter = 'status:[published,draft,scheduled,sent]';
 

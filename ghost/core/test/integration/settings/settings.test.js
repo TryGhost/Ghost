@@ -31,6 +31,8 @@ describe('Settings', function () {
         'members_stripe_webhook_id',
         'members_stripe_webhook_secret',
         'members_otc_secret',
+        'machine_payments_secret',
+        'machine_payments_deposit_address',
         'site_uuid'
     ];
     // If this test is failing, then it is likely a new setting has been added without group migration

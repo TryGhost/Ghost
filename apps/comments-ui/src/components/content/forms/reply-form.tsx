@@ -8,10 +8,9 @@ import {useRefCallback} from '../../../utils/hooks';
 type Props = {
     openForm: OpenCommentForm;
     parent: Comment;
-    threadedLayout?: boolean;
 }
 
-const ReplyForm: React.FC<Props> = ({openForm, parent, threadedLayout = false}) => {
+const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
@@ -45,8 +44,8 @@ const ReplyForm: React.FC<Props> = ({openForm, parent, threadedLayout = false}) 
 
     return (
         <div ref={setForm} data-testid="reply-form">
-            <div className={`${threadedLayout ? '' : 'mt-[-16px]'} pr-2`}>
-                <FormWrapper editor={editor} isOpen={true} openForm={openForm} reduced={isMobile()} threadedLayout={threadedLayout}>
+            <div className="pr-2">
+                <FormWrapper editor={editor} isOpen={true} layoutVariant="reply" openForm={openForm} reduced={isMobile()}>
                     <Form
                         close={close}
                         editor={editor}

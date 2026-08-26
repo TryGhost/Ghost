@@ -8,8 +8,6 @@ const {StripeCustomerSubscription} = require('../../../../../core/server/models/
 
 const createSerialize = require('../../../../../core/server/services/webhooks/serialize');
 
-// Eager routing needs no relations; getRequiredRelations returns [] there, so
-// this is the default for tests that don't exercise relation loading.
 const noRelationsUrlService = {getRequiredRelations: () => []};
 const serialize = createSerialize({urlService: noRelationsUrlService});
 

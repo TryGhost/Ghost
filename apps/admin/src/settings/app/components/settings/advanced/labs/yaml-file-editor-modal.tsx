@@ -1,5 +1,4 @@
 import CodeEditor from '@/settings/app/components/code-editor';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';
@@ -17,7 +16,7 @@ export interface YamlFileEditorModalProps {
     uploadFilename: string;
     successMessage: string;
     onUpload: (file: File) => Promise<unknown>;
-    afterClose?: () => void;
+    onClose: () => void;
 }
 
 const extractErrorMessage = (error: unknown): string => {
@@ -40,9 +39,8 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     uploadFilename,
     successMessage,
     onUpload,
-    afterClose
+    onClose
 }) => {
-    const modal = useModal();
     const handleError = useHandleError();
 
     const [content, setContent] = useState('');
@@ -96,11 +94,6 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
         };
     }, [downloadPath, uploadFilename]);
 
-    const closeModal = () => {
-        modal.remove();
-        afterClose?.();
-    };
-
     const handleSave = async () => {
         if (isSaving || isLoading || loadError) {
             return;
@@ -115,7 +108,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
             toast.success(successMessage);
 
-            closeModal();
+            onClose();
         } catch (error) {
             setSaveError(extractErrorMessage(error));
             handleError(error, {withToast: false});
@@ -143,19 +136,19 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
     return (
         <SettingsModal
-            afterClose={afterClose}
             backDropClick={false}
             cancelLabel='Close'
             footer={<></>}
             height='full'
             size='full'
             testId={testId}
+            onClose={onClose}
         >
             <div className='flex h-full min-h-0 flex-col'>
                 <div className='mb-4 flex items-center justify-between'>
                     <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>{title}</Text>
                     <Inline gap='md'>
-                        <Button type='button' variant='outline' onClick={closeModal}>Close</Button>
+                        <Button type='button' variant='outline' onClick={onClose}>Close</Button>
                         <Button disabled={!canSave} type='button' onClick={() => void handleSave()}>{isSaving ? 'Saving...' : 'Save'}</Button>
                     </Inline>
                 </div>
@@ -184,4 +177,4 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     );
 };
 
-export default NiceModal.create(YamlFileEditorModal);
+export default YamlFileEditorModal;

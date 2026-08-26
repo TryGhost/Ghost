@@ -3,15 +3,7 @@
  * Dynamically build and execute queries on the API
  */
 const _ = require('lodash');
-const {resolveRouteData} = require('../routing/api-adapter');
-
-// The default settings for a default post query
-const queryDefaults = {
-    type: 'browse',
-    resource: 'posts',
-    controller: 'postsPublic',
-    options: {}
-};
+const {resolveApiCall, resolveRouteData} = require('../routing/api-adapter');
 
 /**
  * The theme expects to have access to the relations by default e.g. {{post.authors}}
@@ -29,13 +21,16 @@ const defaultDataQueryOptions = {
     author: null
 };
 
-const defaultPostQuery = _.cloneDeep(queryDefaults);
-defaultPostQuery.options = defaultQueryOptions.options;
+const defaultPostQuery = {
+    ...resolveApiCall({type: 'browse', resource: 'posts'}),
+    options: _.cloneDeep(defaultQueryOptions.options)
+};
 
 /**
  * Process query request.
  *
- * Takes a 'query' object, ensures that type, resource and options are set
+ * Takes a resolved query spec, which already carries type, resource,
+ * controller and options.
  * Replaces occurrences of `%s` in options with slugParam
  * Converts the query config to a promise for the result
  *
@@ -47,8 +42,6 @@ function processQuery(query, slugParam, locals) {
     const api = require('../proxy').api;
 
     query = _.cloneDeep(query);
-
-    _.defaultsDeep(query, queryDefaults);
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option, name) {

@@ -14,6 +14,7 @@ const {fixtureManager} = require('../../core/server/data/schema/fixtures');
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
+const {Queries: EmailAnalyticsQueries} = require('../../core/server/services/email-analytics/lib/queries');
 
 // Other Test Utilities
 const context = require('./fixtures/context');
@@ -715,8 +716,7 @@ const fixtures = {
     },
 
     insertEmailsAndRecipients: async function insertEmailsAndRecipients(withFailed = false) {
-        // NOTE: This require touches the database, so it can't be done at the top of the file as test setup is being performed.
-        const {queries: emailAnalyticsQueries} = require('../../core/server/services/email-analytics/lib/queries');
+        const emailAnalyticsQueries = new EmailAnalyticsQueries(models.Base.knex);
 
         for (const email of _.cloneDeep(DataGenerator.forKnex.emails)) {
             await models.Email.add(email, context.internal);

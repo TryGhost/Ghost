@@ -52,7 +52,7 @@ describe('Importer', function () {
 
         it('gets the correct extensions', function () {
             assert(Array.isArray(ImportManager.getExtensions()));
-            assert.equal(ImportManager.getExtensions().length, 105);
+            assert.equal(ImportManager.getExtensions().length, 107);
             assert(ImportManager.getExtensions().includes('.csv'));
             assert(ImportManager.getExtensions().includes('.json'));
             assert(ImportManager.getExtensions().includes('.zip'));
@@ -119,7 +119,7 @@ describe('Importer', function () {
         });
 
         it('globs extensions correctly', function () {
-            const extGlob = '+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.7z|.aac|.ai|.aif|.aiff|.apkg|.arw|.avif|.avi|.blend|.bmp|.bz2|.cr2|.cr3|.css|.csv|.dng|.doc|.docx|.eot|.epub|.eps|.fb2|.fbx|.flac|.geojson|.glb|.gltf|.gpx|.gz|.heic|.heif|.html|.ics|.ipynb|.js|.json|.jsonld|.key|.kml|.m4v|.md|.mid|.midi|.mkv|.mobi|.mov|.nef|.np3|.numbers|.obj|.odp|.ods|.odt|.opus|.orf|.otf|.pages|.paprikarecipes|.pdf|.ppt|.pptx|.psd|.py|.raf|.rar|.rtf|.rw2|.skp|.stl|.tar|.tgz|.tif|.tiff|.toml|.tsv|.ttf|.txt|.vcf|.woff|.woff2|.xcf|.xls|.xlsb|.xlsm|.xlsx|.xml|.yaml|.zip|.markdown)';
+            const extGlob = '+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.7z|.aac|.ai|.aif|.aiff|.apkg|.arw|.avif|.avi|.blend|.bmp|.bz2|.cr2|.cr3|.css|.csv|.deb|.dng|.doc|.docx|.eot|.epub|.eps|.fb2|.fbx|.flac|.geojson|.glb|.gltf|.gpx|.gz|.heic|.heif|.html|.ics|.ipynb|.js|.json|.jsonld|.key|.kml|.m4v|.md|.mid|.midi|.mkv|.mobi|.mov|.nef|.np3|.numbers|.obj|.odp|.ods|.odt|.opus|.orf|.otf|.pages|.paprikarecipes|.pdf|.ppt|.pptx|.psd|.py|.raf|.rar|.rpm|.rtf|.rw2|.skp|.stl|.tar|.tgz|.tif|.tiff|.toml|.tsv|.ttf|.txt|.vcf|.woff|.woff2|.xcf|.xls|.xlsb|.xlsm|.xlsx|.xml|.yaml|.zip|.markdown)';
             assert.equal(ImportManager.getGlobPattern(ImportManager.getExtensions()), extGlob);
             assert.equal(ImportManager.getGlobPattern(ImportManager.getDirectories()), '+(images|content|media|files)');
             assert.equal(ImportManager.getGlobPattern(JSONHandler.extensions), '+(.json)');

@@ -172,10 +172,6 @@ module.exports = {
         return apiFramework.pipeline(require('./config'), localUtils);
     },
 
-    get explore() {
-        return apiFramework.pipeline(require('./explore'), localUtils);
-    },
-
     get themes() {
         return apiFramework.pipeline(require('./themes'), localUtils);
     },

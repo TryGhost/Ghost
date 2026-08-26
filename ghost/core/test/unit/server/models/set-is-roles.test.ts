@@ -59,12 +59,12 @@ describe('setIsRoles function behavior', function () {
     };
 
     it('returns an object', function () {
-        let result = setIsRoles(loadedPermissionsEditor);
+        const result = setIsRoles(loadedPermissionsEditor);
         assert(_.isPlainObject(result));
     });
 
     it('returns the correct object for Editor', function () {
-        let result = setIsRoles(loadedPermissionsEditor);
+        const result = setIsRoles(loadedPermissionsEditor);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);
@@ -76,7 +76,7 @@ describe('setIsRoles function behavior', function () {
     });
 
     it('returns the correct object for Administrator', function () {
-        let result = setIsRoles(loadedPermissionsAdmin);
+        const result = setIsRoles(loadedPermissionsAdmin);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, true);
@@ -88,7 +88,7 @@ describe('setIsRoles function behavior', function () {
     });
 
     it('returns the correct object for Author', function () {
-        let result = setIsRoles(loadedPermissionsAuthor);
+        const result = setIsRoles(loadedPermissionsAuthor);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);
@@ -100,7 +100,7 @@ describe('setIsRoles function behavior', function () {
     });
 
     it('returns the correct object for Super Editor', function () {
-        let result = setIsRoles(loadedPermissionsSuperEditor);
+        const result = setIsRoles(loadedPermissionsSuperEditor);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);
@@ -112,7 +112,7 @@ describe('setIsRoles function behavior', function () {
     });
 
     it('returns the correct object for multiple roles', function () {
-        let result = setIsRoles(loadedPermissionsWithMultipleRoles);
+        const result = setIsRoles(loadedPermissionsWithMultipleRoles);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);
@@ -123,7 +123,7 @@ describe('setIsRoles function behavior', function () {
         assert.equal(result.isEitherEditor, true);
     });
     it('returns the correct object for no roles', function () {
-        let result = setIsRoles(loadedPermissionsWithNoRoles);
+        const result = setIsRoles(loadedPermissionsWithNoRoles);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);
@@ -134,7 +134,7 @@ describe('setIsRoles function behavior', function () {
         assert.equal(result.isEitherEditor, false);
     });
     it('returns the correct object for no user', function () {
-        let result = setIsRoles(loadedPermissionsWithNoUser);
+        const result = setIsRoles(loadedPermissionsWithNoUser);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);
@@ -145,7 +145,7 @@ describe('setIsRoles function behavior', function () {
         assert.equal(result.isEitherEditor, false);
     });
     it('returns the correct object for permissions without role', function () {
-        let result = setIsRoles(loadedPermissionswithPermissions);
+        const result = setIsRoles(loadedPermissionswithPermissions);
         assert(_.isPlainObject(result));
         assert.equal(result.isOwner, false);
         assert.equal(result.isAdmin, false);

@@ -18,8 +18,8 @@ describe('MailgunEmailSuppressionList', function () {
         // fetched, so no suppression is created. The suite previously passed only
         // by free-riding on an earlier file's timestamp state, which breaks under
         // per-file isolation. Mirrors newsletter-email-event-storage.test.js.
-        const {queries} = require('../../../core/server/services/email-analytics/lib/queries');
-        sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
+        const {Queries} = require('../../../core/server/services/email-analytics/lib/queries');
+        sinon.stub(Queries.prototype, 'getLastEventTimestamp').callsFake(async function () {
             return new Date(2000, 0, 1);
         });
 
@@ -43,7 +43,7 @@ describe('MailgunEmailSuppressionList', function () {
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
-        const providerId = emailBatch.provider_id;
+        const providerId = emailBatch.mailgun_message_id;
         const timestamp = new Date(2000, 0, 1);
         const recipient = emailRecipient.member_email;
 
@@ -71,7 +71,7 @@ describe('MailgunEmailSuppressionList', function () {
         const emailRecipient = fixtureManager.get('email_recipients', 1);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
-        const providerId = emailBatch.provider_id;
+        const providerId = emailBatch.mailgun_message_id;
         const timestamp = new Date(2000, 0, 1);
         const recipient = emailRecipient.member_email;
 
@@ -99,7 +99,7 @@ describe('MailgunEmailSuppressionList', function () {
         const emailRecipient = fixtureManager.get('email_recipients', 2);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
-        const providerId = emailBatch.provider_id;
+        const providerId = emailBatch.mailgun_message_id;
         const timestamp = new Date(2000, 0, 1);
         const recipient = emailRecipient.member_email;
 
@@ -127,7 +127,7 @@ describe('MailgunEmailSuppressionList', function () {
         const emailRecipient = fixtureManager.get('email_recipients', 3);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
-        const providerId = emailBatch.provider_id;
+        const providerId = emailBatch.mailgun_message_id;
         const timestamp = new Date(2000, 0, 1);
         const recipient = emailRecipient.member_email;
 
@@ -156,7 +156,7 @@ describe('MailgunEmailSuppressionList', function () {
         const emailRecipient = fixtureManager.get('email_recipients', 4);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
-        const providerId = emailBatch.provider_id;
+        const providerId = emailBatch.mailgun_message_id;
         const timestamp = new Date(2000, 0, 1);
 
         const {body: {members: [member]}} = await agent.get(`/members/${memberId}`);
@@ -193,7 +193,7 @@ describe('MailgunEmailSuppressionList', function () {
         const emailRecipient = fixtureManager.get('email_recipients', 5);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
-        const providerId = emailBatch.provider_id;
+        const providerId = emailBatch.mailgun_message_id;
         const recipient = emailRecipient.member_email;
         const timestamp = new Date(2000, 0, 1);
 

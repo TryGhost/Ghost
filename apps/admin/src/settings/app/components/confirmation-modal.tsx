@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {
     AlertDialog,
@@ -31,7 +30,14 @@ export interface ConfirmationModalProps {
     testId?: string;
 }
 
-export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
+export type ConfirmationHostProps = {
+    visible?: boolean;
+    onRemove: () => void;
+};
+
+export const ConfirmationModalContent: React.FC<ConfirmationModalProps & ConfirmationHostProps> = ({
+    visible = true,
+    onRemove,
     title = 'Are you sure?',
     prompt,
     cancelLabel = 'Cancel',
@@ -45,7 +51,6 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     stickyFooter = false,
     testId = 'confirmation-modal'
 }) => {
-    const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');
     const isRunning = taskState === 'running';
     const runningLabel = okRunningLabel || okLabel;
@@ -58,7 +63,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
         if (onCancel) {
             onCancel();
         } else {
-            modal.remove();
+            onRemove();
         }
     };
 
@@ -66,7 +71,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
         setTaskState('running');
 
         try {
-            await onOk?.(modal);
+            await onOk?.({remove: onRemove});
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Unhandled Promise Rejection. Make sure you catch errors in your onOk handler.', error);
@@ -94,7 +99,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     const footer = customFooter === undefined ? defaultFooter : customFooter;
 
     return (
-        <AlertDialog open={modal.visible} onOpenChange={open => !open && handleCancel()}>
+        <AlertDialog open={visible} onOpenChange={open => !open && handleCancel()}>
             <AlertDialogContent
                 className={cn(
                     'z-[1100] max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] overflow-y-auto bg-background'
@@ -121,5 +126,3 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
         </AlertDialog>
     );
 };
-
-export default NiceModal.create(ConfirmationModalContent);

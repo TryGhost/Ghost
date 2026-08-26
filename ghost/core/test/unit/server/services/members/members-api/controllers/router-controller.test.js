@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
-// @ts-ignore - Intentionally ignoring TypeScript errors for tests
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
 
 describe('RouterController', function () {

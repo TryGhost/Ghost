@@ -33,7 +33,7 @@ const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
  */
 
 /**
- * @typedef {object} IGiftServiceWrapper
+ * @typedef {object} IGiftsModule
  * @prop {{getMemberPresentations: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
  */
 
@@ -49,7 +49,7 @@ module.exports = class MemberBREADService {
      * @param {import('../../../email-suppression-list/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
      * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
-     * @param {IGiftServiceWrapper} deps.giftService
+     * @param {IGiftsModule} deps.giftService
      * @param {import('../../../members-custom-fields/values-service').CustomFieldValuesService} deps.customFieldValues Required: boot builds it before the members service
      */
     constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService, customFieldValues}) {

@@ -699,7 +699,6 @@ describe('Posts API', function () {
                         status: 'draft'
                     };
 
-                    // @ts-ignore
                     const products = await models.Product.findAll();
 
                     const freeTier = products.models[0];

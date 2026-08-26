@@ -6,21 +6,25 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Contributing
 
-<p className="excerpt">Conventions for adding to Shade. The decision tree for *which layer* something belongs in is on the [Layers](?path=/docs/overview-layers--docs) page. The agent-facing rule source is `apps/shade/AGENTS.md`.</p>
+<p className="excerpt">Conventions for adding to Shade. The decision tree for *which layer* something belongs in is on the [Layers](?path=/docs/overview-layers--docs) page.</p>
 
 ## File layout
 
 ```
-apps/shade/src/
-├── components/
-│   ├── ui/              Generic controls + recipes
-│   ├── primitives/      Layout primitives (Stack, Inline, …)
-│   ├── patterns/        Product compositions (PageHeader, KpiCard, …)
-│   └── page-templates/  Top-level page wrappers (ListPage)
-├── docs/                MDX + showcase stories rendered in Storybook
-├── hooks/               Generic React hooks
-├── lib/                 Utilities (cn, formatters, chart helpers)
-└── providers/           Context providers
+apps/shade/
+├── .storybook/              Storybook configuration
+├── theme-variables.css      Semantic tokens and dark-mode values
+├── tailwind.theme.css       Tailwind theme mappings and raw tokens
+└── src/
+    ├── components/
+    │   ├── ui/              Generic controls + recipes
+    │   ├── primitives/      Layout primitives (Stack, Inline, …)
+    │   ├── patterns/        Product compositions (PageHeader, KpiCard, …)
+    │   └── page-templates/  Top-level page wrappers (ListPage)
+    ├── docs/                MDX + showcase stories rendered in Storybook
+    ├── hooks/               Generic React hooks
+    ├── lib/                 Utilities (cn, formatters, chart helpers)
+    └── providers/           Context providers
 ```
 
 Each entrypoint barrel (`components.ts`, `primitives.ts`, `patterns.ts`, `page-templates.ts`) re-exports from its folder.
@@ -81,6 +85,21 @@ Guardrails:
 - Don't write `dark:` variants for colour — semantic tokens flip automatically. Exceptions: assets like logos and illustrations.
 - New tokens go in `apps/shade/theme-variables.css` (semantic) or `apps/shade/tailwind.theme.css` (raw `@theme`). Don't introduce ad-hoc CSS variables in component files.
 
+## Common anti-patterns
+
+- Don't import from the root `@tryghost/shade` barrel. Use the layer-specific
+  subpaths shown above.
+- Don't import Shade's stylesheet or add another `ShadeApp` wrapper in an
+  embedded Admin app. Admin owns both centrally.
+- Don't use raw colours or colour `dark:` variants. Use semantic tokens.
+- Don't add product-specific props or application state to a generic component
+  or pattern.
+- Don't add a component without its sibling story and required interactive
+  states.
+- Don't let the ShadCN CLI overwrite an existing Shade component.
+- Don't add something to Shade before it has demonstrated reuse. See
+  [Layers](?path=/docs/overview-layers--docs) for the promotion rules.
+
 ## Acceptance checklist
 
 Before merging a component:
@@ -93,22 +112,21 @@ Before merging a component:
 - [ ] No product-specific props on a generic control
 - [ ] `pnpm lint`, `pnpm test`, and Storybook all clean
 
+## Testing
+
+Shade uses Vitest, Testing Library, and jsdom. Unit tests live under
+`test/unit/`; use `test/unit/utils/test-utils.tsx` when a test needs the shared
+render wrapper.
+
+For a new UI component, make the Storybook stories cover its important
+variants and states. Add focused unit tests when they provide useful coverage
+for hooks, utilities, or logic-heavy behaviour. Shade does not currently
+enforce a package-specific coverage threshold.
+
 ## Commits & PRs
 
-Commit message format (full rules in `apps/shade/AGENTS.md`):
-
-```
-Added Avatar component
-
-ref https://linear.app/ghost/issue/DES-1234/avatar
-
-Builds on Radix Avatar with a size variant scale and a fallback initials slot.
-```
-
-- 1st line: ≤ 80 chars, past tense, starts with one of: Fixed / Changed / Updated / Improved / Added / Removed / Reverted / Moved / Released / Bumped / Cleaned.
-- 3rd line: magic word (`ref`, `closes`, `fixes`) + full Linear URL.
-- 4th+: the **why**, not the what.
-
-PRs: screenshots or GIFs for any UI change; link the Linear issue; update or add stories.
+Follow the repository's [contribution workflow](https://github.com/TryGhost/Ghost/blob/main/docs/contributing/workflow.md)
+for commits and pull requests. For Shade UI changes, also include screenshots
+or a GIF and update or add the relevant stories.
 
 </div>

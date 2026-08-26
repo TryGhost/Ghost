@@ -83,38 +83,53 @@ function serializeScalarValue(value: unknown, config?: CodecConfig): string {
     return String(value);
 }
 
-function extractRegexOperator(pattern: RegExp, negated = false): string {
-    const source = pattern.source;
-    const startsWith = source.startsWith('^');
-    const endsWith = source.endsWith('$');
-
-    if (startsWith && endsWith) {
-        return negated ? 'does-not-contain' : 'contains';
+// A trailing `$` anchors the regex only when it isn't itself escaped: a value holding a
+// literal `$` (contains `5$`) reaches here as the source `5\$`, which still ends in `$`.
+// An odd run of backslashes before it means it is escaped, so it is part of the value.
+// A literal `^` is always escaped to `\^`, so a leading `^` needs no such check.
+function hasEndAnchor(source: string): boolean {
+    if (!source.endsWith('$')) {
+        return false;
     }
 
-    if (startsWith) {
+    let backslashes = 0;
+
+    for (let index = source.length - 2; index >= 0 && source[index] === '\\'; index -= 1) {
+        backslashes += 1;
+    }
+
+    return backslashes % 2 === 0;
+}
+
+// Which anchors a regex carries, and the value left once they are removed. Read together
+// rather than one at a time: the operator and the value are two answers to the same
+// question, and deciding the anchors twice is how a value could keep a `$` the operator
+// had already consumed.
+function decomposeRegex(pattern: RegExp): {anchorStart: boolean; anchorEnd: boolean; value: string} {
+    const source = pattern.source;
+    const anchorStart = source.startsWith('^');
+    const anchorEnd = hasEndAnchor(source);
+    const body = source.slice(anchorStart ? 1 : 0, anchorEnd ? -1 : undefined);
+
+    return {
+        anchorStart,
+        anchorEnd,
+        value: body.replace(/\\([\\.^$|?*+()[\]{}/-])/g, '$1')
+    };
+}
+
+// Anchors read back into the operator that would have produced them. Both anchors is not
+// an operator this codec emits, so it falls back to the unanchored reading.
+function anchorsToOperator(anchorStart: boolean, anchorEnd: boolean, negated: boolean): string {
+    if (anchorStart && !anchorEnd) {
         return negated ? 'does-not-start-with' : 'starts-with';
     }
 
-    if (endsWith) {
+    if (anchorEnd && !anchorStart) {
         return negated ? 'does-not-end-with' : 'ends-with';
     }
 
     return negated ? 'does-not-contain' : 'contains';
-}
-
-function normalizeRegexValue(pattern: RegExp): string {
-    let source = pattern.source;
-
-    if (source.startsWith('^')) {
-        source = source.slice(1);
-    }
-
-    if (source.endsWith('$')) {
-        source = source.slice(0, -1);
-    }
-
-    return source.replace(/\\([\\.^$|?*+()[\]{}/-])/g, '$1');
 }
 
 export function scalarCodec(config?: CodecConfig): FilterCodec {
@@ -179,18 +194,22 @@ export function textCodec(config?: CodecConfig): FilterCodec {
             }
 
             if (comparator.operator === '$regex' && comparator.value instanceof RegExp) {
+                const {anchorStart, anchorEnd, value} = decomposeRegex(comparator.value);
+
                 return {
                     field: ctx.key,
-                    operator: extractRegexOperator(comparator.value),
-                    values: [normalizeRegexValue(comparator.value)]
+                    operator: anchorsToOperator(anchorStart, anchorEnd, false),
+                    values: [value]
                 };
             }
 
             if (comparator.operator === '$not' && comparator.value instanceof RegExp) {
+                const {anchorStart, anchorEnd, value} = decomposeRegex(comparator.value);
+
                 return {
                     field: ctx.key,
-                    operator: extractRegexOperator(comparator.value, true),
-                    values: [normalizeRegexValue(comparator.value)]
+                    operator: anchorsToOperator(anchorStart, anchorEnd, true),
+                    values: [value]
                 };
             }
 

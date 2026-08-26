@@ -97,7 +97,7 @@ describe('MemberBreadService', function () {
             const {service, createStub} = createService({}, customFieldValues);
 
             await assert.rejects(
-                () => service.add({email: 'test@example.com', custom_fields: {'favourite-topic': 'Ghosts'}}, {}),
+                () => service.add({email: 'test@example.com', custom_fields: {favourite_topic: 'Ghosts'}}, {}),
                 (error) => {
                     assert.equal(error.errorType, 'ValidationError');
                     assert.equal(error.property, 'custom_fields');

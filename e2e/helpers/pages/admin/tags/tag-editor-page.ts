@@ -6,6 +6,8 @@ export class TagEditorPage extends TagDetailsPage {
     readonly deleteModal: Locator;
     readonly deleteModalPostsCount: Locator;
     readonly deleteModalConfirmButton: Locator;
+    readonly tagActionsButton: Locator;
+    readonly deleteMenuItem: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -21,6 +23,8 @@ export class TagEditorPage extends TagDetailsPage {
             .or(this.deleteModal.getByTestId(deleteTagPostsCount));
         this.deleteModalConfirmButton = this.deleteModal.locator('[data-test-button="confirm"]')
             .or(this.deleteModal.getByTestId(confirmDeleteTag));
+        this.tagActionsButton = page.getByRole('button', {name: 'Tag actions'});
+        this.deleteMenuItem = page.getByRole('menuitem', {name: 'Delete tag'});
     }
 
     async gotoTagBySlug(slug: string) {
@@ -35,6 +39,12 @@ export class TagEditorPage extends TagDetailsPage {
     }
 
     async deleteTag() {
+        if (await this.tagActionsButton.isVisible()) {
+            await this.tagActionsButton.click();
+            await this.deleteMenuItem.click();
+            return;
+        }
+
         await this.deleteButton.click();
     }
 

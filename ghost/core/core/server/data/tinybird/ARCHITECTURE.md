@@ -10,8 +10,7 @@ to provide real-time analytics.
 2. [MySQL Schema (Ghost Database)](#mysql-schema-ghost-database)
 3. [Tinybird Event Schema](#tinybird-event-schema)
 4. [Data Flow & Relationships](#data-flow--relationships)
-5. [API Endpoints](#api-endpoints)
-6. [Mock Data Considerations](#mock-data-considerations)
+5. [Mock Data Considerations](#mock-data-considerations)
 
 ## Overview
  Ghost's traffic analytics system has two data sources: MySQL and Tinybird

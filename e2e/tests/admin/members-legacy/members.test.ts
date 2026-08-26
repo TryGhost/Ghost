@@ -21,7 +21,10 @@ test.describe('Ghost Admin - Legacy Member Detail Flows', () => {
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.fillMemberDetails(memberToCreate.name!, memberToCreate.email, memberToCreate.note!);
-        await memberDetailsPage.save();
+        await memberDetailsPage.saveButton.click();
+        // Creating redirects to the new member's own URL; the Save button never
+        // settles on "Saved" here, so the redirect is the completion signal.
+        await expect(page).toHaveURL(/#\/members\/[0-9a-f]{24}/);
 
         await membersPage.goto();
 
@@ -38,10 +41,8 @@ test.describe('Ghost Admin - Legacy Member Detail Flows', () => {
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.fillMemberDetails(memberToCreate.name!, memberToCreate.email, memberToCreate.note!);
-        await memberDetailsPage.saveButton.click();
 
-        await expect(memberDetailsPage.retryButton).toBeVisible();
-        await expect(memberDetailsPage.body).toContainText('Invalid Email');
+        await expect(memberDetailsPage.saveButton).toBeDisabled();
     });
 
     test('updates an existing member', async ({page}) => {
@@ -83,11 +84,14 @@ test.describe('Ghost Admin - Legacy Member Detail Flows', () => {
         await membersPage.openMemberByName(memberToEdit.name!);
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.emailInput.fill('invalid-email-address');
-        await memberDetailsPage.saveButton.click();
+        // Save also starts disabled while the form is untouched, so a valid edit has to
+        // enable it first for the assertion below to be about the email at all.
+        await memberDetailsPage.nameInput.fill('Test Member Edited');
+        await expect(memberDetailsPage.saveButton).toBeEnabled();
 
-        await expect(memberDetailsPage.retryButton).toBeVisible();
-        await expect(memberDetailsPage.body).toContainText('Invalid Email');
+        await memberDetailsPage.emailInput.fill('invalid-email-address');
+
+        await expect(memberDetailsPage.saveButton).toBeDisabled();
     });
 
     test('deletes an existing member', async ({page}) => {

@@ -61,12 +61,10 @@ describe('storage: index_spec', function () {
             '}' +
             'module.exports = AnotherAdapter';
 
-        let chosenStorage;
-
         fs.writeFileSync(scope.adapter, jsFile);
 
         assert.equal(configUtils.config.get('storage:active'), 'custom-adapter');
-        chosenStorage = adapterManager.getAdapter('storage:images');
+        const chosenStorage = adapterManager.getAdapter('storage:images');
         assert.equal((chosenStorage instanceof LocalStorageBase), false);
         assert.equal((chosenStorage instanceof StorageBase), true);
     });

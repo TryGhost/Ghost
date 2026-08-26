@@ -45,12 +45,21 @@ function isBlank(cell: string): boolean {
     return cell.trim() === '';
 }
 
+/** A column a field occupies, and which part of the field's value it holds. */
+export interface CsvFieldColumn {
+    column: string;
+    /** The part this column holds, or null where the field's whole value is one column. */
+    subField: string | null;
+}
+
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
-export function csvColumnsForField(field: CsvField): string[] {
+export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
     const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
     const subFields = subFieldsOf(field.type);
-    return subFields ? subFields.map(sub => `${column}${SEPARATOR}${sub}`) : [column];
+    return subFields
+        ? subFields.map(sub => ({column: `${column}${SEPARATOR}${sub}`, subField: sub}))
+        : [{column, subField: null}];
 }
 
 export function isCustomFieldColumn(column: string): boolean {

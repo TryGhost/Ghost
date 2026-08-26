@@ -1,16 +1,17 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import UniversalImportModal from './universal-import-modal';
 import {Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
 
 const MigrationToolsImport: React.FC = () => {
     const {updateRoute} = useSettingsNavigation();
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     const handleImportContent = () => {
-        NiceModal.show(UniversalImportModal);
+        setIsImportModalOpen(true);
     };
 
     const importers = [
@@ -31,6 +32,7 @@ const MigrationToolsImport: React.FC = () => {
                     {importer.title}
                 </Button>
             ))}
+            {isImportModalOpen && <DialogPortal><UniversalImportModal onClose={() => setIsImportModalOpen(false)} /></DialogPortal>}
         </div>
     );
 };

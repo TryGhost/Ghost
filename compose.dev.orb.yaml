@@ -1,0 +1,8 @@
+services:
+  ghost-dev:
+    environment:
+      url: ${PUBLIC_URL}
+
+  ghost-dev-gateway:
+    ports: !override
+      - "2370:80"

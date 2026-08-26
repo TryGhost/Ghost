@@ -4,23 +4,49 @@ Read this reference before creating the Ghost import PR.
 
 ## Create package-only source history
 
-Work from an up-to-date clone of the source repository. Use its actual default
-branch and a temporary branch name that cannot be confused with a product
-branch. For example, when the default branch is `main`:
+Work from an up-to-date, clean, full clone of the source repository. Shallow and
+partial clones can complete `git subtree split` while still failing later when
+Ghost fetches the split, because the local source cannot serve promised objects.
+Reject them before splitting:
 
 ```bash
-git fetch origin
-git switch --detach origin/main
-git subtree split \
-  --prefix=<source-package-path> \
-  -b migrate-<package>-history
+set -euo pipefail
+
+test "$(git rev-parse --is-shallow-repository)" = "false"
+test -z "$(git config --local --get extensions.partialClone || true)"
 ```
 
-Record the split tip and inspect the resulting package-only history:
+If either check fails, create a fresh full clone without `--depth`,
+`--filter` or sparse/partial clone options. Use the source's actual default
+branch and a temporary branch name that cannot be confused with a product
+branch.
+
+`git subtree split` may inspect thousands of commits and run for several
+minutes. Use `--quiet` in agent or CI-style runners so its progress stream does
+not flood or interrupt the runner. Run it on its own, keep the process alive
+until it returns an exit status, and do not mistake an output timeout for
+completion. For example, when the default branch is `main`:
 
 ```bash
-git rev-parse migrate-<package>-history
-git log --oneline --reverse migrate-<package>-history
+set -euo pipefail
+
+git fetch origin
+git switch --detach origin/main
+test -z "$(git status --porcelain)"
+git subtree split \
+  --quiet \
+  --prefix=<source-package-path> \
+  -b migrate-<package>-history \
+  origin/main
+```
+
+Confirm the branch was actually created, then record the split tip and inspect
+the resulting package-only history:
+
+```bash
+git show-ref --verify refs/heads/migrate-<package>-history
+source_split_tip=$(git rev-parse migrate-<package>-history)
+git log --oneline --reverse "$source_split_tip"
 ```
 
 `git subtree split` retains the relevant commit authorship and chronology while
@@ -28,8 +54,33 @@ excluding unrelated source-repository paths.
 
 ## Attach the history to Ghost
 
-From a branch based on freshly fetched Ghost `origin/main`, fetch the local
-source split and add it without `--squash`:
+Before creating the worktree, inspect collisions rather than discovering them
+halfway through the import:
+
+```bash
+git fetch --prune origin
+git worktree list --porcelain
+git branch --list 'codex/import-<package>*'
+git branch --remotes --list 'origin/codex/import-<package>*'
+```
+
+If a match exists, record its worktree, cleanliness, base/divergence, imported
+split and remote state. Do not delete or overwrite it without an explicit user
+decision. Otherwise create or enter a dedicated Ghost worktree, then verify its
+branch, cleanliness, base and empty destination before attaching history:
+
+```bash
+set -euo pipefail
+
+test "$(git rev-parse --git-dir)" != "$(git rev-parse --git-common-dir)"
+test "$(git branch --show-current)" = "codex/import-<package>-from-<source>"
+test -z "$(git status --porcelain)"
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+test ! -e "packages/<ghost-directory>"
+```
+
+Fetch the local source split and add it without `--squash`. Run these as
+separate checked operations and stop immediately if either fails:
 
 ```bash
 git fetch /absolute/path/to/source-repository migrate-<package>-history
@@ -49,13 +100,40 @@ git-subtree-split: <source-split-tip>
 Verify the topology before adding integration commits:
 
 ```bash
-git show --no-patch --format='%H%nparents: %P%n%B' HEAD
+set -euo pipefail
+
+source_split_tip="<recorded-source-split-tip>"
+subtree_commit=$(git rev-parse HEAD)
+ghost_parent=$(git rev-parse HEAD^1)
+imported_parent=$(git rev-parse HEAD^2)
+source_path="path/to/representative-file"
+destination_path="packages/<ghost-directory>/$source_path"
+
+test "$ghost_parent" = "$(git rev-parse origin/main)"
+test "$imported_parent" = "$source_split_tip"
+git merge-base --is-ancestor "$source_split_tip" HEAD
+
+source_history=$(git log --full-history --format=%H "$source_split_tip" -- "$source_path")
+destination_history=$(git log --full-history --format=%H -- "$destination_path")
+test -n "$source_history"
+test -n "$destination_history"
+test "$(git rev-parse "$source_split_tip:$source_path")" = \
+  "$(git rev-parse "$subtree_commit:$destination_path")"
+
+git show --no-patch --format='%H%nparents: %P%n%B' "$subtree_commit"
 git log --graph --oneline --decorate --all --max-count=40
-git log --follow -- packages/<ghost-directory>/path/to/representative-file
+git log --full-history --oneline -- "$destination_path"
+git log --full-history --oneline "$source_split_tip" -- "$source_path"
 ```
 
-The subtree commit must have two parents, and its second parent must equal the
-recorded split tip.
+The subtree commit must have two parents: its first parent must equal the
+recorded Ghost base and its second parent must equal the recorded split tip.
+Checking the prefixed destination path with `--full-history` and the unprefixed
+split path separately is more reliable around merge boundaries than relying on
+ordinary path history or `--follow`, either of which may show only the subtree
+merge. Requiring non-empty histories and equal blob IDs makes a missing or
+mismatched representative file stop the import before integration edits obscure
+the source state.
 
 The Admin API schema migration from TryGhost/SDK is a known-good example:
 

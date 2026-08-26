@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyContentLength, stringMatching} = matchers;
+const {anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching} = matchers;
 
 /**
  * This is a snapshot test for the happy path of the config API
@@ -39,8 +39,18 @@ describe('Config API', function () {
                     config: {
                         database: stringMatching(/sqlite3|mysql|mysql2/),
                         environment: stringMatching(/^testing/),
-                        version: stringMatching(/\d+\.\d+\.\d+/)
+                        version: stringMatching(/\d+\.\d+\.\d+/),
+                        // labs is matched dynamically so adding/removing feature
+                        // flags doesn't churn the snapshot
+                        labs: anyObject
                     }
+                })
+                .expect(({body}) => {
+                    const {labs} = body.config;
+                    assert.ok(labs && typeof labs === 'object' && !Array.isArray(labs), 'expected labs to be a plain object');
+                    const labsValues = Object.values(labs);
+                    assert.ok(labsValues.length > 0, 'expected labs to contain flags');
+                    assert.ok(labsValues.every(value => typeof value === 'boolean'), 'expected all labs flags to be booleans');
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

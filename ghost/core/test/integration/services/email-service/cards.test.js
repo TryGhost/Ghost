@@ -32,16 +32,19 @@ const excludedNodes = [
  * Remove the preheader span from the email html and put it in a separate field called preheader
  * @template {{html: string}} T
  * @param {T} data
- * @returns {asserts data is T & {preheader: string}}
+ * @returns {T & {html: string, preheader: string}}
  */
 function splitPreheader(data) {
     // Remove the preheader span from the email using cheerio
     const $ = cheerio.load(data.html);
     const preheader = $('.preheader');
-    // @ts-ignore
-    data.preheader = preheader.html();
+    const preheaderHtml = preheader.html();
     preheader.remove();
-    data.html = $.html();
+    return {
+        ...data,
+        html: $.html(),
+        preheader: preheaderHtml
+    };
 }
 
 function createParagraphCard(text = 'Hello world.') {
@@ -129,12 +132,12 @@ describe('Can send cards via email', function () {
         });
 
         // Remove the preheader span from the email using cheerio
-        splitPreheader(data);
+        const email = splitPreheader(data);
 
         // Check only contains once in every part
-        assert.equal(data.html.match(/This is a paragraph test\./g).length, 1);
-        assert.equal(data.plaintext.match(/This is a paragraph test\./g).length, 1);
-        assert.equal(data.preheader.match(/This is a paragraph test\./g).length, 1);
+        assert.equal(email.html.match(/This is a paragraph test\./g).length, 1);
+        assert.equal(email.plaintext.match(/This is a paragraph test\./g).length, 1);
+        assert.equal(email.preheader.match(/This is a paragraph test\./g).length, 1);
 
         await matchEmailSnapshot();
     });
@@ -165,16 +168,16 @@ describe('Can send cards via email', function () {
             ])
         });
 
-        splitPreheader(data);
+        const email = splitPreheader(data);
 
         // Check the plaintext does contain the paragraph, but doesn't contain the signup card
-        assert.ok(!data.html.includes('Sign up for Koenig Lexical'));
-        assert.ok(!data.plaintext.includes('Sign up for Koenig Lexical'));
-        assert.ok(!data.preheader.includes('Sign up for Koenig Lexical'));
+        assert.ok(!email.html.includes('Sign up for Koenig Lexical'));
+        assert.ok(!email.plaintext.includes('Sign up for Koenig Lexical'));
+        assert.ok(!email.preheader.includes('Sign up for Koenig Lexical'));
 
-        assert.ok(data.html.includes('This is a paragraph'));
-        assert.ok(data.plaintext.includes('This is a paragraph'));
-        assert.ok(data.preheader.includes('This is a paragraph'));
+        assert.ok(email.html.includes('This is a paragraph'));
+        assert.ok(email.plaintext.includes('This is a paragraph'));
+        assert.ok(email.preheader.includes('This is a paragraph'));
 
         await matchEmailSnapshot();
     });

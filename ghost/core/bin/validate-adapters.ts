@@ -9,16 +9,11 @@
 //   e.g. bin/validate-adapters.js cache:Redis sso:ProSSO storage:S3Storage
 //
 // Adapters are named explicitly rather than read from config, which may not be
-// present at build time. Run this as the user the image runs as: the modules it
-// loads land in the V8 compile cache, which is namespaced by uid.
+// present at build time
 
-import {enableCompileCache} from 'node:module';
 import {adapterPaths} from '../core/server/services/adapter-manager/adapter-paths';
 import {baseClasses} from '../core/server/services/adapter-manager/base-classes';
 import {loadAdapterClass} from '../core/server/services/adapter-manager/utils';
-
-// No-op when NODE_COMPILE_CACHE is already set, as it is in Ghost's image.
-enableCompileCache();
 
 type AdapterType = keyof typeof baseClasses;
 

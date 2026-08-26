@@ -114,7 +114,7 @@ describe('buildImportResponse', () => {
     it('keeps a reason whole however it is punctuated', () => {
         // A reason may quote a cell the publisher wrote, and a CSV cell legally holds
         // both a comma and a newline.
-        const punctuated = 'custom_fields.home-address.country: Enter a 2-letter country code, like US.';
+        const punctuated = 'custom_fields.home_address.country: Enter a 2-letter country code, like US.';
         const multiline = '"Gold\nPlan" is not a valid tier.';
         const result = buildImportResponse({
             meta: {
@@ -197,9 +197,9 @@ describe('buildImportResponse', () => {
                     imported: 0,
                     invalid: [{
                         email: 'a@test.com',
-                        'custom_fields.home-address.country': 'IRL',
-                        errors: ['Missing email address', 'custom_fields.home-address.country: Enter a 2-letter country code, like US.'],
-                        error: 'Missing email address\ncustom_fields.home-address.country: Enter a 2-letter country code, like US.'
+                        'custom_fields.home_address.country': 'IRL',
+                        errors: ['Missing email address', 'custom_fields.home_address.country: Enter a 2-letter country code, like US.'],
+                        error: 'Missing email address\ncustom_fields.home_address.country: Enter a 2-letter country code, like US.'
                     }]
                 },
                 import_label: {name: 'Test', slug: 'test'}
@@ -210,7 +210,7 @@ describe('buildImportResponse', () => {
         // CRLF between rows; a reason may itself contain a bare newline.
         const [header] = csv.split('\r\n');
 
-        expect(header).toBe('"email","custom_fields.home-address.country","error"');
-        expect(csv).toContain('"Missing email address\ncustom_fields.home-address.country: Enter a 2-letter country code, like US."');
+        expect(header).toBe('"email","custom_fields.home_address.country","error"');
+        expect(csv).toContain('"Missing email address\ncustom_fields.home_address.country: Enter a 2-letter country code, like US."');
     });
 });

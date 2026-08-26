@@ -1,9 +1,13 @@
+import Ember from 'ember';
 import moment from 'moment-timezone';
+import upgradeUrl from 'ghost-admin/utils/upgrade-url';
 import {action} from '@ember/object';
 import {getPublicPreviewWarning} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+
+const {Handlebars} = Ember;
 
 export default class PublishOptions {
     // passed in services
@@ -402,9 +406,14 @@ export default class PublishOptions {
         await this.settings.reload();
 
         try {
-            if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
+            // authors and contributors cannot browse emails so we can't count them at this stage
+            if (this.limit.limiter?.isLimited('emails') && !this.user.isAuthorOrContributor) {
                 await this.limit.limiter.errorIfWouldGoOverLimit('emails');
-            } else if (this.settings.emailVerificationRequired) {
+            }
+
+            // checked separately so a site under its email limit still shows a
+            // verification hold, in the order the server applies them
+            if (this.settings.emailVerificationRequired) {
                 this.emailDisabledError = this.config.hostSettings?.emailVerification?.emailSendingDisabledMessage
                     || 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
             }
@@ -424,7 +433,7 @@ export default class PublishOptions {
                 await this.limit.limiter.errorIfIsOverLimit('members');
             }
         } catch (e) {
-            const linkedMessage = htmlSafe(e.message.replace(/please upgrade/i, '<a href="#/pro">$&</a>'));
+            const linkedMessage = htmlSafe(e.message.replace(/please upgrade/i, `<a href="${Handlebars.Utils.escapeExpression(upgradeUrl(this.config))}">$&</a>`));
             this.publishDisabledError = linkedMessage;
         }
     }

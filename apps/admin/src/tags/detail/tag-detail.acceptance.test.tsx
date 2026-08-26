@@ -28,13 +28,177 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('News');
+        await expect.element(page.getByTestId('tag-detail-internal-badge')).not.toBeInTheDocument();
         await expect.element(page.getByLabelText('Name', {exact: true})).toHaveValue('News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('news');
         // The host comes from the site endpoint's `url` (config has no
         // blogUrl), scheme-stripped — never a bare `/tag/news/` path.
         await expect.element(page.getByTestId('tag-slug-preview')).toHaveTextContent('test.com/tag/news/');
         await expect.element(page.getByLabelText('Description', {exact: true})).toHaveValue('All the news');
-        await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
+        const coreDataCard = page.getByTestId('tag-core-data-card');
+        await expect.element(coreDataCard.getByLabelText('Name', {exact: true})).toBeVisible();
+        await expect.element(coreDataCard.getByRole('button', {name: 'Accent color picker'})).toBeVisible();
+        await expect.element(coreDataCard.getByText('Tag image', {exact: true})).toBeVisible();
+        await expect.element(coreDataCard.getByLabelText('Slug', {exact: true})).toBeVisible();
+        await expect.element(coreDataCard.getByLabelText('Description', {exact: true})).toBeVisible();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await expect.element(page.getByRole('menuitem', {name: 'View posts'})).toHaveAttribute('target', '_blank');
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag', exact: true})).toBeVisible();
+    });
+
+    it('shows an internal badge after the name for internal tags', async () => {
+        const t = tag({name: '#News', slug: 'hash-news', visibility: 'internal'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('#News');
+        await expect.element(page.getByTestId('tag-detail-internal-badge')).toHaveTextContent('INTERNAL');
+    });
+
+    it('shows metadata in Search, X card, and Facebook card tabs', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        const metadataCard = page.getByTestId('tag-metadata-card');
+        const searchTab = metadataCard.getByRole('tab', {name: 'Search'});
+        const xTab = metadataCard.getByRole('tab', {name: 'X card'});
+        const facebookTab = metadataCard.getByRole('tab', {name: 'Facebook card'});
+
+        await expect.element(metadataCard.getByText('Meta data', {exact: true})).toBeVisible();
+        await expect.element(metadataCard.getByText('Extra content for search engines and social accounts.', {exact: true})).toBeVisible();
+        await expect.element(searchTab).toHaveAttribute('aria-selected', 'true');
+        await expect.element(xTab).toHaveAttribute('aria-selected', 'false');
+        await expect.element(facebookTab).toHaveAttribute('aria-selected', 'false');
+
+        const metaTitle = page.getByLabelText('Meta title');
+        const searchPreview = page.getByText('Search Engine Result Preview', {exact: true});
+        await expect.element(metaTitle).toBeVisible();
+        expect(metaTitle.element().compareDocumentPosition(searchPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        await xTab.click();
+        await expect.element(searchTab).toHaveAttribute('aria-selected', 'false');
+        await expect.element(xTab).toHaveAttribute('aria-selected', 'true');
+        expect(page.getByLabelText('Meta title').query()).toBeNull();
+        const xTitle = page.getByLabelText('X title');
+        const xPreview = page.getByText('X preview', {exact: true});
+        await expect.element(xTitle).toBeVisible();
+        expect(xTitle.element().compareDocumentPosition(xPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        await facebookTab.click();
+        await expect.element(xTab).toHaveAttribute('aria-selected', 'false');
+        await expect.element(facebookTab).toHaveAttribute('aria-selected', 'true');
+        expect(page.getByLabelText('X title').query()).toBeNull();
+        const facebookTitle = page.getByLabelText('Facebook title');
+        const facebookPreview = page.getByText('Facebook preview', {exact: true});
+        await expect.element(facebookTitle).toBeVisible();
+        expect(facebookTitle.element().compareDocumentPosition(facebookPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        const codeInjectionCard = page.getByTestId('tag-code-injection-card');
+        const codeInjectionTrigger = codeInjectionCard.getByRole('button', {name: /Code injection/});
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
+        expect(page.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
+        expect(page.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
+        const coreDataCard = page.getByTestId('tag-core-data-card');
+        expect(coreDataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(codeInjectionCard.element().compareDocumentPosition(metadataCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('edits and saves tag code injection with CodeMirror', async () => {
+        const head = '<script>\n    head();\n</script>';
+        const foot = '<style>\n    .footer { display: block; }\n</style>';
+        const t = tag({name: 'News', slug: 'news', codeinjection_head: head, codeinjection_foot: foot});
+        const saveApi = fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await expect.element(page.getByRole('button', {name: /Code injection/})).toHaveAttribute('aria-expanded', 'true');
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
+        const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
+        await expect.element(headerEditor).toBeVisible();
+        await expect.element(footerEditor).toBeVisible();
+        await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
+        await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
+
+        const updatedHead = '<script>updatedHead();</script>';
+        const updatedFoot = '<style>.footer { display: grid; }</style>';
+
+        // Playwright manipulates contenteditable DOM directly when clearing,
+        // which can race CodeMirror's document reconciliation. Clear through
+        // CodeMirror's keyboard handling before filling the empty editor.
+        await headerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
+        await expect.poll(() => headerEditor.element().textContent).toBe('');
+        await headerEditor.fill(updatedHead);
+        await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
+
+        await footerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
+        await expect.poll(() => footerEditor.element().textContent).toBe('');
+        await footerEditor.fill(updatedFoot);
+        await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
+        await page.getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+        const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(saved.codeinjection_head).toBe(updatedHead);
+        expect(saved.codeinjection_foot).toBe(updatedFoot);
+    });
+
+    it('opens code injection when only the footer contains code', async () => {
+        const t = tag({name: 'News', slug: 'news', codeinjection_foot: '<script>footer();</script>'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        const codeInjectionTrigger = page.getByRole('button', {name: /Code injection/});
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'true');
+        await expect.element(page.getByRole('textbox', {name: /^Tag footer/})).toBeVisible();
+    });
+
+    it('keeps CodeMirror autocomplete visible in the code injection accordion', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 250);
+        });
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
+        await headerEditor.fill('<');
+
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 75);
+        });
+
+        await expect.poll(() => {
+            const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
+            const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
+            const container = tooltipParent?.firstElementChild as HTMLElement | null;
+            if (!tooltip || !tooltipParent || !container) {
+                return null;
+            }
+
+            const tooltipRect = tooltip.getBoundingClientRect();
+
+            return {
+                containerBackground: getComputedStyle(container).backgroundColor,
+                containerHeight: container.getBoundingClientRect().height,
+                hostParent: tooltipParent.parentElement?.tagName,
+                tooltipOnscreen: tooltipRect.bottom > 0
+                    && tooltipRect.right > 0
+                    && tooltipRect.top < window.innerHeight
+                    && tooltipRect.left < window.innerWidth,
+                tooltipPosition: getComputedStyle(tooltip).position
+            };
+        }).toEqual({
+            containerBackground: 'rgba(0, 0, 0, 0)',
+            containerHeight: 0,
+            hostParent: 'BODY',
+            tooltipOnscreen: true,
+            tooltipPosition: 'fixed'
+        });
     });
 
     it('redirects to billing during a force upgrade', async () => {
@@ -174,7 +338,9 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await userEvent.upload(uploadInput.element(), new File(['image'], 'tag.png', {type: 'image/png'}));
         await expect.poll(() => uploadApi.requests.length).toBe(1);
         await expect.element(page.getByRole('button', {name: 'Save'})).toBeDisabled();
-        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeDisabled();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeDisabled();
+        await userEvent.keyboard('{Escape}');
         await expect.element(page.getByRole('button', {name: 'Select tag image from Unsplash'})).toBeDisabled();
 
         pendingUpload.resolve({images: [{url: 'https://example.com/tag.png', ref: null}]});
@@ -235,11 +401,13 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await page.getByLabelText('Name', {exact: true}).fill('Renamed');
         await page.getByRole('button', {name: 'Save'}).click();
         await expect.poll(() => saveApi.requests.length).toBe(1);
+        await expect.element(page.getByRole('button', {name: 'Accent color picker'})).toBeDisabled();
 
-        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeDisabled();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeDisabled();
 
         pendingSave.resolve({tags: [{...t, name: 'Renamed'}]});
-        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeEnabled();
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeEnabled();
     });
 
     it('includes an immediately typed accent color in a keyboard save', async () => {
@@ -254,6 +422,30 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${current.slug}`, FLAGS);
 
         await page.getByLabelText('Accent color hex value').fill('AABBCC');
+        await userEvent.keyboard('{Meta>}s{/Meta}');
+        await expect.poll(() => saveApi.requests.length).toBe(1);
+
+        const savedPayload = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(savedPayload.accent_color).toBe('#AABBCC');
+        pendingSave.resolve({tags: [{...current, accent_color: '#AABBCC'}]});
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+    });
+
+    it('uses the Shade color picker and includes its value in a keyboard save', async () => {
+        let current = tag({name: 'News', slug: 'news', accent_color: '#112233'});
+        fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${current.slug}/`), () => ({tags: [current]}));
+        const pendingSave = deferred<{tags: Tag[]}>();
+        const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/tags/${current.id}/`), async () => {
+            const response = await pendingSave.promise;
+            current = response.tags[0];
+            return response;
+        });
+        await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: 'Accent color picker'}).click();
+        await page.getByRole('textbox', {name: 'Hex color'}).fill('#AABBCC');
+        await expect.element(page.getByLabelText('Accent color hex value')).toHaveValue('AABBCC');
+
         await userEvent.keyboard('{Meta>}s{/Meta}');
         await expect.poll(() => saveApi.requests.length).toBe(1);
 
@@ -336,7 +528,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const deleteApi = fakeAdminEndpoint('DELETE', new RegExp(`^/tags/${t.id}/`), null, {status: 204});
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        await page.getByRole('button', {name: 'Delete tag', exact: true}).click();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await page.getByRole('menuitem', {name: 'Delete tag', exact: true}).click();
 
         await expect.element(page.getByText('Are you sure you want to delete this tag?')).toBeVisible();
         await expect.element(page.getByTestId('delete-tag-posts-count')).toHaveTextContent('3 posts');
@@ -353,7 +546,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByLabelText('Name', {exact: true}).fill('Draft name');
-        await page.getByRole('button', {name: 'Delete tag', exact: true}).click();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await page.getByRole('menuitem', {name: 'Delete tag', exact: true}).click();
 
         await expect.element(page.getByTestId('delete-tag-modal').getByText('Draft name', {exact: true})).toBeVisible();
     });

@@ -1,11 +1,10 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import {Button} from '@tryghost/shade/components';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface EditRecommendationModalProps {
@@ -17,6 +16,7 @@ const EditRecommendationModal: React.FC<EditRecommendationModalProps> = ({recomm
     const {mutateAsync: editRecommendation} = useEditRecommendation();
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const {formState, updateForm, handleSave, errors, clearError, setErrors, okProps} = useForm({
         initialState: {
@@ -37,7 +37,7 @@ const EditRecommendationModal: React.FC<EditRecommendationModalProps> = ({recomm
     const leftButton = (
         <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={() => {
             onClose();
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Delete recommendation',
                 prompt: <>
                     <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>

@@ -1,11 +1,14 @@
 const assert = require('node:assert/strict');
-const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils, cacheRules} = require('../../utils/e2e-framework');
 const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
+const TestAgent = require('../../utils/agents/test-agent');
+const membersService = require('../../../core/server/services/members');
+const privateSiteAccess = require('../../../core/shared/private-site-access');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 let emailMockReceiver;
@@ -2537,6 +2540,120 @@ describe('Comments API', function () {
             it('Can not reply to a comment', async function () {
                 await testCannotReply();
             });
+        });
+    });
+
+    // Require private-site access for comment reads in private mode
+    describe('When site is in private mode', function () {
+        const privateAccessCode = 'private-comments-test';
+        let comment;
+        let originalIsPrivateSetting;
+        let originalPasswordSetting;
+
+        function createSiteAgent() {
+            return new TestAgent(membersAgent.app, {
+                apiURL: '',
+                originURL: configUtils.config.get('url')
+            });
+        }
+
+        async function loginAsMember(agent) {
+            const magicLink = await membersService.api.getMagicLink('member-any@example.com', 'signin');
+            const token = new URL(magicLink).searchParams.get('token');
+            await agent.get(`/members/?token=${token}`).expectStatus(302);
+        }
+
+        function grantPrivateSiteAccess(agent) {
+            const req = {session: {}};
+            assert.equal(privateSiteAccess.grantAccess(req, privateAccessCode), true);
+
+            const sessionCookie = Buffer.from(JSON.stringify(req.session)).toString('base64');
+            agent.jar.setCookies([`ghost-private=${sessionCookie}; path=/; httponly`]);
+        }
+
+        function commentReadPaths() {
+            return [
+                '/members/api/comments/counts',
+                '/members/api/comments',
+                `/members/api/comments/post/${postId}`,
+                `/members/api/comments/${comment.id}`,
+                `/members/api/comments/${comment.id}/replies`
+            ];
+        }
+
+        async function expectCommentReadStatus(agent, status) {
+            for (const path of commentReadPaths()) {
+                await agent.get(path).expectStatus(status);
+            }
+        }
+
+        beforeAll(async function () {
+            await models.Post.edit({visibility: 'public'}, {id: postId});
+
+            originalIsPrivateSetting = settingsCache.get('is_private', {resolve: false});
+            originalPasswordSetting = settingsCache.get('password', {resolve: false});
+        });
+
+        beforeEach(async function () {
+            settingsCache.set('is_private', {...originalIsPrivateSetting, value: true});
+            settingsCache.set('password', {...originalPasswordSetting, value: privateAccessCode});
+
+            comment = await dbFns.addComment({
+                post_id: postId,
+                member_id: fixtureManager.get('members', 0).id
+            });
+        });
+
+        afterAll(async function () {
+            settingsCache.set('is_private', originalIsPrivateSetting);
+            settingsCache.set('password', originalPasswordSetting);
+        });
+
+        it('Rejects anonymous visitors without private-site access', async function () {
+            await expectCommentReadStatus(createSiteAgent(), 403);
+        });
+
+        it('Does not treat a member session as private-site access', async function () {
+            const agent = createSiteAgent();
+            await loginAsMember(agent);
+            await expectCommentReadStatus(agent, 403);
+        });
+
+        it('Allows visitors with private-site access', async function () {
+            const agent = createSiteAgent();
+            grantPrivateSiteAccess(agent);
+            await expectCommentReadStatus(agent, 200);
+        });
+
+        it('Allows members with private-site access', async function () {
+            const agent = createSiteAgent();
+            await loginAsMember(agent);
+            grantPrivateSiteAccess(agent);
+            await expectCommentReadStatus(agent, 200);
+        });
+
+        it('Invalidates private-site access when the access code changes', async function () {
+            const agent = createSiteAgent();
+            grantPrivateSiteAccess(agent);
+
+            settingsCache.set('password', {...originalPasswordSetting, value: 'changed-private-comments-test'});
+
+            await agent.get('/members/api/comments').expectStatus(403);
+        });
+
+        it('Prevents shared caching of private comment counts', async function () {
+            const agent = createSiteAgent();
+            grantPrivateSiteAccess(agent);
+
+            const response = await agent.get('/members/api/comments/counts').expectStatus(200);
+            assert.equal(response.headers['cache-control'], cacheRules.private);
+        });
+
+        it('Keeps public comment counts publicly cacheable', async function () {
+            settingsCache.set('is_private', {...originalIsPrivateSetting, value: false});
+
+            const response = await createSiteAgent().get('/members/api/comments/counts').expectStatus(200);
+            assert.match(response.headers['cache-control'], /^public, max-age=/);
         });
     });
 });

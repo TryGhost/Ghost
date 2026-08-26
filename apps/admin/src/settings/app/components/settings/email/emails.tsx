@@ -1,9 +1,7 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
 import NewslettersTabContent, {type NewslettersFilter} from './newsletters/newsletters-tab-content';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import SearchableSection from '@/settings/app/components/searchable-section';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
@@ -13,6 +11,7 @@ import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
@@ -26,8 +25,9 @@ export const searchKeywords = {
 };
 
 const TransactionalTabContent: React.FC = () => {
+    const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
     const openCustomizeModal = () => {
-        NiceModal.show(WelcomeEmailCustomizeModal);
+        setIsCustomizeOpen(true);
     };
 
     return (
@@ -52,6 +52,7 @@ const TransactionalTabContent: React.FC = () => {
                 </ActionListItemContent>
                 <ActionListItemActions><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={openCustomizeModal}>Edit</Button></ActionListItemActions>
             </ActionListItem>
+            {isCustomizeOpen && <WelcomeEmailCustomizeModal onClose={() => setIsCustomizeOpen(false)} />}
         </ActionList>
     );
 };
@@ -68,6 +69,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
     const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const submittedTokenRef = useRef<string | null>(null);
     const [selectedTab, setSelectedTab] = useState<'newsletters' | 'transactional'>(newslettersEnabled ? 'newsletters' : 'transactional');
     const [newslettersFilter, setNewslettersFilter] = useState<NewslettersFilter>('active');
@@ -102,7 +104,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
                 }
 
                 updateRoute('emails');
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title,
                     prompt,
                     okLabel: 'Close',
@@ -117,7 +119,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
                 }
 
                 updateRoute('emails');
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Error verifying email address',
                     prompt,
                     okLabel: 'Close',
@@ -129,7 +131,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
         };
 
         verify();
-    }, [handleError, updateRoute, verifyEmailToken, verifySenderUpdate]);
+    }, [confirm, handleError, updateRoute, verifyEmailToken, verifySenderUpdate]);
 
     const openNewNewsletter = () => {
         updateRoute('newsletters/new');
