@@ -1,13 +1,13 @@
 const EmailProviderBase = require('./EmailProviderBase');
 const MailgunEmailProvider = require('../../services/email-service/mailgun-email-provider');
-const EmailAnalyticsProviderMailgun = require('../../services/email-analytics/email-analytics-provider-mailgun');
+const {fetchMailgunEvents} = require('../../services/email-analytics/fetch-mailgun-events');
 const MailgunClient = require('../../services/lib/mailgun-client');
 const errors = require('@tryghost/errors');
 
 /**
  * Mailgun Email Adapter
  *
- * Thin wrapper around existing MailgunEmailProvider and EmailAnalyticsProviderMailgun
+ * Thin wrapper around existing MailgunEmailProvider and fetchMailgunEvents
  * to conform to the unified adapter pattern.
  *
  * @extends EmailProviderBase
@@ -46,14 +46,21 @@ class Mailgun extends EmailProviderBase {
                 errorHandler
             });
 
-            // Initialize the existing analytics provider. `tags` scopes which
-            // Mailgun events are fetched (e.g. newsletters vs automations).
-            this.#analyticsProvider = new EmailAnalyticsProviderMailgun({
-                config: configService,
-                settings: settingsCache,
-                labs,
-                tags
-            });
+            // Initialize the analytics provider on top of the shared
+            // fetchMailgunEvents helper. `tags` scopes which Mailgun events
+            // are fetched (e.g. newsletters vs automations).
+            this.#analyticsProvider = {
+                fetchLatest: (batchHandler, fetchOptions = {}) => fetchMailgunEvents({
+                    config: configService,
+                    settings: settingsCache,
+                    tags,
+                    batchHandler,
+                    maxEvents: fetchOptions.maxEvents,
+                    begin: fetchOptions.begin,
+                    end: fetchOptions.end,
+                    events: fetchOptions.events
+                })
+            };
         }
 
         // Allow explicit provider injection, which overrides the auto-built
@@ -110,7 +117,7 @@ class Mailgun extends EmailProviderBase {
     }
 
     /**
-     * Fetch latest email events for analytics (delegates to existing EmailAnalyticsProviderMailgun)
+     * Fetch latest email events for analytics (delegates to fetchMailgunEvents)
      */
     async fetchLatest(batchHandler, options) {
         if (!this.#analyticsProvider) {

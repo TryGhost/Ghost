@@ -41,8 +41,9 @@ function createService({queries: queryOverrides, provider, providers, fetchEvent
     // now-removed single-callback style) a bare `fetchEvents` function --
     // normalise all three into the `providers` array the service takes.
     const resolvedProviders = providers ?? (provider ? [provider] : (fetchEvents ? [{
-        fetchLatest: (batchHandler: BatchHandler, options: {begin: Date; end: Date; maxEvents: number; events?: string[]}) =>
-            fetchEvents({batchHandler, ...options})
+        fetchLatest: async (batchHandler: BatchHandler, options: {begin: Date; end: Date; maxEvents: number; events?: string[]}) => {
+            await fetchEvents({batchHandler, ...options});
+        }
     }] : []));
 
     return new EmailAnalyticsService({
