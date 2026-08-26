@@ -100,6 +100,16 @@ export async function recordCustomFieldAction({
       { autoRefresh: false },
     );
   } catch (err) {
-    logging.error(err);
+    logging.error(
+      {
+        event: { name: 'members.custom_fields.action_log_failed' },
+        err,
+        verb,
+        subject,
+        actorType: context.actor.type,
+        actorId: context.actor.id,
+      },
+      'Failed to record a member custom field action',
+    );
   }
 }

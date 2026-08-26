@@ -107,7 +107,13 @@ export class CustomFieldValuesService {
         leaves.push(DbCustomFieldLeaf.parse(row));
       } catch (err) {
         logging.warn(
-          `Skipping unreadable custom field value (field '${row.key}', path '${row.path}'): ${err instanceof Error ? err.message : String(err)}`,
+          {
+            event: { name: 'members.custom_fields.value_unreadable' },
+            err,
+            customFieldKey: row.key,
+            path: row.path,
+          },
+          'Skipping an unreadable custom field value',
         );
       }
     }
