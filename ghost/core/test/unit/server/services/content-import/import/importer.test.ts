@@ -24,6 +24,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const updatedTitles = new Set<string>();
   const warningsByTitle = new Map<string, string[]>();
   const urlFailures = new Map<string, unknown>();
+  const inlineMedia = sinon.stub().resolves();
   const store = new ImportRunStore();
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
@@ -68,6 +69,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     getHtmlToLexical: () => htmlToLexicalFactory(),
     getMarkdownToHtml: () => markdownToHtmlFactory(),
     getCleanHTML: () => cleanHTMLFactory(),
+    media: { inline: inlineMedia },
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -125,6 +127,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     updatedTitles,
     warningsByTitle,
     urlFailures,
+    inlineMedia,
     store,
     setHtmlToLexicalFactory,
     setMarkdownToHtmlFactory,
@@ -263,6 +266,10 @@ describe('ContentCSVImporter', function () {
       events.push('convert');
       return (html: string) => ({ converted: html });
     });
+    h.inlineMedia.callsFake(async (data: PostData) => {
+      events.push('inline');
+      assert.match(data.lexical ?? '', /unique\.jpg/);
+    });
     const importer = new ContentCSVImporter({
       ...h.deps,
       prepareSource: async () => ({
@@ -275,7 +282,7 @@ describe('ContentCSVImporter', function () {
     await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
     await h.jobs[0].job();
 
-    assert.deepEqual(events.slice(0, 3), ['store', 'rewrite', 'convert']);
+    assert.deepEqual(events.slice(0, 4), ['store', 'rewrite', 'convert', 'inline']);
     assert.match(h.created[0].data.lexical ?? '', /unique\.jpg/);
     sinon.assert.calledOnce(cleanup);
   });
@@ -330,6 +337,61 @@ describe('ContentCSVImporter', function () {
         tagNames: undefined,
       });
     }
+  });
+
+  it('inlines built post data before opening the repository write transaction', async function () {
+    const h = harness([row('Inline order')]);
+    const events: string[] = [];
+    h.setHtmlToLexicalFactory(() => (html: string) => {
+      events.push('convert');
+      return { converted: html };
+    });
+    h.inlineMedia.callsFake(async (data: PostData) => {
+      events.push('inline');
+      data.feature_image = '__GHOST_URL__/content/images/inlined.jpg';
+    });
+    const write = h.deps.posts.write;
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      posts: {
+        write: async (data, options, metadata) => {
+          events.push('write');
+          assert.equal(data.feature_image, '__GHOST_URL__/content/images/inlined.jpg');
+          return write(data, options, metadata);
+        },
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await h.jobs[0].job();
+
+    assert.deepEqual(events, ['convert', 'inline', 'write']);
+  });
+
+  it('stops the run when media preparation fails before row isolation is added', async function () {
+    const h = harness([row('Media failure'), row('Never reached')]);
+    const failure = new Error('Could not import 1 media file.');
+    h.inlineMedia.rejects(failure);
+
+    await h.run();
+
+    assert.equal(h.created.length, 0);
+    assert.equal(h.inlineMedia.callCount, 1);
+    assert.deepEqual(h.reported, [failure]);
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.equal(h.store.get('run_test')?.failureReason, failure.message);
+  });
+
+  it('does not inspect media for a row skipped during post-data validation', async function () {
+    const h = harness([
+      { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
+      row('Valid row'),
+    ]);
+
+    await h.run();
+
+    sinon.assert.calledOnce(h.inlineMedia);
+    assert.equal(h.inlineMedia.firstCall.args[0].title, 'Valid row');
   });
 
   it('forwards author and tag cells to the transactional write seam', async function () {

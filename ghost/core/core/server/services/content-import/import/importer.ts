@@ -11,6 +11,7 @@ import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
+import type { PostMediaInlining } from './media';
 
 export type { ImportRequest } from './schema';
 
@@ -60,6 +61,7 @@ interface ImporterDeps {
   getHtmlToLexical: () => HtmlToLexical;
   getMarkdownToHtml: () => MarkdownToHtml;
   getCleanHTML: () => CleanHTML;
+  media: PostMediaInlining;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -83,6 +85,7 @@ class ContentCSVImporter {
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
   private _getCleanHTML: () => CleanHTML;
+  private _media: PostMediaInlining;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -98,6 +101,7 @@ class ContentCSVImporter {
     getHtmlToLexical,
     getMarkdownToHtml,
     getCleanHTML,
+    media,
     addJob,
     report,
     store,
@@ -112,6 +116,7 @@ class ContentCSVImporter {
     this._getHtmlToLexical = getHtmlToLexical;
     this._getMarkdownToHtml = getMarkdownToHtml;
     this._getCleanHTML = getCleanHTML;
+    this._media = media;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -211,6 +216,8 @@ class ContentCSVImporter {
           // failure. Stop the run before misclassifying it as a lost write.
           throw error;
         }
+
+        await this._media.inline(data);
 
         let post: WrittenPost;
         let writeStatus: 'created' | 'updated';
