@@ -20,10 +20,10 @@ module.exports = function setupParentApp() {
   // Shed load as early as the stack allows, and ahead of the queue rather than
   // behind it: a request that has already waited in the queue has paid the
   // cost shedding exists to avoid. Sits after requestId/logRequest so shed
-  // responses are still traceable and show up in the access log.
-  const eventLoopLagConfig = config.get('optimization:eventLoopLag');
+  // responses stay traceable and show up in the access log.
+  const eventLoopLagConfig = mw.parseEventLoopLagConfig(config.get('optimization:eventLoopLag'));
 
-  if (eventLoopLagConfig) {
+  if (eventLoopLagConfig.enabled) {
     parentApp.use(mw.eventLoopLag(eventLoopLagConfig));
   }
 

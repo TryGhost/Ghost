@@ -41,8 +41,20 @@ describe('Event loop lag middleware', function () {
       );
     });
 
-    it('rejects a missing water mark rather than inventing one', function () {
-      assert.throws(() => parseEventLoopLagConfig({ highWaterMarkMs: 250 }), /lowWaterMarkMs/);
+    it('resolves to the shipped defaults when nothing is configured', function () {
+      const config = parseEventLoopLagConfig(undefined);
+
+      assert.equal(config.enabled, false, 'ships disabled');
+      assert.equal(config.highWaterMarkMs, 500);
+      assert.equal(config.lowWaterMarkMs, 100);
+      assert.deepEqual(config.exemptPathPrefixes, ['/ghost/']);
+    });
+
+    it('reads the enabled flag, including as a string from an env var', function () {
+      assert.equal(parseEventLoopLagConfig({ enabled: true }).enabled, true);
+      assert.equal(parseEventLoopLagConfig({ enabled: 'true' }).enabled, true);
+      // 'false' is truthy as a bare string, so it must be parsed, not coerced.
+      assert.equal(parseEventLoopLagConfig({ enabled: 'false' }).enabled, false);
     });
 
     it('falls back to shipped defaults for malformed tuning values', function () {
@@ -59,13 +71,21 @@ describe('Event loop lag middleware', function () {
       assert.deepEqual(config.exemptPathPrefixes, ['/ghost/']);
     });
 
-    it('does not accept the values z.coerce.number() would let through', function () {
+    it('throws on water marks that are individually valid but incoherent', function () {
+      // No way to guess which of the two the operator meant.
+      assert.throws(
+        () => parseEventLoopLagConfig({ highWaterMarkMs: 100, lowWaterMarkMs: 250 }),
+        /must be below highWaterMarkMs/,
+      );
+    });
+
+    it('does not let through the values z.coerce.number() would', function () {
       // null/true/'' all coerce to 0, which here would mean "shed everything".
       for (const highWaterMarkMs of [null, true, '', []]) {
-        assert.throws(
-          () => parseEventLoopLagConfig({ ...CONFIG, highWaterMarkMs }),
-          /highWaterMarkMs/,
-          `expected ${JSON.stringify(highWaterMarkMs)} to be rejected`,
+        assert.equal(
+          parseEventLoopLagConfig({ ...CONFIG, highWaterMarkMs }).highWaterMarkMs,
+          500,
+          `expected ${JSON.stringify(highWaterMarkMs)} to fall back, not become 0`,
         );
       }
     });
@@ -79,11 +99,11 @@ describe('Event loop lag middleware', function () {
       assert.equal(config.lowWaterMarkMs, 60);
     });
 
-    it('rejects numeric config that is not a number', function () {
-      assert.throws(
-        () => parseEventLoopLagConfig({ highWaterMarkMs: 250, lowWaterMarkMs: 'soon' }),
-        /lowWaterMarkMs/,
-      );
+    it('falls back to the shipped value for a malformed water mark', function () {
+      const config = parseEventLoopLagConfig({ highWaterMarkMs: 250, lowWaterMarkMs: 'soon' });
+
+      assert.equal(config.highWaterMarkMs, 250);
+      assert.equal(config.lowWaterMarkMs, 100, 'shipped value');
     });
 
     it('rejects a low water mark below the sampling resolution', function () {

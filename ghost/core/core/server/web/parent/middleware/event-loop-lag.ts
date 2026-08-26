@@ -7,46 +7,18 @@ import type { Request, RequestHandler } from 'express';
 
 const NS_PER_MS = 1e6;
 
-const DEFAULTS = {
-  sampleWindowMs: 500,
-  percentile: 90,
-  resolutionMs: 20,
-  retryAfterSeconds: 5,
-  // The admin client and its API. Locking the owner out of their own site
-  // during an incident is worse than serving readers a little slower.
-  exemptPathPrefixes: ['/ghost/'],
-};
+// Config is untyped, and a value set through an environment variable or argv
+// arrives as a string. Not z.coerce.number(): it also accepts null, true, []
+// and '', turning each into 0 - which for a water mark means "shed everything".
+const Numeric = z.union([z.number(), z.string().trim().min(1)]).transform(Number);
+const Milliseconds = Numeric.pipe(z.number().positive().finite());
+const Percentile = Numeric.pipe(z.number().gt(0).lte(100));
+const Flag = z.union([z.boolean(), z.enum(['true', 'false']).transform((v) => v === 'true')]);
 
-/**
- * Resolving Ghost's config into the values this middleware runs on.
- *
- * Config arrives untyped: nconf layers an operator's config file, environment
- * variables and argv over defaults.json, so any value can be anything - and a
- * number set through an environment variable arrives as a string.
- *
- * A numeric string is accepted for that reason. z.coerce.number() is not used
- * because it also accepts null, true, [] and '' - all of which become 0, which
- * here would silently mean "shed everything".
- */
-const Milliseconds = z
-  .union([z.number(), z.string().trim().min(1)])
-  .transform(Number)
-  .pipe(z.number().positive().finite());
-
-const Percentile = z
-  .union([z.number(), z.string().trim().min(1)])
-  .transform(Number)
-  .pipe(z.number().gt(0).lte(100));
-
-/**
- * Path prefixes rather than a regular expression: nconf can only ever hand us
- * JSON, so a RegExp is unreachable from config, and compiling one supplied by
- * an operator would put an unbounded backtracking risk on the hot path of the
- * middleware whose whole job is to protect the CPU. startsWith is also cheaper
- * per request, and matches how max-limit-cap.js exempts endpoints.
- *
- * A bare string is accepted because an environment variable can only supply one.
- */
+// Prefixes rather than a RegExp: nconf can only produce JSON, and an
+// operator-supplied regex would put backtracking risk on the hot path of the
+// middleware whose job is to protect the CPU. A bare string is accepted
+// because an environment variable can only ever supply one.
 const PathPrefixes = z.union([
   z
     .string()
@@ -55,26 +27,45 @@ const PathPrefixes = z.union([
   z.array(z.string().min(1)),
 ]);
 
-/**
- * The water marks are required and deliberately have no shipped fallback: a
- * site that opts into shedding must say where its thresholds are, and inventing
- * them silently could shed everything. The tuning values below do fall back to
- * the shipped default rather than throwing, because an operator can correct a
- * typo live and one must not take the site down.
- */
+const fields = {
+  enabled: Flag,
+  highWaterMarkMs: Milliseconds,
+  lowWaterMarkMs: Milliseconds,
+  sampleWindowMs: Milliseconds,
+  percentile: Percentile,
+  resolutionMs: Milliseconds,
+  retryAfterSeconds: Milliseconds,
+  exemptPathPrefixes: PathPrefixes,
+};
+
+// defaults.json is the single source of the shipped values - it is the lowest
+// config layer and the file an operator actually edits, so it is read rather
+// than restated. Parsed eagerly and strictly: a bad value there is our bug and
+// should fail at boot, not become the fallback for everything below.
+const shipped = z
+  .object(fields)
+  .parse(require('../../../../shared/config/defaults.json').optimization.eventLoopLag);
+
 const EventLoopLagConfigSchema = z
   .object({
-    highWaterMarkMs: Milliseconds,
-    lowWaterMarkMs: Milliseconds,
-    sampleWindowMs: Milliseconds.catch(DEFAULTS.sampleWindowMs),
-    percentile: Percentile.catch(DEFAULTS.percentile),
-    resolutionMs: Milliseconds.catch(DEFAULTS.resolutionMs),
-    retryAfterSeconds: Milliseconds.catch(DEFAULTS.retryAfterSeconds),
-    exemptPathPrefixes: PathPrefixes.catch(DEFAULTS.exemptPathPrefixes),
+    enabled: fields.enabled.catch(shipped.enabled),
+    // Each field falls back to the shipped value on its own, so one typo does
+    // not take the site down.
+    highWaterMarkMs: fields.highWaterMarkMs.catch(shipped.highWaterMarkMs),
+    lowWaterMarkMs: fields.lowWaterMarkMs.catch(shipped.lowWaterMarkMs),
+    sampleWindowMs: fields.sampleWindowMs.catch(shipped.sampleWindowMs),
+    percentile: fields.percentile.catch(shipped.percentile),
+    resolutionMs: fields.resolutionMs.catch(shipped.resolutionMs),
+    retryAfterSeconds: fields.retryAfterSeconds.catch(shipped.retryAfterSeconds),
+    exemptPathPrefixes: fields.exemptPathPrefixes.catch(shipped.exemptPathPrefixes),
   })
+  // Individually valid values can still be incoherent together. These throw
+  // rather than falling back, because there is no way to guess which of the two
+  // the operator meant.
   .superRefine((config, ctx) => {
-    // One threshold oscillates: shedding lowers lag, which re-admits the
-    // traffic that raised it. The gap between the marks is the hysteresis.
+    // The gap between the marks is the hysteresis. A single threshold
+    // oscillates: shedding lowers lag, which re-admits the traffic that raised
+    // it, and the CDN caches a mix of real pages and 503s.
     if (config.lowWaterMarkMs >= config.highWaterMarkMs) {
       ctx.addIssue({
         code: 'custom',
@@ -82,10 +73,9 @@ const EventLoopLagConfigSchema = z
       });
     }
 
-    // An idle loop reports a delay of roughly one sampling interval, not zero -
-    // the histogram measures how late each sample was, and a sample is never
-    // early. A low water mark under the resolution can therefore never be
-    // reached, and the origin would shed until it was restarted.
+    // An idle loop reports roughly one sampling interval of delay, not zero, so
+    // a mark under the resolution can never be reached and the origin would
+    // shed until it was restarted.
     if (config.lowWaterMarkMs <= config.resolutionMs) {
       ctx.addIssue({
         code: 'custom',
@@ -94,16 +84,11 @@ const EventLoopLagConfigSchema = z
     }
   });
 
-/** The config this middleware actually runs on, once resolved. */
 export type EventLoopLagConfig = z.infer<typeof EventLoopLagConfigSchema>;
 
-/**
- * Parses whatever config supplied into the values the middleware runs on,
- * reporting a bad one as a Ghost error so it fails at boot rather than on the
- * first request.
- */
+/** Resolves configured values, failing at boot rather than on the first request. */
 export function parseEventLoopLagConfig(configured: unknown): EventLoopLagConfig {
-  const result = EventLoopLagConfigSchema.safeParse(configured);
+  const result = EventLoopLagConfigSchema.safeParse(configured ?? {});
 
   if (!result.success) {
     const detail = result.error.issues
@@ -126,14 +111,13 @@ export type LagMonitor = Readonly<{
 }>;
 
 /**
- * Tracks event loop delay as a rolling window and flips between a healthy and
- * an overloaded state with hysteresis.
+ * Tracks event loop delay as a rolling window, flipping between healthy and
+ * overloaded with hysteresis.
  *
- * monitorEventLoopDelay is sampled by libuv itself rather than by a JS timer,
- * so it stays accurate exactly when a JS timer would not: while the loop is
- * blocked. The histogram it returns is cumulative, though, so it has to be
- * reset each window - read without resetting, a site that was briefly busy an
- * hour ago never looks healthy again.
+ * monitorEventLoopDelay is sampled by libuv rather than by a JS timer, so it
+ * stays accurate exactly when a timer would not: while the loop is blocked. Its
+ * histogram is cumulative, so it has to be reset each window - read without
+ * resetting, a site that was briefly busy an hour ago never reads healthy again.
  */
 export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
   const { highWaterMarkMs, lowWaterMarkMs, sampleWindowMs: windowMs, percentile } = config;
@@ -151,10 +135,6 @@ export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
     histogram.reset();
     lastSampleAt = Date.now();
 
-    // Two water marks rather than one: a single threshold oscillates, because
-    // shedding lowers lag, which immediately re-admits the traffic that raised
-    // it. Flapping every window would make the CDN cache a mix of real pages
-    // and 503s.
     if (!overloaded && lagMs >= highWaterMarkMs) {
       overloaded = true;
       shedSinceTransition = 0;
@@ -175,10 +155,9 @@ export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
 
   return {
     isOverloaded: () => {
-      // CASE: the sampler is a timer, so a fully blocked loop stops it running
-      // and leaves `overloaded` stale at whatever it was before the block. If
-      // it has missed its window by a wide margin, the loop is by definition
-      // too congested to be serving - treat that as overloaded regardless.
+      // The sampler is itself a timer, so a fully blocked loop stops it running
+      // and leaves the flag stale. A badly overdue sample means the loop is too
+      // congested to be serving anyway.
       if (Date.now() - lastSampleAt > windowMs * 4) {
         return true;
       }
@@ -198,10 +177,10 @@ export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
 
 /**
  * Sheds idempotent frontend reads while the event loop is too far behind to
- * serve them within any timeout the CDN in front of it is willing to wait for.
+ * serve them within the timeout of whatever is in front of it.
  *
- * This has to sit ahead of the request queue: shedding a request that has
- * already waited in the queue has paid the cost it was meant to avoid.
+ * Belongs ahead of the request queue: shedding a request that has already
+ * waited in the queue has paid the cost shedding exists to avoid.
  */
 export function eventLoopLag(configured: unknown, monitor?: LagMonitor): RequestHandler {
   const config = parseEventLoopLagConfig(configured);
@@ -210,15 +189,14 @@ export function eventLoopLag(configured: unknown, monitor?: LagMonitor): Request
   const { exemptPathPrefixes } = config;
 
   const isSheddable = (req: Request) => {
-    // Only idempotent reads. A shed GET costs the client a retry; a shed POST
-    // could drop a member signup, a comment, or a Stripe webhook.
+    // A shed GET costs the client a retry; a shed POST could drop a member
+    // signup, a comment, or a Stripe webhook.
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       return false;
     }
 
-    // Static assets are served off disk without touching the renderer, so they
-    // are not what is burning the loop - and shedding them breaks the pages
-    // that did get rendered.
+    // Static assets don't touch the renderer, and shedding them breaks the
+    // pages that did get rendered.
     if (path.extname(req.path)) {
       return false;
     }
@@ -232,17 +210,16 @@ export function eventLoopLag(configured: unknown, monitor?: LagMonitor): Request
     }
 
     res.setHeader('Retry-After', retryAfter);
-    // Never let a shed response be cached. Without this the CDN can pin a 503
-    // over a perfectly good URL for the whole TTL, long outliving the spike.
+    // Never let a shed response be cached, or the CDN can pin a 503 over a good
+    // URL for the whole TTL, long outliving the spike.
     res.setHeader('Cache-Control', 'no-store, private');
     res.status(503);
     lagMonitor.recordShed();
 
-    // Deliberately not routed through the error handler: rendering an error
-    // page costs the loop time we are shedding to reclaim. The 503 is recorded
-    // in the access log by the logRequest middleware either way, so there is
-    // no per-request logging here - at the rate this fires, that would itself
-    // be meaningful load.
+    // Not routed through the error handler: rendering an error page costs the
+    // loop time we are shedding to reclaim. logRequest still records the 503,
+    // so there is no per-request logging here - at the rate this fires that
+    // would itself be real load.
     return res.end();
   };
 }
