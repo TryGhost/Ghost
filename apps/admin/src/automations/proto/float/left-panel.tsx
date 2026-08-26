@@ -11,7 +11,6 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  MetricValue,
   Table,
   TableBody,
   TableCell,
@@ -19,7 +18,12 @@ import {
   TableRow,
 } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { FilterBar, GhAreaChart } from '@tryghost/shade/patterns';
+import {
+  FilterBar,
+  GhAreaChart,
+  KpiCardHeaderLabel,
+  KpiCardHeaderValue,
+} from '@tryghost/shade/patterns';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import type { AutomationRun, ExitReason } from '@/automations/proto/shared/mock';
 import type { LeftPanelProps } from './left-panel-types';
@@ -610,20 +614,23 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                             off the metric's label row rather than centring against a
                             two-line block. */}
                   <Inline align="start" justify="between">
-                    <MetricValue
-                      label={
-                        <>
-                          {/* Matches the shipping KPI for a member count
-                                        (posts/analytics/growth labels "Free members"
-                                        with the same icon and weight). Zap was the
-                                        trigger's icon, not this metric's — what's
-                                        counted here is people, not firings. */}
-                          <LucideIcon.User size={16} strokeWidth={1.5} />
-                          Total entries
-                        </>
-                      }
-                      value={formatNumber(totalEntries)}
-                    />
+                    {/* KpiCardHeaderLabel + KpiCardHeaderValue rather than MetricValue.
+                        Main removed MetricValue from Shade's public exports as dead
+                        (#30142) — it's internal now, and the KpiCard pair is the
+                        supported way to reach the same rendering: the label carries the
+                        identical chrome and the value wraps MetricValue itself. Stack
+                        gap="sm" is gap-2, the gap MetricValue put between them. */}
+                    <Stack gap="sm">
+                      <KpiCardHeaderLabel>
+                        {/* Matches the shipping KPI for a member count
+                            (posts/analytics/growth labels "Free members" with the same
+                            icon and weight). Zap was the trigger's icon, not this
+                            metric's — what's counted here is people, not firings. */}
+                        <LucideIcon.User size={16} strokeWidth={1.5} />
+                        Total entries
+                      </KpiCardHeaderLabel>
+                      <KpiCardHeaderValue value={formatNumber(totalEntries)} />
+                    </Stack>
                     {flat && rangeMenu}
                   </Inline>
                   <GhAreaChart
@@ -659,15 +666,13 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                   type="button"
                   onClick={() => setStatusFilter(active ? null : facet.key)}
                 >
-                  <MetricValue
-                    label={
-                      <>
-                        <span className={facet.color}>{facet.glyph}</span>
-                        {facet.key}
-                      </>
-                    }
-                    value={formatNumber(counts[facet.key] ?? 0)}
-                  />
+                  <Stack gap="sm">
+                    <KpiCardHeaderLabel>
+                      <span className={facet.color}>{facet.glyph}</span>
+                      {facet.key}
+                    </KpiCardHeaderLabel>
+                    <KpiCardHeaderValue value={formatNumber(counts[facet.key] ?? 0)} />
+                  </Stack>
                 </button>
               );
             })}
