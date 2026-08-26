@@ -17,7 +17,7 @@
  */
 import * as i18nCore from './i18n-core.mjs';
 
-const {createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES} = i18nCore;
+const { createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES } = i18nCore;
 
 /**
  * Shared body of every per-namespace browser entry. Collects a Vite
@@ -29,35 +29,35 @@ const {createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES} = i1
  * the parsing/wiring is identical, so it lives here once.
  */
 export function i18nFromGlob(globModules, namespace) {
-    const registry = {};
-    for (const [filePath, resource] of Object.entries(globModules)) {
-        registry[filePath.match(/\/locales\/([^/]+)\//)[1]] = resource;
-    }
-    return createNamespacedI18n(registry, namespace);
+  const registry = {};
+  for (const [filePath, resource] of Object.entries(globModules)) {
+    registry[filePath.match(/\/locales\/([^/]+)\//)[1]] = resource;
+  }
+  return createNamespacedI18n(registry, namespace);
 }
 
 export function createNamespacedI18n(registry, boundNamespace) {
-    // Registry loader: returns undefined for an unknown locale so the core falls
-    // back to English (mirrors the CJS try/catch fallback).
-    const generateResources = createGenerateResources(locale => registry[locale]);
+  // Registry loader: returns undefined for an unknown locale so the core falls
+  // back to English (mirrors the CJS try/catch fallback).
+  const generateResources = createGenerateResources((locale) => registry[locale]);
 
-    function generateThemeResources(lng) {
-        return {
-            [lng]: {
-                theme: {}
-            }
-        };
-    }
+  function generateThemeResources(lng) {
+    return {
+      [lng]: {
+        theme: {},
+      },
+    };
+  }
 
-    const i18n = createI18n({generateResources, generateThemeResources});
+  const i18n = createI18n({ generateResources, generateThemeResources });
 
-    i18n.LOCALE_DATA = LOCALE_DATA;
-    i18n.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
-    i18n.generateResources = generateResources;
-    i18n.namespace = boundNamespace;
-    i18n.default = i18n;
+  i18n.LOCALE_DATA = LOCALE_DATA;
+  i18n.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
+  i18n.generateResources = generateResources;
+  i18n.namespace = boundNamespace;
+  i18n.default = i18n;
 
-    return i18n;
+  return i18n;
 }
 
-export {LOCALE_DATA, SUPPORTED_LOCALES};
+export { LOCALE_DATA, SUPPORTED_LOCALES };

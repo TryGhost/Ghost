@@ -8,12 +8,16 @@ services:
     image: ghost/traffic-analytics:1.0.336@sha256:13ca3b62c1334fba8fc3c9486290ef42d1f8fb6c628e19dd75356f30cea9733d
     container_name: ghost-dev-analytics
     platform: linux/amd64
-    command: ["node", "--enable-source-maps", "dist/server.js"]
-    entrypoint: ["/app/entrypoint.sh"]
+    command: ['node', '--enable-source-maps', 'dist/server.js']
+    entrypoint: ['/app/entrypoint.sh']
     expose:
-      - "3000"
+      - '3000'
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://localhost:3000'').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"',
+        ]
       interval: 30s
       retries: 5
       start_period: 120s
@@ -36,9 +40,9 @@ services:
     platform: linux/amd64
     stop_grace_period: 2s
     ports:
-      - "7181:7181"
+      - '7181:7181'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:7181/v0/health']
       interval: 30s
       timeout: 5s
       retries: 5
@@ -68,7 +72,7 @@ services:
     environment:
       # Analytics configuration
       analytics__url: http://analytics:3000
-      analytics__enabled: "true"
+      analytics__enabled: 'true'
       # Tinybird configuration
       # These static values are set here; workspaceId and adminToken are sourced from
       # /mnt/shared-config/.env.tinybird by docker/ghost-dev/entrypoint.sh
@@ -86,5 +90,3 @@ services:
 
 volumes:
   shared-config:
-
-

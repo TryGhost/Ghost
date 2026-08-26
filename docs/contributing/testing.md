@@ -12,8 +12,9 @@ From the repository root, run:
 pnpm check
 ```
 
-This is the default one-stop command for linting and testing. It runs
-`pnpm lint` followed by `pnpm test` across the monorepo.
+This is the default one-stop command for formatting checks, linting, and
+testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test` across
+the monorepo.
 
 `pnpm check` does not run the Playwright browser end-to-end suite or Ember
 Admin's test suite. Run those separately when your change affects those areas.

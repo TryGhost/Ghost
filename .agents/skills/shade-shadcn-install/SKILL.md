@@ -42,13 +42,13 @@ Raw ShadCN output is not Shade-quality yet. Do all of these:
 
 ## What ShadCN gets wrong that Shade fixes
 
-| ShadCN default | Shade convention |
-|---|---|
-| `bg-background dark:bg-background` | `bg-background` (token already flips) |
-| `bg-white text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50` | `bg-surface-elevated text-foreground` |
-| `border border-input` | `border border-control-border` (form controls) or `border-border-default` (other chrome) |
-| Direct `focus-visible:ring-2 focus-visible:ring-ring` chrome on every input | `inputSurface('self')` recipe |
-| Relative imports `import {cn} from "../../lib/utils"` | `@/` alias: `import {cn} from '@/lib/utils'` |
+| ShadCN default                                                              | Shade convention                                                                         |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `bg-background dark:bg-background`                                          | `bg-background` (token already flips)                                                    |
+| `bg-white text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50`                 | `bg-surface-elevated text-foreground`                                                    |
+| `border border-input`                                                       | `border border-control-border` (form controls) or `border-border-default` (other chrome) |
+| Direct `focus-visible:ring-2 focus-visible:ring-ring` chrome on every input | `inputSurface('self')` recipe                                                            |
+| Relative imports `import {cn} from "../../lib/utils"`                       | `@/` alias: `import {cn} from '@/lib/utils'`                                             |
 
 ## When NOT to use the CLI
 

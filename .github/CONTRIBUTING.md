@@ -1,6 +1,6 @@
 # Contributing to Ghost
 
-For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
+For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)** 🚑.
 
 ---
 

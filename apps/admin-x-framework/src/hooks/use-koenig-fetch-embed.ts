@@ -1,21 +1,24 @@
-import {useCallback} from 'react';
-import {getGhostPaths} from '../utils/helpers';
-import {useFetchApi} from '../utils/api/fetch-api';
+import { useCallback } from 'react';
+import { getGhostPaths } from '../utils/helpers';
+import { useFetchApi } from '../utils/api/fetch-api';
 
 interface KoenigFetchEmbedOptions {
-    type?: string;
+  type?: string;
 }
 
 export const useKoenigFetchEmbed = () => {
-    const fetchApi = useFetchApi();
+  const fetchApi = useFetchApi();
 
-    return useCallback(async (url: string, {type}: KoenigFetchEmbedOptions = {}) => {
-        const oembedUrl = new URL(`${getGhostPaths().apiRoot}/oembed/`, window.location.origin);
-        oembedUrl.searchParams.set('url', url);
-        if (type) {
-            oembedUrl.searchParams.set('type', type);
-        }
+  return useCallback(
+    async (url: string, { type }: KoenigFetchEmbedOptions = {}) => {
+      const oembedUrl = new URL(`${getGhostPaths().apiRoot}/oembed/`, window.location.origin);
+      oembedUrl.searchParams.set('url', url);
+      if (type) {
+        oembedUrl.searchParams.set('type', type);
+      }
 
-        return await fetchApi(oembedUrl);
-    }, [fetchApi]);
+      return await fetchApi(oembedUrl);
+    },
+    [fetchApi],
+  );
 };

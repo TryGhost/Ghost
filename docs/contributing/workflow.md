@@ -37,17 +37,42 @@ first; ordinary pull requests target `main`.
 
 Add or update automated tests when behavior changes. Run the most focused checks
 for the code you touched, following the README beside that workspace. Before
-handing off a change, use the repository's one-stop lint and test command:
+handing off a change, use the repository's one-stop formatting, lint, and test
+command:
 
 ```bash
 pnpm check
 ```
 
-`pnpm check` runs `pnpm lint` followed by `pnpm test`. It does not include the
-browser E2E suite or Ember Admin tests, so run those separately when the affected
-area requires them. CI uses the Nx affected graph and path filters to select the
-relevant lint, unit, integration, acceptance, build, and browser-test jobs for a
-pull request.
+`pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
+not include the browser E2E suite or Ember Admin tests, so run those separately
+when the affected area requires them. CI uses the Nx affected graph and path
+filters to select the relevant lint, unit, integration, acceptance, build, and
+browser-test jobs for a pull request.
+
+## Formatting
+
+Source formatting is owned by [Oxfmt](https://oxc.rs/docs/guide/usage/formatter),
+configured in the root `.oxfmtrc.json`: Oxfmt defaults plus single quotes, with
+embedded-language formatting disabled so string contents are never rewritten.
+CI rejects unformatted code, and the pre-commit hook formats staged files
+automatically, so there is usually nothing to do. To format manually:
+
+```bash
+pnpm format path/to/file.ts
+```
+
+`pnpm format` with no arguments formats the whole repository, and
+`pnpm format:check` reports without writing. Do not add per-package formatter
+configuration; the root config is the only one.
+
+The one-time repository reformat is listed in `.git-blame-ignore-revs`. GitHub's
+blame view skips it automatically, and `pnpm setup` configures local Git to use
+the file. For an existing checkout, rerun `pnpm setup` or run once:
+
+```bash
+git config --local blame.ignoreRevsFile .git-blame-ignore-revs
+```
 
 ## Record package release intent
 
@@ -81,7 +106,6 @@ not affect a publishable package do not need one.
 ## Commit Messages
 
 Follow the canonical [commit message guidelines](../../.github/CONTRIBUTING.md#commit-messages).
-
 
 ## Publish the branch
 

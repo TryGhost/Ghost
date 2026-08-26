@@ -10,11 +10,11 @@
  * @returns {string}
  */
 function defaultIndexName(tableName, columns) {
-    if (!Array.isArray(columns)) {
-        columns = columns ? [columns] : [];
-    }
-    const table = tableName.replace(/\.|-/g, '_');
-    return (table + '_' + columns.join('_') + '_index').toLowerCase();
+  if (!Array.isArray(columns)) {
+    columns = columns ? [columns] : [];
+  }
+  const table = tableName.replace(/\.|-/g, '_');
+  return (table + '_' + columns.join('_') + '_index').toLowerCase();
 }
 
 exports.defaultIndexName = defaultIndexName;

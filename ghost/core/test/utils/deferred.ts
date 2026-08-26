@@ -11,12 +11,12 @@
  *   });
  */
 export function deferred(): {
-    promise: Promise<void>;
-    done: (err?: unknown) => void;
+  promise: Promise<void>;
+  done: (err?: unknown) => void;
 } {
-    let done: (err?: unknown) => void = () => {};
-    const promise = new Promise<void>((resolve, reject) => {
-        done = err => (err ? reject(err) : resolve());
-    });
-    return {promise, done};
-};
+  let done: (err?: unknown) => void = () => {};
+  const promise = new Promise<void>((resolve, reject) => {
+    done = (err) => (err ? reject(err) : resolve());
+  });
+  return { promise, done };
+}

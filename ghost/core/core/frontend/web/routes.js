@@ -7,6 +7,6 @@ const routing = require('../services/routing');
  * @returns {import('express').Router}
  */
 module.exports = function siteRoutes(routerConfig) {
-    debug('site Routes', routerConfig);
-    return routing.routerManager.init(routerConfig);
+  debug('site Routes', routerConfig);
+  return routing.routerManager.init(routerConfig);
 };

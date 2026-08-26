@@ -22,26 +22,26 @@ const DEFAULT_REQUEST_TIMEOUT = 5000;
 // it to hardcode `publisher: 'Amazon'`. Gate the plugin on the registrable
 // domain (PSL-aware via tldts) so subdomain spoofs like `amazon.evil.com` or
 // `amazon.com.evil.org` are rejected too.
-const {getDomain} = require('tldts');
+const { getDomain } = require('tldts');
 
 const isAmazonUrl = (url) => {
-    const domain = getDomain(url);
-    if (!domain) {
-        return false;
-    }
-    if (domain === 'a.co') {
-        return true;
-    }
-    return /^(?:amazon|amzn)\./.test(domain);
+  const domain = getDomain(url);
+  if (!domain) {
+    return false;
+  }
+  if (domain === 'a.co') {
+    return true;
+  }
+  return /^(?:amazon|amzn)\./.test(domain);
 };
 
 const messages = {
-    noUrlProvided: 'No url provided.',
-    insufficientMetadata: 'URL contains insufficient metadata.',
-    unknownProvider: 'No provider found for supplied URL.',
-    unableToFetchOembed: 'Unable to fetch requested embed.',
-    unauthorized: 'URL contains a private resource.',
-    unconvertibleSvg: 'SVG image is too large or compressed to convert.'
+  noUrlProvided: 'No url provided.',
+  insufficientMetadata: 'URL contains insufficient metadata.',
+  unknownProvider: 'No provider found for supplied URL.',
+  unableToFetchOembed: 'Unable to fetch requested embed.',
+  unauthorized: 'URL contains a private resource.',
+  unconvertibleSvg: 'SVG image is too large or compressed to convert.',
 };
 
 const SVG_RASTER_SIZE = 256;
@@ -53,17 +53,19 @@ const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
 const SVG_SNIFF_BYTES = 1024;
 
 const toBuffer = (bytes) => {
-    return Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return Buffer.isBuffer(bytes)
+    ? bytes
+    : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 };
 
 const shouldRasterize = (buffer, ext) => {
-    if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
-        return true;
-    }
+  if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
+    return true;
+  }
 
-    const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
+  const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
 
-    return head.startsWith('<') && /<svg[\s:>]/i.test(head);
+  return head.startsWith('<') && /<svg[\s:>]/i.test(head);
 };
 
 /**
@@ -71,29 +73,29 @@ const shouldRasterize = (buffer, ext) => {
  * @returns {{url: string, provider: boolean}}
  */
 const findUrlWithProvider = (url) => {
-    const {hasProvider} = require('@extractus/oembed-extractor');
+  const { hasProvider } = require('@extractus/oembed-extractor');
 
-    let provider;
+  let provider;
 
-    // build up a list of URL variations to test against because the oembed
-    // providers list is not always up to date with scheme or www vs non-www
-    let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
-    let testUrls = [
-        `https://${baseUrl}`,
-        `https://www.${baseUrl}`,
-        `http://${baseUrl}`,
-        `http://www.${baseUrl}`
-    ];
+  // build up a list of URL variations to test against because the oembed
+  // providers list is not always up to date with scheme or www vs non-www
+  let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
+  let testUrls = [
+    `https://${baseUrl}`,
+    `https://www.${baseUrl}`,
+    `http://${baseUrl}`,
+    `http://www.${baseUrl}`,
+  ];
 
-    for (let testUrl of testUrls) {
-        provider = hasProvider(testUrl);
-        if (provider) {
-            url = testUrl;
-            break;
-        }
+  for (let testUrl of testUrls) {
+    provider = hasProvider(testUrl);
+    if (provider) {
+      url = testUrl;
+      break;
     }
+  }
 
-    return {url, provider};
+  return { url, provider };
 };
 
 /**
@@ -117,653 +119,686 @@ const findUrlWithProvider = (url) => {
  */
 
 class OEmbedService {
-    /**
-     *
-     * @param {Object} dependencies
-     * @param {IConfig} dependencies.config
-     * @param {IImageStore} dependencies.imageStore
-     * @param {IExternalRequest} dependencies.externalRequest
-     */
-    constructor({config, externalRequest, imageStore}) {
-        this.config = config;
-        this.imageStore = imageStore;
+  /**
+   *
+   * @param {Object} dependencies
+   * @param {IConfig} dependencies.config
+   * @param {IImageStore} dependencies.imageStore
+   * @param {IExternalRequest} dependencies.externalRequest
+   */
+  constructor({ config, externalRequest, imageStore }) {
+    this.config = config;
+    this.imageStore = imageStore;
 
-        /** @type {IExternalRequest} */
-        this.externalRequest = externalRequest;
+    /** @type {IExternalRequest} */
+    this.externalRequest = externalRequest;
 
-        /** @type {ICustomProvider[]} */
-        this.customProviders = [];
-    }
+    /** @type {ICustomProvider[]} */
+    this.customProviders = [];
+  }
 
-    /**
-     * @param {ICustomProvider} provider
-     */
-    registerProvider(provider) {
-        this.customProviders.push(provider);
-    }
+  /**
+   * @param {ICustomProvider} provider
+   */
+  registerProvider(provider) {
+    this.customProviders.push(provider);
+  }
 
-    /**
-     * @param {string} url
-     * @returns {Promise<never>}
-     */
-    async unknownProvider(url) {
+  /**
+   * @param {string} url
+   * @returns {Promise<never>}
+   */
+  async unknownProvider(url) {
+    throw new errors.ValidationError({
+      message: tpl(messages.unknownProvider),
+      context: url,
+    });
+  }
+
+  /**
+   * @param {string} url
+   * @param {Object} [options]
+   */
+  async knownProvider(url, options = {}) {
+    const { extract } = require('@extractus/oembed-extractor');
+
+    try {
+      return await extract(url, {}, options);
+    } catch (err) {
+      if (
+        err.message === 'Request failed with error code 401' ||
+        err.message === 'Request failed with error code 403'
+      ) {
         throw new errors.ValidationError({
-            message: tpl(messages.unknownProvider),
-            context: url
+          message: tpl(messages.unableToFetchOembed),
+          context: messages.unauthorized,
         });
+      }
+
+      throw new errors.ValidationError({
+        message: tpl(messages.unableToFetchOembed),
+        context: err.message,
+      });
+    }
+  }
+
+  /**
+   * Fetches the image buffer from a URL using this.externalRequest
+   * @param {string} imageUrl - URL of the image to fetch
+   * @returns {Promise<Buffer>} - Promise resolving to the image buffer
+   */
+  async fetchImageBuffer(imageUrl) {
+    const bytes = await this.externalRequest(imageUrl).buffer();
+    return toBuffer(bytes);
+  }
+
+  /**
+   * Process and store image from a URL
+   * @param {string|null|undefined} imageUrl - URL of the image to process
+   * @param {string} imageType - What is the image used for. Example - icon, thumbnail
+   * @returns {Promise<String|null>} - URL where the image is stored
+   */
+  async processImageFromUrl(imageUrl, imageType) {
+    if (!imageUrl) {
+      return null;
     }
 
-    /**
-     * @param {string} url
-     * @param {Object} [options]
-     */
-    async knownProvider(url, options = {}) {
-        const {extract} = require('@extractus/oembed-extractor');
+    // Fetch image buffer from the URL
+    let imageBuffer = await this.fetchImageBuffer(imageUrl);
 
-        try {
-            return await extract(url, {}, options);
-        } catch (err) {
-            if (err.message === 'Request failed with error code 401' || err.message === 'Request failed with error code 403') {
-                throw new errors.ValidationError({
-                    message: tpl(messages.unableToFetchOembed),
-                    context: messages.unauthorized
-                });
-            }
+    // Extract file name from URL
+    const fileName = path.basename(new URL(imageUrl).pathname);
+    let ext = path.extname(fileName);
+    const baseName = ext ? path.basename(fileName, ext) : fileName;
+    const name = this.imageStore.getSanitizedFileName(baseName);
 
-            throw new errors.ValidationError({
-                message: tpl(messages.unableToFetchOembed),
-                context: err.message
-            });
-        }
+    if (shouldRasterize(imageBuffer, ext)) {
+      if (
+        imageBuffer.length > MAX_SVG_BYTES ||
+        GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)
+      ) {
+        throw new errors.ValidationError({
+          message: tpl(messages.unconvertibleSvg),
+          context: imageUrl,
+        });
+      }
+
+      imageBuffer = await imageTransform.resizeFromBuffer(imageBuffer, {
+        // without `format` this returns the original bytes whenever they
+        // are smaller, storing the SVG under a .png name
+        format: 'png',
+        width: SVG_RASTER_SIZE,
+        height: SVG_RASTER_SIZE,
+        withoutEnlargement: false,
+        timeout: SVG_RASTER_TIMEOUT_SECONDS,
+      });
+
+      ext = '.png';
     }
 
-    /**
-     * Fetches the image buffer from a URL using this.externalRequest
-     * @param {string} imageUrl - URL of the image to fetch
-     * @returns {Promise<Buffer>} - Promise resolving to the image buffer
-     */
-    async fetchImageBuffer(imageUrl) {
-        const bytes = await this.externalRequest(imageUrl).buffer();
-        return toBuffer(bytes);
+    const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
+    const targetPath = path.join(imageType, uniqueFileName);
+
+    return this.imageStore.saveRaw(imageBuffer, targetPath);
+  }
+
+  /**
+   * Fetch bookmark enrichment from an allowlisted oEmbed provider without
+   * exposing provider-supplied HTML.
+   *
+   * @param {string} url
+   * @param {Object} [options]
+   * @returns {Promise<Object|undefined>}
+   */
+  async fetchBookmarkEnrichment(url, options = {}) {
+    const { url: providerUrl, provider } = findUrlWithProvider(url);
+    if (!provider) {
+      return;
     }
 
-    /**
-     * Process and store image from a URL
-     * @param {string|null|undefined} imageUrl - URL of the image to process
-     * @param {string} imageType - What is the image used for. Example - icon, thumbnail
-     * @returns {Promise<String|null>} - URL where the image is stored
-     */
-    async processImageFromUrl(imageUrl, imageType) {
-        if (!imageUrl) {
-            return null;
-        }
+    const timeout = options.timeout?.request ?? DEFAULT_REQUEST_TIMEOUT;
+    const signal = AbortSignal.timeout(timeout);
 
-        // Fetch image buffer from the URL
-        let imageBuffer = await this.fetchImageBuffer(imageUrl);
-
-        // Extract file name from URL
-        const fileName = path.basename(new URL(imageUrl).pathname);
-        let ext = path.extname(fileName);
-        const baseName = ext ? path.basename(fileName, ext) : fileName;
-        const name = this.imageStore.getSanitizedFileName(baseName);
-
-        if (shouldRasterize(imageBuffer, ext)) {
-            if (imageBuffer.length > MAX_SVG_BYTES || GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)) {
-                throw new errors.ValidationError({
-                    message: tpl(messages.unconvertibleSvg),
-                    context: imageUrl
-                });
-            }
-
-            imageBuffer = await imageTransform.resizeFromBuffer(imageBuffer, {
-                // without `format` this returns the original bytes whenever they
-                // are smaller, storing the SVG under a .png name
-                format: 'png',
-                width: SVG_RASTER_SIZE,
-                height: SVG_RASTER_SIZE,
-                withoutEnlargement: false,
-                timeout: SVG_RASTER_TIMEOUT_SECONDS
-            });
-
-            ext = '.png';
-        }
-
-        const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
-        const targetPath = path.join(imageType, uniqueFileName);
-
-        return this.imageStore.saveRaw(imageBuffer, targetPath);
+    let oembed;
+    try {
+      oembed = await this.knownProvider(providerUrl, { signal });
+    } catch {
+      // oEmbed metadata is a best-effort enhancement. If it fails, keep
+      // the bookmark metadata scraped from the page.
+      return;
     }
 
-    /**
-     * Fetch bookmark enrichment from an allowlisted oEmbed provider without
-     * exposing provider-supplied HTML.
-     *
-     * @param {string} url
-     * @param {Object} [options]
-     * @returns {Promise<Object|undefined>}
-     */
-    async fetchBookmarkEnrichment(url, options = {}) {
-        const {url: providerUrl, provider} = findUrlWithProvider(url);
-        if (!provider) {
-            return;
-        }
-
-        const timeout = options.timeout?.request ?? DEFAULT_REQUEST_TIMEOUT;
-        const signal = AbortSignal.timeout(timeout);
-
-        let oembed;
-        try {
-            oembed = await this.knownProvider(providerUrl, {signal});
-        } catch {
-            // oEmbed metadata is a best-effort enhancement. If it fails, keep
-            // the bookmark metadata scraped from the page.
-            return;
-        }
-
-        if (!oembed) {
-            return;
-        }
-
-        return _.pickBy({
-            title: oembed.title,
-            author: oembed.author_name,
-            publisher: oembed.provider_name,
-            thumbnail: oembed.thumbnail_url || (oembed.type === 'photo' ? oembed.url : undefined)
-        }, value => value !== null && value !== undefined && value !== '');
+    if (!oembed) {
+      return;
     }
 
-    /**
-     * @param {string} url
-     * @param {Object} options
-     *
-     * @returns {GotPromise<any>}
-     */
-    fetchPage(url, options) {
-        return this.externalRequest(
-            url,
-            {
-                headers: {
-                    'user-agent': USER_AGENT
-                },
-                timeout: {
-                    request: DEFAULT_REQUEST_TIMEOUT
-                },
-                followRedirect: true,
-                ...options
-            });
-    }
+    return _.pickBy(
+      {
+        title: oembed.title,
+        author: oembed.author_name,
+        publisher: oembed.provider_name,
+        thumbnail: oembed.thumbnail_url || (oembed.type === 'photo' ? oembed.url : undefined),
+      },
+      (value) => value !== null && value !== undefined && value !== '',
+    );
+  }
 
-    /**
-     * @param {string} url
-     * @param {Object} options
-     *
-     * @returns {Promise<{url: string, body: string, contentType: string|undefined}>}
-     */
-    async fetchPageHtml(url, options = {}) {
-        // Fetch url and get response as binary buffer to
-        // avoid implicit cast
-        let {headers, body, url: responseUrl} = await this.fetchPage(
-            url,
-            {
-                encoding: 'binary',
-                responseType: 'buffer',
-                ...options
-            });
+  /**
+   * @param {string} url
+   * @param {Object} options
+   *
+   * @returns {GotPromise<any>}
+   */
+  fetchPage(url, options) {
+    return this.externalRequest(url, {
+      headers: {
+        'user-agent': USER_AGENT,
+      },
+      timeout: {
+        request: DEFAULT_REQUEST_TIMEOUT,
+      },
+      followRedirect: true,
+      ...options,
+    });
+  }
 
-        body = toBuffer(body);
+  /**
+   * @param {string} url
+   * @param {Object} options
+   *
+   * @returns {Promise<{url: string, body: string, contentType: string|undefined}>}
+   */
+  async fetchPageHtml(url, options = {}) {
+    // Fetch url and get response as binary buffer to
+    // avoid implicit cast
+    let {
+      headers,
+      body,
+      url: responseUrl,
+    } = await this.fetchPage(url, {
+      encoding: 'binary',
+      responseType: 'buffer',
+      ...options,
+    });
 
-        try {
-            // Detect page encoding which might not be utf-8
-            // and decode content
-            const encoding = charset(
-                headers,
-                body);
+    body = toBuffer(body);
 
-            if (encoding === null) {
-                return {
-                    body: body.toString(),
-                    url: responseUrl,
-                    contentType: headers['content-type']
-                };
-            }
+    try {
+      // Detect page encoding which might not be utf-8
+      // and decode content
+      const encoding = charset(headers, body);
 
-            const decodedBody = iconv.decode(
-                body, encoding);
-
-            return {
-                body: decodedBody,
-                url: responseUrl,
-                contentType: headers['content-type']
-            };
-        } catch (err) {
-            logging.error(err);
-            //return non decoded body anyway
-            return {
-                body: body.toString(),
-                url: responseUrl,
-                contentType: headers['content-type']
-            };
-        }
-    }
-
-    /**
-     * @param {string} url
-     *
-     * @returns {Promise<{url: string, body: Object}>}
-     */
-    async fetchPageJson(url) {
-        const res = await this.fetchPage(url, {responseType: 'json'});
-        const body = res.body;
-        const pageUrl = res.url;
+      if (encoding === null) {
         return {
-            body,
-            url: pageUrl
+          body: body.toString(),
+          url: responseUrl,
+          contentType: headers['content-type'],
         };
+      }
+
+      const decodedBody = iconv.decode(body, encoding);
+
+      return {
+        body: decodedBody,
+        url: responseUrl,
+        contentType: headers['content-type'],
+      };
+    } catch (err) {
+      logging.error(err);
+      //return non decoded body anyway
+      return {
+        body: body.toString(),
+        url: responseUrl,
+        contentType: headers['content-type'],
+      };
+    }
+  }
+
+  /**
+   * @param {string} url
+   *
+   * @returns {Promise<{url: string, body: Object}>}
+   */
+  async fetchPageJson(url) {
+    const res = await this.fetchPage(url, { responseType: 'json' });
+    const body = res.body;
+    const pageUrl = res.url;
+    return {
+      body,
+      url: pageUrl,
+    };
+  }
+
+  /**
+   * @param {string} url
+   * @param {string} html
+   * @param {string} type
+   * @param {Object} [enrichment]
+   *
+   * @returns {Promise<{
+   *     version: '1.0',
+   *     type: 'bookmark',
+   *     url: string,
+   *     metadata: Omit<import('metascraper').Metadata, 'image'|'logo'> & {
+   *         thumbnail?: string,
+   *         icon?: string
+   *     }
+   * }>}
+   */
+  async fetchBookmarkData(url, html, type, enrichment = {}) {
+    const requestOptions = this.externalRequest.defaults?.options || {};
+    const gotOpts = {
+      hooks: requestOptions.hooks,
+      retry: requestOptions.retry,
+      timeout: requestOptions.timeout,
+      ...requestOptions,
+      headers: {
+        ...(requestOptions.headers || {}),
+        'User-Agent': USER_AGENT,
+      },
+    };
+
+    if (process.env.NODE_ENV?.startsWith('test')) {
+      gotOpts.retry = {
+        limit: 0,
+      };
     }
 
-    /**
-     * @param {string} url
-     * @param {string} html
-     * @param {string} type
-     * @param {Object} [enrichment]
-     *
-     * @returns {Promise<{
-     *     version: '1.0',
-     *     type: 'bookmark',
-     *     url: string,
-     *     metadata: Omit<import('metascraper').Metadata, 'image'|'logo'> & {
-     *         thumbnail?: string,
-     *         icon?: string
-     *     }
-     * }>}
-     */
-    async fetchBookmarkData(url, html, type, enrichment = {}) {
-        const requestOptions = this.externalRequest.defaults?.options || {};
-        const gotOpts = {
-            hooks: requestOptions.hooks,
-            retry: requestOptions.retry,
-            timeout: requestOptions.timeout,
-            ...requestOptions,
-            headers: {
-                ...(requestOptions.headers || {}),
-                'User-Agent': USER_AGENT
-            }
-        };
+    // metascraper-logo-favicon 5.50.x awaits pickFn and passes the resolved
+    // value straight to its logo sanitizer, so pickFn must return a URL
+    // string, not a size entry like the pre-5.43 API. Its bundled default
+    // picker (pickBiggerSize) also network-validates every candidate via
+    // reachable-url before returning it, which drops icons whenever probes
+    // are blocked (tests) or slow. Icon URLs here come from the page's own
+    // markup, so keep the pre-5.43 behavior and pick purely by parsed size.
+    const pickBiggest = (iconSizes) => {
+      const sorted = [...iconSizes].sort(
+        (a, b) => (b.size?.priority ?? 0) - (a.size?.priority ?? 0),
+      );
+      return (sorted.find((item) => item.size?.square) || sorted[0])?.url;
+    };
+    const pickFn = (sizes) => {
+      const appleTouchIcon = sizes.find(
+        (item) => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180,
+      );
+      // Bookmark cards (including the oembed fallback, which resolves to a
+      // bookmark) render the icon inline in the post body, where the site's
+      // standard (often transparent) favicon matches surrounding chrome
+      // better than an Apple Touch icon's solid-background square. The
+      // Recommendations Avatar (type='mention') instead scales the icon up
+      // into a larger tile, where Apple Touch is the better fit.
+      if (type === 'bookmark') {
+        // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
+        // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
+        // fluid-icon (Fluid SSB) — none of those are the site's standard brand
+        // favicon, so skip them when picking what to show in a bookmark card.
+        const standardIcons = sizes.filter(
+          (item) => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''),
+        );
+        const svgIcon = standardIcons.find((item) => item.href?.endsWith('svg'));
+        return svgIcon?.url || pickBiggest(standardIcons) || appleTouchIcon?.url;
+      }
+      const svgIcon = sizes.find((item) => item.href?.endsWith('svg'));
+      return appleTouchIcon?.url || svgIcon?.url || pickBiggest(sizes);
+    };
 
-        if (process.env.NODE_ENV?.startsWith('test')) {
-            gotOpts.retry = {
-                limit: 0
-            };
+    const scrapers = [
+      require('metascraper-url')(),
+      require('metascraper-title')(),
+      require('metascraper-description')(),
+      require('metascraper-author')(),
+      require('metascraper-publisher')(),
+      require('metascraper-image')(),
+      require('metascraper-logo-favicon')({
+        gotOpts,
+        pickFn,
+      }),
+      require('metascraper-logo')(),
+    ];
+
+    if (isAmazonUrl(url)) {
+      scrapers.unshift(require('metascraper-amazon')());
+    }
+
+    const metascraper = require('metascraper')(scrapers);
+
+    let scraperResponse;
+
+    try {
+      scraperResponse = await metascraper({
+        html,
+        url,
+        // In development, allow non-standard TLDs
+        validateUrl: this.config.get('env') !== 'development',
+      });
+    } catch (err) {
+      // Log to avoid being blind to errors happening in metascraper
+      logging.error(err);
+      return this.unknownProvider(url);
+    }
+
+    const metadata = Object.assign(
+      {},
+      scraperResponse,
+      {
+        thumbnail: scraperResponse.image,
+        icon: scraperResponse.logo,
+      },
+      enrichment,
+    );
+    // We want to use standard naming for image and logo
+    delete metadata.image;
+    delete metadata.logo;
+
+    return this.buildBookmarkData(url, metadata, type);
+  }
+
+  /**
+   * Validate and process bookmark metadata after it has been scraped,
+   * enriched, or assembled from enrichment alone.
+   *
+   * @param {string} url
+   * @param {Object} metadata
+   * @param {string} type
+   * @returns {Promise<Object>}
+   */
+  async buildBookmarkData(url, metadata, type) {
+    if (!metadata.title) {
+      throw new errors.ValidationError({
+        message: tpl(messages.insufficientMetadata),
+        context: url,
+      });
+    }
+
+    if (type === 'mention') {
+      if (metadata.icon) {
+        try {
+          await this.externalRequest.head(metadata.icon);
+        } catch (err) {
+          metadata.icon = DEFAULT_BOOKMARK_ICON;
+          logging.error(err);
         }
+      }
+    } else {
+      if (metadata.icon) {
+        await this.processImageFromUrl(metadata.icon, 'icon')
+          .then((processedImageUrl) => {
+            metadata.icon = processedImageUrl;
+          })
+          .catch((err) => {
+            metadata.icon = DEFAULT_BOOKMARK_ICON;
+            logging.error(err);
+          });
+      } else {
+        metadata.icon = DEFAULT_BOOKMARK_ICON;
+      }
 
-        // metascraper-logo-favicon 5.50.x awaits pickFn and passes the resolved
-        // value straight to its logo sanitizer, so pickFn must return a URL
-        // string, not a size entry like the pre-5.43 API. Its bundled default
-        // picker (pickBiggerSize) also network-validates every candidate via
-        // reachable-url before returning it, which drops icons whenever probes
-        // are blocked (tests) or slow. Icon URLs here come from the page's own
-        // markup, so keep the pre-5.43 behavior and pick purely by parsed size.
-        const pickBiggest = (iconSizes) => {
-            const sorted = [...iconSizes].sort((a, b) => (b.size?.priority ?? 0) - (a.size?.priority ?? 0));
-            return (sorted.find(item => item.size?.square) || sorted[0])?.url;
-        };
-        const pickFn = (sizes) => {
-            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180);
-            // Bookmark cards (including the oembed fallback, which resolves to a
-            // bookmark) render the icon inline in the post body, where the site's
-            // standard (often transparent) favicon matches surrounding chrome
-            // better than an Apple Touch icon's solid-background square. The
-            // Recommendations Avatar (type='mention') instead scales the icon up
-            // into a larger tile, where Apple Touch is the better fit.
-            if (type === 'bookmark') {
-                // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
-                // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
-                // fluid-icon (Fluid SSB) — none of those are the site's standard brand
-                // favicon, so skip them when picking what to show in a bookmark card.
-                const standardIcons = sizes.filter(item => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''));
-                const svgIcon = standardIcons.find(item => item.href?.endsWith('svg'));
-                return svgIcon?.url || pickBiggest(standardIcons) || appleTouchIcon?.url;
-            }
-            const svgIcon = sizes.find(item => item.href?.endsWith('svg'));
-            return appleTouchIcon?.url || svgIcon?.url || pickBiggest(sizes);
-        };
+      if (metadata.thumbnail) {
+        await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
+          .then((processedImageUrl) => {
+            metadata.thumbnail = processedImageUrl;
+          })
+          .catch((err) => {
+            logging.error(err);
+          });
+      }
+    }
 
-        const scrapers = [
-            require('metascraper-url')(),
-            require('metascraper-title')(),
-            require('metascraper-description')(),
-            require('metascraper-author')(),
-            require('metascraper-publisher')(),
-            require('metascraper-image')(),
-            require('metascraper-logo-favicon')({
-                gotOpts,
-                pickFn
-            }),
-            require('metascraper-logo')()
+    return {
+      version: '1.0',
+      type: 'bookmark',
+      url,
+      metadata,
+    };
+  }
+
+  /**
+   * @param {string} url
+   * @param {string} html
+   * @param {string} [cardType]
+   *
+   * @returns {Promise<Object>}
+   */
+  async fetchOembedData(url, html, cardType) {
+    // Lazy require the library to keep boot quick
+    const cheerio = require('cheerio');
+
+    // check for <link rel="alternate" type="application/json+oembed"> element
+    let oembedUrl;
+    try {
+      oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
+    } catch (e) {
+      return this.unknownProvider(url);
+    }
+
+    if (oembedUrl) {
+      // for standard WP oembed's we want to insert a bookmark card rather than their blockquote+script
+      // which breaks in the editor and most Ghost themes. Only fallback if card type was not explicitly chosen
+      if (!cardType && oembedUrl.match(/wp-json\/oembed/)) {
+        return;
+      }
+
+      // fetch oembed response from embedded rel="alternate" url
+      const oembedResponse = await this.fetchPageJson(oembedUrl);
+      // validate the fetched json against the oembed spec to avoid
+      // leaking non-oembed responses
+      const body = oembedResponse.body;
+      const hasRequiredFields = body.type && body.version;
+      const hasValidType = ['photo', 'video', 'link', 'rich'].includes(body.type);
+
+      if (hasRequiredFields && hasValidType) {
+        // extract known oembed fields from the response to limit leaking of unrecognised data
+        const knownFields = [
+          'type',
+          'version',
+          'html',
+          'url',
+          'title',
+          'width',
+          'height',
+          'author_name',
+          'author_url',
+          'provider_name',
+          'provider_url',
+          'thumbnail_url',
+          'thumbnail_width',
+          'thumbnail_height',
         ];
+        const oembed = _.pick(body, knownFields);
 
-        if (isAmazonUrl(url)) {
-            scrapers.unshift(require('metascraper-amazon')());
+        // Fallback to bookmark if it's a link type
+        if (oembed.type === 'link') {
+          return;
         }
 
-        const metascraper = require('metascraper')(scrapers);
-
-        let scraperResponse;
-
-        try {
-            scraperResponse = await metascraper({
-                html,
-                url,
-                // In development, allow non-standard TLDs
-                validateUrl: this.config.get('env') !== 'development'
-            });
-        } catch (err) {
-            // Log to avoid being blind to errors happening in metascraper
-            logging.error(err);
-            return this.unknownProvider(url);
+        // ensure we have required data for certain types
+        if (oembed.type === 'photo' && !oembed.url) {
+          return;
+        }
+        if (
+          (oembed.type === 'video' || oembed.type === 'rich') &&
+          (!oembed.html || !oembed.width)
+        ) {
+          return;
         }
 
-        const metadata = Object.assign({}, scraperResponse, {
-            thumbnail: scraperResponse.image,
-            icon: scraperResponse.logo
-        }, enrichment);
-        // We want to use standard naming for image and logo
-        delete metadata.image;
-        delete metadata.logo;
+        // `rich` and `video` responses ship provider-supplied HTML that gets
+        // stored in the post's Lexical payload and rendered into the admin
+        // editor preview (via srcdoc) and into public themes (via innerHTML).
+        // Known providers (YouTube, Twitter, etc.) go through `knownProvider`
+        // with @extractus/oembed-extractor's allowlist — anything reaching
+        // here is an arbitrary site's self-declared oEmbed endpoint, which we
+        // must not trust. Drop the response and let the caller fall back to
+        // a bookmark card.
+        if (oembed.type === 'video' || oembed.type === 'rich') {
+          return;
+        }
 
-        return this.buildBookmarkData(url, metadata, type);
+        // return the extracted object, don't pass through the response body
+        return oembed;
+      }
     }
+  }
 
-    /**
-     * Validate and process bookmark metadata after it has been scraped,
-     * enriched, or assembled from enrichment alone.
-     *
-     * @param {string} url
-     * @param {Object} metadata
-     * @param {string} type
-     * @returns {Promise<Object>}
-     */
-    async buildBookmarkData(url, metadata, type) {
-        if (!metadata.title) {
-            throw new errors.ValidationError({
-                message: tpl(messages.insufficientMetadata),
-                context: url
-            });
+  /**
+   * @param {string} url - oembed URL
+   * @param {string} type - card type
+   * @param {Object} [options] Specific fetch options
+   * @param {Object} [options.timeout] Change the default request timeout, got-style ({request: ms})
+   *
+   * @returns {Promise<Object>}
+   */
+  async fetchOembedDataFromUrl(url, type, options = {}) {
+    const { shouldRethrowFetchError, ...fetchOptions } = options;
+
+    try {
+      const urlObject = new URL(url);
+
+      // YouTube has started not returning oembed <link>tags for some live URLs
+      // when fetched from an IP address that's in a non-EN region.
+      // We convert live URLs to watch URLs so we can go straight to the
+      // oembed request via a known provider rather than going through the page fetch routine.
+      const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
+      if (
+        urlObject.hostname.match(/(?:www\.)?youtube\.com/) &&
+        ytLiveRegex.test(urlObject.pathname)
+      ) {
+        const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
+        urlObject.pathname = '/watch';
+        urlObject.searchParams.set('v', videoId);
+        url = urlObject.toString();
+      }
+
+      // Trimming solves the difference of url validation between `new URL(url)`
+      // and metascraper.
+      url = url.trim();
+
+      for (const provider of this.customProviders) {
+        if (await provider.canSupportRequest(urlObject)) {
+          const result = await provider.getOEmbedData(urlObject, this.externalRequest);
+          if (result !== null) {
+            return result;
+          }
+        }
+      }
+
+      if (type !== 'bookmark' && type !== 'mention') {
+        // if not a bookmark request, first
+        // check against known oembed list
+        const { url: providerUrl, provider } = findUrlWithProvider(url);
+        if (provider) {
+          return this.knownProvider(providerUrl);
+        }
+      }
+
+      // Not in the list, we need to fetch the content
+      const bookmarkEnrichmentPromise =
+        type === 'bookmark' ? this.fetchBookmarkEnrichment(url, fetchOptions) : undefined;
+      const [pageResult, enrichmentResult] = await Promise.allSettled([
+        this.fetchPageHtml(url, fetchOptions),
+        bookmarkEnrichmentPromise,
+      ]);
+      const bookmarkEnrichment =
+        enrichmentResult.status === 'fulfilled' ? enrichmentResult.value : undefined;
+
+      if (pageResult.status === 'rejected') {
+        if (type === 'bookmark' && bookmarkEnrichment?.title) {
+          return this.buildBookmarkData(
+            url,
+            {
+              url,
+              title: null,
+              description: null,
+              author: null,
+              publisher: null,
+              thumbnail: null,
+              icon: null,
+              ...bookmarkEnrichment,
+            },
+            type,
+          );
         }
 
-        if (type === 'mention') {
-            if (metadata.icon) {
-                try {
-                    await this.externalRequest.head(metadata.icon);
-                } catch (err) {
-                    metadata.icon = DEFAULT_BOOKMARK_ICON;
-                    logging.error(err);
-                }
-            }
-        } else {
-            if (metadata.icon) {
-                await this.processImageFromUrl(metadata.icon, 'icon')
-                    .then((processedImageUrl) => {
-                        metadata.icon = processedImageUrl;
-                    }).catch((err) => {
-                        metadata.icon = DEFAULT_BOOKMARK_ICON;
-                        logging.error(err);
-                    });
-            } else {
-                metadata.icon = DEFAULT_BOOKMARK_ICON;
-            }
+        throw pageResult.reason;
+      }
 
-            if (metadata.thumbnail) {
-                await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
-                    .then((processedImageUrl) => {
-                        metadata.thumbnail = processedImageUrl;
-                    }).catch((err) => {
-                        logging.error(err);
-                    });
-            }
-        }
+      const { url: pageUrl, body, contentType } = pageResult.value;
 
-        return {
+      // fetch only bookmark when explicitly requested
+      if (type === 'bookmark') {
+        return this.fetchBookmarkData(url, body, type, bookmarkEnrichment);
+      }
+
+      // mentions need to return bookmark data (metadata) and body (html) for link verification
+      if (type === 'mention') {
+        if (contentType.includes('application/json')) {
+          // No need to fetch metadata: we have none
+          const bookmark = {
             version: '1.0',
             type: 'bookmark',
             url,
-            metadata
-        };
-    }
-
-    /**
-     * @param {string} url
-     * @param {string} html
-     * @param {string} [cardType]
-     *
-     * @returns {Promise<Object>}
-     */
-    async fetchOembedData(url, html, cardType) {
-        // Lazy require the library to keep boot quick
-        const cheerio = require('cheerio');
-
-        // check for <link rel="alternate" type="application/json+oembed"> element
-        let oembedUrl;
-        try {
-            oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
-        } catch (e) {
-            return this.unknownProvider(url);
+            metadata: {
+              title: null,
+              description: null,
+              publisher: null,
+              author: null,
+              thumbnail: null,
+              icon: null,
+            },
+            contentType,
+          };
+          return { ...bookmark, body };
         }
+        const bookmark = await this.fetchBookmarkData(url, body, type);
+        return { ...bookmark, body, contentType };
+      }
 
-        if (oembedUrl) {
-            // for standard WP oembed's we want to insert a bookmark card rather than their blockquote+script
-            // which breaks in the editor and most Ghost themes. Only fallback if card type was not explicitly chosen
-            if (!cardType && oembedUrl.match(/wp-json\/oembed/)) {
-                return;
-            }
+      // attempt to fetch oembed
 
-            // fetch oembed response from embedded rel="alternate" url
-            const oembedResponse = await this.fetchPageJson(oembedUrl);
-            // validate the fetched json against the oembed spec to avoid
-            // leaking non-oembed responses
-            const body = oembedResponse.body;
-            const hasRequiredFields = body.type && body.version;
-            const hasValidType = ['photo', 'video', 'link', 'rich'].includes(body.type);
-
-            if (hasRequiredFields && hasValidType) {
-                // extract known oembed fields from the response to limit leaking of unrecognised data
-                const knownFields = [
-                    'type',
-                    'version',
-                    'html',
-                    'url',
-                    'title',
-                    'width',
-                    'height',
-                    'author_name',
-                    'author_url',
-                    'provider_name',
-                    'provider_url',
-                    'thumbnail_url',
-                    'thumbnail_width',
-                    'thumbnail_height'
-                ];
-                const oembed = _.pick(body, knownFields);
-
-                // Fallback to bookmark if it's a link type
-                if (oembed.type === 'link') {
-                    return;
-                }
-
-                // ensure we have required data for certain types
-                if (oembed.type === 'photo' && !oembed.url) {
-                    return;
-                }
-                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width)) {
-                    return;
-                }
-
-                // `rich` and `video` responses ship provider-supplied HTML that gets
-                // stored in the post's Lexical payload and rendered into the admin
-                // editor preview (via srcdoc) and into public themes (via innerHTML).
-                // Known providers (YouTube, Twitter, etc.) go through `knownProvider`
-                // with @extractus/oembed-extractor's allowlist — anything reaching
-                // here is an arbitrary site's self-declared oEmbed endpoint, which we
-                // must not trust. Drop the response and let the caller fall back to
-                // a bookmark card.
-                if (oembed.type === 'video' || oembed.type === 'rich') {
-                    return;
-                }
-
-                // return the extracted object, don't pass through the response body
-                return oembed;
-            }
+      // In case response was a redirect, see if we were
+      // redirected to a known oembed
+      if (pageUrl !== url) {
+        const { url: providerUrl, provider } = findUrlWithProvider(pageUrl);
+        if (provider) {
+          return this.knownProvider(providerUrl);
         }
+      }
+
+      let data = await this.fetchOembedData(url, body);
+
+      // fallback to bookmark when we can't get oembed
+      if (!data && !type) {
+        data = await this.fetchBookmarkData(url, body, 'bookmark');
+      }
+
+      // couldn't get anything, throw a validation error
+      if (!data) {
+        return this.unknownProvider(url);
+      }
+
+      return data;
+    } catch (err) {
+      if (shouldRethrowFetchError?.(err)) {
+        throw err;
+      }
+
+      // allow specific validation errors through for better error messages
+      if (errors.utils.isGhostError(err) && err.errorType === 'ValidationError') {
+        throw err;
+      }
+
+      // log the real error because we're going to throw a generic "Unknown provider" error
+      logging.error(
+        new errors.InternalServerError({
+          message: 'Encountered error when fetching oembed',
+          err,
+        }),
+      );
+
+      // default to unknown provider to avoid leaking any app specifics
+      return this.unknownProvider(url);
     }
-
-    /**
-     * @param {string} url - oembed URL
-     * @param {string} type - card type
-     * @param {Object} [options] Specific fetch options
-     * @param {Object} [options.timeout] Change the default request timeout, got-style ({request: ms})
-     *
-     * @returns {Promise<Object>}
-     */
-    async fetchOembedDataFromUrl(url, type, options = {}) {
-        const {shouldRethrowFetchError, ...fetchOptions} = options;
-
-        try {
-            const urlObject = new URL(url);
-
-            // YouTube has started not returning oembed <link>tags for some live URLs
-            // when fetched from an IP address that's in a non-EN region.
-            // We convert live URLs to watch URLs so we can go straight to the
-            // oembed request via a known provider rather than going through the page fetch routine.
-            const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
-            if (urlObject.hostname.match(/(?:www\.)?youtube\.com/) && ytLiveRegex.test(urlObject.pathname)) {
-                const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
-                urlObject.pathname = '/watch';
-                urlObject.searchParams.set('v', videoId);
-                url = urlObject.toString();
-            }
-
-            // Trimming solves the difference of url validation between `new URL(url)`
-            // and metascraper.
-            url = url.trim();
-
-            for (const provider of this.customProviders) {
-                if (await provider.canSupportRequest(urlObject)) {
-                    const result = await provider.getOEmbedData(urlObject, this.externalRequest);
-                    if (result !== null) {
-                        return result;
-                    }
-                }
-            }
-
-            if (type !== 'bookmark' && type !== 'mention') {
-                // if not a bookmark request, first
-                // check against known oembed list
-                const {url: providerUrl, provider} = findUrlWithProvider(url);
-                if (provider) {
-                    return this.knownProvider(providerUrl);
-                }
-            }
-
-            // Not in the list, we need to fetch the content
-            const bookmarkEnrichmentPromise = type === 'bookmark' ? this.fetchBookmarkEnrichment(url, fetchOptions) : undefined;
-            const [pageResult, enrichmentResult] = await Promise.allSettled([
-                this.fetchPageHtml(url, fetchOptions),
-                bookmarkEnrichmentPromise
-            ]);
-            const bookmarkEnrichment = enrichmentResult.status === 'fulfilled' ? enrichmentResult.value : undefined;
-
-            if (pageResult.status === 'rejected') {
-                if (type === 'bookmark' && bookmarkEnrichment?.title) {
-                    return this.buildBookmarkData(url, {
-                        url,
-                        title: null,
-                        description: null,
-                        author: null,
-                        publisher: null,
-                        thumbnail: null,
-                        icon: null,
-                        ...bookmarkEnrichment
-                    }, type);
-                }
-
-                throw pageResult.reason;
-            }
-
-            const {url: pageUrl, body, contentType} = pageResult.value;
-
-            // fetch only bookmark when explicitly requested
-            if (type === 'bookmark') {
-                return this.fetchBookmarkData(url, body, type, bookmarkEnrichment);
-            }
-
-            // mentions need to return bookmark data (metadata) and body (html) for link verification
-            if (type === 'mention') {
-                if (contentType.includes('application/json')) {
-                    // No need to fetch metadata: we have none
-                    const bookmark = {
-                        version: '1.0',
-                        type: 'bookmark',
-                        url,
-                        metadata: {
-                            title: null,
-                            description: null,
-                            publisher: null,
-                            author: null,
-                            thumbnail: null,
-                            icon: null
-                        },
-                        contentType
-                    };
-                    return {...bookmark, body};
-                }
-                const bookmark = await this.fetchBookmarkData(url, body, type);
-                return {...bookmark, body, contentType};
-            }
-
-            // attempt to fetch oembed
-
-            // In case response was a redirect, see if we were
-            // redirected to a known oembed
-            if (pageUrl !== url) {
-                const {url: providerUrl, provider} = findUrlWithProvider(pageUrl);
-                if (provider) {
-                    return this.knownProvider(providerUrl);
-                }
-            }
-
-            let data = await this.fetchOembedData(url, body);
-
-            // fallback to bookmark when we can't get oembed
-            if (!data && !type) {
-                data = await this.fetchBookmarkData(url, body, 'bookmark');
-            }
-
-            // couldn't get anything, throw a validation error
-            if (!data) {
-                return this.unknownProvider(url);
-            }
-
-            return data;
-        } catch (err) {
-            if (shouldRethrowFetchError?.(err)) {
-                throw err;
-            }
-
-            // allow specific validation errors through for better error messages
-            if (errors.utils.isGhostError(err) && err.errorType === 'ValidationError') {
-                throw err;
-            }
-
-            // log the real error because we're going to throw a generic "Unknown provider" error
-            logging.error(new errors.InternalServerError({
-                message: 'Encountered error when fetching oembed',
-                err
-            }));
-
-            // default to unknown provider to avoid leaking any app specifics
-            return this.unknownProvider(url);
-        }
-    }
+  }
 }
 
 module.exports = OEmbedService;

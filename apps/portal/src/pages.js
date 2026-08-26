@@ -18,57 +18,72 @@ import SupportSuccess from './components/pages/support-success';
 import SupportError from './components/pages/support-error';
 import RecommendationsPage from './components/pages/recommendations-page';
 import GiftPage from './components/pages/gift-page';
+import BetaGiftPage from './components/pages/beta-gift-page';
 import GiftRedemptionPage from './components/pages/gift-redemption-page';
+import BetaGiftRedemptionPage from './components/pages/beta-gift-redemption-page';
 import GiftSuccessPage from './components/pages/gift-success-page';
+import BetaGiftSuccessPage from './components/pages/beta-gift-success-page';
 import ShareModal from './components/pages/share/share-modal';
+import { isGiftCustomizationEnabled } from './utils/gift-subscriptions';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
-*/
+ */
 const Pages = {
-    signin: SigninPage,
-    signup: SignupPage,
-    accountHome: AccountHomePage,
-    accountPlan: AccountPlanPage,
-    accountProfile: AccountProfilePage,
-    accountEmail: AccountEmailPage,
-    signupNewsletter: NewsletterSelectionPage,
-    unsubscribe: UnsubscribePage,
-    magiclink: MagicLinkPage,
-    loading: LoadingPage,
-    offer: OfferPage,
-    feedback: FeedbackPage,
-    emailSuppressed: EmailSuppressedPage,
-    emailSuppressionFAQ: EmailSuppressionFAQ,
-    emailReceivingFAQ: EmailReceivingFAQ,
-    support: SupportPage,
-    supportSuccess: SupportSuccess,
-    supportError: SupportError,
-    recommendations: RecommendationsPage,
-    gift: GiftPage,
-    giftRedemption: GiftRedemptionPage,
-    giftSuccess: GiftSuccessPage,
-    share: ShareModal
+  signin: SigninPage,
+  signup: SignupPage,
+  accountHome: AccountHomePage,
+  accountPlan: AccountPlanPage,
+  accountProfile: AccountProfilePage,
+  accountEmail: AccountEmailPage,
+  signupNewsletter: NewsletterSelectionPage,
+  unsubscribe: UnsubscribePage,
+  magiclink: MagicLinkPage,
+  loading: LoadingPage,
+  offer: OfferPage,
+  feedback: FeedbackPage,
+  emailSuppressed: EmailSuppressedPage,
+  emailSuppressionFAQ: EmailSuppressionFAQ,
+  emailReceivingFAQ: EmailReceivingFAQ,
+  support: SupportPage,
+  supportSuccess: SupportSuccess,
+  supportError: SupportError,
+  recommendations: RecommendationsPage,
+  gift: GiftPage,
+  giftRedemption: GiftRedemptionPage,
+  giftSuccess: GiftSuccessPage,
+  share: ShareModal,
+};
+
+const BetaPages = {
+  ...Pages,
+  gift: BetaGiftPage,
+  giftRedemption: BetaGiftRedemptionPage,
+  giftSuccess: BetaGiftSuccessPage,
+};
+
+export const getPages = function ({ site } = {}) {
+  return isGiftCustomizationEnabled({ site }) ? BetaPages : Pages;
 };
 
 /** Return page if valid, fallback to signup */
-export const getActivePage = function ({page}) {
-    if (Object.keys(Pages).includes(page)) {
-        return page;
-    }
-    return 'signup';
+export const getActivePage = function ({ page }) {
+  if (Object.keys(Pages).includes(page)) {
+    return page;
+  }
+  return 'signup';
 };
 
-export const isAccountPage = function ({page}) {
-    return page.includes('account');
+export const isAccountPage = function ({ page }) {
+  return page.includes('account');
 };
 
-export const isOfferPage = function ({page}) {
-    return page.includes('offer');
+export const isOfferPage = function ({ page }) {
+  return page.includes('offer');
 };
 
-export const isSupportPage = function ({page}) {
-    return page.includes('support');
+export const isSupportPage = function ({ page }) {
+  return page.includes('support');
 };
 
 export default Pages;

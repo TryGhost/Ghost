@@ -45,144 +45,144 @@ const jwt = require('jsonwebtoken');
  */
 
 const TINYBIRD_PIPES = [
-    'api_kpis',
-    'api_active_visitors',
-    'api_post_visitor_counts',
-    'api_top_locations',
-    'api_top_pages',
-    'api_top_sources',
-    'api_top_utm_sources',
-    'api_top_utm_mediums',
-    'api_top_utm_campaigns',
-    'api_top_utm_contents',
-    'api_top_utm_terms',
-    'api_top_devices',
-    'api_gift_link_visits',
-    // v2 pipes (materialized view optimization)
-    'api_kpis_v2',
-    'api_active_visitors_v2',
-    'api_post_visitor_counts_v2',
-    'api_top_locations_v2',
-    'api_top_pages_v2',
-    'api_top_sources_v2',
-    'api_top_utm_sources_v2',
-    'api_top_utm_mediums_v2',
-    'api_top_utm_campaigns_v2',
-    'api_top_utm_contents_v2',
-    'api_top_utm_terms_v2',
-    'api_top_devices_v2'
+  'api_kpis',
+  'api_active_visitors',
+  'api_post_visitor_counts',
+  'api_top_locations',
+  'api_top_pages',
+  'api_top_sources',
+  'api_top_utm_sources',
+  'api_top_utm_mediums',
+  'api_top_utm_campaigns',
+  'api_top_utm_contents',
+  'api_top_utm_terms',
+  'api_top_devices',
+  'api_gift_link_visits',
+  // v2 pipes (materialized view optimization)
+  'api_kpis_v2',
+  'api_active_visitors_v2',
+  'api_post_visitor_counts_v2',
+  'api_top_locations_v2',
+  'api_top_pages_v2',
+  'api_top_sources_v2',
+  'api_top_utm_sources_v2',
+  'api_top_utm_mediums_v2',
+  'api_top_utm_campaigns_v2',
+  'api_top_utm_contents_v2',
+  'api_top_utm_terms_v2',
+  'api_top_devices_v2',
 ];
 
 /**
  * Service for managing Tinybird JWT tokens and authentication
  */
 class TinybirdService {
-    /**
-     * Creates a new TinybirdService instance
-     * @param {TinybirdConstructorOptions} options - Configuration options
-     */
-    constructor({tinybirdConfig, siteUuid}) {
-        this.tinybirdConfig = tinybirdConfig;
-        this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
+  /**
+   * Creates a new TinybirdService instance
+   * @param {TinybirdConstructorOptions} options - Configuration options
+   */
+  constructor({ tinybirdConfig, siteUuid }) {
+    this.tinybirdConfig = tinybirdConfig;
+    this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
 
-        // Flags for determining which token to use
-        // We should aim to simplify this in the future
-        this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
-        this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
-        this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
-        this._serverToken = null;
-        this._serverTokenExp = null;
+    // Flags for determining which token to use
+    // We should aim to simplify this in the future
+    this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
+    this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
+    this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
+    this._serverToken = null;
+    this._serverTokenExp = null;
+  }
+
+  /**
+   * Gets the server token, refreshing it if it's about to expire
+   * We're moving towards using JWT tokens for all Tinybird requests
+   * For now we need to remain backwards compatible with the old stats token
+   * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
+   */
+  getToken({ name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 180 } = {}) {
+    // Prefer JWT tokens if enabled
+    if (this.isJwtEnabled) {
+      // Generate a new JWT token if it doesn't exist or is expired
+      if (!this._serverToken || this._isJWTExpired(this._serverToken)) {
+        const tokenData = this._generateToken({ name, expiresInMinutes });
+        this._serverToken = tokenData.token;
+        this._serverTokenExp = tokenData.exp;
+      }
+      return {
+        token: this._serverToken,
+        exp: this._serverTokenExp,
+      };
     }
-
-    /**
-     * Gets the server token, refreshing it if it's about to expire
-     * We're moving towards using JWT tokens for all Tinybird requests
-     * For now we need to remain backwards compatible with the old stats token
-     * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
-     */
-    getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 180} = {}) {
-        // Prefer JWT tokens if enabled
-        if (this.isJwtEnabled) {
-            // Generate a new JWT token if it doesn't exist or is expired
-            if (!this._serverToken || this._isJWTExpired(this._serverToken)) {
-                const tokenData = this._generateToken({name, expiresInMinutes});
-                this._serverToken = tokenData.token;
-                this._serverTokenExp = tokenData.exp;
-            }
-            return {
-                token: this._serverToken,
-                exp: this._serverTokenExp
-            };
-        }
-        // If local stats are enabled, use the local token
-        if (this.isLocalEnabled) {
-            return {
-                token: this.tinybirdConfig.stats.local?.token
-            };
-        }
-        // If stats are enabled, use the stats token
-        if (this.isStatsEnabled) {
-            return {
-                token: this.tinybirdConfig.stats.token
-            };
-        }
-        // If no token is available, return null
-        return null;
+    // If local stats are enabled, use the local token
+    if (this.isLocalEnabled) {
+      return {
+        token: this.tinybirdConfig.stats.local?.token,
+      };
     }
+    // If stats are enabled, use the stats token
+    if (this.isStatsEnabled) {
+      return {
+        token: this.tinybirdConfig.stats.token,
+      };
+    }
+    // If no token is available, return null
+    return null;
+  }
 
-    /**
-     * Generates a Tinybird JWT token with specified options
-     * @param {JWTGenerationOptions} [options={}] - Token generation options
-     * @returns {{token: string, exp: number}} Object containing the signed JWT token and expiration timestamp
-     * @private
-     */
-    _generateToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
-        const expiresAt = Math.floor(Date.now() / 1000) + expiresInMinutes * 60;
-        
-        /** @type {TinybirdJWTPayload} */
-        const payload = {
-            workspace_id: this.tinybirdConfig.workspaceId,
-            name,
-            exp: expiresAt,
-            scopes: TINYBIRD_PIPES.map((pipe) => {
-                return {
-                    type: 'PIPES:READ',
-                    resource: pipe,
-                    fixed_params: {
-                        site_uuid: this.siteUuid
-                    }
-                };
-            })
-        };
+  /**
+   * Generates a Tinybird JWT token with specified options
+   * @param {JWTGenerationOptions} [options={}] - Token generation options
+   * @returns {{token: string, exp: number}} Object containing the signed JWT token and expiration timestamp
+   * @private
+   */
+  _generateToken({ name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60 } = {}) {
+    const expiresAt = Math.floor(Date.now() / 1000) + expiresInMinutes * 60;
 
-        const token = jwt.sign(payload, this.tinybirdConfig.adminToken, {noTimestamp: true});
-        
+    /** @type {TinybirdJWTPayload} */
+    const payload = {
+      workspace_id: this.tinybirdConfig.workspaceId,
+      name,
+      exp: expiresAt,
+      scopes: TINYBIRD_PIPES.map((pipe) => {
         return {
-            token,
-            exp: expiresAt
+          type: 'PIPES:READ',
+          resource: pipe,
+          fixed_params: {
+            site_uuid: this.siteUuid,
+          },
         };
-    }
+      }),
+    };
 
-    /**
-     * Checks if a JWT token is expired or will expire within the buffer time
-     * @param {string|null} token - The JWT token to check
-     * @param {number} [bufferSeconds=300] - Buffer time in seconds before expiration
-     * @returns {boolean} True if token is expired or will expire soon, false otherwise
-     * @private
-     */
-    _isJWTExpired(token, bufferSeconds = 300) {
-        try {
-            const decoded = jwt.verify(token, this.tinybirdConfig.adminToken);
-            if (typeof decoded !== 'object' || !decoded.exp) {
-                return true;
-            }
-            const now = Math.floor(Date.now() / 1000);
-            const timeRemaining = decoded.exp - now;
-            return timeRemaining < bufferSeconds;
-        } catch (error) {
-            return true;
-        }
+    const token = jwt.sign(payload, this.tinybirdConfig.adminToken, { noTimestamp: true });
+
+    return {
+      token,
+      exp: expiresAt,
+    };
+  }
+
+  /**
+   * Checks if a JWT token is expired or will expire within the buffer time
+   * @param {string|null} token - The JWT token to check
+   * @param {number} [bufferSeconds=300] - Buffer time in seconds before expiration
+   * @returns {boolean} True if token is expired or will expire soon, false otherwise
+   * @private
+   */
+  _isJWTExpired(token, bufferSeconds = 300) {
+    try {
+      const decoded = jwt.verify(token, this.tinybirdConfig.adminToken);
+      if (typeof decoded !== 'object' || !decoded.exp) {
+        return true;
+      }
+      const now = Math.floor(Date.now() / 1000);
+      const timeRemaining = decoded.exp - now;
+      return timeRemaining < bufferSeconds;
+    } catch (error) {
+      return true;
     }
+  }
 }
 
 module.exports = TinybirdService;

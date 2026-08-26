@@ -1,7 +1,7 @@
 # Ghost Traffic Analytics Data Model Explainer
 
-This document explains the comprehensive data architecture behind Ghost's traffic analytics features, 
-covering both the MySQL database schema and Tinybird event streams, their relationships, and how they work together 
+This document explains the comprehensive data architecture behind Ghost's traffic analytics features,
+covering both the MySQL database schema and Tinybird event streams, their relationships, and how they work together
 to provide real-time analytics.
 
 ## Table of Contents
@@ -13,7 +13,8 @@ to provide real-time analytics.
 5. [Mock Data Considerations](#mock-data-considerations)
 
 ## Overview
- Ghost's traffic analytics system has two data sources: MySQL and Tinybird
+
+Ghost's traffic analytics system has two data sources: MySQL and Tinybird
 
 # Ghost Analytics Architecture
 
@@ -30,6 +31,7 @@ graph TD
 - **Cross-system Integration**: UUID-based relationships between Ghost entities and Tinybird events
 
 The system tracks:
+
 - **Web Traffic**: Page views, sessions, referrers, device info (via Tinybird)
 - **Member Growth**: Signups, conversions, attribution to content (via MySQL)
 - **Newsletter Performance**: Sends, opens, clicks, revenue attribution (via MySQL + Tinybird)
@@ -40,9 +42,11 @@ The system tracks:
 ### Core Content Tables
 
 #### `posts`
+
 Primary content table storing all posts and pages.
 
 **Key fields for analytics:**
+
 - `id` (string, 24 chars) - Primary key, used in attribution events
 - `uuid` (string, 36 chars) - UUID for Tinybird correlation
 - `title` - Content title
@@ -53,9 +57,11 @@ Primary content table storing all posts and pages.
 - `newsletter_id` - Associated newsletter (if sent via email)
 
 #### `posts_meta`
+
 Extended metadata for posts.
 
 **Relevant fields:**
+
 - `post_id` - Foreign key to posts.id
 - `meta_title`, `meta_description` - SEO metadata
 - `email_subject` - Newsletter subject line
@@ -64,27 +70,33 @@ Extended metadata for posts.
 ### Member & Subscription Tables
 
 #### `members`
+
 Core member accounts.
 
 **Key fields:**
+
 - `id` (string, 24 chars) - Primary key
-- `uuid` (string, 36 chars) - UUID for Tinybird correlation  
+- `uuid` (string, 36 chars) - UUID for Tinybird correlation
 - `email` - Member email address
 - `status` - 'free', 'paid', 'comped', 'gift'
 - `created_at` - Signup timestamp
 
 #### `newsletters`
+
 Newsletters are series of emails. Sites can have multiple different newsletters, each with its own name & branding. Sites may have a "Daily newsletter" and a "Weekly roundup" newsletter, for example.
 
 **Key fields:**
+
 - `id` (string, 24 chars) - Primary key
 - `name` - Newsletter name
 - `status` - 'active', 'archived'
 
 #### `products` (tiers)
+
 Subscription tiers/products that members can sign up for with Stripe
 
 **Key fields:**
+
 - `id` (string, 24 chars) - Primary key
 - `name` - Tier name
 - `type` - 'free', 'paid'
@@ -93,9 +105,11 @@ Subscription tiers/products that members can sign up for with Stripe
 ### Attribution & Event Tables
 
 #### `members_created_events`
+
 Tracks member signups and their attribution.
 
 **Key fields:**
+
 - `id` - Primary key
 - `member_id` - Foreign key to members.id
 - `created_at` - Signup timestamp
@@ -108,9 +122,11 @@ Tracks member signups and their attribution.
 - `source` - 'member', 'import', 'system', 'api', 'admin'
 
 #### `members_subscription_created_events`
+
 Tracks paid subscription starts and their attribution.
 
 **Key fields:**
+
 - `id` - Primary key
 - `member_id` - Foreign key to members.id
 - `subscription_id` - Associated subscription
@@ -123,9 +139,11 @@ Tracks paid subscription starts and their attribution.
 - `referrer_url` - Full referrer URL
 
 #### `members_paid_subscription_events`
+
 Tracks MRR changes from subscription events.
 
 **Key fields:**
+
 - `member_id` - Foreign key to members.id
 - `subscription_id` - Associated subscription
 - `mrr_delta` - Monthly recurring revenue change
@@ -134,9 +152,11 @@ Tracks MRR changes from subscription events.
 ### Email & Newsletter Tables
 
 #### `emails`
+
 When a post is sent as an email, a row is added to this table
 
 **Key fields:**
+
 - `id` - Primary key
 - `post_id` - Associated post (unique)
 - `newsletter_id` - Associated newsletter
@@ -148,9 +168,11 @@ When a post is sent as an email, a row is added to this table
 - `submitted_at` - Send timestamp
 
 #### `email_recipients`
+
 A row for every member who received a particular email. Tracks which members received each email, and when it was delivered, opened, failed, etc.
 
 **Key fields:**
+
 - `email_id` - Foreign key to emails.id
 - `member_id` - Foreign key to members.id
 - `member_email` - Recipient email
@@ -159,18 +181,22 @@ A row for every member who received a particular email. Tracks which members rec
 - `failed_at` - Failure timestamp
 
 #### `redirects`
+
 All links in an email are replaced with tracking links to Ghost so we can track clicks in emails
 
 **Key fields:**
+
 - `id` - Primary key
 - `from` - Short redirect URL
 - `to` - Destination URL
 - `post_id` - Associated post (if applicable)
 
 #### `members_click_events`
+
 Email click tracking - each time a member clicks a link in an email
 
 **Key fields:**
+
 - `member_id` - Foreign key to members.id
 - `redirect_id` - Foreign key to redirects.id
 - `created_at` - Click timestamp
@@ -178,16 +204,20 @@ Email click tracking - each time a member clicks a link in an email
 ### Newsletter Subscription Tables
 
 #### `members_newsletters`
+
 Many-to-many relationship for newsletter subscriptions. Sites can have multiple newsletters, members can be subscribed to 0 or more newsletters
 
 **Key fields:**
+
 - `member_id` - Foreign key to members.id
 - `newsletter_id` - Foreign key to newsletters.id
 
 #### `members_subscribe_events`
+
 Newsletter subscription/unsubscription events. Members can choose to subscribe/unsubscribe to any of a site's newsletters at any time
 
 **Key fields:**
+
 - `member_id` - Foreign key to members.id
 - `newsletter_id` - Foreign key to newsletters.id
 - `subscribed` - true/false for subscribe/unsubscribe
@@ -209,6 +239,7 @@ Fields with specific data in the schema:
 ```
 
 **Payload Structure:**
+
 ```json
 {
   "site_uuid": "string",
@@ -265,6 +296,7 @@ Frontend → Tinybird analytics_events → _mv_hits materialized view
 ```
 
 **Key Relationships:**
+
 - `payload.site_uuid` identifies the Ghost site
 - `payload.post_uuid` correlates to `posts.uuid` in MySQL
 - `payload.member_uuid` correlates to `members.uuid` in MySQL
@@ -277,6 +309,7 @@ Member Conversion → members_subscription_created_events (with attribution_*)
 ```
 
 **Attribution Logic:**
+
 - `attribution_id` contains `posts.id` when attributed to specific content
 - `attribution_type` categorizes the attribution source
 - `attribution_url` stores the full URL that drove the action
@@ -292,12 +325,14 @@ Click Tracking → redirects → members_click_events
 ### 4. Cross-System Data Correlation
 
 **Post Performance Analysis:**
+
 1. Get page views from Tinybird using `posts.uuid`
 2. Get member attribution from MySQL using `posts.id`
 3. Get email performance from MySQL using `posts.id`
 4. Combine for comprehensive post analytics
 
 **Member Journey Tracking:**
+
 1. Tinybird tracks anonymous page views
 2. MySQL tracks member signup with attribution
 3. MySQL tracks paid conversion with attribution
@@ -310,7 +345,7 @@ GET /stats/member_count
 GET /stats/mrr
 GET /stats/subscriptions
 
-// Content performance  
+// Content performance
 GET /stats/top-posts          // Attribution-based rankings
 GET /stats/top-posts-views    // View-based rankings (Tinybird)
 GET /stats/top-content        // Combined content performance
@@ -338,13 +373,15 @@ POST /stats/posts-member-counts    // Bulk member attribution (MySQL)
 ### Request/Response Patterns
 
 Most endpoints support:
+
 - `date_from` / `date_to` - Date range filtering
-- `limit` - Result count limiting  
+- `limit` - Result count limiting
 - `order` - Sort field and direction
 - `newsletter_id` - Newsletter-specific filtering
-- `timezone` 
+- `timezone`
 
 Response format:
+
 ```json
 {
   "data": [...],
@@ -361,22 +398,26 @@ Response format:
 For realistic testing, mock data should maintain proper ratios:
 
 **Content:**
+
 - ~100-500 posts across 6-month period
 - ~10-20 pages (about, contact, etc.)
 - 1-3 newsletters
 
 **Members:**
+
 - ~1000-5000 total members
 - ~70% free, ~25% paid, ~5% comped
 - ~50-100 new signups per month
 - ~10-20% conversion rate from free to paid
 
 **Page Views (Tinybird):**
+
 - ~10-50 views per post (varies widely)
 - ~100-500 daily total page views
 - ~60% direct/type-in, ~25% search, ~10% social, ~5% other referrers
 
 **Email Performance:**
+
 - ~50-80% delivery rate
 - ~20-40% open rate
 - ~2-5% click rate
@@ -385,16 +426,19 @@ For realistic testing, mock data should maintain proper ratios:
 ### Key Constraints
 
 **UUID Relationships:**
+
 - `posts.uuid` must match Tinybird `post_uuid` values
 - `members.uuid` must match Tinybird `member_uuid` values
 - UUIDs should be valid v4 format
 
 **Attribution Data:**
+
 - `attribution_id` must reference valid `posts.id`
 - `attribution_url` should be realistic Ghost URLs
 - `referrer_source` should be realistic domains
 
 **Temporal Consistency:**
+
 - Member created events before subscription events
 - Posts published before attribution events
 - Email sends after post publication
@@ -403,11 +447,13 @@ For realistic testing, mock data should maintain proper ratios:
 ### Performance Considerations
 
 **Indexes:**
+
 - Date-based queries need temporal indexing
 - Attribution queries need member_id + attribution_id indexes
 - Cross-table joins need proper foreign key indexes
 
 **Query Patterns:**
+
 - Most analytics queries filter by date ranges
 - Post-specific queries join on post IDs/UUIDs
 - Member attribution queries are complex with multiple CTEs

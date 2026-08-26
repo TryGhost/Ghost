@@ -11,7 +11,7 @@
 // and friends, which are not) and maps each to its defaults.json key. The URLs
 // to purge come from defaults.json itself — see cdnPathsFor.
 
-import {PUBLIC_APPS, readDefaults} from './lib/public-apps.js';
+import { PUBLIC_APPS, readDefaults } from './lib/public-apps.js';
 
 const DEFAULTS = await readDefaults();
 
@@ -33,9 +33,9 @@ const VERSION_PLACEHOLDER = '{version}';
  * @returns {string[]}
  */
 export function cdnPathsFor(configEntry) {
-    return Object.values(configEntry)
-        .filter(value => typeof value === 'string' && value.startsWith('https://'))
-        .map(url => url.replaceAll(VERSION_PLACEHOLDER, 'CURRENT_MINOR'));
+  return Object.values(configEntry)
+    .filter((value) => typeof value === 'string' && value.startsWith('https://'))
+    .map((url) => url.replaceAll(VERSION_PLACEHOLDER, 'CURRENT_MINOR'));
 }
 
 /**
@@ -45,54 +45,56 @@ export function cdnPathsFor(configEntry) {
  *   publish job's purge step expects.
  */
 export function buildMatrix(affectedProjects) {
-    const affected = new Set(affectedProjects);
-    return PUBLIC_APPS
-        .filter(app => affected.has(app.packageName))
-        .map((app) => {
-            const configEntry = DEFAULTS[app.configKey];
+  const affected = new Set(affectedProjects);
+  return PUBLIC_APPS.filter((app) => affected.has(app.packageName)).map((app) => {
+    const configEntry = DEFAULTS[app.configKey];
 
-            // Both of these would otherwise degrade into an empty purge list,
-            // which reads as success and leaves jsDelivr serving the old bundle.
-            if (!configEntry) {
-                throw new Error(`public-apps.json maps ${app.packageName} to configKey "${app.configKey}", which defaults.json does not define`);
-            }
+    // Both of these would otherwise degrade into an empty purge list,
+    // which reads as success and leaves jsDelivr serving the old bundle.
+    if (!configEntry) {
+      throw new Error(
+        `public-apps.json maps ${app.packageName} to configKey "${app.configKey}", which defaults.json does not define`,
+      );
+    }
 
-            const cdnPaths = cdnPathsFor(configEntry);
-            if (!cdnPaths.length) {
-                throw new Error(`defaults.json entry "${app.configKey}" (${app.packageName}) has no CDN URLs to purge`);
-            }
+    const cdnPaths = cdnPathsFor(configEntry);
+    if (!cdnPaths.length) {
+      throw new Error(
+        `defaults.json entry "${app.configKey}" (${app.packageName}) has no CDN URLs to purge`,
+      );
+    }
 
-            return {
-                package_name: app.packageName,
-                package_path: app.path,
-                cdn_paths: cdnPaths.join('\n')
-            };
-        });
+    return {
+      package_name: app.packageName,
+      package_path: app.path,
+      cdn_paths: cdnPaths.join('\n'),
+    };
+  });
 }
 
 function main() {
-    const raw = process.argv[2] || '[]';
+  const raw = process.argv[2] || '[]';
 
-    let affectedProjects;
-    try {
-        affectedProjects = JSON.parse(raw);
-    } catch (error) {
-        throw new Error(`Invalid affected-projects JSON: ${error.message}`);
-    }
+  let affectedProjects;
+  try {
+    affectedProjects = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`Invalid affected-projects JSON: ${error.message}`);
+  }
 
-    if (!Array.isArray(affectedProjects)) {
-        throw new Error('affected-projects argument must be a JSON array');
-    }
+  if (!Array.isArray(affectedProjects)) {
+    throw new Error('affected-projects argument must be a JSON array');
+  }
 
-    // Stdout is the contract — the workflow captures this into a job output.
-    process.stdout.write(JSON.stringify(buildMatrix(affectedProjects)));
+  // Stdout is the contract — the workflow captures this into a job output.
+  process.stdout.write(JSON.stringify(buildMatrix(affectedProjects)));
 }
 
 if (import.meta.main) {
-    try {
-        main();
-    } catch (error) {
-        console.error(error.message);
-        process.exit(1);
-    }
+  try {
+    main();
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
 }

@@ -1,10 +1,9 @@
 const ghostBookshelf = require('./base');
 
 const OfferRedemption = ghostBookshelf.Model.extend({
-    tableName: 'offer_redemptions'
+  tableName: 'offer_redemptions',
 });
 
 module.exports = {
-    OfferRedemption: ghostBookshelf.model('OfferRedemption', OfferRedemption)
+  OfferRedemption: ghostBookshelf.model('OfferRedemption', OfferRedemption),
 };
-

@@ -4,83 +4,83 @@
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
 
 module.exports = {
-    get automation_email_previews() {
-        return require('./automation_email_previews');
-    },
+  get automation_email_previews() {
+    return require('./automation_email_previews');
+  },
 
-    get automated_emails() {
-        return require('./automated_emails');
-    },
+  get automated_emails() {
+    return require('./automated_emails');
+  },
 
-    get password_reset() {
-        return require('./password_reset');
-    },
+  get password_reset() {
+    return require('./password_reset');
+  },
 
-    get setup() {
-        return require('./setup');
-    },
+  get setup() {
+    return require('./setup');
+  },
 
-    get posts() {
-        return require('./posts');
-    },
+  get posts() {
+    return require('./posts');
+  },
 
-    get pages() {
-        return require('./pages');
-    },
+  get pages() {
+    return require('./pages');
+  },
 
-    get invites() {
-        return require('./invites');
-    },
+  get invites() {
+    return require('./invites');
+  },
 
-    get invitations() {
-        return require('./invitations');
-    },
+  get invitations() {
+    return require('./invitations');
+  },
 
-    get members() {
-        return require('./members');
-    },
+  get members() {
+    return require('./members');
+  },
 
-    get tiers() {
-        return require('./tiers');
-    },
+  get tiers() {
+    return require('./tiers');
+  },
 
-    get media() {
-        return require('./media');
-    },
+  get media() {
+    return require('./media');
+  },
 
-    get files() {
-        return require('./files');
-    },
+  get files() {
+    return require('./files');
+  },
 
-    get settings() {
-        return require('./settings');
-    },
+  get settings() {
+    return require('./settings');
+  },
 
-    get tags() {
-        return require('./tags');
-    },
+  get tags() {
+    return require('./tags');
+  },
 
-    get labels() {
-        return require('./labels');
-    },
+  get labels() {
+    return require('./labels');
+  },
 
-    get users() {
-        return require('./users');
-    },
+  get users() {
+    return require('./users');
+  },
 
-    get images() {
-        return require('./images');
-    },
+  get images() {
+    return require('./images');
+  },
 
-    get oembed() {
-        return require('./oembed');
-    },
+  get oembed() {
+    return require('./oembed');
+  },
 
-    get webhooks() {
-        return require('./webhooks');
-    },
+  get webhooks() {
+    return require('./webhooks');
+  },
 
-    get snippets() {
-        return require('./snippets');
-    }
+  get snippets() {
+    return require('./snippets');
+  },
 };

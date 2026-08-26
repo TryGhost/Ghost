@@ -3,16 +3,16 @@ const events = require('../../lib/common/events');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'slack',
-    sendTest: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: false,
-        query() {
-            events.emit('slack.test');
-        }
-    }
+  docName: 'slack',
+  sendTest: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: false,
+    query() {
+      events.emit('slack.test');
+    },
+  },
 };
 
 module.exports = controller;

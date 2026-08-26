@@ -6,49 +6,51 @@ const middleware = require('./lib/middleware');
 const router = require('./lib/router');
 
 const messages = {
-    urlCannotContainPrivateSubdir: {
-        error: 'private subdirectory not allowed',
-        description: 'Your site url in config.js cannot contain a subdirectory called private.',
-        help: 'Please rename the subdirectory before restarting'
-    }
+  urlCannotContainPrivateSubdir: {
+    error: 'private subdirectory not allowed',
+    description: 'Your site url in config.js cannot contain a subdirectory called private.',
+    help: 'Please rename the subdirectory before restarting',
+  },
 };
 
 // routeKeywords.private: 'private'
 const PRIVATE_KEYWORD = 'private';
 
 let checkSubdir = function checkSubdir() {
-    if (urlUtils.getSubdir()) {
-        const paths = urlUtils.getSubdir().split('/');
+  if (urlUtils.getSubdir()) {
+    const paths = urlUtils.getSubdir().split('/');
 
-        if (paths.pop() === PRIVATE_KEYWORD) {
-            logging.error(new errors.InternalServerError({
-                message: tpl(messages.urlCannotContainPrivateSubdir.error),
-                context: tpl(messages.urlCannotContainPrivateSubdir.description),
-                help: tpl(messages.urlCannotContainPrivateSubdir.help)
-            }));
+    if (paths.pop() === PRIVATE_KEYWORD) {
+      logging.error(
+        new errors.InternalServerError({
+          message: tpl(messages.urlCannotContainPrivateSubdir.error),
+          context: tpl(messages.urlCannotContainPrivateSubdir.description),
+          help: tpl(messages.urlCannotContainPrivateSubdir.help),
+        }),
+      );
 
-            // @TODO: why
-            process.exit(0);
-        }
+      // @TODO: why
+      process.exit(0);
     }
+  }
 };
 
 module.exports = {
-    activate: function activate(ghost) {
-        let privateRoute = `/${PRIVATE_KEYWORD}/`;
+  activate: function activate(ghost) {
+    let privateRoute = `/${PRIVATE_KEYWORD}/`;
 
-        checkSubdir();
+    checkSubdir();
 
-        ghost.routeService.registerRouter(privateRoute, router);
-        ghost.helperService.registerHelper('input_password', require('./lib/helpers/input_password'));
-    },
+    ghost.routeService.registerRouter(privateRoute, router);
+    ghost.helperService.registerHelper('input_password', require('./lib/helpers/input_password'));
+  },
 
-    setupMiddleware: function setupMiddleware(siteApp) {
-        siteApp.use(middleware.checkIsPrivate);
-        siteApp.use(middleware.filterPrivateRoutes);
-    },
+  setupMiddleware: function setupMiddleware(siteApp) {
+    siteApp.use(middleware.checkIsPrivate);
+    siteApp.use(middleware.filterPrivateRoutes);
+  },
 
-    setupErrorHandling: function setupErrorHandling(siteApp) {
-        siteApp.use(middleware.handle404);
-    }
+  setupErrorHandling: function setupErrorHandling(siteApp) {
+    siteApp.use(middleware.handle404);
+  },
 };

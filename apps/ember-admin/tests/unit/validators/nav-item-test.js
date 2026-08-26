@@ -29,7 +29,7 @@ const testValidUrl = function (url) {
 };
 
 describe('Unit: Validator: nav-item', function () {
-    it('requires label presence', function () {
+    it('requires label or icon presence', function () {
         let navItem = NavItem.create();
 
         validator.check(navItem, 'label');
@@ -37,8 +37,18 @@ describe('Unit: Validator: nav-item', function () {
         expect(validator.get('passed')).to.be.false;
         expect(navItem.get('errors').errorsFor('label').toArray()).to.deep.equal([{
             attribute: 'label',
-            message: 'You must specify a label'
+            message: 'You must specify a label or icon'
         }]);
+        expect(navItem.get('hasValidated')).to.include('label');
+    });
+
+    it('allows blank label when icon is present', function () {
+        let navItem = NavItem.create({icon: 'https://example.com/icon.svg'});
+
+        validator.check(navItem, 'label');
+
+        expect(validator.get('passed')).to.be.true;
+        expect(navItem.get('errors').errorsFor('label')).to.be.empty;
         expect(navItem.get('hasValidated')).to.include('label');
     });
 
@@ -79,7 +89,7 @@ describe('Unit: Validator: nav-item', function () {
             'http://localhost:2368/?query=test&another=example#test',
             'tel:01234-567890',
             'mailto:test@example.com',
-            'http://some:user@example.com:1234',
+            'http://example.com:1234',
             '/relative/path'
         ];
 
@@ -96,5 +106,15 @@ describe('Unit: Validator: nav-item', function () {
         expect(navItem.get('errors').errorsFor('label')).to.not.be.empty;
         expect(navItem.get('errors').errorsFor('url')).to.not.be.empty;
         expect(validator.get('passed')).to.be.false;
+    });
+
+    it('validates url and icon-only item by default', function () {
+        let navItem = NavItem.create({icon: 'https://example.com/icon.svg', url: '/icon-only/'});
+
+        validator.check(navItem);
+
+        expect(navItem.get('errors').errorsFor('label')).to.be.empty;
+        expect(navItem.get('errors').errorsFor('url')).to.be.empty;
+        expect(validator.get('passed')).to.be.true;
     });
 });

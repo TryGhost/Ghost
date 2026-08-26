@@ -2,48 +2,44 @@ const gift = require('../../services/gifts');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 module.exports = {
-    docName: 'gifts',
+  docName: 'gifts',
 
-    getRedeemable: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'token'
-        ],
-        validation: {
-            data: {
-                token: {
-                    type: 'string',
-                    required: true
-                }
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return gift.controller.getRedeemable(frame);
-        }
+  getRedeemable: {
+    headers: {
+      cacheInvalidate: false,
     },
+    data: ['token'],
+    validation: {
+      data: {
+        token: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    permissions: false,
+    query(frame) {
+      return gift.controller.getRedeemable(frame);
+    },
+  },
 
-    redeem: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
+  redeem: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
+    },
+    data: ['token'],
+    validation: {
+      data: {
+        token: {
+          type: 'string',
+          required: true,
         },
-        data: [
-            'token'
-        ],
-        validation: {
-            data: {
-                token: {
-                    type: 'string',
-                    required: true
-                }
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return gift.controller.redeem(frame);
-        }
-    }
+      },
+    },
+    permissions: false,
+    query(frame) {
+      return gift.controller.redeem(frame);
+    },
+  },
 };

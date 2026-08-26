@@ -1,8 +1,8 @@
-const {addSetting} = require('../../utils');
+const { addSetting } = require('../../utils');
 
 module.exports = addSetting({
-    key: 'body_font',
-    value: '',
-    type: 'string',
-    group: 'site'
+  key: 'body_font',
+  value: '',
+  type: 'string',
+  group: 'site',
 });

@@ -31,7 +31,7 @@ env:
   # runner was Nx's default before the native one existed; parallelism is
   # unaffected and output/colour is preserved (FORCE_COLOR is set above), so
   # there's no meaningful cost in CI.
-  NX_NATIVE_COMMAND_RUNNER: "false"
+  NX_NATIVE_COMMAND_RUNNER: 'false'
 
 concurrency:
   # Tag pushes get a unique uninterruptible group so a release CI run always
@@ -429,6 +429,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Check formatting
+        run: pnpm format:check
+
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -714,7 +717,7 @@ jobs:
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
-          timezoneLinux: "America/New_York"
+          timezoneLinux: 'America/New_York'
 
       - name: Run unit tests
         # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
@@ -836,7 +839,7 @@ jobs:
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
-          timezoneLinux: "America/New_York"
+          timezoneLinux: 'America/New_York'
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -1031,39 +1034,59 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      # The Koenig editor suite is the only one that needs apt packages on top
-      # of the runner image (setup-playwright deliberately avoids apt-get, see
-      # its README note about hangs — scoping this to one matrix leg contains
-      # that risk):
-      #  - MS core fonts: caret-position assertions depend on where text wraps,
-      #    which depends on Arial's font metrics
-      #  - playwright firefox deps: system media codecs so firefox can decode
-      #    the H.264 fixtures in the video card tests
-      # msttcorefonts downloads the font files from SourceForge at install time;
-      # mirror-redirect roulette there can hang indefinitely. timeout-minutes is
-      # the backstop, and each network op is bounded + retried so a stuck fetch
-      # fails fast and re-rolls onto a different mirror instead of sitting.
-      - name: Install Koenig editor test dependencies (fonts + media codecs)
+      # Cache the msttcorefonts .ttf files so only a cache miss hits the
+      # SourceForge download that regularly hangs the koenig-lexical job. Save
+      # is a separate step right after the fonts are in place, so a later codec
+      # or test failure on a cache-miss run still populates the cache.
+      - name: Restore MS core fonts cache
+        if: matrix.app == '@tryghost/koenig-lexical'
+        id: mscorefonts-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/msttcorefonts
+          key: msttcorefonts-ttf-v1
+      - name: Install Koenig editor test fonts
         if: matrix.app == '@tryghost/koenig-lexical'
         timeout-minutes: 10
         env:
           DEBIAN_FRONTEND: noninteractive
-          DEBCONF_NONINTERACTIVE_SEEN: "true"
+          DEBCONF_NONINTERACTIVE_SEEN: 'true'
         run: |
-          sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
-          sudo apt-get update -yq -o Acquire::Retries=3 -o Acquire::http::Timeout=30
-          installed=
-          for i in 1 2 3; do
-            if sudo timeout -k 5 120 apt-get install -yq \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 msttcorefonts; then
-              installed=1; break
+          FONT_CACHE="$HOME/.cache/msttcorefonts"
+          FONT_DIR=/usr/share/fonts/truetype/msttcorefonts
+          sudo mkdir -p "$FONT_DIR"
+          if ls "$FONT_CACHE"/*.ttf >/dev/null 2>&1; then
+            echo "Restoring MS core fonts from cache"
+            sudo cp "$FONT_CACHE"/*.ttf "$FONT_DIR"/
+          else
+            echo "Cache miss — installing msttcorefonts from apt"
+            sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
+            sudo apt-get update -yq -o Acquire::Retries=3 -o Acquire::http::Timeout=30
+            installed=
+            for i in 1 2 3; do
+              if sudo timeout -k 5 120 apt-get install -yq \
+                   -o Acquire::Retries=3 -o Acquire::http::Timeout=30 msttcorefonts; then
+                installed=1; break
+              fi
+              echo "msttcorefonts attempt $i failed/stuck, retrying..."; sleep 5
+            done
+            if [ -z "$installed" ]; then
+              echo "msttcorefonts failed after 3 attempts"; exit 1
             fi
-            echo "msttcorefonts attempt $i failed/stuck, retrying..."; sleep 5
-          done
-          if [ -z "$installed" ]; then
-            echo "msttcorefonts failed after 3 attempts"; exit 1
+            mkdir -p "$FONT_CACHE"
+            cp "$FONT_DIR"/*.ttf "$FONT_CACHE"/
           fi
-          pnpm exec playwright install-deps firefox
+          sudo fc-cache -f
+      - name: Save MS core fonts cache
+        if: matrix.app == '@tryghost/koenig-lexical' && steps.mscorefonts-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/msttcorefonts
+          key: msttcorefonts-ttf-v1
+      - name: Install Koenig editor test media codecs
+        if: matrix.app == '@tryghost/koenig-lexical'
+        timeout-minutes: 10
+        run: pnpm exec playwright install-deps firefox
 
       - name: Run Playwright tests
         run: pnpm nx run ${{ matrix.app }}:test:acceptance
@@ -1094,6 +1117,18 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
+      # Vitest Browser Mode apps (e.g. apps/admin) save failure screenshots
+      # into __screenshots__/ directories next to the specs, not a
+      # playwright-report; upload them so failures are debuggable from CI.
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ${{ steps.app_name.outputs.name }}-failure-screenshots
+          path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
+          if-no-files-found: ignore
+          retention-days: 30
+
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -1117,12 +1152,14 @@ jobs:
         run: npm install -g ghost-cli@latest
 
       # Test against the same tarball that npm-publish ships, not a parallel rebuild.
+      # Ghost-CLI still requires the package/ prefix; switch this to
+      # ghost-release-tarball once it accepts a prefix-free archive too.
       - name: Download npm tarball
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ghost-npm-tarball
 
-      - run: mv ghost-*.tgz ghost.tgz
+      - run: mv ghost-*-npm.tgz ghost.tgz
 
       - name: Verify packaged package.json
         run: tar -xOf ghost.tgz package/package.json | jq -e '.packageManager' >/dev/null
@@ -1166,6 +1203,37 @@ jobs:
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_stripe_fixtures:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
+    name: Stripe fixture checks
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Asserts the fake Stripe server against responses captured from Stripe, and
+      # that it refuses the requests Stripe refuses. Needs no Ghost, no Docker and
+      # no browser, so it does not belong in the e2e matrix that waits on the image.
+      - name: Check Stripe fixtures
+        run: pnpm --filter @tryghost/e2e test:fixtures
+
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1322,11 +1390,24 @@ jobs:
         # dependsOn would rebuild admin/tsc/assets we already have).
         run: pnpm --filter ghost run archive
 
+      # pack.mjs emits the same tree in two layouts. The prefix-free tarball is
+      # the release asset; the -npm one carries the package/ prefix npm and
+      # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
+      - name: Upload release tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ghost-release-tarball
+          path: |
+            ghost/core/ghost-*.tgz
+            !ghost/core/ghost-*-npm.tgz
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Upload npm tarball
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ghost-npm-tarball
-          path: ghost/core/ghost-*.tgz
+          path: ghost/core/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
@@ -1753,6 +1834,151 @@ jobs:
           path: docker-image-e2e.tar.gz
           retention-days: 1
 
+      # `Inspect image size and layers` above only runs on the artifact path, where
+      # the image is loaded into the local daemon. On the push path nothing is
+      # loaded, so size comes from the registry manifest instead — and is compared
+      # against the image CI built for the base commit, which is what makes a
+      # dependency's cost visible on the PR that adds it.
+      #
+      # Last in the job on purpose: these steps are informational, and job_docker
+      # gates the e2e lane and the release lane. They never delay the e2e image, and
+      # on tag runs they never strand a half-published release.
+      - name: Report image size
+        if: steps.strategy.outputs.should-push == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        env:
+          CORE_IMAGE: ${{ steps.strategy.outputs.image-core-name }}
+          FULL_IMAGE: ${{ steps.strategy.outputs.image-full-name }}
+          CORE_TAGS: ${{ steps.meta-core.outputs.tags }}
+          FULL_TAGS: ${{ steps.meta-full.outputs.tags }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -uo pipefail
+
+          # Sum of compressed layer sizes — what a pull actually costs. buildx
+          # attaches a provenance manifest, so a tag resolves to an index: pick the
+          # real platform manifest out of it before summing.
+          layer_bytes() { # <image> <tag>
+            local image="$1" raw digest
+            raw=$(docker buildx imagetools inspect "${image}:$2" --raw 2>/dev/null) || return 1
+            if jq -e 'has("manifests")' <<< "$raw" > /dev/null 2>&1; then
+              digest=$(jq -r 'first(.manifests[] | select((.platform.architecture // "unknown") != "unknown") | .digest) // empty' <<< "$raw")
+              [ -n "$digest" ] || return 1
+              raw=$(docker buildx imagetools inspect "${image}@${digest}" --raw 2>/dev/null) || return 1
+            fi
+            jq -e '[.layers[].size] | add' <<< "$raw" 2>/dev/null
+          }
+
+          mib() { awk -v b="$1" 'BEGIN {printf "%.1f MiB", b / 1048576}'; }
+          delta() { awk -v b="$1" 'BEGIN {printf "%s%.1f MiB", (b < 0 ? "-" : "+"), (b < 0 ? -b : b) / 1048576}'; }
+
+          # Every main build tags `sha-<short>` (metadata-action type=sha), so the
+          # PR base commit / previous main commit is an exact like-for-like baseline.
+          # The zero SHA is what a branch's first push reports as `before`.
+          BASE_TAG=""
+          case "$BASE_SHA" in
+            ""|0000000*) ;;
+            *) BASE_TAG="sha-${BASE_SHA:0:7}" ;;
+          esac
+
+          {
+            echo "## Docker image size"
+            echo ""
+            echo "Compressed layer totals from the registry manifest."
+            echo ""
+            echo "| Image | This build | \`${BASE_TAG:-no baseline}\` | Delta |"
+            echo "|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          report() { # <label> <image> <tag-list>
+            local label="$1" image="$2" tag size base
+            tag=$(head -n1 <<< "$3")
+            tag="${tag##*:}"
+
+            if ! size=$(layer_bytes "$image" "$tag"); then
+              echo "| $label | inspect failed | | |" >> "$GITHUB_STEP_SUMMARY"
+              return
+            fi
+
+            if [ -n "$BASE_TAG" ] && base=$(layer_bytes "$image" "$BASE_TAG"); then
+              echo "| $label | $(mib "$size") | $(mib "$base") | **$(delta $((size - base)))** |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| $label | $(mib "$size") | not built | - |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          }
+
+          report core "$CORE_IMAGE" "$CORE_TAGS"
+          report full "$FULL_IMAGE" "$FULL_TAGS"
+
+      # Image bytes are gzipped, which flattens exactly the regression this is meant
+      # to catch: a peer-forked duplicate of a large dependency reads as a couple of
+      # megabytes. The report stage carries per-package sizes and file counts of the
+      # pruned production node_modules, so the diff below names the dependency.
+      #
+      # Every layer under `report` is already cached from the core build, so this is
+      # an export rather than a rebuild. The output goes to RUNNER_TEMP for the same
+      # reason the other artifacts do: a stray file in the repo root would change the
+      # `.` context and bust the deploy-stage COPY cache.
+      - name: Build dependency size report
+        if: steps.strategy.outputs.should-push == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: Dockerfile.production
+          target: report
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+          outputs: type=local,dest=${{ runner.temp }}/image-report
+          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
+
+      - name: Upload dependency size report
+        if: steps.strategy.outputs.should-push == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: image-report
+          path: ${{ runner.temp }}/image-report/image-report.json
+          if-no-files-found: error
+
+      # This job deliberately has no pnpm setup (the build is in-container), but the
+      # comparison is a plain node script with no dependencies — node alone is enough.
+      - name: Set up Node.js
+        if: steps.strategy.outputs.should-push == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Compare dependency sizes against base commit
+        if: steps.strategy.outputs.should-push == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -uo pipefail
+
+          # The base commit's own CI run uploaded this artifact. Missing is normal —
+          # the run may have expired, been skipped, or predate this step — and the
+          # script renders totals without a baseline in that case.
+          ARGS=(
+            "--current=${RUNNER_TEMP}/image-report/image-report.json"
+            "--baseline-label=${BASE_SHA:0:7}"
+          )
+
+          RUN_ID=$(gh run list --commit "$BASE_SHA" --workflow ci.yml --limit 1 \
+            --json databaseId --jq '.[0].databaseId' 2>/dev/null) || RUN_ID=""
+
+          if [ -n "$RUN_ID" ] && gh run download "$RUN_ID" --name image-report \
+            --dir "${RUNNER_TEMP}/baseline-report" 2>/dev/null; then
+            ARGS+=("--baseline=${RUNNER_TEMP}/baseline-report/image-report.json")
+          fi
+
+          node scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
+
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
       image-core-tags: ${{ steps.meta-core.outputs.tags }}
@@ -2070,12 +2296,7 @@ jobs:
 
   job_coverage:
     name: Coverage
-    needs: [
-      job_setup,
-      job_admin-tests,
-      job_acceptance-tests,
-      job_unit-tests
-    ]
+    needs: [job_setup, job_admin-tests, job_acceptance-tests, job_unit-tests]
     if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -2129,6 +2350,7 @@ jobs:
         job_lint,
         job_lint_docs,
         job_lint_packages,
+        job_stripe_fixtures,
         job_i18n,
         job_build_admin,
         job_pack,
@@ -2141,7 +2363,7 @@ jobs:
         job_apps_acceptance-tests,
         job_build_e2e_public_apps,
         job_e2e_tests,
-        publish_public_apps
+        publish_public_apps,
       ]
     if: always()
     runs-on: ubuntu-slim
@@ -2158,12 +2380,7 @@ jobs:
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
   publish_public_apps:
-    needs: [
-      job_setup,
-      job_lint,
-      job_unit-tests,
-      job_build_e2e_public_apps
-    ]
+    needs: [job_setup, job_lint, job_unit-tests, job_build_e2e_public_apps]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     # Serialize per-app publishes so two quick main merges can't both compute the
@@ -2336,14 +2553,14 @@ jobs:
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
+        run: tar -xOf ghost-*-npm.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       # --provenance is explicit so a publish without an attestation fails the
       # job instead of warning. Safe with no repo checkout: the SLSA statement
       # is built from the GITHUB_* env vars plus the tarball digest, and the
       # subject comes from the packed manifest — nothing reads a working tree.
       - name: Publish to npm
-        run: npm publish ghost-*.tgz --access public --provenance
+        run: npm publish ghost-*-npm.tgz --access public --provenance
 
   # NOTE: Publishing the other workspace packages (koenig/*, packages/*, ...) is
   # NOT a job here. The release tag triggers publish-packages.yml directly, in
@@ -2410,12 +2627,22 @@ jobs:
           fi
           cat /tmp/release-notes.md
 
+      # Attach the prefix-free tarball so the release is installable without an
+      # npm client. Same build tree as the npm package, just without the
+      # package/ wrapper dir.
+      - name: Download release tarball
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ghost-release-tarball
+          path: release-assets
+
       - name: Create GitHub Release
         id: create_release
         run: |
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
-            --notes-file /tmp/release-notes.md
+            --notes-file /tmp/release-notes.md \
+            release-assets/ghost-*.tgz
 
       # Gate on create_release, not notes, so a failed release can't announce success
       - name: Notify Slack
@@ -2444,10 +2671,19 @@ jobs:
   # --------------------------------------------------------------------------- #
   notify_release_failure:
     name: Notify release failure
-    needs: [job_setup, job_build_admin, job_pack, job_docker, job_ghost-cli, publish_ghost, create_github_release]
+    needs:
+      [
+        job_setup,
+        job_build_admin,
+        job_pack,
+        job_docker,
+        job_ghost-cli,
+        publish_ghost,
+        create_github_release,
+      ]
     if: failure() && startsWith(github.ref, 'refs/tags/v') && github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-slim
-    permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
+    permissions: {} # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
     steps:
       - name: Notify Slack
         env:

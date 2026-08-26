@@ -5,46 +5,50 @@
 // Outputs cancel/renew links to manage subscription renewal after the subscription period ends.
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Resume subscription"
-const {labs} = require('../services/proxy');
-const {templates} = require('../services/handlebars');
+const { labs } = require('../services/proxy');
+const { templates } = require('../services/handlebars');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    invalidData: 'The {{cancel_link}} helper was used outside of a subscription context. See https://ghost.org/docs/themes/members/#cancel-links.'
+  invalidData:
+    'The {{cancel_link}} helper was used outside of a subscription context. See https://ghost.org/docs/themes/members/#cancel-links.',
 };
 
 // eslint-disable-next-line camelcase
 function cancel_link(options) {
-    let truncateOptions = (options || {}).hash || {};
+  let truncateOptions = (options || {}).hash || {};
 
-    if (this.id === undefined || this.cancel_at_period_end === undefined) {
-        throw new errors.IncorrectUsageError({message: tpl(messages.invalidData)});
-    }
+  if (this.id === undefined || this.cancel_at_period_end === undefined) {
+    throw new errors.IncorrectUsageError({ message: tpl(messages.invalidData) });
+  }
 
-    const data = {
-        id: this.id,
-        cancel_at_period_end: this.cancel_at_period_end,
-        class: truncateOptions.class || 'gh-subscription-cancel',
-        errorClass: truncateOptions.errorClass || 'gh-error gh-error-subscription-cancel',
-        cancelLabel: truncateOptions.cancelLabel || 'Cancel subscription',
-        continueLabel: truncateOptions.continueLabel || 'Resume subscription'
-    };
+  const data = {
+    id: this.id,
+    cancel_at_period_end: this.cancel_at_period_end,
+    class: truncateOptions.class || 'gh-subscription-cancel',
+    errorClass: truncateOptions.errorClass || 'gh-error gh-error-subscription-cancel',
+    cancelLabel: truncateOptions.cancelLabel || 'Cancel subscription',
+    continueLabel: truncateOptions.continueLabel || 'Resume subscription',
+  };
 
-    return templates.execute('cancel_link', data);
+  return templates.execute('cancel_link', data);
 }
 
 module.exports = function cancelLabsWrapper() {
-    let self = this;
-    let args = arguments;
+  let self = this;
+  let args = arguments;
 
-    return labs.enabledHelper({
-        flagKey: 'members',
-        flagName: 'Members',
-        helperName: 'cancel_link',
-        helpUrl: 'https://ghost.org/docs/themes/members/'
-    }, () => {
-        return cancel_link.apply(self, args); // eslint-disable-line camelcase
-    });
+  return labs.enabledHelper(
+    {
+      flagKey: 'members',
+      flagName: 'Members',
+      helperName: 'cancel_link',
+      helpUrl: 'https://ghost.org/docs/themes/members/',
+    },
+    () => {
+      return cancel_link.apply(self, args); // eslint-disable-line camelcase
+    },
+  );
 };

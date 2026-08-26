@@ -1,3 +1,3 @@
-const {createAddIndexMigration} = require('../../utils');
+const { createAddIndexMigration } = require('../../utils');
 
 module.exports = createAddIndexMigration('members', ['email_disabled']);

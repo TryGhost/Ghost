@@ -1,24 +1,26 @@
 {
   "name": "@tryghost/adapter-base-jobs",
   "version": "0.0.0",
-  "description": "Base class and contract for Ghost jobs backends.",
   "private": true,
-  "ghostPackage": {
-    "goldenPath": "compliant"
-  },
-  "type": "module",
+  "description": "Base class and contract for Ghost jobs backends.",
+  "keywords": [
+    "adapter",
+    "ghost",
+    "jobs"
+  ],
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/adapters/jobs-base"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
-  "keywords": [
-    "ghost",
-    "jobs",
-    "adapter"
+  "files": [
+    "build"
   ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -31,8 +33,6 @@
       "default": "./build/contract-test-suite.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -42,9 +42,6 @@
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
-  "files": [
-    "build"
-  ],
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
@@ -55,6 +52,9 @@
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "compliant"
   },
   "nx": {
     "targets": {

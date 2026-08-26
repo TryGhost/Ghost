@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const _ = require('lodash');
@@ -8,99 +8,99 @@ const actionsMap = require('../../../../../core/server/services/permissions/acti
 const permissions = require('../../../../../core/server/services/permissions');
 
 describe('Permissions', function () {
-    let fakePermissions = [];
+  let fakePermissions = [];
 
-    beforeEach(function () {
-        sinon.stub(models.Permission, 'findAll').callsFake(function () {
-            return Promise.resolve(models.Permissions.forge(fakePermissions));
-        });
-
-        sinon.stub(models.Post, 'findOne').callsFake(function () {
-            return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
-        });
-
-        sinon.stub(models.Tag, 'findOne').callsFake(function () {
-            return Promise.resolve({});
-        });
+  beforeEach(function () {
+    sinon.stub(models.Permission, 'findAll').callsFake(function () {
+      return Promise.resolve(models.Permissions.forge(fakePermissions));
     });
 
-    afterEach(function () {
-        sinon.restore();
+    sinon.stub(models.Post, 'findOne').callsFake(function () {
+      return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
     });
 
-    /**
-     * Default test actionMap looks like this:
-     * {
-     *   browse: [ 'post' ],
-     *   edit: [ 'post', 'tag', 'user', 'page' ],
-     *   add: [ 'post', 'user', 'page' ],
-     *   destroy: [ 'post', 'user' ]
-     * }
-     *
-     * @param {object} options
-     * @return {Array|*}
-     */
-    function loadFakePermissions(options) {
-        options = options || {};
+    sinon.stub(models.Tag, 'findOne').callsFake(function () {
+      return Promise.resolve({});
+    });
+  });
 
-        const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
+  afterEach(function () {
+    sinon.restore();
+  });
 
-        const extraPerm = {
-            name: 'test',
-            action_type: 'edit',
-            object_type: 'post'
-        };
+  /**
+   * Default test actionMap looks like this:
+   * {
+   *   browse: [ 'post' ],
+   *   edit: [ 'post', 'tag', 'user', 'page' ],
+   *   add: [ 'post', 'user', 'page' ],
+   *   destroy: [ 'post', 'user' ]
+   * }
+   *
+   * @param {object} options
+   * @return {Array|*}
+   */
+  function loadFakePermissions(options) {
+    options = options || {};
 
-        if (options.extra) {
-            fixturePermissions.push(extraPerm);
-        }
+    const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
 
-        return _.map(fixturePermissions, function (testPerm) {
-            return testUtils.DataGenerator.forKnex.createPermission(testPerm);
-        });
+    const extraPerm = {
+      name: 'test',
+      action_type: 'edit',
+      object_type: 'post',
+    };
+
+    if (options.extra) {
+      fixturePermissions.push(extraPerm);
     }
 
-    describe('No init (no action map)', function () {
-        it('throws an error without actionMap', function () {
-            sinon.stub(actionsMap, 'empty').returns(true);
+    return _.map(fixturePermissions, function (testPerm) {
+      return testUtils.DataGenerator.forKnex.createPermission(testPerm);
+    });
+  }
 
-            assert.throws(permissions.canThis, /No actions map found/);
-        });
+  describe('No init (no action map)', function () {
+    it('throws an error without actionMap', function () {
+      sinon.stub(actionsMap, 'empty').returns(true);
+
+      assert.throws(permissions.canThis, /No actions map found/);
+    });
+  });
+
+  describe('Init (build actions map)', function () {
+    it('can load an actions map from existing permissions', async function () {
+      fakePermissions = loadFakePermissions();
+
+      const actions = await permissions.init();
+
+      assertExists(actions);
+
+      assert.doesNotThrow(permissions.canThis);
+
+      assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+
+      assert.deepEqual(actions.browse, ['post']);
+      assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
+      assert.deepEqual(actions.add, ['post', 'user', 'page']);
+      assert.deepEqual(actions.destroy, ['post', 'user']);
     });
 
-    describe('Init (build actions map)', function () {
-        it('can load an actions map from existing permissions', async function () {
-            fakePermissions = loadFakePermissions();
+    it('can load an actions map from existing permissions, and deduplicate', async function () {
+      fakePermissions = loadFakePermissions({ extra: true });
 
-            const actions = await permissions.init();
+      const actions = await permissions.init();
 
-            assertExists(actions);
+      assertExists(actions);
 
-            assert.doesNotThrow(permissions.canThis);
+      assert.doesNotThrow(permissions.canThis);
 
-            assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+      assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 
-            assert.deepEqual(actions.browse, ['post']);
-            assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
-            assert.deepEqual(actions.add, ['post', 'user', 'page']);
-            assert.deepEqual(actions.destroy, ['post', 'user']);
-        });
-
-        it('can load an actions map from existing permissions, and deduplicate', async function () {
-            fakePermissions = loadFakePermissions({extra: true});
-
-            const actions = await permissions.init();
-
-            assertExists(actions);
-
-            assert.doesNotThrow(permissions.canThis);
-
-            assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
-
-            assert.deepEqual(actions.browse, ['post']);
-            assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
-            assert.deepEqual(actions.add, ['post', 'user', 'page']);
-            assert.deepEqual(actions.destroy, ['post', 'user']);
-        });
+      assert.deepEqual(actions.browse, ['post']);
+      assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
+      assert.deepEqual(actions.add, ['post', 'user', 'page']);
+      assert.deepEqual(actions.destroy, ['post', 'user']);
     });
+  });
 });

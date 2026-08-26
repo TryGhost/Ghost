@@ -1,18 +1,30 @@
 const _ = require('lodash');
+const path = require('node:path');
 let replaceImage;
 let preProcessPosts;
 let preProcessTags;
 let preProcessUsers;
 
 replaceImage = function (markdown, image) {
-    if (!markdown) {
-        return;
-    }
+  if (!markdown) {
+    return;
+  }
 
-    // Normalizes to include a trailing slash if there was one
-    const regex = new RegExp('(/)?' + image.originalPath, 'gm');
+  const originalPaths = [image.originalPath];
+  if (image.originalPath.startsWith('content/')) {
+    originalPaths.push(image.originalPath.slice('content/'.length));
+  } else {
+    originalPaths.unshift(`content/${image.originalPath}`);
+  }
 
-    return markdown.replace(regex, image.newPath);
+  // Match canonical /content/{type} paths before their shorter archive path so
+  // replacing images/image.jpg cannot leave an extra /content prefix behind.
+  // Consume __GHOST_URL__ too: newPath already contains the configured subdir
+  // and the model will normalize it back to transform-ready form on write.
+  const escapedPaths = originalPaths.map((originalPath) => _.escapeRegExp(originalPath));
+  const regex = new RegExp(`(?:__GHOST_URL__)?/?(?:${escapedPaths.join('|')})`, 'gm');
+
+  return markdown.replace(regex, image.newPath);
 };
 
 /**
@@ -23,106 +35,162 @@ replaceImage = function (markdown, image) {
  * @param {string} contentFile.newPath
  */
 preProcessPosts = function (data, contentFile) {
-    _.each(data.posts, function (post) {
-        post.markdown = replaceImage(post.markdown, contentFile);
-        if (post.html) {
-            post.html = replaceImage(post.html, contentFile);
-        }
-        if (post.feature_image) {
-            post.feature_image = replaceImage(post.feature_image, contentFile);
-        }
-    });
+  _.each(data.posts, function (post) {
+    post.markdown = replaceImage(post.markdown, contentFile);
+    if (post.html) {
+      post.html = replaceImage(post.html, contentFile);
+    }
+    if (post.feature_image) {
+      post.feature_image = replaceImage(post.feature_image, contentFile);
+    }
+    if (post.og_image) {
+      post.og_image = replaceImage(post.og_image, contentFile);
+    }
+    if (post.twitter_image) {
+      post.twitter_image = replaceImage(post.twitter_image, contentFile);
+    }
+  });
 };
 
 preProcessTags = function (data, image) {
-    _.each(data.tags, function (tag) {
-        if (tag.feature_image) {
-            tag.feature_image = replaceImage(tag.feature_image, image);
-        }
-    });
+  _.each(data.tags, function (tag) {
+    if (tag.feature_image) {
+      tag.feature_image = replaceImage(tag.feature_image, image);
+    }
+  });
 };
 
 preProcessUsers = function (data, image) {
-    _.each(data.users, function (user) {
-        if (user.cover_image) {
-            user.cover_image = replaceImage(user.cover_image, image);
-        }
-        if (user.profile_image) {
-            user.profile_image = replaceImage(user.profile_image, image);
-        }
-    });
+  _.each(data.users, function (user) {
+    if (user.cover_image) {
+      user.cover_image = replaceImage(user.cover_image, image);
+    }
+    if (user.profile_image) {
+      user.profile_image = replaceImage(user.profile_image, image);
+    }
+  });
 };
 
 class ContentFileImporter {
-    /** @property {string} */
-    type;
+  /** @property {string} */
+  type;
 
-    /** @property {import('ghost-storage-base').StorageBase} */
-    #store;
+  /** @property {import('ghost-storage-base').StorageBase} */
+  #store;
 
-    /**
-     *
-     * @param {Object} deps
-     * @param {'images' | 'media' | 'files'} deps.type - importer type
-     * @param {import('ghost-storage-base').StorageBase} deps.store
-     */
-    constructor(deps) {
-        this.type = deps.type;
-        this.#store = deps.store;
+  /**
+   *
+   * @param {Object} deps
+   * @param {'images' | 'media' | 'files'} deps.type - importer type
+   * @param {import('ghost-storage-base').StorageBase} deps.store
+   */
+  constructor(deps) {
+    this.type = deps.type;
+    this.#store = deps.store;
+  }
+
+  preProcess(importData) {
+    if (this.type === 'images') {
+      if (importData.images && importData.data && importData.data.data) {
+        _.each(importData.images, function (image) {
+          preProcessPosts(importData.data.data, image);
+          preProcessTags(importData.data.data, image);
+          preProcessUsers(importData.data.data, image);
+        });
+      }
+
+      importData.preProcessedByImage = true;
     }
 
-    preProcess(importData) {
-        if (this.type === 'images') {
-            if (importData.images && importData.data && importData.data.data) {
-                _.each(importData.images, function (image) {
-                    preProcessPosts(importData.data.data, image);
-                    preProcessTags(importData.data.data, image);
-                    preProcessUsers(importData.data.data, image);
-                });
-            }
+    // @NOTE: the type === 'media' check does not belong here and should be abstracted away
+    //        to make this importer more generic
+    if (this.type === 'media') {
+      if (importData.media && importData.data && importData.data.data) {
+        _.each(importData.media, function (file) {
+          preProcessPosts(importData.data.data, file);
+        });
+      }
 
-            importData.preProcessedByImage = true;
-        }
-
-        // @NOTE: the type === 'media' check does not belong here and should be abstracted away
-        //        to make this importer more generic
-        if (this.type === 'media') {
-            if (importData.media && importData.data && importData.data.data) {
-                _.each(importData.media, function (file) {
-                    preProcessPosts(importData.data.data, file);
-                });
-            }
-
-            importData.preProcessedByMedia = true;
-        }
-
-        if (this.type === 'files') {
-            if (importData.files && importData.data && importData.data.data) {
-                _.each(importData.files, function (file) {
-                    preProcessPosts(importData.data.data, file);
-                });
-            }
-
-            importData.preProcessedByFiles = true;
-        }
-
-        return importData;
+      importData.preProcessedByMedia = true;
     }
 
-    /**
-     *
-     * @param {Object[]} contentFilesData
-     * @returns
-     */
-    doImport(contentFilesData) {
-        const store = this.#store;
+    if (this.type === 'files') {
+      if (importData.files && importData.data && importData.data.data) {
+        _.each(importData.files, function (file) {
+          preProcessPosts(importData.data.data, file);
+        });
+      }
 
-        return Promise.all(contentFilesData.map(function (contentFile) {
-            return store.save(contentFile, contentFile.targetDir).then(function (result) {
-                return {originalPath: contentFile.originalPath, newPath: contentFile.newPath, stored: result};
-            });
-        }));
+      importData.preProcessedByFiles = true;
     }
+
+    return importData;
+  }
+
+  /**
+   *
+   * @param {Object[]} contentFilesData
+   * @returns
+   */
+  async doImport(contentFilesData) {
+    const store = this.#store;
+
+    const results = await Promise.allSettled(
+      contentFilesData.map(function (contentFile) {
+        return store.save(contentFile, contentFile.targetDir).then(function (result) {
+          return {
+            originalPath: contentFile.originalPath,
+            newPath: contentFile.newPath,
+            stored: result,
+          };
+        });
+      }),
+    );
+
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure) {
+      const storedFiles = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      );
+      try {
+        await this.rollback(storedFiles);
+      } catch (rollbackFailure) {
+        // AggregateError is the native error for preserving both storage failures;
+        // it is not a GhostError and therefore does not accept an options object.
+        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+        throw new AggregateError(
+          [failure.reason, rollbackFailure],
+          'Asset storage failed and rollback was incomplete.',
+          { cause: failure.reason },
+        );
+      }
+      throw failure.reason;
+    }
+
+    return results.map((result) => result.value);
+  }
+
+  /**
+   * @param {{stored: string}[]} storedFiles
+   * @returns {Promise<void>}
+   */
+  async rollback(storedFiles) {
+    const store = this.#store;
+    const results = await Promise.allSettled(
+      storedFiles.map(function (storedFile) {
+        const storedPath = store.urlToPath(storedFile.stored);
+        const targetDir = path.posix.dirname(storedPath);
+        return store.delete(
+          path.posix.basename(storedPath),
+          targetDir === '.' ? undefined : targetDir,
+        );
+      }),
+    );
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure) {
+      throw failure.reason;
+    }
+  }
 }
 
 module.exports = ContentFileImporter;
