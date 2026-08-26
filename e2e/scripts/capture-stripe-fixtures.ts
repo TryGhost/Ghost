@@ -1,7 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { PRICES, provision, stripeClient } from './provision-stripe-environment.ts';
+import {
+  PRICES,
+  asSessionCreateParams,
+  provision,
+  stripeClient,
+} from './provision-stripe-environment.ts';
 import { fileURLToPath } from 'node:url';
+// Reached across the workspace deliberately: the point of this capture is that the request
+// is the one Ghost builds, so importing the builder is the coupling rather than a leak.
+import { stripeCheckoutCollectionOptions } from '../../ghost/core/core/server/services/stripe/services/checkout/session-options.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(__dirname, '../helpers/services/stripe/fixtures');
@@ -105,33 +113,62 @@ async function main(): Promise<void> {
       line_items: [{ price: monthly.id, quantity: 1 }],
     }),
   );
+  // Built by the same function Ghost builds a real session with, rather than by hand.
+  // That is what makes this capture check the request as well as the response: if the
+  // builder ever produces something Stripe refuses, this fails here instead of a fixture
+  // quietly describing a request production never sends. It is also how we learned that
+  // an empty shipping_address_collection form-encodes to nothing, so Stripe accepts a
+  // request it was never actually asked to collect an address by.
+  const collection = stripeCheckoutCollectionOptions({
+    customFields: [
+      {
+        key: 'delivery_notes',
+        label: null,
+        optional: true,
+        prompt: 'Delivery notes',
+        type: 'short_text',
+      },
+    ],
+    shipping: {
+      allowedCountries: ['GB', 'US'],
+      nameCustomFieldKey: 'recipient_name',
+      addressCustomFieldKey: 'delivery_address',
+    },
+    taxNumber: true,
+    phone: null,
+  });
+
   save(
-    'checkout_session.shipping',
-    await stripe.checkout.sessions.create({
-      ...urls,
-      mode: 'subscription',
-      line_items: [{ price: monthly.id, quantity: 1 }],
-      shipping_address_collection: { allowed_countries: ['GB', 'US'] },
-    }),
+    'checkout_session.collection',
+    await stripe.checkout.sessions.create(
+      asSessionCreateParams({
+        ...urls,
+        mode: 'subscription',
+        line_items: [{ price: monthly.id, quantity: 1 }],
+        ...collection,
+      }),
+    ),
   );
   save(
     'checkout_session.donation',
-    await stripe.checkout.sessions.create({
-      ...urls,
-      mode: 'payment',
-      submit_type: 'donate',
-      line_items: [
-        { price_data: { currency: 'usd', unit_amount: 1000, product: product.id }, quantity: 1 },
-      ],
-      custom_fields: [
-        {
-          key: 'donation_message',
-          label: { type: 'custom', custom: 'Add a personal note' },
-          type: 'text',
-          optional: true,
-        },
-      ],
-    }),
+    await stripe.checkout.sessions.create(
+      asSessionCreateParams({
+        ...urls,
+        mode: 'payment',
+        submit_type: 'donate',
+        line_items: [
+          { price_data: { currency: 'usd', unit_amount: 1000, product: product.id }, quantity: 1 },
+        ],
+        custom_fields: [
+          {
+            key: 'donation_message',
+            label: { type: 'custom', custom: 'Add a personal note' },
+            type: 'text',
+            optional: true,
+          },
+        ],
+      }),
+    ),
   );
 
   // Without this there is no way to tell how stale the fixtures are, which makes
@@ -147,7 +184,10 @@ async function main(): Promise<void> {
   log('its hosted page, so checkout_session.completed must be captured by hand.');
 }
 
-main().catch((error: Error) => {
-  log(`Capture failed: ${error.message}`);
+main().catch((error: unknown) => {
+  // A rejection need not be an Error, and the stack is what says which of a dozen
+  // sequential Stripe calls failed.
+  const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  process.stderr.write(`Capture failed: ${detail}\n`);
   process.exit(1);
 });
