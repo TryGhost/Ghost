@@ -43,6 +43,26 @@ describe('Stripe allowed countries', function () {
     );
   });
 
+  it('offers exactly what the end-to-end fake Stripe server will accept', function () {
+    // The harness keeps its own copy on purpose: a fake that shared this list could never
+    // catch Ghost offering a country Stripe refuses. Read back here because that package
+    // cannot import this one, and a silent disagreement would make the fake useless.
+    const harness = path.join(
+      __dirname,
+      '../../../../../../../e2e/helpers/services/stripe/allowed-countries.ts',
+    );
+    const codes = [
+      ...new Set(
+        fs
+          .readFileSync(harness, 'utf8')
+          .match(/'[A-Z]{2}',/g)
+          ?.map((code) => code.slice(1, 3)) ?? [],
+      ),
+    ].sort();
+
+    assert.deepEqual(codes, [...STRIPE_ALLOWED_COUNTRIES].sort());
+  });
+
   it('accepts a country Stripe ships to and refuses one it does not', function () {
     assert.ok(isStripeAllowedCountry('GB'));
     // Kosovo and Stripe's catch-all: absent from a general ISO list, accepted by Stripe.
