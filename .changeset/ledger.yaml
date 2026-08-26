@@ -21,6 +21,10 @@
   intents:
     - open-shirts-arrive
     - young-spiders-request
+"@tryghost/adapter-base-scheduling@0.2.3":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - brown-rules-cut
 "@tryghost/adapter-base-sso@0.1.1":
   dir: packages/adapters/sso-base
   intents:
@@ -30,6 +34,10 @@
   dir: packages/adapters/sso-base
   intents:
     - open-shirts-arrive
+"@tryghost/adapter-base-sso@0.1.3":
+  dir: packages/adapters/sso-base
+  intents:
+    - brown-rules-cut
 "@tryghost/kg-card-factory@5.2.4":
   dir: koenig/kg-card-factory
   intents:
@@ -120,6 +128,10 @@
     - petite-forks-lick
     - petite-schools-accept
     - six-parents-shout
+"@tryghost/koenig-lexical@1.9.3":
+  dir: koenig/koenig-lexical
+  intents:
+    - plenty-moons-smile
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:

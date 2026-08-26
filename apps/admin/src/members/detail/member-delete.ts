@@ -1,4 +1,4 @@
-import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/members';
+import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 
 // Same allow-list Ember uses in `delete-member.js:22-27` and the comp flow
 // (`member-add-comp-modal.tsx:14`). Kept as a Set for O(1) status lookups.
@@ -14,8 +14,8 @@ const CANCELABLE_STATUSES = new Set(['active', 'trialing', 'unpaid', 'past_due']
  * cancel call is a no-op, but we don't gate the checkbox on it here.
  */
 export function hasCancelableStripeSubscription(member: Pick<Member, 'subscriptions'>): boolean {
-    const subscriptions: MemberSubscription[] = member.subscriptions ?? [];
-    return subscriptions.some(sub => CANCELABLE_STATUSES.has(sub.status));
+  const subscriptions: MemberSubscription[] = member.subscriptions ?? [];
+  return subscriptions.some((sub) => CANCELABLE_STATUSES.has(sub.status));
 }
 
 /**
@@ -25,5 +25,5 @@ export function hasCancelableStripeSubscription(member: Pick<Member, 'subscripti
  * `delete-member.hbs:44`.
  */
 export function getDeleteMemberButtonLabel(cancelStripeSubscription: boolean): string {
-    return cancelStripeSubscription ? 'Delete member + Cancel subscription' : 'Delete member';
+  return cancelStripeSubscription ? 'Delete member + Cancel subscription' : 'Delete member';
 }

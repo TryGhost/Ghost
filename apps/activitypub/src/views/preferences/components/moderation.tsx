@@ -2,248 +2,311 @@ import APAvatar from '@components/global/ap-avatar';
 import ActivityItem from '@components/activities/activity-item';
 import Layout from '@components/layout';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
-import React, {useState} from 'react';
-import {Account} from '@src/api/activitypub';
-import {Button, NoValueLabel, NoValueLabelIcon, Skeleton, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {H2} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade/utils';
-import {SettingAction, SettingDescription, SettingHeader, SettingItem, SettingTitle} from './settings';
-import {handleProfileClick} from '@src/utils/handle-profile-click';
-import {toast} from 'sonner';
-import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, usePreferencesForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser, useUpdatePreferencesForUser} from '@hooks/use-activity-pub-queries';
-import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import React, { useState } from 'react';
+import { Account } from '@src/api/activitypub';
+import {
+  Button,
+  NoValueLabel,
+  NoValueLabelIcon,
+  Skeleton,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@tryghost/shade/components';
+import { H2 } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
+import {
+  SettingAction,
+  SettingDescription,
+  SettingHeader,
+  SettingItem,
+  SettingTitle,
+} from './settings';
+import { handleProfileClick } from '@src/utils/handle-profile-click';
+import { toast } from 'sonner';
+import {
+  useBlockDomainMutationForUser,
+  useBlockMutationForUser,
+  useBlockedAccountsForUser,
+  useBlockedDomainsForUser,
+  usePreferencesForUser,
+  useUnblockDomainMutationForUser,
+  useUnblockMutationForUser,
+  useUpdatePreferencesForUser,
+} from '@hooks/use-activity-pub-queries';
+import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 
 const Moderation: React.FC = () => {
-    const {data: blockedAccountsData, isLoading: blockedAccountsLoading} = useBlockedAccountsForUser('index');
-    const {data: blockedDomainsData, isLoading: blockedDomainsLoading} = useBlockedDomainsForUser('index');
+  const { data: blockedAccountsData, isLoading: blockedAccountsLoading } =
+    useBlockedAccountsForUser('index');
+  const { data: blockedDomainsData, isLoading: blockedDomainsLoading } =
+    useBlockedDomainsForUser('index');
 
-    const blockedAccounts = blockedAccountsLoading
-        ? Array(5).fill({apId: '', name: '', handle: '', avatarUrl: ''})
-        : blockedAccountsData?.pages.flatMap(page => page.accounts) ?? [];
-    const blockedDomains = blockedDomainsLoading
-        ? Array(5).fill({apId: '', name: ''})
-        : blockedDomainsData?.pages.flatMap(page => page.domains) ?? [];
+  const blockedAccounts = blockedAccountsLoading
+    ? Array(5).fill({ apId: '', name: '', handle: '', avatarUrl: '' })
+    : (blockedAccountsData?.pages.flatMap((page) => page.accounts) ?? []);
+  const blockedDomains = blockedDomainsLoading
+    ? Array(5).fill({ apId: '', name: '' })
+    : (blockedDomainsData?.pages.flatMap((page) => page.domains) ?? []);
 
-    const blockMutation = useBlockMutationForUser('index');
-    const unblockMutation = useUnblockMutationForUser('index');
-    const [unblockedAccountIds, setUnblockedAccountIds] = useState<Set<string>>(new Set());
+  const blockMutation = useBlockMutationForUser('index');
+  const unblockMutation = useUnblockMutationForUser('index');
+  const [unblockedAccountIds, setUnblockedAccountIds] = useState<Set<string>>(new Set());
 
-    const blockDomainMutation = useBlockDomainMutationForUser('index');
-    const unblockDomainMutation = useUnblockDomainMutationForUser('index');
-    const [unblockedDomainIds, setUnblockedDomainIds] = useState<Set<string>>(new Set());
+  const blockDomainMutation = useBlockDomainMutationForUser('index');
+  const unblockDomainMutation = useUnblockDomainMutationForUser('index');
+  const [unblockedDomainIds, setUnblockedDomainIds] = useState<Set<string>>(new Set());
 
-    const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-    const navigate = useNavigateWithBasePath();
-    const {data: preferences, isError: isPreferencesUnavailable, isLoading: isLoadingPreferences, isSuccess: hasPreferences} = usePreferencesForUser();
-    const updatePreferences = useUpdatePreferencesForUser({
-        onError: () => {
-            toast.error('Could not update sensitive media preference.');
-        }
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+  const navigate = useNavigateWithBasePath();
+  const {
+    data: preferences,
+    isError: isPreferencesUnavailable,
+    isLoading: isLoadingPreferences,
+    isSuccess: hasPreferences,
+  } = usePreferencesForUser();
+  const updatePreferences = useUpdatePreferencesForUser({
+    onError: () => {
+      toast.error('Could not update sensitive media preference.');
+    },
+  });
+  const showSensitiveMedia = preferences?.showSensitiveMedia ?? false;
+
+  const handleShowSensitiveMediaChange = (showSensitiveMediaValue: boolean) => {
+    if (!hasPreferences) {
+      return;
+    }
+
+    updatePreferences.mutate({
+      showSensitiveMedia: showSensitiveMediaValue,
     });
-    const showSensitiveMedia = preferences?.showSensitiveMedia ?? false;
+  };
 
-    const handleShowSensitiveMediaChange = (showSensitiveMediaValue: boolean) => {
-        if (!hasPreferences) {
-            return;
-        }
+  const handleUnblock = (account: Account) => {
+    setUnblockedAccountIds((prev) => {
+      const newSet = new Set([...prev]);
+      newSet.add(account.apId);
+      return newSet;
+    });
 
-        updatePreferences.mutate({
-            showSensitiveMedia: showSensitiveMediaValue
-        });
-    };
+    unblockMutation.mutate(account);
 
-    const handleUnblock = (account: Account) => {
-        setUnblockedAccountIds((prev) => {
-            const newSet = new Set([...prev]);
-            newSet.add(account.apId);
-            return newSet;
-        });
+    toast.success('User unblocked');
+  };
 
-        unblockMutation.mutate(account);
+  const handleBlock = (account: Account) => {
+    setUnblockedAccountIds((prev) => {
+      const newSet = new Set([...prev]);
+      newSet.delete(account.apId);
+      return newSet;
+    });
 
-        toast.success('User unblocked');
-    };
+    blockMutation.mutate(account);
 
-    const handleBlock = (account: Account) => {
-        setUnblockedAccountIds((prev) => {
-            const newSet = new Set([...prev]);
-            newSet.delete(account.apId);
-            return newSet;
-        });
+    toast.success('User blocked');
+  };
 
-        blockMutation.mutate(account);
+  const handleDomainUnblock = (domain: { url: string }) => {
+    setUnblockedDomainIds((prev) => {
+      const newSet = new Set([...prev]);
+      newSet.add(domain.url);
+      return newSet;
+    });
 
-        toast.success('User blocked');
-    };
+    unblockDomainMutation.mutate({ url: domain.url });
 
-    const handleDomainUnblock = (domain: {url: string}) => {
-        setUnblockedDomainIds((prev) => {
-            const newSet = new Set([...prev]);
-            newSet.add(domain.url);
-            return newSet;
-        });
+    toast.success('Domain unblocked');
+  };
 
-        unblockDomainMutation.mutate({url: domain.url});
+  const handleDomainBlock = (domain: { url: string }) => {
+    setUnblockedDomainIds((prev) => {
+      const newSet = new Set([...prev]);
+      newSet.delete(domain.url);
+      return newSet;
+    });
 
-        toast.success('Domain unblocked');
-    };
+    blockDomainMutation.mutate({ url: domain.url });
 
-    const handleDomainBlock = (domain: {url: string}) => {
-        setUnblockedDomainIds((prev) => {
-            const newSet = new Set([...prev]);
-            newSet.delete(domain.url);
-            return newSet;
-        });
+    toast.success('Domain blocked');
+  };
 
-        blockDomainMutation.mutate({url: domain.url});
+  return (
+    <Layout>
+      <div className="mx-auto max-w-[620px] py-[min(4vh,48px)]">
+        <div className="flex items-center justify-between gap-8">
+          <H2>Moderation</H2>
+        </div>
+        {!isPreferencesUnavailable && (
+          <div className="mt-6">
+            <SettingItem>
+              <SettingHeader>
+                <SettingTitle>Show sensitive media</SettingTitle>
+                <SettingDescription>
+                  Display adult content or media marked as sensitive without a warning
+                </SettingDescription>
+              </SettingHeader>
+              <SettingAction>
+                <Switch
+                  aria-label="Show sensitive media"
+                  checked={showSensitiveMedia}
+                  disabled={isLoadingPreferences || !hasPreferences}
+                  onCheckedChange={handleShowSensitiveMediaChange}
+                />
+              </SettingAction>
+            </SettingItem>
+          </div>
+        )}
+        <div className="mt-6">
+          <Tabs defaultValue="blocked_users" variant="underline">
+            <TabsList>
+              <TabsTrigger value="blocked_users">Blocked users</TabsTrigger>
+              <TabsTrigger value="blocked_domains">Blocked domains</TabsTrigger>
+            </TabsList>
+            <TabsContent className="mt-2" value="blocked_users">
+              {!blockedAccountsLoading && blockedAccounts.length === 0 ? (
+                <NoValueLabel>
+                  <NoValueLabelIcon>
+                    <LucideIcon.Ban />
+                  </NoValueLabelIcon>
+                  <div className="mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center">
+                    <p>
+                      When you block someone, they won&apos;t be able to follow you or interact with
+                      your content on the social web.
+                    </p>
+                  </div>
+                </NoValueLabel>
+              ) : (
+                blockedAccounts.map((account, index) => (
+                  <ProfilePreviewHoverCard
+                    key={account.apId ? account.apId : `loading-${index}`}
+                    actor={account}
+                    isCurrentUser={true}
+                  >
+                    <div>
+                      <ActivityItem
+                        onClick={
+                          !blockedAccountsLoading
+                            ? () => handleProfileClick(account.handle, navigate)
+                            : undefined
+                        }
+                      >
+                        <APAvatar
+                          author={{
+                            icon: {
+                              url: account.avatarUrl,
+                            },
+                            name: account.name,
+                            handle: account.handle,
+                          }}
+                        />
+                        <div className="flex min-w-0  flex-col">
+                          <span className="block truncate font-semibold text-black dark:text-white">
+                            {!blockedAccountsLoading ? account.name : <Skeleton className="w-24" />}
+                          </span>
+                          <span className="block truncate text-sm text-gray-600">
+                            {!blockedAccountsLoading ? (
+                              account.handle
+                            ) : (
+                              <Skeleton className="w-40" />
+                            )}
+                          </span>
+                        </div>
 
-        toast.success('Domain blocked');
-    };
-
-    return (
-        <Layout>
-            <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
-                <div className='flex items-center justify-between gap-8'>
-                    <H2>Moderation</H2>
-                </div>
-                {!isPreferencesUnavailable && (
-                    <div className='mt-6'>
-                        <SettingItem>
-                            <SettingHeader>
-                                <SettingTitle>Show sensitive media</SettingTitle>
-                                <SettingDescription>Display adult content or media marked as sensitive without a warning</SettingDescription>
-                            </SettingHeader>
-                            <SettingAction>
-                                <Switch
-                                    aria-label='Show sensitive media'
-                                    checked={showSensitiveMedia}
-                                    disabled={isLoadingPreferences || !hasPreferences}
-                                    onCheckedChange={handleShowSensitiveMediaChange}
-                                />
-                            </SettingAction>
-                        </SettingItem>
+                        {unblockedAccountIds.has(account.apId) ? (
+                          <Button
+                            className="ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleBlock(account);
+                            }}
+                          >
+                            Block
+                          </Button>
+                        ) : !blockedAccountsLoading ? (
+                          <Button
+                            className="ml-auto min-w-[90px]"
+                            variant="destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnblock(account);
+                            }}
+                            onMouseEnter={() => setHoveredItemId(account.apId)}
+                            onMouseLeave={() => setHoveredItemId(null)}
+                          >
+                            {hoveredItemId === account.apId ? 'Unblock' : 'Blocked'}
+                          </Button>
+                        ) : (
+                          <div className="ml-auto w-16">
+                            <Skeleton />
+                          </div>
+                        )}
+                      </ActivityItem>
                     </div>
-                )}
-                <div className='mt-6'>
-                    <Tabs defaultValue="blocked_users" variant='underline'>
-                        <TabsList>
-                            <TabsTrigger value="blocked_users">Blocked users</TabsTrigger>
-                            <TabsTrigger value="blocked_domains">Blocked domains</TabsTrigger>
-                        </TabsList>
-                        <TabsContent className='mt-2' value="blocked_users">
-                            {!blockedAccountsLoading && blockedAccounts.length === 0 ? (
-                                <NoValueLabel>
-                                    <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
-                                    <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
-                                        <p>When you block someone, they won&apos;t be able to follow you or interact with your content on the social web.</p>
-                                    </div>
-                                </NoValueLabel>
-                            ) : (
-                                blockedAccounts.map((account, index) => (
-                                    <ProfilePreviewHoverCard key={account.apId ? account.apId : `loading-${index}`} actor={account} isCurrentUser={true}>
-                                        <div>
-                                            <ActivityItem
-                                                onClick={!blockedAccountsLoading ? () => handleProfileClick(account.handle, navigate) : undefined}
-                                            >
-                                                <APAvatar
-                                                    author={
-                                                        {
-                                                            icon: {
-                                                                url: account.avatarUrl
-                                                            },
-                                                            name: account.name,
-                                                            handle: account.handle
-                                                        }
-                                                    } />
-                                                <div className='flex min-w-0  flex-col'>
-                                                    <span className='block truncate font-semibold text-black dark:text-white'>{!blockedAccountsLoading ? account.name : <Skeleton className='w-24' />}</span>
-                                                    <span className='block truncate text-sm text-gray-600'>{!blockedAccountsLoading ? account.handle : <Skeleton className='w-40' />}</span>
-                                                </div>
+                  </ProfilePreviewHoverCard>
+                ))
+              )}
+            </TabsContent>
+            <TabsContent className="mt-[11px]" value="blocked_domains">
+              {!blockedDomainsLoading && blockedDomains.length === 0 ? (
+                <NoValueLabel>
+                  <NoValueLabelIcon>
+                    <LucideIcon.Ban />
+                  </NoValueLabelIcon>
+                  <div className="mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center">
+                    <p>
+                      When you block a domain, all users from that domain won&apos;t be able to
+                      follow you or interact with your content.
+                    </p>
+                  </div>
+                </NoValueLabel>
+              ) : (
+                blockedDomains.map((domain, index) => (
+                  <ActivityItem key={domain.url ? domain.url : `loading-${index}`}>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="block truncate font-semibold text-black dark:text-white">
+                        {!blockedDomainsLoading ? (
+                          new URL(domain.url).hostname
+                        ) : (
+                          <Skeleton className="w-48" />
+                        )}
+                      </span>
+                    </div>
 
-                                                {unblockedAccountIds.has(account.apId) ? (
-                                                    <Button
-                                                        className='ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400'
-                                                        variant='outline'
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleBlock(account);
-                                                        }}
-                                                    >
-                                                        Block
-                                                    </Button>
-                                                ) : (
-                                                    !blockedAccountsLoading ?
-                                                        <Button
-                                                            className='ml-auto min-w-[90px]'
-                                                            variant='destructive'
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleUnblock(account);
-                                                            }}
-                                                            onMouseEnter={() => setHoveredItemId(account.apId)}
-                                                            onMouseLeave={() => setHoveredItemId(null)}
-                                                        >
-                                                            {hoveredItemId === account.apId ? 'Unblock' : 'Blocked'}
-                                                        </Button> :
-                                                        <div className='ml-auto w-16'>
-                                                            <Skeleton />
-                                                        </div>
-                                                )}
-                                            </ActivityItem>
-                                        </div>
-                                    </ProfilePreviewHoverCard>
-                                ))
-                            )}
-                        </TabsContent>
-                        <TabsContent className='mt-[11px]' value="blocked_domains">
-                            {!blockedDomainsLoading && blockedDomains.length === 0 ? (
-                                <NoValueLabel>
-                                    <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
-                                    <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
-                                        <p>When you block a domain, all users from that domain won&apos;t be able to follow you or interact with your content.</p>
-                                    </div>
-                                </NoValueLabel>
-                            ) : (
-                                blockedDomains.map((domain, index) => (
-                                    <ActivityItem key={domain.url ? domain.url : `loading-${index}`}>
-                                        <div className='flex min-w-0 flex-col'>
-                                            <span className='block truncate font-semibold text-black dark:text-white'>
-                                                {!blockedDomainsLoading ? new URL(domain.url).hostname : <Skeleton className='w-48' />}
-                                            </span>
-                                        </div>
-
-                                        {unblockedDomainIds.has(domain.url) ? (
-                                            <Button
-                                                className='ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400'
-                                                variant='outline'
-                                                onClick={() => handleDomainBlock(domain)}
-                                            >
-                                                Block
-                                            </Button>
-                                        ) : (
-                                            !blockedDomainsLoading ?
-                                                <Button
-                                                    className='ml-auto min-w-[90px]'
-                                                    variant='destructive'
-                                                    onClick={() => handleDomainUnblock(domain)}
-                                                    onMouseEnter={() => setHoveredItemId(domain.url)}
-                                                    onMouseLeave={() => setHoveredItemId(null)}
-                                                >
-                                                    {hoveredItemId === domain.url ? 'Unblock' : 'Blocked'}
-                                                </Button> :
-                                                <div className='ml-auto w-16'>
-                                                    <Skeleton />
-                                                </div>
-                                        )}
-                                    </ActivityItem>
-                                ))
-                            )}
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            </div>
-        </Layout>
-    );
+                    {unblockedDomainIds.has(domain.url) ? (
+                      <Button
+                        className="ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400"
+                        variant="outline"
+                        onClick={() => handleDomainBlock(domain)}
+                      >
+                        Block
+                      </Button>
+                    ) : !blockedDomainsLoading ? (
+                      <Button
+                        className="ml-auto min-w-[90px]"
+                        variant="destructive"
+                        onClick={() => handleDomainUnblock(domain)}
+                        onMouseEnter={() => setHoveredItemId(domain.url)}
+                        onMouseLeave={() => setHoveredItemId(null)}
+                      >
+                        {hoveredItemId === domain.url ? 'Unblock' : 'Blocked'}
+                      </Button>
+                    ) : (
+                      <div className="ml-auto w-16">
+                        <Skeleton />
+                      </div>
+                    )}
+                  </ActivityItem>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </Layout>
+  );
 };
 
 export default Moderation;

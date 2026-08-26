@@ -1,5 +1,5 @@
 module.exports = {
-    bulkEdit(data, apiConfig, frame) {
-        frame.response = data;
-    }
+  bulkEdit(data, apiConfig, frame) {
+    frame.response = data;
+  },
 };

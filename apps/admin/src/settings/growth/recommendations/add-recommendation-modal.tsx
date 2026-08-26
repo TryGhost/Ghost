@@ -1,237 +1,278 @@
 import AddRecommendationModalConfirm from './add-recommendation-modal-confirm';
-import React, {useEffect, useState} from 'react';
-import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
-import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, LoadingIndicator} from '@tryghost/shade/components';
-import {useSearchParams} from '@tryghost/admin-x-framework';
-import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
-import {SettingsModal} from '@tryghost/shade/patterns';
-import {formatUrl} from '@/settings/utils/format-url';
-import {toast} from 'sonner';
+import React, { useEffect, useState } from 'react';
+import { AlreadyExistsError } from '@tryghost/admin-x-framework/errors';
+import {
+  type EditOrAddRecommendation,
+  useCheckRecommendation,
+} from '@tryghost/admin-x-framework/api/recommendations';
+import { type ErrorMessages, useForm } from '@tryghost/admin-x-framework/hooks';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  Input,
+  LoadingIndicator,
+} from '@tryghost/shade/components';
+import { useSearchParams } from '@tryghost/admin-x-framework';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import { SettingsModal } from '@tryghost/shade/patterns';
+import { formatUrl } from '@/settings/utils/format-url';
+import { toast } from 'sonner';
 
 const doFormatUrl = (url: string) => {
-    return formatUrl(url).save || '';
+  return formatUrl(url).save || '';
 };
 
 const validateUrl = function (errors: ErrorMessages, url: string) {
-    try {
-        const u = new URL(url);
+  try {
+    const u = new URL(url);
 
-        // Check domain includes a dot
-        if (!u.hostname.includes('.')) {
-            errors.url = 'Enter a valid URL';
-        } else {
-            delete errors.url;
-        }
-    } catch {
-        errors.url = 'Enter a valid URL';
+    // Check domain includes a dot
+    if (!u.hostname.includes('.')) {
+      errors.url = 'Enter a valid URL';
+    } else {
+      delete errors.url;
     }
-    return errors;
+  } catch {
+    errors.url = 'Enter a valid URL';
+  }
+  return errors;
 };
 
 const AddRecommendationModal: React.FC = () => {
-    const [enterPressed, setEnterPressed] = useState(false);
-    const [searchParams] = useSearchParams();
-    const {updateRoute} = useSettingsNavigation();
-    const {mutateAsync: checkRecommendation} = useCheckRecommendation();
+  const [enterPressed, setEnterPressed] = useState(false);
+  const [searchParams] = useSearchParams();
+  const { updateRoute } = useSettingsNavigation();
+  const { mutateAsync: checkRecommendation } = useCheckRecommendation();
 
-    // Both wizard steps render under recommendations/add; the confirm step has
-    // no URL of its own.
-    const [step, setStep] = useState<'form' | 'confirm'>('form');
-    const [animate, setAnimate] = useState(true);
+  // Both wizard steps render under recommendations/add; the confirm step has
+  // no URL of its own.
+  const [step, setStep] = useState<'form' | 'confirm'>('form');
+  const [animate, setAnimate] = useState(true);
 
-    // Handle a URL that was passed via the URL
-    const initialUrl = searchParams.get('url') ?? '';
-    const {save: initialUrlCleaned} = initialUrl ? formatUrl(initialUrl) : {save: ''};
+  // Handle a URL that was passed via the URL
+  const initialUrl = searchParams.get('url') ?? '';
+  const { save: initialUrlCleaned } = initialUrl ? formatUrl(initialUrl) : { save: '' };
 
-    // Show loading view when we had an initial URL
-    const didInitialSubmit = React.useRef(false);
-    const [showLoadingView, setShowLoadingView] = React.useState(!!initialUrlCleaned);
+  // Show loading view when we had an initial URL
+  const didInitialSubmit = React.useRef(false);
+  const [showLoadingView, setShowLoadingView] = React.useState(!!initialUrlCleaned);
 
-    const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm<EditOrAddRecommendation>({
-        initialState: {
-            title: '',
-            url: initialUrlCleaned || '',
-            description: '',
-            excerpt: null,
-            featured_image: null,
-            favicon: null,
-            one_click_subscribe: false
-        },
-        onSave: async () => {
-            const validatedUrl: URL = new URL(formState.url);
+  const { formState, updateForm, handleSave, errors, saveState, clearError } =
+    useForm<EditOrAddRecommendation>({
+      initialState: {
+        title: '',
+        url: initialUrlCleaned || '',
+        description: '',
+        excerpt: null,
+        featured_image: null,
+        favicon: null,
+        one_click_subscribe: false,
+      },
+      onSave: async () => {
+        const validatedUrl: URL = new URL(formState.url);
 
-            // Use the hostname as fallback title
-            const defaultTitle = validatedUrl.hostname.replace('www.', '');
+        // Use the hostname as fallback title
+        const defaultTitle = validatedUrl.hostname.replace('www.', '');
 
-            const updatedRecommendation = {
-                ...formState,
-                url: validatedUrl.toString()
-            };
+        const updatedRecommendation = {
+          ...formState,
+          url: validatedUrl.toString(),
+        };
 
-            // Check if the recommendation already exists, or fetch metadata if it's a new recommendation
-            const {recommendations = []} = await checkRecommendation(validatedUrl);
+        // Check if the recommendation already exists, or fetch metadata if it's a new recommendation
+        const { recommendations = [] } = await checkRecommendation(validatedUrl);
 
-            if (!recommendations || recommendations.length === 0) {
-                // Oops! Failed to fetch metadata
-                return;
-            }
-
-            const existing = recommendations[0];
-
-            if (existing.id) {
-                throw new AlreadyExistsError('A recommendation with this URL already exists.');
-            }
-
-            // Update metadata so we can preview it
-            updatedRecommendation.title = existing.title ?? defaultTitle;
-            updatedRecommendation.excerpt = existing.excerpt ?? updatedRecommendation.excerpt;
-            updatedRecommendation.featured_image = existing.featured_image ?? updatedRecommendation.featured_image ?? null;
-            updatedRecommendation.favicon = existing.favicon ?? updatedRecommendation.favicon ?? null;
-            updatedRecommendation.one_click_subscribe = existing.one_click_subscribe ?? updatedRecommendation.one_click_subscribe ?? false;
-
-            // Set a default description (excerpt)
-            updatedRecommendation.description = updatedRecommendation.excerpt || null;
-
-            updateForm(() => updatedRecommendation);
-            setShowLoadingView(false);
-            setAnimate(false);
-            setStep('confirm');
-        },
-        onValidate: () => {
-            const newErrors: Record<string, string> = {};
-
-            validateUrl(newErrors, formState.url);
-
-            // If we have errors: close direct submit view
-            if (showLoadingView) {
-                setShowLoadingView(Object.keys(newErrors).length === 0);
-            }
-
-            return newErrors;
-        }
-    });
-
-    const onOk = React.useCallback(async () => {
-        if (saveState === 'saving') {
-            // Already saving
-            return;
+        if (!recommendations || recommendations.length === 0) {
+          // Oops! Failed to fetch metadata
+          return;
         }
 
-        toast.dismiss();
-        try {
-            if (await handleSave({force: true})) {
-                return;
-            }
-        } catch (e) {
-            const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
-            toast.error(message);
+        const existing = recommendations[0];
+
+        if (existing.id) {
+          throw new AlreadyExistsError('A recommendation with this URL already exists.');
         }
+
+        // Update metadata so we can preview it
+        updatedRecommendation.title = existing.title ?? defaultTitle;
+        updatedRecommendation.excerpt = existing.excerpt ?? updatedRecommendation.excerpt;
+        updatedRecommendation.featured_image =
+          existing.featured_image ?? updatedRecommendation.featured_image ?? null;
+        updatedRecommendation.favicon = existing.favicon ?? updatedRecommendation.favicon ?? null;
+        updatedRecommendation.one_click_subscribe =
+          existing.one_click_subscribe ?? updatedRecommendation.one_click_subscribe ?? false;
+
+        // Set a default description (excerpt)
+        updatedRecommendation.description = updatedRecommendation.excerpt || null;
+
+        updateForm(() => updatedRecommendation);
+        setShowLoadingView(false);
+        setAnimate(false);
+        setStep('confirm');
+      },
+      onValidate: () => {
+        const newErrors: Record<string, string> = {};
+
+        validateUrl(newErrors, formState.url);
 
         // If we have errors: close direct submit view
         if (showLoadingView) {
-            setShowLoadingView(false);
+          setShowLoadingView(Object.keys(newErrors).length === 0);
         }
-    }, [handleSave, saveState, showLoadingView, setShowLoadingView]);
 
-    // Make sure we submit initially when opening in loading view state
-    React.useEffect(() => {
-        if (showLoadingView && !didInitialSubmit.current) {
-            didInitialSubmit.current = true;
-            void onOk();
-        }
-    }, [showLoadingView, onOk]);
+        return newErrors;
+      },
+    });
 
-    useEffect(() => {
-        if (enterPressed) {
-            void onOk();
-            setEnterPressed(false); // Reset for future use
-        }
-    }, [formState]);
-
-    if (step === 'confirm') {
-        return <AddRecommendationModalConfirm
-            recommendation={formState}
-            onBack={(recommendation) => {
-                updateForm(() => recommendation);
-                setStep('form');
-            }}
-            onClose={() => {
-                updateRoute('recommendations');
-            }}
-            onSaved={() => {
-                updateRoute('recommendations');
-            }}
-        />;
+  const onOk = React.useCallback(async () => {
+    if (saveState === 'saving') {
+      // Already saving
+      return;
     }
 
+    toast.dismiss();
+    try {
+      if (await handleSave({ force: true })) {
+        return;
+      }
+    } catch (e) {
+      const message =
+        e instanceof AlreadyExistsError
+          ? e.message
+          : 'Something went wrong while checking this URL, please try again.';
+      toast.error(message);
+    }
+
+    // If we have errors: close direct submit view
     if (showLoadingView) {
-        return <SettingsModal
-            animate={animate}
-            backDropClick={false}
-            footer={false}
-            header={false}
-            size='sm'
-            onClose={() => {
-                // Closed without saving: reset route
-                updateRoute('recommendations');
-            }}
-        >
-            <div className="flex flex-col items-center justify-center p-8">
-                <div className="flex h-64 items-center justify-center">
-                    <LoadingIndicator size='lg' />
-                </div>
-            </div>
-        </SettingsModal>;
+      setShowLoadingView(false);
     }
+  }, [handleSave, saveState, showLoadingView, setShowLoadingView]);
 
-    return <SettingsModal
+  // Make sure we submit initially when opening in loading view state
+  React.useEffect(() => {
+    if (showLoadingView && !didInitialSubmit.current) {
+      didInitialSubmit.current = true;
+      void onOk();
+    }
+  }, [showLoadingView, onOk]);
+
+  useEffect(() => {
+    if (enterPressed) {
+      void onOk();
+      setEnterPressed(false); // Reset for future use
+    }
+  }, [formState]);
+
+  if (step === 'confirm') {
+    return (
+      <AddRecommendationModalConfirm
+        recommendation={formState}
+        onBack={(recommendation) => {
+          updateForm(() => recommendation);
+          setStep('form');
+        }}
+        onClose={() => {
+          updateRoute('recommendations');
+        }}
+        onSaved={() => {
+          updateRoute('recommendations');
+        }}
+      />
+    );
+  }
+
+  if (showLoadingView) {
+    return (
+      <SettingsModal
         animate={animate}
         backDropClick={false}
-        okLabel={'Next'}
-        okLoading={saveState === 'saving'}
-        okVariant='default'
-        size='sm'
-        testId='add-recommendation-modal'
-        title='Add recommendation'
+        footer={false}
+        header={false}
+        size="sm"
         onClose={() => {
-            // Closed without saving: reset route
-            updateRoute('recommendations');
+          // Closed without saving: reset route
+          updateRoute('recommendations');
         }}
-        onOk={onOk}
+      >
+        <div className="flex flex-col items-center justify-center p-8">
+          <div className="flex h-64 items-center justify-center">
+            <LoadingIndicator size="lg" />
+          </div>
+        </div>
+      </SettingsModal>
+    );
+  }
+
+  return (
+    <SettingsModal
+      animate={animate}
+      backDropClick={false}
+      okLabel={'Next'}
+      okLoading={saveState === 'saving'}
+      okVariant="default"
+      size="sm"
+      testId="add-recommendation-modal"
+      title="Add recommendation"
+      onClose={() => {
+        // Closed without saving: reset route
+        updateRoute('recommendations');
+      }}
+      onOk={onOk}
     >
-        <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
-        <FieldGroup className='mt-10 gap-8'>
-            <Field data-invalid={Boolean(errors.url) || undefined}>
-                <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
-                <Input
-                    aria-invalid={Boolean(errors.url) || undefined}
-                    id='recommendation-url'
-                    maxLength={2000}
-                    placeholder='https://www.example.com'
-                    value={formState.url}
-                    autoFocus
-                onBlur={() => {
-                    const url = doFormatUrl(formState.url);
-                    updateForm(state => ({...state, url: url}));
-                }}
-                onChange={(e) => {
-                    clearError?.('url');
-                    updateForm(state => ({...state, url: e.target.value}));
-                }}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        updateForm(state => ({...state, url: doFormatUrl(formState.url)}));
-                        setEnterPressed(true);
-                    }
-                }}
-                />
-                {errors.url ? <FieldError>{errors.url}</FieldError> : <FieldDescription>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</FieldDescription>}
-            </Field>
-        </FieldGroup>
-    </SettingsModal>;
+      <p className="mt-4">
+        You can recommend <strong>any site</strong> your audience will find valuable, not just those
+        published on Ghost.
+      </p>
+      <FieldGroup className="mt-10 gap-8">
+        <Field data-invalid={Boolean(errors.url) || undefined}>
+          <FieldLabel htmlFor="recommendation-url">URL</FieldLabel>
+          <Input
+            aria-invalid={Boolean(errors.url) || undefined}
+            id="recommendation-url"
+            maxLength={2000}
+            placeholder="https://www.example.com"
+            value={formState.url}
+            autoFocus
+            onBlur={() => {
+              const url = doFormatUrl(formState.url);
+              updateForm((state) => ({ ...state, url: url }));
+            }}
+            onChange={(e) => {
+              clearError?.('url');
+              updateForm((state) => ({ ...state, url: e.target.value }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                updateForm((state) => ({ ...state, url: doFormatUrl(formState.url) }));
+                setEnterPressed(true);
+              }
+            }}
+          />
+          {errors.url ? (
+            <FieldError>{errors.url}</FieldError>
+          ) : (
+            <FieldDescription>
+              Need inspiration?{' '}
+              <a
+                className="text-green"
+                href="https://www.ghost.org/explore"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Explore thousands of sites
+              </a>{' '}
+              to recommend
+            </FieldDescription>
+          )}
+        </Field>
+      </FieldGroup>
+    </SettingsModal>
+  );
 };
 
 export default AddRecommendationModal;

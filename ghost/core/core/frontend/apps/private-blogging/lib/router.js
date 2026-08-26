@@ -8,38 +8,35 @@ const templateName = 'private';
 const privateRouter = express.Router(templateName);
 
 function _renderer(req, res) {
-    res.routerOptions = {
-        type: 'custom',
-        templates: templateName,
-        defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`)
-    };
+  res.routerOptions = {
+    type: 'custom',
+    templates: templateName,
+    defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`),
+  };
 
-    // Renderer begin
-    // Format data
-    let data = {};
+  // Renderer begin
+  // Format data
+  let data = {};
 
-    if (res.error) {
-        data.error = res.error;
-    }
+  if (res.error) {
+    data.error = res.error;
+  }
 
-    // Render Call
-    return renderer.renderer(req, res, data);
+  // Render Call
+  return renderer.renderer(req, res, data);
 }
 
 // password-protected frontend route
 privateRouter
-    .route('/')
-    .get(
-        middleware.redirectPrivateToHomeIfLoggedIn,
-        _renderer
-    )
-    .post(
-        bodyParser.urlencoded({extended: true}),
-        middleware.redirectPrivateToHomeIfLoggedIn,
-        web.shared.middleware.brute.privateBlog,
-        middleware.doLoginToPrivateSite,
-        _renderer
-    );
+  .route('/')
+  .get(middleware.redirectPrivateToHomeIfLoggedIn, _renderer)
+  .post(
+    bodyParser.urlencoded({ extended: true }),
+    middleware.redirectPrivateToHomeIfLoggedIn,
+    web.shared.middleware.brute.privateBlog,
+    middleware.doLoginToPrivateSite,
+    _renderer,
+  );
 
 module.exports = privateRouter;
 module.exports.renderer = _renderer;

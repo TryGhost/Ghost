@@ -1,699 +1,603 @@
 {
-    "extends": [
-        "github>tryghost/renovate-config",
-        // Track `# renovate:`-annotated `ARG/ENV *_VERSION` pins in Dockerfiles,
-        // for tool versions that no native manager sees (e.g. the Tinybird CLI
-        // installed via `uv tool install` in docker/tb-cli/Dockerfile).
-        "customManagers:dockerfileVersions",
-        // Same, for `# renovate:`-annotated `env:` version pins in workflows
-        // (the Tinybird CLI in .github/workflows/tinybird.yml).
-        "customManagers:githubActionsVersions"
-    ],
-    // Keep Renovate's own concurrency guardrails in place. The shared preset
-    // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
-    // so these override that unlimited default. The true "no more than 10
-    // open Renovate PRs" cap is enforced in .github/workflows/renovate.yml
-    // because Renovate's vulnerability-alert path can bypass these limits and
-    // because we need the cap to be based on the live GitHub PR count.
-    "prConcurrentLimit": 10,
-    "branchConcurrentLimit": 10,
-    // Keep manually-closed immortal/grouped PRs closed unless explicitly
-    // reopened from the Dependency Dashboard.
-    "recreateWhen": "never",
-    // pnpm lockfile generation (`pnpm install --lockfile-only` across all 20
-    // workspace projects — a ~47k-line, ~4300-entry lockfile) needs well over
-    // 1GB of Node heap. The old 1024MB cap was a workaround for Mend's hosted
-    // 3GB container ceiling: shrink Node's heap enough to keep the whole job
-    // under Mend's limit. Now that Renovate runs self-hosted on ubuntu-latest
-    // (~16GB) that ceiling is gone — but the cap stayed and became the binding
-    // limit. Lockfile regeneration was OOMing at ~1GB ("FATAL ERROR: ...
-    // JavaScript heap out of memory"), which fails renovate/artifacts on every
-    // PR; the PR then opens with a stale lockfile, `Setup`
-    // (pnpm install --frozen-lockfile) fails, every required check cascades red,
-    // nothing automerges, and open PRs jam against the concurrency cap. Raised
-    // to 8192MB: ample headroom for pnpm's resolution graph, still well under
-    // the runner's memory.
-    "toolSettings": {
-        "nodeMaxMemory": 8192
-    },
-    // `pnpmDedupe` intentionally NOT in postUpdateOptions — Renovate dedupes
-    // on its Linux runner, but `pnpm install` on macOS produces a different
-    // lockfile (platform-sensitive peer-suffix resolution), so every stale
-    // Renovate branch fails --frozen-lockfile. Upstream: pnpm/pnpm#10258,
-    // renovatebot/renovate#31867. Ad-hoc `pnpm dedupe` PR or scheduled
-    // lockFileMaintenance when bloat becomes a problem.
-    // We have to disable platform based automerge (forcing renovate to do it manually)
-    // as otherwise renovate wont follow our schedule
-    "platformAutomerge": false,
-    // Merge automerged PRs by rebasing the branch's own commits onto the base
-    // instead of squashing. Renovate branches are a single, concise commit
-    // (e.g. "chore(deps): update X to Y"), so a squash merge would replace that
-    // clean message with the PR title *and* the full PR body — release-note
-    // tables, changelogs, dependency dashboards — producing a giant commit
-    // message on main. Rebase preserves the branch commit message verbatim.
-    "automergeStrategy": "rebase",
-    // Branch protection does not require up-to-date branches (the required
-    // status checks ruleset has strict: false), so a green-but-behind branch
-    // is still mergeable. Rebasing on every `main` commit therefore buys
-    // nothing and costs a force-push plus a full CI re-run per branch, which
-    // is what stopped branches from ever being green *and* current inside an
-    // automerge window. "conflicted" rebases only when a branch genuinely
-    // conflicts — in practice whenever another Renovate PR lands a
-    // pnpm-lock.yaml change, which is exactly when it's needed. It also keeps
-    // needs:review PRs current, unlike the preset's "automerging", which
-    // Renovate resolves to "never" wherever a package rule disables automerge.
-    "rebaseWhen": "conflicted",
-    // Soak every dependency update for 72 hours before opening a PR. This guards
-    // against compromised publishes (malicious version yanked within a few hours)
-    // and against unstable releases that get hotfixed shortly after publish.
-    // Vulnerability-alert PRs require dashboard approval below so they do not
-    // bypass the live open-PR cap enforced by the workflow.
-    "minimumReleaseAge": "3 days",
-    // Hold updates internally during the release-age soak instead of opening a
-    // PR immediately and gating it with a pending `renovate/stability-days`
-    // status. With the default "flexible" filter, a soaking PR is still an open
-    // PR, so it counts against the live 10-PR cap enforced in
-    // .github/workflows/renovate.yml even though it cannot merge for up to 72h —
-    // soakers were starving creation slots from updates that are actually ready.
-    // "strict" keeps soaking updates as branchless/PR-less internal state until
-    // the soak passes, so a slot is only ever held by a mergeable PR. Trade-off:
-    // we lose day-0 CI signal on an update (breakage now surfaces only once the
-    // PR opens post-soak) and security fixes also stay invisible until their
-    // 72h soak clears (see vulnerabilityAlerts below — the soak already applied,
-    // strict only changes when the PR becomes visible).
-    "internalChecksFilter": "strict",
-    "timezone": "Etc/UTC",
-    // Restrict Renovate runs to the automerge windows so branch updates
-    // (rebasing, force-pushes) happen around the same times automerge
-    // can actually complete, not during the working day when CI is busy.
-    // Weekday windows are intentionally narrow now that the self-hosted runner
-    // can tick hourly, leaving a larger shared quiet period across US and
-    // European core working hours.
+  extends: [
+    'github>tryghost/renovate-config',
+    // Track `# renovate:`-annotated `ARG/ENV *_VERSION` pins in Dockerfiles,
+    // for tool versions that no native manager sees (e.g. the Tinybird CLI
+    // installed via `uv tool install` in docker/tb-cli/Dockerfile).
+    'customManagers:dockerfileVersions',
+    // Same, for `# renovate:`-annotated `env:` version pins in workflows
+    // (the Tinybird CLI in .github/workflows/tinybird.yml).
+    'customManagers:githubActionsVersions',
+  ],
+  // Keep Renovate's own concurrency guardrails in place. The shared preset
+  // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
+  // so these override that unlimited default. The true "no more than 10
+  // open Renovate PRs" cap is enforced in .github/workflows/renovate.yml
+  // because Renovate's vulnerability-alert path can bypass these limits and
+  // because we need the cap to be based on the live GitHub PR count.
+  prConcurrentLimit: 10,
+  branchConcurrentLimit: 10,
+  // Keep manually-closed immortal/grouped PRs closed unless explicitly
+  // reopened from the Dependency Dashboard.
+  recreateWhen: 'never',
+  // pnpm lockfile generation (`pnpm install --lockfile-only` across all 20
+  // workspace projects — a ~47k-line, ~4300-entry lockfile) needs well over
+  // 1GB of Node heap. The old 1024MB cap was a workaround for Mend's hosted
+  // 3GB container ceiling: shrink Node's heap enough to keep the whole job
+  // under Mend's limit. Now that Renovate runs self-hosted on ubuntu-latest
+  // (~16GB) that ceiling is gone — but the cap stayed and became the binding
+  // limit. Lockfile regeneration was OOMing at ~1GB ("FATAL ERROR: ...
+  // JavaScript heap out of memory"), which fails renovate/artifacts on every
+  // PR; the PR then opens with a stale lockfile, `Setup`
+  // (pnpm install --frozen-lockfile) fails, every required check cascades red,
+  // nothing automerges, and open PRs jam against the concurrency cap. Raised
+  // to 8192MB: ample headroom for pnpm's resolution graph, still well under
+  // the runner's memory.
+  toolSettings: {
+    nodeMaxMemory: 8192,
+  },
+  // `pnpmDedupe` intentionally NOT in postUpdateOptions — Renovate dedupes
+  // on its Linux runner, but `pnpm install` on macOS produces a different
+  // lockfile (platform-sensitive peer-suffix resolution), so every stale
+  // Renovate branch fails --frozen-lockfile. Upstream: pnpm/pnpm#10258,
+  // renovatebot/renovate#31867. Ad-hoc `pnpm dedupe` PR or scheduled
+  // lockFileMaintenance when bloat becomes a problem.
+  // We have to disable platform based automerge (forcing renovate to do it manually)
+  // as otherwise renovate wont follow our schedule
+  platformAutomerge: false,
+  // Merge automerged PRs by rebasing the branch's own commits onto the base
+  // instead of squashing. Renovate branches are a single, concise commit
+  // (e.g. "chore(deps): update X to Y"), so a squash merge would replace that
+  // clean message with the PR title *and* the full PR body — release-note
+  // tables, changelogs, dependency dashboards — producing a giant commit
+  // message on main. Rebase preserves the branch commit message verbatim.
+  automergeStrategy: 'rebase',
+  // Branch protection does not require up-to-date branches (the required
+  // status checks ruleset has strict: false), so a green-but-behind branch
+  // is still mergeable. Rebasing on every `main` commit therefore buys
+  // nothing and costs a force-push plus a full CI re-run per branch, which
+  // is what stopped branches from ever being green *and* current inside an
+  // automerge window. "conflicted" rebases only when a branch genuinely
+  // conflicts — in practice whenever another Renovate PR lands a
+  // pnpm-lock.yaml change, which is exactly when it's needed. It also keeps
+  // needs:review PRs current, unlike the preset's "automerging", which
+  // Renovate resolves to "never" wherever a package rule disables automerge.
+  rebaseWhen: 'conflicted',
+  // Soak every dependency update for 72 hours before opening a PR. This guards
+  // against compromised publishes (malicious version yanked within a few hours)
+  // and against unstable releases that get hotfixed shortly after publish.
+  // Vulnerability-alert PRs require dashboard approval below so they do not
+  // bypass the live open-PR cap enforced by the workflow.
+  minimumReleaseAge: '3 days',
+  // Hold updates internally during the release-age soak instead of opening a
+  // PR immediately and gating it with a pending `renovate/stability-days`
+  // status. With the default "flexible" filter, a soaking PR is still an open
+  // PR, so it counts against the live 10-PR cap enforced in
+  // .github/workflows/renovate.yml even though it cannot merge for up to 72h —
+  // soakers were starving creation slots from updates that are actually ready.
+  // "strict" keeps soaking updates as branchless/PR-less internal state until
+  // the soak passes, so a slot is only ever held by a mergeable PR. Trade-off:
+  // we lose day-0 CI signal on an update (breakage now surfaces only once the
+  // PR opens post-soak) and security fixes also stay invisible until their
+  // 72h soak clears (see vulnerabilityAlerts below — the soak already applied,
+  // strict only changes when the PR becomes visible).
+  internalChecksFilter: 'strict',
+  timezone: 'Etc/UTC',
+  // Restrict Renovate runs to the automerge windows so branch updates
+  // (rebasing, force-pushes) happen around the same times automerge
+  // can actually complete, not during the working day when CI is busy.
+  // Weekday windows are intentionally narrow now that the self-hosted runner
+  // can tick hourly, leaving a larger shared quiet period across US and
+  // European core working hours.
+  //
+  // `schedule` alone only gates *new* PR creation — Renovate defaults to
+  // `updateNotScheduled: true`, which lets existing branches keep getting
+  // rebased and force-pushed any time the runner ticks. With the hourly
+  // self-hosted workflow that means a CI-storm of force-pushes across all
+  // open Renovate PRs during the workday. Setting `updateNotScheduled:
+  // false` keeps existing branch maintenance inside the same windows.
+  updateNotScheduled: false,
+  schedule: [
+    // Run all weekend
+    '* * * * 0,6',
+    // Run on weekday evenings
+    '* 23 * * 1-5',
+    // Run on early weekday mornings (previous day 23:00 is already
+    // covered by the evening/weekend blocks above). Extends to 05:59 to
+    // absorb GitHub Actions scheduler drift — delayed ticks were landing
+    // outside the window and doing nothing.
+    '* 0-5 * * 1-6',
+  ],
+  automergeSchedule: [
+    // Allow automerge all weekend
+    '* * * * 0,6',
+    // Allow automerge overnight on weekday evenings (11pm-5:59am UTC)
+    '* 23 * * 1-5',
+    '* 0-5 * * 1-6',
+  ],
+  // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
+  // PR, and schedule limits. Let them keep doing that so security fixes can
+  // still create PRs even when normal dependency updates are capped, but keep
+  // the same 72h release-age soak as every other dependency update.
+  vulnerabilityAlerts: {
+    schedule: ['at any time'],
+    minimumReleaseAge: '3 days',
+    // Same reasoning as the global `rebaseWhen` above: branches don't have
+    // to be current to merge, so rebasing a security PR on every `main`
+    // commit only delays the fix behind another CI cycle.
+    rebaseWhen: 'conflicted',
+    dependencyDashboardApproval: false,
+    labels: ['dependencies', 'security'],
+  },
+  ignoreDeps: [
+    // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
+    // Theme i18n ({{t}} helper) is on intl-messageformat 5.x. 6.0.0 changed
+    // message escaping from `\` to ICU apostrophe quoting, which changes the
+    // output of existing theme locale strings; needs a deliberate migration.
+    'intl-messageformat',
+
+    // codemirror 6 is a rewrite of the 5.x API. @tryghost/kg-simplemde (the
+    // Koenig markdown card) is built on 5.x and is not being ported. Also
+    // covers the `codemirror@<5.58.2` pnpm override key.
+    'codemirror',
+
+    // https://linear.app/ghost/issue/PLA-78
+    // https://github.com/TryGhost/Ghost/pull/28180
+    // ghost/core is pinned to knex 2.4.2 and knex-migrator's knex is pinned
+    // back to the same version via the `knex-migrator>knex` pnpm override
+    // (knex-migrator 5.4.x bundles knex 3.x). Migrations are built with
+    // core's query builder and executed by knex-migrator's, so the two must
+    // move together; 2.5.x also strips the password from the shared
+    // `config.get('database')` object before knex-migrator connects. Ignore
+    // until core moves to knex 3.x in one coordinated upgrade.
+    'knex',
+    // Same PLA-78 pin, but Renovate treats the pnpm override key
+    // `knex-migrator>knex` as its own dependency name, so the plain "knex"
+    // ignore above doesn't match it (see #29092).
+    'knex-migrator>knex',
+
+    // https://github.com/TryGhost/Ghost/pull/29099
+    // The pnpm override `path-to-regexp@<0.1.13` exists only to force
+    // Express 4's transitive path-to-regexp to the ReDoS-patched 0.1.13.
+    // Express 4 pins path-to-regexp 0.1.x; 0.2.x+ changes routing
+    // semantics and breaks route matching, so this override must never
+    // leave the 0.1 line.
+    'path-to-regexp',
+  ],
+  ignorePaths: [
+    'test',
+    // Freeze the Ember admin app wholesale. `apps/ember-admin` is being replaced by
+    // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
+    // Ember/broccoli stack we deliberately do not upgrade (see
+    // docs/ember-dependency-burden.md). Ignoring the whole directory drops
+    // admin's declared deps from extraction entirely: no update PRs, and they
+    // stop cluttering the Dependency Dashboard's Detected / Abandoned /
+    // Deprecated sections. Because Renovate manages deps per-manifest, anything
+    // admin SHARES with `ghost/core` or `apps/*` is still managed via those
+    // manifests — so in effect only admin-exclusive deps are omitted. This
+    // subsumes the old koenig-editor ignore and the per-package "Disable ember
+    // updates" / "disable css" rules (removed from packageRules below).
     //
-    // `schedule` alone only gates *new* PR creation — Renovate defaults to
-    // `updateNotScheduled: true`, which lets existing branches keep getting
-    // rebased and force-pushed any time the runner ticks. With the hourly
-    // self-hosted workflow that means a CI-storm of force-pushes across all
-    // open Renovate PRs during the workday. Setting `updateNotScheduled:
-    // false` keeps existing branch maintenance inside the same windows.
-    "updateNotScheduled": false,
-    "schedule": [
-        // Run all weekend
-        "* * * * 0,6",
-        // Run on weekday evenings
-        "* 23 * * 1-5",
-        // Run on early weekday mornings (previous day 23:00 is already
-        // covered by the evening/weekend blocks above). Extends to 05:59 to
-        // absorb GitHub Actions scheduler drift — delayed ticks were landing
-        // outside the window and doing nothing.
-        "* 0-5 * * 1-6"
-    ],
-    "automergeSchedule": [
-        // Allow automerge all weekend
-        "* * * * 0,6",
-        // Allow automerge overnight on weekday evenings (11pm-5:59am UTC)
-        "* 23 * * 1-5",
-        "* 0-5 * * 1-6"
-    ],
-    // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
-    // PR, and schedule limits. Let them keep doing that so security fixes can
-    // still create PRs even when normal dependency updates are capped, but keep
-    // the same 72h release-age soak as every other dependency update.
-    "vulnerabilityAlerts": {
-        "schedule": ["at any time"],
-        "minimumReleaseAge": "3 days",
-        // Same reasoning as the global `rebaseWhen` above: branches don't have
-        // to be current to merge, so rebasing a security PR on every `main`
-        // commit only delays the fix behind another CI cycle.
-        "rebaseWhen": "conflicted",
-        "dependencyDashboardApproval": false,
-        "labels": ["dependencies", "security"]
+    // Security note: GitHub Dependabot alerts for admin deps still fire (they
+    // are independent of Renovate) — we lose only Renovate's auto-fix PR. Given
+    // the app is slated for removal, remediate any rare real incident with a
+    // `pnpm overrides` pin. Today's admin-exclusive advisories are all
+    // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
+    'apps/ember-admin/**',
+  ],
+  packageRules: [
+    // Auto-generate a changeset when an npm/package.json update (or a pnpm
+    // catalog bump — the npm manager handles both) touches a publishable
+    // package (koenig/*, packages/*), directly or via a catalog entry it
+    // references, so the PR clears the "Check app version bump" gate without
+    // a human authoring one. Scoped to `npm` so Docker/GitHub-Actions updates
+    // never run it. Runs once per branch after the update is applied (working
+    // tree, pre-commit): the script diffs the working tree against the base,
+    // writes a `.changeset/*.md` for any affected publishable package, and
+    // no-ops otherwise. fileFilters scopes Renovate's commit to the generated
+    // changeset. The first command installs the script's deps — Renovate's
+    // own install can be lockfile-only, so @internal/scripts' node_modules
+    // isn't guaranteed present. Both commands must be allowlisted in the
+    // runner via RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS (see
+    // .github/workflows/renovate.yml).
+    {
+      description: 'Auto-generate changesets for publishable package updates',
+      matchManagers: ['npm'],
+      postUpgradeTasks: {
+        commands: [
+          'pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts',
+          'node scripts/generate-changeset.js',
+        ],
+        fileFilters: ['.changeset/**'],
+        executionMode: 'branch',
+      },
     },
-    "ignoreDeps": [
-        // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
-        // Theme i18n ({{t}} helper) is on intl-messageformat 5.x. 6.0.0 changed
-        // message escaping from `\` to ICU apostrophe quoting, which changes the
-        // output of existing theme locale strings; needs a deliberate migration.
-        "intl-messageformat",
 
-        // codemirror 6 is a rewrite of the 5.x API. @tryghost/kg-simplemde (the
-        // Koenig markdown card) is built on 5.x and is not being ported. Also
-        // covers the `codemirror@<5.58.2` pnpm override key.
-        "codemirror",
+    // Always require dashboard approval for major updates
+    // This was largely to avoid the noise of major updates which were ESM only
+    // The idea was to check and accept major updates if they were NOT ESM
+    // But this hasn't been workable with our capacity
+    // Plus, ESM-only is an edge case in the grand scheme of dependencies
+    {
+      description: 'Require dashboard approval for major updates',
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
 
-        // https://linear.app/ghost/issue/PLA-78
-        // https://github.com/TryGhost/Ghost/pull/28180
-        // ghost/core is pinned to knex 2.4.2 and knex-migrator's knex is pinned
-        // back to the same version via the `knex-migrator>knex` pnpm override
-        // (knex-migrator 5.4.x bundles knex 3.x). Migrations are built with
-        // core's query builder and executed by knex-migrator's, so the two must
-        // move together; 2.5.x also strips the password from the shared
-        // `config.get('database')` object before knex-migrator connects. Ignore
-        // until core moves to knex 3.x in one coordinated upgrade.
-        "knex",
-        // Same PLA-78 pin, but Renovate treats the pnpm override key
-        // `knex-migrator>knex` as its own dependency name, so the plain "knex"
-        // ignore above doesn't match it (see #29092).
-        "knex-migrator>knex",
+    // The shared preset keeps major updates to packages we publish out of
+    // automerge. Make that manual-merge requirement visible on the PR.
+    {
+      description: 'Require human review for major TryGhost package updates',
+      matchPackageNames: ['/^@tryghost\/.+/', 'gscan', 'knex-migrator'],
+      matchUpdateTypes: ['major'],
+      automerge: false,
+      addLabels: ['needs:review'],
+    },
 
-        // https://github.com/TryGhost/Ghost/pull/29099
-        // The pnpm override `path-to-regexp@<0.1.13` exists only to force
-        // Express 4's transitive path-to-regexp to the ReDoS-patched 0.1.13.
-        // Express 4 pins path-to-regexp 0.1.x; 0.2.x+ changes routing
-        // semantics and breaks route matching, so this override must never
-        // leave the 0.1 line.
-        "path-to-regexp"
-    ],
-    "ignorePaths": [
-        "test",
-        // Freeze the Ember admin app wholesale. `apps/ember-admin` is being replaced by
-        // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
-        // Ember/broccoli stack we deliberately do not upgrade (see
-        // docs/ember-dependency-burden.md). Ignoring the whole directory drops
-        // admin's declared deps from extraction entirely: no update PRs, and they
-        // stop cluttering the Dependency Dashboard's Detected / Abandoned /
-        // Deprecated sections. Because Renovate manages deps per-manifest, anything
-        // admin SHARES with `ghost/core` or `apps/*` is still managed via those
-        // manifests — so in effect only admin-exclusive deps are omitted. This
-        // subsumes the old koenig-editor ignore and the per-package "Disable ember
-        // updates" / "disable css" rules (removed from packageRules below).
-        //
-        // Security note: GitHub Dependabot alerts for admin deps still fire (they
-        // are independent of Renovate) — we lose only Renovate's auto-fix PR. Given
-        // the app is slated for removal, remediate any rare real incident with a
-        // `pnpm overrides` pin. Today's admin-exclusive advisories are all
-        // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
-        "apps/ember-admin/**"
-    ],
-    "packageRules": [
-        // Auto-generate a changeset when an npm/package.json update (or a pnpm
-        // catalog bump — the npm manager handles both) touches a publishable
-        // package (koenig/*, packages/*), directly or via a catalog entry it
-        // references, so the PR clears the "Check app version bump" gate without
-        // a human authoring one. Scoped to `npm` so Docker/GitHub-Actions updates
-        // never run it. Runs once per branch after the update is applied (working
-        // tree, pre-commit): the script diffs the working tree against the base,
-        // writes a `.changeset/*.md` for any affected publishable package, and
-        // no-ops otherwise. fileFilters scopes Renovate's commit to the generated
-        // changeset. The first command installs the script's deps — Renovate's
-        // own install can be lockfile-only, so @internal/scripts' node_modules
-        // isn't guaranteed present. Both commands must be allowlisted in the
-        // runner via RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS (see
-        // .github/workflows/renovate.yml).
-        {
-            "description": "Auto-generate changesets for publishable package updates",
-            "matchManagers": [
-                "npm"
-            ],
-            "postUpgradeTasks": {
-                "commands": [
-                    "pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts",
-                    "node scripts/generate-changeset.js"
-                ],
-                "fileFilters": [
-                    ".changeset/**"
-                ],
-                "executionMode": "branch"
-            }
-        },
+    // Pin the Node.js runtime — Renovate must not bump it. Node is upgraded
+    // manually as one coordinated change: the `engines` range (root +
+    // ghost/core package.json), the `NODE_VERSION` ARG behind the `node`
+    // base image in Dockerfile.production and docker/ghost-dev/Dockerfile,
+    // and the `@types/node` cap below all have to move together and be
+    // deployed/QA'd as a unit. Left to Renovate this surfaces as recurring
+    // minor/patch PRs (e.g. #28696: 22.18.0 -> 22.22.3) that churn CI on a
+    // change we want to make deliberately. `matchPackageNames: ["node"]` is
+    // exact, so it disables both the `node-version` (engines) and `docker`
+    // (base image) updates without touching @types/node, nodemailer, etc.
+    {
+      description: 'Pin Node.js — bump the runtime manually, not via Renovate',
+      matchPackageNames: ['node'],
+      enabled: false,
+    },
 
-        // Always require dashboard approval for major updates
-        // This was largely to avoid the noise of major updates which were ESM only
-        // The idea was to check and accept major updates if they were NOT ESM
-        // But this hasn't been workable with our capacity
-        // Plus, ESM-only is an edge case in the grand scheme of dependencies
-        {
-            "description": "Require dashboard approval for major updates",
-            "matchUpdateTypes": [
-                "major"
-            ],
-            "dependencyDashboardApproval": true
-        },
+    // The Tinybird CLI declares `requires_python: >=3.10,<3.14`, so a 3.14
+    // base image would break `uv tool install tinybird` (or silently force
+    // uv to fetch a second, standalone interpreter). Cap rather than
+    // disable, so 3.13.x patches and digest re-pins still flow.
+    {
+      description: 'Cap the tb-cli base image below Python 3.14 (Tinybird CLI requires <3.14)',
+      matchFileNames: ['docker/tb-cli/Dockerfile'],
+      matchPackageNames: ['python'],
+      allowedVersions: '<3.14',
+    },
 
-        // The shared preset keeps major updates to packages we publish out of
-        // automerge. Make that manual-merge requirement visible on the PR.
-        {
-            "description": "Require human review for major TryGhost package updates",
-            "matchPackageNames": [
-                "/^@tryghost\/.+/",
-                "gscan",
-                "knex-migrator"
-            ],
-            "matchUpdateTypes": [
-                "major"
-            ],
-            "automerge": false,
-            "addLabels": [
-                "needs:review"
-            ]
-        },
+    // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
+    // local dev run against. Capping (rather than disabling) keeps 8.x
+    // patches and digest re-pins flowing.
+    {
+      description: 'Cap MySQL at the 8.x line',
+      matchDatasources: ['docker'],
+      matchPackageNames: ['mysql'],
+      allowedVersions: '<9',
+    },
 
-        // Pin the Node.js runtime — Renovate must not bump it. Node is upgraded
-        // manually as one coordinated change: the `engines` range (root +
-        // ghost/core package.json), the `NODE_VERSION` ARG behind the `node`
-        // base image in Dockerfile.production and docker/ghost-dev/Dockerfile,
-        // and the `@types/node` cap below all have to move together and be
-        // deployed/QA'd as a unit. Left to Renovate this surfaces as recurring
-        // minor/patch PRs (e.g. #28696: 22.18.0 -> 22.22.3) that churn CI on a
-        // change we want to make deliberately. `matchPackageNames: ["node"]` is
-        // exact, so it disables both the `node-version` (engines) and `docker`
-        // (base image) updates without touching @types/node, nodemailer, etc.
-        {
-            "description": "Pin Node.js — bump the runtime manually, not via Renovate",
-            "matchPackageNames": [
-                "node"
-            ],
-            "enabled": false
-        },
+    // Keep `@types/*` aligned with the runtime major they describe. Type defs
+    // for a different major than what actually runs are silently wrong at best
+    // (e.g. @types/express 5 vs Express 4) and build-breaking at worst
+    // (@types/react 19 fails the @tryghost/shade build under React 18) — this
+    // is what stalled the grouped "Update Types packages (major)" PR (#28307).
+    // Two mechanisms, with the major-dashboard-approval rule above as the human
+    // backstop for any types-ahead major that still slips through:
+    //
+    // 1. @types/node has no `node` npm package to pair with — it tracks the
+    //    Node.js runtime declared in `engines`, not a dependency — so a hard
+    //    version cap is the only lever. Raise it when we bump the Node engine.
+    {
+      description: 'Cap @types/node at the installed Node major (engines: ^22.23.1)',
+      matchPackageNames: ['@types/node'],
+      allowedVersions: '<23',
+    },
 
-        // The Tinybird CLI declares `requires_python: >=3.10,<3.14`, so a 3.14
-        // base image would break `uv tool install tinybird` (or silently force
-        // uv to fetch a second, standalone interpreter). Cap rather than
-        // disable, so 3.13.x patches and digest re-pins still flow.
-        {
-            "description": "Cap the tb-cli base image below Python 3.14 (Tinybird CLI requires <3.14)",
-            "matchFileNames": [
-                "docker/tb-cli/Dockerfile"
-            ],
-            "matchPackageNames": [
-                "python"
-            ],
-            "allowedVersions": "<3.14"
-        },
+    // 2. Every other @types/* is grouped WITH the runtime package it describes
+    //    (rules below) so a runtime major and its type-definition major travel
+    //    in the same PR and land together, instead of the types racing ahead.
+    //    This is self-maintaining — no per-package caps to hand-raise on each
+    //    upgrade (a stale cap silently flips from guard to blocker once the
+    //    runtime moves, as happened with supertest 6 -> 7).
+    //
+    // Any @types/* with NO managed runtime peer is left as its own individual
+    // PR rather than lumped into one mega "Types packages (major)" PR (so one
+    // breaking type can't block the rest). Ordering matters: this ungroup
+    // default comes BEFORE the pairings so the pairings (later) win for paired
+    // packages, and the pairings come BEFORE the react17/eslint9/tailwind3
+    // catalog rules below so those version-lane groups still win for their own
+    // depTypes (e.g. react@17 in the react17 catalog stays in its own PR).
+    {
+      description: 'Unpaired @types/* majors get their own PR, not one mega Types group',
+      matchPackageNames: ['@types/**'],
+      matchUpdateTypes: ['major'],
+      groupName: null,
+    },
+    {
+      description: 'React runtime + its type defs bump together',
+      groupName: 'React',
+      matchPackageNames: ['react', 'react-dom', '@types/react', '@types/react-dom'],
+    },
+    {
+      description: 'Express runtime + its type defs bump together',
+      groupName: 'Express',
+      matchPackageNames: ['express', '@types/express'],
+    },
+    {
+      description: 'jest runtime + its type defs bump together',
+      groupName: 'jest',
+      matchPackageNames: ['jest', '@types/jest'],
+    },
+    {
+      description: 'supertest runtime + its type defs bump together',
+      groupName: 'supertest',
+      matchPackageNames: ['supertest', '@types/supertest'],
+    },
+    {
+      description: 'dockerode runtime + its type defs bump together',
+      groupName: 'dockerode',
+      matchPackageNames: ['dockerode', '@types/dockerode'],
+    },
+    {
+      description: 'nodemailer runtime + its type defs bump together',
+      groupName: 'nodemailer',
+      matchPackageNames: ['nodemailer', '@types/nodemailer'],
+    },
+    {
+      description: 'sinon runtime + its type defs bump together',
+      groupName: 'sinon',
+      matchPackageNames: ['sinon', '@types/sinon'],
+    },
 
-        // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
-        // local dev run against. Capping (rather than disabling) keeps 8.x
-        // patches and digest re-pins flowing.
-        {
-            "description": "Cap MySQL at the 8.x line",
-            "matchDatasources": [
-                "docker"
-            ],
-            "matchPackageNames": [
-                "mysql"
-            ],
-            "allowedVersions": "<9"
-        },
+    // Group NQL packages separately from other TryGhost packages
+    {
+      groupName: 'NQL packages',
+      matchPackageNames: ['@tryghost/nql', '@tryghost/nql-lang'],
+    },
 
-        // Keep `@types/*` aligned with the runtime major they describe. Type defs
-        // for a different major than what actually runs are silently wrong at best
-        // (e.g. @types/express 5 vs Express 4) and build-breaking at worst
-        // (@types/react 19 fails the @tryghost/shade build under React 18) — this
-        // is what stalled the grouped "Update Types packages (major)" PR (#28307).
-        // Two mechanisms, with the major-dashboard-approval rule above as the human
-        // backstop for any types-ahead major that still slips through:
-        //
-        // 1. @types/node has no `node` npm package to pair with — it tracks the
-        //    Node.js runtime declared in `engines`, not a dependency — so a hard
-        //    version cap is the only lever. Raise it when we bump the Node engine.
-        {
-            "description": "Cap @types/node at the installed Node major (engines: ^22.23.1)",
-            "matchPackageNames": [
-                "@types/node"
-            ],
-            "allowedVersions": "<23"
-        },
+    // Split the broad shared TryGhost group into smaller logical lanes so
+    // failures in one area (e.g. email rendering) don't block unrelated
+    // internal package updates from merging.
+    {
+      groupName: 'TryGhost runtime packages',
+      matchPackageNames: [
+        '@tryghost/api-framework',
+        '@tryghost/bookshelf-plugins',
+        '@tryghost/database-info',
+        '@tryghost/debug',
+        '@tryghost/domain-events',
+        '@tryghost/errors',
+        '@tryghost/http-cache-utils',
+        '@tryghost/job-manager',
+        '@tryghost/logging',
+        '@tryghost/metrics',
+        '@tryghost/mw-error-handler',
+        '@tryghost/mw-vhost',
+        '@tryghost/pretty-cli',
+        '@tryghost/prometheus-metrics',
+        '@tryghost/promise',
+        '@tryghost/referrer-parser',
+        '@tryghost/root-utils',
+        '@tryghost/security',
+        '@tryghost/social-urls',
+        '@tryghost/tpl',
+        '@tryghost/validator',
+        '@tryghost/version',
+        '@tryghost/zip',
+      ],
+    },
+    {
+      groupName: 'TryGhost admin support packages',
+      matchPackageNames: [
+        '@tryghost/color-utils',
+        '@tryghost/custom-fonts',
+        '@tryghost/timezone-data',
+      ],
+    },
 
-        // 2. Every other @types/* is grouped WITH the runtime package it describes
-        //    (rules below) so a runtime major and its type-definition major travel
-        //    in the same PR and land together, instead of the types racing ahead.
-        //    This is self-maintaining — no per-package caps to hand-raise on each
-        //    upgrade (a stale cap silently flips from guard to blocker once the
-        //    runtime moves, as happened with supertest 6 -> 7).
-        //
-        // Any @types/* with NO managed runtime peer is left as its own individual
-        // PR rather than lumped into one mega "Types packages (major)" PR (so one
-        // breaking type can't block the rest). Ordering matters: this ungroup
-        // default comes BEFORE the pairings so the pairings (later) win for paired
-        // packages, and the pairings come BEFORE the react17/eslint9/tailwind3
-        // catalog rules below so those version-lane groups still win for their own
-        // depTypes (e.g. react@17 in the react17 catalog stays in its own PR).
-        {
-            "description": "Unpaired @types/* majors get their own PR, not one mega Types group",
-            "matchPackageNames": [
-                "@types/**"
-            ],
-            "matchUpdateTypes": [
-                "major"
-            ],
-            "groupName": null
-        },
-        {
-            "description": "React runtime + its type defs bump together",
-            "groupName": "React",
-            "matchPackageNames": [
-                "react",
-                "react-dom",
-                "@types/react",
-                "@types/react-dom"
-            ]
-        },
-        {
-            "description": "Express runtime + its type defs bump together",
-            "groupName": "Express",
-            "matchPackageNames": [
-                "express",
-                "@types/express"
-            ]
-        },
-        {
-            "description": "jest runtime + its type defs bump together",
-            "groupName": "jest",
-            "matchPackageNames": [
-                "jest",
-                "@types/jest"
-            ]
-        },
-        {
-            "description": "supertest runtime + its type defs bump together",
-            "groupName": "supertest",
-            "matchPackageNames": [
-                "supertest",
-                "@types/supertest"
-            ]
-        },
-        {
-            "description": "dockerode runtime + its type defs bump together",
-            "groupName": "dockerode",
-            "matchPackageNames": [
-                "dockerode",
-                "@types/dockerode"
-            ]
-        },
-        {
-            "description": "nodemailer runtime + its type defs bump together",
-            "groupName": "nodemailer",
-            "matchPackageNames": [
-                "nodemailer",
-                "@types/nodemailer"
-            ]
-        },
-        {
-            "description": "sinon runtime + its type defs bump together",
-            "groupName": "sinon",
-            "matchPackageNames": [
-                "sinon",
-                "@types/sinon"
-            ]
-        },
+    // Bump @tryghost/limit-service on its own. Limit changes are feature-tied
+    // (each new flag is consumed by specific BREAD/limit-helper code) and we
+    // want the version bump landing as an isolated, reviewable PR rather than
+    // riding in with unrelated admin-support package updates.
+    {
+      groupName: '@tryghost/limit-service',
+      matchPackageNames: ['@tryghost/limit-service'],
+    },
+    {
+      groupName: 'TryGhost content and email packages',
+      matchPackageNames: [
+        '@tryghost/config-url-helpers',
+        '@tryghost/content-api',
+        '@tryghost/helpers',
+        '@tryghost/html-to-plaintext',
+        '@tryghost/nodemailer',
+        '@tryghost/parse-email-address',
+        '@tryghost/request',
+        '@tryghost/string',
+        '@tryghost/url-utils',
+      ],
+    },
+    {
+      groupName: 'TryGhost test support packages',
+      matchPackageNames: [
+        '@tryghost/email-mock-receiver',
+        '@tryghost/express-test',
+        '@tryghost/webhook-mock-receiver',
+      ],
+    },
 
-        // Group NQL packages separately from other TryGhost packages
-        {
-            "groupName": "NQL packages",
-            "matchPackageNames": [
-                "@tryghost/nql",
-                "@tryghost/nql-lang"
-            ]
-        },
+    // These are published by us but live outside the @tryghost/ npm scope,
+    // so they miss the shared preset's "0 days" trusted-package exemption
+    // and would otherwise soak for 72h like third-party releases. Mirrors
+    // the pnpm-workspace.yaml minimumReleaseAgeExclude list. knex-migrator
+    // is currently in ignoreDeps, but is listed for when that's lifted.
+    // Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
+    // (Mapbox-era) npm maintainer accounts can still publish, so the soak
+    // retains value there.
+    {
+      description: 'No release-age soak for unscoped TryGhost-published packages',
+      matchPackageNames: [
+        'bookshelf-relations',
+        'eslint-plugin-ghost',
+        'express-hbs',
+        'ghost-storage-base',
+        'gscan',
+        'knex-migrator',
+      ],
+      minimumReleaseAge: '0 days',
+    },
 
-        // Split the broad shared TryGhost group into smaller logical lanes so
-        // failures in one area (e.g. email rendering) don't block unrelated
-        // internal package updates from merging.
-        {
-            "groupName": "TryGhost runtime packages",
-            "matchPackageNames": [
-                "@tryghost/api-framework",
-                "@tryghost/bookshelf-plugins",
-                "@tryghost/database-info",
-                "@tryghost/debug",
-                "@tryghost/domain-events",
-                "@tryghost/errors",
-                "@tryghost/http-cache-utils",
-                "@tryghost/job-manager",
-                "@tryghost/logging",
-                "@tryghost/metrics",
-                "@tryghost/mw-error-handler",
-                "@tryghost/mw-vhost",
-                "@tryghost/pretty-cli",
-                "@tryghost/prometheus-metrics",
-                "@tryghost/promise",
-                "@tryghost/referrer-parser",
-                "@tryghost/root-utils",
-                "@tryghost/security",
-                "@tryghost/social-urls",
-                "@tryghost/tpl",
-                "@tryghost/validator",
-                "@tryghost/version",
-                "@tryghost/zip"
-            ]
-        },
-        {
-            "groupName": "TryGhost admin support packages",
-            "matchPackageNames": [
-                "@tryghost/color-utils",
-                "@tryghost/custom-fonts",
-                "@tryghost/timezone-data"
-            ]
-        },
+    // The shared preset's automerge rule only matches traditional package
+    // dependency types. pnpm catalogs use `pnpm.catalog` (default catalog)
+    // and `pnpm.catalog.<name>` (named catalogs), so catalog updates were
+    // opening with automerge disabled even when the same package in a
+    // package.json would automerge. Apply the same default here.
+    {
+      description: 'Automerge pnpm catalog updates after CI passes',
+      matchDepTypes: ['/^pnpm\\.catalog(?:\\..+)?$/'],
+      automerge: true,
+      automergeType: 'pr',
+    },
 
-        // Bump @tryghost/limit-service on its own. Limit changes are feature-tied
-        // (each new flag is consumed by specific BREAD/limit-helper code) and we
-        // want the version bump landing as an isolated, reviewable PR rather than
-        // riding in with unrelated admin-support package updates.
-        {
-            "groupName": "@tryghost/limit-service",
-            "matchPackageNames": [
-                "@tryghost/limit-service"
-            ]
-        },
-        {
-            "groupName": "TryGhost content and email packages",
-            "matchPackageNames": [
-                "@tryghost/config-url-helpers",
-                "@tryghost/content-api",
-                "@tryghost/helpers",
-                "@tryghost/html-to-plaintext",
-                "@tryghost/nodemailer",
-                "@tryghost/parse-email-address",
-                "@tryghost/request",
-                "@tryghost/string",
-                "@tryghost/url-utils"
-            ]
-        },
-        {
-            "groupName": "TryGhost test support packages",
-            "matchPackageNames": [
-                "@tryghost/email-mock-receiver",
-                "@tryghost/express-test",
-                "@tryghost/webhook-mock-receiver"
-            ]
-        },
+    // Overrides change transitive resolution across the entire workspace,
+    // so keep them manual and make that policy explicit on their PRs.
+    {
+      description: 'Require human review for pnpm override updates',
+      matchDepTypes: ['pnpm.overrides'],
+      automerge: false,
+      addLabels: ['needs:review'],
+    },
 
-        // These are published by us but live outside the @tryghost/ npm scope,
-        // so they miss the shared preset's "0 days" trusted-package exemption
-        // and would otherwise soak for 72h like third-party releases. Mirrors
-        // the pnpm-workspace.yaml minimumReleaseAgeExclude list. knex-migrator
-        // is currently in ignoreDeps, but is listed for when that's lifted.
-        // Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
-        // (Mapbox-era) npm maintainer accounts can still publish, so the soak
-        // retains value there.
-        {
-            "description": "No release-age soak for unscoped TryGhost-published packages",
-            "matchPackageNames": [
-                "bookshelf-relations",
-                "eslint-plugin-ghost",
-                "express-hbs",
-                "ghost-storage-base",
-                "gscan",
-                "knex-migrator"
-            ],
-            "minimumReleaseAge": "0 days"
-        },
+    // Group each pinned-version pnpm catalog into a single PR per catalog.
+    //
+    // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
+    // tailwind3) each hold a version lane we deliberately keep separate
+    // from the main `catalog:` — e.g. eslint 9 lives in `eslint9` while the
+    // default catalog stays on eslint 8. Renovate tags every catalog dep
+    // with a depType of `pnpm.catalog.<name>`, so matching the depType
+    // groups the whole catalog without restating its package list and stays
+    // correct as entries are added or removed in pnpm-workspace.yaml.
+    //
+    // These also override the shared preset's `group:monorepos` rules,
+    // which would otherwise group e.g. eslint + @eslint/js *by name* and
+    // mix the default-catalog (v8) and eslint9-catalog (v9) bumps into one
+    // PR. Matching by depType keeps each lane in its own reviewable PR.
+    //
+    // The main `catalog:` is intentionally left ungrouped: its entries are
+    // independent, so grouping them would only couple unrelated bumps and
+    // let one risky update block the rest.
+    {
+      groupName: 'react17 catalog',
+      matchDepTypes: ['pnpm.catalog.react17'],
+    },
+    {
+      groupName: 'eslint9 catalog',
+      matchDepTypes: ['pnpm.catalog.eslint9'],
+    },
+    {
+      groupName: 'tailwind3 catalog',
+      matchDepTypes: ['pnpm.catalog.tailwind3'],
+    },
 
-        // The shared preset's automerge rule only matches traditional package
-        // dependency types. pnpm catalogs use `pnpm.catalog` (default catalog)
-        // and `pnpm.catalog.<name>` (named catalogs), so catalog updates were
-        // opening with automerge disabled even when the same package in a
-        // package.json would automerge. Apply the same default here.
-        {
-            "description": "Automerge pnpm catalog updates after CI passes",
-            "matchDepTypes": [
-                "/^pnpm\\.catalog(?:\\..+)?$/"
-            ],
-            "automerge": true,
-            "automergeType": "pr"
-        },
+    // Always automerge these packages:
+    {
+      matchPackageNames: [
+        // This is a pre-1.0.0 package, but it provides icons
+        // and is very very regularly updated and seems safe to update
+        'lucide-react',
+      ],
+      automerge: true,
+    },
 
-        // Overrides change transitive resolution across the entire workspace,
-        // so keep them manual and make that policy explicit on their PRs.
-        {
-            "description": "Require human review for pnpm override updates",
-            "matchDepTypes": [
-                "pnpm.overrides"
-            ],
-            "automerge": false,
-            "addLabels": [
-                "needs:review"
-            ]
-        },
+    // Docker tag changes can alter runtime/service behavior even without a
+    // manifest change. Keep those updates manual and visibly labelled; the
+    // controlled digest rule immediately below remains automergeable.
+    {
+      description: 'Require human review for Docker tag updates',
+      matchDatasources: ['docker'],
+      matchUpdateTypes: ['major', 'minor', 'patch'],
+      automerge: false,
+      addLabels: ['needs:review'],
+    },
 
-        // Group each pinned-version pnpm catalog into a single PR per catalog.
-        //
-        // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
-        // tailwind3) each hold a version lane we deliberately keep separate
-        // from the main `catalog:` — e.g. eslint 9 lives in `eslint9` while the
-        // default catalog stays on eslint 8. Renovate tags every catalog dep
-        // with a depType of `pnpm.catalog.<name>`, so matching the depType
-        // groups the whole catalog without restating its package list and stays
-        // correct as entries are added or removed in pnpm-workspace.yaml.
-        //
-        // These also override the shared preset's `group:monorepos` rules,
-        // which would otherwise group e.g. eslint + @eslint/js *by name* and
-        // mix the default-catalog (v8) and eslint9-catalog (v9) bumps into one
-        // PR. Matching by depType keeps each lane in its own reviewable PR.
-        //
-        // The main `catalog:` is intentionally left ungrouped: its entries are
-        // independent, so grouping them would only couple unrelated bumps and
-        // let one risky update block the rest.
-        {
-            "groupName": "react17 catalog",
-            "matchDepTypes": ["pnpm.catalog.react17"]
-        },
-        {
-            "groupName": "eslint9 catalog",
-            "matchDepTypes": ["pnpm.catalog.eslint9"]
-        },
-        {
-            "groupName": "tailwind3 catalog",
-            "matchDepTypes": ["pnpm.catalog.tailwind3"]
-        },
+    // Batch internal Docker digest pins into a single weekly PR and
+    // automerge after CI passes. Scoped to base images we control or
+    // pin purely for build reproducibility, so digest rotations don't
+    // change runtime behavior. Frequently-rotating upstream tags
+    // (notably `tinybird-local:latest`) were opening ~5 individual PRs
+    // per week, each running the full E2E lane (~70-150 job-min) for a
+    // tweak with no runtime impact. Saturday-only `schedule` batches the
+    // week's churn into one PR + one CI run; the global automergeSchedule
+    // (all weekend, weekday evenings) lands it without human review.
+    // Digests for images not in this list (e.g. the pinned `redis` in
+    // ci.yml services) still open individually — they're rare and
+    // intentionally human-reviewed.
+    {
+      description: 'Group + weekly-schedule internal Docker digest updates; automerge after CI passes',
+      matchDatasources: ['docker'],
+      matchPackageNames: [
+        'ghost/traffic-analytics',
+        'tinybirdco/tinybird-local',
+        'python',
+        'ghcr.io/astral-sh/uv',
+        'axllent/mailpit',
+        'caddy',
+        'stripe/stripe-cli',
+      ],
+      matchUpdateTypes: ['digest'],
+      groupName: 'Docker image digests',
+      schedule: ['* * * * 6'],
+      automerge: true,
+      automergeType: 'pr',
+    },
 
-        // Always automerge these packages:
-        {
-            "matchPackageNames": [
-                // This is a pre-1.0.0 package, but it provides icons
-                // and is very very regularly updated and seems safe to update
-                "lucide-react"
-            ],
-            "automerge": true
-        },
+    // Digest and pin updates (Docker image digests, action SHAs) usually
+    // have no release timestamp — Docker Hub library images skip label
+    // lookup entirely — so the 72h soak can never be satisfied. Worse,
+    // digest updates bypass internalChecksFilter's lookup-time pending
+    // state (it only filters version releases), so the PR opens
+    // immediately anyway and then sits unmergeable forever on a pending
+    // renovate/stability-days status, getting rebased every run. A time
+    // gate is unmeasurable here, so exempt these update types from the
+    // soak; the automerge rules around this one decide what merges on
+    // green CI vs what waits for a human.
+    {
+      description: 'No release-age soak for digest/pin updates (no usable release timestamp)',
+      matchUpdateTypes: ['digest', 'pin', 'pinDigest'],
+      minimumReleaseAge: '0 days',
+    },
 
-        // Docker tag changes can alter runtime/service behavior even without a
-        // manifest change. Keep those updates manual and visibly labelled; the
-        // controlled digest rule immediately below remains automergeable.
-        {
-            "description": "Require human review for Docker tag updates",
-            "matchDatasources": [
-                "docker"
-            ],
-            "matchUpdateTypes": [
-                "major",
-                "minor",
-                "patch"
-            ],
-            "automerge": false,
-            "addLabels": [
-                "needs:review"
-            ]
-        },
+    // The shared preset automerges all `action`-type deps, which would
+    // quietly convert our SHA pins on third-party actions back into
+    // "trust whatever upstream publishes next" — the exact attack class
+    // SHA-pinning defends against (codecov 2021, tj-actions 2025). Keep
+    // own-org and GitHub-owned actions automerging; bumps to everything
+    // else (codecov, docker, pnpm, peter-evans, ...) wait for a human
+    // review per GitHub's Actions hardening guidance. Placed before the
+    // security-update rule below so vulnerability-alert action bumps can
+    // still automerge.
+    {
+      description: 'Third-party action bumps require human merge',
+      matchDepTypes: ['action'],
+      matchPackageNames: ['!tryghost/**', '!actions/**', '!github/**'],
+      automerge: false,
+      addLabels: ['needs:review'],
+    },
 
-        // Batch internal Docker digest pins into a single weekly PR and
-        // automerge after CI passes. Scoped to base images we control or
-        // pin purely for build reproducibility, so digest rotations don't
-        // change runtime behavior. Frequently-rotating upstream tags
-        // (notably `tinybird-local:latest`) were opening ~5 individual PRs
-        // per week, each running the full E2E lane (~70-150 job-min) for a
-        // tweak with no runtime impact. Saturday-only `schedule` batches the
-        // week's churn into one PR + one CI run; the global automergeSchedule
-        // (all weekend, weekday evenings) lands it without human review.
-        // Digests for images not in this list (e.g. the pinned `redis` in
-        // ci.yml services) still open individually — they're rare and
-        // intentionally human-reviewed.
-        {
-            "description": "Group + weekly-schedule internal Docker digest updates; automerge after CI passes",
-            "matchDatasources": [
-                "docker"
-            ],
-            "matchPackageNames": [
-                "ghost/traffic-analytics",
-                "tinybirdco/tinybird-local",
-                "python",
-                "ghcr.io/astral-sh/uv",
-                "axllent/mailpit",
-                "caddy",
-                "stripe/stripe-cli"
-            ],
-            "matchUpdateTypes": [
-                "digest"
-            ],
-            "groupName": "Docker image digests",
-            "schedule": [
-                "* * * * 6"
-            ],
-            "automerge": true,
-            "automergeType": "pr"
-        },
+    // Security patches and minors automerge after CI passes regardless
+    // of any other automerge exclusion (e.g. the third-party action rule
+    // above). Security majors are intentionally left
+    // for human merge — but the `vulnerabilityAlerts` block above
+    // still opens them without a dashboard-approval tick.
+    {
+      description: 'Automerge non-major security updates after CI passes',
+      matchUpdateTypes: ['patch', 'minor', 'digest'],
+      matchJsonata: ['isVulnerabilityAlert = true'],
+      automerge: true,
+      automergeType: 'pr',
+    },
 
-        // Digest and pin updates (Docker image digests, action SHAs) usually
-        // have no release timestamp — Docker Hub library images skip label
-        // lookup entirely — so the 72h soak can never be satisfied. Worse,
-        // digest updates bypass internalChecksFilter's lookup-time pending
-        // state (it only filters version releases), so the PR opens
-        // immediately anyway and then sits unmergeable forever on a pending
-        // renovate/stability-days status, getting rebased every run. A time
-        // gate is unmeasurable here, so exempt these update types from the
-        // soak; the automerge rules around this one decide what merges on
-        // green CI vs what waits for a human.
-        {
-            "description": "No release-age soak for digest/pin updates (no usable release timestamp)",
-            "matchUpdateTypes": [
-                "digest",
-                "pin",
-                "pinDigest"
-            ],
-            "minimumReleaseAge": "0 days"
-        },
-
-        // The shared preset automerges all `action`-type deps, which would
-        // quietly convert our SHA pins on third-party actions back into
-        // "trust whatever upstream publishes next" — the exact attack class
-        // SHA-pinning defends against (codecov 2021, tj-actions 2025). Keep
-        // own-org and GitHub-owned actions automerging; bumps to everything
-        // else (codecov, docker, pnpm, peter-evans, ...) wait for a human
-        // review per GitHub's Actions hardening guidance. Placed before the
-        // security-update rule below so vulnerability-alert action bumps can
-        // still automerge.
-        {
-            "description": "Third-party action bumps require human merge",
-            "matchDepTypes": [
-                "action"
-            ],
-            "matchPackageNames": [
-                "!tryghost/**",
-                "!actions/**",
-                "!github/**"
-            ],
-            "automerge": false,
-            "addLabels": [
-                "needs:review"
-            ]
-        },
-
-        // Security patches and minors automerge after CI passes regardless
-        // of any other automerge exclusion (e.g. the third-party action rule
-        // above). Security majors are intentionally left
-        // for human merge — but the `vulnerabilityAlerts` block above
-        // still opens them without a dashboard-approval tick.
-        {
-            "description": "Automerge non-major security updates after CI passes",
-            "matchUpdateTypes": [
-                "patch",
-                "minor",
-                "digest"
-            ],
-            "matchJsonata": [
-                "isVulnerabilityAlert = true"
-            ],
-            "automerge": true,
-            "automergeType": "pr"
-        }
-
-        // NOTE: the Ember admin app is now frozen wholesale via
-        // `ignorePaths: ghost/admin/**` (above). The former per-package
-        // "Disable ember updates" and "disable css" rules used to live here, but
-        // they only matched ember-*named* and css packages in
-        // ghost/admin/package.json — which let non-ember admin deps (broccoli-*,
-        // liquid-fire, tracked-built-ins, the autoprefixer/postcss tree, etc.)
-        // keep surfacing on the dashboard. The ignorePaths entry supersedes both.
-    ]
+    // NOTE: the Ember admin app is now frozen wholesale via
+    // `ignorePaths: ghost/admin/**` (above). The former per-package
+    // "Disable ember updates" and "disable css" rules used to live here, but
+    // they only matched ember-*named* and css packages in
+    // ghost/admin/package.json — which let non-ember admin deps (broccoli-*,
+    // liquid-fire, tracked-built-ins, the autoprefixer/postcss tree, etc.)
+    // keep surfacing on the dashboard. The ignorePaths entry supersedes both.
+  ],
 }

@@ -1,1 +1,1 @@
-export {default as slugify} from './slugify.js';
+export { default as slugify } from './slugify.js';

@@ -1,4 +1,4 @@
-const {createAddColumnMigration} = require('../../utils');
+const { createAddColumnMigration } = require('../../utils');
 
 // The publisher's order for their custom fields. Every existing row takes the
 // default, so a site that has never reordered ends up with one value repeated —
@@ -6,8 +6,8 @@ const {createAddColumnMigration} = require('../../utils');
 // writes real ranks, the fields still come out in the order they were created.
 // That is what makes this a column addition rather than a backfill.
 module.exports = createAddColumnMigration('members_custom_fields', 'sort_order', {
-    type: 'integer',
-    nullable: false,
-    unsigned: true,
-    defaultTo: 0
+  type: 'integer',
+  nullable: false,
+  unsigned: true,
+  defaultTo: 0,
 });

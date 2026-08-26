@@ -1,175 +1,210 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Badge, Banner} from '@tryghost/shade/components';
-import {type ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
-import {LucideIcon} from '@tryghost/shade/utils';
+import { useMemo } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Badge,
+} from '@tryghost/shade/components';
+import {
+  type DisplayVariant,
+  SEVERITY_ORDER,
+  getDisplaySeverity,
+  getDisplayVariant,
+  hasErrorProblem,
+  sortBySeverity,
+} from './theme-validation-issues';
+import { type ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 
-type DisplaySeverity = 'Error' | 'Warning' | 'Recommendation';
+/**
+ * A grey inline-code chip that also answers every property of Ghost's legacy
+ * unlayered `code, tt` rule. Tokens are spelled out in full because Tailwind
+ * only generates utilities it finds literally in the source.
+ */
+const CODE_CHIP =
+  '[&_code]:rounded-md [&_code]:border-0 [&_code]:bg-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:align-baseline [&_code]:font-mono [&_code]:text-sm [&_code]:text-inherit [&_code]:leading-[inherit] [&_code]:whitespace-nowrap';
 
-function getDisplaySeverity(problem: ThemeProblem): DisplaySeverity {
-    if (problem.level === 'warning') {
-        return 'Warning';
-    }
+/** gscan writes `rule` and `details` as HTML, rendered verbatim. */
+const RULE_HTML = `text-base leading-[1.55] font-semibold text-foreground ${CODE_CHIP}`;
+const DETAILS_HTML = `text-base leading-[1.55] text-foreground [&_a]:underline ${CODE_CHIP}`;
 
-    if (problem.level === 'recommendation') {
-        return 'Recommendation';
-    }
+const FAILURE_LIST = `space-y-1 text-base text-muted-foreground ${CODE_CHIP}`;
 
-    return 'Error';
+function countBySeverity(problems: ThemeProblem[]) {
+  return SEVERITY_ORDER.map((severity) => ({
+    severity,
+    count: problems.filter((problem) => getDisplaySeverity(problem) === severity).length,
+  })).filter(({ count }) => count > 0);
 }
 
-function getDisplayVariant(problem: ThemeProblem): 'destructive' | 'warning' | 'secondary' {
-    if (problem.level === 'warning') {
-        return 'warning';
-    }
-
-    if (problem.level === 'recommendation') {
-        return 'secondary';
-    }
-
-    return 'destructive';
+/** e.g. `2 errors, 3 warnings`, omitting severities that aren't present. */
+function formatIssueSummary(counts: ReturnType<typeof countBySeverity>): string {
+  return counts
+    .map(
+      ({ severity, count }) =>
+        `${formatNumber(count)} ${severity.toLowerCase()}${count === 1 ? '' : 's'}`,
+    )
+    .join(', ');
 }
 
-function formatNonBlockingIssueCount(count: number) {
-    return `${count} non-blocking ${count === 1 ? 'issue' : 'issues'}`;
+/** Problem codes repeat across gscan results, so the index keeps accordion values unique. */
+function problemValue(problem: ThemeProblem, index: number): string {
+  return `${problem.code || 'issue'}-${index}`;
 }
 
-function ProblemDetails({problem}: {problem: ThemeProblem}) {
-    return (
-        <div className='space-y-3'>
-            <div dangerouslySetInnerHTML={{__html: problem.details}} className='text-sm text-muted-foreground' />
-            {problem.failures?.length > 0 && (
-                <div>
-                    <h6 className='mb-1 text-xs font-semibold text-muted-foreground uppercase'>Affected files</h6>
-                    <ul className='space-y-1 text-sm text-muted-foreground'>
-                        {problem.failures.map(failure => (
-                            <li key={`${failure.ref}-${failure.message || ''}`}>
-                                <code className='rounded bg-muted px-1 py-0.5 text-xs text-foreground'>{failure.ref}</code>
-                                {failure.message ? <span>: {failure.message}</span> : null}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+function SeverityBadge({ children, variant }: { children: string; variant: DisplayVariant }) {
+  return (
+    <Badge className="py-1 font-mono text-sm leading-none uppercase" variant={variant}>
+      {children}
+    </Badge>
+  );
+}
+
+function ProblemDetails({ problem }: { problem: ThemeProblem }) {
+  return (
+    <div className="mt-3 space-y-3">
+      <div dangerouslySetInnerHTML={{ __html: problem.details }} className={DETAILS_HTML} />
+      {problem.failures?.length > 0 && (
+        <div>
+          <h6 className="mb-1 text-base font-semibold text-muted-foreground">Affected files</h6>
+          <ul className={FAILURE_LIST}>
+            {problem.failures.map((failure) => (
+              <li key={`${failure.ref}-${failure.message || ''}`}>
+                <code>{failure.ref}</code>
+                {failure.message ? <span>: {failure.message}</span> : null}
+              </li>
+            ))}
+          </ul>
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
-export function ValidationProblemCard({problem, prominent = false}: {problem: ThemeProblem; prominent?: boolean}) {
-    const [expanded, setExpanded] = useState(prominent);
-    const displaySeverity = getDisplaySeverity(problem);
-
-    return (
-        <div className={`rounded-lg border ${prominent ? 'border-destructive/30 bg-background' : 'border-border bg-background'} p-4`}>
-            <button
-                className='flex w-full items-start justify-between gap-3 text-left'
-                type='button'
-                onClick={() => setExpanded(!expanded)}
-            >
-                <div className='min-w-0 flex-1'>
-                    <div className='mb-2 flex items-center gap-2'>
-                        <Badge variant={getDisplayVariant(problem)}>{displaySeverity}</Badge>
-                        {problem.code && <span className='text-xs text-muted-foreground'>{problem.code}</span>}
-                    </div>
-                    <div dangerouslySetInnerHTML={{__html: problem.rule}} className='text-sm font-medium text-foreground' />
-                </div>
-                <LucideIcon.ChevronDown className={`mt-1 size-4 shrink-0 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`} />
-            </button>
-            {expanded && (
-                <div className='mt-4 border-t border-border pt-4'>
-                    <ProblemDetails problem={problem} />
-                </div>
-            )}
-        </div>
-    );
-}
-
-export function ThemeValidationDetailsDisclosure({
-    defaultOpen,
-    problems
+function ValidationProblemItem({
+  errorLabel,
+  problem,
+  value,
 }: {
-    defaultOpen: boolean;
-    problems: ThemeProblem[];
+  errorLabel: string;
+  problem: ThemeProblem;
+  value: string;
 }) {
-    const [open, setOpen] = useState(defaultOpen);
-    const count = problems.length;
+  const severity = getDisplaySeverity(problem);
 
-    useEffect(() => {
-        setOpen(defaultOpen);
-    }, [defaultOpen]);
-
-    const sortedProblems = useMemo(() => {
-        return [...problems].sort((a, b) => {
-            const severityOrder: Record<DisplaySeverity, number> = {Error: 0, Warning: 1, Recommendation: 2};
-            return severityOrder[getDisplaySeverity(a)] - severityOrder[getDisplaySeverity(b)];
-        });
-    }, [problems]);
-
-    if (!count) {
-        return null;
-    }
-
-    return (
-        <div className='mt-6 border-t border-border pt-5'>
-            <button
-                className='flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:bg-muted/40'
-                type='button'
-                onClick={() => setOpen(!open)}
-            >
-                <div>
-                    <div className='text-sm font-semibold text-foreground'>
-                        Review {formatNonBlockingIssueCount(count)}
-                    </div>
-                    <div className='mt-1 text-sm text-muted-foreground'>
-                        {open ? 'Hide details' : 'Show details'}
-                    </div>
-                </div>
-                <LucideIcon.ChevronDown className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
-            </button>
-            {open && (
-                <div className='mt-4 space-y-3'>
-                    {sortedProblems.map(problem => (
-                        <ValidationProblemCard key={problem.code} problem={problem} />
-                    ))}
-                </div>
+  // An explicit colour: the cascade would give this row the translucent
+  // border token, which disappears against an opaque card in dark mode.
+  return (
+    <AccordionItem className="border-border-default last:border-b-0" value={value}>
+      <AccordionTrigger className="items-start gap-3 p-5 hover:no-underline data-[state=open]:pb-1 [&>svg]:mt-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <SeverityBadge variant={getDisplayVariant(problem)}>
+              {severity === 'Error' ? errorLabel : severity}
+            </SeverityBadge>
+            {problem.code && (
+              <span className="font-mono text-sm font-normal text-muted-foreground">
+                {problem.code}
+              </span>
             )}
+          </div>
+          <div dangerouslySetInnerHTML={{ __html: problem.rule }} className={RULE_HTML} />
         </div>
-    );
+      </AccordionTrigger>
+      <AccordionContent className="px-5 pb-5">
+        <ProblemDetails problem={problem} />
+      </AccordionContent>
+    </AccordionItem>
+  );
 }
 
-export function ErrorTextCard({message}: {message: string}) {
-    return (
-        <div className='rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive'>
-            <div className='flex items-start gap-2'>
-                <LucideIcon.AlertTriangle className='mt-0.5 size-4 shrink-0' />
-                <p>{message}</p>
-            </div>
-        </div>
-    );
+/** A bare error string from the API: same row as a problem, minus anything to expand. */
+function ValidationMessageRow({ errorLabel, message }: { errorLabel: string; message: string }) {
+  return (
+    <div className="flex flex-col gap-2 border-b border-border-default p-5 last:border-b-0">
+      <div className="flex items-center gap-3">
+        <SeverityBadge variant="destructive">{errorLabel}</SeverityBadge>
+      </div>
+      <p className="text-base font-semibold text-foreground">{message}</p>
+    </div>
+  );
 }
 
-export function OutcomeBanner({
-    children,
-    title,
-    variant
+export const THEME_PROBLEM_LIST_TESTID = 'theme-problem-list';
+
+/**
+ * `errorLabel` names an error-severity row, so a dialog showing two lists can
+ * say which one blocked it: `Blocking` vs. plain `Error`.
+ */
+export function ValidationProblemList({
+  errorLabel = 'Error',
+  expandedByDefault = false,
+  messages = [],
+  problems,
 }: {
-    children: React.ReactNode;
-    title: string;
-    variant: 'success' | 'destructive';
+  errorLabel?: string;
+  expandedByDefault?: boolean;
+  messages?: string[];
+  problems: ThemeProblem[];
 }) {
-    const Icon = variant === 'success' ? LucideIcon.CheckCircle2 : LucideIcon.AlertTriangle;
-    const iconClassName = variant === 'success' ? 'text-state-success' : 'text-destructive';
+  const sortedProblems = useMemo(() => sortBySeverity(problems), [problems]);
+  const values = useMemo(() => sortedProblems.map(problemValue), [sortedProblems]);
 
-    return (
-        <Banner role={variant === 'destructive' ? 'alert' : 'status'} size='lg' variant={variant === 'success' ? 'success' : 'destructive'}>
-            <div className='flex items-start gap-3'>
-                <div className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full ${variant === 'success' ? 'bg-state-success/10' : 'bg-destructive/10'}`}>
-                    <Icon className={`size-5 ${iconClassName}`} />
-                </div>
-                <div>
-                    <h3 className={`text-xl font-semibold tracking-tight ${variant === 'success' ? 'text-state-success' : 'text-destructive'}`}>{title}</h3>
-                    <div className='mt-1 text-sm text-foreground'>{children}</div>
-                </div>
-            </div>
-        </Banner>
-    );
+  if (!sortedProblems.length && !messages.length) {
+    return null;
+  }
+
+  return (
+    <div
+      className="overflow-hidden rounded-lg border border-border-default"
+      data-testid={THEME_PROBLEM_LIST_TESTID}
+    >
+      {messages.map((message) => (
+        <ValidationMessageRow key={message} errorLabel={errorLabel} message={message} />
+      ))}
+      {sortedProblems.length > 0 && (
+        <Accordion defaultValue={expandedByDefault ? values : []} type="multiple">
+          {sortedProblems.map((problem, index) => (
+            <ValidationProblemItem
+              key={values[index]}
+              errorLabel={errorLabel}
+              problem={problem}
+              value={values[index]}
+            />
+          ))}
+        </Accordion>
+      )}
+    </div>
+  );
+}
+
+export function ThemeValidationIssueList({ problems }: { problems: ThemeProblem[] }) {
+  if (!problems.length) {
+    return null;
+  }
+
+  const counts = countBySeverity(problems);
+  // The heading reads severity, not count, so the icon has to match it: amber
+  // is only right when the set is warnings and recommendations alone.
+  const hasError = hasErrorProblem(problems);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <LucideIcon.TriangleAlert
+            className={cn('size-4 shrink-0', hasError ? 'text-destructive' : 'text-state-warning')}
+          />
+          {formatIssueSummary(counts)}
+        </h3>
+        {hasError && (
+          <p className="text-sm text-muted-foreground">
+            Highly recommended to fix, functionality could be restricted
+          </p>
+        )}
+      </div>
+      <ValidationProblemList problems={problems} />
+    </div>
+  );
 }

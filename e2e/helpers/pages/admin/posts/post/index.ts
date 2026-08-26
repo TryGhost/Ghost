@@ -1,3 +1,3 @@
-export {PageEditorPage, PostEditorPage} from './post-editor-page';
-export {PostPreviewModal} from './post-preview-modal';
-export {DesktopPreviewFrame, EmailPreviewFrame} from './post-preview-frames';
+export { PageEditorPage, PostEditorPage } from './post-editor-page';
+export { PostPreviewModal } from './post-preview-modal';
+export { DesktopPreviewFrame, EmailPreviewFrame } from './post-preview-frames';

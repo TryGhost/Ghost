@@ -1,32 +1,40 @@
 import Interpolate from '@doist/react-interpolate';
-import {useAppContext} from '../../app-context';
+import { useAppContext } from '../../app-context';
 
 const CommentingDisabledBox: React.FC = () => {
-    const {accentColor, supportEmail, t} = useAppContext();
+  const { accentColor, supportEmail, t } = useAppContext();
 
-    const linkStyle = {
-        color: accentColor
-    };
+  const linkStyle = {
+    color: accentColor,
+  };
 
-    return (
-        <>
-            <h1 className="mb-2 text-center font-sans text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white/85">
-                {t('Commenting disabled')}
-            </h1>
-            <p className="w-full text-balance text-center text-lg leading-normal text-neutral-900 dark:text-white/85 sm:px-8">
-                {supportEmail ? (
-                    <Interpolate
-                        mapping={{
-                            a: <a className="font-semibold hover:opacity-90" href={`mailto:${supportEmail}`} style={linkStyle} />
-                        }}
-                        string={t('You can\'t post comments in this publication. <a>Contact support</a> for more information.')}
-                    />
-                ) : (
-                    t('You can\'t post comments in this publication.')
-                )}
-            </p>
-        </>
-    );
+  return (
+    <>
+      <h1 className="mb-2 text-center font-sans text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white/85">
+        {t('Commenting disabled')}
+      </h1>
+      <p className="w-full text-balance text-center text-lg leading-normal text-neutral-900 dark:text-white/85 sm:px-8">
+        {supportEmail ? (
+          <Interpolate
+            mapping={{
+              a: (
+                <a
+                  className="font-semibold hover:opacity-90"
+                  href={`mailto:${supportEmail}`}
+                  style={linkStyle}
+                />
+              ),
+            }}
+            string={t(
+              "You can't post comments in this publication. <a>Contact support</a> for more information.",
+            )}
+          />
+        ) : (
+          t("You can't post comments in this publication.")
+        )}
+      </p>
+    </>
+  );
 };
 
 export default CommentingDisabledBox;

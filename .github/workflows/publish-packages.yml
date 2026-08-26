@@ -99,7 +99,7 @@ jobs:
     needs: [publish]
     if: failure() && github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-slim
-    permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
+    permissions: {} # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
     steps:
       - name: Notify Slack
         env:

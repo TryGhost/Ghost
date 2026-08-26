@@ -5,8 +5,8 @@ const emailService = require('../../services/email-service');
 const emailAnalytics = require('../../services/email-analytics');
 
 const messages = {
-    emailNotFound: 'Email not found.',
-    retryNotAllowed: 'Only failed emails can be retried'
+  emailNotFound: 'Email not found.',
+  retryNotAllowed: 'Only failed emails can be retried',
 };
 
 const allowedBatchIncludes = ['count.recipients'];
@@ -14,180 +14,150 @@ const allowedFailureIncludes = ['member', 'email_recipient'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'emails',
+  docName: 'emails',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'page'
-        ],
-        permissions: true,
-        async query(frame) {
-            return await models.Email.findPage(frame.options);
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'fields'
-        ],
-        validation: {
-            options: {
-                fields: ['html', 'plaintext', 'subject']
-            }
-        },
-        data: [
-            'id'
-        ],
-        permissions: true,
-        async query(frame) {
-            const model = await models.Email.findOne(frame.data, frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.emailNotFound)
-                });
-            }
-
-            return model;
-        }
+    options: ['limit', 'fields', 'filter', 'order', 'page'],
+    permissions: true,
+    async query(frame) {
+      return await models.Email.findPage(frame.options);
     },
+  },
 
-    retry: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'id'
-        ],
-        permissions: true,
-        async query(frame) {
-            return await emailService.controller.retryFailedEmail(frame);
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    browseBatches: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'page',
-            'include'
-        ],
-        data: [
-            'id'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: allowedBatchIncludes
-                }
-            }
-        },
-        permissions: {
-            method: 'browse'
-        },
-        async query(frame) {
-            const filter = `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
-            return await models.EmailBatch.findPage({...frame.options, filter});
-        }
+    options: ['fields'],
+    validation: {
+      options: {
+        fields: ['html', 'plaintext', 'subject'],
+      },
     },
+    data: ['id'],
+    permissions: true,
+    async query(frame) {
+      const model = await models.Email.findOne(frame.data, frame.options);
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.emailNotFound),
+        });
+      }
 
-    browseFailures: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'page',
-            'include'
-        ],
-        data: [
-            'id'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: allowedFailureIncludes
-                }
-            }
-        },
-        permissions: {
-            method: 'browse'
-        },
-        async query(frame) {
-            const filter = `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
-            return await models.EmailRecipientFailure.findPage({...frame.options, filter});
-        }
+      return model;
     },
+  },
 
-    analyticsStatus: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: {
-            method: 'browse'
-        },
-        async query() {
-            return emailAnalytics.newsletters.service.getStatus();
-        }
+  retry: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    scheduleAnalytics: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: {
-            method: 'browse'
-        },
-        data: [
-            'id'
-        ],
-        options: [
-            'begin',
-            'end'
-        ],
-        async query(frame) {
-            const {begin: beginParam, end: endParam, ...findOptions} = frame.options;
-            const model = await models.Email.findOne(frame.data, findOptions);
-
-            const begin = beginParam
-                ? new Date(beginParam)
-                : model.get('created_at');
-            const end = endParam
-                ? new Date(endParam)
-                : new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7));
-
-            return emailAnalytics.newsletters.service.schedule({begin, end});
-        }
+    data: ['id'],
+    permissions: true,
+    async query(frame) {
+      return await emailService.controller.retryFailedEmail(frame);
     },
+  },
 
-    cancelScheduledAnalytics: {
-        headers: {
-            cacheInvalidate: false
+  browseBatches: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['limit', 'fields', 'filter', 'order', 'page', 'include'],
+    data: ['id'],
+    validation: {
+      options: {
+        include: {
+          values: allowedBatchIncludes,
         },
-        permissions: {
-            method: 'browse'
+      },
+    },
+    permissions: {
+      method: 'browse',
+    },
+    async query(frame) {
+      const filter =
+        `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
+      return await models.EmailBatch.findPage({ ...frame.options, filter });
+    },
+  },
+
+  browseFailures: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['limit', 'fields', 'filter', 'order', 'page', 'include'],
+    data: ['id'],
+    validation: {
+      options: {
+        include: {
+          values: allowedFailureIncludes,
         },
-        async query() {
-            return emailAnalytics.newsletters.service.cancelScheduled();
-        }
-    }
+      },
+    },
+    permissions: {
+      method: 'browse',
+    },
+    async query(frame) {
+      const filter =
+        `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
+      return await models.EmailRecipientFailure.findPage({ ...frame.options, filter });
+    },
+  },
+
+  analyticsStatus: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'browse',
+    },
+    async query() {
+      return emailAnalytics.newsletters.service.getStatus();
+    },
+  },
+
+  scheduleAnalytics: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'browse',
+    },
+    data: ['id'],
+    options: ['begin', 'end'],
+    async query(frame) {
+      const { begin: beginParam, end: endParam, ...findOptions } = frame.options;
+      const model = await models.Email.findOne(frame.data, findOptions);
+
+      const begin = beginParam ? new Date(beginParam) : model.get('created_at');
+      const end = endParam
+        ? new Date(endParam)
+        : new Date(
+            Math.min(
+              Date.now() - 60 * 60 * 1000,
+              model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7,
+            ),
+          );
+
+      return emailAnalytics.newsletters.service.schedule({ begin, end });
+    },
+  },
+
+  cancelScheduledAnalytics: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'browse',
+    },
+    async query() {
+      return emailAnalytics.newsletters.service.cancelScheduled();
+    },
+  },
 };
 
 module.exports = controller;

@@ -1,140 +1,221 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import UniversalImportModal from '@/settings/advanced/migration-tools/universal-import-modal';
-import {ConfirmationProvider} from '@/settings/providers/confirmation-provider';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-const {mockImportContent, mockImportContentCSV, mockUseFeatureFlag, mockHandleError} = vi.hoisted(() => ({
+const { mockImportContent, mockImportContentCSV, mockUseFeatureFlag, mockHandleError } = vi.hoisted(
+  () => ({
     mockImportContent: vi.fn(),
     mockImportContentCSV: vi.fn(),
     mockUseFeatureFlag: vi.fn(),
-    mockHandleError: vi.fn()
-}));
+    mockHandleError: vi.fn(),
+  }),
+);
 
 vi.mock('@tryghost/admin-x-framework/api/db', async () => {
-    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/db')>('@tryghost/admin-x-framework/api/db');
-    return {...actual, useImportContent: () => ({mutateAsync: mockImportContent})};
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/db')>(
+    '@tryghost/admin-x-framework/api/db',
+  );
+  return { ...actual, useImportContent: () => ({ mutateAsync: mockImportContent }) };
 });
 
 vi.mock('@tryghost/admin-x-framework/api/posts', async () => {
-    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/posts')>('@tryghost/admin-x-framework/api/posts');
-    return {...actual, useImportContentCSV: () => ({mutateAsync: mockImportContentCSV})};
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/posts')>(
+    '@tryghost/admin-x-framework/api/posts',
+  );
+  return { ...actual, useImportContentCSV: () => ({ mutateAsync: mockImportContentCSV }) };
 });
 
 vi.mock('@tryghost/admin-x-framework/hooks', async () => {
-    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>('@tryghost/admin-x-framework/hooks');
-    return {...actual, useHandleError: () => mockHandleError};
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
+    '@tryghost/admin-x-framework/hooks',
+  );
+  return {
+    ...actual,
+    useFeatureFlag: (flag: string) => mockUseFeatureFlag(flag) as boolean,
+    useHandleError: () => mockHandleError,
+  };
 });
 
-vi.mock('@/settings/hooks/use-feature-flag', () => ({
-    default: (flag: string) => mockUseFeatureFlag(flag) as boolean
-}));
-
 describe('UniversalImportModal', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        mockImportContent.mockResolvedValue({});
-        mockImportContentCSV.mockResolvedValue({});
-    });
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+  });
 
-    const showModal = () => {
-        const ModalHarness = () => {
-            const [isOpen, setIsOpen] = useState(true);
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockImportContent.mockResolvedValue({});
+    mockImportContentCSV.mockResolvedValue({});
+  });
 
-            return isOpen ? <UniversalImportModal onClose={() => setIsOpen(false)} /> : null;
-        };
+  const showModal = () => {
+    const ModalHarness = () => {
+      const [isOpen, setIsOpen] = useState(true);
 
-        render(<ConfirmationProvider><ModalHarness /></ConfirmationProvider>);
+      return isOpen ? <UniversalImportModal onClose={() => setIsOpen(false)} /> : null;
     };
 
-    const fileInput = async () => await screen.findByTestId('import-file');
+    render(
+      <ConfirmationProvider>
+        <ModalHarness />
+      </ConfirmationProvider>,
+    );
+  };
 
-    const description = async () => await screen.findByTestId('import-file-description');
+  const fileInput = async () => await screen.findByTestId('import-file');
 
-    const dropFile = async (file: File) => {
-        const input = await fileInput();
+  const description = async () => await screen.findByTestId('import-file-description');
 
-        // act() flushes react-dropzone's async file processing, so a
-        // "not called" assertion afterwards can't pass vacuously
-        await act(async () => {
-            fireEvent.change(input, {target: {files: [file]}});
-            await Promise.resolve();
-        });
-    };
+  const dropFile = async (file: File) => {
+    const input = await fileInput();
 
-    it('reads the csvContentImporter flag', async () => {
-        mockUseFeatureFlag.mockReturnValue(false);
-        showModal();
-
-        await fileInput();
-        expect(mockUseFeatureFlag).toHaveBeenCalledWith('csvContentImporter');
+    // act() flushes react-dropzone's async file processing, so a
+    // "not called" assertion afterwards can't pass vacuously
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+      await Promise.resolve();
     });
+  };
 
-    it('sends JSON files to the db import when csvContentImporter is disabled', async () => {
-        mockUseFeatureFlag.mockReturnValue(false);
-        showModal();
+  it('reads the csvContentImporter flag', async () => {
+    mockUseFeatureFlag.mockReturnValue(false);
+    showModal();
 
-        expect(await description()).toHaveTextContent(/Select any JSON or zip file/);
+    await fileInput();
+    expect(mockUseFeatureFlag).toHaveBeenCalledWith('csvContentImporter');
+  });
 
-        const file = new File(['{}'], 'export.json', {type: 'application/json'});
-        await dropFile(file);
+  it('sends JSON files to the db import when csvContentImporter is disabled', async () => {
+    mockUseFeatureFlag.mockReturnValue(false);
+    showModal();
 
-        await waitFor(() => expect(mockImportContent).toHaveBeenCalledWith(file));
-        expect(mockImportContentCSV).not.toHaveBeenCalled();
-        expect(await screen.findByTestId('confirmation-modal')).toHaveTextContent('Import in progress');
+    expect(await description()).toHaveTextContent(/Select any JSON or zip file/);
+
+    const file = new File(['{}'], 'export.json', { type: 'application/json' });
+    await dropFile(file);
+
+    await waitFor(() => expect(mockImportContent).toHaveBeenCalledWith(file));
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+    expect(await screen.findByTestId('confirmation-modal')).toHaveTextContent('Import in progress');
+  });
+
+  it('rejects CSV files when csvContentImporter is disabled', async () => {
+    mockUseFeatureFlag.mockReturnValue(false);
+    showModal();
+
+    const input = await fileInput();
+    expect(input).toHaveAttribute('accept', expect.not.stringContaining('.csv'));
+
+    await dropFile(new File(['title\nHello'], 'posts.csv', { type: 'text/csv' }));
+
+    expect(mockImportContent).not.toHaveBeenCalled();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+    expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
+  });
+
+  it('maps CSV files before sending them to the posts upload endpoint', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    expect(await description()).toHaveTextContent(/Select any JSON, zip or CSV file/);
+
+    const input = await fileInput();
+    expect(input).toHaveAttribute('accept', expect.stringContaining('.csv'));
+
+    const file = new File(['title\nHello'], 'posts.csv', { type: 'text/csv' });
+    await dropFile(file);
+
+    expect(await screen.findByText('Map CSV fields')).toBeInTheDocument();
+    expect(screen.getByText('title')).toBeInTheDocument();
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        file,
+        mapping: { title: 'title' },
+      }),
+    );
+    expect(mockImportContent).not.toHaveBeenCalled();
+    expect(await screen.findByTestId('confirmation-modal')).toHaveTextContent('Import in progress');
+  });
+
+  it('can start over after selecting a CSV file', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    await dropFile(new File(['title\nHello'], 'posts.csv', { type: 'text/csv' }));
+    expect(await screen.findByText('Map CSV fields')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start over' }));
+
+    expect(await fileInput()).toBeInTheDocument();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
+
+  it('blocks importing while the required title field is unmapped', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    await dropFile(new File(['Headline\nHello'], 'posts.csv', { type: 'text/csv' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Required field missing: Title');
+    expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
+
+  it('searches grouped editorial targets and submits the chosen field', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    const file = new File(['title,Social summary\nHello,Shared copy'], 'posts.csv', {
+      type: 'text/csv',
     });
+    await dropFile(file);
 
-    it('rejects CSV files when csvContentImporter is disabled', async () => {
-        mockUseFeatureFlag.mockReturnValue(false);
-        showModal();
+    fireEvent.click(await screen.findByRole('combobox', { name: /Field for Social summary/ }));
+    expect(screen.getByText('Content')).toBeInTheDocument();
+    expect(screen.getByText('Social')).toBeInTheDocument();
 
-        const input = await fileInput();
-        expect(input).toHaveAttribute('accept', expect.not.stringContaining('.csv'));
-
-        await dropFile(new File(['title\nHello'], 'posts.csv', {type: 'text/csv'}));
-
-        expect(mockImportContent).not.toHaveBeenCalled();
-        expect(mockImportContentCSV).not.toHaveBeenCalled();
-        expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Search post fields...'), {
+      target: { value: 'Twitter description' },
     });
+    fireEvent.click(screen.getByText('Twitter description'));
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
 
-    it('sends CSV files to the posts upload endpoint when csvContentImporter is enabled', async () => {
-        mockUseFeatureFlag.mockReturnValue(true);
-        showModal();
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        file,
+        mapping: { title: 'title', 'Social summary': 'twitter_description' },
+      }),
+    );
+  });
 
-        expect(await description()).toHaveTextContent(/Select any JSON, zip or CSV file/);
+  it('still sends JSON files to the db import when csvContentImporter is enabled', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
 
-        const input = await fileInput();
-        expect(input).toHaveAttribute('accept', expect.stringContaining('.csv'));
+    const file = new File(['{}'], 'export.json', { type: 'application/json' });
+    await dropFile(file);
 
-        const file = new File(['title\nHello'], 'posts.csv', {type: 'text/csv'});
-        await dropFile(file);
+    await waitFor(() => expect(mockImportContent).toHaveBeenCalledWith(file));
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
 
-        await waitFor(() => expect(mockImportContentCSV).toHaveBeenCalledWith(file));
-        expect(mockImportContent).not.toHaveBeenCalled();
-        expect(await screen.findByTestId('confirmation-modal')).toHaveTextContent('Import in progress');
-    });
+  it('surfaces an error and keeps the modal open when the import fails', async () => {
+    const error = new Error('Import failed');
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockImportContentCSV.mockRejectedValue(error);
+    showModal();
 
-    it('still sends JSON files to the db import when csvContentImporter is enabled', async () => {
-        mockUseFeatureFlag.mockReturnValue(true);
-        showModal();
+    await dropFile(new File(['title\nHello'], 'posts.csv', { type: 'text/csv' }));
+    await screen.findByText('Map CSV fields');
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
 
-        const file = new File(['{}'], 'export.json', {type: 'application/json'});
-        await dropFile(file);
-
-        await waitFor(() => expect(mockImportContent).toHaveBeenCalledWith(file));
-        expect(mockImportContentCSV).not.toHaveBeenCalled();
-    });
-
-    it('surfaces an error and keeps the modal open when the import fails', async () => {
-        const error = new Error('Import failed');
-        mockUseFeatureFlag.mockReturnValue(true);
-        mockImportContentCSV.mockRejectedValue(error);
-        showModal();
-
-        await dropFile(new File(['title\nHello'], 'posts.csv', {type: 'text/csv'}));
-
-        await waitFor(() => expect(mockHandleError).toHaveBeenCalledWith(error));
-        expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
-        expect(screen.queryByTestId('confirmation-modal')).not.toBeInTheDocument();
-    });
+    await waitFor(() => expect(mockHandleError).toHaveBeenCalledWith(error));
+    expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
+    expect(screen.queryByTestId('confirmation-modal')).not.toBeInTheDocument();
+  });
 });

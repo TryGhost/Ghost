@@ -2,14 +2,19 @@
   "name": "@tryghost/adapter-base-cache",
   "version": "0.2.0",
   "description": "Base class for Ghost cache adapters.",
-  "type": "module",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/adapters/cache-base"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -17,8 +22,6 @@
       "default": "./build/index.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -28,9 +31,6 @@
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
-  "files": [
-    "build"
-  ],
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",

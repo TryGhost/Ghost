@@ -1,10 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "sharedGlobals": [
       "{workspaceRoot}/.npmrc",
       "{workspaceRoot}/ghost/tsconfig.json",
@@ -17,9 +14,7 @@
   "useDaemonProcess": false,
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "inputs": [
         {
           "env": "GHOST_CDN_URL"
@@ -44,9 +39,7 @@
     },
     "test:unit": {
       "cache": true,
-      "dependsOn": [
-        "build"
-      ]
+      "dependsOn": ["build"]
     },
     "test:ci:*": {
       "cache": true,
@@ -62,9 +55,7 @@
       ]
     },
     "dev": {
-      "dependsOn": [
-        "^dev"
-      ],
+      "dependsOn": ["^dev"],
       "continuous": true
     }
   },

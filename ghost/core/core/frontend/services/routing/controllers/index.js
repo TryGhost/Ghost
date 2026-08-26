@@ -1,33 +1,33 @@
 module.exports = {
-    get entry() {
-        return require('./entry').entryController;
-    },
+  get entry() {
+    return require('./entry').entryController;
+  },
 
-    get collection() {
-        return require('./collection');
-    },
+  get collection() {
+    return require('./collection');
+  },
 
-    get rss() {
-        return require('./rss').rssController;
-    },
+  get rss() {
+    return require('./rss').rssController;
+  },
 
-    get previews() {
-        return require('./previews');
-    },
+  get previews() {
+    return require('./previews');
+  },
 
-    get email() {
-        return require('./email-post');
-    },
+  get email() {
+    return require('./email-post');
+  },
 
-    get channel() {
-        return require('./channel');
-    },
+  get channel() {
+    return require('./channel');
+  },
 
-    get static() {
-        return require('./static');
-    },
+  get static() {
+    return require('./static');
+  },
 
-    get unsubscribe() {
-        return require('./unsubscribe');
-    }
+  get unsubscribe() {
+    return require('./unsubscribe');
+  },
 };

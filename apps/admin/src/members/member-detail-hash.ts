@@ -1,11 +1,11 @@
 export function buildMemberDetailPath(memberId: string, backPath?: string) {
-    const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-    if (backPath) {
-        params.set('back', backPath);
-    }
+  if (backPath) {
+    params.set('back', backPath);
+  }
 
-    const queryString = params.toString();
+  const queryString = params.toString();
 
-    return `/members/${memberId}${queryString ? `?${queryString}` : ''}`;
+  return `/members/${memberId}${queryString ? `?${queryString}` : ''}`;
 }

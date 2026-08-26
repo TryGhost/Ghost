@@ -44,6 +44,7 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
   ```
 
   A tag or branch ref can be re-pointed at malicious code; a SHA cannot.
+
 - Install with a frozen lockfile (`pnpm install --frozen-lockfile`).
 
 ## Checklist for a new workflow

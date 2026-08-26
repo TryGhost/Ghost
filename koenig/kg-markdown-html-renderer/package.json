@@ -2,13 +2,16 @@
   "name": "@tryghost/kg-markdown-html-renderer",
   "version": "7.2.4",
   "description": "Markdown to HTML rendering for Ghost's markdown card",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "koenig/kg-markdown-html-renderer"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -20,6 +23,9 @@
       "require": "./build/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -29,14 +35,16 @@
     "lint": "eslint . --cache",
     "posttest": "pnpm lint"
   },
-  "engines": {
-    "node": "^22.13.1 || ^24.0.0"
-  },
-  "files": [
-    "build"
-  ],
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "@tryghost/kg-utils": "workspace:~",
+    "markdown-it": "14.3.0",
+    "markdown-it-footnote": "4.0.0",
+    "markdown-it-image-lazy-loading": "2.0.1",
+    "markdown-it-lazy-headers": "0.1.3",
+    "markdown-it-mark": "4.0.0",
+    "markdown-it-sub": "2.0.0",
+    "markdown-it-sup": "2.0.0",
+    "semver": "7.8.5"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -50,15 +58,7 @@
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {
-    "@tryghost/kg-utils": "workspace:~",
-    "markdown-it": "14.3.0",
-    "markdown-it-footnote": "4.0.0",
-    "markdown-it-image-lazy-loading": "2.0.1",
-    "markdown-it-lazy-headers": "0.1.3",
-    "markdown-it-mark": "4.0.0",
-    "markdown-it-sub": "2.0.0",
-    "markdown-it-sup": "2.0.0",
-    "semver": "7.8.5"
+  "engines": {
+    "node": "^22.13.1 || ^24.0.0"
   }
 }

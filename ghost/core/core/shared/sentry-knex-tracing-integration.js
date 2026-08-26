@@ -10,56 +10,56 @@
  * not a direct dependency of ghost/core (only `@sentry/node` is).
  */
 class SentryKnexTracingIntegration {
-    static id = 'Knex';
+  static id = 'Knex';
 
-    name = SentryKnexTracingIntegration.id;
+  name = SentryKnexTracingIntegration.id;
 
-    /** @type {KnexClient} */
-    #knex;
+  /** @type {KnexClient} */
+  #knex;
 
-    /** @type {Map} */
-    #spanCache = new Map();
+  /** @type {Map} */
+  #spanCache = new Map();
 
-    /**
-     * @param {KnexClient} knex
-     */
-    constructor(knex) {
-        this.#knex = knex;
-    }
+  /**
+   * @param {KnexClient} knex
+   */
+  constructor(knex) {
+    this.#knex = knex;
+  }
 
-    /**
-     * @param {Function} addGlobalEventProcessor
-     * @param {Function} getCurrentHub
-     */
-    setupOnce(addGlobalEventProcessor, getCurrentHub) {
-        this.#knex.on('query', (query) => {
-            const scope = getCurrentHub().getScope();
-            const parentSpan = scope?.getSpan();
+  /**
+   * @param {Function} addGlobalEventProcessor
+   * @param {Function} getCurrentHub
+   */
+  setupOnce(addGlobalEventProcessor, getCurrentHub) {
+    this.#knex.on('query', (query) => {
+      const scope = getCurrentHub().getScope();
+      const parentSpan = scope?.getSpan();
 
-            const span = parentSpan?.startChild({
-                op: 'db.query',
-                description: query.sql
-            });
+      const span = parentSpan?.startChild({
+        op: 'db.query',
+        description: query.sql,
+      });
 
-            if (span) {
-                this.#spanCache.set(query.__knexQueryUid, span);
-            }
-        });
+      if (span) {
+        this.#spanCache.set(query.__knexQueryUid, span);
+      }
+    });
 
-        const handleQueryExecuted = (err, query) => {
-            const queryId = query.__knexQueryUid;
-            const span = this.#spanCache.get(queryId);
+    const handleQueryExecuted = (err, query) => {
+      const queryId = query.__knexQueryUid;
+      const span = this.#spanCache.get(queryId);
 
-            if (span) {
-                span.finish();
+      if (span) {
+        span.finish();
 
-                this.#spanCache.delete(queryId);
-            }
-        };
+        this.#spanCache.delete(queryId);
+      }
+    };
 
-        this.#knex.on('query-response', handleQueryExecuted);
-        this.#knex.on('query-error', handleQueryExecuted);
-    }
+    this.#knex.on('query-response', handleQueryExecuted);
+    this.#knex.on('query-error', handleQueryExecuted);
+  }
 }
 
 module.exports = SentryKnexTracingIntegration;

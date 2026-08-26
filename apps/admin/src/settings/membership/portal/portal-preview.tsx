@@ -1,61 +1,58 @@
 import PortalFrame from './portal-frame';
 import PortalLinks from './portal-links';
 import React from 'react';
-import {type Setting} from '@tryghost/admin-x-framework/api/settings';
-import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
-import {getPortalPreviewUrl} from '@/settings/utils/get-portal-preview-url';
-import {useGlobalData} from '@/settings/providers/global-data-context';
+import { type Setting } from '@tryghost/admin-x-framework/api/settings';
+import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
+import { getPortalPreviewUrl } from '@/settings/utils/get-portal-preview-url';
+import { useGlobalData } from '@/settings/providers/global-data-context';
 
 interface PortalPreviewProps {
-    darkMode: boolean;
-    selectedTab: string;
-    localSettings: Setting[];
-    localTiers: Tier[];
+  darkMode: boolean;
+  selectedTab: string;
+  localSettings: Setting[];
+  localTiers: Tier[];
 }
 
 const PortalPreview: React.FC<PortalPreviewProps> = ({
-    darkMode,
-    selectedTab = 'signup',
-    localSettings,
-    localTiers
+  darkMode,
+  selectedTab = 'signup',
+  localSettings,
+  localTiers,
 }) => {
-    const {
-        siteData,
-        config
-    } = useGlobalData();
+  const { siteData, config } = useGlobalData();
 
-    const href = getPortalPreviewUrl({
-        settings: localSettings,
-        tiers: localTiers,
-        selectedTab,
-        previewTheme: darkMode ? 'dark' : 'light',
-        siteData,
-        config
-    });
+  const href = getPortalPreviewUrl({
+    settings: localSettings,
+    tiers: localTiers,
+    selectedTab,
+    previewTheme: darkMode ? 'dark' : 'light',
+    siteData,
+    config,
+  });
 
-    let tabContents = <></>;
+  let tabContents = <></>;
 
-    switch (selectedTab) {
+  switch (selectedTab) {
     case 'account':
-        tabContents = (
-            <>
-                <PortalFrame href={href || ''} portalParent='preview' selectedTab={selectedTab} />
-            </>
-        );
-        break;
+      tabContents = (
+        <>
+          <PortalFrame href={href || ''} portalParent="preview" selectedTab={selectedTab} />
+        </>
+      );
+      break;
     case 'links':
-        tabContents = <PortalLinks />;
-        break;
+      tabContents = <PortalLinks />;
+      break;
     default:
-        tabContents = (
-            <>
-                <PortalFrame href={href || ''} portalParent='preview' selectedTab={selectedTab} />
-            </>
-        );
-        break;
-    }
+      tabContents = (
+        <>
+          <PortalFrame href={href || ''} portalParent="preview" selectedTab={selectedTab} />
+        </>
+      );
+      break;
+  }
 
-    return tabContents;
+  return tabContents;
 };
 
 export default PortalPreview;

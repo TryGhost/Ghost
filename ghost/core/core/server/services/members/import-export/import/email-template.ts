@@ -1,5 +1,5 @@
 function formatNumber(value: number): string {
-    return value.toLocaleString();
+  return value.toLocaleString();
 }
 
 const iff = (cond: boolean, yes: string, no: string): string => (cond ? yes : no);
@@ -11,24 +11,31 @@ export type ImportEmailSummary = 'did-not-run' | 'all-failed' | 'added';
 // The heading is a pure function of the outcome, and the subject is the same sentence, so
 // both are read from here rather than derived twice and left to disagree.
 export const headingFor: Record<ImportEmailSummary, string> = {
-    'did-not-run': 'Your member import could not be completed',
-    'all-failed': 'Your member import was unsuccessful',
-    added: 'Your member import is complete'
+  'did-not-run': 'Your member import could not be completed',
+  'all-failed': 'Your member import was unsuccessful',
+  added: 'Your member import is complete',
 };
 
 interface ImportEmailProps {
-    summary: ImportEmailSummary;
-    imported: number;
-    errorCount: number;
-    siteUrl: URL;
-    membersUrl: URL;
-    emailRecipient: string;
+  summary: ImportEmailSummary;
+  imported: number;
+  errorCount: number;
+  siteUrl: URL;
+  membersUrl: URL;
+  emailRecipient: string;
 }
 
 // The states are exclusive, so each paragraph below tests for exactly one.
-export default function renderImportEmail({summary, imported, errorCount, siteUrl, membersUrl, emailRecipient}: ImportEmailProps): string {
-    const heading = headingFor[summary];
-    return `
+export default function renderImportEmail({
+  summary,
+  imported,
+  errorCount,
+  siteUrl,
+  membersUrl,
+  emailRecipient,
+}: ImportEmailProps): string {
+  const heading = headingFor[summary];
+  return `
 <!doctype html>
 <html>
   <head>
@@ -155,26 +162,38 @@ export default function renderImportEmail({summary, imported, errorCount, siteUr
                             <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${heading}</p>
                           </td>
                       </tr>
-                    ${iff(summary === 'did-not-run', `
+                    ${iff(
+                      summary === 'did-not-run',
+                      `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
                           <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">Something went wrong on our end and your import couldn't be completed. There's nothing wrong with your file. Please try uploading it again.</p>
                       </td>
                     </tr>
-                    `, ``)}
-                    ${iff(summary === 'added', `
+                    `,
+                      ``,
+                    )}
+                    ${iff(
+                      summary === 'added',
+                      `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
                           <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">A total of <strong style="font-weight: 600;">${formatNumber(imported)}</strong> ${iff(imported === 1, 'person was', 'people were')} successfully added or updated in your list of members, and now ${iff(imported === 1, 'has', 'have')} access to your site.</p>
                       </td>
-                    </tr>`, ``)}
-                    ${iff(errorCount > 0, `
+                    </tr>`,
+                      ``,
+                    )}
+                    ${iff(
+                      errorCount > 0,
+                      `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">
                         ${iff(summary === 'all-failed', `No members were added.`, `<strong style="font-weight: 600;">${formatNumber(errorCount)}</strong> ${iff(errorCount === 1, `member was`, `members were`)} skipped due to errors.`)} The CSV file attached to this email lists each one with the reason it wasn't imported.</p>
                       </td>
-                    </tr>`, '')}
+                    </tr>`,
+                      '',
+                    )}
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 12px; padding-top: 16px;">
                         <a href="${membersUrl.href}" target="_blank" style="display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;">${iff(summary === 'added', `View members`, `Try again`)}</a>

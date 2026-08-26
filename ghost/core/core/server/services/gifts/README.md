@@ -23,10 +23,22 @@ transactions, or Stripe objects.
 - `processReminders()`, `processConsumed()`, and `processExpired()` own gift
   lifecycle work. `GiftDeliveryService` owns email-delivery creation,
   post-commit dispatch, cancellation, and processing behind a separate
-  interface. Email delivery starts immediately after purchase through an
-  in-process event. Delivery claims are atomic; stale in-progress claims are
-  retried after a crash, so mail-transport acceptance is at least once.
+  interface. Immediate email delivery starts after purchase through an
+  in-process event; scheduled email delivery becomes eligible at the
+  GiftDelivery's `scheduledAt` and uses the same processing path. Gift links
+  remain redeemable from purchase. Delivery claims are atomic;
+  stale in-progress claims are retried after a crash, so mail-transport
+  acceptance is at least once.
+- `GiftDeliveryService.recordOutcome(...)` retains only the newest Mailgun
+  delivery outcome; mail transport acceptance remains the authoritative sent
+  fact. A newly recorded permanent provider failure sends the buyer a
+  best-effort transactional notification containing the gift link for manual
+  sharing.
 - `reassignRedeemer(...)` is the import capability.
 
 The `Gift` model, gift-delivery data schema, their repositories, Bookshelf
-queries, Stripe checkout and email collaborators are internal adapters.
+queries, Stripe checkout, email, and notification collaborators are internal
+adapters. Recipient delivery uses the bulk Mailgun account when it is available
+so delivery outcomes are observable, and otherwise uses the provider-agnostic
+transactional mailer. Buyer-facing confirmations and failure notices also use
+the transactional mailer.

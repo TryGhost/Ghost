@@ -1,12 +1,12 @@
 const config = require('../../../../shared/config');
 const models = require('../../../models');
 const jobsService = require('../../jobs');
-const {EmailAnalyticsJobScheduler} = require('./email-analytics-job-scheduler');
+const { EmailAnalyticsJobScheduler } = require('./email-analytics-job-scheduler');
 
 const emailAnalyticsJobScheduler = new EmailAnalyticsJobScheduler({
-    models,
-    config,
-    jobManager: jobsService
+  models,
+  config,
+  jobManager: jobsService,
 });
 
 /**
@@ -14,9 +14,9 @@ const emailAnalyticsJobScheduler = new EmailAnalyticsJobScheduler({
  * @returns {Promise<void>}
  */
 exports.scheduleRecurringNewslettersJob = async (...args) => {
-    if (!process.env.NODE_ENV?.startsWith('test')) {
-        await emailAnalyticsJobScheduler.scheduleRecurringNewslettersJob(...args);
-    }
+  if (!process.env.NODE_ENV?.startsWith('test')) {
+    await emailAnalyticsJobScheduler.scheduleRecurringNewslettersJob(...args);
+  }
 };
 
 /**
@@ -24,7 +24,17 @@ exports.scheduleRecurringNewslettersJob = async (...args) => {
  * @returns {Promise<void>}
  */
 exports.scheduleRecurringAutomationsJob = async (...args) => {
-    if (!process.env.NODE_ENV?.startsWith('test')) {
-        await emailAnalyticsJobScheduler.scheduleRecurringAutomationsJob(...args);
-    }
+  if (!process.env.NODE_ENV?.startsWith('test')) {
+    await emailAnalyticsJobScheduler.scheduleRecurringAutomationsJob(...args);
+  }
+};
+
+/**
+ * @param {Parameters<typeof EmailAnalyticsJobScheduler.prototype.scheduleRecurringGiftDeliveriesJob>} args
+ * @returns {Promise<void>}
+ */
+exports.scheduleRecurringGiftDeliveriesJob = async (...args) => {
+  if (!process.env.NODE_ENV?.startsWith('test')) {
+    await emailAnalyticsJobScheduler.scheduleRecurringGiftDeliveriesJob(...args);
+  }
 };

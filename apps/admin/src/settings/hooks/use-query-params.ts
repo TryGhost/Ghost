@@ -1,15 +1,15 @@
-import {useSearchParams} from '@tryghost/admin-x-framework';
+import { useSearchParams } from '@tryghost/admin-x-framework';
 
 const useQueryParams = () => {
-    const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-    const getParam = (key: string) => {
-        return searchParams.get(key);
-    };
+  const getParam = (key: string) => {
+    return searchParams.get(key);
+  };
 
-    return {
-        getParam
-    };
+  return {
+    getParam,
+  };
 };
 
 export default useQueryParams;

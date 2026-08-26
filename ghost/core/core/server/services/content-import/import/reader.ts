@@ -1,14 +1,14 @@
-import {parse as parseCSV} from '../csv';
-import {postImportRowSchema, type PostImportRow} from './row';
+import { parse as parseCSV } from '../csv';
+import { EDITORIAL_POST_FIELDS, postImportRowSchema, type PostImportRow } from './row';
 
-// Identity map until the field-mapping milestone adds caller-supplied mappings.
-const FIELD_BY_HEADER: Record<string, string> = {
-    title: 'title',
-    html: 'html',
-    published_at: 'published_at'
-};
+const FIELD_BY_HEADER: Record<string, string> = Object.fromEntries(
+  EDITORIAL_POST_FIELDS.map((field) => [field, field]),
+);
 
-export default async function readPostRows(path: string): Promise<PostImportRow[]> {
-    const rows = await parseCSV(path, FIELD_BY_HEADER);
-    return rows.map(row => postImportRowSchema.parse(row));
+export default async function readPostRows(
+  path: string,
+  mapping?: Record<string, string>,
+): Promise<PostImportRow[]> {
+  const rows = await parseCSV(path, mapping ?? FIELD_BY_HEADER);
+  return rows.map((row) => postImportRowSchema.parse(row));
 }

@@ -1,27 +1,23 @@
 {
     "name": "ghost",
-    "version": "6.59.0",
+    "version": "6.60.0",
     "description": "The professional publishing platform",
-    "author": "Ghost Foundation",
-    "homepage": "https://ghost.org",
     "keywords": [
-        "ghost",
         "blog",
         "cms",
-        "headless",
         "content",
+        "ghost",
+        "headless",
         "markdown"
     ],
+    "homepage": "https://ghost.org",
+    "bugs": "https://github.com/TryGhost/Ghost/issues",
+    "license": "MIT",
+    "author": "Ghost Foundation",
+    "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
     "repository": {
         "type": "git",
         "url": "git://github.com/TryGhost/Ghost.git"
-    },
-    "bugs": "https://github.com/TryGhost/Ghost/issues",
-    "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
-    "license": "MIT",
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
     },
     "files": [
         "core/",
@@ -34,14 +30,18 @@
         "content/themes/source/",
         "!content/themes/source/pnpm-lock.yaml",
         "bin/",
+        "scripts/prune.mts",
         "types/",
         "index.js",
-        "ghost.js",
         "loggingrc.js",
         "MigratorConfig.js",
         "nodemon.json",
         "tsconfig.json"
     ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "archive": "node scripts/pack.mjs",
         "dev": "nodemon index.js",
@@ -74,10 +74,6 @@
         "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
         "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit",
         "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
-    },
-    "engines": {
-        "node": "^22.23.1",
-        "cli": "^1.29.1"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "3.1079.0",
@@ -117,9 +113,11 @@
         "@tryghost/kg-default-nodes": "workspace:*",
         "@tryghost/kg-html-to-lexical": "workspace:*",
         "@tryghost/kg-lexical-html-renderer": "workspace:*",
+        "@tryghost/kg-markdown-html-renderer": "workspace:*",
         "@tryghost/limit-service": "catalog:",
         "@tryghost/logging": "catalog:",
         "@tryghost/metrics": "catalog:",
+        "@tryghost/mg-clean-html": "catalog:",
         "@tryghost/mongo-knex": "catalog:",
         "@tryghost/mongo-utils": "0.6.5",
         "@tryghost/mw-error-handler": "1.0.13",
@@ -143,6 +141,10 @@
         "@tryghost/validator": "0.2.22",
         "@tryghost/version": "2.3.2",
         "@tryghost/zip": "3.5.1",
+        "@x402/core": "catalog:",
+        "@x402/evm": "catalog:",
+        "@x402/hono": "catalog:",
+        "archiver": "8.0.0",
         "body-parser": "1.20.6",
         "bookshelf": "1.2.0",
         "bookshelf-relations": "2.8.0",
@@ -184,6 +186,7 @@
         "gscan": "6.4.2",
         "handlebars": "4.7.9",
         "heic-convert": "2.1.0",
+        "hono": "catalog:",
         "html-to-text": "5.1.1",
         "html5parser": "2.0.2",
         "human-number": "3.0.0",
@@ -245,12 +248,6 @@
         "xml": "1.0.1",
         "zod": "catalog:"
     },
-    "overrides": {
-        "cron-validate": "1.4.5"
-    },
-    "optionalDependencies": {
-        "better-sqlite3": "catalog:"
-    },
     "devDependencies": {
         "@eslint/js": "catalog:",
         "@internal/cfg-eslint": "workspace:*",
@@ -259,6 +256,7 @@
         "@types/bookshelf": "1.2.9",
         "@types/common-tags": "1.8.4",
         "@types/express": "catalog:",
+        "@types/express-brute": "catalog:",
         "@types/fs-extra": "11.0.4",
         "@types/js-yaml": "4.0.9",
         "@types/jsdom": "catalog:",
@@ -276,6 +274,7 @@
         "@types/sanitize-html": "catalog:",
         "@types/semver": "catalog:",
         "@types/sinon": "catalog:",
+        "@types/stoppable": "catalog:",
         "@types/supertest": "6.0.3",
         "@typescript/native": "catalog:",
         "@vitest/coverage-v8": "catalog:",
@@ -306,6 +305,16 @@
         "typescript-eslint": "catalog:",
         "validator": "catalog:",
         "vitest": "catalog:"
+    },
+    "optionalDependencies": {
+        "better-sqlite3": "catalog:"
+    },
+    "overrides": {
+        "cron-validate": "1.4.5"
+    },
+    "engines": {
+        "cli": "^1.29.1",
+        "node": "^22.23.1"
     },
     "nx": {
         "tags": [

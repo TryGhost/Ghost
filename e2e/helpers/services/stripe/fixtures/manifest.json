@@ -1,0 +1,6 @@
+{
+  "captured_at": "2026-08-19T13:34:43.264Z",
+  "api_version": "2020-08-27",
+  "stripe_node": "see e2e/package.json",
+  "note": "Regenerate with `pnpm stripe:fixtures`. Completed checkout is captured separately by hand."
+}

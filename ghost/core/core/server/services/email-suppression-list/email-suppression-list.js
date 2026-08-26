@@ -33,25 +33,25 @@ const assert = require('node:assert/strict');
  * @implements {IEmailSuppressionData}
  */
 class EmailSuppressionData {
-    /** @type {boolean} */
-    suppressed;
-    /** @type {EmailSuppressionInfo | null} */
-    info;
+  /** @type {boolean} */
+  suppressed;
+  /** @type {EmailSuppressionInfo | null} */
+  info;
 
-    constructor(suppressed, info) {
-        if (!suppressed) {
-            this.suppressed = false;
-            this.info = null;
-        } else {
-            this.suppressed = true;
-            assert(info.reason === 'spam' || info.reason === 'fail');
-            assert(info.timestamp instanceof Date);
-            this.info = {
-                reason: info.reason,
-                timestamp: info.timestamp
-            };
-        }
+  constructor(suppressed, info) {
+    if (!suppressed) {
+      this.suppressed = false;
+      this.info = null;
+    } else {
+      this.suppressed = true;
+      assert(info.reason === 'spam' || info.reason === 'fail');
+      assert(info.timestamp instanceof Date);
+      this.info = {
+        reason: info.reason,
+        timestamp: info.timestamp,
+      };
     }
+  }
 }
 
 /**
@@ -59,68 +59,68 @@ class EmailSuppressionData {
  * @implements {IEmailSuppressionList}
  */
 class AbstractEmailSuppressionList {
-    /**
-     * @param {string} email
-     * @returns {Promise<boolean>}
-     */
-    // eslint-disable-next-line
-    async removeEmail(email) {
-        return Promise.reject();
-    }
+  /**
+   * @param {string} email
+   * @returns {Promise<boolean>}
+   */
+  // eslint-disable-next-line
+  async removeEmail(email) {
+    return Promise.reject();
+  }
 
-    /**
-     * @param {string} email
-     * @returns {Promise<EmailSuppressionData>}
-     */
-    // eslint-disable-next-line
-    async getSuppressionData(email) {
-        return Promise.reject();
-    }
+  /**
+   * @param {string} email
+   * @returns {Promise<EmailSuppressionData>}
+   */
+  // eslint-disable-next-line
+  async getSuppressionData(email) {
+    return Promise.reject();
+  }
 
-    /**
-     * @param {string[]} emails
-     * @returns {Promise<EmailSuppressionData[]>}
-     */
-    async getBulkSuppressionData(emails) {
-        return Promise.all(emails.map(email => this.getSuppressionData(email)));
-    }
+  /**
+   * @param {string[]} emails
+   * @returns {Promise<EmailSuppressionData[]>}
+   */
+  async getBulkSuppressionData(emails) {
+    return Promise.all(emails.map((email) => this.getSuppressionData(email)));
+  }
 }
 
 class EmailSuppressedEvent {
-    /**
-     * @readonly
-     * @type {{emailId: string, emailAddress: string, reason: string}}
-     */
-    data;
+  /**
+   * @readonly
+   * @type {{emailId: string, emailAddress: string, reason: string}}
+   */
+  data;
 
-    /**
-     * @readonly
-     * @type {Date}
-     */
-    timestamp;
+  /**
+   * @readonly
+   * @type {Date}
+   */
+  timestamp;
 
-    /**
-     * @private
-     */
-    constructor({emailAddress, emailId, reason, timestamp}) {
-        this.data = {
-            emailAddress,
-            emailId,
-            reason
-        };
-        this.timestamp = timestamp;
-    }
+  /**
+   * @private
+   */
+  constructor({ emailAddress, emailId, reason, timestamp }) {
+    this.data = {
+      emailAddress,
+      emailId,
+      reason,
+    };
+    this.timestamp = timestamp;
+  }
 
-    static create(data, timestamp) {
-        return new EmailSuppressedEvent({
-            ...data,
-            timestamp: timestamp || new Date
-        });
-    }
+  static create(data, timestamp) {
+    return new EmailSuppressedEvent({
+      ...data,
+      timestamp: timestamp || new Date(),
+    });
+  }
 }
 
 module.exports = {
-    AbstractEmailSuppressionList,
-    EmailSuppressionData,
-    EmailSuppressedEvent
+  AbstractEmailSuppressionList,
+  EmailSuppressionData,
+  EmailSuppressedEvent,
 };

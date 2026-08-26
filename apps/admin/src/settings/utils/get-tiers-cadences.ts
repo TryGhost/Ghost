@@ -1,24 +1,24 @@
-import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
+import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
 
 export interface TierCadenceOption {
-    label: string;
-    value: string;
+  label: string;
+  value: string;
 }
 
 export const getTiersCadences = (tiers: Tier[]): TierCadenceOption[] => {
-    const cadences: TierCadenceOption[] = [];
+  const cadences: TierCadenceOption[] = [];
 
-    tiers.forEach((tier: Tier) => {
-        cadences.push({
-            label: `${tier.name} - Monthly`,
-            value: `${tier.id}-month-${tier.currency}`
-        });
-
-        cadences.push({
-            label: `${tier.name} - Yearly`,
-            value: `${tier.id}-year-${tier.currency}`
-        });
+  tiers.forEach((tier: Tier) => {
+    cadences.push({
+      label: `${tier.name} - Monthly`,
+      value: `${tier.id}-month-${tier.currency}`,
     });
 
-    return cadences;
+    cadences.push({
+      label: `${tier.name} - Yearly`,
+      value: `${tier.id}-year-${tier.currency}`,
+    });
+  });
+
+  return cadences;
 };

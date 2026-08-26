@@ -43,15 +43,15 @@ values are `member`, `import`, `system`, `api`, and `admin`.
 profile information, email engagement totals, and communication preferences.
 Related data is separated by responsibility:
 
-| Responsibility | Tables |
-| --- | --- |
-| Labels | `labels`, `members_labels` |
-| Custom fields | `members_custom_fields`, `members_custom_field_values` |
-| Newsletter subscriptions | `newsletters`, `members_newsletters` |
-| Tiers and access | `products`, `members_products`, `subscriptions` |
-| Stripe state | `members_stripe_customers`, `members_stripe_customers_subscriptions`, `members_current_subscription`, `stripe_products`, `stripe_prices` |
-| Offers | `offers`, `offer_redemptions` |
-| Lifecycle and attribution history | the `members_*_events` tables |
+| Responsibility                    | Tables                                                                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Labels                            | `labels`, `members_labels`                                                                                                               |
+| Custom fields                     | `members_custom_fields`, `members_custom_field_values`                                                                                   |
+| Newsletter subscriptions          | `newsletters`, `members_newsletters`                                                                                                     |
+| Tiers and access                  | `products`, `members_products`, `subscriptions`                                                                                          |
+| Stripe state                      | `members_stripe_customers`, `members_stripe_customers_subscriptions`, `members_current_subscription`, `stripe_products`, `stripe_prices` |
+| Offers                            | `offers`, `offer_redemptions`                                                                                                            |
+| Lifecycle and attribution history | the `members_*_events` tables                                                                                                            |
 
 `labels` has a many-to-many relationship with `members` through
 `members_labels`. Newsletter subscriptions use the same pattern through
@@ -74,12 +74,12 @@ of truth for the current member record.
 
 A newsletter send is represented across four main tables:
 
-| Table | Purpose |
-| --- | --- |
-| `emails` | One send for one post, including rendered content, recipient filter, aggregate counts, tracking options, and overall status |
-| `email_batches` | Provider submissions for an email, including the member segment, provider identifier, status, and batch-level errors |
-| `email_recipients` | The recipients selected for a send, their batch, a snapshot of member identity, and processing/delivery/open/failure timestamps |
-| `email_recipient_failures` | Structured temporary or permanent delivery failure information for a recipient |
+| Table                      | Purpose                                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `emails`                   | One send for one post, including rendered content, recipient filter, aggregate counts, tracking options, and overall status     |
+| `email_batches`            | Provider submissions for an email, including the member segment, provider identifier, status, and batch-level errors            |
+| `email_recipients`         | The recipients selected for a send, their batch, a snapshot of member identity, and processing/delivery/open/failure timestamps |
+| `email_recipient_failures` | Structured temporary or permanent delivery failure information for a recipient                                                  |
 
 This split answers three different questions: `emails` records what Ghost sent,
 `email_batches` records how it was submitted to the provider, and

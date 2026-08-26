@@ -6,7 +6,7 @@ services:
     container_name: ghost-dev-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
     ports:
-      - "3306:3306"
+      - '3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-ghost_dev}
@@ -15,7 +15,17 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysql", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}", "-e", "SELECT 1"]
+      test:
+        [
+          'CMD',
+          'mysql',
+          '-h',
+          '127.0.0.1',
+          '-uroot',
+          '-p${MYSQL_ROOT_PASSWORD:-root}',
+          '-e',
+          'SELECT 1',
+        ]
       interval: 1s
       retries: 120
       timeout: 5s
@@ -24,9 +34,9 @@ services:
   redis:
     image: redis:7.4@sha256:e9b2e45ecd47fbb69b877cf8d045d5cccaaaed52524b6e098b4abe8212994f73
     container_name: ghost-dev-redis
-    command: ["redis-server", "--loglevel", "warning"]
+    command: ['redis-server', '--loglevel', 'warning']
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis-data:/data
     healthcheck:
@@ -42,13 +52,13 @@ services:
   mailpit:
     image: axllent/mailpit@sha256:d5ecbb067db3705fa953d79e1b7f81ef84038df67aba6c52825d8c02a1ea748a
     container_name: ghost-dev-mailpit
-    command: ["--quiet"]
+    command: ['--quiet']
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web interface
-      - "8026:8025"  # Web interface (for e2e tests)
+      - '1025:1025' # SMTP server
+      - '8025:8025' # Web interface
+      - '8026:8025' # Web interface (for e2e tests)
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8025']
       interval: 1s
       retries: 30
 
@@ -60,7 +70,7 @@ services:
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
     working_dir: /home/ghost/ghost/core
-    command: ["pnpm", "dev"]
+    command: ['pnpm', 'dev']
     volumes:
       # Mount the backend source as whole-directory mounts instead of
       # enumerating each server-graph workspace package. `pnpm dev` runs in
@@ -87,9 +97,9 @@ services:
       - shared-config:/mnt/shared-config:ro
     environment:
       NODE_ENV: development
-      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      NODE_TLS_REJECT_UNAUTHORIZED: '0'
       DEBUG: ${DEBUG:-}
-      pnpm_config_verify_deps_before_run: "false"
+      pnpm_config_verify_deps_before_run: 'false'
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -114,7 +124,13 @@ services:
         condition: service_healthy
         required: false
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
       timeout: 5s
       retries: 10
       start_period: 5s
@@ -127,10 +143,10 @@ services:
       dockerfile: Dockerfile
     container_name: ghost-dev-gateway
     ports:
-      - "2368:80"
-      - "80:80"
+      - '2368:80'
+      - '80:80'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     volumes:
       # Mount Caddyfile for live config changes without rebuilding
       - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -146,8 +162,8 @@ services:
   stripe:
     image: stripe/stripe-cli:latest@sha256:e35a010404b9b527249283bad6b1360430f4eb22a2f7726dc1d8735509a5fbda
     container_name: ghost-dev-stripe
-    entrypoint: ["/entrypoint.sh"]
-    profiles: ["stripe"]
+    entrypoint: ['/entrypoint.sh']
+    profiles: ['stripe']
     volumes:
       - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
       - shared-config:/mnt/shared-config
@@ -155,7 +171,7 @@ services:
       - GHOST_URL=${GHOST_URL:-http://ghost-dev:2368}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
     healthcheck:
-      test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
+      test: ['CMD', 'test', '-f', '/mnt/shared-config/.env.stripe']
       interval: 1s
       retries: 120
 

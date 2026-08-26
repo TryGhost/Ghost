@@ -5,50 +5,50 @@ const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('importer:handler:data');
 
 const messages = {
-    invalidJsonFormat: 'Invalid JSON format, expected `{ db: [exportedData] }`',
-    checkImportJsonIsValid: 'check that the import file is valid JSON.'
+  invalidJsonFormat: 'Invalid JSON format, expected `{ db: [exportedData] }`',
+  checkImportJsonIsValid: 'check that the import file is valid JSON.',
 };
 
 let JSONHandler;
 
 JSONHandler = {
-    type: 'data',
-    extensions: ['.json'],
-    contentTypes: ['application/octet-stream', 'application/json'],
-    directories: [],
+  type: 'data',
+  extensions: ['.json'],
+  contentTypes: ['application/octet-stream', 'application/json'],
+  directories: [],
 
-    // eslint-disable-next-line no-unused-vars
-    loadFile: async function (files, startDir) {
-        debug('loadFile', files);
-        // @TODO: Handle multiple JSON files
-        const filePath = files[0].path;
+  // eslint-disable-next-line no-unused-vars
+  loadFile: async function (files, startDir) {
+    debug('loadFile', files);
+    // @TODO: Handle multiple JSON files
+    const filePath = files[0].path;
 
-        const fileData = await fs.readFile(filePath);
-        let importData;
+    const fileData = await fs.readFile(filePath);
+    let importData;
 
-        try {
-            importData = JSON.parse(fileData);
+    try {
+      importData = JSON.parse(fileData);
 
-            // if importData follows JSON-API format `{ db: [exportedData] }`
-            if (_.keys(importData).length === 1) {
-                if (!importData.db || !Array.isArray(importData.db)) {
-                    throw new errors.InternalServerError({
-                        message: tpl(messages.invalidJsonFormat)
-                    });
-                }
-
-                importData = importData.db[0];
-            }
-
-            return importData;
-        } catch (err) {
-            throw new errors.BadRequestError({
-                err,
-                message: err.message,
-                help: tpl(messages.checkImportJsonIsValid)
-            });
+      // if importData follows JSON-API format `{ db: [exportedData] }`
+      if (_.keys(importData).length === 1) {
+        if (!importData.db || !Array.isArray(importData.db)) {
+          throw new errors.InternalServerError({
+            message: tpl(messages.invalidJsonFormat),
+          });
         }
+
+        importData = importData.db[0];
+      }
+
+      return importData;
+    } catch (err) {
+      throw new errors.BadRequestError({
+        err,
+        message: err.message,
+        help: tpl(messages.checkImportJsonIsValid),
+      });
     }
+  },
 };
 
 module.exports = JSONHandler;

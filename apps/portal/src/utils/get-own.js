@@ -7,6 +7,4 @@
  * @param {K} key
  * @returns {undefined | T[K]}
  */
-export const getOwn = (obj, key) => (
-    Object.hasOwn(obj, key) ? obj[key] : undefined
-);
+export const getOwn = (obj, key) => (Object.hasOwn(obj, key) ? obj[key] : undefined);

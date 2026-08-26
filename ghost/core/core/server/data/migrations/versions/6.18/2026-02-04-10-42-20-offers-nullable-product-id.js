@@ -1,4 +1,6 @@
-const {createSetNullableMigration} = require('../../utils');
+const { createSetNullableMigration } = require('../../utils');
 
 // We need to disable foreign key checks because if MySQL is missing the STRICT_TRANS_TABLES mode, we cannot revert the migration
-module.exports = createSetNullableMigration('offers', 'product_id', {disableForeignKeyChecks: true});
+module.exports = createSetNullableMigration('offers', 'product_id', {
+  disableForeignKeyChecks: true,
+});

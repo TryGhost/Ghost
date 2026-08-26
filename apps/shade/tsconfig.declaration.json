@@ -1,17 +1,16 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "noEmit": false,
-        "composite": true,
-        "declaration": true,
-        "declarationMap": true,
-        "declarationDir": "./types",
-        "outDir": "./types",
-        "emitDeclarationOnly": true,
-        "tsBuildInfoFile": "./types/tsconfig.tsbuildinfo",
-        "rootDir": "./src"
-    },
-    "include": ["src"],
-    "exclude": ["src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./types",
+    "outDir": "./types",
+    "emitDeclarationOnly": true,
+    "tsBuildInfoFile": "./types/tsconfig.tsbuildinfo",
+    "rootDir": "./src"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }
-  

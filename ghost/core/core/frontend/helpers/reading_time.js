@@ -10,22 +10,22 @@
 //
 // Returns estimated reading time for post
 
-const {checks} = require('../services/data');
-const {SafeString} = require('../services/handlebars');
+const { checks } = require('../services/data');
+const { SafeString } = require('../services/handlebars');
 
-const {readingTime: calculateAndFormatReadingTime} = require('@tryghost/helpers');
+const { readingTime: calculateAndFormatReadingTime } = require('@tryghost/helpers');
 
 // eslint-disable-next-line camelcase
 module.exports = function reading_time(options) {
-    options = options || {};
-    options.hash = options.hash || {};
-    const possiblyPost = this;
+  options = options || {};
+  options.hash = options.hash || {};
+  const possiblyPost = this;
 
-    // only calculate reading time for posts
-    if (!checks.isPost(possiblyPost)) {
-        return null;
-    }
+  // only calculate reading time for posts
+  if (!checks.isPost(possiblyPost)) {
+    return null;
+  }
 
-    const readingTime = calculateAndFormatReadingTime(possiblyPost, options.hash);
-    return new SafeString(readingTime);
+  const readingTime = calculateAndFormatReadingTime(possiblyPost, options.hash);
+  return new SafeString(readingTime);
 };
