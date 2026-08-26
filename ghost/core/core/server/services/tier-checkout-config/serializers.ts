@@ -1,9 +1,15 @@
 import { z } from 'zod';
 import { MAX_CHECKOUT_CUSTOM_FIELDS } from '../stripe/services/checkout/field-ports';
+import {
+  STRIPE_ALLOWED_COUNTRIES,
+  isStripeAllowedCountry,
+} from '../stripe/services/checkout/allowed-countries';
 import { TierCheckoutConfig } from './models';
 
-/** Each code costs three characters once comma-joined, against a 2000-character column. */
-const MAX_ALLOWED_COUNTRIES = 600;
+// Every country Stripe will take, sent at once, was measured as accepted — so the only
+// ceiling is the list itself, and a request naming more than there are countries is naming
+// something twice.
+const MAX_ALLOWED_COUNTRIES = STRIPE_ALLOWED_COUNTRIES.length;
 
 const QuestionInput = z.object({
   key: z.string().min(1, { error: 'Every checkout question needs a custom field key.' }),
@@ -18,7 +24,10 @@ const CountryCode = z
   .string()
   .trim()
   .regex(/^[A-Za-z]{2}$/, { error: 'Enter a 2-letter country code, like US.' })
-  .toUpperCase();
+  .toUpperCase()
+  .refine(isStripeAllowedCountry, {
+    error: 'Stripe will not ship to that country, so a checkout cannot offer it.',
+  });
 
 /**
  * Where a collected value lands is the request's to state. Ghost keeps no convention about

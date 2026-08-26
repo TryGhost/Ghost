@@ -184,6 +184,21 @@ describe('Tier Checkout Admin API', function () {
   });
 
   describe('What the checkout collects for itself', function () {
+    // A country Stripe will not ship to fails the whole session create, so a publisher who
+    // saved one would find every checkout for that tier broken and nothing to tell them
+    // why. Refused at the point they choose it instead.
+    it('refuses a country the processor will not ship to', async function () {
+      await createField({ name: 'Delivery address', type: 'address' });
+
+      // The usual slip for GB: two letters, looks like a country, and Stripe rejects it.
+      const body = await setCheckout(shipping({ allowed_countries: ['UK'] }), 422);
+      assert.match(body.errors[0].context, /will not ship to that country/);
+
+      // Sanctioned, so a general list of countries has it and Stripe does not.
+      const sanctioned = await setCheckout(shipping({ allowed_countries: ['KP'] }), 422);
+      assert.match(sanctioned.errors[0].context, /will not ship to that country/);
+    });
+
     // Collecting and choosing where it lands are one statement, because a publisher
     // makes them as one choice: a checkbox and the field beside it.
     it('collects a port and binds its destination in one write', async function () {
