@@ -15,7 +15,7 @@ import { createPortal } from 'react-dom';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { useFramework } from '@tryghost/admin-x-framework';
 import { usePinturaEditor } from '@/hooks/use-pintura-editor';
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
   JSONError,
   RequestEntityTooLargeError,

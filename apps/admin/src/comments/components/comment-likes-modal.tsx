@@ -18,7 +18,7 @@ import {
   useBrowseCommentLikes,
 } from '@tryghost/admin-x-framework/api/comments';
 import { LucideIcon, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
-import { formatMemberName, memberAvatarProps } from '@/members/member-format';
+import { formatMemberName, memberAvatarProps } from '@/members/api';
 
 type DefaultTab = 'likes' | 'dislikes';
 

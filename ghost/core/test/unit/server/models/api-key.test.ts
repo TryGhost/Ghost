@@ -1,6 +1,9 @@
-const assert = require('node:assert/strict');
-const { ApiKey } = require('../../../../core/server/models/api-key');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+
+const { ApiKey } = models;
 
 describe('Unit: models/api_key', function () {
   describe('fn: refreshSecret', function () {

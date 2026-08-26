@@ -45,7 +45,7 @@ import {
   type NewsletterRadialChartData,
 } from './components/newsletter-radial-chart';
 import { type Post, usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
-import { buildMembersUrl } from '@/members/member-route';
+import { buildMembersUrl } from '@/members/api';
 import { getLinkById } from '@/posts/analytics/utils/link-helpers';
 import { hasBeenEmailed, useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';

@@ -1,6 +1,9 @@
-const { Milestone } = require('../../../../core/server/models/milestone');
-const assert = require('node:assert/strict');
-const errors = require('@tryghost/errors');
+import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+
+const { Milestone } = models;
 
 describe('Unit: models/milestone', function () {
   describe('validation', function () {
@@ -10,7 +13,8 @@ describe('Unit: models/milestone', function () {
           .then(function () {
             throw new Error('expected ValidationError');
           })
-          .catch(function (err) {
+          .catch(function (err: unknown) {
+            assert(Array.isArray(err));
             assert.equal(err.length, 2);
             assert.equal(err[0] instanceof errors.ValidationError, true);
             assert.equal(err[1] instanceof errors.ValidationError, true);

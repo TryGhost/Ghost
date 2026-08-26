@@ -1,7 +1,5 @@
-const assert = require('node:assert/strict');
-const {
-  isPurchasableEntry,
-} = require('../../../../../core/server/services/machine-payments/eligibility');
+import assert from 'node:assert/strict';
+import { isPurchasableEntry } from '../../../../../core/server/services/machine-payments/eligibility';
 
 describe('Unit: server/services/machine-payments/eligibility', function () {
   it('treats visibility paid as purchasable', function () {

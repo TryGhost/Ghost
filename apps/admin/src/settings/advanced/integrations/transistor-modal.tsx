@@ -1,6 +1,6 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '@/settings/assets/images/integrations/ghost-transistor.png';
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import {
   Field,

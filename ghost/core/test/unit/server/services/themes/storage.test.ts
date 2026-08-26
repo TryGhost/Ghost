@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const storage = require('../../../../../core/server/services/themes/storage');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import storage from '../../../../../core/server/services/themes/storage';
 
 describe('Themes storage', function () {
   describe('zipToFile', function () {

@@ -1,9 +1,10 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const errors = require('@tryghost/errors');
-const {
-  SubscriptionCreatedEvent,
-} = require('../../../../core/server/models/subscription-created-event');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import errors from '@tryghost/errors';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+
+const { SubscriptionCreatedEvent } = models;
 
 describe('Unit: models/SubscriptionCreatedEvent', function () {
   afterEach(function () {
@@ -20,7 +21,8 @@ describe('Unit: models/SubscriptionCreatedEvent', function () {
         .then(function () {
           throw new Error('expected ValidationError');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
           assert.equal(err.length, 1);
           assert.equal(err[0] instanceof errors.ValidationError, true);
           assert.match(err[0].context, /members_subscription_created_events\.attribution_type/);
@@ -32,7 +34,8 @@ describe('Unit: models/SubscriptionCreatedEvent', function () {
         .then(function () {
           throw new Error('expected ValidationError');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
           assert.equal(err.length, 1);
           assert.equal(err[0] instanceof errors.ValidationError, true);
           assert.match(err[0].context, /members_subscription_created_events\.member_id/);
@@ -44,7 +47,8 @@ describe('Unit: models/SubscriptionCreatedEvent', function () {
         .then(function () {
           throw new Error('expected ValidationError');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
           assert.equal(err.length, 1);
           assert.equal(err[0] instanceof errors.ValidationError, true);
           assert.match(err[0].context, /members_subscription_created_events\.subscription_id/);
