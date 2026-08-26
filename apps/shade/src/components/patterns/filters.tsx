@@ -35,6 +35,7 @@ export interface FilterI18nConfig {
     noResultsFound: string;
     loading: string;
     loadMore: string;
+    showMore: (count: number) => string;
     select: string;
     true: string;
     false: string;
@@ -112,6 +113,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     noResultsFound: 'No results found.',
     loading: 'Loading...',
     loadMore: 'Load more',
+    showMore: count => `Show ${count} more`,
     select: 'Select...',
     true: 'True',
     false: 'False',
@@ -346,12 +348,19 @@ const filterOperatorVariants = cva(
             cursorPointer: {
                 true: 'cursor-pointer',
                 false: ''
+            },
+            // A read-only segment keeps its chrome but reads as static: muted, no
+            // hover, no pointer. Used for an applied-but-not-editable filter.
+            readOnly: {
+                true: 'pointer-events-none text-muted-foreground hover:text-muted-foreground',
+                false: ''
             }
         },
         defaultVariants: {
             variant: 'outline',
             size: 'md',
-            cursorPointer: true
+            cursorPointer: true,
+            readOnly: false
         }
     }
 );
@@ -414,12 +423,19 @@ const filterFieldValueVariants = cva(
             cursorPointer: {
                 true: 'cursor-pointer has-[[data-slot=switch]]:cursor-default has-[>[data-slot=filters-input-wrapper]]:cursor-text',
                 false: ''
+            },
+            // A read-only value keeps its chrome but reads as static: muted, no hover,
+            // no pointer. Mirrors the operator segment's read-only treatment.
+            readOnly: {
+                true: 'pointer-events-none text-muted-foreground hover:bg-background',
+                false: ''
             }
         },
         defaultVariants: {
             variant: 'outline',
             size: 'md',
-            cursorPointer: true
+            cursorPointer: true,
+            readOnly: false
         }
     }
 );
@@ -915,12 +931,25 @@ export interface CustomRendererProps<T = unknown> {
     values: T[];
     onChange: (values: T[]) => void;
     operator: string;
+    // Set the predicate's operator from inside the renderer. Provided when the
+    // field opts into `renderOperatorInValue`, so a renderer whose operator set
+    // depends on a choice made in the value area (e.g. a custom field whose type
+    // is picked here) can own the operator control itself.
+    onOperatorChange?: (operator: string) => void;
+    // Render the composed segments as static, non-editable text (an applied filter
+    // that can't be changed, e.g. one on an archived source). The renderer should
+    // pass this through to its FilterSegment* children.
+    readOnly?: boolean;
 }
 
 // Grouped field configuration interface
 export interface FilterFieldGroup<T = unknown> {
     group?: string;
     fields: FilterFieldConfig<T>[];
+    // Show only the first `previewLimit` fields in the picker, with a "Show more"
+    // to reveal the rest. Every field stays resolvable regardless — this caps
+    // presentation, not the config map. Absent = show all.
+    previewLimit?: number;
 }
 
 // Union type for both flat and grouped field configurations
@@ -970,6 +999,11 @@ export interface FilterFieldConfig<T = unknown> {
     // Group-level configuration
     group?: string;
     fields?: FilterFieldConfig<T>[];
+    previewLimit?: number;
+    // Renders an existing pill as read-only: its operator and value stay visible but
+    // static, and it can only be removed — for a filter on a source no longer offered
+    // in the picker (e.g. an archived field).
+    readOnly?: boolean;
     // Field-specific options
     options?: FilterOption<T>[];
     isLoading?: boolean;
@@ -1006,6 +1040,12 @@ export interface FilterFieldConfig<T = unknown> {
     defaultValue?: T;
     // Hide the operator dropdown and only show the operator as text
     hideOperatorSelect?: boolean;
+    // Suppress the framework's operator control entirely and let a customRenderer
+    // render its own, positioned after the value area's own selections. Used when
+    // the valid operator set depends on a choice made inside the renderer (e.g. a
+    // custom field whose type is picked there). The renderer receives
+    // `onOperatorChange` to drive the predicate operator.
+    renderOperatorInValue?: boolean;
     // Controlled values support for this field
     value?: T[];
     onValueChange?: (values: T[]) => void;
@@ -1196,6 +1236,66 @@ interface FilterOperatorDropdownProps<T = unknown> {
     onChange: (operator: string) => void;
 }
 
+// The operator-style dropdown chrome, shared by the built-in operator control and the
+// composable FilterSegmentSelect: a trigger styled with `filterOperatorVariants` over a
+// checked option list. `readOnly` renders the trigger as static text with no menu, so an
+// applied-but-not-editable filter still shows its value.
+function SegmentDropdown({
+    trigger,
+    options,
+    value,
+    onChange,
+    readOnly,
+    ariaLabel,
+    testId
+}: {
+    trigger: React.ReactNode;
+    options: FilterSegmentOption[];
+    value: string;
+    onChange: (value: string) => void;
+    readOnly?: boolean;
+    ariaLabel?: string;
+    testId?: string;
+}) {
+    const context = useFilterContext();
+
+    if (readOnly) {
+        return (
+            <div
+                aria-label={ariaLabel}
+                className={filterOperatorVariants({variant: context.variant, size: context.size, readOnly: true})}
+                data-testid={testId}
+            >
+                {trigger}
+            </div>
+        );
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                aria-label={ariaLabel}
+                className={filterOperatorVariants({variant: context.variant, size: context.size})}
+                data-testid={testId}
+            >
+                {trigger}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-fit min-w-fit">
+                {options.map(option => (
+                    <DropdownMenuItem
+                        key={option.value}
+                        className="flex items-center justify-between"
+                        onClick={() => onChange(option.value)}
+                    >
+                        <span>{option.label}</span>
+                        <Check className={`ms-auto text-primary ${option.value === value ? 'opacity-100' : 'opacity-0'}`} />
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
 function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}: FilterOperatorDropdownProps<T>) {
     const context = useFilterContext();
     const operators = getOperatorsForField(field, values, context.i18n);
@@ -1204,33 +1304,104 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     const operatorLabel =
     operators.find(op => op.value === operator)?.label || context.i18n.helpers.formatOperator(operator);
 
-    // If hideOperatorSelect is true, just render the operator as plain text
-    if (field.hideOperatorSelect) {
-        return (
-            <div className="flex items-center self-stretch border border-r-0 px-2.5 whitespace-nowrap text-muted-foreground">
-                {operatorLabel}
-            </div>
-        );
-    }
+    // Both `hideOperatorSelect` and a read-only field render the operator as static
+    // text through the shared chrome, rather than a live menu.
+    return (
+        <SegmentDropdown
+            options={operators}
+            readOnly={field.readOnly || field.hideOperatorSelect}
+            trigger={operatorLabel}
+            value={operator}
+            onChange={onChange}
+        />
+    );
+}
+
+export interface FilterSegmentOption {
+    value: string;
+    label: string;
+}
+
+export interface FilterSegmentSelectProps {
+    value: string;
+    options: FilterSegmentOption[];
+    onChange: (value: string) => void;
+    placeholder?: string;
+    ariaLabel?: string;
+    className?: string;
+    testId?: string;
+    // Render the selection as static text (no menu) — for an applied filter that
+    // should stay legible but not editable.
+    readOnly?: boolean;
+}
+
+// A dropdown segment styled like the built-in operator control, so a custom
+// renderer can compose its own choices (e.g. a custom field's field / sub-field /
+// operator) that read as native filter segments rather than standalone selects.
+export function FilterSegmentSelect({value, options, onChange, placeholder, ariaLabel, className, testId, readOnly}: FilterSegmentSelectProps) {
+    const selected = options.find(option => option.value === value);
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger className={filterOperatorVariants({variant: context.variant, size: context.size})}>
-                {operatorLabel}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-fit min-w-fit">
-                {operators.map(op => (
-                    <DropdownMenuItem
-                        key={op.value}
-                        className="flex items-center justify-between"
-                        onClick={() => onChange(op.value)}
-                    >
-                        <span>{op.label}</span>
-                        <Check className={`ms-auto text-primary ${op.value === operator ? 'opacity-100' : 'opacity-0'}`} />
-                    </DropdownMenuItem>
-                ))}
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <SegmentDropdown
+            ariaLabel={ariaLabel}
+            options={options}
+            readOnly={readOnly}
+            testId={testId}
+            trigger={
+                <span className={cn(selected ? undefined : 'text-muted-foreground', className)}>
+                    {selected ? selected.label : placeholder}
+                </span>
+            }
+            value={value}
+            onChange={onChange}
+        />
+    );
+}
+
+export interface FilterSegmentInputProps {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    ariaLabel?: string;
+    className?: string;
+    testId?: string;
+    // Render the value as static text (no input) — for an applied filter that should
+    // stay legible but not editable.
+    readOnly?: boolean;
+}
+
+// A text-input segment styled like the built-in value input, for the value part
+// of a custom renderer composed from segments.
+export function FilterSegmentInput({value, onChange, placeholder, ariaLabel, className, testId, readOnly}: FilterSegmentInputProps) {
+    const context = useFilterContext();
+
+    return (
+        <div
+            className={cn('w-36', filterInputVariants({variant: context.variant, size: context.size}), className)}
+            data-slot="filters-input-wrapper"
+        >
+            {readOnly ? (
+                <span
+                    aria-label={ariaLabel}
+                    className="block w-full truncate text-muted-foreground"
+                    data-slot="filters-input"
+                    data-testid={testId}
+                >
+                    {value || placeholder}
+                </span>
+            ) : (
+                <input
+                    aria-label={ariaLabel}
+                    autoComplete="off"
+                    className="w-full bg-transparent outline-hidden"
+                    data-slot="filters-input"
+                    data-testid={testId}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={event => onChange(event.target.value)}
+                />
+            )}
+        </div>
     );
 }
 
@@ -1239,6 +1410,8 @@ interface FilterValueSelectorProps<T = unknown> {
     values: T[];
     onChange: (values: T[]) => void;
     operator: string;
+    onOperatorChange?: (operator: string) => void;
+    readOnly?: boolean;
 }
 
 interface SelectOptionsPopoverProps<T = unknown> {
@@ -1750,7 +1923,7 @@ function SelectOptionsPopover<T = unknown>({
     );
 }
 
-function FilterValueSelector<T = unknown>({field, values, onChange, operator}: FilterValueSelectorProps<T>) {
+function FilterValueSelector<T = unknown>({field, values, onChange, operator, onOperatorChange, readOnly}: FilterValueSelectorProps<T>) {
     const [open, setOpen] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const context = useFilterContext();
@@ -1775,15 +1948,49 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
 
     // Use custom renderer if provided
     if (field.customRenderer) {
+        // A field that renders its own operator also composes its own segments, so
+        // it sits directly in the filter item rather than inside a single value box
+        // — otherwise its segments would nest inside one bordered value pill.
+        if (field.renderOperatorInValue) {
+            return <>{field.customRenderer({field, values, onChange, operator, onOperatorChange, readOnly})}</>;
+        }
+
         return (
             <div
                 className={filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
-                    cursorPointer: context.cursorPointer
+                    cursorPointer: context.cursorPointer,
+                    readOnly
                 })}
             >
-                {field.customRenderer({field, values, onChange, operator})}
+                {field.customRenderer({field, values, onChange, operator, onOperatorChange, readOnly})}
+            </div>
+        );
+    }
+
+    // A read-only field with no custom renderer shows its value as static text.
+    if (readOnly) {
+        return (
+            <div
+                className={filterFieldValueVariants({
+                    variant: context.variant,
+                    size: context.size,
+                    cursorPointer: context.cursorPointer,
+                    readOnly: true
+                })}
+            >
+                {field.customValueRenderer
+                    ? field.customValueRenderer(values, field.options ?? [])
+                    : values
+                        .map((currentValue) => {
+                            // Through the options, as the editable path does: a field that
+                            // reads "Gold" while editable must not read "t1" once frozen.
+                            const option = field.options?.find(candidate => candidate.value === currentValue);
+                            return option ? option.label : String(currentValue);
+                        })
+                        .filter(Boolean)
+                        .join(', ')}
             </div>
         );
     }
@@ -2250,19 +2457,23 @@ export const FiltersContent = <T = unknown,>({filters, fields, onChange}: Filter
                         </div>
 
                         {/* Operator Dropdown */}
-                        <FilterOperatorDropdown<T>
-                            field={field}
-                            operator={filter.operator}
-                            values={filter.values}
-                            onChange={operator => updateFilter(filter.id, {operator})}
-                        />
+                        {!field.renderOperatorInValue && (
+                            <FilterOperatorDropdown<T>
+                                field={field}
+                                operator={filter.operator}
+                                values={filter.values}
+                                onChange={operator => updateFilter(filter.id, {operator})}
+                            />
+                        )}
 
                         {/* Value Selector */}
                         <FilterValueSelector<T>
                             field={field}
                             operator={filter.operator}
+                            readOnly={field.readOnly}
                             values={filter.values}
                             onChange={values => updateFilter(filter.id, {values})}
+                            onOperatorChange={operator => updateFilter(filter.id, {operator})}
                         />
 
                         {/* Remove Button */}
@@ -2336,6 +2547,11 @@ export function Filters<T = unknown>({
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+    // The field-picker search, controlled so a `previewLimit` group can uncap while
+    // the user is searching. `expandedGroups` holds the groups whose "Show more" was
+    // clicked. Both reset when the picker closes.
+    const [fieldSearch, setFieldSearch] = useState('');
+    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
     // Notify parent when active field changes
     useEffect(() => {
@@ -2439,6 +2655,8 @@ export function Filters<T = unknown>({
         setAddFilterOpen(false);
         setSelectedFieldKeyForOptions(null);
         setTempSelectedValues([]);
+        setFieldSearch('');
+        setExpandedGroups(new Set());
     }, []);
 
     const addFilter = useCallback(
@@ -2495,6 +2713,19 @@ export function Filters<T = unknown>({
         [closeFilterPopover, filters, onChange]
     );
 
+    // A read-only field is never offered: it exists so a filter already applied against it
+    // stays readable and removable. Checked before allowMultiple, which otherwise lets a
+    // field be picked again while it is applied — minting a second, uneditable, empty one.
+    const isOfferable = useCallback((field: FilterFieldConfig<T>) => {
+        if (field.readOnly) {
+            return false;
+        }
+        if (allowMultiple) {
+            return true;
+        }
+        return !filters.some(filter => filter.field === field.key);
+    }, [allowMultiple, filters]);
+
     const selectableFields = useMemo(() => {
         const flatFields = flattenFields(fields);
         return flatFields.filter((field) => {
@@ -2502,14 +2733,69 @@ export function Filters<T = unknown>({
             if (!field.key || field.type === 'separator') {
                 return false;
             }
-            // If allowMultiple is true, don't filter out fields that already have filters
-            if (allowMultiple) {
-                return true;
-            }
-            // Filter out fields that already have filters (default behavior)
-            return !filters.some(filter => filter.field === field.key);
+            return isOfferable(field);
         });
-    }, [fields, filters, allowMultiple]);
+    }, [fields, isOfferable]);
+
+    // A group can preview a subset in the picker (previewLimit) while every field
+    // stays resolvable — getFieldsMap flattens all of them, so named pills and saved
+    // segments never depend on a field being listed here. "Show more" reveals the
+    // rest; an active search reveals the whole group so a capped-out field is still
+    // findable by name.
+    const renderPickerGroup = (
+        groupKey: string,
+        heading: string,
+        groupFields: FilterFieldConfig<T>[],
+        previewLimit?: number
+    ) => {
+        // A group with nothing left to add collapses away rather than showing an empty
+        // heading.
+        if (groupFields.length === 0) {
+            return null;
+        }
+
+        const searching = fieldSearch.trim().length > 0;
+        const capped = previewLimit !== undefined
+            && !searching
+            && !expandedGroups.has(groupKey)
+            && groupFields.length > previewLimit;
+        const visibleFields = capped ? groupFields.slice(0, previewLimit) : groupFields;
+        const hiddenCount = groupFields.length - visibleFields.length;
+
+        return (
+            <CommandGroup key={groupKey} heading={heading}>
+                {visibleFields.map((field, fieldIndex) => {
+                    if (field.type === 'separator') {
+                        return <CommandSeparator key={field.key ?? `${groupKey}-separator-${fieldIndex}`} />;
+                    }
+
+                    return (
+                        <CommandItem
+                            key={field.key ?? `${groupKey}-field-${fieldIndex}`}
+                            className="min-w-0"
+                            onSelect={() => field.key && addFilter(field.key)}
+                        >
+                            {field.icon}
+                            <span className="truncate">{field.label}</span>
+                        </CommandItem>
+                    );
+                })}
+                {capped && (
+                    <CommandItem
+                        className="min-w-0 text-muted-foreground"
+                        value={`${groupKey}-show-more`}
+                        onSelect={() => setExpandedGroups((prev) => {
+                            const next = new Set(prev);
+                            next.add(groupKey);
+                            return next;
+                        })}
+                    >
+                        <span className="truncate">{mergedI18n.showMore(hiddenCount)}</span>
+                    </CommandItem>
+                )}
+            </CommandGroup>
+        );
+    };
 
     return (
         <FilterContext.Provider
@@ -2551,19 +2837,26 @@ export function Filters<T = unknown>({
                             </div>
 
                             {/* Operator Dropdown */}
-                            <FilterOperatorDropdown<T>
-                                field={field}
-                                operator={filter.operator}
-                                values={filter.values}
-                                onChange={operator => updateFilter(filter.id, {operator})}
-                            />
+                            {!field.renderOperatorInValue && (
+                                <FilterOperatorDropdown<T>
+                                    field={field}
+                                    operator={filter.operator}
+                                    values={filter.values}
+                                    onChange={operator => updateFilter(filter.id, {operator})}
+                                />
+                            )}
 
-                            {/* Value Selector */}
+                            {/* Value Selector. A read-only field (e.g. an archived
+                                source) still renders its operator and value, but as
+                                static segments, so the filter stays legible while only
+                                the remove control acts. */}
                             <FilterValueSelector<T>
                                 field={field}
                                 operator={filter.operator}
+                                readOnly={field.readOnly}
                                 values={filter.values}
                                 onChange={values => updateFilter(filter.id, {values})}
+                                onOperatorChange={operator => updateFilter(filter.id, {operator})}
                             />
 
                             {/* Remove Button */}
@@ -2580,6 +2873,8 @@ export function Filters<T = unknown>({
                             if (!open) {
                                 setSelectedFieldKeyForOptions(null);
                                 setTempSelectedValues([]);
+                                setFieldSearch('');
+                                setExpandedGroups(new Set());
                             }
                         }}
                     >
@@ -2633,7 +2928,7 @@ export function Filters<T = unknown>({
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
                                 <Command className='outline-hidden' tabIndex={showSearchInput ? undefined : 0}>
-                                    {showSearchInput && <CommandInput className="h-(--control-height)" placeholder={mergedI18n.searchFields} />}
+                                    {showSearchInput && <CommandInput className="h-(--control-height)" placeholder={mergedI18n.searchFields} value={fieldSearch} onValueChange={setFieldSearch} />}
                                     <CommandList className="outline-hidden">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
                                         {fields.map((item, index) => {
@@ -2644,41 +2939,10 @@ export function Filters<T = unknown>({
                                                     if (field.type === 'separator') {
                                                         return true;
                                                     }
-                                                    // If allowMultiple is true, don't filter out fields that already have filters
-                                                    if (allowMultiple) {
-                                                        return true;
-                                                    }
-                                                    // Filter out fields that already have filters (default behavior)
-                                                    return !filters.some(filter => filter.field === field.key);
+                                                    return isOfferable(field);
                                                 });
 
-                                                if (groupFields.length === 0) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                        {groupFields.map((field, fieldIndex) => {
-                                                            // Handle separator - use field.key if available, or generate stable key
-                                                            if (field.type === 'separator') {
-                                                                const sepKey = field.key ?? `${item.group ?? `group-${index}`}-separator-${fieldIndex}`;
-                                                                return <CommandSeparator key={sepKey} />;
-                                                            }
-
-                                                            // Regular field
-                                                            return (
-                                                                <CommandItem
-                                                                    key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
-                                                                    className="min-w-0"
-                                                                    onSelect={() => field.key && addFilter(field.key)}
-                                                                >
-                                                                    {field.icon}
-                                                                    <span className="truncate">{field.label}</span>
-                                                                </CommandItem>
-                                                            );
-                                                        })}
-                                                    </CommandGroup>
-                                                );
+                                                return renderPickerGroup(item.group || `group-${index}`, item.group || 'Fields', groupFields, item.previewLimit);
                                             }
 
                                             // Handle group-level fields (new FilterFieldConfig structure with group property)
@@ -2688,37 +2952,10 @@ export function Filters<T = unknown>({
                                                     if (field.type === 'separator') {
                                                         return true;
                                                     }
-                                                    // If allowMultiple is true, don't filter out fields that already have filters
-                                                    if (allowMultiple) {
-                                                        return true;
-                                                    }
-                                                    // Filter out fields that already have filters (default behavior)
-                                                    return !filters.some(filter => filter.field === field.key);
+                                                    return isOfferable(field);
                                                 });
 
-                                                if (groupFields.length === 0) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                        {groupFields.map((field) => {
-                                                            // Handle separator - use field.key if available, or generate stable key
-                                                            if (field.type === 'separator') {
-                                                                const sepKey = field.key || `${item.group || `group-${index}`}-separator-${field.label || Math.random()}`;
-                                                                return <CommandSeparator key={sepKey} />;
-                                                            }
-
-                                                            // Regular field
-                                                            return (
-                                                                <CommandItem key={field.key} className="min-w-0" onSelect={() => field.key && addFilter(field.key)}>
-                                                                    {field.icon}
-                                                                    <span className="truncate">{field.label}</span>
-                                                                </CommandItem>
-                                                            );
-                                                        })}
-                                                    </CommandGroup>
-                                                );
+                                                return renderPickerGroup(item.group || `group-${index}`, item.group || 'Fields', groupFields, item.previewLimit);
                                             }
 
                                             // Handle flat field configuration (backward compatibility)
@@ -2730,8 +2967,7 @@ export function Filters<T = unknown>({
                                                 return <CommandSeparator key={sepKey} />;
                                             }
 
-                                            // If allowMultiple is false, filter out fields that already have filters
-                                            if (!allowMultiple && filters.some(filter => filter.field === field.key)) {
+                                            if (!isOfferable(field)) {
                                                 return null;
                                             }
 

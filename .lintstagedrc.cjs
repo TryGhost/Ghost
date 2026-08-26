@@ -91,6 +91,23 @@ function buildBoundaryCommand(files) {
     return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
 }
 
+function buildMarkdownCommands(files) {
+    const relativeFiles = files
+        .map(file => normalize(path.relative(ROOT, file)))
+        .filter(file => !file.startsWith('.changeset/'))
+        .filter(file => !file.split('/').some(part => part === 'fixture' || part === 'fixtures'));
+
+    if (relativeFiles.length === 0) {
+        return [];
+    }
+
+    const quotedFiles = shellQuote(relativeFiles);
+    return [
+        `pnpm exec markdownlint-cli2 --config .markdownlint-cli2.jsonc ${quotedFiles}`,
+        `pnpm exec remark --use remark-validate-links --frail --quiet --no-stdout ${quotedFiles}`
+    ];
+}
+
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
         const groups = new Map();
@@ -109,5 +126,12 @@ module.exports = {
     'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
         buildBoundaryCommand(files),
     'apps/{shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
-        buildBoundaryCommand(files)
+        buildBoundaryCommand(files),
+    '**/*.md': buildMarkdownCommands,
+    '{**/AGENTS.md,scripts/check-agent-guidance.js}': () =>
+        'pnpm lint:agent-guidance',
+    '{.agents/skills/**,.claude/skills/**,scripts/check-agent-skill-links.js}': () =>
+        'pnpm lint:agent-skills',
+    '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,scripts/check-internal-packages.js,scripts/create-package.js,scripts/lib/constants.js,scripts/lib/package-template.js}': () =>
+        'pnpm lint:packages'
 };

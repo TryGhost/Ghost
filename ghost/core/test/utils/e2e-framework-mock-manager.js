@@ -247,7 +247,6 @@ const mockMailgun = (customStubbedSend) => {
 
     // We need to stub the Mailgun client before starting Ghost
     sinon.stub(MailgunClient.prototype, 'getInstance').returns({
-        // @ts-ignore
         messages: {
             create: async function () {
                 return await mailgunCreateMessageStub.call(this, ...arguments);

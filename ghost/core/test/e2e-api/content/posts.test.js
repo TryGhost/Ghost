@@ -369,6 +369,27 @@ describe('Posts Content API', function () {
         assert.equal(paidPostData.tiers.length, 1);
     });
 
+    it('ignores Payment Authorization on gated Content API reads', async function () {
+        const paidPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'mp-content-api-paid',
+            visibility: 'paid',
+            lexical: testUtils.DataGenerator.markdownToLexical('Secret paid body'),
+            published_at: moment().add(35, 'seconds').toDate()
+        });
+        const created = await models.Post.add(paidPost, {context: {internal: true}});
+
+        try {
+            const {body} = await agent
+                .get(`posts/slug/mp-content-api-paid/?formats=html`)
+                .header('Authorization', 'Payment test-credential')
+                .expectStatus(200);
+
+            assert.doesNotMatch(body.posts[0].html || '', /Secret paid body/);
+        } finally {
+            await models.Post.destroy({id: created.id}, {context: {internal: true}});
+        }
+    });
+
     it('Can include specific tier for post with tiers visibility', async function () {
         const res = await agent
             .get(`tiers/`)

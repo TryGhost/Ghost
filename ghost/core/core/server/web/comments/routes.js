@@ -8,9 +8,11 @@ const tpl = require('@tryghost/tpl');
 
 const bodyParser = require('body-parser');
 const membersService = require('../../../server/services/members');
+const privateSiteAccess = require('../../../shared/private-site-access');
 
 const messages = {
-    memberCommentingDisabled: 'Your commenting ability has been disabled.'
+    memberCommentingDisabled: 'Your commenting ability has been disabled.',
+    privateSiteAccessRequired: 'Comment browsing is not available'
 };
 
 /**
@@ -28,28 +30,49 @@ function checkMemberCommenting(req, res, next) {
 }
 
 /**
+ * Middleware to reject comment read requests without a valid private-site
+ * session when the site is in private mode.
+ */
+function checkCanReadComments(req, res, next) {
+    if (res.isPrivateBlog && !privateSiteAccess.hasAccess(req)) {
+        return next(new errors.NoPermissionError({
+            message: tpl(messages.privateSiteAccessRequired)
+        }));
+    }
+    next();
+}
+
+/**
  * @returns {import('express').Router}
  */
 module.exports = function apiRoutes() {
     const router = express.Router('comment api');
     router.use(bodyParser.json({limit: '50mb'}));
+    router.use(privateSiteAccess.loadSession);
 
-    const countsCache = shared.middleware.cacheControl(
+    const publicCountsCache = shared.middleware.cacheControl(
         'public',
         {maxAge: config.get('caching:commentsCountAPI:maxAge')}
     );
-    router.get('/counts', countsCache, http(api.commentsMembers.counts));
+    const privateCountsCache = shared.middleware.cacheControl('private');
+    const countsCache = (req, res, next) => {
+        if (res.isPrivateBlog) {
+            return privateCountsCache(req, res, next);
+        }
+        return publicCountsCache(req, res, next);
+    };
+    router.get('/counts', checkCanReadComments, countsCache, http(api.commentsMembers.counts));
 
-    // Authenticated Routes
+    // Load the optional member session for member-specific comment state
     router.use(membersService.middleware.loadMemberSession);
 
     // Enforce capped limit parameter
     router.use(shared.middleware.maxLimitCap);
 
-    router.get('/', http(api.commentsMembers.browse));
-    router.get('/post/:post_id', http(api.commentsMembers.browse));
-    router.get('/:id', http(api.commentsMembers.read));
-    router.get('/:id/replies', http(api.commentsMembers.replies));
+    router.get('/', checkCanReadComments, http(api.commentsMembers.browse));
+    router.get('/post/:post_id', checkCanReadComments, http(api.commentsMembers.browse));
+    router.get('/:id', checkCanReadComments, http(api.commentsMembers.read));
+    router.get('/:id/replies', checkCanReadComments, http(api.commentsMembers.replies));
 
     // Write operations require member to have commenting ability enabled
     router.post('/', checkMemberCommenting, http(api.commentsMembers.add));

@@ -24,10 +24,6 @@ const features: Feature[] = [{
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 }, {
-    title: 'Email customization (internal beta)',
-    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
-    flag: 'emailCustomization'
-}, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
@@ -39,10 +35,6 @@ const features: Feature[] = [{
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh'
-}, {
-    title: 'Explore',
-    description: 'Enables keeping in touch with the new Explore API',
-    flag: 'explore'
 }, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
@@ -56,25 +48,13 @@ const features: Feature[] = [{
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'Featurebase Feedback',
-    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
-    flag: 'featurebaseFeedback'
-}, {
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
 }, {
-    title: 'Smarter Counts',
-    description: 'Use optimized COUNT queries for API pagination when safe',
-    flag: 'smarterCounts'
-}, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
-}, {
-    title: 'React member details',
-    description: 'Renders the member detail screen (/members/:id) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'memberDetailsReact'
 }, {
     title: 'React tag details',
     description: 'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
@@ -91,6 +71,14 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Self-serve archives',
+    description: 'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
+    flag: 'selfServeArchives'
+}, {
+    title: 'Machine payments',
+    description: 'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
+    flag: 'machinePayments'
 }];
 
 const AlphaFeatures: React.FC = () => {

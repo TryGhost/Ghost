@@ -1,7 +1,4 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import EmailNotificationsTab from './users/email-notifications-tab';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import ProfileTab from './users/profile-tab';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import SocialLinksTab from './users/social-links-tab';
@@ -18,12 +15,14 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
 import {useLocation, useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/app/utils/social-urls/index';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
@@ -77,6 +76,7 @@ export interface UserDetailProps {
 
 const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDeleting: boolean) => void}> = ({user, onDeletingUserChange}) => {
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const location = useLocation();
 
     const getTabFromPath = (path: string): string => {
@@ -91,6 +91,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
     const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError, okProps} = useForm({
         initialState: user,
         savingDelay: 500,
@@ -172,10 +173,10 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                 await limiter?.errorIfWouldGoOverLimit('staff');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(LimitModal, {
+                    showLimit({
                         formSheet: true,
                         prompt: error.message || `Your current plan doesn't support more users.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     return;
                 } else {
@@ -188,7 +189,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
         if (_user.status === 'inactive') {
             warningText = 'This user will be able to log in again and will have the same permissions they had previously.';
         }
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to suspend this user?',
             prompt: (
                 <>
@@ -216,7 +217,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     };
 
     const confirmDelete = (_user: User, {owner}: {owner: User}) => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to delete this user?',
             prompt: (
                 <>
@@ -243,7 +244,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     };
 
     const confirmMakeOwner = () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Transfer Ownership',
             prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
             okLabel: 'Yep — I\'m sure',

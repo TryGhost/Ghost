@@ -265,11 +265,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member changed status');
     });
 
-    it('skips sending email if the member unsubscribed from updates & announcements', async function () {
-        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+    it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
         Member.findOne.resolves(buildMember({enable_updates_and_announcements: false}));
 
         await poll(options);
@@ -277,9 +275,9 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automationsApi.recordEmailSent);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
     });
 
     it('sends email if updates & announcements is unset and the member has newsletter subscriptions', async function () {
@@ -297,11 +295,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
 
-    it('skips sending email if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
-        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+    it('ends the automation run if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
         Member.findOne.resolves(buildMember({
             enable_updates_and_announcements: null,
             newsletters: []
@@ -312,9 +308,9 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automationsApi.recordEmailSent);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
     });
 
     it('gift members run through paid automations', async function () {

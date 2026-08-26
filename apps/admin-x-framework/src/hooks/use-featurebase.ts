@@ -93,8 +93,8 @@ function initFeaturebaseWidget(organization: string, theme: 'light' | 'dark', to
  * Lazy-loads the Featurebase SDK and opens the feedback widget.
  *
  * `isAvailable` reflects whether Featurebase is enabled for the current site.
- * The server only exposes `config.featurebase` when the `featurebaseFeedback`
- * lab is on AND the org config is set, so checking it here is sufficient.
+ * The server only exposes `config.featurebase` when the org config is set,
+ * so checking it here is sufficient.
  * Callers still need to gate by user role (e.g. exclude contributors) if
  * relevant to their surface.
  *

@@ -2,6 +2,9 @@
   "name": "@tryghost/nql-string",
   "version": "0.0.0",
   "private": true,
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",

@@ -1,9 +1,7 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
-import WelcomeEmailModal from './member-emails/welcome-email-modal';
+import WelcomeEmailModal, {type WelcomeEmailModalProps} from './member-emails/welcome-email-modal';
 import useQueryParams from '@/settings/app/hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
@@ -13,10 +11,12 @@ import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
 
 const EmailPreviewRow: React.FC<{
     automatedEmail: AutomatedEmail,
@@ -145,6 +145,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: editAutomatedEmail, isPending: isEditingAutomatedEmail} = useEditAutomatedEmail();
     const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const isMutating = isAddingAutomatedEmail || isEditingAutomatedEmail;
@@ -196,7 +197,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     prompt = <>Welcome email reply-to address has been verified and updated.</>;
                 }
 
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title,
                     prompt,
                     okLabel: 'Close',
@@ -212,7 +213,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
                 clearVerifyEmailFromRoute();
 
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Error verifying email address',
                     prompt,
                     okLabel: 'Close',
@@ -224,7 +225,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
 
         verify();
-    }, [handleError, verifyEmailToken, verifySenderUpdate]);
+    }, [confirm, handleError, verifyEmailToken, verifySenderUpdate]);
 
     const handleToggle = async (emailType: 'free' | 'paid') => {
         const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);
@@ -250,6 +251,9 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     };
 
+    const [editingEmail, setEditingEmail] = useState<WelcomeEmailModalProps | null>(null);
+    const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+
     // Handle Edit button click - creates inactive row if needed, then opens modal
     const handleEditClick = async (emailType: 'free' | 'paid') => {
         const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);
@@ -263,13 +267,13 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 const result = await createAutomatedEmail(emailType, 'inactive');
                 const newEmail = result?.automated_emails?.[0];
                 if (newEmail) {
-                    NiceModal.show(WelcomeEmailModal, {emailType, automatedEmail: newEmail});
+                    setEditingEmail({emailType, automatedEmail: newEmail});
                 }
             } catch (e) {
                 handleError(e);
             }
         } else {
-            NiceModal.show(WelcomeEmailModal, {emailType, automatedEmail: existing});
+            setEditingEmail({emailType, automatedEmail: existing});
         }
     };
 
@@ -285,7 +289,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     size='sm'
                     type='button'
                     variant='ghost'
-                    onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
+                    onClick={() => setIsCustomizeOpen(true)}
                 >
                     Customize
                 </Button>
@@ -310,6 +314,12 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 onPaidEdit={() => handleEditClick('paid')}
                 onPaidToggle={() => handleToggle('paid')}
             />
+            {editingEmail && (
+                <DialogPortal>
+                    <WelcomeEmailModal key={editingEmail.automatedEmail.id} {...editingEmail} onClose={() => setEditingEmail(null)} />
+                </DialogPortal>
+            )}
+            {isCustomizeOpen && <WelcomeEmailCustomizeModal onClose={() => setIsCustomizeOpen(false)} />}
         </TopLevelGroup>
     );
 };

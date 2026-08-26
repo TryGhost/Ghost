@@ -1091,7 +1091,7 @@ User = ghostBookshelf.Model.extend({
             });
         }
 
-        const updatedUser = await user.save({password: newPassword});
+        const updatedUser = await user.save({password: newPassword}, options);
 
         // Destroy every active session for this user. The caller must mint a
         // fresh session (with a new session_id) for self password-changes so

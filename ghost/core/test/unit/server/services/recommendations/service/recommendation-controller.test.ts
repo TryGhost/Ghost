@@ -590,7 +590,7 @@ describe('RecommendationController', function () {
 
         describe('include', function () {
             let listSpy: SinonSpy;
-            let rec = {
+            const rec = {
                 id: '1',
                 title: 'Test',
                 description: null,

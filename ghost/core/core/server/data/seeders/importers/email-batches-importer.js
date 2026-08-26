@@ -1,6 +1,6 @@
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class EmailBatchesImporter extends TableImporter {
     static table = 'email_batches';
@@ -14,23 +14,24 @@ class EmailBatchesImporter extends TableImporter {
         const emails = await this.transaction.select('id', 'created_at', 'email_count').from('emails');
 
         // 1 batch per 1000 recipients
-        await this.importForEach(emails, quantity ?? (() => {
+        const amount = typeof quantity === 'number' ? Math.ceil(quantity / emails.length) : () => {
             return Math.ceil(this.model.email_count / 1000);
-        }));
+        };
+        await this.importForEach(emails, amount);
     }
 
     generate() {
-        const emailSentDate = dateToDatabaseString.parse(this.model.created_at);
-        const latestUpdatedDate = dateToDatabaseString.parse(this.model.created_at);
+        const emailSentDate = databaseDate.parse(this.model.created_at);
+        const latestUpdatedDate = databaseDate.parse(this.model.created_at);
         latestUpdatedDate.setHours(latestUpdatedDate.getHours() + 1);
 
         return {
             id: this.fastFakeObjectId(),
             email_id: this.model.id,
-            provider_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.string.hexadecimal({length: 16, prefix: '', casing: 'lower'})}@m.example.com`,
+            mailgun_message_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.string.hexadecimal({length: 16, prefix: '', casing: 'lower'})}@m.example.com`,
             status: 'submitted', // TODO: introduce failures
             created_at: this.model.created_at,
-            updated_at: dateToDatabaseString(dateToDatabaseString.randomBetween(emailSentDate, latestUpdatedDate))
+            updated_at: databaseDate.dateToDatabaseString(databaseDate.randomBetween(emailSentDate, latestUpdatedDate))
         };
     }
 }

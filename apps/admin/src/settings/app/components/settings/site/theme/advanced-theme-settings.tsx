@@ -1,8 +1,5 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -12,8 +9,10 @@ import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyThe
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 interface ThemeActionProps {
     theme: Theme;
@@ -59,7 +58,10 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
     const {route, updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const {checkThemeLimitError} = useCheckThemeLimitError();
+    const {confirm, showLimit} = useConfirmation();
+    const [activationErrors, setActivationErrors] = useState<FatalErrors | null>(null);
 
     const handleActivate = async () => {
         try {
@@ -73,19 +75,8 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             } else {
                 handleError(e);
             }
-            const title = 'Theme not activated';
-            const prompt = <>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>;
-
             if (fatalErrors) {
-                NiceModal.show(InvalidThemeModal, {
-                    title,
-                    prompt,
-                    fatalErrors,
-                    onRetry: async (modal) => {
-                        modal?.remove();
-                        handleActivate();
-                    }
-                });
+                setActivationErrors(fatalErrors);
             }
         }
     };
@@ -96,7 +87,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleDelete = async () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to delete this?',
             prompt: (
                 <>
@@ -131,9 +122,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 prompt: limitError,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             return;
         }
@@ -172,6 +163,18 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
+            {activationErrors && (
+                <InvalidThemeModal
+                    fatalErrors={activationErrors}
+                    prompt={<>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>}
+                    title='Theme not activated'
+                    onClose={() => setActivationErrors(null)}
+                    onRetry={async () => {
+                        setActivationErrors(null);
+                        handleActivate();
+                    }}
+                />
+            )}
         </div>
     );
 };

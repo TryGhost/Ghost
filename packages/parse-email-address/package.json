@@ -2,6 +2,9 @@
   "name": "@tryghost/parse-email-address",
   "version": "0.0.0",
   "private": true,
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
   "type": "module",
   "repository": {
     "type": "git",
@@ -36,19 +39,21 @@
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {
-    "parse-email-address": "0.0.2"
+    "parse-email-address": "catalog:"
   },
   "nx": {
     "targets": {
       "build": {
-        "outputs": ["{projectRoot}/build"]
+        "outputs": [
+          "{projectRoot}/build"
+        ]
       }
     }
   }

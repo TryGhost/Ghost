@@ -1,7 +1,30 @@
-import {MembersFieldMapping, detectFieldTypes, formatImportError, getFieldMappings, sampleData} from '@/members/components/bulk-action-modals/import-members/mapping';
+import {MembersFieldMapping, columnsOf, detectFieldTypes, formatImportError, getFieldMappings, sampleData} from '@/members/components/bulk-action-modals/import-members/mapping';
 import {describe, expect, it} from 'vitest';
+import type {MemberCustomFieldCsvColumn} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 describe('mapping helpers', () => {
+    // Papaparse omits keys for a row with fewer cells than the header rather than padding it,
+    // so reading the first row alone loses every column a short first row does not reach — and
+    // a column nothing names is carried through by the importer, imported without ever being
+    // shown to the publisher.
+    it('finds every column even when the first row is short', () => {
+        const ragged = [
+            {email: 'one@example.com'},
+            {email: 'two@example.com', name: 'Two', note: 'hello'}
+        ] as unknown as Record<string, string>[];
+
+        expect(columnsOf(ragged)).toEqual(['email', 'name', 'note']);
+        expect(Object.keys(detectFieldTypes(ragged))).toContain('note');
+    });
+
+    it('does not offer papaparse overflow as a column', () => {
+        const overflowing = [
+            {email: 'one@example.com', __parsed_extra: 'spare'}
+        ] as unknown as Record<string, string>[];
+
+        expect(columnsOf(overflowing)).toEqual(['email']);
+    });
+
     it('samples non-empty entries per column', () => {
         const sampled = sampleData([
             {email: '', name: 'A'},
@@ -89,17 +112,17 @@ describe('mapping helpers', () => {
         expect(mapping.gift_id).toBe('gift_id');
     });
 
-    const customFieldColumns = [
-        {label: 'Nickname', value: 'custom_fields.nickname'},
-        {label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1'},
-        {label: 'Shipping Address (First name)', value: 'custom_fields.shipping_address.first_name'}
+    const customFieldColumns: MemberCustomFieldCsvColumn[] = [
+        {label: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'},
+        {label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1', type: 'address'},
+        {label: 'Shipping Address (First name)', value: 'custom_fields.shipping_address.first_name', type: 'address'}
     ];
 
     it('offers the custom field columns as mapping targets', () => {
         const mappings = getFieldMappings({customFieldColumns});
 
-        expect(mappings).toContainEqual({label: 'Nickname', value: 'custom_fields.nickname'});
-        expect(mappings).toContainEqual({label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1'});
+        expect(mappings).toContainEqual(expect.objectContaining({label: 'Nickname', value: 'custom_fields.nickname'}));
+        expect(mappings).toContainEqual(expect.objectContaining({label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1'}));
     });
 
     it('auto-detects a custom field column by its namespaced header', () => {
@@ -135,7 +158,7 @@ describe('mapping helpers', () => {
     it('does not bind an email-valued custom field column to the member email', () => {
         const mapping = detectFieldTypes([
             {'custom_fields.contact_email': 'contact@example.com', email: 'member@example.com'}
-        ], {customFieldColumns: [{label: 'Contact email', value: 'custom_fields.contact_email'}]});
+        ], {customFieldColumns: [{label: 'Contact email', value: 'custom_fields.contact_email', type: 'short_text'}]});
 
         expect(mapping.email).toBe('email');
         expect(mapping['custom_fields.contact_email']).toBe('custom_fields.contact_email');

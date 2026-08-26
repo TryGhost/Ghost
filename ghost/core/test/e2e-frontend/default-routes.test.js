@@ -16,6 +16,7 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
+const {cardAssets} = require('../../core/frontend/services/assets-minification');
 const origCache = _.cloneDeep(settingsCache);
 
 function assertCorrectFrontendHeaders(res) {
@@ -391,6 +392,43 @@ describe('Default Frontend routing', function () {
                 .expect('ETag', /[0-9a-f]{32}/i)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
+        });
+
+        it('should retrieve card assets', async function () {
+            const css = await request.get('/public/cards.min.css')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect('Content-Type', 'text/css')
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
+
+            assert.match(css.text, /\.kg-/);
+
+            await request.get('/public/cards.min.js')
+                .expect('Content-Type', 'application/javascript')
+                .expect(200);
+        });
+
+        it('should serve card assets under the same hash the page rendered', async function () {
+            const page = await request.get('/').expect(200);
+            const href = cheerio.load(page.text)('link[href*="cards.min.css"]').attr('href');
+
+            assertExists(href);
+
+            const [, renderedHash] = href.match(/\?v=([^&#]+)/);
+
+            // The hash is derived from the bundle contents, so it must survive a
+            // restart and match across processes — see card-assets.js
+            const asset = await request.get(`/public/cards.min.css?v=${renderedHash}`).expect(200);
+            assert.equal(asset.headers.etag, `"${renderedHash}"`);
+        });
+
+        it('should 404 card assets when the theme has asked for none', async function () {
+            // What a theme with `card_assets: false` leaves us with — there's no
+            // bundle to serve, so there's nothing at this URL
+            sinon.stub(cardAssets, 'getBundle').returns(null);
+
+            await request.get('/public/cards.min.css').expect(404);
+            await request.get('/public/cards.min.js').expect(404);
         });
     });
 

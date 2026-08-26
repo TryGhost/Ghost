@@ -141,6 +141,35 @@ describe('Files API', function () {
         }
     });
 
+    it('Stores Linux package files with application/octet-stream', async function () {
+        const store = adapterManager.getAdapter('storage:files');
+        const saveSpy = sinon.spy(store, 'save');
+
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-test-'));
+
+        try {
+            for (const filename of ['package.rpm', 'package.deb']) {
+                saveSpy.resetHistory();
+                const tempFile = path.join(tmpDir, filename);
+                fs.writeFileSync(tempFile, 'fake package content');
+
+                const res = await request.post(localUtils.API.getApiQuery('files/upload'))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .attach('file', tempFile)
+                    .expect(201);
+
+                files.push(new URL(res.body.files[0].url).pathname);
+
+                assert.ok(saveSpy.calledOnce, 'save() should have been called once');
+                const fileArg = saveSpy.firstCall.args[0];
+                assert.equal(fileArg.type, 'application/octet-stream', `${filename} should be stored as application/octet-stream`);
+            }
+        } finally {
+            fs.removeSync(tmpDir);
+        }
+    });
+
     it('Stores HTML files with text/plain content type to prevent execution', async function () {
         const store = adapterManager.getAdapter('storage:files');
         const saveSpy = sinon.spy(store, 'save');

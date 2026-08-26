@@ -132,15 +132,11 @@ class LocalStorageBase extends StorageBase {
      * - returns a promise which ultimately returns the full url to the uploaded file
      */
     async save(file: StorageFile, targetDir?: string): Promise<string> {
-        let targetFilename;
-
         targetDir = targetDir
             ? this._resolveAndValidateStoragePath(targetDir)
             : this.getTargetDir(this.storagePath);
 
-        const filename = await this.getUniqueFileName(file, targetDir);
-
-        targetFilename = filename;
+        const targetFilename = await this.getUniqueFileName(file, targetDir);
 
         // Verify that we are saving directly under `targetDir` and not outside of it.
         const expectedPrefix = path.join(path.resolve(targetDir), '/');

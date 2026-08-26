@@ -1,0 +1,16 @@
+{
+	local_certs
+	http_port 9080
+}
+
+https://site.localhost:8443 {
+	reverse_proxy http://localhost:2369 {
+		header_up Host site.localhost:8443
+	}
+}
+
+https://admin.localhost:8443 {
+	reverse_proxy http://localhost:2369 {
+		header_up Host admin.localhost:8443
+	}
+}

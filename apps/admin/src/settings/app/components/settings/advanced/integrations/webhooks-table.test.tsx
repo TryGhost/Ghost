@@ -1,4 +1,5 @@
 import WebhooksTable from '@/settings/app/components/settings/advanced/integrations/webhooks-table';
+import {ConfirmationProvider} from '@/settings/app/components/providers/confirmation-provider';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {render, screen} from '@testing-library/react';
 
@@ -17,7 +18,7 @@ describe('WebhooksTable', () => {
             webhooks: []
         } as unknown as Integration;
 
-        const {container} = render(<WebhooksTable integration={integration} />);
+        const {container} = render(<ConfirmationProvider><WebhooksTable integration={integration} /></ConfirmationProvider>);
 
         expect(screen.getByRole('heading', {name: 'No webhooks'})).toBeInTheDocument();
         expect(screen.getByText('Add a webhook to send Ghost events to another service.')).toBeInTheDocument();
@@ -40,7 +41,7 @@ describe('WebhooksTable', () => {
             }]
         } as unknown as Integration;
 
-        const {container} = render(<WebhooksTable integration={integration} />);
+        const {container} = render(<ConfirmationProvider><WebhooksTable integration={integration} /></ConfirmationProvider>);
 
         const table = screen.getByRole('table');
         const addButton = screen.getByRole('button', {name: 'Add webhook'});

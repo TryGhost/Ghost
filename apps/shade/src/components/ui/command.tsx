@@ -4,7 +4,10 @@ import React from 'react';
 import {cn} from '@/lib/utils';
 import {Dialog, DialogContent, DialogTitle} from '@/components/ui/dialog';
 import {type DialogProps} from '@radix-ui/react-dialog';
-import {Command as CommandPrimitive} from 'cmdk';
+// The scorer cmdk filters with by default, passed on because a list whose items are identified
+// by something other than their label has to say what to search instead, and the answer should
+// be "the same way as everywhere else, over this string" rather than a second kind of matching.
+import {Command as CommandPrimitive, defaultFilter as commandDefaultFilter} from 'cmdk';
 import {Check, LucideIcon, Search} from 'lucide-react';
 
 function Command({className, ...props}: React.ComponentProps<typeof CommandPrimitive>) {
@@ -135,5 +138,6 @@ export {
     CommandItem,
     CommandList,
     CommandSeparator,
-    CommandShortcut
+    CommandShortcut,
+    commandDefaultFilter
 };

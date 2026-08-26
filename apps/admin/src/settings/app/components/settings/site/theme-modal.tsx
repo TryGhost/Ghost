@@ -1,11 +1,8 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
-import ThemeInstalledModal from './theme/theme-installed-modal';
+import ThemeInstalledModal, {type ThemeInstalledModalProps} from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
 import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
@@ -14,8 +11,10 @@ import {type OfficialTheme} from '@/settings/app/components/providers/settings-a
 import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {type ConfirmationHandle, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
@@ -34,14 +33,11 @@ interface ThemeModalContentProps {
 }
 
 const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
-    const modal = useModal();
-
     return (
         <Dropzone
             accept={{'application/zip': ['.zip']}}
             inputId="theme-upload"
             onDropAccepted={([file]) => {
-                modal.remove();
                 onUpload(file);
             }}
         >
@@ -56,12 +52,16 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes
 }) => {
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const {checkThemeLimitError, isThemeLimited} = useCheckThemeLimitError();
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string} | undefined>();
     const [isUploading, setUploading] = useState(false);
+    const [uploadErrors, setUploadErrors] = useState<FatalErrors | null>(null);
+    const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
 
     useEffect(() => {
         const checkUploadLimit = async () => {
@@ -86,7 +86,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         const themeFileName = file?.name.replace(/\.zip$/, '');
         const existingThemeNames = themes.map(t => t.name);
         if (isDefaultOrLegacyTheme({name: themeFileName})) {
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Upload failed',
                 cancelLabel: 'Cancel',
                 okLabel: '',
@@ -101,7 +101,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 }
             });
         } else if (existingThemeNames.includes(themeFileName)) {
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Overwrite theme',
                 prompt: (
                     <>
@@ -158,17 +158,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         }
 
         if (fatalErrors && !data) {
-            const title = 'Theme not uploaded';
-            const prompt = <>This theme couldn&apos;t be uploaded because Ghost found a blocking validation error. Fix the issue below and upload the theme again.</>;
-            NiceModal.show(InvalidThemeModal, {
-                title,
-                prompt,
-                fatalErrors,
-                onRetry: async (invalidThemeModal) => {
-                    invalidThemeModal?.remove();
-                    handleUpload();
-                }
-            });
+            setUploadErrors(fatalErrors);
         }
 
         if (!data) {
@@ -203,11 +193,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             }
         }
 
-        NiceModal.show(ThemeInstalledModal, {
+        setInstalledModal({
             title,
             prompt,
             installedTheme: uploadedTheme,
-            onActivate: onActivate
+            onActivate
         });
     };
 
@@ -228,17 +218,21 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         }
 
         if (uploadConfig.enabled) {
-            NiceModal.show(ConfirmationModal, {
+            const handleRef: {current: ConfirmationHandle | null} = {current: null};
+            handleRef.current = confirm({
                 title: 'Upload theme',
-                prompt: <UploadModalContent onUpload={onThemeUpload} />,
+                prompt: <UploadModalContent onUpload={(file) => {
+                    handleRef.current?.remove();
+                    onThemeUpload(file);
+                }} />,
                 okLabel: '',
                 formSheet: false
             });
         } else {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 title: 'Upgrade to enable custom themes',
                 prompt: uploadConfig.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
         }
     };
@@ -268,6 +262,19 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 </TabsList>
             </Tabs>
         </div>
+        {uploadErrors && (
+            <InvalidThemeModal
+                fatalErrors={uploadErrors}
+                prompt={<>This theme couldn&apos;t be uploaded because Ghost found a blocking validation error. Fix the issue below and upload the theme again.</>}
+                title='Theme not uploaded'
+                onClose={() => setUploadErrors(null)}
+                onRetry={async () => {
+                    setUploadErrors(null);
+                    handleUpload();
+                }}
+            />
+        )}
+        {installedModal && <ThemeInstalledModal {...installedModal} onClose={() => setInstalledModal(null)} />}
     </>);
 };
 
@@ -301,13 +308,16 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [isInstalling, setInstalling] = useState(false);
     const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
 
     const {data: {themes} = {}} = useBrowseThemes();
     const {mutateAsync: installTheme} = useInstallTheme();
     const {mutateAsync: activateTheme} = useActivateTheme();
     const {checkThemeLimitError} = useCheckThemeLimitError();
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
 
     const onSelectTheme = (theme: OfficialTheme|null) => {
         setSelectedTheme(theme);
@@ -353,7 +363,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     </>
                     }
                 </>;
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: titleText,
                     prompt,
                     okLabel: 'Install',
@@ -388,7 +398,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
         };
 
         handleUrlInstallation();
-    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, isMounted]);
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, confirm, isMounted]);
 
     if (!themes) {
         return;
@@ -402,9 +412,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             // Check theme limit FIRST, before any confirmation modals
             const limitError = await checkThemeLimitError(selectedTheme.name);
             if (limitError) {
-                NiceModal.show(LimitModal, {
+                showLimit({
                     prompt: limitError,
-                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                    onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                 });
                 return;
             }
@@ -412,7 +422,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             // Handle the overwrite confirmation if needed
             if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
                 return new Promise<void>((resolve) => {
-                    NiceModal.show(ConfirmationModal, {
+                    confirm({
                         title: 'Overwrite theme',
                         prompt: (
                             <>
@@ -489,7 +499,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 installedTheme = newlyInstalledTheme;
             }
 
-            NiceModal.show(ThemeInstalledModal, {
+            setInstalledModal({
                 title,
                 prompt,
                 installedTheme: installedTheme!,
@@ -550,6 +560,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     }
                 </div>
             </div>
+            {installedModal && <ThemeInstalledModal {...installedModal} onClose={() => setInstalledModal(null)} />}
         </SettingsModal>
     );
 };

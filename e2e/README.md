@@ -1,6 +1,10 @@
 # Ghost End-To-End Test Suite
 
-This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
+This top-level workspace is Ghost's browser end-to-end test suite. It runs
+automated browser tests against a complete, running Ghost instance to verify
+critical user journeys across packages and applications. A package's own
+Playwright suite is an *acceptance* suite, not an E2E one — see the
+[testing guide](../docs/contributing/testing.md) for how the layers differ.
 
 ## Quick Start
 
@@ -83,8 +87,8 @@ pnpm --filter @tryghost/e2e preflight:build
 ### Running Specific Tests
 
 ```bash
-# Specific test file
-pnpm test specific/folder/testfile.spec.ts
+# Run the Admin sign-in test
+pnpm test tests/admin/signin.test.ts
 
 # Matching a pattern
 pnpm test --grep "homepage"
@@ -95,116 +99,48 @@ pnpm test --debug
 
 ## Tests Development
 
+See [Writing Browser E2E Tests](../docs/contributing/e2e-testing.md) for the
+canonical conventions, Page Object pattern, locator priority, waiting patterns,
+and worked examples. This README covers the local workspace, infrastructure,
+fixtures, and commands.
+
 The test suite is organized into separate directories for different areas/functions:
 
 ### **Current Test Suites**
 - `tests/public/` - Public-facing site tests (homepage, posts, etc.)
 - `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
+- `tests/portal/` - Portal member journey tests
 
 We can decide whether to add additional sub-folders as we add more tests.
 
-Example structure for admin tests:
-```text
-tests/admin/
-├── login.spec.ts
-├── posts.spec.ts
-└── settings.spec.ts
-```
-
-Project folder structure can be seen below: 
+Project folder structure can be seen below:
 
 ```text
 e2e/
 ├── tests/                      # All the tests
 │   ├── public/                 # Public site tests
-│   │   └── testname.spec.ts    # Test cases
+│   │   └── member-signup.test.ts
 │   ├── admin/                  # Admin site tests
-│   │   └── testname.spec.ts    # Test cases
+│   │   └── signin.test.ts
+│   ├── portal/                 # Portal tests
 │   ├── global.setup.ts         # Global setup script
-│   ├── global.teardown.ts      # Global teardown script
-│   └── .eslintrc.js            # Test-specific ESLint config
+│   └── global.teardown.ts      # Global teardown script
 ├── helpers/                    # All helpers that support the tests, utilities, fixtures, page objects etc.
 │   ├── playwright/             # Playwright specific helpers
 │   │   └── fixture.ts          # Playwright fixtures
-│   ├── pages/                  # Page Object Models
-│   │   └── HomePage.ts         # Page Object
-│   ├── utils/                  # Utils
-│   │   └── math.ts             # Math related utils   
-│   └── index.ts                # Main exports
+│   ├── pages/                  # Page Object Models, grouped by area
+│   │   ├── base-page.ts        # Base class for all page objects
+│   │   └── admin/              # e.g. login-page.ts, admin-page.ts
+│   ├── environment/            # Ghost container/database lifecycle
+│   ├── services/               # Test doubles (fake Stripe, Mailgun, etc.)
+│   └── utils/                  # Shared utilities
+├── data-factory/               # Test data factories (see its own README)
+├── visual-regression/          # Screenshot baseline suite (separate config)
+├── scripts/                    # Infra and runner shell scripts
 ├── playwright.config.mjs       # Playwright configuration
+├── eslint.config.js            # Lint config for the workspace
 ├── package.json                # Dependencies and scripts
-└── tsconfig.json               # TypeScript configuration
-```
-
-### Writing Tests
-
-Tests use [Playwright Test](https://playwright.dev/docs/writing-tests). Use
-Arrange–Act–Assert (AAA) as a readability heuristic: set up the scenario, perform
-the behavior under test, then verify the outcome. Keep those phases clear through
-test structure and naming; comments are only useful when the boundaries would
-otherwise be unclear.
-
-```typescript
-test.describe('Ghost Homepage', () => {
-    test('loads correctly', async ({page}) => {
-        const homePage = new HomePage(page);
-
-        await homePage.goto();
-
-        await expect(homePage.title).toBeVisible();
-    });
-});
-```
-
-### Using Page Objects
-
-Page Objects are the default home for reusable knowledge about a page or major UI
-component. They encapsulate locators, readiness guards, and semantic interactions
-so tests can describe behavior rather than DOM structure. Assertions stay in test
-files.
-
-Prefer an existing Page Object when a test exercises reusable UI behavior. A direct
-semantic locator in a test is acceptable for a small, one-off assertion or
-interaction when creating a Page Object would add indirection without reuse.
-Structural selectors sometimes remain necessary for iframes, editor internals,
-generated theme markup, and elements without an accessible role. Keep those inside
-Page Objects where practical and prefer, in order:
-
-1. Accessible roles, labels, and visible text
-2. Stable test IDs
-3. Stable structural selectors when no semantic locator exists
-
-Avoid selectors coupled to visual styling, DOM position, or incidental class names.
-See [Playwright's locator guidance](https://playwright.dev/docs/locators) and
-[Martin Fowler's Page Object description](https://martinfowler.com/bliki/PageObject.html)
-for background.
-
-```typescript
-// Create a page object for admin login
-import type {Locator, Page} from '@playwright/test';
-
-export class AdminLoginPage {
-    private readonly pageUrl = '/ghost';
-    public readonly emailInput: Locator;
-    public readonly passwordInput: Locator;
-    public readonly signInButton: Locator;
-    
-    constructor(private readonly page: Page) {
-        this.emailInput = page.getByLabel('Email address');
-        this.passwordInput = page.getByLabel('Password');
-        this.signInButton = page.getByRole('button', {name: 'Sign in'});
-    }
-
-    async goto(urlToVisit = this.pageUrl) {
-        await this.page.goto(urlToVisit);
-    }
-    
-    async login(email: string, password: string) {
-        await this.emailInput.fill(email);
-        await this.passwordInput.fill(password);
-        await this.signInButton.click();
-    }
-}
+└── tsconfig.json               # TypeScript configuration and path aliases
 ```
 
 ### Global Setup and Teardown
@@ -217,6 +153,15 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 ### Playwright Fixtures
 
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
+
+The fixtures a test usually reaches for:
+- `page` - browser page against this test's Ghost instance
+- `pageWithAuthenticatedUser` - the same, already signed in to Ghost Admin
+- `ghostAccountOwner` - the owner account's credentials
+- `ghostInstance` - the running instance: `baseUrl`, `database`, `port`, `siteUuid`, `containerId`, `instanceId`
+- `resolvedIsolation` - `'per-file' | 'per-test'` for the current test
+- `resetEnvironment()` - force an environment recycle (see the escape hatch below)
+
 The fixture resolves isolation mode per test file:
 - Default: per-file isolation (one Ghost environment cycle per file)
 - Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file

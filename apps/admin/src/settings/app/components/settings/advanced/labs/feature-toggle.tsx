@@ -1,5 +1,4 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import trackEvent from '@/settings/app/utils/analytics';
 import {type ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
 import {SettingsModal} from '@tryghost/shade/patterns';
@@ -8,6 +7,7 @@ import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
+import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
 
 type ConfirmationProps = {
     title: string;
@@ -25,21 +25,18 @@ type FeatureToggleProps = {
 
 type FeatureToggleConfirmationModalProps = ConfirmationProps & {
     onConfirm: () => Promise<boolean>;
+    onClose: () => void;
 };
 
-const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmationModalProps>(({
+const FeatureToggleConfirmationModal: React.FC<FeatureToggleConfirmationModalProps> = ({
     title,
     prompt,
     okLabel,
     okRunningLabel = 'Enabling...',
-    onConfirm
+    onConfirm,
+    onClose
 }) => {
-    const modal = useModal();
-    const [isRunning, setIsRunning] = React.useState(false);
-
-    const handleCancel = () => {
-        modal.remove();
-    };
+    const [isRunning, setIsRunning] = useState(false);
 
     const handleConfirm = async () => {
         setIsRunning(true);
@@ -47,7 +44,7 @@ const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmatio
         try {
             const confirmed = await onConfirm();
             if (confirmed) {
-                modal.remove();
+                onClose();
             }
         } finally {
             setIsRunning(false);
@@ -63,13 +60,14 @@ const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmatio
             testId='feature-toggle-confirmation-modal'
             title={title}
             width={540}
-            onCancel={handleCancel}
+            onCancel={onClose}
+            onClose={onClose}
             onOk={handleConfirm}
         >
             <div className='py-4'>{prompt}</div>
         </SettingsModal>
     );
-});
+};
 
 const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, confirmation}) => {
     const {settings} = useGlobalData();
@@ -78,6 +76,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, con
     const client = useQueryClient();
     const handleError = useHandleError();
     const isEnabled = !!labs[flag];
+    const [isConfirming, setIsConfirming] = useState(false);
 
     const saveFeatureValue = async (newValue: boolean) => {
         try {
@@ -102,18 +101,25 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, con
         }
     };
 
-    return <Switch aria-label={label || flag} checked={isEnabled} disabled={disabled} name={`feature-${flag}`} onCheckedChange={async (newValue) => {
+    return <>
+        <Switch aria-label={label || flag} checked={isEnabled} disabled={disabled} name={`feature-${flag}`} onCheckedChange={async (newValue) => {
+            if (confirmation && newValue) {
+                setIsConfirming(true);
+                return;
+            }
 
-        if (confirmation && newValue) {
-            NiceModal.show(FeatureToggleConfirmationModal, {
-                ...confirmation,
-                onConfirm: () => saveFeatureValue(newValue)
-            });
-            return;
-        }
-
-        await saveFeatureValue(newValue);
-    }} />;
+            await saveFeatureValue(newValue);
+        }} />
+        {confirmation && isConfirming && (
+            <DialogPortal>
+                <FeatureToggleConfirmationModal
+                    {...confirmation}
+                    onClose={() => setIsConfirming(false)}
+                    onConfirm={() => saveFeatureValue(true)}
+                />
+            </DialogPortal>
+        )}
+    </>;
 };
 
 export default FeatureToggle;

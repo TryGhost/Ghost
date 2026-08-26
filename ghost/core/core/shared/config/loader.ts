@@ -2,6 +2,7 @@ import Nconf from 'nconf';
 import path from 'node:path';
 import {bindAll as bindUrlHelpers, type BoundHelpers} from '@tryghost/config-url-helpers';
 import * as localUtils from './utils';
+import {loadSecretsFromEnv, isSecretFileRef} from './secrets';
 import {bindAll as bindHelpers, type ConfigHelpers} from './helpers';
 
 const _debug = require('@tryghost/debug')._base;
@@ -28,9 +29,17 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
     // no channel can override the overrides
     nconf.file('overrides', path.join(baseConfigPath, 'overrides.json'));
 
-    // command line arguments take precedence, then environment variables
+    // command line arguments take precedence, then secret files, then environment variables
     nconf.argv();
-    nconf.env({separator: '__', parseValues: true});
+    // secrets are not parsed - a password like `01234` must stay a string
+    nconf.add('secrets', {type: 'literal', store: loadSecretsFromEnv()});
+    nconf.env({
+        separator: '__',
+        parseValues: true,
+        // the secrets store has already resolved these, so keep the file paths themselves
+        // out of config - otherwise e.g. `database:connection` gains a bogus `password_FILE` key
+        transform: ({key, value}: {key: string, value: string}) => (isSecretFileRef(key) ? false : {key, value})
+    });
 
     // Now load various config json files
     nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
