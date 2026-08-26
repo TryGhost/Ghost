@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const labs = require('../../../../../../shared/labs');
 const models = require('../../../../../models');
 const postPresence = require('../../../../../services/post-presence');
+const permissionsService = require('../../../../../services/permissions');
 
 /**
  * Explicit "I just opened this post in the editor" handler. Looks up
@@ -17,6 +18,10 @@ module.exports = async function presenceEnter(req, res) {
       res.status(404).end();
       return;
     }
+    if (req.api_key) {
+      res.status(204).end();
+      return;
+    }
     const postId = req.params && req.params.id;
     const user = req.user;
     if (!postId || !user || !user.id) {
@@ -26,6 +31,7 @@ module.exports = async function presenceEnter(req, res) {
 
     let post;
     try {
+      await permissionsService.canThis({ user: user.id }).edit.post(postId);
       post = await models.Post.findOne(
         { id: postId, status: 'all' },
         {
@@ -39,6 +45,10 @@ module.exports = async function presenceEnter(req, res) {
       // best-effort — never block the editor flow.
       if (err && (err.errorType === 'NoPermissionError' || err.statusCode === 403)) {
         res.status(403).end();
+        return;
+      }
+      if (err && (err.errorType === 'NotFoundError' || err.statusCode === 404)) {
+        res.status(404).end();
         return;
       }
       logging.warn({ err, postId, userId: user.id }, 'presence-enter: post lookup failed');

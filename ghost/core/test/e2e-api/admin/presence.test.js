@@ -3,7 +3,7 @@ const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-
 describe('Presence API', function () {
   let agent;
 
-  before(async function () {
+  beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'posts');
   });
@@ -27,7 +27,7 @@ describe('Presence API', function () {
   });
 
   describe('As Owner', function () {
-    before(async function () {
+    beforeAll(async function () {
       await agent.loginAsOwner();
     });
 
@@ -51,25 +51,30 @@ describe('Presence API', function () {
   });
 
   describe('As Author (non-elevated role)', function () {
-    before(async function () {
+    beforeAll(async function () {
       await agent.loginAsAuthor();
     });
 
     it('returns 204 from /presence/posts/:id/enter for a post the author owns', async function () {
       // The author fixture authors their own post; the lookup
       // via Post.findOne with the user context will succeed.
-      const ownPostId = fixtureManager.get('posts', 6).id;
+      const ownPostId = fixtureManager.get('posts', 4).id;
       await agent.post(`/presence/posts/${ownPostId}/enter/`).expectStatus(204);
     });
 
+    it('returns 403 from /presence/posts/:id/enter for another author’s post', async function () {
+      const foreignPostId = fixtureManager.get('posts', 6).id;
+      await agent.post(`/presence/posts/${foreignPostId}/enter/`).expectStatus(403);
+    });
+
     it('returns 204 from /presence/posts/:id/leave', async function () {
-      const ownPostId = fixtureManager.get('posts', 6).id;
+      const ownPostId = fixtureManager.get('posts', 4).id;
       await agent.post(`/presence/posts/${ownPostId}/leave/`).expectStatus(204);
     });
   });
 
   describe('With editorPresence labs flag disabled', function () {
-    before(async function () {
+    beforeAll(async function () {
       await agent.loginAsOwner();
     });
 

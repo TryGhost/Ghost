@@ -1,10 +1,10 @@
 const { EventEmitter } = require('events');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 
 const labs = require('../../../../../core/shared/labs');
 const postPresence = require('../../../../../core/server/services/post-presence');
+const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
 const presenceStream = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-stream');
 
 describe('PostPresence resilience', function () {
@@ -18,10 +18,7 @@ describe('PostPresence resilience', function () {
     sinon.restore();
   });
 
-  describe('markPostPresence (posts.js) — never breaks the parent API call', function () {
-    const postsEndpoint = rewire('../../../../../core/server/api/endpoints/posts');
-    const markPostPresence = postsEndpoint.__get__('markPostPresence');
-
+  describe('markPostPresence — never breaks the parent API call', function () {
     it('swallows errors from postPresence.mark', function () {
       labsStub.withArgs('editorPresence').returns(true);
       sinon.stub(postPresence, 'mark').throws(new Error('cache exploded'));
@@ -70,12 +67,12 @@ describe('PostPresence resilience', function () {
       return { req, res };
     }
 
-    it('unsubscribes from the bus when the request closes', function () {
+    it('unsubscribes from the bus when the request closes', async function () {
       labsStub.withArgs('editorPresence').returns(true);
       const baseline = postPresence._emitter.listenerCount('presence');
 
       const { req, res } = makeReqRes();
-      presenceStream(req, res);
+      await presenceStream(req, res);
 
       assert.equal(
         postPresence._emitter.listenerCount('presence'),
@@ -92,23 +89,23 @@ describe('PostPresence resilience', function () {
       );
     });
 
-    it('also unsubscribes when the response emits close (proxy teardown path)', function () {
+    it('also unsubscribes when the response emits close (proxy teardown path)', async function () {
       labsStub.withArgs('editorPresence').returns(true);
       const baseline = postPresence._emitter.listenerCount('presence');
 
       const { req, res } = makeReqRes();
-      presenceStream(req, res);
+      await presenceStream(req, res);
       res.emit('close');
 
       assert.equal(postPresence._emitter.listenerCount('presence'), baseline);
     });
 
-    it('does not double-unsubscribe when multiple close/error events fire', function () {
+    it('does not double-unsubscribe when multiple close/error events fire', async function () {
       labsStub.withArgs('editorPresence').returns(true);
       const baseline = postPresence._emitter.listenerCount('presence');
 
       const { req, res } = makeReqRes();
-      presenceStream(req, res);
+      await presenceStream(req, res);
       req.emit('close');
       req.emit('error', new Error('socket reset'));
       res.emit('close');

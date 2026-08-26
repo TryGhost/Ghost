@@ -1,8 +1,8 @@
 const sinon = require('sinon');
-const rewire = require('rewire');
 
 const labs = require('../../../../../core/shared/labs');
 const postPresence = require('../../../../../core/server/services/post-presence');
+const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
 
 describe('PostPresence labs flag gate', function () {
   let labsStub;
@@ -15,11 +15,7 @@ describe('PostPresence labs flag gate', function () {
     sinon.restore();
   });
 
-  describe('markPostPresence helper (posts.js)', function () {
-    // The helper isn't exported, so reach it via rewire.
-    const postsEndpoint = rewire('../../../../../core/server/api/endpoints/posts');
-    const markPostPresence = postsEndpoint.__get__('markPostPresence');
-
+  describe('markPostPresence helper', function () {
     it('does not call postPresence.mark when editorPresence is off', function () {
       labsStub.withArgs('editorPresence').returns(false);
       const markSpy = sinon.spy(postPresence, 'mark');

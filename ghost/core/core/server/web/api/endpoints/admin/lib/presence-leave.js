@@ -12,6 +12,10 @@ module.exports = function presenceLeave(req, res) {
       res.status(404).end();
       return;
     }
+    if (req.api_key) {
+      res.status(204).end();
+      return;
+    }
     const postId = req.params && req.params.id;
     const user = req.user;
     if (postId && user && user.id) {

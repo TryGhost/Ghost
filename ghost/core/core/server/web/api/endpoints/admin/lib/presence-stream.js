@@ -11,6 +11,19 @@ const {
 
 const KEEPALIVE_MS = 30 * 1000;
 
+function toClientEvent(event) {
+  const payload = { ...event };
+  delete payload.authorIds;
+  if (payload.type === PRESENCE_EVENT_TYPES.SNAPSHOT) {
+    payload.posts = payload.posts.map((post) => {
+      const clientPost = { ...post };
+      delete clientPost.authorIds;
+      return clientPost;
+    });
+  }
+  return payload;
+}
+
 /**
  * SSE handler that streams presence events to a single admin tab.
  * Events are filtered per-subscriber so Author/Contributor only see
@@ -19,6 +32,10 @@ const KEEPALIVE_MS = 30 * 1000;
 module.exports = async function presenceStream(req, res) {
   if (!labs.isSet('editorPresence')) {
     res.status(404).end();
+    return;
+  }
+  if (req.api_key) {
+    res.status(403).end();
     return;
   }
 
@@ -69,7 +86,7 @@ module.exports = async function presenceStream(req, res) {
       return;
     }
     try {
-      res.write(`data: ${JSON.stringify(event)}\n\n`);
+      res.write(`data: ${JSON.stringify(toClientEvent(event))}\n\n`);
     } catch (err) {
       logging.warn({ err, code: err && err.code }, 'presence-stream: write failed');
     }

@@ -123,6 +123,12 @@ class PostPresenceService {
     }
   }
 
+  reset() {
+    this.stop();
+    this._byPostId.clear();
+    this._postContexts.clear();
+  }
+
   /**
    * Record that a user is active on a post. Publishes only when the
    * entry is new or transitioning from idle — already-active
@@ -147,7 +153,7 @@ class PostPresenceService {
       this.start();
     }
 
-    if (postContext && Array.isArray(postContext.authorIds)) {
+    if (postContext && Array.isArray(postContext.authorIds) && postContext.authorIds.length > 0) {
       this._postContexts.set(postId, { authorIds: postContext.authorIds.slice() });
     }
 

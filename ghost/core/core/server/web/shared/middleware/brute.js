@@ -224,4 +224,18 @@ module.exports = {
       },
     })(req, res, next);
   },
+
+  /**
+   * Uses a separate key so EventSource reconnects cannot exhaust the
+   * enter/leave request budget for an editor.
+   */
+  presenceStreamLimiter(req, res, next) {
+    return spamPrevention.presenceBlock().getMiddleware({
+      ignoreIP: true,
+      key(_req, _res, _next) {
+        const userId = _req.user && _req.user.id;
+        return _next(userId ? `presence_stream_${userId}` : 'presence_stream_anon');
+      },
+    })(req, res, next);
+  },
 };

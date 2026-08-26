@@ -1,17 +1,19 @@
 const { EventEmitter } = require('events');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 
 const labs = require('../../../../../core/shared/labs');
 const models = require('../../../../../core/server/models');
 const postPresence = require('../../../../../core/server/services/post-presence');
+const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
 const PostPresenceService = require('../../../../../core/server/services/post-presence/post-presence-service');
+const permissionsService = require('../../../../../core/server/services/permissions');
 const {
   canReceiveEvent,
 } = require('../../../../../core/server/services/post-presence/presence-permissions');
 const presenceStream = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-stream');
 const presenceEnter = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-enter');
+const presenceLeave = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-leave');
 
 function fakeReqRes(user) {
   const req = new EventEmitter();
@@ -39,9 +41,11 @@ describe('PostPresence security: per-subscriber filtering', function () {
   beforeEach(function () {
     labsStub = sinon.stub(labs, 'isSet');
     labsStub.withArgs('editorPresence').returns(true);
+    postPresence.reset();
   });
 
   afterEach(function () {
+    postPresence.reset();
     sinon.restore();
   });
 
@@ -105,6 +109,15 @@ describe('PostPresence security: per-subscriber filtering', function () {
       assert.deepEqual(p2.authorIds, ['u2', 'u3']);
     });
 
+    it('preserves known authorIds when a heartbeat omits post context', function () {
+      service = new PostPresenceService({ idleMs: 1000, ttlMs: 5000, cleanupIntervalMs: 500 });
+      service.mark('p1', { id: 'u1', name: 'A' }, { authorIds: ['u1', 'u2'] });
+
+      service.mark('p1', { id: 'u1', name: 'A' });
+
+      assert.deepEqual(service.snapshot()[0].authorIds, ['u1', 'u2']);
+    });
+
     it('when last user leaves a post, the postContext is dropped', function () {
       service = new PostPresenceService({ idleMs: 1000, ttlMs: 5000, cleanupIntervalMs: 500 });
       service.mark('p1', { id: 'u1', name: 'A' }, { authorIds: ['u1'] });
@@ -163,12 +176,6 @@ describe('PostPresence security: per-subscriber filtering', function () {
   });
 
   describe('SSE handler: an Author cannot see presence for posts they do not author', function () {
-    beforeEach(function () {
-      // Reset the singleton's state between tests so test order doesn't matter.
-      postPresence._byPostId.clear();
-      postPresence._postContexts.clear();
-    });
-
     it('snapshot sent on connect is filtered: Author receives only their own post', function () {
       // Two posts are active. The Author is only listed as an author on p1.
       // The Editor's draft (p2) must NOT leak to the Author.
@@ -190,6 +197,7 @@ describe('PostPresence security: per-subscriber filtering', function () {
       assert.equal(payload.type, 'snapshot');
       const postIds = payload.posts.map((p) => p.postId);
       assert.deepEqual(postIds, ['p1'], 'Author must only see p1, NEVER p2');
+      assert.equal('authorIds' in payload.posts[0], false, 'permission metadata stays server-side');
 
       req.emit('close');
     });
@@ -225,6 +233,7 @@ describe('PostPresence security: per-subscriber filtering', function () {
       const dataLine = res.write.firstCall.args[0].match(/^data: (.+)\n\n$/)[1];
       const payload = JSON.parse(dataLine);
       assert.equal(payload.postId, 'p1');
+      assert.equal('authorIds' in payload, false, 'permission metadata stays server-side');
 
       req.emit('close');
     });
@@ -257,19 +266,64 @@ describe('PostPresence security: per-subscriber filtering', function () {
 
       req.emit('close');
     });
+
+    it('loads subscriber roles before sending the initial snapshot', async function () {
+      const author = fakeUser({ id: 'author-1', roles: ['Author'] });
+      author.load = sinon.stub().resolves();
+      const { req, res } = fakeReqRes(author);
+
+      await presenceStream(req, res);
+
+      sinon.assert.calledOnceWithExactly(author.load, ['roles']);
+      sinon.assert.calledOnce(res.write);
+      req.emit('close');
+    });
+
+    it('returns 500 without subscribing when subscriber roles cannot be loaded', async function () {
+      const author = fakeUser({ id: 'author-1', roles: ['Author'] });
+      author.load = sinon.stub().rejects(new Error('database unavailable'));
+      const subscribeSpy = sinon.spy(postPresence, 'subscribe');
+      const { req, res } = fakeReqRes(author);
+
+      await presenceStream(req, res);
+
+      sinon.assert.calledWith(res.status, 500);
+      sinon.assert.notCalled(subscribeSpy);
+    });
+
+    it('rejects staff API tokens without opening a stream', async function () {
+      const subscribeSpy = sinon.spy(postPresence, 'subscribe');
+      const { req, res } = fakeReqRes(fakeUser({ id: 'staff-1', roles: ['Editor'] }));
+      req.api_key = { get: sinon.stub() };
+
+      await presenceStream(req, res);
+
+      sinon.assert.calledWith(res.status, 403);
+      sinon.assert.notCalled(subscribeSpy);
+    });
   });
 
   describe('presence-enter handler authorizes via the Post model', function () {
-    it('returns 403 when Post.findOne throws a permission error', async function () {
+    beforeEach(function () {
+      sinon.stub(permissionsService, 'canThis').returns({
+        edit: {
+          post: sinon.stub().resolves(),
+        },
+      });
+    });
+
+    it('returns 403 when the user cannot edit the post', async function () {
       const permError = new Error('No permissions to read post.');
       permError.errorType = 'NoPermissionError';
-      sinon.stub(models.Post, 'findOne').rejects(permError);
+      permissionsService.canThis().edit.post.rejects(permError);
+      const findSpy = sinon.spy(models.Post, 'findOne');
       const markSpy = sinon.spy(postPresence, 'mark');
       const res = { status: sinon.stub().returnsThis(), end: sinon.stub() };
 
       await presenceEnter({ params: { id: 'p1' }, user: { id: 'u1', get: () => null } }, res);
 
       sinon.assert.calledWith(res.status, 403);
+      sinon.assert.notCalled(findSpy);
       sinon.assert.notCalled(markSpy);
     });
 
@@ -317,12 +371,47 @@ describe('PostPresence security: per-subscriber filtering', function () {
       assert.deepEqual(postContext.authorIds, ['u1', 'u9']);
       sinon.assert.calledWith(res.status, 204);
     });
+
+    it('does not mark presence for staff API tokens', async function () {
+      const findSpy = sinon.spy(models.Post, 'findOne');
+      const markSpy = sinon.spy(postPresence, 'mark');
+      const res = { status: sinon.stub().returnsThis(), end: sinon.stub() };
+
+      await presenceEnter(
+        {
+          api_key: { get: sinon.stub() },
+          params: { id: 'p1' },
+          user: { id: 'u1', get: () => 'Alice' },
+        },
+        res,
+      );
+
+      sinon.assert.calledWith(res.status, 204);
+      sinon.assert.notCalled(findSpy);
+      sinon.assert.notCalled(markSpy);
+    });
   });
 
-  describe('markPostPresence helper (posts.js)', function () {
-    const postsEndpoint = rewire('../../../../../core/server/api/endpoints/posts');
-    const markPostPresence = postsEndpoint.__get__('markPostPresence');
+  describe('presence-leave handler', function () {
+    it('does not mutate presence for staff API tokens', function () {
+      const leaveSpy = sinon.spy(postPresence, 'leave');
+      const res = { status: sinon.stub().returnsThis(), end: sinon.stub() };
 
+      presenceLeave(
+        {
+          api_key: { get: sinon.stub() },
+          params: { id: 'p1' },
+          user: { id: 'u1' },
+        },
+        res,
+      );
+
+      sinon.assert.calledWith(res.status, 204);
+      sinon.assert.notCalled(leaveSpy);
+    });
+  });
+
+  describe('markPostPresence helper', function () {
     it('does not mark when the edit came via a staff API token (api_key context)', function () {
       const markSpy = sinon.spy(postPresence, 'mark');
 
@@ -352,13 +441,26 @@ describe('PostPresence security: per-subscriber filtering', function () {
       assert.deepEqual(postContext.authorIds, ['u1', 'u2']);
     });
 
-    it('passes an empty authorIds array when the DTO has no authors field', function () {
+    it('does not replace author context when the DTO has no authors field', function () {
       const markStub = sinon.stub(postPresence, 'mark');
 
       markPostPresence({ user: { id: 'u1', get: () => 'Alice' }, options: {} }, { id: 'post-1' });
 
       sinon.assert.calledOnce(markStub);
-      assert.deepEqual(markStub.firstCall.args[2].authorIds, []);
+      assert.equal(markStub.firstCall.args[2], undefined);
+    });
+
+    it('accepts a Bookshelf-style model returned by pages.edit', function () {
+      const markStub = sinon.stub(postPresence, 'mark');
+      const page = {
+        toJSON: () => ({ id: 'page-1', authors: [{ id: 'u1' }] }),
+      };
+
+      markPostPresence({ user: { id: 'u1', get: () => 'Alice' }, options: {} }, page);
+
+      sinon.assert.calledOnce(markStub);
+      assert.equal(markStub.firstCall.args[0], 'page-1');
+      assert.deepEqual(markStub.firstCall.args[2].authorIds, ['u1']);
     });
   });
 });

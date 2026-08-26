@@ -34,7 +34,7 @@ module.exports = function apiRoutes() {
     '/presence/stream',
     shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
-    shared.middleware.brute.presenceLimiter,
+    shared.middleware.brute.presenceStreamLimiter,
     presenceStream,
   );
   router.post(

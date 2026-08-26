@@ -221,7 +221,7 @@ const webmentionsBlock = () => {
 // use; tight enough to stop a runaway anon attacker.
 const presenceIpBlock = () => {
   const ExpressBrute = require('express-brute');
-  const BruteKnex = require('brute-knex');
+  const BruteKnex = require('@tryghost/brute-knex');
   const db = require('../../../../data/db');
 
   store =
@@ -265,7 +265,7 @@ const presenceIpBlock = () => {
 // client.
 const presenceBlock = () => {
   const ExpressBrute = require('express-brute');
-  const BruteKnex = require('brute-knex');
+  const BruteKnex = require('@tryghost/brute-knex');
   const db = require('../../../../data/db');
 
   store =
@@ -857,6 +857,10 @@ module.exports = {
     spamCheckoutSessionGlobal = spam.checkout_session_global || {};
     spamCheckoutSessionEmail = spam.checkout_session_email || {};
     spamContentApiKey = spam.content_api_key || {};
+    spamWebmentionsBlock = spam.webmentions_block || {};
+    spamEmailPreviewBlock = spam.email_preview_block || {};
+    spamPresenceBlock = spam.presence_block || {};
+    spamPresenceIpBlock = spam.presence_ip_block || {};
     spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
     spamOtcVerification = spam.otc_verification || {};
   },
