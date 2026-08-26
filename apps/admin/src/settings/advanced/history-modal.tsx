@@ -26,7 +26,7 @@ import {
   inputSurface,
 } from '@tryghost/shade/components';
 import { ChevronDown, History, Pen, Plus, Trash2, X } from 'lucide-react';
-import { memberAvatarProps } from '@/members/member-format';
+import { memberAvatarProps } from '@/members/api';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';

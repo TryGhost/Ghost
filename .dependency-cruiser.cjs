@@ -141,6 +141,45 @@ module.exports = {
       to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
     },
     // ============================================================
+    // apps/admin — domains cross into each other only via api.ts
+    // ============================================================
+    {
+      name: 'admin-domains-cross-via-api-only',
+      comment:
+        "A domain folder in apps/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
+      severity: 'error',
+      from: {
+        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/',
+        pathNot: ['\\.test\\.(ts|tsx)$'],
+      },
+      to: {
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)($|/)',
+        pathNot: [
+          '^(?:@/|apps/admin/src/)$1($|/)',
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/api(\\.ts)?$',
+        ],
+      },
+    },
+    // ============================================================
+    // apps/admin — the shell and layout import domains only via api.ts
+    // ============================================================
+    {
+      name: 'admin-shell-into-domains-via-api-only',
+      comment:
+        'The admin shell (top-level files in apps/admin/src) and layout/ may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
+      severity: 'error',
+      from: {
+        path: '^apps/admin/src/(?:layout/.+|[^/]+\\.(?:ts|tsx))$',
+        pathNot: ['\\.test\\.(ts|tsx)$'],
+      },
+      to: {
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)($|/)',
+        pathNot: [
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/api(\\.ts)?$',
+        ],
+      },
+    },
+    // ============================================================
     // apps/admin — shared/ must stay domain-free
     // ============================================================
     {

@@ -11,7 +11,7 @@ import { CommentHeader } from './comment-header';
 import { CommentMenu } from './comment-menu';
 import { CommentMetrics } from './comment-metrics';
 import { buildThreadLink } from './thread-link';
-import { memberAvatarProps } from '@/members/member-format';
+import { memberAvatarProps } from '@/members/api';
 import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import {
   LoadMoreButton,
