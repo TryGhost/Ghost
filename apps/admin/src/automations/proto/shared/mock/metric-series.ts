@@ -1,4 +1,4 @@
-import type {AutomationRunMetrics, EnrollmentPoint, MetricKey} from './types';
+import type { AutomationRunMetrics, EnrollmentPoint, MetricKey } from './types';
 
 // Per-metric daily series for the run-analytics charts.
 //
@@ -10,12 +10,12 @@ import type {AutomationRunMetrics, EnrollmentPoint, MetricKey} from './types';
 // API lands, this is the single function to swap, and every concept keeps
 // charting through it unchanged.
 export function metricSeries(metrics: AutomationRunMetrics, key: MetricKey): EnrollmentPoint[] {
-    if (key === 'enrollments') {
-        return metrics.enrollments_by_day;
-    }
-    const share = metrics.enrollments > 0 ? metrics[key] / metrics.enrollments : 0;
-    return metrics.enrollments_by_day.map(point => ({
-        date: point.date,
-        count: Math.round(point.count * share)
-    }));
+  if (key === 'enrollments') {
+    return metrics.enrollments_by_day;
+  }
+  const share = metrics.enrollments > 0 ? metrics[key] / metrics.enrollments : 0;
+  return metrics.enrollments_by_day.map((point) => ({
+    date: point.date,
+    count: Math.round(point.count * share),
+  }));
 }

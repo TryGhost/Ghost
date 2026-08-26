@@ -10,21 +10,21 @@
 // renders and reloads.
 
 export interface ProtoActionLink {
-    url: string;
-    clicked_count: number;
+  url: string;
+  clicked_count: number;
 }
 
 const LINK_FIXTURES = [
-    'https://sure-footed-chapel.org/broken-spirit',
-    'https://major-publicity.org/french-carboxyl',
-    'https://simple-strait.info/made-up-innovation',
-    'https://trivial-yarmulke.com/sudden-labourer',
-    'https://ringed-doorbell.io/articles/quarterly-review',
-    'https://gentle-banyan.dev/changelog#2026-08',
-    'https://wistful-harbour.net/guides/getting-started',
-    'https://plucky-lantern.co/offers/annual-plan',
-    'https://candid-meadow.org/archive/issue-42',
-    'https://brisk-anvil.io/community/introductions'
+  'https://sure-footed-chapel.org/broken-spirit',
+  'https://major-publicity.org/french-carboxyl',
+  'https://simple-strait.info/made-up-innovation',
+  'https://trivial-yarmulke.com/sudden-labourer',
+  'https://ringed-doorbell.io/articles/quarterly-review',
+  'https://gentle-banyan.dev/changelog#2026-08',
+  'https://wistful-harbour.net/guides/getting-started',
+  'https://plucky-lantern.co/offers/annual-plan',
+  'https://candid-meadow.org/archive/issue-42',
+  'https://brisk-anvil.io/community/introductions',
 ];
 
 // Share of an email's clicks each row takes, biggest first. Sums to ~0.9, so the
@@ -32,20 +32,22 @@ const LINK_FIXTURES = [
 // has once you truncate to the top 10.
 const WEIGHTS = [0.19, 0.18, 0.17, 0.16, 0.12, 0.08];
 
-const seedOf = (actionId: string): number => [...actionId].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+const seedOf = (actionId: string): number =>
+  [...actionId].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
 
 export const actionLinks = (actionId: string, clickedCount: number): ProtoActionLink[] => {
-    if (clickedCount <= 0) {
-        return [];
-    }
-    const seed = seedOf(actionId);
-    return WEIGHTS
-        .map((weight, i) => ({
-            // Rotate the fixture window by the seed so different emails list
-            // different links rather than all showing the same six.
-            url: LINK_FIXTURES[(seed + i) % LINK_FIXTURES.length],
-            // Deterministic per-row wobble, so the counts don't read as a formula.
-            clicked_count: Math.max(1, Math.round(clickedCount * weight * (1 - ((seed + (i * 7)) % 11) / 100)))
-        }))
-        .sort((a, b) => b.clicked_count - a.clicked_count);
+  if (clickedCount <= 0) {
+    return [];
+  }
+  const seed = seedOf(actionId);
+  return WEIGHTS.map((weight, i) => ({
+    // Rotate the fixture window by the seed so different emails list
+    // different links rather than all showing the same six.
+    url: LINK_FIXTURES[(seed + i) % LINK_FIXTURES.length],
+    // Deterministic per-row wobble, so the counts don't read as a formula.
+    clicked_count: Math.max(
+      1,
+      Math.round(clickedCount * weight * (1 - ((seed + i * 7) % 11) / 100)),
+    ),
+  })).sort((a, b) => b.clicked_count - a.clicked_count);
 };

@@ -1,7 +1,17 @@
-import {type CSSProperties, type ElementType, useCallback, useEffect, useRef, useState} from 'react';
-import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import type {NodeChange, ReactFlowInstance} from '@xyflow/react';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {
+  type CSSProperties,
+  type ElementType,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import type {
+  AutomationAction,
+  AutomationDetail,
+} from '@tryghost/admin-x-framework/api/automations';
+import type { NodeChange, ReactFlowInstance } from '@xyflow/react';
+import { LucideIcon } from '@tryghost/shade/utils';
 
 // Shared flow helpers + scaffolding, kept out of the canvas component files so
 // those can export only components (react-refresh/only-export-components). Both
@@ -17,13 +27,13 @@ export const EDGE_STROKE = 'var(--xy-edge-stroke)';
 // the card either way, which read as a small gap between every connector and
 // its card. At zero size the anchor is the card edge itself.
 export const HIDDEN_HANDLE_STYLE: CSSProperties = {
-    background: 'transparent',
-    border: 'none',
-    height: 0,
-    minHeight: 0,
-    minWidth: 0,
-    opacity: 0,
-    width: 0
+  background: 'transparent',
+  border: 'none',
+  height: 0,
+  minHeight: 0,
+  minWidth: 0,
+  opacity: 0,
+  width: 0,
 };
 // Canvas fill, taken verbatim from the shipping automation-canvas
 // (automations/components/canvas/automation-canvas.tsx): grey-50 in light, and
@@ -57,60 +67,61 @@ export type CanvasRelease = 'phase-1' | 'exploration';
 // being clicked; the member button in the canvas corner names who's in focus, which is
 // where the change actually is. Kept as a hook because the mechanism is sound and the
 // question is only how loudly to state the mode.
-const CANVAS_THEMES: Record<CanvasRelease, {base: string; review?: string}> = {
-    // Phase 1 matches the shipping canvas exactly: grey-50 in light, and in dark the
-    // same --background the flow already sits on. Diverge from this only with a
-    // reason — the proto is meant to be indistinguishable from the real editor here.
-    'phase-1': {
-        base: '[--canvas-fill:var(--color-grey-50)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:var(--background)] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]'
-    },
-    // Exploration is free to diverge — its canvas is a detached window rather than a
-    // full-bleed surface, so it doesn't have to answer to the shipping editor.
-    //
-    // One step off phase 1 in each mode: grey-100 rather than grey-50 in light, and
-    // pure black rather than --background in dark. The window has to separate from
-    // the PAGE, not fill the screen, so both moves are away from the page's own fill.
-    //
-    // Dark goes DOWN, which is what makes it work. Lifting the canvas was tried first
-    // and there's no room above it: the ladder has no stop between --background
-    // (0.178) and --surface-elevated (0.204), so the only step available put the
-    // canvas on the same fill as the node cards and flattened them into it. Black is
-    // below the page instead, so the window reads against it AND the cards sit a full
-    // 0.204 above the canvas — a wider gap than they had to begin with.
-    //
-    // #000 is a literal, and it's deliberate: there is no token for it. Ghost's
-    // --color-black is oklch(20.38%), which is the same colour as the dark card
-    // surface (--color-sidebar-bg, 20.4%) — setting the canvas to it looks like
-    // nothing happened. And --background, the page, is 17.8%, DARKER than the
-    // system's own "black". So the palette has no stop below the page, and every
-    // token option lands either on the page fill or on the card fill.
-    //
-    // The one bespoke value in this table, held to the one thing tokens can't
-    // express. If a true black ever gets a token, this is the line to replace.
-    //
-    // It also retires the old objection to a black canvas — that the shipping
-    // editor's insert buttons rendered as holes on it. Here the buttons take
-    // --canvas-fill like everything else, so they're the same black and read as
-    // slots by their dashed border, which is the intent.
-    //
-    // No review entry, deliberately. Repainting the whole canvas to say a member is
-    // selected was too big a move for what it reports — the surface is the largest
-    // thing on screen and recolouring it announced a change of mode when all that
-    // happened was a row being clicked. The inset frame and the member button carry
-    // it instead, both of which sit where the change actually is.
-    exploration: {
-        base: '[--canvas-fill:var(--color-grey-100)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]'
-    }
+const CANVAS_THEMES: Record<CanvasRelease, { base: string; review?: string }> = {
+  // Phase 1 matches the shipping canvas exactly: grey-50 in light, and in dark the
+  // same --background the flow already sits on. Diverge from this only with a
+  // reason — the proto is meant to be indistinguishable from the real editor here.
+  'phase-1': {
+    base: '[--canvas-fill:var(--color-grey-50)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:var(--background)] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]',
+  },
+  // Exploration is free to diverge — its canvas is a detached window rather than a
+  // full-bleed surface, so it doesn't have to answer to the shipping editor.
+  //
+  // One step off phase 1 in each mode: grey-100 rather than grey-50 in light, and
+  // pure black rather than --background in dark. The window has to separate from
+  // the PAGE, not fill the screen, so both moves are away from the page's own fill.
+  //
+  // Dark goes DOWN, which is what makes it work. Lifting the canvas was tried first
+  // and there's no room above it: the ladder has no stop between --background
+  // (0.178) and --surface-elevated (0.204), so the only step available put the
+  // canvas on the same fill as the node cards and flattened them into it. Black is
+  // below the page instead, so the window reads against it AND the cards sit a full
+  // 0.204 above the canvas — a wider gap than they had to begin with.
+  //
+  // #000 is a literal, and it's deliberate: there is no token for it. Ghost's
+  // --color-black is oklch(20.38%), which is the same colour as the dark card
+  // surface (--color-sidebar-bg, 20.4%) — setting the canvas to it looks like
+  // nothing happened. And --background, the page, is 17.8%, DARKER than the
+  // system's own "black". So the palette has no stop below the page, and every
+  // token option lands either on the page fill or on the card fill.
+  //
+  // The one bespoke value in this table, held to the one thing tokens can't
+  // express. If a true black ever gets a token, this is the line to replace.
+  //
+  // It also retires the old objection to a black canvas — that the shipping
+  // editor's insert buttons rendered as holes on it. Here the buttons take
+  // --canvas-fill like everything else, so they're the same black and read as
+  // slots by their dashed border, which is the intent.
+  //
+  // No review entry, deliberately. Repainting the whole canvas to say a member is
+  // selected was too big a move for what it reports — the surface is the largest
+  // thing on screen and recolouring it announced a change of mode when all that
+  // happened was a row being clicked. The inset frame and the member button carry
+  // it instead, both of which sit where the change actually is.
+  exploration: {
+    base: '[--canvas-fill:var(--color-grey-100)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]',
+  },
 };
 
 // Maps our names onto React Flow's. Constant — only the table above changes.
-const CANVAS_FLOW_VARS = '[--xy-background-color:var(--canvas-fill)] [--xy-background-pattern-color:var(--canvas-dots)] [--xy-edge-stroke:var(--canvas-edge)]';
+const CANVAS_FLOW_VARS =
+  '[--xy-background-color:var(--canvas-fill)] [--xy-background-pattern-color:var(--canvas-dots)] [--xy-edge-stroke:var(--canvas-edge)]';
 
 // review = a member's run is in focus, so the canvas states the mode by its own
 // surface rather than only by chrome drawn over it.
 export const canvasTheme = (release: CanvasRelease, review = false): string => {
-    const theme = CANVAS_THEMES[release];
-    return `${CANVAS_FLOW_VARS} ${(review && theme.review) || theme.base}`;
+  const theme = CANVAS_THEMES[release];
+  return `${CANVAS_FLOW_VARS} ${(review && theme.review) || theme.base}`;
 };
 
 // The dashed insert buttons read as empty slots cut out of the canvas, so they
@@ -155,49 +166,52 @@ const UNMEASURED_NODE_HEIGHT = 200;
 // height never depends on where it was placed. Measure → reposition → re-measure
 // yields the same height and the loop settles on the second pass.
 export const useMeasuredColumn = () => {
-    const [heights, setHeights] = useState<Record<string, number>>({});
+  const [heights, setHeights] = useState<Record<string, number>>({});
 
-    // The canvas owns positions; React Flow owns sizes. Every other kind of change
-    // it offers here (position, selection, removal) is something we drive from the
-    // draft instead, so dimensions are all we take.
-    const onNodesChange = useCallback((changes: NodeChange[]) => {
-        setHeights((current) => {
-            let next = current;
-            for (const change of changes) {
-                if (change.type !== 'dimensions' || !change.dimensions) {
-                    continue;
-                }
-                const height = Math.round(change.dimensions.height);
-                // Bail on an unchanged height so a re-measure that agrees with the
-                // last one doesn't produce a new object and re-run the layout.
-                if (!height || current[change.id] === height) {
-                    continue;
-                }
-                if (next === current) {
-                    next = {...current};
-                }
-                next[change.id] = height;
-            }
-            return next;
-        });
-    }, []);
+  // The canvas owns positions; React Flow owns sizes. Every other kind of change
+  // it offers here (position, selection, removal) is something we drive from the
+  // draft instead, so dimensions are all we take.
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setHeights((current) => {
+      let next = current;
+      for (const change of changes) {
+        if (change.type !== 'dimensions' || !change.dimensions) {
+          continue;
+        }
+        const height = Math.round(change.dimensions.height);
+        // Bail on an unchanged height so a re-measure that agrees with the
+        // last one doesn't produce a new object and re-run the layout.
+        if (!height || current[change.id] === height) {
+          continue;
+        }
+        if (next === current) {
+          next = { ...current };
+        }
+        next[change.id] = height;
+      }
+      return next;
+    });
+  }, []);
 
-    // Node order in, top-Y per node out — plus the bottom edge of the last card,
-    // which is what the pan bound needs. Ids are the only input: whatever a card
-    // renders, its height is already known by the time this runs.
-    const layout = useCallback((ids: string[]) => {
-        const measured = ids.map(id => heights[id] ?? UNMEASURED_NODE_HEIGHT);
-        let cursor = 0;
-        const ys = measured.map((height) => {
-            const y = cursor;
-            cursor += height + NODE_VISUAL_GAP;
-            return y;
-        });
-        const bottom = measured.length ? ys[ys.length - 1] + measured[measured.length - 1] : 0;
-        return {ys, bottom};
-    }, [heights]);
+  // Node order in, top-Y per node out — plus the bottom edge of the last card,
+  // which is what the pan bound needs. Ids are the only input: whatever a card
+  // renders, its height is already known by the time this runs.
+  const layout = useCallback(
+    (ids: string[]) => {
+      const measured = ids.map((id) => heights[id] ?? UNMEASURED_NODE_HEIGHT);
+      let cursor = 0;
+      const ys = measured.map((height) => {
+        const y = cursor;
+        cursor += height + NODE_VISUAL_GAP;
+        return y;
+      });
+      const bottom = measured.length ? ys[ys.length - 1] + measured[measured.length - 1] : 0;
+      return { ys, bottom };
+    },
+    [heights],
+  );
 
-    return {onNodesChange, layout};
+  return { onNodesChange, layout };
 };
 
 // The three editable step kinds share one icon per kind across both canvases.
@@ -206,39 +220,39 @@ export const useMeasuredColumn = () => {
 export type StepKind = 'trigger' | 'email' | 'wait';
 
 export const stepKindIcon: Record<StepKind, ElementType> = {
-    trigger: LucideIcon.Zap,
-    email: LucideIcon.Mail,
-    wait: LucideIcon.Clock
+  trigger: LucideIcon.Zap,
+  email: LucideIcon.Mail,
+  wait: LucideIcon.Clock,
 };
 
 export const formatWait = (hours: number): string => {
-    if (hours % 24 === 0) {
-        const days = hours / 24;
-        return `${days} day${days === 1 ? '' : 's'}`;
-    }
-    return `${hours} hour${hours === 1 ? '' : 's'}`;
+  if (hours % 24 === 0) {
+    const days = hours / 24;
+    return `${days} day${days === 1 ? '' : 's'}`;
+  }
+  return `${hours} hour${hours === 1 ? '' : 's'}`;
 };
 
 // Follow the edge chain from the head so actions come out in flow order.
 export const orderActions = (automation: AutomationDetail): AutomationAction[] => {
-    const {actions, edges} = automation;
-    if (edges.length === 0) {
-        return actions;
-    }
-    const targets = new Set(edges.map(e => e.target_action_id));
-    const byId = new Map(actions.map(a => [a.id, a]));
-    const nextOf = new Map(edges.map(e => [e.source_action_id, e.target_action_id]));
-    const head = actions.find(a => !targets.has(a.id)) ?? actions[0];
+  const { actions, edges } = automation;
+  if (edges.length === 0) {
+    return actions;
+  }
+  const targets = new Set(edges.map((e) => e.target_action_id));
+  const byId = new Map(actions.map((a) => [a.id, a]));
+  const nextOf = new Map(edges.map((e) => [e.source_action_id, e.target_action_id]));
+  const head = actions.find((a) => !targets.has(a.id)) ?? actions[0];
 
-    const ordered: AutomationAction[] = [];
-    const seen = new Set<string>();
-    let cursor: string | undefined = head?.id;
-    while (cursor && byId.has(cursor) && !seen.has(cursor)) {
-        seen.add(cursor);
-        ordered.push(byId.get(cursor)!);
-        cursor = nextOf.get(cursor);
-    }
-    return ordered;
+  const ordered: AutomationAction[] = [];
+  const seen = new Set<string>();
+  let cursor: string | undefined = head?.id;
+  while (cursor && byId.has(cursor) && !seen.has(cursor)) {
+    seen.add(cursor);
+    ordered.push(byId.get(cursor)!);
+    cursor = nextOf.get(cursor);
+  }
+  return ordered;
 };
 
 // Centres the node column in the canvas and keeps it centred as the canvas resizes
@@ -252,46 +266,49 @@ export const orderActions = (automation: AutomationDetail): AutomationAction[] =
 export const INITIAL_VIEWPORT_Y = 48;
 
 export function useCenteredColumn(leftInset = 0) {
-    const canvasRef = useRef<HTMLDivElement>(null);
-    const flowRef = useRef<ReactFlowInstance | null>(null);
-    const [size, setSize] = useState({width: 0, height: 0});
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const flowRef = useRef<ReactFlowInstance | null>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
-    const centerColumn = useCallback(() => {
-        const instance = flowRef.current;
-        const el = canvasRef.current;
-        if (!instance || !el) {
-            return;
-        }
-        const {zoom} = instance.getViewport();
-        const x = Math.round(leftInset + (el.clientWidth - leftInset - NODE_WIDTH * zoom) / 2);
-        // Re-anchor Y to the shared default (not the drifted value) so state transitions
-        // keep the first node at the same height instead of jumping.
-        void instance.setViewport({x, y: INITIAL_VIEWPORT_Y, zoom});
-    }, [leftInset]);
+  const centerColumn = useCallback(() => {
+    const instance = flowRef.current;
+    const el = canvasRef.current;
+    if (!instance || !el) {
+      return;
+    }
+    const { zoom } = instance.getViewport();
+    const x = Math.round(leftInset + (el.clientWidth - leftInset - NODE_WIDTH * zoom) / 2);
+    // Re-anchor Y to the shared default (not the drifted value) so state transitions
+    // keep the first node at the same height instead of jumping.
+    void instance.setViewport({ x, y: INITIAL_VIEWPORT_Y, zoom });
+  }, [leftInset]);
 
-    useEffect(() => {
-        const el = canvasRef.current;
-        if (!el) {
-            return;
-        }
-        const observer = new ResizeObserver(() => {
-            setSize({width: el.clientWidth, height: el.clientHeight});
-            centerColumn();
-        });
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, [centerColumn]);
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) {
+      return;
+    }
+    const observer = new ResizeObserver(() => {
+      setSize({ width: el.clientWidth, height: el.clientHeight });
+      centerColumn();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [centerColumn]);
 
-    const onInit = useCallback((instance: ReactFlowInstance) => {
-        flowRef.current = instance;
-        const el = canvasRef.current;
-        const width = el?.clientWidth ?? 800;
-        setSize({width, height: el?.clientHeight ?? 600});
-        const x = Math.round(leftInset + (width - leftInset - NODE_WIDTH) / 2);
-        void instance.setViewport({x, y: INITIAL_VIEWPORT_Y, zoom: 1});
-    }, [leftInset]);
+  const onInit = useCallback(
+    (instance: ReactFlowInstance) => {
+      flowRef.current = instance;
+      const el = canvasRef.current;
+      const width = el?.clientWidth ?? 800;
+      setSize({ width, height: el?.clientHeight ?? 600 });
+      const x = Math.round(leftInset + (width - leftInset - NODE_WIDTH) / 2);
+      void instance.setViewport({ x, y: INITIAL_VIEWPORT_Y, zoom: 1 });
+    },
+    [leftInset],
+  );
 
-    return {canvasRef, onInit, size};
+  return { canvasRef, onInit, size };
 }
 
 // Bounds panning to the automation's content plus a margin, so the flow can't be
@@ -308,24 +325,24 @@ export function useCenteredColumn(leftInset = 0) {
 export const PAN_MARGIN_RATIO = 0.5;
 export const PAN_SLACK_X = 160;
 export function panTranslateExtent(
-    contentBottom: number,
-    size: {width: number; height: number},
-    leftInset = 0
+  contentBottom: number,
+  size: { width: number; height: number },
+  leftInset = 0,
 ): [[number, number], [number, number]] {
-    const w = size.width || 1200;
-    const h = size.height || 800;
-    const marginY = h * PAN_MARGIN_RATIO;
-    // The centred initial viewport in flow coords (matches useCenteredColumn: zoom 1,
-    // y = 48). Included so the bound can never clamp our own starting position.
-    const centeredX = leftInset + (w - leftInset - NODE_WIDTH) / 2;
-    const visLeft = -centeredX;
-    const visRight = w - centeredX;
-    const visTop = -48;
-    const visBottom = h - 48;
-    return [
-        [Math.min(0, visLeft) - PAN_SLACK_X, Math.min(0, visTop) - marginY],
-        [Math.max(NODE_WIDTH, visRight) + PAN_SLACK_X, Math.max(contentBottom, visBottom) + marginY]
-    ];
+  const w = size.width || 1200;
+  const h = size.height || 800;
+  const marginY = h * PAN_MARGIN_RATIO;
+  // The centred initial viewport in flow coords (matches useCenteredColumn: zoom 1,
+  // y = 48). Included so the bound can never clamp our own starting position.
+  const centeredX = leftInset + (w - leftInset - NODE_WIDTH) / 2;
+  const visLeft = -centeredX;
+  const visRight = w - centeredX;
+  const visTop = -48;
+  const visBottom = h - 48;
+  return [
+    [Math.min(0, visLeft) - PAN_SLACK_X, Math.min(0, visTop) - marginY],
+    [Math.max(NODE_WIDTH, visRight) + PAN_SLACK_X, Math.max(contentBottom, visBottom) + marginY],
+  ];
 }
 
 // Where floating chrome sits inside the canvas: 24px off every edge.
@@ -341,7 +358,7 @@ export function panTranslateExtent(
 // inline styles — see AutomationCanvasControls, which takes the inset rather than
 // fixing it. Everything else on the canvas expresses the same number as Tailwind
 // (top-6 / left-6).
-export const CANVAS_HUD_INSET = {bottom: 24, left: 24};
+export const CANVAS_HUD_INSET = { bottom: 24, left: 24 };
 
 // Floating controls on the canvas are Shade Buttons on the outline variant — the
 // same control the rest of Ghost uses — with one addition: outline is bg-transparent,

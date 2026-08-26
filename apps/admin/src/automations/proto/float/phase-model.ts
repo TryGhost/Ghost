@@ -1,4 +1,4 @@
-import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
+import type { ProtoSlot } from '@/automations/proto/shared/proto-variants';
 
 // The prototype's one variant slot: which release this screen is showing.
 //
@@ -24,16 +24,16 @@ import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
 // own comparison (see proto-variants.ts) — the machinery never assumed a single
 // slot. The point is that nothing gets a variant by default.
 export const PHASE_SLOT: ProtoSlot = {
-    id: 'phase',
-    label: 'Release',
-    // First entry is the default for fresh visitors.
-    variants: [
-        {id: 'phase-1', label: 'Phase 1'},
-        // Labelled "Exploration", not "Future". The id stays 'future' because it's
-        // internal and renaming it would only reset stored selections — but the label
-        // is what a reviewer reads, and "Future" claimed a roadmap this hasn't got.
-        // It reads as work already committed to and scheduled, which invites engineers
-        // to cost it rather than react to it. "Exploration" says what it is.
-        {id: 'future', label: 'Exploration'}
-    ]
+  id: 'phase',
+  label: 'Release',
+  // First entry is the default for fresh visitors.
+  variants: [
+    { id: 'phase-1', label: 'Phase 1' },
+    // Labelled "Exploration", not "Future". The id stays 'future' because it's
+    // internal and renaming it would only reset stored selections — but the label
+    // is what a reviewer reads, and "Future" claimed a roadmap this hasn't got.
+    // It reads as work already committed to and scheduled, which invites engineers
+    // to cost it rather than react to it. "Exploration" says what it is.
+    { id: 'future', label: 'Exploration' },
+  ],
 };
