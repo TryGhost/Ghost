@@ -77,8 +77,6 @@ export default class SessionService extends ESASessionService {
 
         this.loadServerNotifications();
 
-        this.presence.start();
-
         // pre-emptively load editor code in the background to avoid loading state when opening editor
         this.koenig.fetch();
     }

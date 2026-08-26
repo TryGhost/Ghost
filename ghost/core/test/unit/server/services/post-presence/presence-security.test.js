@@ -434,10 +434,11 @@ describe('PostPresence security: per-subscriber filtering', function () {
       );
 
       sinon.assert.calledOnce(markStub);
-      const [postId, user, postContext] = markStub.firstCall.args;
+      const [postId, user, postContext, options] = markStub.firstCall.args;
       assert.equal(postId, 'post-1');
       assert.equal(user.id, 'u1');
       assert.deepEqual(postContext.authorIds, ['u1', 'u2']);
+      assert.deepEqual(options, { heartbeat: true });
     });
 
     it('does not replace author context when the DTO has no authors field', function () {

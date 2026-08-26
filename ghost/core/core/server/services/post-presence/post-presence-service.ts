@@ -60,6 +60,10 @@ export type PostPresenceServiceOptions = {
   cleanupIntervalMs?: number;
 };
 
+export type MarkPresenceOptions = {
+  heartbeat?: boolean;
+};
+
 /** In-process map of who has which post open. One Node process per Ghost(Pro) site. */
 export class PostPresenceService {
   idleMs: number;
@@ -118,13 +122,18 @@ export class PostPresenceService {
     this._postContexts.clear();
   }
 
-  /** Heartbeat. Publishes only for new or idle→active entries so autosaves stay quiet. */
+  /** Enter or heartbeat. Heartbeats only refresh an existing entry so other save UIs cannot mint presence. */
   mark(
     postId?: string | null,
     user?: PresenceUser | null,
     postContext?: { authorIds?: string[] },
+    { heartbeat = false }: MarkPresenceOptions = {},
   ): void {
     if (!postId || !user || !user.id) {
+      return;
+    }
+    const entries = this._entriesFor(postId);
+    if (heartbeat && !entries.has(user.id)) {
       return;
     }
     if (!this._cleanupTimer) {
@@ -134,7 +143,6 @@ export class PostPresenceService {
     this._rememberAuthorIds(postId, postContext);
 
     const now = Date.now();
-    const entries = this._entriesFor(postId);
     const wasActive = this._isActive(entries.get(user.id), now);
 
     entries.set(user.id, {

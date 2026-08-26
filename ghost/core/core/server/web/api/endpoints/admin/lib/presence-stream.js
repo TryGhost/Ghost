@@ -12,6 +12,8 @@ const KEEPALIVE_MS = 30 * 1000;
 
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',
+  // no-transform skips Ghost's global gzip middleware; without it, events buffer
+  // until the stream ends and presence is no longer real-time.
   'Cache-Control': 'no-cache, no-transform',
   Connection: 'keep-alive',
   'X-Accel-Buffering': 'no',

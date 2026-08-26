@@ -12,11 +12,11 @@ describe('Unit: Service: presence', function () {
         service = this.owner.lookup('service:presence');
 
         originalEventSource = window.EventSource;
-        eventSourceSpy = sinon.stub().returns({
+        eventSourceSpy = sinon.stub().callsFake(() => ({
             close: sinon.stub(),
             onmessage: null,
             onerror: null
-        });
+        }));
         window.EventSource = eventSourceSpy;
         window.EventSource.CLOSED = originalEventSource ? originalEventSource.CLOSED : 2;
         window.EventSource.CONNECTING = originalEventSource ? originalEventSource.CONNECTING : 0;
@@ -74,6 +74,26 @@ describe('Unit: Service: presence', function () {
         service._source.onopen();
 
         expect(enterStub).to.have.been.calledOnceWith('post-1');
+    });
+
+    it('clears a terminal SSE close so a later enter can reopen the stream', function () {
+        sinon.stub(console, 'warn');
+        sinon.stub(service, '_sendEnter');
+        sinon.stub(service, '_sendLeave');
+
+        service.start();
+        const closedSource = service._source;
+        closedSource.readyState = window.EventSource.CLOSED;
+
+        service._onStreamError();
+
+        expect(service._source).to.be.null;
+
+        service.enterPost('post-1');
+
+        expect(eventSourceSpy.calledTwice).to.be.true;
+        expect(service._source).to.not.be.null;
+        expect(service._source).to.not.equal(closedSource);
     });
 
     it('retries EventSource construction on a later editor entry', function () {

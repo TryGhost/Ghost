@@ -71,6 +71,30 @@ describe('PostPresenceService', function () {
       service.stop();
     });
 
+    it('does not create an entry for a heartbeat when the user has not entered', function () {
+      const service = makeService();
+      const handler = sinon.spy();
+      service.subscribe(handler);
+
+      service.mark(POST_ID, USER, { authorIds: [USER.id] }, { heartbeat: true });
+
+      assert.equal(handler.callCount, 0);
+      assert.equal(service.snapshot().length, 0);
+      service.stop();
+    });
+
+    it('heartbeats refresh an existing entry', function () {
+      const service = makeService();
+      service.mark(POST_ID, USER);
+      clock.tick(500);
+      service.mark(POST_ID, USER, undefined, { heartbeat: true });
+
+      const [entry] = service.snapshot()[0].users;
+      assert.equal(entry.id, USER.id);
+      assert.equal(entry.isIdle, false);
+      service.stop();
+    });
+
     it('publishes on idle→active transition', function () {
       const service = makeService();
       const handler = sinon.spy();

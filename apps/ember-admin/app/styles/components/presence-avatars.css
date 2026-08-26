@@ -42,12 +42,14 @@
     align-self: stretch;
     display: flex;
     align-items: center;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .gh-presence-avatar {
     position: relative;
     border-radius: 50%;
-    background: var(--midgrey);
+    background: var(--middarkgrey);
     color: var(--white);
     border: 2px solid var(--white);
     display: inline-flex;

@@ -82,7 +82,9 @@ export function markPostPresence(
       return;
     }
 
-    postPresence.mark(postData.id, staffFromFrame(frame.user), authorIdsFrom(postData));
+    postPresence.mark(postData.id, staffFromFrame(frame.user), authorIdsFrom(postData), {
+      heartbeat: true,
+    });
   } catch (err) {
     logging.warn({ err }, 'Failed to record post presence');
   }

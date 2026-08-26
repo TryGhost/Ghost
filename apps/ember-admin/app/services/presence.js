@@ -110,6 +110,7 @@ export default class PresenceService extends Service {
         const isConnecting = this._source.readyState === EventSource.CONNECTING;
         if (isClosed) {
             console.warn('[presence] SSE stream closed; not reconnecting'); // eslint-disable-line no-console
+            this._source = null;
             return;
         }
         if (!isConnecting) {
