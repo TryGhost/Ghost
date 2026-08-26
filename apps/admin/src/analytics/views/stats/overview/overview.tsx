@@ -11,8 +11,13 @@ import { type GhAreaChartDataItem } from '@tryghost/shade/patterns';
 import { H3 } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { NavbarActions } from '@tryghost/shade/components';
-import { centsToDollars, formatQueryDate, getRangeDates } from '@tryghost/shade/app';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+import {
+  centsToDollars,
+  formatQueryDate,
+  getEffectiveChartRange,
+  getRangeDates,
+  sanitizeChartData,
+} from '@/shared/analytics/chart-helpers';
 import { getAudienceQueryParam } from '@/shared/analytics/audience';
 import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';

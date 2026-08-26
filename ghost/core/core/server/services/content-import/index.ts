@@ -1,38 +1,13 @@
 import { z } from 'zod';
-import ContentCSVImporter, {
-  type ImportRequest,
-  type ImportAccepted,
-  type FailureReporter,
-} from './import/importer';
+import ContentCSVImporter, { type ImportAccepted, type FailureReporter } from './import/importer';
+import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
-import { EDITORIAL_POST_FIELDS } from './import/row';
+import { importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
+import { prepareImportSource } from './import/source';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
-const importableFields = new Set<string>(EDITORIAL_POST_FIELDS);
-const mappingSchema = z.record(z.string(), z.string()).superRefine((mapping, ctx) => {
-  const targets = new Set<string>();
-  for (const [header, target] of Object.entries(mapping)) {
-    if (!header || header in Object.prototype) {
-      ctx.addIssue({ code: 'custom', message: `Invalid CSV header mapping: "${header}"` });
-    }
-    if (target && !importableFields.has(target)) {
-      ctx.addIssue({ code: 'custom', message: `Unknown post field mapping: "${target}"` });
-    }
-    if (target && targets.has(target)) {
-      ctx.addIssue({ code: 'custom', message: `Post field is mapped more than once: "${target}"` });
-    }
-    targets.add(target);
-  }
-  if (!targets.has('title')) {
-    ctx.addIssue({ code: 'custom', message: 'Post field mapping must include "title"' });
-  }
-});
-const importRequestSchema = z.object({
-  filePath: z.string().min(1),
-  mapping: mappingSchema.optional(),
-});
 // A junk timezone setting falls back to UTC rather than mis-stamping the batch tag.
 const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 
@@ -68,9 +43,8 @@ function makeImporter(): ContentCSVImporter {
 
   return new ContentCSVImporter({
     readRows: readPostRows,
-    posts: {
-      create: (data, options) => models.Post.add(data, options),
-    },
+    prepareSource: prepareImportSource,
+    posts: new BookshelfPostsRepository(models),
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,

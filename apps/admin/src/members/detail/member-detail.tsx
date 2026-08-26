@@ -35,7 +35,7 @@ import {
 } from './member-detail-edit';
 import { dequal } from 'dequal';
 import { deriveMemberDetailBackPath } from './member-detail-nav';
-import { formatMemberName } from '@tryghost/shade/app';
+import { formatMemberName } from '@/members/member-format';
 import { useMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
 import {
   getSettingValue,

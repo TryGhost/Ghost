@@ -5,6 +5,8 @@ import { resolveMaxDefinitions } from './config';
 
 export type { CustomField } from './models';
 export type { RequestContext } from './actions';
+export { actingContext } from './actions';
+export type { WrittenBy } from './schema';
 
 // Two services from one module, split along an aggregate boundary rather than a
 // technical layer: `definitions` owns the field definitions, which belong to the

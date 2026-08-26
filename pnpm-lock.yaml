@@ -184,8 +184,8 @@ catalogs:
       specifier: 0.11.2
       version: 0.11.2
     '@tryghost/request':
-      specifier: 4.0.2
-      version: 4.0.2
+      specifier: 4.0.3
+      version: 4.0.3
     '@tryghost/string':
       specifier: 0.3.5
       version: 0.3.5
@@ -1814,9 +1814,6 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.31)
-      '@types/validator':
-        specifier: 'catalog:'
-        version: 13.15.10
       '@uiw/react-codemirror':
         specifier: 'catalog:'
         version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1865,9 +1862,6 @@ importers:
       tailwind-merge:
         specifier: 3.6.0
         version: 3.6.0
-      validator:
-        specifier: 'catalog:'
-        version: 13.12.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -2377,15 +2371,12 @@ importers:
       '@tryghost/prometheus-metrics':
         specifier: 1.0.8
         version: 1.0.8(supports-color@10.2.2)
-      '@tryghost/promise':
-        specifier: 2.3.2
-        version: 2.3.2
       '@tryghost/referrer-parser':
         specifier: 0.1.21
         version: 0.1.21
       '@tryghost/request':
         specifier: 'catalog:'
-        version: 4.0.2
+        version: 4.0.3
       '@tryghost/root-utils':
         specifier: 2.3.2
         version: 2.3.2
@@ -9469,9 +9460,6 @@ packages:
   '@tryghost/promise@0.3.20':
     resolution: {integrity: sha512-afHCBoS72XabqRi7GmHdVAWC/UMsVPGlxnL/epNVp0c/C7tEn6+MgHABXNAW4wViZFhuOda3k7fk3i2K0FAZQg==}
 
-  '@tryghost/promise@2.3.2':
-    resolution: {integrity: sha512-WAwvjo85D5DVHfQ+YhBAb8Vq8h3NS/tfn/gVzrIy/L6TztvSxxPG2t9hU/XVsPbFguEV8lqhInowHdJehW/f0w==}
-
   '@tryghost/promise@2.3.9':
     resolution: {integrity: sha512-O/d4kTvvHrD/T9Czfhl057uPCJVQulfcQl/XsFHrWOhXewZUc6rsmqTFo6zz9Iv5NRye+SicsUya7BSJFSgKCQ==}
 
@@ -9482,11 +9470,17 @@ packages:
   '@tryghost/request@4.0.2':
     resolution: {integrity: sha512-43mgzdOSd09u7Ek9nIjgk1MIkYteZ5FmiS4UYc+H82G8ci5RnVvkW2qplaNYK8Rpih36KxxjNIb7SglX6IL+kg==}
 
+  '@tryghost/request@4.0.3':
+    resolution: {integrity: sha512-vcKSJua/W9zjUQrH7jw/16t8dB6UbEbwCFMiFFxMY0uXcn2IbYEJuxmHOg0aMhqpOc11lAk714rDi3K+RNoweQ==}
+
   '@tryghost/root-utils@0.3.38':
     resolution: {integrity: sha512-ARn8wC6qv867lCr7BZ+IS8S/88K5go0j6HgQFhP27rKje4b40PsxH/P3rO4Ez2NzF/Do8ywFrTWHoLCSsCazXQ==}
 
   '@tryghost/root-utils@2.3.1':
     resolution: {integrity: sha512-1g0HskTTDJzn3CzcEWhd4aKtcmPm3IztD7cyfQQiG4QX+6gfpPOkYk7Y5gDOwTKAYtfor0nc8npSY90vvIj93A==}
+
+  '@tryghost/root-utils@2.3.10':
+    resolution: {integrity: sha512-QqOj7YQxG91ovizRFKUn5f1AHZn5pdkgxcz8Qbg2M9QRJvACRVF9Pxst/yGoWmjdWRchpaDbfl7QipTOT/jH/Q==}
 
   '@tryghost/root-utils@2.3.2':
     resolution: {integrity: sha512-tUyMS4xJUceE62JjZIjWAXCeoVlbNHWF2dIy6xJkaYgeHw4oZ5YoKMu9Mzqa7TPHIapU+BxwdWV0HvMj9dZGlA==}
@@ -9522,6 +9516,9 @@ packages:
   '@tryghost/tpl@2.3.1':
     resolution: {integrity: sha512-qqa2SvhnBVKFYN+G4hfj2cYZuZXINBDyJ9cTzNBtev/FRNUKniyGarPKAkyb6ZBtvp3Nqlmyvrqe+SFoqHcfrQ==}
 
+  '@tryghost/tpl@2.3.10':
+    resolution: {integrity: sha512-jYUMBtCDc7Ok9m7VbdaL5znxhb4cWpRlnoCHZKTtxnP/D5Kt/WWwuV8fBRabqvdpPABkGlMm+momDAKMwst3lw==}
+
   '@tryghost/tpl@2.3.7':
     resolution: {integrity: sha512-TIDQF9tj4MaQKrIxNB8CxpElShAwLfyByozggIBnuzIVkGudX07gy/o9oWGRYslRselrvdByf+NpYonQ9j3Y0Q==}
 
@@ -9537,8 +9534,14 @@ packages:
   '@tryghost/validator@0.2.22':
     resolution: {integrity: sha512-dmobNVEKXMi3K4OdAXLBFwa78hVgy8cYvCPJgfV4h3NtYIyRHqwARr3upT3/ASpVBpKGVBu7XexfSv+tibzsuQ==}
 
+  '@tryghost/validator@3.2.10':
+    resolution: {integrity: sha512-mk4bexOTmO4xaGiTvHXwCQIH5okcR3XOA3zF2vSMu89lpwZ0QJPXEaooHZUdLLBGOwuigz0iLVyiNeC58OAyrg==}
+
   '@tryghost/validator@3.2.9':
     resolution: {integrity: sha512-dhb8ix2Xd1TVCjpwAJ87MRO/39m1fTl72dfqLbjnmA8r/vgA59SLVUF+BimH3DHcN6vDldwJlDlfJ4nHl5NEaA==}
+
+  '@tryghost/version@2.3.10':
+    resolution: {integrity: sha512-4KHPqEZwhyixUFfDiNCoJ6nCjmLrX5VwqrPcAsNQs82W2chkaysvjZU9rXFNULpapRcYu0Y7xX/Sn2JJDlbriQ==}
 
   '@tryghost/version@2.3.2':
     resolution: {integrity: sha512-tBW8gJKLJTUsrGdt/mM1k28Vy4DRTQF7tfZPUf9DQ0KkTgFc+5Z2WipGa50dOaicGysM15imOq7AK7IfXddCHw==}
@@ -19671,6 +19674,7 @@ packages:
   prom-client@15.1.3:
     resolution: {integrity: sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==}
     engines: {node: ^16 || ^18 || >=20}
+    deprecated: prom-client has been replaced by @prometheus-io/client
 
   promise-inflight@1.0.1:
     resolution: {integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g==}
@@ -29185,8 +29189,6 @@ snapshots:
 
   '@tryghost/promise@0.3.20': {}
 
-  '@tryghost/promise@2.3.2': {}
-
   '@tryghost/promise@2.3.9': {}
 
   '@tryghost/referrer-parser@0.1.21': {}
@@ -29200,12 +29202,26 @@ snapshots:
       got: 15.1.0
       lodash: 4.18.1
 
+  '@tryghost/request@4.0.3':
+    dependencies:
+      '@tryghost/errors': 3.3.9
+      '@tryghost/validator': 3.2.10
+      '@tryghost/version': 2.3.10
+      cacheable-lookup: 7.0.0
+      got: 15.1.0
+      lodash: 4.18.1
+
   '@tryghost/root-utils@0.3.38':
     dependencies:
       caller: 1.1.0
       find-root: 1.1.0
 
   '@tryghost/root-utils@2.3.1':
+    dependencies:
+      caller: 1.1.0
+      find-root: 1.1.0
+
+  '@tryghost/root-utils@2.3.10':
     dependencies:
       caller: 1.1.0
       find-root: 1.1.0
@@ -29256,6 +29272,8 @@ snapshots:
 
   '@tryghost/tpl@2.3.1': {}
 
+  '@tryghost/tpl@2.3.10': {}
+
   '@tryghost/tpl@2.3.7': {}
 
   '@tryghost/tpl@2.3.9': {}
@@ -29288,6 +29306,14 @@ snapshots:
       moment-timezone: 0.5.45
       validator: 7.2.0
 
+  '@tryghost/validator@3.2.10':
+    dependencies:
+      '@tryghost/errors': 3.3.9
+      '@tryghost/tpl': 2.3.10
+      lodash: 4.18.1
+      moment-timezone: 0.5.45
+      validator: 13.15.35
+
   '@tryghost/validator@3.2.9':
     dependencies:
       '@tryghost/errors': 3.3.9
@@ -29295,6 +29321,11 @@ snapshots:
       lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 13.15.35
+
+  '@tryghost/version@2.3.10':
+    dependencies:
+      '@tryghost/root-utils': 2.3.10
+      semver: 7.8.5
 
   '@tryghost/version@2.3.2':
     dependencies:
@@ -30404,9 +30435,9 @@ snapshots:
       obug: 2.1.3
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
     optionalDependencies:
-      '@vitest/browser': 4.1.10(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10)
+      '@vitest/browser': 4.1.10(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10)
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -30487,7 +30518,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
   '@vitest/utils@3.2.4':
     dependencies:

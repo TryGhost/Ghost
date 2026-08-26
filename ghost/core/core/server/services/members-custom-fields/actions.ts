@@ -9,6 +9,25 @@ export interface RequestContext {
   actor: Actor | null;
 }
 
+/**
+ * Who is acting, read off an API frame's context.
+ *
+ * Here rather than in each endpoint, because two resources now record custom field history
+ * and a second reading of the same shape is a second chance to disagree about it. An
+ * integration and a user are both actors; a request that is neither — a webhook, a job —
+ * has none, and the history says so rather than guessing.
+ */
+export function actingContext(context: unknown): RequestContext {
+  const frame = (context ?? {}) as { user?: string; integration?: { id: string } };
+  if (frame.integration) {
+    return { actor: { id: frame.integration.id, type: 'integration' } };
+  }
+  if (frame.user) {
+    return { actor: { id: frame.user, type: 'user' } };
+  }
+  return { actor: null };
+}
+
 export interface ActionRecorder {
   add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;
 }

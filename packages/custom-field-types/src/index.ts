@@ -187,6 +187,12 @@ export const FIELD_TYPES = defineFieldTypes({
   long_text: longText(),
   // An address is a delivery address, so its bounds are what a courier will accept
   // rather than what the column could hold. Modelled on Stripe's Address object.
+  //
+  // Who the parcel is addressed to is not here. A parcel needs a name as well as an
+  // address, but that is a fact about posting parcels rather than about either type,
+  // and the name is often not the account name — gift subscriptions, workplace
+  // deliveries, c/o. A site that needs one keeps it in a field of its own, which is
+  // also how Stripe hands it back: beside the address rather than inside it.
   address: record(
     {
       line1: shortText(),

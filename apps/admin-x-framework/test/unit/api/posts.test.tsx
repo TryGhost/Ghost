@@ -55,4 +55,20 @@ describe('posts api', () => {
       vi.useRealTimers();
     }
   });
+
+  it('uploads a mapped CSV ZIP through the posts endpoint', async () => {
+    const file = new File(['PK'], 'posts.zip', { type: 'application/zip' });
+
+    await withMockFetch({}, async (mock) => {
+      const { result } = renderHookWithProviders(() => useImportContentCSV());
+
+      await act(async () => {
+        await result.current.mutateAsync({ file, mapping: { Headline: 'title' } });
+      });
+
+      expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/posts/upload/');
+      expect(mock.calls[0][1].body.get('postsfile')).toBe(file);
+      expect(mock.calls[0][1].body.get('mapping[Headline]')).toBe('title');
+    });
+  });
 });

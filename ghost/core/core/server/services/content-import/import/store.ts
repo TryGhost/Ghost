@@ -6,7 +6,7 @@
 // failed = the write was attempted and lost.
 export type Clock = () => Date;
 
-export type RowStatus = 'created' | 'skipped' | 'failed';
+export type RowStatus = 'created' | 'updated' | 'skipped' | 'failed';
 
 export interface RowOutcome {
   // Source line number as a publisher sees it in a spreadsheet: the header is
@@ -15,6 +15,7 @@ export interface RowOutcome {
   title: string | null;
   status: RowStatus;
   reason?: string;
+  warnings?: string[];
   postId?: string;
   url?: string;
 }
