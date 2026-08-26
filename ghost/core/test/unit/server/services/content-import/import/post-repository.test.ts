@@ -22,6 +22,7 @@ function harness() {
   const updated = { id: 'existing', toJSON: () => ({ id: 'existing' }) };
   const findOne = sinon.stub().resolves(null);
   const findUser = sinon.stub().resolves(null);
+  const getUserByEmail = sinon.stub().resolves(undefined);
   const addUser = sinon.stub().resolves({ id: 'author-created' });
   const getOwnerUser = sinon.stub().resolves({ id: 'owner' });
   const findTag = sinon.stub().resolves(null);
@@ -32,7 +33,7 @@ function harness() {
   const repository = new BookshelfPostsRepository({
     Base: { transaction },
     Post: { findOne, add, edit },
-    User: { findOne: findUser, add: addUser, getOwnerUser },
+    User: { findOne: findUser, getByEmail: getUserByEmail, add: addUser, getOwnerUser },
     Tag: { findOne: findTag, add: addTag },
   });
 
@@ -42,6 +43,7 @@ function harness() {
     transacting,
     findOne,
     findUser,
+    getUserByEmail,
     addUser,
     getOwnerUser,
     findTag,
@@ -162,7 +164,7 @@ describe('BookshelfPostsRepository', function () {
 
   it('reconciles existing authors and tags before creating the post', async function () {
     const h = harness();
-    h.findUser.resolves({ id: 'author-existing' });
+    h.getUserByEmail.resolves({ id: 'author-existing' });
     h.findTag.resolves({ id: 'tag-existing' });
     const options = { importing: true, context: { internal: true } };
 
@@ -181,11 +183,10 @@ describe('BookshelfPostsRepository', function () {
       },
       { ...options, transacting: h.transacting },
     );
-    sinon.assert.calledWithExactly(
-      h.findUser,
-      { email: 'author@example.com' },
-      { ...options, transacting: h.transacting },
-    );
+    sinon.assert.calledWithExactly(h.getUserByEmail, 'author@example.com', {
+      ...options,
+      transacting: h.transacting,
+    });
     sinon.assert.calledWithExactly(
       h.findTag,
       { name: 'Existing Tag' },
@@ -252,6 +253,7 @@ describe('BookshelfPostsRepository', function () {
     );
 
     sinon.assert.notCalled(h.findUser);
+    sinon.assert.notCalled(h.getUserByEmail);
     sinon.assert.notCalled(h.findTag);
     sinon.assert.notCalled(h.add);
     sinon.assert.notCalled(h.edit);
@@ -495,7 +497,7 @@ describe('BookshelfPostsRepository', function () {
   it('propagates relation lookup failures without writing the post', async function () {
     const h = harness();
     const failure = new Error('relation lookup failed');
-    h.findUser.rejects(failure);
+    h.getUserByEmail.rejects(failure);
 
     await assert.rejects(
       h.repository.write(data, { importing: true }, { authorEmails: 'author@example.com' }),
