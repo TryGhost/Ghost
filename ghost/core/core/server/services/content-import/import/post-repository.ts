@@ -12,8 +12,8 @@ export interface WrittenPost {
 }
 
 export type PostWriteResult =
-  | { status: 'created'; post: WrittenPost }
-  | { status: 'updated'; post: WrittenPost }
+  | { status: 'created'; post: WrittenPost; warnings: string[] }
+  | { status: 'updated'; post: WrittenPost; warnings: string[] }
   | { status: 'skipped'; reason: string };
 
 export interface PostWriteMetadata extends PostRelationSource {
@@ -111,8 +111,8 @@ export class BookshelfPostsRepository implements PostsRepository {
         // First update the content against the locked server version, then persist
         // the incoming source timestamp on its own. The second edit is safe because
         // timestamp-only importing edits are excluded from collision detection.
-        const resolvedData = await this._relations.resolve(data, metadata, writeOptions);
-        const collisionSafeData: Record<string, unknown> = { ...resolvedData };
+        const resolved = await this._relations.resolve(data, metadata, writeOptions);
+        const collisionSafeData: Record<string, unknown> = { ...resolved.data };
         if (storedUpdatedAt) {
           collisionSafeData.updated_at = storedUpdatedAt;
         } else {
@@ -127,12 +127,12 @@ export class BookshelfPostsRepository implements PostsRepository {
           { updated_at: metadata.sourceUpdatedAt },
           { ...editOptions },
         );
-        return { status: 'updated', post };
+        return { status: 'updated', post, warnings: resolved.warnings };
       }
 
-      const resolvedData = await this._relations.resolve(data, metadata, writeOptions);
-      const post = await this._models.Post.add(resolvedData, writeOptions);
-      return { status: 'created', post };
+      const resolved = await this._relations.resolve(data, metadata, writeOptions);
+      const post = await this._models.Post.add(resolved.data, writeOptions);
+      return { status: 'created', post, warnings: resolved.warnings };
     });
   }
 }

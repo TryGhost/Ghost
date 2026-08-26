@@ -874,6 +874,81 @@ describe('Posts Importer API', function () {
     assert.match(importedTags[4].get('name'), /^#Import Run /);
   });
 
+  it('Creates missing CSV authors as locked Contributors and falls back to Owner', async function () {
+    await agent.loginAsOwner();
+
+    const authorsCsvPath = await csvFile(
+      'posts-import-new-authors.csv',
+      'title,authors,author_emails\n' +
+        'CSV created contributor,"New CSV Contributor, New CSV Contributor","new-csv-contributor@example.com, new-csv-contributor@example.com"\n' +
+        'CSV missing author email,Missing CSV Email,\n' +
+        'CSV invalid author email,Invalid CSV Email,not-an-email\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', authorsCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const contributor = await models.User.findOne(
+      { email: 'new-csv-contributor@example.com', status: 'all' },
+      { withRelated: ['roles'] },
+    );
+    assert.ok(contributor);
+    assert.equal(contributor.get('status'), 'locked');
+    assert.deepEqual(
+      contributor.related('roles').map((role) => role.get('name')),
+      ['Contributor'],
+    );
+
+    const owner = await models.User.getOwnerUser();
+    const createdPost = await models.Post.findOne(
+      { title: 'CSV created contributor', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    const missingEmailPost = await models.Post.findOne(
+      { title: 'CSV missing author email', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    const invalidEmailPost = await models.Post.findOne(
+      { title: 'CSV invalid author email', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    assert.deepEqual(
+      createdPost.related('authors').map((author) => author.id),
+      [contributor.id],
+      'duplicate author inputs create and attach one Contributor',
+    );
+    for (const post of [missingEmailPost, invalidEmailPost]) {
+      assert.deepEqual(
+        post.related('authors').map((author) => author.id),
+        [owner.id],
+      );
+    }
+    assert.equal(await models.User.findOne({ slug: 'missing-csv-email', status: 'all' }), null);
+    assert.equal(await models.User.findOne({ slug: 'invalid-csv-email', status: 'all' }), null);
+  });
+
+  it('Rolls back a newly created Contributor when the post model fails', async function () {
+    await agent.loginAsOwner();
+    sinon.stub(models.Post, 'add').rejects(new Error('post model failed'));
+    const authorsCsvPath = await csvFile(
+      'posts-import-author-rollback.csv',
+      'title,authors,author_emails\n' +
+        'CSV contributor rollback,Rollback Contributor,csv-rollback-contributor@example.com\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', authorsCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    assert.equal(
+      await models.User.findOne({ email: 'csv-rollback-contributor@example.com', status: 'all' }),
+      null,
+    );
+    assert.equal(
+      await models.Post.findOne({ title: 'CSV contributor rollback', status: 'all' }),
+      null,
+    );
+  });
+
   it('Renders a mapped Markdown column through the post content converter', async function () {
     await agent.loginAsOwner();
 

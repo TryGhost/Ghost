@@ -15,6 +15,7 @@ export interface RowOutcome {
   title: string | null;
   status: RowStatus;
   reason?: string;
+  warnings?: string[];
   postId?: string;
   url?: string;
 }

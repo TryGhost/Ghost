@@ -1,6 +1,7 @@
 import type { PostData } from './post-data';
 
 const { slugify } = require('@tryghost/string');
+const validator = require('@tryghost/validator');
 
 interface RelationModel {
   id: string;
@@ -9,6 +10,8 @@ interface RelationModel {
 export interface RelationModels {
   User: {
     findOne(data: object, options: object): Promise<RelationModel | null>;
+    add(data: object, options: object): Promise<RelationModel>;
+    getOwnerUser(options: object): Promise<RelationModel>;
   };
   Tag: {
     findOne(data: object, options: object): Promise<RelationModel | null>;
@@ -27,7 +30,12 @@ export interface AuthorReference {
 }
 
 export interface PostRelationsResolver {
-  resolve(data: PostData, source: PostRelationSource, options: object): Promise<PostData>;
+  resolve(data: PostData, source: PostRelationSource, options: object): Promise<ResolvedRelations>;
+}
+
+export interface ResolvedRelations {
+  data: PostData;
+  warnings: string[];
 }
 
 export function parseAuthorReferences(
@@ -53,8 +61,12 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
     this._models = models;
   }
 
-  async resolve(data: PostData, source: PostRelationSource, options: object): Promise<PostData> {
-    const authors = await this.resolveAuthors(source, options);
+  async resolve(
+    data: PostData,
+    source: PostRelationSource,
+    options: object,
+  ): Promise<ResolvedRelations> {
+    const { authors, warnings } = await this.resolveAuthors(source, options);
     const tags = await this.resolveTags(source, options);
     const resolved: PostData = {
       ...data,
@@ -65,22 +77,69 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
       resolved.authors = authors;
     }
 
-    return resolved;
+    return { data: resolved, warnings };
   }
 
   private async resolveAuthors(
     source: PostRelationSource,
     options: object,
-  ): Promise<Array<{ id: string }>> {
+  ): Promise<{ authors: Array<{ id: string }>; warnings: string[] }> {
     const authors: Array<{ id: string }> = [];
+    const warnings: string[] = [];
     const seen = new Set<string>();
+    const authorsByEmail = new Map<string, RelationModel>();
+    let owner: RelationModel | undefined;
+
+    const useOwner = async (warning: string) => {
+      owner ??= await this._models.User.getOwnerUser({ ...options });
+      warnings.push(warning);
+      if (!seen.has(owner.id)) {
+        seen.add(owner.id);
+        authors.push({ id: owner.id });
+      }
+    };
 
     for (const reference of parseAuthorReferences(source.authorNames, source.authorEmails)) {
       let author: RelationModel | null = null;
       if (reference.email) {
-        author = await this._models.User.findOne({ email: reference.email }, { ...options });
+        if (!validator.isEmail(reference.email)) {
+          await useOwner(`Author email "${reference.email}" is invalid; assigned Owner instead.`);
+          continue;
+        }
+
+        const emailKey = reference.email.toLowerCase();
+        author = authorsByEmail.get(emailKey) ?? null;
+        if (!author) {
+          author = await this._models.User.findOne({ email: reference.email }, { ...options });
+        }
+
+        if (!author && reference.name) {
+          author = await this._models.User.add(
+            {
+              name: reference.name,
+              email: reference.email,
+              roles: ['Contributor'],
+            },
+            { ...options },
+          );
+        }
+
+        if (!author) {
+          await useOwner(`Author email "${reference.email}" has no name; assigned Owner instead.`);
+          continue;
+        }
+
+        authorsByEmail.set(emailKey, author);
       } else if (reference.name) {
         author = await this._models.User.findOne({ slug: slugify(reference.name) }, { ...options });
+
+        if (!author) {
+          await useOwner(`Author "${reference.name}" has no email; assigned Owner instead.`);
+          continue;
+        }
+      } else {
+        await useOwner('An empty author entry was assigned to Owner instead.');
+        continue;
       }
 
       if (author && !seen.has(author.id)) {
@@ -89,7 +148,7 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
       }
     }
 
-    return authors;
+    return { authors, warnings };
   }
 
   private async resolveTags(

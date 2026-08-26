@@ -22,6 +22,8 @@ function harness() {
   const updated = { id: 'existing', toJSON: () => ({ id: 'existing' }) };
   const findOne = sinon.stub().resolves(null);
   const findUser = sinon.stub().resolves(null);
+  const addUser = sinon.stub().resolves({ id: 'author-created' });
+  const getOwnerUser = sinon.stub().resolves({ id: 'owner' });
   const findTag = sinon.stub().resolves(null);
   const add = sinon.stub().resolves(created);
   const edit = sinon.stub().resolves(updated);
@@ -29,7 +31,7 @@ function harness() {
   const repository = new BookshelfPostsRepository({
     Base: { transaction },
     Post: { findOne, add, edit },
-    User: { findOne: findUser },
+    User: { findOne: findUser, add: addUser, getOwnerUser },
     Tag: { findOne: findTag },
   });
 
@@ -39,6 +41,8 @@ function harness() {
     transacting,
     findOne,
     findUser,
+    addUser,
+    getOwnerUser,
     findTag,
     add,
     edit,
@@ -59,7 +63,7 @@ describe('BookshelfPostsRepository', function () {
 
     const result = await h.repository.write(data, options);
 
-    assert.deepEqual(result, { status: 'created', post: h.created });
+    assert.deepEqual(result, { status: 'created', post: h.created, warnings: [] });
     sinon.assert.calledOnce(h.transaction);
     sinon.assert.calledWithExactly(
       h.findOne,
@@ -144,7 +148,7 @@ describe('BookshelfPostsRepository', function () {
       context: { internal: true },
     });
 
-    assert.deepEqual(result, { status: 'created', post: h.created });
+    assert.deepEqual(result, { status: 'created', post: h.created, warnings: [] });
     sinon.assert.calledTwice(h.findOne);
     sinon.assert.calledWithExactly(
       h.add,
@@ -187,6 +191,33 @@ describe('BookshelfPostsRepository', function () {
     );
   });
 
+  it('creates missing contributors and returns Owner fallback warnings with the post', async function () {
+    const h = harness();
+    const options = { importing: true, context: { internal: true } };
+
+    const result = await h.repository.write(data, options, {
+      authorNames: 'New Contributor,Missing Email',
+      authorEmails: 'new@example.com,',
+    });
+
+    assert.deepEqual(result, {
+      status: 'created',
+      post: h.created,
+      warnings: ['Author "Missing Email" has no email; assigned Owner instead.'],
+    });
+    sinon.assert.calledWithExactly(
+      h.addUser,
+      {
+        name: 'New Contributor',
+        email: 'new@example.com',
+        roles: ['Contributor'],
+      },
+      { ...options, transacting: h.transacting },
+    );
+    sinon.assert.calledWithExactly(h.getOwnerUser, { ...options, transacting: h.transacting });
+    assert.deepEqual(h.add.firstCall.args[0].authors, [{ id: 'author-created' }, { id: 'owner' }]);
+  });
+
   it('does not reconcile relations for a skipped duplicate', async function () {
     const h = harness();
     h.findOne.resolves(h.existing);
@@ -216,7 +247,7 @@ describe('BookshelfPostsRepository', function () {
       sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
     });
 
-    assert.deepEqual(result, { status: 'updated', post: h.updated });
+    assert.deepEqual(result, { status: 'updated', post: h.updated, warnings: [] });
     sinon.assert.calledTwice(h.edit);
     sinon.assert.calledWithExactly(
       h.edit.firstCall,
@@ -285,7 +316,7 @@ describe('BookshelfPostsRepository', function () {
       { sourceUpdatedAt: '2025-01-01T00:00:00.000Z' },
     );
 
-    assert.deepEqual(result, { status: 'updated', post: h.updated });
+    assert.deepEqual(result, { status: 'updated', post: h.updated, warnings: [] });
     sinon.assert.calledTwice(h.edit);
     assert.equal('updated_at' in h.edit.firstCall.args[0], false);
   });
@@ -359,6 +390,53 @@ describe('BookshelfPostsRepository', function () {
       h.repository.write(data, { importing: true, context: { internal: true } }),
       failure,
     );
+  });
+
+  it('keeps contributor creation in the post transaction so insert failures roll it back', async function () {
+    const h = harness();
+    const failure = new Error('post insert failed');
+    h.add.rejects(failure);
+    const options = { importing: true, context: { internal: true } };
+
+    await assert.rejects(
+      h.repository.write(data, options, {
+        authorNames: 'New Contributor',
+        authorEmails: 'new@example.com',
+      }),
+      failure,
+    );
+
+    sinon.assert.calledWithExactly(
+      h.addUser,
+      {
+        name: 'New Contributor',
+        email: 'new@example.com',
+        roles: ['Contributor'],
+      },
+      { ...options, transacting: h.transacting },
+    );
+    sinon.assert.calledWithExactly(h.add, sinon.match.object, {
+      ...options,
+      transacting: h.transacting,
+    });
+  });
+
+  it('propagates contributor model failures without writing the post', async function () {
+    const h = harness();
+    const failure = new Error('contributor insert failed');
+    h.addUser.rejects(failure);
+
+    await assert.rejects(
+      h.repository.write(
+        data,
+        { importing: true },
+        { authorNames: 'New Contributor', authorEmails: 'new@example.com' },
+      ),
+      failure,
+    );
+
+    sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
   });
 
   it('propagates relation lookup failures without writing the post', async function () {

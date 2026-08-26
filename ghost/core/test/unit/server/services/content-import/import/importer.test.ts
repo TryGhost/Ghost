@@ -22,6 +22,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const createFailures = new Map<string, unknown>();
   const duplicateSlugs = new Set<string>();
   const updatedTitles = new Set<string>();
+  const warningsByTitle = new Map<string, string[]>();
   const urlFailures = new Map<string, unknown>();
   const store = new ImportRunStore();
   let converterResolutions = 0;
@@ -60,6 +61,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
         return {
           status: updatedTitles.has(data.title) ? ('updated' as const) : ('created' as const),
           post: { id, toJSON: () => ({ id, slug: `slug-${created.length}` }) },
+          warnings: warningsByTitle.get(data.title) ?? [],
         };
       },
     },
@@ -121,6 +123,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     createFailures,
     duplicateSlugs,
     updatedTitles,
+    warningsByTitle,
     urlFailures,
     store,
     setHtmlToLexicalFactory,
@@ -783,6 +786,24 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.reported, [{}]);
     assert.equal(h.store.get('run_test')?.status, 'failed');
     assert.equal(h.store.get('run_test')?.failureReason, 'Unknown error');
+  });
+
+  it('records relation warnings on successful row outcomes', async function () {
+    const h = harness([row('Owner fallback')]);
+    h.warningsByTitle.set('Owner fallback', [
+      'Author "Missing Author" has no email; assigned Owner instead.',
+    ]);
+
+    await h.run();
+
+    assert.deepEqual(h.store.get('run_test')?.rows[0], {
+      line: 2,
+      title: 'Owner fallback',
+      status: 'created',
+      postId: 'post_1',
+      url: 'https://example.com/post_1/',
+      warnings: ['Author "Missing Author" has no email; assigned Owner instead.'],
+    });
   });
 
   it('keeps a successfully written post when its URL cannot be resolved', async function () {

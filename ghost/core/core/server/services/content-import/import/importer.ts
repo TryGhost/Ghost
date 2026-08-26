@@ -214,6 +214,7 @@ class ContentCSVImporter {
 
         let post: WrittenPost;
         let writeStatus: 'created' | 'updated';
+        let warnings: string[];
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:
           // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
@@ -247,6 +248,7 @@ class ContentCSVImporter {
 
           post = result.post;
           writeStatus = result.status;
+          warnings = result.warnings;
           successfulWrites += 1;
         } catch (error) {
           if (failedWrites === 0) {
@@ -267,6 +269,7 @@ class ContentCSVImporter {
           title: row.title,
           status: writeStatus,
           postId: post.id,
+          ...(warnings.length > 0 ? { warnings } : {}),
         };
         try {
           outcome.url = this._urlForPost(post);

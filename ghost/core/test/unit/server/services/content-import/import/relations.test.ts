@@ -17,6 +17,11 @@ const data: PostData = {
 };
 
 const relation = (id: string) => ({ id });
+const userModels = (
+  findOne: sinon.SinonStub = sinon.stub().resolves(null),
+  add: sinon.SinonStub = sinon.stub().resolves(relation('author-created')),
+  getOwnerUser: sinon.SinonStub = sinon.stub().resolves(relation('owner')),
+) => ({ findOne, add, getOwnerUser });
 
 describe('CSV post relation parsing', function () {
   it('pairs author names and emails positionally to the longest list', function () {
@@ -58,7 +63,7 @@ describe('BookshelfPostRelationsResolver', function () {
     });
     const findTag = sinon.stub().resolves(null);
     const resolver = new BookshelfPostRelationsResolver({
-      User: { findOne: findUser },
+      User: userModels(findUser),
       Tag: { findOne: findTag },
     });
     const transacting = { transaction: true };
@@ -66,22 +71,26 @@ describe('BookshelfPostRelationsResolver', function () {
     const resolved = await resolver.resolve(
       data,
       {
-        authorNames: 'Alice Example,No name fallback,Charlie Example,,Alice again',
-        authorEmails: 'alice@example.com,missing@example.com,,,alice@example.com',
+        authorNames: 'Alice Example,No name fallback,Charlie Example,Alice again',
+        authorEmails: 'alice@example.com,missing@example.com,,alice@example.com',
       },
       { importing: true, transacting },
     );
 
-    assert.deepEqual(resolved.authors, [{ id: 'author-alice' }, { id: 'author-charlie' }]);
+    assert.deepEqual(resolved.data.authors, [
+      { id: 'author-alice' },
+      { id: 'author-created' },
+      { id: 'author-charlie' },
+    ]);
+    assert.deepEqual(resolved.warnings, []);
     assert.deepEqual(
       findUser.getCalls().map((call) => call.args[0]),
       [
         { email: 'alice@example.com' },
         { email: 'missing@example.com' },
         { slug: 'charlie-example' },
-        { email: 'alice@example.com' },
       ],
-      'an email-bearing entry never falls back to its name',
+      'email-bearing entries never fall back to names and duplicates reuse the first match',
     );
     for (const call of findUser.getCalls()) {
       assert.deepEqual(call.args[1], { importing: true, transacting });
@@ -89,10 +98,11 @@ describe('BookshelfPostRelationsResolver', function () {
     sinon.assert.notCalled(findTag);
   });
 
-  it('omits authors when no supplied reference matches', async function () {
+  it('falls back to Owner with a warning when a name-only author does not match', async function () {
     const findUser = sinon.stub().resolves(null);
+    const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
-      User: { findOne: findUser },
+      User: userModels(findUser, undefined, getOwnerUser),
       Tag: { findOne: sinon.stub().resolves(null) },
     });
 
@@ -102,8 +112,151 @@ describe('BookshelfPostRelationsResolver', function () {
       { importing: true },
     );
 
-    assert.equal('authors' in resolved, false, 'the model retains its Owner fallback');
+    assert.deepEqual(resolved.data.authors, [{ id: 'owner' }]);
+    assert.deepEqual(resolved.warnings, [
+      'Author "Missing Author" has no email; assigned Owner instead.',
+    ]);
     sinon.assert.calledWithMatch(findUser, { slug: 'missing-author' });
+    sinon.assert.calledOnce(getOwnerUser);
+  });
+
+  it('creates an unmatched named author as a locked Contributor through the importing path', async function () {
+    const findUser = sinon.stub().resolves(null);
+    const addUser = sinon.stub().resolves(relation('author-created'));
+    const getOwnerUser = sinon.stub().resolves(relation('owner'));
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(findUser, addUser, getOwnerUser),
+      Tag: { findOne: sinon.stub().resolves(null) },
+    });
+    const options = { importing: true, context: { internal: true }, transacting: {} };
+
+    const resolved = await resolver.resolve(
+      data,
+      { authorNames: 'New Contributor', authorEmails: 'new@example.com' },
+      options,
+    );
+
+    assert.deepEqual(resolved.data.authors, [{ id: 'author-created' }]);
+    assert.deepEqual(resolved.warnings, []);
+    sinon.assert.calledWithExactly(findUser, { email: 'new@example.com' }, options);
+    sinon.assert.calledWithExactly(
+      addUser,
+      {
+        name: 'New Contributor',
+        email: 'new@example.com',
+        roles: ['Contributor'],
+      },
+      options,
+    );
+    sinon.assert.notCalled(getOwnerUser);
+  });
+
+  it('matches an existing author by email without requiring a supplied name', async function () {
+    const findUser = sinon.stub().resolves(relation('author-existing'));
+    const addUser = sinon.stub().resolves(relation('author-created'));
+    const getOwnerUser = sinon.stub().resolves(relation('owner'));
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(findUser, addUser, getOwnerUser),
+      Tag: { findOne: sinon.stub().resolves(null) },
+    });
+
+    const resolved = await resolver.resolve(
+      data,
+      { authorEmails: 'existing@example.com' },
+      { importing: true },
+    );
+
+    assert.deepEqual(resolved.data.authors, [{ id: 'author-existing' }]);
+    assert.deepEqual(resolved.warnings, []);
+    sinon.assert.notCalled(addUser);
+    sinon.assert.notCalled(getOwnerUser);
+  });
+
+  it('reuses a contributor created for a duplicate email in the same row', async function () {
+    const findUser = sinon.stub().resolves(null);
+    const addUser = sinon.stub().resolves(relation('author-created'));
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(findUser, addUser),
+      Tag: { findOne: sinon.stub().resolves(null) },
+    });
+
+    const resolved = await resolver.resolve(
+      data,
+      {
+        authorNames: 'New Contributor,Duplicate Name',
+        authorEmails: 'NEW@example.com,new@example.com',
+      },
+      { importing: true },
+    );
+
+    assert.deepEqual(resolved.data.authors, [{ id: 'author-created' }]);
+    sinon.assert.calledOnce(findUser);
+    sinon.assert.calledOnce(addUser);
+  });
+
+  it('falls back to Owner for email-only, invalid, and empty entries with clear warnings', async function () {
+    const findUser = sinon.stub().resolves(null);
+    const addUser = sinon.stub().resolves(relation('author-created'));
+    const getOwnerUser = sinon.stub().resolves(relation('owner'));
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(findUser, addUser, getOwnerUser),
+      Tag: { findOne: sinon.stub().resolves(null) },
+    });
+
+    const resolved = await resolver.resolve(
+      data,
+      {
+        authorNames: ',Invalid Author,',
+        authorEmails: 'missing@example.com,not-an-email,',
+      },
+      { importing: true },
+    );
+
+    assert.deepEqual(resolved.data.authors, [{ id: 'owner' }]);
+    assert.deepEqual(resolved.warnings, [
+      'Author email "missing@example.com" has no name; assigned Owner instead.',
+      'Author email "not-an-email" is invalid; assigned Owner instead.',
+      'An empty author entry was assigned to Owner instead.',
+    ]);
+    sinon.assert.calledOnceWithExactly(
+      findUser,
+      { email: 'missing@example.com' },
+      {
+        importing: true,
+      },
+    );
+    sinon.assert.notCalled(addUser);
+    sinon.assert.calledOnce(getOwnerUser);
+  });
+
+  it('propagates author creation failures so the row transaction can roll back', async function () {
+    const failure = new Error('user creation failed');
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(sinon.stub().resolves(null), sinon.stub().rejects(failure)),
+      Tag: { findOne: sinon.stub().resolves(null) },
+    });
+
+    await assert.rejects(
+      resolver.resolve(
+        data,
+        { authorNames: 'New Contributor', authorEmails: 'new@example.com' },
+        { importing: true },
+      ),
+      failure,
+    );
+  });
+
+  it('propagates Owner lookup failures so the row transaction can roll back', async function () {
+    const failure = new Error('owner lookup failed');
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(sinon.stub().resolves(null), undefined, sinon.stub().rejects(failure)),
+      Tag: { findOne: sinon.stub().resolves(null) },
+    });
+
+    await assert.rejects(
+      resolver.resolve(data, { authorNames: 'Missing Author' }, { importing: true }),
+      failure,
+    );
   });
 
   it('matches tags by exact name, explicit slug, then normalized slug', async function () {
@@ -120,7 +273,7 @@ describe('BookshelfPostRelationsResolver', function () {
       return null;
     });
     const resolver = new BookshelfPostRelationsResolver({
-      User: { findOne: sinon.stub().resolves(null) },
+      User: userModels(),
       Tag: { findOne: findTag },
     });
 
@@ -132,7 +285,7 @@ describe('BookshelfPostRelationsResolver', function () {
       { importing: true },
     );
 
-    assert.deepEqual(resolved.tags, [
+    assert.deepEqual(resolved.data.tags, [
       { id: 'tag-exact' },
       { id: 'tag-explicit-slug' },
       { id: 'tag-normalized' },
@@ -159,14 +312,14 @@ describe('BookshelfPostRelationsResolver', function () {
     const findUser = sinon.stub().resolves(null);
     const findTag = sinon.stub().resolves(null);
     const resolver = new BookshelfPostRelationsResolver({
-      User: { findOne: findUser },
+      User: userModels(findUser),
       Tag: { findOne: findTag },
     });
 
     const resolved = await resolver.resolve(data, {}, { importing: true });
 
-    assert.deepEqual(resolved, data);
-    assert.notEqual(resolved, data, 'callers receive data they can safely change');
+    assert.deepEqual(resolved, { data, warnings: [] });
+    assert.notEqual(resolved.data, data, 'callers receive data they can safely change');
     sinon.assert.notCalled(findUser);
     sinon.assert.notCalled(findTag);
   });
@@ -174,7 +327,7 @@ describe('BookshelfPostRelationsResolver', function () {
   it('propagates lookup failures to roll back the row transaction', async function () {
     const failure = new Error('author lookup failed');
     const resolver = new BookshelfPostRelationsResolver({
-      User: { findOne: sinon.stub().rejects(failure) },
+      User: userModels(sinon.stub().rejects(failure)),
       Tag: { findOne: sinon.stub().resolves(null) },
     });
 
