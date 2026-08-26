@@ -60,7 +60,7 @@ const BetaGiftRedemptionPage = () => {
   const gift = pageData?.gift;
   const isLoggedIn = !!member;
   const [name, setName] = useState(gift?.recipient_name || member?.name || '');
-  const [email, setEmail] = useState(member?.email || '');
+  const [email, setEmail] = useState(member?.email || gift?.recipient_email || '');
   const [errors, setErrors] = useState({});
   const [showDetails, setShowDetails] = useState(false);
   const { cardRef, containerProps: cardTiltProps } = useCardTilt();
@@ -69,9 +69,9 @@ const BetaGiftRedemptionPage = () => {
     // Prefill with the recipient name the buyer entered, so the gift card
     // is personal before the recipient types anything.
     setName(gift?.recipient_name || member?.name || '');
-    setEmail(member?.email || '');
+    setEmail(member?.email || gift?.recipient_email || '');
     setErrors({});
-  }, [member?.email, member?.name, gift?.recipient_name]);
+  }, [member?.email, member?.name, gift?.recipient_email, gift?.recipient_name]);
 
   useEffect(() => {
     if (gift) {

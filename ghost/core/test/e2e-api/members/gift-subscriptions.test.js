@@ -856,6 +856,12 @@ describe('Gift Subscriptions', function () {
         recipient_name: 'Taylor',
         personal_message: 'Enjoy!',
       });
+      await models.GiftDelivery.add({
+        gift_id: gift.id,
+        recipient_email: 'taylor@example.com',
+        status: 'failed',
+        outcome: 'permanent_failed',
+      });
 
       const { body } = await membersAgent
         .get(`/api/gifts/${gift.get('token')}/redeem/`)
@@ -869,6 +875,7 @@ describe('Gift Subscriptions', function () {
       assert.equal(body.gifts[0].amount, 5000);
       assert.equal(body.gifts[0].buyer_name, 'Jamie');
       assert.equal(body.gifts[0].recipient_name, 'Taylor');
+      assert.equal(body.gifts[0].recipient_email, 'taylor@example.com');
       assert.equal(body.gifts[0].message, 'Enjoy!');
       assert.equal(body.gifts[0].expires_at, new Date(gift.get('expires_at')).toISOString());
       assert.deepEqual(body.gifts[0].tier, {
@@ -881,7 +888,6 @@ describe('Gift Subscriptions', function () {
           .map((item) => item.name),
       });
       assert.equal(body.gifts[0].buyer_email, undefined);
-      assert.equal(body.gifts[0].recipient_email, undefined);
       assert.equal(body.gifts[0].delivery_status, undefined);
       assert.equal(body.gifts[0].redeemed_at, undefined);
       assert.equal(body.gifts[0].status, undefined);
@@ -897,6 +903,7 @@ describe('Gift Subscriptions', function () {
       const { body } = await agent.get(`/api/gifts/${gift.get('token')}/redeem/`).expectStatus(200);
 
       assert.equal(body.gifts[0].token, gift.get('token'));
+      assert.equal(body.gifts[0].recipient_email, null);
     });
 
     it('returns 404 when the gift token does not exist', async function () {
@@ -975,6 +982,11 @@ describe('Gift Subscriptions', function () {
         const agent = membersAgent.duplicate();
         const email = `gift-post-free-${giftSequence + 1}@example.com`;
         const gift = await createGift();
+        await models.GiftDelivery.add({
+          gift_id: gift.id,
+          recipient_email: 'recipient@example.com',
+          status: 'pending',
+        });
 
         await agent.loginAs(email);
 
@@ -990,6 +1002,7 @@ describe('Gift Subscriptions', function () {
         const member = await models.Member.findOne({ email }, { require: true });
 
         assert.equal(body.gifts[0].token, gift.get('token'));
+        assert.equal(body.gifts[0].recipient_email, 'recipient@example.com');
         assert.equal(body.gifts[0].status, undefined);
         assert.ok(body.gifts[0].consumes_at);
         assert.equal(member.get('status'), 'gift');

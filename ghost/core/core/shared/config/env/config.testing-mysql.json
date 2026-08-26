@@ -19,6 +19,9 @@
     "level": "error",
     "logClientErrorsAsError": false
   },
+  "queryParameterFiltering": {
+    "enabled": true
+  },
   "adapters": {
     "Redis": {
       "host": "127.0.0.1",
