@@ -233,6 +233,33 @@ describe('BookshelfPostRelationsResolver', function () {
     sinon.assert.calledOnce(getOwnerUser);
   });
 
+  it('does not duplicate Owner when an existing match is followed by an Owner fallback', async function () {
+    const owner = relation('owner');
+    const findUser = sinon.stub().callsFake(async (lookup: { email?: string }) => {
+      return lookup.email === 'owner@example.com' ? owner : null;
+    });
+    const getOwnerUser = sinon.stub().resolves(owner);
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(findUser, undefined, getOwnerUser),
+      Tag: tagModels(),
+    });
+
+    const resolved = await resolver.resolve(
+      data,
+      {
+        authorNames: 'Site Owner,Missing Author',
+        authorEmails: 'owner@example.com,',
+      },
+      { importing: true },
+    );
+
+    assert.deepEqual(resolved.data.authors, [{ id: 'owner' }]);
+    assert.deepEqual(resolved.warnings, [
+      'Author "Missing Author" has no email; assigned Owner instead.',
+    ]);
+    sinon.assert.calledOnce(getOwnerUser);
+  });
+
   it('propagates author creation failures so the row transaction can roll back', async function () {
     const failure = new Error('user creation failed');
     const resolver = new BookshelfPostRelationsResolver({

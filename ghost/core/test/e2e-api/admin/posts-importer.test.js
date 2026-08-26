@@ -96,6 +96,34 @@ describe('Posts Importer API', function () {
       .expect(cacheInvalidateHeaderNotSet());
   });
 
+  it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {
+    const contentImportService =
+      await import('../../../core/server/services/content-import/index.ts?coverage-lifecycle');
+
+    assert.throws(
+      () => contentImportService.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
+      /Content import service used before init/,
+    );
+    contentImportService.init();
+    contentImportService.init();
+
+    assert.throws(
+      () => contentImportService.importCSV({ filePath: '', fileName: '' }),
+      (error) => {
+        assert.equal(error.errorType, 'ValidationError');
+        assert.match(error.message, /Too small/);
+        return true;
+      },
+    );
+    await assert.rejects(
+      contentImportService.importCSV({
+        filePath: path.join(tmpDir, 'missing.csv'),
+        fileName: 'missing.csv',
+      }),
+      /The file could not be parsed as a CSV file/,
+    );
+  });
+
   it('Can upload a posts CSV as Administrator', async function () {
     await agent.loginAsAdmin();
 
