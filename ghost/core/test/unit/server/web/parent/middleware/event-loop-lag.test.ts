@@ -5,11 +5,11 @@ import sinon from 'sinon';
 import {
   createLagMonitor,
   eventLoopLag,
-  type EventLoopLagConfig,
+  parseEventLoopLagConfig,
   type LagMonitor,
 } from '../../../../../../core/server/web/parent/middleware/event-loop-lag';
 
-const CONFIG: EventLoopLagConfig = {
+const CONFIG = {
   highWaterMarkMs: 250,
   lowWaterMarkMs: 60,
 };
@@ -23,7 +23,7 @@ function fakeMonitor(overloaded: boolean): LagMonitor & { recordShed: sinon.Sino
   };
 }
 
-function createApp(monitor: LagMonitor, config: EventLoopLagConfig = CONFIG) {
+function createApp(monitor: LagMonitor, config: unknown = CONFIG) {
   const app = express();
   app.use(eventLoopLag(config, monitor));
   app.all(/.*/, (_req, res) => {
@@ -33,34 +33,56 @@ function createApp(monitor: LagMonitor, config: EventLoopLagConfig = CONFIG) {
 }
 
 describe('Event loop lag middleware', function () {
-  describe('createLagMonitor', function () {
+  describe('parseEventLoopLagConfig', function () {
     it('rejects a low water mark at or above the high water mark', function () {
       assert.throws(
-        () => createLagMonitor({ highWaterMarkMs: 100, lowWaterMarkMs: 100 }),
+        () => parseEventLoopLagConfig({ highWaterMarkMs: 100, lowWaterMarkMs: 100 }),
         /must be below highWaterMarkMs/,
       );
+    });
+
+    it('rejects a missing water mark rather than inventing one', function () {
+      assert.throws(() => parseEventLoopLagConfig({ highWaterMarkMs: 250 }), /lowWaterMarkMs/);
+    });
+
+    it('falls back to shipped defaults for malformed tuning values', function () {
+      // An operator can correct a typo live; it must not take the site down.
+      const config = parseEventLoopLagConfig({
+        ...CONFIG,
+        percentile: 'nope',
+        sampleWindowMs: -1,
+        exemptPathPrefixes: [42],
+      });
+
+      assert.equal(config.percentile, 90);
+      assert.equal(config.sampleWindowMs, 500);
+      assert.deepEqual(config.exemptPathPrefixes, ['/ghost/']);
+    });
+
+    it('does not accept the values z.coerce.number() would let through', function () {
+      // null/true/'' all coerce to 0, which here would mean "shed everything".
+      for (const highWaterMarkMs of [null, true, '', []]) {
+        assert.throws(
+          () => parseEventLoopLagConfig({ ...CONFIG, highWaterMarkMs }),
+          /highWaterMarkMs/,
+          `expected ${JSON.stringify(highWaterMarkMs)} to be rejected`,
+        );
+      }
     });
 
     it('accepts numeric config supplied as strings by argv or env vars', function () {
       // nconf layers JSON files over argv and env vars, so these arrive as
       // strings when set via GHOST_optimization__eventLoopLag__...
-      const monitor = createLagMonitor({
-        highWaterMarkMs: '250',
-        lowWaterMarkMs: '60',
-      } as unknown as EventLoopLagConfig);
+      const config = parseEventLoopLagConfig({ highWaterMarkMs: '250', lowWaterMarkMs: '60' });
 
-      assert.equal(monitor.isOverloaded(), false);
-      monitor.stop();
+      assert.equal(config.highWaterMarkMs, 250);
+      assert.equal(config.lowWaterMarkMs, 60);
     });
 
     it('rejects numeric config that is not a number', function () {
       assert.throws(
-        () =>
-          createLagMonitor({
-            highWaterMarkMs: 250,
-            lowWaterMarkMs: 'soon',
-          } as unknown as EventLoopLagConfig),
-        /lowWaterMarkMs must be a finite number/,
+        () => parseEventLoopLagConfig({ highWaterMarkMs: 250, lowWaterMarkMs: 'soon' }),
+        /lowWaterMarkMs/,
       );
     });
 
@@ -68,13 +90,14 @@ describe('Event loop lag middleware', function () {
       // An idle loop reports ~resolution ms of delay, so such a monitor could
       // never leave the overloaded state.
       assert.throws(
-        () => createLagMonitor({ highWaterMarkMs: 250, lowWaterMarkMs: 20, resolutionMs: 20 }),
+        () =>
+          parseEventLoopLagConfig({ highWaterMarkMs: 250, lowWaterMarkMs: 20, resolutionMs: 20 }),
         /must exceed resolutionMs/,
       );
     });
 
     it('starts healthy and does not hold the process open', function () {
-      const monitor = createLagMonitor(CONFIG);
+      const monitor = createLagMonitor(parseEventLoopLagConfig(CONFIG));
       assert.equal(monitor.isOverloaded(), false);
       assert.equal(monitor.lagMs(), 0);
       monitor.stop();
@@ -161,15 +184,13 @@ describe('Event loop lag middleware', function () {
       await request(app).get('/critical/thing').expect(200);
     });
 
-    it('rejects exempt prefixes that are not strings', function () {
-      assert.throws(
-        () =>
-          eventLoopLag(
-            { ...CONFIG, exemptPathPrefixes: [42] } as unknown as EventLoopLagConfig,
-            fakeMonitor(true),
-          ),
-        /exemptPathPrefixes must be a string or an array of strings/,
-      );
+    it('falls back to the default when exempt prefixes are not strings', async function () {
+      // Unlike the water marks, a malformed prefix list falls back rather than
+      // throwing, so admin stays exempt instead of the site failing to boot.
+      const app = createApp(fakeMonitor(true), { ...CONFIG, exemptPathPrefixes: [42] });
+
+      await request(app).get('/ghost/').expect(200);
+      await request(app).get('/some-post').expect(503);
     });
   });
 });

@@ -2,6 +2,7 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 import path from 'node:path';
 import * as errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import { z } from 'zod';
 import type { Request, RequestHandler } from 'express';
 
 const NS_PER_MS = 1e6;
@@ -17,63 +18,105 @@ const DEFAULTS = {
 };
 
 /**
- * Config reaches us through nconf, which layers JSON files over argv and env
- * vars - so a value that is a number in config.production.json arrives as a
- * string when it is set via GHOST_optimization__eventLoopLag__... Comparing
- * those directly is silently wrong rather than loudly broken: '60' >= '250'
- * is true, so an env-var-configured site would fail validation for no reason.
+ * Resolving Ghost's config into the values this middleware runs on.
+ *
+ * Config arrives untyped: nconf layers an operator's config file, environment
+ * variables and argv over defaults.json, so any value can be anything - and a
+ * number set through an environment variable arrives as a string.
+ *
+ * A numeric string is accepted for that reason. z.coerce.number() is not used
+ * because it also accepts null, true, [] and '' - all of which become 0, which
+ * here would silently mean "shed everything".
  */
-function toFiniteNumber(value: unknown, name: string): number {
-  const parsed = typeof value === 'string' ? Number(value) : value;
+const Milliseconds = z
+  .union([z.number(), z.string().trim().min(1)])
+  .transform(Number)
+  .pipe(z.number().positive().finite());
 
-  if (typeof parsed !== 'number' || !Number.isFinite(parsed)) {
-    throw new errors.IncorrectUsageError({
-      message: `eventLoopLag ${name} must be a finite number, got ${JSON.stringify(value)}`,
-    });
-  }
-
-  return parsed;
-}
+const Percentile = z
+  .union([z.number(), z.string().trim().min(1)])
+  .transform(Number)
+  .pipe(z.number().gt(0).lte(100));
 
 /**
- * Plain prefixes rather than a regular expression: nconf can only ever hand us
+ * Path prefixes rather than a regular expression: nconf can only ever hand us
  * JSON, so a RegExp is unreachable from config, and compiling one supplied by
  * an operator would put an unbounded backtracking risk on the hot path of the
  * middleware whose whole job is to protect the CPU. startsWith is also cheaper
  * per request, and matches how max-limit-cap.js exempts endpoints.
+ *
+ * A bare string is accepted because an environment variable can only supply one.
  */
-function toPathPrefixes(value: unknown): string[] {
-  if (value === undefined) {
-    return DEFAULTS.exemptPathPrefixes;
-  }
+const PathPrefixes = z.union([
+  z
+    .string()
+    .min(1)
+    .transform((prefix) => [prefix]),
+  z.array(z.string().min(1)),
+]);
 
-  const prefixes = typeof value === 'string' ? [value] : value;
+/**
+ * The water marks are required and deliberately have no shipped fallback: a
+ * site that opts into shedding must say where its thresholds are, and inventing
+ * them silently could shed everything. The tuning values below do fall back to
+ * the shipped default rather than throwing, because an operator can correct a
+ * typo live and one must not take the site down.
+ */
+const EventLoopLagConfigSchema = z
+  .object({
+    highWaterMarkMs: Milliseconds,
+    lowWaterMarkMs: Milliseconds,
+    sampleWindowMs: Milliseconds.catch(DEFAULTS.sampleWindowMs),
+    percentile: Percentile.catch(DEFAULTS.percentile),
+    resolutionMs: Milliseconds.catch(DEFAULTS.resolutionMs),
+    retryAfterSeconds: Milliseconds.catch(DEFAULTS.retryAfterSeconds),
+    exemptPathPrefixes: PathPrefixes.catch(DEFAULTS.exemptPathPrefixes),
+  })
+  .superRefine((config, ctx) => {
+    // One threshold oscillates: shedding lowers lag, which re-admits the
+    // traffic that raised it. The gap between the marks is the hysteresis.
+    if (config.lowWaterMarkMs >= config.highWaterMarkMs) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `lowWaterMarkMs (${config.lowWaterMarkMs}) must be below highWaterMarkMs (${config.highWaterMarkMs})`,
+      });
+    }
 
-  if (!Array.isArray(prefixes) || prefixes.some((prefix) => typeof prefix !== 'string')) {
+    // An idle loop reports a delay of roughly one sampling interval, not zero -
+    // the histogram measures how late each sample was, and a sample is never
+    // early. A low water mark under the resolution can therefore never be
+    // reached, and the origin would shed until it was restarted.
+    if (config.lowWaterMarkMs <= config.resolutionMs) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `lowWaterMarkMs (${config.lowWaterMarkMs}) must exceed resolutionMs (${config.resolutionMs}); an idle event loop reports ~${config.resolutionMs}ms of delay`,
+      });
+    }
+  });
+
+/** The config this middleware actually runs on, once resolved. */
+export type EventLoopLagConfig = z.infer<typeof EventLoopLagConfigSchema>;
+
+/**
+ * Parses whatever config supplied into the values the middleware runs on,
+ * reporting a bad one as a Ghost error so it fails at boot rather than on the
+ * first request.
+ */
+export function parseEventLoopLagConfig(configured: unknown): EventLoopLagConfig {
+  const result = EventLoopLagConfigSchema.safeParse(configured);
+
+  if (!result.success) {
+    const detail = result.error.issues
+      .map((issue) => [issue.path.join('.'), issue.message].filter(Boolean).join(' '))
+      .join('; ');
+
     throw new errors.IncorrectUsageError({
-      message: `eventLoopLag exemptPathPrefixes must be a string or an array of strings, got ${JSON.stringify(value)}`,
+      message: `Invalid optimization.eventLoopLag config: ${detail}`,
     });
   }
 
-  return prefixes;
+  return result.data;
 }
-
-export type EventLoopLagConfig = Readonly<{
-  /** Lag at or above which the origin starts shedding, in ms. */
-  highWaterMarkMs: number;
-  /** Lag at or below which it resumes serving, in ms. Must be below the high mark. */
-  lowWaterMarkMs: number;
-  /** How often the histogram is summarised and reset, in ms. */
-  sampleWindowMs?: number;
-  /** Which percentile of the window is compared against the water marks. */
-  percentile?: number;
-  /** libuv sampling resolution, in ms. */
-  resolutionMs?: number;
-  /** Retry-After sent on shed responses, in seconds. */
-  retryAfterSeconds?: number;
-  /** Path prefixes that are never shed. Replaces the default, it does not merge. */
-  exemptPathPrefixes?: string[] | string;
-}>;
 
 export type LagMonitor = Readonly<{
   isOverloaded: () => boolean;
@@ -93,32 +136,9 @@ export type LagMonitor = Readonly<{
  * hour ago never looks healthy again.
  */
 export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
-  const windowMs = toFiniteNumber(
-    config.sampleWindowMs ?? DEFAULTS.sampleWindowMs,
-    'sampleWindowMs',
-  );
-  const percentile = toFiniteNumber(config.percentile ?? DEFAULTS.percentile, 'percentile');
-  const resolution = toFiniteNumber(config.resolutionMs ?? DEFAULTS.resolutionMs, 'resolutionMs');
-  const highWaterMarkMs = toFiniteNumber(config.highWaterMarkMs, 'highWaterMarkMs');
-  const lowWaterMarkMs = toFiniteNumber(config.lowWaterMarkMs, 'lowWaterMarkMs');
+  const { highWaterMarkMs, lowWaterMarkMs, sampleWindowMs: windowMs, percentile } = config;
 
-  if (lowWaterMarkMs >= highWaterMarkMs) {
-    throw new errors.IncorrectUsageError({
-      message: `eventLoopLag lowWaterMarkMs (${lowWaterMarkMs}) must be below highWaterMarkMs (${highWaterMarkMs})`,
-    });
-  }
-
-  // An idle loop reports a delay of roughly one sampling interval, not zero -
-  // the histogram measures how late each sample was, and a sample is never
-  // early. A low water mark under the resolution can therefore never be
-  // reached, and the origin would shed until it was restarted.
-  if (lowWaterMarkMs <= resolution) {
-    throw new errors.IncorrectUsageError({
-      message: `eventLoopLag lowWaterMarkMs (${lowWaterMarkMs}) must exceed resolutionMs (${resolution}); an idle event loop reports ~${resolution}ms of delay`,
-    });
-  }
-
-  const histogram = monitorEventLoopDelay({ resolution });
+  const histogram = monitorEventLoopDelay({ resolution: config.resolutionMs });
   histogram.enable();
 
   let lagMs = 0;
@@ -183,14 +203,11 @@ export function createLagMonitor(config: EventLoopLagConfig): LagMonitor {
  * This has to sit ahead of the request queue: shedding a request that has
  * already waited in the queue has paid the cost it was meant to avoid.
  */
-export function eventLoopLag(
-  config: EventLoopLagConfig,
-  monitor: LagMonitor = createLagMonitor(config),
-): RequestHandler {
-  const retryAfter = String(
-    toFiniteNumber(config.retryAfterSeconds ?? DEFAULTS.retryAfterSeconds, 'retryAfterSeconds'),
-  );
-  const exemptPathPrefixes = toPathPrefixes(config.exemptPathPrefixes);
+export function eventLoopLag(configured: unknown, monitor?: LagMonitor): RequestHandler {
+  const config = parseEventLoopLagConfig(configured);
+  const lagMonitor = monitor ?? createLagMonitor(config);
+  const retryAfter = String(config.retryAfterSeconds);
+  const { exemptPathPrefixes } = config;
 
   const isSheddable = (req: Request) => {
     // Only idempotent reads. A shed GET costs the client a retry; a shed POST
@@ -210,7 +227,7 @@ export function eventLoopLag(
   };
 
   return function eventLoopLagMw(req, res, next) {
-    if (!monitor.isOverloaded() || !isSheddable(req)) {
+    if (!lagMonitor.isOverloaded() || !isSheddable(req)) {
       return next();
     }
 
@@ -219,7 +236,7 @@ export function eventLoopLag(
     // over a perfectly good URL for the whole TTL, long outliving the spike.
     res.setHeader('Cache-Control', 'no-store, private');
     res.status(503);
-    monitor.recordShed();
+    lagMonitor.recordShed();
 
     // Deliberately not routed through the error handler: rendering an error
     // page costs the loop time we are shedding to reclaim. The 503 is recorded
