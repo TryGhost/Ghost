@@ -4,7 +4,6 @@ import {NotFoundError} from 'ember-ajax/errors';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
-    @service feature;
     @service presence;
 
     _activePostId = null;
