@@ -55,7 +55,14 @@ export default class GhPresenceAvatars extends Component {
     }
 
     get overflowTooltip() {
-        return this._allUsers.slice(this._cap).map(u => u.firstName).join(', ');
+        const hiddenUsers = this._allUsers.slice(this._cap);
+        const visibleNames = hiddenUsers.slice(0, 5).map(user => user.firstName);
+        const remaining = hiddenUsers.length - visibleNames.length;
+        return remaining > 0 ? `${visibleNames.join(', ')} and ${remaining} more` : visibleNames.join(', ');
+    }
+
+    get overflowAriaLabel() {
+        return `${this.overflowCount} more editors: ${this.overflowTooltip}`;
     }
 
     get sizeClass() {

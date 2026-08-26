@@ -24,7 +24,6 @@ export default class PresenceService extends Service {
     _source = null;
     _currentPostId = null;
     _beforeUnloadHandler = null;
-    _initFailed = false;
     _connectingErrorCount = 0;
     _connectingErrorLogged = false;
 
@@ -39,7 +38,6 @@ export default class PresenceService extends Service {
         try {
             this._source = new EventSource(streamUrl, {withCredentials: true});
         } catch (e) {
-            this._initFailed = true;
             console.warn('[presence] EventSource construction failed', e); // eslint-disable-line no-console
             return;
         }
@@ -90,6 +88,9 @@ export default class PresenceService extends Service {
     }
 
     stop() {
+        if (this._currentPostId && this.feature.get('editorPresence')) {
+            this._sendLeave(this._currentPostId);
+        }
         if (this._source) {
             this._source.close();
             this._source = null;
@@ -108,12 +109,11 @@ export default class PresenceService extends Service {
      * presence — that would have lit up analytics views too).
      */
     enterPost(postId) {
-        if (!postId) {
+        if (!postId || !this.feature.get('editorPresence')) {
             return;
         }
-        if (this._initFailed) {
-            console.warn('[presence] skipping enter; SSE init failed earlier'); // eslint-disable-line no-console
-            return;
+        if (!this._source) {
+            this.start();
         }
         if (this._currentPostId && this._currentPostId !== postId) {
             this.leavePost(this._currentPostId);
@@ -129,7 +129,7 @@ export default class PresenceService extends Service {
     }
 
     leavePost(postId) {
-        if (!postId) {
+        if (!postId || !this.feature.get('editorPresence')) {
             return;
         }
         if (this._currentPostId === postId) {

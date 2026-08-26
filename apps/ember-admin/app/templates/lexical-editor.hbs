@@ -6,7 +6,7 @@
             @class="gh-editor gh-view relative"
             as |editor|
         >
-            <header class="gh-editor-header br2 pe-none">
+            <header class="gh-editor-header br2 pe-none {{if (feature 'editorPresence') "gh-editor-header--with-presence"}}">
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}

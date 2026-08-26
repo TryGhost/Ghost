@@ -322,7 +322,9 @@
 
         {{!-- Presence column --}}
         {{#if (feature 'editorPresence')}}
-            <GhPresenceAvatars @postId={{@post.id}} @size="sm" />
+            <div class="gh-list-data gh-presence-list-cell">
+                <GhPresenceAvatars @postId={{@post.id}} @size="sm" />
+            </div>
         {{/if}}
 
         {{!-- Button column --}}

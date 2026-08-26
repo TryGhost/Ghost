@@ -26,17 +26,30 @@
     }
 }
 
+@media (max-width: 768px) {
+    .gh-editor-header--with-presence .gh-editor-back-button span {
+        display: none;
+    }
+}
+
 .gh-presence-avatars--sm {
     margin-right: 12px;
     align-self: center;
 }
 
+.gh-presence-list-cell {
+    flex: none;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+}
+
 .gh-presence-avatar {
     position: relative;
     border-radius: 50%;
-    background: #738a94;
-    color: #fff;
-    border: 2px solid #fff;
+    background: var(--midgrey);
+    color: var(--white);
+    border: 2px solid var(--white);
     display: inline-flex;
     align-items: center;
     justify-content: center;
