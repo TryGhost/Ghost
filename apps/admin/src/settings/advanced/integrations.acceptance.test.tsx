@@ -51,7 +51,6 @@ const customIntegrationsLimit = {
 
 function limitedConfig(upgradeUrl?: string) {
   const response = configResponse();
-  response.config.labs = { ...response.config.labs, transistor: true };
   response.config.hostSettings = upgradeUrl
     ? { limits: customIntegrationsLimit, billing: { upgradeUrl } }
     : { limits: customIntegrationsLimit };
@@ -293,7 +292,7 @@ describe('Advanced integrations', () => {
   it('shows the Active badge after enabling the Transistor integration', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/integrations', { labs: { transistor: true } });
+    await renderAdminApp('/settings/integrations');
 
     const item = settingsScreen.section('integrations').getByTestId('transistor-integration');
     const badge = item.getByText('Active', { exact: true });
@@ -316,7 +315,7 @@ describe('Advanced integrations', () => {
   it('clears the Active badge after disabling the Transistor integration', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/integrations', { labs: { transistor: true } });
+    await renderAdminApp('/settings/integrations');
 
     const item = settingsScreen.section('integrations').getByTestId('transistor-integration');
     const badge = item.getByText('Active', { exact: true });
@@ -540,7 +539,6 @@ describe('Advanced integrations', () => {
   it('moves host-limited integrations to the bottom without disturbing relative order', async () => {
     fakeSettingsScreens();
     await renderAdminApp('/settings/integrations', {
-      labs: { transistor: true },
       boot: { browseConfig: { response: limitedConfig() } },
     });
 
