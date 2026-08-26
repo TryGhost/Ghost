@@ -6,6 +6,7 @@ import {
   matchRoutes,
   redirect,
 } from '@tryghost/admin-x-framework';
+import { useMemo } from 'react';
 
 // ActivityPub
 import { FeatureFlagsProvider, routes as activityPubRoutes } from '@tryghost/activitypub/api';
@@ -228,7 +229,9 @@ const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGif
 export function useIsEmberOwnedRoute(pathname: string): boolean {
   const tagDetailOwner = useFlagGatedRouteOwner('tagDetailsReact');
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
-  const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
+  // Matching flattens and ranks the full route tree. Sidebar preferences can
+  // rerender every link without changing its destination; reuse that match.
+  const leaf = useMemo(() => matchRoutes(routes, pathname)?.at(-1)?.route, [pathname]);
   if (!leaf) {
     return true;
   }

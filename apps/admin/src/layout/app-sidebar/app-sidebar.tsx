@@ -16,4 +16,6 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   );
 }
 
-export default AppSidebar;
+// Shell saving and animation bookkeeping do not change the sidebar's content.
+// Its own query/context subscriptions still update navigation and user details.
+export default React.memo(AppSidebar);

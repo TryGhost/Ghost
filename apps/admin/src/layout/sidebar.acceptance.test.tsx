@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { StateBridge } from '@/ember-bridge';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   activeThemeResponse,
@@ -9,6 +9,9 @@ import {
   fakeAdminEndpoint,
   fakeEndpoint,
   fakeTags,
+  fakeMembers,
+  member,
+  browseResponse,
   renderAdminApp,
   currentUserResponse,
   configResponse,
@@ -403,8 +406,9 @@ describe('Admin page chrome boundary', () => {
     },
   );
 
-  it('stays off while config is loading, then activates without a reload', async () => {
+  it('waits for config before mounting the shell, then activates without a reload', async () => {
     let releaseConfig: () => void = () => {};
+    let configRequested = false;
     const gate = new Promise<void>((resolve) => {
       releaseConfig = resolve;
     });
@@ -413,13 +417,15 @@ describe('Admin page chrome boundary', () => {
         boot: {
           browseConfig: {
             response: async () => {
+              configRequested = true;
               await gate;
               return configResponse({ labs: { admin7PageChrome: true } });
             },
           },
         },
       });
-      await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+      await expect.poll(() => configRequested).toBe(true);
+      await expect.element(sidebarScreen.shellMain()).not.toBeInTheDocument();
       expect(hasPageChromeScope()).toBe(false);
       releaseConfig();
       await expectPageChromeScope(true);
@@ -772,4 +778,622 @@ describe('Theme error notification', () => {
     await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
     await expect.element(sidebarScreen.themeErrorsBanner()).not.toBeInTheDocument();
   });
+});
+
+// Full-app coverage for the first page to adopt the saved desktop sidebar.
+describe('Members floating sidebar', () => {
+  const toggle = (open: boolean) =>
+    page.getByRole('button', { name: open ? 'Hide sidebar' : 'Show sidebar', exact: true });
+  const layout = () => document.querySelector('.admin7-sidebar-layout') as HTMLElement;
+  const panel = () => sidebarScreen.shellNav().element() as HTMLElement;
+  const surface = () => panel().querySelector('[data-sidebar="sidebar"]') as HTMLElement;
+  const content = () => document.querySelector('.admin7-members-content') as HTMLElement;
+  const savedUser = (visible: boolean, nightShift = 'light') => {
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      navigation: { expanded: { posts: false, members: true }, menu: { visible } },
+      nightShift,
+      customPreference: 'preserve me',
+      whatsNew: { lastSeenDate: '2026-08-26T00:00:00.000Z' },
+    });
+    return me;
+  };
+
+  it.each([
+    {
+      name: 'saved closed, config last',
+      waitFor: 'config',
+      visible: false,
+      enabled: true,
+      theme: 'light',
+      expected: 'collapsed',
+    },
+    {
+      name: 'saved closed, user last',
+      waitFor: 'user',
+      visible: false,
+      enabled: true,
+      theme: 'light',
+      expected: 'collapsed',
+    },
+    {
+      name: 'saved open',
+      waitFor: 'config',
+      visible: true,
+      enabled: true,
+      theme: 'light',
+      expected: 'expanded',
+    },
+    {
+      name: 'default open',
+      waitFor: 'config',
+      visible: undefined,
+      enabled: true,
+      theme: 'light',
+      expected: 'expanded',
+    },
+    {
+      name: 'flag disabled',
+      waitFor: 'config',
+      visible: false,
+      enabled: false,
+      theme: 'light',
+      expected: 'expanded',
+    },
+    {
+      name: 'dark mode',
+      waitFor: 'config',
+      visible: false,
+      enabled: true,
+      theme: 'dark',
+      expected: 'expanded',
+    },
+  ])(
+    'resolves boot inputs before rendering the sidebar: $name',
+    async ({ waitFor, visible, enabled, theme, expected }) => {
+      fakeMembers([]);
+      const me = savedUser(visible ?? true, theme);
+      if (visible === undefined) {
+        me.users[0].accessibility = '{}';
+      }
+      let releaseBoot!: () => void;
+      const bootGate = new Promise<void>((resolve) => {
+        releaseBoot = resolve;
+      });
+      let otherResponseServed = false;
+      const states: string[] = [];
+      const recordState = () => {
+        const state = document
+          .querySelector('[role="navigation"][data-state]')
+          ?.getAttribute('data-state');
+        if (state) {
+          states.push(state);
+        }
+      };
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (
+            mutation.target instanceof Element &&
+            mutation.target.matches('[role="navigation"][data-state]') &&
+            mutation.oldValue
+          ) {
+            states.push(mutation.oldValue);
+          }
+        }
+        recordState();
+      });
+      observer.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['data-state'],
+        attributeOldValue: true,
+      });
+      try {
+        await renderAdminApp('/members', {
+          labs: { admin7PageChrome: enabled },
+          boot: {
+            browseMe: {
+              response: async () => {
+                if (waitFor === 'user') {
+                  await bootGate;
+                } else {
+                  otherResponseServed = true;
+                }
+                return me;
+              },
+            },
+            browseConfig: {
+              response: async () => {
+                if (waitFor === 'config') {
+                  await bootGate;
+                } else {
+                  otherResponseServed = true;
+                }
+                return configResponse({ labs: { admin7PageChrome: enabled } });
+              },
+            },
+          },
+        });
+        await expect.poll(() => otherResponseServed).toBe(true);
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        });
+        expect(document.querySelector('[role="navigation"][data-state]')).toBeNull();
+        releaseBoot();
+        await expect
+          .poll(() =>
+            document.querySelector('[role="navigation"][data-state]')?.getAttribute('data-state'),
+          )
+          .toBe(expected);
+        recordState();
+        expect(states.length).toBeGreaterThan(0);
+        expect(states.every((state) => state === expected)).toBe(true);
+        if (enabled && theme === 'light') {
+          expect(layout().dataset.sidebarMotion).toBe('snap');
+          await expect
+            .element(toggle(expected === 'expanded'))
+            .toHaveAttribute('aria-disabled', 'false');
+        } else {
+          expect(document.querySelector('.admin7-sidebar-layout')).toBeNull();
+        }
+      } finally {
+        releaseBoot();
+        observer.disconnect();
+      }
+    },
+  );
+
+  it.each(['config', 'preferences'])(
+    'still renders legacy navigation when initial %s fails',
+    async (dependency) => {
+      fakeMembers([]);
+      const me = savedUser(false);
+      if (dependency === 'preferences') {
+        me.users[0].accessibility = '{invalid';
+      }
+      await renderAdminApp('/members', {
+        labs: { admin7PageChrome: true },
+        boot: {
+          browseMe: { response: me },
+          ...(dependency === 'config' && {
+            browseConfig: {
+              responseStatus: 400,
+              response: { errors: [{ message: 'Config unavailable' }] },
+            },
+          }),
+        },
+      });
+      await expect
+        .poll(() =>
+          document.querySelector('[role="navigation"][data-state]')?.getAttribute('data-state'),
+        )
+        .toBe('expanded');
+      expect(document.querySelector('.admin7-sidebar-layout')).toBeNull();
+    },
+  );
+
+  it('toggles a 300px floating panel, preserves preferences, and prevents hidden keyboard focus', async () => {
+    fakeMembers([
+      member({ name: 'A member with a very long name that should not widen the layout' }),
+    ]);
+    const writes: Array<{ users: Array<{ accessibility: string }> }> = [];
+    const me = savedUser(true);
+    await renderAdminApp('/members', {
+      labs: { admin7PageChrome: true },
+      boot: {
+        browseMe: { response: me },
+        editUserPreferences: {
+          response: async (request: Request) => {
+            const body = (await request.json()) as { users: Array<{ accessibility: string }> };
+            writes.push(body);
+            return { users: [{ ...me.users[0], ...body.users[0] }] };
+          },
+        },
+      },
+    });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    const trigger = toggle(true).element();
+    expect(trigger.getAttribute('aria-controls')).toBe(panel().parentElement?.id);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(surface().getBoundingClientRect().width).toBe(300);
+    expect(surface().getBoundingClientRect().x).toBe(8);
+    expect(surface().getBoundingClientRect().y).toBe(8);
+    expect(getComputedStyle(surface()).boxShadow).toBe('none');
+    expect(getComputedStyle(surface()).borderWidth).toBe('1px');
+    expect(getComputedStyle(surface()).borderStyle).toBe('solid');
+    expect(getComputedStyle(panel()).transitionDuration).toBe('0s');
+    const cookies = document.cookie;
+    await toggle(true).click();
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+    expect(panel().inert).toBe(true);
+    expect(panel().getAttribute('aria-hidden')).toBe('true');
+    await expect
+      .poll(() => Math.round(sidebarScreen.shellMain().element().getBoundingClientRect().x))
+      .toBe(0);
+    expect(document.cookie).toBe(cookies);
+    expect(JSON.parse(writes[0].users[0].accessibility)).toMatchObject({
+      navigation: { expanded: { posts: false, members: true }, menu: { visible: false } },
+      customPreference: 'preserve me',
+      nightShift: 'light',
+    });
+    await userEvent.tab({ shift: true });
+    expect(panel().contains(document.activeElement)).toBe(false);
+    toggle(false).element().focus();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    expect(panel().inert).toBe(false);
+    await expect
+      .poll(() => Math.round(sidebarScreen.shellMain().element().getBoundingClientRect().x))
+      .toBe(316);
+    expect(JSON.parse(writes[1].users[0].accessibility)).toMatchObject({
+      navigation: { menu: { visible: true } },
+    });
+    await userEvent.keyboard('{Control>}b{/Control}');
+    await expect.element(toggle(true)).toHaveAttribute('aria-expanded', 'true');
+    expect(writes).toHaveLength(2);
+  });
+
+  it('resolves a saved closed preference on direct loads, including import, without animation', async () => {
+    fakeMembers([]);
+    await renderAdminApp('/members/import', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: savedUser(false) } },
+    });
+    await expect.element(page.getByRole('dialog', { name: 'Import members' })).toBeVisible();
+    expect(document.querySelector('[data-sidebar=trigger]')?.getAttribute('aria-expanded')).toBe(
+      'false',
+    );
+    expect(layout().dataset.sidebarMotion).toBe('snap');
+    expect(getComputedStyle(panel()).transitionDuration).toBe('0s');
+    expect(panel().inert).toBe(true);
+    expect(document.querySelector('main')?.getBoundingClientRect().x).toBe(0);
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    await toggle(false).click();
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+  });
+
+  it('rolls back a rejected save and offers a working retry', async () => {
+    fakeMembers([]);
+    await renderAdminApp('/members', {
+      labs: { admin7PageChrome: true },
+      boot: {
+        browseMe: { response: savedUser(true) },
+        editUserPreferences: {
+          responseStatus: 400,
+          response: { errors: [{ message: 'Rejected' }] },
+        },
+      },
+    });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    await toggle(true).click();
+    await expect
+      .element(sidebarScreen.errorToast())
+      .toHaveTextContent("Couldn't save sidebar preference. Please try again.");
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    expect(panel().inert).toBe(false);
+    expect(layout().dataset.sidebarMotion).toBe('snap');
+    fakeAdminEndpoint('PUT', /^\/users\/\w+\/\?include=roles/, ({ body }) => body);
+    await toggle(true).click();
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+    expect(panel().inert).toBe(true);
+  });
+
+  it('keeps the optimistic control stable while a save is pending', async () => {
+    fakeMembers([]);
+    const me = savedUser(true);
+    let releaseSave!: () => void;
+    const saved = new Promise<void>((resolve) => {
+      releaseSave = resolve;
+    });
+    let writeCount = 0;
+    await renderAdminApp('/members', {
+      labs: { admin7PageChrome: true },
+      boot: {
+        browseMe: { response: me },
+        editUserPreferences: {
+          response: async (request: Request) => {
+            writeCount += 1;
+            const body = (await request.json()) as { users: Array<{ accessibility: string }> };
+            await saved;
+            return { users: [{ ...me.users[0], ...body.users[0] }] };
+          },
+        },
+      },
+    });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    await toggle(true).click();
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'true');
+    expect(getComputedStyle(panel()).transitionDuration).toBe(
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? '0s' : '0.52s',
+    );
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      expect(getComputedStyle(panel()).transitionProperty).toBe('none');
+    }
+    expect(document.activeElement).toBe(toggle(false).element());
+    await userEvent.keyboard('{Enter}');
+    expect(panel().inert).toBe(true);
+    expect(writeCount).toBe(1);
+    releaseSave();
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+    expect(document.activeElement).toBe(toggle(false).element());
+    expect(writeCount).toBe(1);
+  });
+
+  it('uses 40px gutters and responsive caps without changing header type or spacing', async () => {
+    fakeMembers([member()]);
+    await renderAdminApp('/members', { labs: { admin7PageChrome: true } });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    const header = document.querySelector('[data-list-page="header"]') as HTMLElement;
+    const heading = page.getByRole('heading', { name: /^Members/ }).element();
+    // Standalone acceptance uses a 16px rem; Ember's host uses 10px.
+    expect(parseFloat(getComputedStyle(header).paddingTop)).toBe(
+      parseFloat(getComputedStyle(document.documentElement).fontSize) * 2,
+    );
+    expect(parseFloat(getComputedStyle(heading).fontSize)).toBe(
+      parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5,
+    );
+    expect(parseFloat(getComputedStyle(heading).lineHeight)).toBe(
+      parseFloat(getComputedStyle(document.documentElement).fontSize) * 2.25,
+    );
+    expect(getComputedStyle(header).paddingLeft).toBe('40px');
+    expect(getComputedStyle(content()).maxWidth).toBe('1080px');
+    await toggle(true).click();
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+    await expect.poll(() => Math.round(content().getBoundingClientRect().width)).toBe(1080);
+    try {
+      await page.viewport(1600, 900);
+      expect(getComputedStyle(content()).maxWidth).toBe('1280px');
+      await expect.poll(() => Math.round(content().getBoundingClientRect().width)).toBe(1280);
+      await expect.poll(() => layout().dataset.sidebarMotion).toBe('snap');
+      expect(content().getBoundingClientRect().x).toBe(160);
+      expect(panel().getAnimations()).toHaveLength(0);
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('retains the desktop choice through mobile and dark mode without hiding unintegrated navigation', async () => {
+    fakeMembers([]);
+    fakeTags([]);
+    await renderAdminApp('/members', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: savedUser(false) } },
+    });
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+    try {
+      await page.viewport(800, 800);
+      await expect.element(toggle(false)).not.toBeInTheDocument();
+      expect(layout()).toBeNull();
+      await page.viewport(801, 800);
+      await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+      expect(layout().dataset.sidebarMotion).toBe('snap');
+      await page.viewport(1280, 800);
+      // Use navigation history rather than clicking the deliberately inert sidebar.
+      window.location.hash = '#/tags';
+      await expect.element(sidebarScreen.navLink('Members')).toBeVisible();
+      expect(layout()).toBeNull();
+      await sidebarScreen.selectAppearance('dark');
+      await sidebarScreen.navLink('Members').click();
+      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+      expect(layout()).toBeNull();
+      await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+      await sidebarScreen.selectAppearance('light');
+      await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+      expect(layout().dataset.sidebarMotion).toBe('snap');
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('keeps a large count and actions separate at narrow desktop widths, with existing banners intact', async () => {
+    fakeMembers([member({ name: 'A very long member name that remains within the table' })]);
+    const response = browseResponse('members', [member()], { limit: 100 });
+    response.meta.pagination.total = 1234567;
+    fakeAdminEndpoint('GET', /^\/members\/\?.*limit=100/, response);
+    await renderAdminApp('/members', {
+      labs: { admin7PageChrome: true },
+      boot: {
+        browseMe: { response: savedUser(true) },
+        browseActiveTheme: {
+          response: activeThemeResponse({
+            errors: [
+              {
+                code: 'GS001-DEPRECATED-HELPER',
+                rule: 'Replace deprecated helper',
+                details: 'A deprecated helper was found.',
+                failures: [{ ref: 'index.hbs', message: 'Use the current helper.' }],
+                fatal: false,
+                level: 'error',
+              },
+            ],
+          }),
+        },
+      },
+    });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    await expect.element(page.getByRole('heading', { name: 'Members 1,234,567' })).toBeVisible();
+    await expect.element(sidebarScreen.themeErrorsBanner()).toBeVisible();
+    try {
+      for (const width of [801, 1024, 1280, 1440]) {
+        await page.viewport(width, 900);
+        await expect
+          .poll(() => {
+            const left = document
+              .querySelector('[data-page-header="left"]')!
+              .getBoundingClientRect();
+            const actions = document
+              .querySelector('[data-page-header="actions"]')!
+              .getBoundingClientRect();
+            const header = document
+              .querySelector('[data-list-page="header"]')!
+              .getBoundingClientRect();
+            const body = document
+              .querySelector('[data-testid="members-list-item"]')!
+              .getBoundingClientRect();
+            return {
+              separate: left.right <= actions.left || left.bottom <= actions.top,
+              insideHeader: actions.bottom <= header.bottom,
+              afterHeader: body.top >= header.bottom,
+            };
+          })
+          .toEqual({ separate: true, insideHeader: true, afterHeader: true });
+        expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+      }
+      await toggle(true).click();
+      await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+      expect(panel().inert).toBe(true);
+      await toggle(false).click();
+      await expect.element(sidebarScreen.themeErrorsBanner()).toBeVisible();
+      await sidebarScreen.themeErrorsBanner().click();
+      await expect.element(sidebarScreen.themeErrorsDialog()).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('keeps content moving throughout the toggle without repeatedly measuring the page header', async () => {
+    fakeMembers(
+      Array.from({ length: 100 }, (_, index) => member({ name: `Measured member ${index}` })),
+    );
+    await renderAdminApp('/members?search=layout-measurements', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: savedUser(true) } },
+    });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    await expect
+      .element(page.getByRole('link', { name: 'Measured member 0', exact: true }))
+      .toBeVisible();
+    await document.fonts.ready;
+    const header = document.querySelector('[data-list-page="header"]') as HTMLElement;
+    const sticky = page.getByTestId('members-list-scroll-root').element()
+      .firstElementChild as HTMLElement;
+    await expect
+      .poll(() => parseFloat(sticky.style.getPropertyValue('--members-sticky-column-width')))
+      .toBeGreaterThan(0);
+    const measureHeader = header.getBoundingClientRect.bind(header);
+    let headerReads = 0;
+    header.getBoundingClientRect = () => {
+      headerReads += 1;
+      return measureHeader();
+    };
+    const gap = document.querySelector('[data-sidebar="gap"]') as HTMLElement;
+    const completed: number[] = [];
+    const cancelled: string[] = [];
+    const onEnd = (event: TransitionEvent) => completed.push(event.elapsedTime);
+    const onCancel = (event: TransitionEvent) => cancelled.push(event.propertyName);
+    gap.addEventListener('transitionend', onEnd);
+    gap.addEventListener('transitioncancel', onCancel);
+    try {
+      const main = sidebarScreen.shellMain().element();
+      const initialWidth = main.getBoundingClientRect().width;
+      await toggle(true).click();
+      // The panel moves as a compositor transform; the page still genuinely
+      // resizes between its endpoints instead of freezing until the end.
+      expect(getComputedStyle(panel()).transitionProperty).toBe('transform');
+      await expect
+        .poll(() => {
+          const width = main.getBoundingClientRect().width;
+          return width > initialWidth && width < initialWidth + 316;
+        })
+        .toBe(true);
+      await expect.poll(() => layout().dataset.sidebarMotion).toBe('snap');
+      await toggle(false).click();
+      await expect.poll(() => layout().dataset.sidebarMotion).toBe('snap');
+      expect(cancelled).toEqual([]);
+      expect(completed).toEqual([0.52, 0.52]);
+      // ResizeObserver supplies the already-computed dimensions. This used to
+      // force a header layout read on almost every opening animation frame.
+      expect(headerReads).toBe(0);
+    } finally {
+      gap.removeEventListener('transitionend', onEnd);
+      gap.removeEventListener('transitioncancel', onCancel);
+      header.getBoundingClientRect = measureHeader;
+    }
+  });
+
+  it('preserves scroll position, sticky headers, and import modal stacking while toggling', async () => {
+    fakeMembers(Array.from({ length: 100 }, (_, index) => member({ name: `Member ${index}` })));
+    // Give the history-scoped scroll cache its own entry, independent of earlier Members specs.
+    await renderAdminApp('/members?search=scroll-preservation', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: savedUser(true) } },
+    });
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    await expect.element(page.getByRole('link', { name: 'Member 0', exact: true })).toBeVisible();
+    const scroll = sidebarScreen.shellMain().element();
+    scroll.scrollTop = 350;
+    await expect.poll(() => scroll.scrollTop).toBe(350);
+    await expect
+      .poll(
+        () =>
+          (window.history.state as { ghostVirtualListScrollPosition?: Record<string, number> })
+            ?.ghostVirtualListScrollPosition?.['/members?search=scroll-preservation'],
+      )
+      .toBe(350);
+    const header = document.querySelector('[data-list-page="header"]')!;
+    await expect.poll(() => header.getBoundingClientRect().top).toBe(0);
+    await toggle(true).click();
+    await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+    await expect.poll(() => Math.round(scroll.getBoundingClientRect().x)).toBe(0);
+    await expect.poll(() => layout().dataset.sidebarMotion).toBe('snap');
+    expect(scroll.scrollTop).toBe(350);
+    expect(header.getBoundingClientRect().top).toBe(0);
+    await toggle(false).click();
+    await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+    await expect.poll(() => Math.round(scroll.getBoundingClientRect().x)).toBe(316);
+    await expect.poll(() => layout().dataset.sidebarMotion).toBe('snap');
+    expect(scroll.scrollTop).toBe(350);
+    expect(header.getBoundingClientRect().top).toBe(0);
+    await page.getByTestId('members-actions').click();
+    await page.getByRole('menuitem', { name: 'Import members', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Import members' });
+    await expect.element(dialog).toBeVisible();
+    const rect = dialog.element().getBoundingClientRect();
+    expect(
+      dialog
+        .element()
+        .contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+  });
+
+  it.each(['loading', 'empty', 'error'] as const)(
+    'keeps the toggle usable with a %s Members list',
+    async (state) => {
+      fakeMembers([]);
+      let releaseMembers!: () => void;
+      const responseReady = new Promise<void>((resolve) => {
+        releaseMembers = resolve;
+      });
+      if (state !== 'empty') {
+        fakeAdminEndpoint(
+          'GET',
+          /^\/members\/\?.*limit=100/,
+          async () => {
+            if (state === 'loading') {
+              await responseReady;
+            }
+            return state === 'error'
+              ? { errors: [{ message: 'Cannot load members' }] }
+              : browseResponse('members', []);
+          },
+          { status: state === 'error' ? 400 : 200 },
+        );
+      }
+      await renderAdminApp('/members', {
+        labs: { admin7PageChrome: true },
+        boot: { browseMe: { response: savedUser(false) } },
+      });
+      await expect.element(toggle(false)).toHaveAttribute('aria-disabled', 'false');
+      if (state === 'error') {
+        await expect
+          .element(page.getByRole('heading', { name: 'Error loading members' }))
+          .toBeVisible();
+      }
+      await toggle(false).click();
+      await expect.element(toggle(true)).toHaveAttribute('aria-disabled', 'false');
+      releaseMembers();
+    },
+  );
 });

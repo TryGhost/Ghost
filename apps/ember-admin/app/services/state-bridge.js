@@ -27,6 +27,13 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };
 
+function normalizeThemePreference(preference) {
+    if (preference === true || preference === 'dark') {
+        return 'dark';
+    }
+    return preference === 'system' ? 'system' : 'light';
+}
+
 export default class StateBridgeService extends Service.extend(Evented) {
     @service customViews;
     @service feature;
@@ -101,6 +108,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
         }
 
         const {type, singleton} = emberDataTypeMapping[dataType];
+        const updatesCurrentUser = dataType === 'UsersResponseType' && response.users[0]?.id === this.session.user?.id;
+        const previousTheme = updatesCurrentUser ? normalizeThemePreference(this.feature._nightShiftPref) : undefined;
 
         // Clone the response before pushing to the Ember store because
         // pushPayload mutates the object in place (e.g. renaming keys via
@@ -121,8 +130,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
             this.store.pushPayload(type, clonedResponse);
         }
 
-        if (dataType === 'UsersResponseType' && response.users[0]?.id === this.session.user?.id) {
-            // nightShift preference is managed by the feature service and won't auto-update when store data changes
+        if (updatesCurrentUser && normalizeThemePreference(this.feature._nightShiftPref) !== previousTheme) {
+            // Reapplying an unchanged theme suppresses all CSS transitions, cutting
+            // short animations such as the sidebar toggle when its preference saves.
+            // Only a changed theme needs the feature service's DOM side effects.
             try {
                 this.feature._setAdminTheme();
             } catch (error) {

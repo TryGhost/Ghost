@@ -6,6 +6,102 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin-7/fonts.css';
 
+/* Members is the first integrated page. Keep the rollout's dimensions local:
+   other pages retain their existing containers until their headers opt in. */
+.admin7-sidebar-layout {
+  --panel-inset: 8px;
+  --page-gutter: 40px;
+  --content-width: 1080px;
+  --content-width-wide: 1280px;
+  --duration-layout: 0s;
+  overflow: hidden;
+}
+
+.admin7-sidebar-layout[data-sidebar-motion='animate'] {
+  --duration-layout: 520ms;
+}
+
+.admin7-sidebar-layout [data-sidebar='sidebar'] {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: none;
+}
+
+/* The panel's size is fixed; only its position changes. Move that layer with a
+   transform while the separate gap continues to resize the page content. */
+.admin7-sidebar-layout [data-sidebar='panel'] {
+  left: 0;
+  transform: translateX(0);
+  transition-property: transform;
+}
+
+.admin7-sidebar-layout [data-state='collapsed'] [data-sidebar='panel'] {
+  transform: translateX(-100%);
+}
+
+/* Removing transition-property also cancels an in-flight transition. Merely
+   changing its duration to zero does not stop an existing browser animation. */
+[data-sidebar-motion='snap'] [data-sidebar='gap'],
+[data-sidebar-motion='snap'] [data-sidebar='panel'] {
+  transition: none;
+}
+
+.admin7-sidebar-layout > main {
+  min-width: 0;
+}
+
+/* Reflow can make the focused sticky toggle the browser's scroll anchor and
+   jump the list back to its original position. Keep the user's scroll offset
+   while the sidebar changes width; normal list anchoring stays untouched. */
+.admin7-sidebar-layout[data-sidebar-motion='animate'] > main {
+  overflow-anchor: none;
+}
+
+.admin7-members-content {
+  max-width: var(--content-width);
+}
+
+.admin7-members-content > [data-list-page='list-page'] {
+  padding-inline: var(--page-gutter);
+}
+
+.admin7-members-content [data-list-page='header'] {
+  margin-inline: calc(var(--page-gutter) * -1);
+  padding-inline: var(--page-gutter);
+}
+
+/* An open panel leaves less room than the viewport's responsive breakpoints
+   imply. Let Members actions take a second row before they cover the title. */
+.admin7-members-content [data-page-header='main'] {
+  flex-wrap: wrap;
+}
+
+.admin7-members-content [data-page-header='left'] {
+  flex-shrink: 0;
+}
+
+.admin7-members-content [data-page-header='left'],
+.admin7-members-content [data-page-header='title-block'] {
+  height: auto;
+}
+
+@media (min-width: 1380px) {
+  .admin7-sidebar-layout {
+    --content-width: var(--content-width-wide);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin7-sidebar-layout[data-sidebar-motion='animate'] {
+    --duration-layout: 0s;
+  }
+
+  .admin7-sidebar-layout [data-sidebar='gap'],
+  .admin7-sidebar-layout [data-sidebar='panel'] {
+    transition: none;
+  }
+}
+
 /* The shell owns rollout eligibility. Admin overlays mount beside #root, so
    mirror typography into Shade portals and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
