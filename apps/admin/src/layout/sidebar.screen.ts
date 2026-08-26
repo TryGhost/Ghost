@@ -26,7 +26,9 @@ export const sidebarScreen = {
   shellNav: () => page.getByTestId(adminSidebar),
   /** The shell's content area, rendered by AdminLayout alongside the sidebar. */
   shellMain: () => page.getByRole('main').first(),
-  navLink: (name: string) => page.getByRole('navigation').getByRole('link', { name, exact: true }),
+  // Scoped to the shell sidebar: in-content navigation (e.g. the tag
+  // detail breadcrumb) repeats the same link names.
+  navLink: (name: string) => sidebarScreen.shellNav().getByRole('link', { name, exact: true }),
   postsToggle: () => page.getByRole('button', { name: postsToggle }),
   networkBadge: () => page.getByTestId(networkNotificationBadge),
   userMenuTrigger: () => page.getByRole('button', { name: userMenuTrigger }),
