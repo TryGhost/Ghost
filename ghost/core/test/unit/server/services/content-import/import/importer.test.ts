@@ -320,8 +320,33 @@ describe('ContentCSVImporter', function () {
     );
     for (const call of h.created) {
       assert.deepEqual(call.options, { importing: true, context: { internal: true } });
-      assert.deepEqual(call.metadata, { sourceUpdatedAt: undefined });
+      assert.deepEqual(call.metadata, {
+        sourceUpdatedAt: undefined,
+        authorNames: undefined,
+        authorEmails: undefined,
+        tagNames: undefined,
+      });
     }
+  });
+
+  it('forwards author and tag cells to the transactional write seam', async function () {
+    const h = harness([
+      {
+        ...row('Related post'),
+        authors: 'Alice, Bob',
+        author_emails: 'alice@example.com, bob@example.com',
+        tags: 'News, Features',
+      },
+    ]);
+
+    await h.run();
+
+    assert.deepEqual(h.created[0].metadata, {
+      sourceUpdatedAt: undefined,
+      authorNames: 'Alice, Bob',
+      authorEmails: 'alice@example.com, bob@example.com',
+      tagNames: 'News, Features',
+    });
   });
 
   it('files every row of a run under a date-stamped tag and a unique run tag', async function () {
@@ -533,6 +558,9 @@ describe('ContentCSVImporter', function () {
 
     assert.deepEqual(h.created[0].metadata, {
       sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
+      authorNames: undefined,
+      authorEmails: undefined,
+      tagNames: undefined,
     });
     assert.deepEqual(h.store.get('run_test')?.rows, [
       {

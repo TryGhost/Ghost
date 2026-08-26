@@ -1,4 +1,10 @@
 import type { PostData } from './post-data';
+import {
+  BookshelfPostRelationsResolver,
+  type PostRelationSource,
+  type PostRelationsResolver,
+  type RelationModels,
+} from './relations';
 
 export interface WrittenPost {
   id: string;
@@ -10,7 +16,7 @@ export type PostWriteResult =
   | { status: 'updated'; post: WrittenPost }
   | { status: 'skipped'; reason: string };
 
-export interface PostWriteMetadata {
+export interface PostWriteMetadata extends PostRelationSource {
   sourceUpdatedAt?: string;
 }
 
@@ -18,7 +24,7 @@ export interface PostsRepository {
   write(data: PostData, options: object, metadata?: PostWriteMetadata): Promise<PostWriteResult>;
 }
 
-interface Models {
+interface Models extends RelationModels {
   Base: {
     transaction<T>(callback: (transacting: object) => Promise<T>): Promise<T>;
   };
@@ -31,9 +37,14 @@ interface Models {
 
 export class BookshelfPostsRepository implements PostsRepository {
   private _models: Models;
+  private _relations: PostRelationsResolver;
 
-  constructor(models: Models) {
+  constructor(
+    models: Models,
+    relations: PostRelationsResolver = new BookshelfPostRelationsResolver(models),
+  ) {
     this._models = models;
+    this._relations = relations;
   }
 
   write(
@@ -100,7 +111,8 @@ export class BookshelfPostsRepository implements PostsRepository {
         // First update the content against the locked server version, then persist
         // the incoming source timestamp on its own. The second edit is safe because
         // timestamp-only importing edits are excluded from collision detection.
-        const collisionSafeData: Record<string, unknown> = { ...data };
+        const resolvedData = await this._relations.resolve(data, metadata, writeOptions);
+        const collisionSafeData: Record<string, unknown> = { ...resolvedData };
         if (storedUpdatedAt) {
           collisionSafeData.updated_at = storedUpdatedAt;
         } else {
@@ -118,7 +130,8 @@ export class BookshelfPostsRepository implements PostsRepository {
         return { status: 'updated', post };
       }
 
-      const post = await this._models.Post.add(data, writeOptions);
+      const resolvedData = await this._relations.resolve(data, metadata, writeOptions);
+      const post = await this._models.Post.add(resolvedData, writeOptions);
       return { status: 'created', post };
     });
   }

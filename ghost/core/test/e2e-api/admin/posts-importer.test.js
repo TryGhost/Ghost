@@ -506,8 +506,8 @@ describe('Posts Importer API', function () {
         reason: /Invalid CSV header mapping: "constructor"/,
       },
       {
-        mapping: { First: 'title', Second: 'authors' },
-        reason: /Unknown post field mapping: "authors"/,
+        mapping: { First: 'title', Second: 'newsletter_id' },
+        reason: /Unknown post field mapping: "newsletter_id"/,
       },
       {
         mapping: { First: 'title', Second: 'title' },
@@ -811,6 +811,67 @@ describe('Posts Importer API', function () {
       'Mapped social description',
     );
     assert.match(post.get('html'), /Mapped body/);
+  });
+
+  it('Reconciles mapped CSV authors and tags with existing records', async function () {
+    await agent.loginAsOwner();
+
+    const emailAuthor = fixtureManager.get('users', 1);
+    const nameAuthor = fixtureManager.get('users', 3);
+    const tagOptions = { context: { internal: true } };
+    const exactTag = await models.Tag.add(
+      { name: 'CSV exact relation', slug: 'csv-exact-relation-stored' },
+      tagOptions,
+    );
+    const explicitSlugTag = await models.Tag.add(
+      { name: 'Stored explicit relation', slug: 'csv-explicit-relation' },
+      tagOptions,
+    );
+    const normalizedSlugTag = await models.Tag.add(
+      { name: 'Stored normalized relation', slug: 'csv-normalized-relation' },
+      tagOptions,
+    );
+    const relationsCsvPath = await csvFile(
+      'posts-import-existing-relations.csv',
+      'Headline,Bylines,Emails,Topics\n' +
+        `CSV existing relations,"${emailAuthor.name}, ${nameAuthor.name}, ${emailAuthor.name}","${emailAuthor.email}, , ${emailAuthor.email}","CSV exact relation,csv-explicit-relation,CSV normalized relation,CSV exact relation"\n`,
+    );
+    const form = new FormData();
+    for (const [header, field] of Object.entries({
+      Headline: 'title',
+      Bylines: 'authors',
+      Emails: 'author_emails',
+      Topics: 'tags',
+    })) {
+      form.append(`mapping[${header}]`, field);
+    }
+    form.append('postsfile', await fs.readFile(relationsCsvPath), {
+      filename: path.basename(relationsCsvPath),
+      contentType: 'text/csv',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'CSV existing relations', status: 'all' },
+      { withRelated: ['authors', 'tags'] },
+    );
+    assert.ok(post);
+    assert.deepEqual(
+      post.related('authors').map((author) => author.id),
+      [emailAuthor.id, nameAuthor.id],
+      'email and name-only matches retain source order and remove duplicates',
+    );
+    const importedTags = post.related('tags').models;
+    assert.deepEqual(
+      importedTags.slice(0, 3).map((tag) => tag.id),
+      [exactTag.id, explicitSlugTag.id, normalizedSlugTag.id],
+      'exact names, explicit slugs, and normalized slugs retain source order',
+    );
+    assert.equal(importedTags.length, 5);
+    assert.match(importedTags[3].get('name'), /^#Import /);
+    assert.match(importedTags[4].get('name'), /^#Import Run /);
   });
 
   it('Renders a mapped Markdown column through the post content converter', async function () {

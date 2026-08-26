@@ -212,6 +212,52 @@ describe('UniversalImportModal', () => {
     );
   });
 
+  it('maps author names, author emails, and tags from the grouped picker', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    const file = new File(
+      [
+        'title,Bylines,Emails,Topics\nHello,"Alice, Bob","alice@example.com, bob@example.com","News, Features"',
+      ],
+      'posts.csv',
+      { type: 'text/csv' },
+    );
+    await dropFile(file);
+
+    fireEvent.click(await screen.findByRole('combobox', { name: /Field for Bylines/ }));
+    expect(screen.getByText('Authors & tags')).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Search post fields...'), {
+      target: { value: 'Authors' },
+    });
+    fireEvent.click(screen.getByText('Authors'));
+
+    fireEvent.click(screen.getByRole('combobox', { name: /Field for Emails/ }));
+    fireEvent.change(screen.getByPlaceholderText('Search post fields...'), {
+      target: { value: 'Author emails' },
+    });
+    fireEvent.click(screen.getByText('Author emails'));
+
+    fireEvent.click(screen.getByRole('combobox', { name: /Field for Topics/ }));
+    fireEvent.change(screen.getByPlaceholderText('Search post fields...'), {
+      target: { value: 'Tags' },
+    });
+    fireEvent.click(screen.getByText('Tags'));
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        file,
+        mapping: {
+          title: 'title',
+          Bylines: 'authors',
+          Emails: 'author_emails',
+          Topics: 'tags',
+        },
+      }),
+    );
+  });
+
   it('still sends JSON files to the db import when csvContentImporter is enabled', async () => {
     mockUseFeatureFlag.mockReturnValue(true);
     showModal();

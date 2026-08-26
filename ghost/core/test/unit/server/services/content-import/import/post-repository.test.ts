@@ -21,15 +21,31 @@ function harness() {
   const created = { id: 'created', toJSON: () => ({ id: 'created' }) };
   const updated = { id: 'existing', toJSON: () => ({ id: 'existing' }) };
   const findOne = sinon.stub().resolves(null);
+  const findUser = sinon.stub().resolves(null);
+  const findTag = sinon.stub().resolves(null);
   const add = sinon.stub().resolves(created);
   const edit = sinon.stub().resolves(updated);
   const transaction = sinon.stub().callsFake(async (callback) => callback(transacting));
   const repository = new BookshelfPostsRepository({
     Base: { transaction },
     Post: { findOne, add, edit },
+    User: { findOne: findUser },
+    Tag: { findOne: findTag },
   });
 
-  return { repository, transaction, transacting, findOne, add, edit, existing, created, updated };
+  return {
+    repository,
+    transaction,
+    transacting,
+    findOne,
+    findUser,
+    findTag,
+    add,
+    edit,
+    existing,
+    created,
+    updated,
+  };
 }
 
 describe('BookshelfPostsRepository', function () {
@@ -138,6 +154,58 @@ describe('BookshelfPostsRepository', function () {
     sinon.assert.notCalled(h.edit);
   });
 
+  it('reconciles existing authors and tags before creating the post', async function () {
+    const h = harness();
+    h.findUser.resolves({ id: 'author-existing' });
+    h.findTag.resolves({ id: 'tag-existing' });
+    const options = { importing: true, context: { internal: true } };
+
+    await h.repository.write(data, options, {
+      authorNames: 'Existing Author',
+      authorEmails: 'author@example.com',
+      tagNames: 'Existing Tag',
+    });
+
+    sinon.assert.calledWithExactly(
+      h.add,
+      {
+        ...data,
+        authors: [{ id: 'author-existing' }],
+        tags: [{ id: 'tag-existing' }, ...data.tags],
+      },
+      { ...options, transacting: h.transacting },
+    );
+    sinon.assert.calledWithExactly(
+      h.findUser,
+      { email: 'author@example.com' },
+      { ...options, transacting: h.transacting },
+    );
+    sinon.assert.calledWithExactly(
+      h.findTag,
+      { name: 'Existing Tag' },
+      { ...options, transacting: h.transacting },
+    );
+  });
+
+  it('does not reconcile relations for a skipped duplicate', async function () {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+
+    await h.repository.write(
+      data,
+      {},
+      {
+        authorEmails: 'author@example.com',
+        tagNames: 'Existing Tag',
+      },
+    );
+
+    sinon.assert.notCalled(h.findUser);
+    sinon.assert.notCalled(h.findTag);
+    sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
+  });
+
   it('updates a matching post when the explicit incoming timestamp is newer', async function () {
     const h = harness();
     const options = { importing: true, context: { internal: true } };
@@ -222,6 +290,26 @@ describe('BookshelfPostsRepository', function () {
     assert.equal('updated_at' in h.edit.firstCall.args[0], false);
   });
 
+  it('reconciles relations before updating a newer post', async function () {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+    h.findUser.resolves({ id: 'author-existing' });
+    h.findTag.resolves({ id: 'tag-existing' });
+
+    await h.repository.write(
+      { ...data, updated_at: '2025-02-01T00:00:00.000Z' },
+      { importing: true },
+      {
+        sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
+        authorNames: 'Existing Author',
+        tagNames: 'Existing Tag',
+      },
+    );
+
+    assert.deepEqual(h.edit.firstCall.args[0].authors, [{ id: 'author-existing' }]);
+    assert.deepEqual(h.edit.firstCall.args[0].tags, [{ id: 'tag-existing' }]);
+  });
+
   it('does not update for an invalid incoming timestamp', async function () {
     const h = harness();
     h.findOne.resolves(h.existing);
@@ -271,6 +359,20 @@ describe('BookshelfPostsRepository', function () {
       h.repository.write(data, { importing: true, context: { internal: true } }),
       failure,
     );
+  });
+
+  it('propagates relation lookup failures without writing the post', async function () {
+    const h = harness();
+    const failure = new Error('relation lookup failed');
+    h.findUser.rejects(failure);
+
+    await assert.rejects(
+      h.repository.write(data, { importing: true }, { authorEmails: 'author@example.com' }),
+      failure,
+    );
+
+    sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
   });
 
   it('propagates update failures through the transaction', async function () {

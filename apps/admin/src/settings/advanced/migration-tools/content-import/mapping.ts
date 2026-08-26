@@ -33,6 +33,14 @@ export const CONTENT_FIELD_GROUPS: readonly ContentFieldGroup[] = [
     ],
   },
   {
+    label: 'Authors & tags',
+    fields: [
+      { label: 'Authors', value: 'authors', required: false },
+      { label: 'Author emails', value: 'author_emails', required: false },
+      { label: 'Tags', value: 'tags', required: false },
+    ],
+  },
+  {
     label: 'Images',
     fields: [
       { label: 'Feature image', value: 'feature_image', required: false },

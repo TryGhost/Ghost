@@ -30,6 +30,9 @@ describe('ContentFieldMapping', () => {
       'markdown',
       'published_at',
       'comment_id',
+      'authors',
+      'author_emails',
+      'tags',
       'Something else',
     ]);
 
@@ -39,6 +42,9 @@ describe('ContentFieldMapping', () => {
       markdown: 'markdown',
       published_at: 'published_at',
       comment_id: 'comment_id',
+      authors: 'authors',
+      author_emails: 'author_emails',
+      tags: 'tags',
       'Something else': '',
     });
   });
@@ -61,6 +67,7 @@ describe('ContentFieldMapping', () => {
     expect(CONTENT_FIELD_GROUPS.map((group) => group.label)).toEqual([
       'Content',
       'Publishing',
+      'Authors & tags',
       'Images',
       'SEO',
       'Social',
@@ -79,6 +86,9 @@ describe('ContentFieldMapping', () => {
       'created_at',
       'updated_at',
       'published_at',
+      'authors',
+      'author_emails',
+      'tags',
       'feature_image',
       'feature_image_alt',
       'feature_image_caption',
@@ -99,15 +109,7 @@ describe('ContentFieldMapping', () => {
       'frontmatter',
     ]);
     expect(CONTENT_FIELD_MAPPINGS.map((field) => field.value)).not.toEqual(
-      expect.arrayContaining([
-        'authors',
-        'tags',
-        'newsletter_id',
-        'email',
-        'tiers',
-        'id',
-        'lexical',
-      ]),
+      expect.arrayContaining(['newsletter_id', 'email', 'tiers', 'id', 'lexical']),
     );
   });
 });

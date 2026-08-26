@@ -227,7 +227,12 @@ class ContentCSVImporter {
               importing: true,
               context: { internal: true },
             },
-            { sourceUpdatedAt: row.updated_at },
+            {
+              sourceUpdatedAt: row.updated_at,
+              authorNames: row.authors,
+              authorEmails: row.author_emails,
+              tagNames: row.tags,
+            },
           );
 
           if (result.status === 'skipped') {

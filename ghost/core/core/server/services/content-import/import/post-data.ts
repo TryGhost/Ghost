@@ -52,7 +52,8 @@ export interface PostData {
   status: 'draft' | 'published';
   type: 'post' | 'page';
   visibility: 'public' | 'members' | 'paid';
-  tags: Array<{ name: string }>;
+  authors?: Array<{ id: string }>;
+  tags: Array<{ id: string } | { name: string }>;
   posts_meta?: PostsMetaData;
 }
 
