@@ -141,17 +141,17 @@ describe('BetaGiftRedemptionPage', () => {
     expect(queryByText(member.free.name)).not.toBeInTheDocument();
   });
 
-  test('presents the buyer details and prefills the intended recipient name', () => {
+  test('presents the buyer details and prefills the intended recipient details', async () => {
     const personalizedGift = {
       ...gift,
       buyer_name: 'Jamie',
       recipient_name: 'Taylor',
+      recipient_email: 'taylor@example.com',
       message: 'Enjoy this!',
       expires_at: '2030-01-01T00:00:00.000Z',
     };
-    const { container, getByLabelText, getByTestId, getByText } = renderGiftRedemptionPage(
-      BetaGiftRedemptionPage,
-      {
+    const { container, getByLabelText, getByRole, getByTestId, getByText, mockDoActionFn } =
+      renderGiftRedemptionPage(BetaGiftRedemptionPage, {
         site: {
           ...testSite,
           url: 'https://example.com/',
@@ -162,10 +162,10 @@ describe('BetaGiftRedemptionPage', () => {
           token: 'gift-token-123',
           gift: personalizedGift,
         },
-      },
-    );
+      });
 
     expect(getByLabelText(/your name/i)).toHaveValue('Taylor');
+    expect(getByLabelText(/your email/i)).toHaveValue('taylor@example.com');
     expect(getByLabelText(/your email/i)).toHaveFocus();
     const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
     expect(subtitle).toHaveTextContent(
@@ -175,6 +175,16 @@ describe('BetaGiftRedemptionPage', () => {
     expect(getByTestId('gift-message')).toHaveTextContent('Enjoy this!');
     expect(getByTestId('gift-message')).toHaveTextContent('Jamie');
     expect(getByText(/This gift can only be redeemed once and expires on/i)).toBeInTheDocument();
+
+    fireEvent.click(getByRole('button', { name: 'Redeem your gift' }));
+
+    await waitFor(() => {
+      expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
+        email: 'taylor@example.com',
+        name: 'Taylor',
+        giftToken: 'gift-token-123',
+      });
+    });
   });
 
   test('presents the claim deadline in the publication locale and timezone', () => {
