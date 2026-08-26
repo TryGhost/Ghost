@@ -177,7 +177,7 @@ describe('PostPresence security: per-subscriber filtering', function () {
   });
 
   describe('SSE handler: an Author cannot see presence for posts they do not author', function () {
-    it('snapshot sent on connect is filtered: Author receives only their own post', function () {
+    it('snapshot sent on connect is filtered: Author receives only their own post', async function () {
       // Two posts are active. The Author is only listed as an author on p1.
       // The Editor's draft (p2) must NOT leak to the Author.
       postPresence.mark('p1', { id: 'author-1', name: 'A' }, { authorIds: ['author-1'] });
@@ -185,7 +185,7 @@ describe('PostPresence security: per-subscriber filtering', function () {
 
       const author = fakeUser({ id: 'author-1', roles: ['Author'] });
       const { req, res } = fakeReqRes(author);
-      presenceStream(req, res);
+      await presenceStream(req, res);
 
       // First res.write call is the snapshot frame.
       const writeCall = res.write.firstCall;
@@ -203,10 +203,10 @@ describe('PostPresence security: per-subscriber filtering', function () {
       req.emit('close');
     });
 
-    it('per-event forwarding: Author does not receive an event for an editor-only post', function () {
+    it('per-event forwarding: Author does not receive an event for an editor-only post', async function () {
       const author = fakeUser({ id: 'author-1', roles: ['Author'] });
       const { req, res } = fakeReqRes(author);
-      presenceStream(req, res);
+      await presenceStream(req, res);
       res.write.resetHistory();
 
       // Editor marks themselves on p2 (Author has no role on this post).
@@ -218,10 +218,10 @@ describe('PostPresence security: per-subscriber filtering', function () {
       req.emit('close');
     });
 
-    it('per-event forwarding: Author DOES receive an event for a post they author', function () {
+    it('per-event forwarding: Author DOES receive an event for a post they author', async function () {
       const author = fakeUser({ id: 'author-1', roles: ['Author'] });
       const { req, res } = fakeReqRes(author);
-      presenceStream(req, res);
+      await presenceStream(req, res);
       res.write.resetHistory();
 
       postPresence.mark(
@@ -239,10 +239,10 @@ describe('PostPresence security: per-subscriber filtering', function () {
       req.emit('close');
     });
 
-    it('Editor (elevated) receives ALL events regardless of authorIds', function () {
+    it('Editor (elevated) receives ALL events regardless of authorIds', async function () {
       const editor = fakeUser({ id: 'editor-1', roles: ['Editor'] });
       const { req, res } = fakeReqRes(editor);
-      presenceStream(req, res);
+      await presenceStream(req, res);
       res.write.resetHistory();
 
       postPresence.mark('p99', { id: 'someone', name: 'S' }, { authorIds: ['somebody-else'] });
@@ -254,12 +254,12 @@ describe('PostPresence security: per-subscriber filtering', function () {
       req.emit('close');
     });
 
-    it('Contributor (non-elevated) does NOT see drafts they are not authoring', function () {
+    it('Contributor (non-elevated) does NOT see drafts they are not authoring', async function () {
       postPresence.mark('p-draft', { id: 'editor-1', name: 'E' }, { authorIds: ['editor-1'] });
 
       const contributor = fakeUser({ id: 'contributor-1', roles: ['Contributor'] });
       const { req, res } = fakeReqRes(contributor);
-      presenceStream(req, res);
+      await presenceStream(req, res);
 
       const dataLine = res.write.firstCall.args[0].match(/^data: (.+)\n\n$/)[1];
       const payload = JSON.parse(dataLine);
