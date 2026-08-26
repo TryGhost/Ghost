@@ -1,7 +1,9 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const { Permission } = require('../../../../core/server/models/permission');
-const configUtils = require('../../../utils/config-utils');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import { Permission } from '../../../../core/server/models/permission';
+// @ts-expect-error This module lacks type definitions.
+import configUtils from '../../../utils/config-utils';
 
 describe('Unit: models/permission', function () {
   afterAll(async function () {
@@ -15,7 +17,8 @@ describe('Unit: models/permission', function () {
         .then(function () {
           assert.equal('Should fail', true);
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
           assert.equal(err.length, 3);
         });
     });

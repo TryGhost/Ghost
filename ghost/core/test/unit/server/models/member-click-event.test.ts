@@ -1,5 +1,6 @@
-const sinon = require('sinon');
-const { MemberClickEvent } = require('../../../../core/server/models/member-click-event');
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import { MemberClickEvent } from '../../../../core/server/models/member-click-event';
 
 describe('Unit: models/MemberClickEvent', function () {
   afterEach(function () {

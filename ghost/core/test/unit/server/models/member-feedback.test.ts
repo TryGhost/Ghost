@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const errors = require('@tryghost/errors');
-const { MemberFeedback } = require('../../../../core/server/models/member-feedback');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import errors from '@tryghost/errors';
+// @ts-expect-error This module lacks type definitions.
+import { MemberFeedback } from '../../../../core/server/models/member-feedback';
 
 describe('Unit: models/MemberFeedback', function () {
   afterEach(function () {
@@ -14,7 +15,8 @@ describe('Unit: models/MemberFeedback', function () {
         .then(function () {
           throw new Error('expected ValidationError');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
           assert.equal(err.length, 1);
           assert.equal(err[0] instanceof errors.ValidationError, true);
           assert.match(err[0].context, /members_feedback\.member_id/);
@@ -26,7 +28,8 @@ describe('Unit: models/MemberFeedback', function () {
         .then(function () {
           throw new Error('expected ValidationError');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
+          assert(Array.isArray(err));
           assert.equal(err.length, 1);
           assert.equal(err[0] instanceof errors.ValidationError, true);
           assert.match(err[0].context, /members_feedback\.post_id/);
@@ -39,7 +42,7 @@ describe('Unit: models/MemberFeedback', function () {
       .then(function () {
         throw new Error('expected IncorrectUsageError');
       })
-      .catch(function (err) {
+      .catch(function (err: unknown) {
         assert.equal(err instanceof errors.IncorrectUsageError, true);
       });
   });
