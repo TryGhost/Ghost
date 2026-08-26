@@ -33,6 +33,7 @@ import {
 } from '@tryghost/admin-x-framework/api/invites';
 import { UserRoundX } from 'lucide-react';
 import { formatNumber } from '@tryghost/shade/utils';
+import { memberAvatarProps } from '@/members/member-format';
 import { getSettingValue, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -76,7 +77,7 @@ const Owner: React.FC<OwnerProps> = ({ user }) => {
       data-testid="owner-user"
       onClick={showDetailModal}
     >
-      <Avatar className="size-12" email={user.email} name={user.name} src={user.profile_image} />
+      <Avatar className="size-12" {...memberAvatarProps(user)} src={user.profile_image} />
       <div className="flex flex-col">
         <span>
           {user.name} &mdash; <strong>Owner</strong>{' '}
@@ -149,8 +150,7 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
                 >
                   <Avatar
                     className="size-10"
-                    email={user.email}
-                    name={user.name}
+                    {...memberAvatarProps(user)}
                     src={user.profile_image}
                   />
                   <span className="min-w-0 grow">
@@ -164,8 +164,7 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
                 <div className="flex w-full items-center gap-3 py-3" id={`list-item-${user.id}`}>
                   <Avatar
                     className="size-10"
-                    email={user.email}
-                    name={user.name}
+                    {...memberAvatarProps(user)}
                     src={user.profile_image}
                   />
                   <span className="min-w-0 grow">
@@ -294,7 +293,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({ users }) => {
               className="flex items-center gap-3 py-3"
               id={`list-item-${user.id}`}
             >
-              <Avatar className="size-10" email={user.email} />
+              <Avatar className="size-10" {...memberAvatarProps({ email: user.email })} />
               <span className="min-w-0 grow">
                 <span className="block">{user.email}</span>
                 <span className="block text-sm text-muted-foreground">{user.role}</span>

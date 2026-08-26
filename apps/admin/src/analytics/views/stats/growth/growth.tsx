@@ -36,9 +36,8 @@ import {
   getGrowthContentDescription,
 } from '@/analytics/utils/content-helpers';
 import { LucideIcon, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
-import { centsToDollars } from '@tryghost/shade/app';
 import { getClickHandler } from '@/analytics/utils/url-helpers';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { centsToDollars, getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {
   useMembersTrackSources,

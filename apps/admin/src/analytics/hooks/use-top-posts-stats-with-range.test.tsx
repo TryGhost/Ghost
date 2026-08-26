@@ -8,15 +8,19 @@ import { useTopPostsStatsWithRange } from '@/analytics/hooks/use-top-posts-stats
 
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@/analytics/providers/analytics-context');
-vi.mock('@tryghost/shade/app', () => ({
-  formatQueryDate: vi.fn(),
-  getRangeDates: vi.fn(),
-}));
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
+  return {
+    ...actual,
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn(),
+  };
+});
 
 const mockUseTopPostsStats = vi.mocked(
   await import('@tryghost/admin-x-framework/api/stats'),
 ).useTopPostsStats;
-const { formatQueryDate, getRangeDates } = await import('@tryghost/shade/app');
+const { formatQueryDate, getRangeDates } = await import('@/shared/analytics/chart-helpers');
 const mockFormatQueryDate = vi.mocked(formatQueryDate);
 const mockGetRangeDates = vi.mocked(getRangeDates);
 

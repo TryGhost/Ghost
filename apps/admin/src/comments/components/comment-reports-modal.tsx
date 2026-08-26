@@ -10,7 +10,7 @@ import {
 } from '@tryghost/shade/components';
 import { type Comment, useBrowseCommentReports } from '@tryghost/admin-x-framework/api/comments';
 import { LucideIcon, formatTimestamp } from '@tryghost/shade/utils';
-import { formatMemberName } from '@tryghost/shade/app';
+import { formatMemberName, memberAvatarProps } from '@/members/member-format';
 
 interface CommentReportsModalProps {
   comment: Comment;
@@ -37,8 +37,7 @@ function CommentReportsModal({ comment, open, onOpenChange }: CommentReportsModa
           <div className="flex min-w-0 items-start gap-3">
             <Avatar
               className="shrink-0"
-              email={comment.member?.email}
-              name={comment.member?.name}
+              {...memberAvatarProps(comment.member)}
               src={comment.member?.avatar_image}
             />
             <div className="flex min-w-0 flex-col overflow-hidden">
@@ -76,8 +75,7 @@ function CommentReportsModal({ comment, open, onOpenChange }: CommentReportsModa
                   <div className="flex items-center gap-3">
                     <div className="relative shrink-0">
                       <Avatar
-                        email={report.member?.email}
-                        name={report.member?.name}
+                        {...memberAvatarProps(report.member)}
                         src={report.member?.avatar_image}
                       />
                       {/* Red flag overlay */}

@@ -9,7 +9,7 @@ import {
 } from './koenig-loader';
 import { useFocusContext } from '@tryghost/shade/app';
 
-export type { FetchKoenigLexical, KoenigInstance, KoenigLexicalModule } from './koenig-loader';
+export type { KoenigInstance, KoenigLexicalModule } from './koenig-loader';
 
 export type NodeType =
   | 'DEFAULT_NODES'
@@ -155,13 +155,8 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
   loadingFallback,
   ...props
 }) => {
-  const { fetchKoenigLexical, darkMode } = useFocusContext();
-  const editorResource = useMemo(() => {
-    if (!fetchKoenigLexical) {
-      throw new Error('Koenig Lexical loader is not available');
-    }
-    return loadKoenig(fetchKoenigLexical);
-  }, [fetchKoenigLexical]);
+  const { darkMode } = useFocusContext();
+  const editorResource = useMemo(() => loadKoenig(), []);
   const inheritClasses = inheritFontStyles ? '[&_*]:font-inherit! [&_*]:[font-size:inherit]!' : '';
 
   return (

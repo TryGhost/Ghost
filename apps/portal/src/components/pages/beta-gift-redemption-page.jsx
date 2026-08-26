@@ -59,7 +59,7 @@ const BetaGiftRedemptionPage = () => {
   const { action, brandColor, doAction, member, pageData, site } = useContext(AppContext);
   const gift = pageData?.gift;
   const isLoggedIn = !!member;
-  const [name, setName] = useState(member?.name || gift?.recipient_name || '');
+  const [name, setName] = useState(gift?.recipient_name || member?.name || '');
   const [email, setEmail] = useState(member?.email || '');
   const [errors, setErrors] = useState({});
   const [showDetails, setShowDetails] = useState(false);
@@ -68,7 +68,7 @@ const BetaGiftRedemptionPage = () => {
   useEffect(() => {
     // Prefill with the recipient name the buyer entered, so the gift card
     // is personal before the recipient types anything.
-    setName(member?.name || gift?.recipient_name || '');
+    setName(gift?.recipient_name || member?.name || '');
     setEmail(member?.email || '');
     setErrors({});
   }, [member?.email, member?.name, gift?.recipient_name]);

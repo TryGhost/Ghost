@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.60.0-rc.0",
+  "version": "6.61.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -72,7 +72,7 @@
     "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint 'test/**/*.js' --cache",
     "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit",
+    "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
   },
   "dependencies": {
@@ -129,7 +129,6 @@
     "@tryghost/parse-email-address": "workspace:*",
     "@tryghost/pretty-cli": "3.3.2",
     "@tryghost/prometheus-metrics": "1.0.8",
-    "@tryghost/promise": "2.3.2",
     "@tryghost/referrer-parser": "0.1.21",
     "@tryghost/request": "catalog:",
     "@tryghost/root-utils": "2.3.2",

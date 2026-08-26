@@ -18,9 +18,12 @@ import {
   KpiTabValue,
 } from '@tryghost/shade/patterns';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { centsToDollars, formatDisplayDateWithRange } from '@tryghost/shade/app';
-import { formatNumber } from '@tryghost/shade/utils';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+import { formatNumber, formatDisplayDateWithRange } from '@tryghost/shade/utils';
+import {
+  getEffectiveChartRange,
+  sanitizeChartData,
+  centsToDollars,
+} from '@/shared/analytics/chart-helpers';
 import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
