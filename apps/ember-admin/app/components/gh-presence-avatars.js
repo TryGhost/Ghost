@@ -10,7 +10,9 @@ function firstNameParts(name) {
 }
 
 function displayName(firstName, parts, firstNameCounts) {
-    if (firstNameCounts.get(firstName) > 1 && parts.length > 1) {
+    const hasCollision = firstNameCounts.get(firstName) > 1;
+    const hasLastName = parts.length > 1;
+    if (hasCollision && hasLastName) {
         return `${firstName} ${parts[parts.length - 1][0].toUpperCase()}.`;
     }
     return firstName;

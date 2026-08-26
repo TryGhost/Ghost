@@ -45,7 +45,8 @@ module.exports = async function presenceStream(req, res) {
   }
 
   try {
-    if (req.user && typeof req.user.load === 'function') {
+    const canLoadRoles = req.user && typeof req.user.load === 'function';
+    if (canLoadRoles) {
       await req.user.load(['roles']);
     }
   } catch (err) {

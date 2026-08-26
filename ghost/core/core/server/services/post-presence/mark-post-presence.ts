@@ -72,7 +72,8 @@ export function markPostPresence(
   post: PostLike | null | undefined,
 ): void {
   try {
-    if (!frame?.user || !post || frame.options?.context?.api_key) {
+    const isApiToken = Boolean(frame?.options?.context?.api_key);
+    if (!frame?.user || !post || isApiToken) {
       return;
     }
 

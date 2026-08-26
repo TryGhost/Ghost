@@ -21,7 +21,9 @@ export default class PresenceService extends Service {
     _connectingErrorLogged = false;
 
     start() {
-        if (this._source || typeof window === 'undefined' || !window.EventSource) {
+        const alreadyStarted = Boolean(this._source);
+        const eventSourceUnavailable = typeof window === 'undefined' || !window.EventSource;
+        if (alreadyStarted || eventSourceUnavailable) {
             return;
         }
         const streamUrl = this.ghostPaths.url.api('presence', 'stream');
@@ -57,7 +59,8 @@ export default class PresenceService extends Service {
         if (!this._source) {
             this.start();
         }
-        if (this._currentPostId && this._currentPostId !== postId) {
+        const switchingPost = this._currentPostId && this._currentPostId !== postId;
+        if (switchingPost) {
             this.leavePost(this._currentPostId);
         }
         this._currentPostId = postId;
@@ -103,15 +106,19 @@ export default class PresenceService extends Service {
         if (!this._source) {
             return;
         }
-        if (this._source.readyState === EventSource.CLOSED) {
+        const isClosed = this._source.readyState === EventSource.CLOSED;
+        const isConnecting = this._source.readyState === EventSource.CONNECTING;
+        if (isClosed) {
             console.warn('[presence] SSE stream closed; not reconnecting'); // eslint-disable-line no-console
             return;
         }
-        if (this._source.readyState !== EventSource.CONNECTING) {
+        if (!isConnecting) {
             return;
         }
         this._connectingErrorCount += 1;
-        if (this._connectingErrorCount >= CONNECTING_ERROR_LOG_THRESHOLD && !this._connectingErrorLogged) {
+        const shouldLogReconnects = this._connectingErrorCount >= CONNECTING_ERROR_LOG_THRESHOLD
+            && !this._connectingErrorLogged;
+        if (shouldLogReconnects) {
             this._connectingErrorLogged = true;
             console.warn('[presence] SSE reconnects are failing'); // eslint-disable-line no-console
         }
@@ -142,9 +149,8 @@ export default class PresenceService extends Service {
 
     _sendLeave(postId) {
         const leaveUrl = this.ghostPaths.url.api('presence', 'posts', postId, 'leave');
-        const queued = typeof navigator !== 'undefined'
-            && typeof navigator.sendBeacon === 'function'
-            && navigator.sendBeacon(leaveUrl);
+        const canSendBeacon = typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function';
+        const queued = canSendBeacon && navigator.sendBeacon(leaveUrl);
         if (queued) {
             return;
         }
@@ -164,12 +170,15 @@ export default class PresenceService extends Service {
             return;
         }
 
-        if (payload?.type === EVENT_TYPE_SNAPSHOT && Array.isArray(payload.posts)) {
+        const isSnapshot = payload?.type === EVENT_TYPE_SNAPSHOT && Array.isArray(payload.posts);
+        const isPostEvent = payload?.type === EVENT_TYPE_POST && payload.postId;
+
+        if (isSnapshot) {
             this._applySnapshot(payload.posts);
             return;
         }
 
-        if (payload?.type === EVENT_TYPE_POST && payload.postId) {
+        if (isPostEvent) {
             this._applyPostEvent(payload);
         }
     }
@@ -177,7 +186,8 @@ export default class PresenceService extends Service {
     _applySnapshot(posts) {
         const next = new Map();
         for (const entry of posts) {
-            if (entry?.postId && Array.isArray(entry.users)) {
+            const hasUsers = entry?.postId && Array.isArray(entry.users);
+            if (hasUsers) {
                 next.set(entry.postId, entry.users);
             }
         }

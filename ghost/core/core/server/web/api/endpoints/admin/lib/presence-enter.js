@@ -7,10 +7,12 @@ function lookupErrorStatus(err) {
   if (!err) {
     return null;
   }
-  if (err.errorType === 'NoPermissionError' || err.statusCode === 403) {
+  const isForbidden = err.errorType === 'NoPermissionError' || err.statusCode === 403;
+  const isNotFound = err.errorType === 'NotFoundError' || err.statusCode === 404;
+  if (isForbidden) {
     return 403;
   }
-  if (err.errorType === 'NotFoundError' || err.statusCode === 404) {
+  if (isNotFound) {
     return 404;
   }
   return null;
@@ -24,7 +26,8 @@ module.exports = async function presenceEnter(req, res) {
     }
     const postId = req.params && req.params.id;
     const user = req.user;
-    if (!postId || !user || !user.id) {
+    const missingEnterTarget = !postId || !user || !user.id;
+    if (missingEnterTarget) {
       res.status(204).end();
       return;
     }
