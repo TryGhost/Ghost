@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   currentRoute,
+  currentUserResponse,
   fakeAnalyticsOverview,
   fakeSettingsScreens,
   fakeTiers,
@@ -13,6 +14,73 @@ import {
 import { settingsScreen } from './settings.screen';
 
 describe('Settings layout', () => {
+  it.each([true, false])(
+    'uses Admin 7 typography in Settings only when enabled (%s)',
+    async (enabled) => {
+      fakeSettingsScreens();
+      await renderAdminApp('/settings', { labs: { admin7PageChrome: enabled } });
+
+      await expect.element(settingsScreen.search()).toBeVisible();
+      const elements = [
+        ...page.getByRole('heading', { name: 'General settings', exact: true }).elements(),
+        settingsScreen.search().element(),
+        settingsScreen.titleAndDescription().getByRole('button', { name: 'Edit' }).element(),
+      ];
+      for (const element of elements) {
+        await expect
+          .poll(() => getComputedStyle(element).fontFamily.includes('Inter Admin 7'))
+          .toBe(enabled);
+        const style = getComputedStyle(element);
+        expect(style.fontVariationSettings, element.outerHTML).toBe(
+          enabled ? '"opsz" 14' : 'normal',
+        );
+        expect(style.fontFeatureSettings).toBe(
+          enabled ? '"cv05", "dlig", "ss01", "zero"' : 'normal',
+        );
+      }
+      expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+      expect(getComputedStyle(document.body).fontFamily).not.toContain('Inter Admin 7');
+      await expect.element(settingsScreen.sidebar()).toBeVisible();
+      await expect.element(settingsScreen.exitButton()).toBeVisible();
+    },
+  );
+
+  it('retains existing Settings typography in dark mode', async () => {
+    fakeSettingsScreens();
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
+    await renderAdminApp('/settings', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: me } },
+    });
+    await expect.element(settingsScreen.search()).toBeVisible();
+    await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+    expect(getComputedStyle(settingsScreen.search().element()).fontFamily).not.toContain(
+      'Inter Admin 7',
+    );
+    expect(document.querySelector('.admin7-typography')).toBeNull();
+    expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+  });
+
+  it('limits Settings typography to desktop without opting into page chrome', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings', { labs: { admin7PageChrome: true } });
+    await expect.element(settingsScreen.search()).toBeVisible();
+    const hasNewFont = () =>
+      getComputedStyle(settingsScreen.search().element()).fontFamily.includes('Inter Admin 7');
+    await expect.poll(hasNewFont).toBe(true);
+    try {
+      await page.viewport(800, 800);
+      await expect.poll(hasNewFont).toBe(false);
+      expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+      await page.viewport(801, 800);
+      await expect.poll(hasNewFont).toBe(true);
+      expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
   it('leaves immediately when the page is clean', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
@@ -62,6 +130,7 @@ describe('Settings layout', () => {
     fakeSettingsScreens();
     fakeTiers([tier({ name: 'Supporter' })]);
     await renderAdminApp('/settings/portal/edit', {
+      labs: { admin7PageChrome: true },
       boot: {
         browseSettings: {
           response: settingsResponse({
@@ -76,6 +145,10 @@ describe('Settings layout', () => {
 
     const modal = settingsScreen.portalModal();
     await expect.element(modal).toBeVisible();
+    await expect
+      .poll(() => getComputedStyle(modal.element()).fontFamily)
+      .toContain('Inter Admin 7');
+    expect(document.querySelector('.admin7-page-chrome')).toBeNull();
     await modal.getByLabelText('Default price at signup').click();
     await expect.element(settingsScreen.selectOptionExact('Yearly')).toBeVisible();
     await userEvent.keyboard('{Escape}');

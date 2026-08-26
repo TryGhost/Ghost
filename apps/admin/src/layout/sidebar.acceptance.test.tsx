@@ -19,8 +19,45 @@ import {
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
 
-// The scope class is this rollout's integration contract, not visible UI.
+// The shell class is the rollout's eligibility boundary for layout and typography.
 const hasPageChromeScope = () => document.querySelector('.admin7-page-chrome') !== null;
+
+async function expectPageChromeScope(enabled: boolean, typographyEnabled = enabled): Promise<void> {
+  await expect.poll(hasPageChromeScope).toBe(enabled);
+  await expect
+    .poll(() => document.querySelector('.admin7-typography') !== null)
+    .toBe(typographyEnabled);
+  await expect
+    .poll(() =>
+      getComputedStyle(sidebarScreen.shellMain().element()).fontFamily.includes('Inter Admin 7'),
+    )
+    .toBe(typographyEnabled);
+}
+
+async function expectAdminTypography(element: Element, enabled: boolean): Promise<void> {
+  await expect
+    .poll(() => getComputedStyle(element).fontFamily.includes('Inter Admin 7'))
+    .toBe(enabled);
+  const style = getComputedStyle(element);
+  expect(style.fontVariationSettings).toBe(enabled ? '"opsz" 14' : 'normal');
+  expect(style.fontFeatureSettings).toBe(enabled ? '"cv05", "dlig", "ss01", "zero"' : 'normal');
+}
+
+// Font rules are inspected here so browser tests use the shipped assets, not
+// copies or a second font definition that could drift from production.
+function pageChromeFontRules(): CSSFontFaceRule[] {
+  return [...document.styleSheets].flatMap((sheet) => {
+    // Third-party preview font stylesheets are cross-origin and unrelated.
+    try {
+      return [...sheet.cssRules].filter(
+        (rule): rule is CSSFontFaceRule =>
+          rule instanceof CSSFontFaceRule && rule.style.fontFamily.includes('Inter Admin 7'),
+      );
+    } catch {
+      return [];
+    }
+  });
+}
 
 // The site fixture's URL roots the ActivityPub API (see use-activity-pub-queries.ts).
 const UNREAD_COUNT_URL = 'http://test.com/.ghost/activitypub/v1/notifications/unread/count';
@@ -188,14 +225,96 @@ describe('Sidebar navigation', () => {
 });
 
 describe('Sidebar user menu', () => {
-  it('opens the user menu with profile, appearance and sign-out items', async () => {
-    await renderAdminApp('/site');
+  it.each([
+    { enabled: true, theme: 'light' },
+    { enabled: false, theme: 'light' },
+    { enabled: true, theme: 'dark' },
+  ] as const)(
+    'uses eligible typography in the portalled user menu ($enabled, $theme)',
+    async ({ enabled, theme }) => {
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({ nightShift: theme });
+      await renderAdminApp('/site', {
+        labs: { admin7PageChrome: enabled },
+        boot: { browseMe: { response: me } },
+      });
 
+      await sidebarScreen.userMenuTrigger().click();
+
+      await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+      await expect.element(sidebarScreen.appearanceMenuItem()).toBeVisible();
+      await expect.element(sidebarScreen.signOutMenuItem()).toBeVisible();
+      const hasTypography = enabled && theme === 'light';
+      await expectAdminTypography(sidebarScreen.profileMenuItem().element(), hasTypography);
+      expect(sidebarScreen.profileMenuItem().element().closest('#root')).toBeNull();
+      await sidebarScreen.appearanceMenuItem().click();
+      await expect.element(sidebarScreen.appearanceOption('light')).toBeVisible();
+      await expectAdminTypography(sidebarScreen.appearanceOption('light').element(), hasTypography);
+    },
+  );
+
+  it('removes portal typography when an open menu outlives editor route entry', async () => {
+    await renderAdminApp('/posts', { labs: { admin7PageChrome: true } });
     await sidebarScreen.userMenuTrigger().click();
-
     await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
-    await expect.element(sidebarScreen.appearanceMenuItem()).toBeVisible();
-    await expect.element(sidebarScreen.signOutMenuItem()).toBeVisible();
+    const profile = sidebarScreen.profileMenuItem().element();
+    await expectAdminTypography(profile, true);
+
+    // The acceptance bridge leaves navigation mounted, exercising cleanup even
+    // when a portal outlives the route whose typography originally enabled it.
+    window.location.hash = '#/editor/post';
+    await expect.poll(currentRoute).toBe('/editor/post');
+    await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    expect(profile.isConnected).toBe(true);
+    await expectAdminTypography(profile, false);
+  });
+
+  it('updates mounted portal roots with theme changes without affecting other body roots', async () => {
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expectPageChromeScope(true);
+    const portal = document.createElement('div');
+    portal.className = 'shade shade-admin shade-activitypub';
+    portal.innerHTML = '<div class="shade shade-admin"><input aria-label="Portal probe" /></div>';
+    const standalone = document.createElement('div');
+    standalone.className = 'shade';
+    standalone.textContent = 'Standalone Shade';
+    const preview = document.createElement('div');
+    preview.textContent = 'Unrelated preview';
+    const legacyHosts = [
+      'ember-basic-dropdown-wormhole',
+      'ember-modal-wormhole',
+      'ember-liquid-wormhole',
+    ].map((id) => {
+      const host = document.createElement('div');
+      host.id = id;
+      host.innerHTML = '<input aria-label="Legacy Admin overlay" />';
+      return host;
+    });
+    document.body.append(portal, standalone, preview, ...legacyHosts);
+    try {
+      const input = portal.querySelector('input')!;
+      const legacyControls = legacyHosts.map((host) => host.querySelector('input')!);
+      for (const element of [input, ...legacyControls]) {
+        await expectAdminTypography(element, true);
+      }
+      expect(getComputedStyle(standalone).fontFamily).not.toContain('Inter Admin 7');
+      expect(getComputedStyle(preview).fontFamily).not.toContain('Inter Admin 7');
+      expect(getComputedStyle(document.body).fontFamily).not.toContain('Inter Admin 7');
+
+      await sidebarScreen.selectAppearance('dark');
+      for (const element of [input, ...legacyControls]) {
+        await expectAdminTypography(element, false);
+      }
+      await sidebarScreen.selectAppearance('light');
+      for (const element of [input, ...legacyControls]) {
+        await expectAdminTypography(element, true);
+      }
+    } finally {
+      portal.remove();
+      standalone.remove();
+      preview.remove();
+      legacyHosts.forEach((host) => host.remove());
+    }
   });
 
   it('navigates to the profile settings from the user menu', async () => {
@@ -263,7 +382,7 @@ describe('Admin page chrome boundary', () => {
     });
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect.poll(hasPageChromeScope).toBe(enabled);
+    await expectPageChromeScope(enabled);
   });
 
   it.each(['flag', 'labs'] as const)(
@@ -280,7 +399,7 @@ describe('Admin page chrome boundary', () => {
       });
 
       await expect.element(sidebarScreen.shellNav()).toBeVisible();
-      expect(hasPageChromeScope()).toBe(false);
+      await expectPageChromeScope(false);
     },
   );
 
@@ -303,7 +422,7 @@ describe('Admin page chrome boundary', () => {
       await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
       expect(hasPageChromeScope()).toBe(false);
       releaseConfig();
-      await expect.poll(hasPageChromeScope).toBe(true);
+      await expectPageChromeScope(true);
     } finally {
       releaseConfig();
     }
@@ -320,12 +439,26 @@ describe('Admin page chrome boundary', () => {
       });
 
       await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
-      await expect.poll(hasPageChromeScope).toBe(role !== 'Contributor');
+      await expectPageChromeScope(role !== 'Contributor');
       if (role === 'Contributor') {
         await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
       }
     },
   );
+
+  it('does not extend Settings typography to a contributor', async () => {
+    allowUnhandledRequests();
+    await renderAdminApp('/settings/staff', {
+      labs: { admin7PageChrome: true },
+      boot: {
+        browseMe: {
+          response: { users: [staffUser({ roles: [staffRole({ name: 'Contributor' })] })] },
+        },
+      },
+    });
+    await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+    await expectPageChromeScope(false);
+  });
 
   it('does not use the saved sidebar collapse preference as route eligibility', async () => {
     const me = currentUserResponse();
@@ -337,17 +470,17 @@ describe('Admin page chrome boundary', () => {
       boot: { browseMe: { response: me } },
     });
 
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
   });
 
   it('removes the scope in dark mode and restores it in light mode', async () => {
     await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
 
     await sidebarScreen.selectAppearance('dark');
-    await expect.poll(hasPageChromeScope).toBe(false);
+    await expectPageChromeScope(false);
     await sidebarScreen.selectAppearance('light');
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
   });
 
   it('never activates for an initially dark user while preferences load', async () => {
@@ -385,33 +518,33 @@ describe('Admin page chrome boundary', () => {
 
   it('tracks the existing desktop breakpoint in both directions', async () => {
     await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
     try {
       await page.viewport(800, 800);
-      await expect.poll(hasPageChromeScope).toBe(false);
+      await expectPageChromeScope(false);
       await page.viewport(801, 800);
-      await expect.poll(hasPageChromeScope).toBe(true);
+      await expectPageChromeScope(true);
     } finally {
       await page.viewport(1280, 800);
     }
   });
 
-  it('removes the scope in Settings and restores it on return to an eligible route', async () => {
+  it('keeps typography but removes chrome in Settings and restores chrome on exit', async () => {
     // The settings app owns its request graph; this spec asserts only shell scope.
     allowUnhandledRequests();
     fakeTags([]);
     await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
     await sidebarScreen.navLink('Tags').click();
     await expect.poll(currentRoute).toBe('/tags');
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toMatch(/^\/settings/);
-    await expect.poll(hasPageChromeScope).toBe(false);
+    await expectPageChromeScope(false, true);
 
     window.location.hash = '#/posts';
     await expect.poll(currentRoute).toBe('/posts');
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
   });
 
   it('excludes the automation editor before its route content loads', async () => {
@@ -421,20 +554,122 @@ describe('Admin page chrome boundary', () => {
       labs: { admin7PageChrome: true, automations: true },
     });
     await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
-    expect(hasPageChromeScope()).toBe(false);
+    await expectPageChromeScope(false);
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
   });
 
   it('excludes the Ember editor immediately on entry and restores the scope on exit', async () => {
     // No Ember bridge in this tier: its visibility deliberately remains true.
     await renderAdminApp('/posts', { labs: { admin7PageChrome: true } });
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
     window.location.hash = '#/editor/post';
     await expect.poll(currentRoute).toBe('/editor/post');
-    await expect.poll(hasPageChromeScope).toBe(false);
+    await expectPageChromeScope(false);
     window.location.hash = '#/posts';
     await expect.poll(currentRoute).toBe('/posts');
-    await expect.poll(hasPageChromeScope).toBe(true);
+    await expectPageChromeScope(true);
+  });
+});
+
+describe('Admin page chrome typography', () => {
+  it('loads local normal and italic fonts and preserves component typography', async () => {
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expectPageChromeScope(true);
+
+    const nav = sidebarScreen.navLink('Posts').element();
+    const navStyle = getComputedStyle(nav);
+    expect(navStyle.fontFamily).toContain('Inter Admin 7');
+    expect(navStyle.fontFeatureSettings).toBe('"cv05", "dlig", "ss01", "zero"');
+    expect(navStyle.fontVariationSettings).toBe('"opsz" 14');
+    const componentTypography = {
+      weight: navStyle.fontWeight,
+      size: navStyle.fontSize,
+      lineHeight: navStyle.lineHeight,
+      casing: navStyle.textTransform,
+    };
+    expect(getComputedStyle(document.body).fontFamily).not.toContain('Inter Admin 7');
+
+    // A small CSS fixture exercises inheritance and the same utilities used by
+    // chrome components. No production-only markup is needed for a font sample.
+    const sample = document.createElement('div');
+    sample.innerHTML = `
+      <span class="font-normal">0 1 2 3</span>
+      <em class="font-semibold">Italic 0123</em>
+      <span class="tabular-nums">111111</span>
+      <span class="tabular-nums">888888</span>
+      <code class="font-mono">const count = 123;</code>
+    `;
+    sidebarScreen.shellMain().element().append(sample);
+    try {
+      const [normal, italic, ones, eights, code] = [...sample.children];
+      expect(getComputedStyle(normal).fontWeight).toBe('400');
+      expect(getComputedStyle(italic).fontWeight).toBe('600');
+      expect(getComputedStyle(italic).fontStyle).toBe('italic');
+      expect(getComputedStyle(ones).fontVariantNumeric).toBe('tabular-nums');
+      expect(getComputedStyle(code).fontFamily).not.toContain('Inter Admin 7');
+
+      // Exercise extended Latin, Greek, Cyrillic, and Vietnamese characters
+      // that a basic English sample would silently skip.
+      const multilingual =
+        'Hamburgefonts 0123 Árvíztűrő tükörfúrógép Tiếng Việt Ελληνικά ἀρχή Кириллица Ѣ';
+      normal.textContent = multilingual;
+      italic.textContent = multilingual;
+      for (const style of ['normal 400', 'italic 600']) {
+        const faces = await document.fonts.load(`${style} 14px "Inter Admin 7"`, multilingual);
+        expect(faces).toHaveLength(1);
+        expect(faces.every((face) => face.status === 'loaded')).toBe(true);
+      }
+      expect(ones.getBoundingClientRect().width).toBeCloseTo(
+        eights.getBoundingClientRect().width,
+        2,
+      );
+
+      await sidebarScreen.selectAppearance('dark');
+      await expectPageChromeScope(false);
+      const excludedStyle = getComputedStyle(nav);
+      expect({
+        weight: excludedStyle.fontWeight,
+        size: excludedStyle.fontSize,
+        lineHeight: excludedStyle.lineHeight,
+        casing: excludedStyle.textTransform,
+      }).toEqual(componentTypography);
+      expect(excludedStyle.fontVariationSettings).toBe('normal');
+      expect(excludedStyle.fontFeatureSettings).toBe('normal');
+    } finally {
+      sample.remove();
+    }
+  });
+
+  it('keeps text visible with the existing font stack when the new font fails to load', async () => {
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expectPageChromeScope(true);
+
+    const fontRules = pageChromeFontRules();
+    expect(fontRules).toHaveLength(2);
+    const sources = fontRules.map((rule) => rule.style.getPropertyValue('src'));
+    const sample = document.createElement('span');
+    sample.textContent = 'Posts 0123456789';
+    sidebarScreen.shellMain().element().append(sample);
+    try {
+      // Corrupt only this family's sources, including already loaded faces, so
+      // the browser exercises the actual CSS fallback rather than a mock font.
+      for (const rule of fontRules) {
+        expect(rule.style.getPropertyValue('font-display')).toBe('swap');
+        rule.style.setProperty('src', 'url(data:font/woff2;base64,AA==) format("woff2")');
+      }
+      await expect(document.fonts.load('400 14px "Inter Admin 7"', 'Posts')).rejects.toThrow();
+      await expect.element(sidebarScreen.navLink('Posts')).toBeVisible();
+      const family = getComputedStyle(sample).fontFamily;
+      expect(family).toContain('Inter,');
+      const fallbackWidth = sample.getBoundingClientRect().width;
+      expect(fallbackWidth).toBeGreaterThan(0);
+      sample.style.fontFamily = family.replace(/"Inter Admin 7",\s*/, '');
+      await document.fonts.ready;
+      expect(sample.getBoundingClientRect().width).toBeCloseTo(fallbackWidth, 2);
+    } finally {
+      sample.remove();
+      fontRules.forEach((rule, index) => rule.style.setProperty('src', sources[index]));
+    }
   });
 });
 

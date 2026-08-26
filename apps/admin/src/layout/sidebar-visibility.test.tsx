@@ -104,9 +104,11 @@ describe('Admin page chrome scope', () => {
   });
 
   it('excludes editor navigation before the Ember visibility update arrives', async () => {
-    const { useAdminPageChromeClass } = await import('./use-admin-page-chrome-class');
-    const { result, rerender } = renderHook(() => useAdminPageChromeClass(true));
-    expect(result.current).toBe('admin7-page-chrome');
+    const { useAdminPageChromeClasses } = await import('./use-admin-page-chrome-classes');
+    const { result, rerender } = renderHook(() =>
+      useAdminPageChromeClasses({ hasNavigation: true, isEligibleUser: true }),
+    );
+    expect(result.current).toBe('admin7-page-chrome admin7-typography');
 
     useLocationMock.mockReturnValue({ pathname: '/editor/post/123' });
     rerender();
@@ -114,13 +116,15 @@ describe('Admin page chrome scope', () => {
 
     useLocationMock.mockReturnValue({ pathname: '/posts' });
     rerender();
-    expect(result.current).toBe('admin7-page-chrome');
+    expect(result.current).toBe('admin7-page-chrome admin7-typography');
   });
 
   it('waits for the resolved theme instead of using the loading light fallback', async () => {
-    const { useAdminPageChromeClass } = await import('./use-admin-page-chrome-class');
+    const { useAdminPageChromeClasses } = await import('./use-admin-page-chrome-classes');
     useThemeContextMock.mockReturnValue({ resolvedTheme: 'light', isThemeReady: false });
-    const { result, rerender } = renderHook(() => useAdminPageChromeClass(true));
+    const { result, rerender } = renderHook(() =>
+      useAdminPageChromeClasses({ hasNavigation: true, isEligibleUser: true }),
+    );
     expect(result.current).toBeUndefined();
 
     useThemeContextMock.mockReturnValue({ resolvedTheme: 'dark', isThemeReady: true });
@@ -129,16 +133,19 @@ describe('Admin page chrome scope', () => {
 
     useThemeContextMock.mockReturnValue({ resolvedTheme: 'light', isThemeReady: true });
     rerender();
-    expect(result.current).toBe('admin7-page-chrome');
+    expect(result.current).toBe('admin7-page-chrome admin7-typography');
   });
 
   it('removes and restores the scope when Ember hides and restores navigation', async () => {
-    const { useAdminPageChromeClass } = await import('./use-admin-page-chrome-class');
+    const { useAdminPageChromeClasses } = await import('./use-admin-page-chrome-classes');
     const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
     const { result, rerender } = renderHook(() =>
-      useAdminPageChromeClass(useAdminSidebarVisibility()),
+      useAdminPageChromeClasses({
+        hasNavigation: useAdminSidebarVisibility(),
+        isEligibleUser: true,
+      }),
     );
-    expect(result.current).toBe('admin7-page-chrome');
+    expect(result.current).toBe('admin7-page-chrome admin7-typography');
 
     useEmberSidebarVisibilityMock.mockReturnValue(false);
     rerender();
@@ -146,6 +153,45 @@ describe('Admin page chrome scope', () => {
 
     useEmberSidebarVisibilityMock.mockReturnValue(true);
     rerender();
-    expect(result.current).toBe('admin7-page-chrome');
+    expect(result.current).toBe('admin7-page-chrome admin7-typography');
   });
+
+  it.each(['/settings', '/settings/staff', '/settings/portal/edit'])(
+    'gives %s typography without chrome, independent of navigation visibility',
+    async (pathname) => {
+      const { useAdminPageChromeClasses } = await import('./use-admin-page-chrome-classes');
+      useLocationMock.mockReturnValue({ pathname });
+      const { result, rerender } = renderHook(
+        ({ hasNavigation }) => useAdminPageChromeClasses({ hasNavigation, isEligibleUser: true }),
+        { initialProps: { hasNavigation: false } },
+      );
+      expect(result.current).toBe('admin7-typography');
+      rerender({ hasNavigation: true });
+      expect(result.current).toBe('admin7-typography');
+    },
+  );
+
+  it('requires a loaded eligible user even on Settings', async () => {
+    const { useAdminPageChromeClasses } = await import('./use-admin-page-chrome-classes');
+    useLocationMock.mockReturnValue({ pathname: '/settings' });
+    const { result, rerender } = renderHook(
+      ({ isEligibleUser }) => useAdminPageChromeClasses({ hasNavigation: false, isEligibleUser }),
+      { initialProps: { isEligibleUser: false } },
+    );
+    expect(result.current).toBeUndefined();
+    rerender({ isEligibleUser: true });
+    expect(result.current).toBe('admin7-typography');
+  });
+
+  it.each(['/settings-preview', '/automations/new', '/editor/post'])(
+    'does not extend typography to another navigation-hidden route: %s',
+    async (pathname) => {
+      const { useAdminPageChromeClasses } = await import('./use-admin-page-chrome-classes');
+      useLocationMock.mockReturnValue({ pathname });
+      const { result } = renderHook(() =>
+        useAdminPageChromeClasses({ hasNavigation: false, isEligibleUser: true }),
+      );
+      expect(result.current).toBeUndefined();
+    },
+  );
 });

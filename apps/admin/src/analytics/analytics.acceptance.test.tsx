@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
+import type { ConfigResponse } from '@tryghost/test-data';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -155,6 +157,28 @@ describe('Analytics overview', () => {
 
     // The header's active-visitors probe (Tinybird) resolved.
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
+  });
+
+  it('uses Admin 7 typography in the portalled trend tooltip', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    const boot = webAnalyticsBootOverrides();
+    const config = boot.browseConfig?.response as ConfigResponse;
+    config.config.labs = { ...config.config.labs, admin7PageChrome: true };
+    await renderAdminApp('/analytics', { boot });
+    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
+    await expect.poll(() => document.querySelector('#root .admin7-typography')).not.toBeNull();
+    await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
+    const tooltip = page.getByRole('tooltip');
+    await expect.element(tooltip).toHaveTextContent(/trending/);
+    expect(tooltip.element().closest('#root')).toBeNull();
+    await expect
+      .poll(() => getComputedStyle(tooltip.element()).fontFamily)
+      .toContain('Inter Admin 7');
+    expect(getComputedStyle(tooltip.element()).fontVariationSettings).toBe('"opsz" 14');
+    expect(getComputedStyle(tooltip.element()).fontFeatureSettings).toBe(
+      '"cv05", "dlig", "ss01", "zero"',
+    );
   });
 
   it('re-queries Tinybird when the date range changes', async () => {

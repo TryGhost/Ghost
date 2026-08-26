@@ -3,7 +3,7 @@ import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
-import { useAdminPageChromeClass } from '@/layout/use-admin-page-chrome-class';
+import { useAdminPageChromeClasses } from '@/layout/use-admin-page-chrome-classes';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
@@ -16,9 +16,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
   const isContributor = currentUser && isContributorUser(currentUser);
-  const pageChromeClass = useAdminPageChromeClass(
-    !!currentUser && sidebarVisible && !isContributor,
-  );
+  const pageChromeClasses = useAdminPageChromeClasses({
+    hasNavigation: sidebarVisible,
+    isEligibleUser: !!currentUser && !isContributor,
+  });
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
@@ -35,7 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <SidebarProvider className={pageChromeClass} open={!!currentUser && sidebarVisible}>
+    <SidebarProvider className={pageChromeClasses} open={!!currentUser && sidebarVisible}>
       {sidebarVisible && <AppSidebar />}
       <SidebarInset
         className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
