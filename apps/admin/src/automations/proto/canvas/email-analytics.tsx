@@ -32,7 +32,7 @@ const FooterMetric: React.FC<{label: string; tracked: boolean; children: React.R
         {/* Small muted label; value at 14px (text-md) foreground. */}
         <span className="text-xs text-muted-foreground">{label}</span>
         {tracked
-            ? <span className="text-md text-foreground tabular-nums">{children}</span>
+            ? <span className="font-mono text-md text-foreground tabular-nums">{children}</span>
             : <OffValue className="text-md" />}
     </div>
 );

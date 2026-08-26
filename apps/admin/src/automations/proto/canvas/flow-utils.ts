@@ -32,51 +32,91 @@ export const HIDDEN_HANDLE_STYLE: CSSProperties = {
 // page in light) and then to --surface-page (pure black in dark). Production had
 // already solved this; there's nothing here to invent.
 //
-// Exported because three things need the same fill and would each be a seam if
-// they drifted: the ReactFlow surface, the region behind it, and the dashed
-// insert buttons that cut out of it.
+// --- Canvas palette --------------------------------------------------------
 //
-// One semantic token, which flips on its own — this was 'bg-grey-50
-// dark:bg-background', a fixed palette value propped up by a dark: variant. The
-// palette scale doesn't flip, so the light value was doing all the work and the
-// variant had to carry dark on its own; the buttons stayed light when it didn't
-// land. --background is white in light and the same oklch(0.178) in dark that
-// the flow already paints itself, so the fill matches by definition now.
+// Every colour the canvas paints, per release, in one table. Edit here and
+// nothing else needs touching.
 //
-// Not bg-surface-page (what the shipping editor's own insert buttons use): that
-// token is pure BLACK in dark, darker than the canvas it sits on, so the buttons
-// rendered as holes rather than as empty slots.
-export const CANVAS_SURFACE = 'bg-background';
+// These are set on the region that CONTAINS the flow, not on the flow itself.
+// React Flow only ever declares *-default variants on .react-flow and reads
+// var(--xy-background-color, …), so it never shadows a value from an ancestor —
+// which means one element up the tree can decide the whole palette and both
+// canvases, plus the dashed insert buttons that cut slots out of it, inherit it.
+// That keeps the choice in detail.tsx, where the release and the focused run are
+// already known, rather than threading props into two canvases and a button.
+//
+// Naming our own variables rather than writing React Flow's directly is what
+// lets the buttons match: they need the canvas fill too, and bg-[var(--canvas-fill)]
+// reads as "the canvas's fill" where bg-[var(--xy-background-color)] would read as
+// a library internal.
+export type CanvasRelease = 'phase-1' | 'exploration';
 
-// Dots + edges from the shipping canvas (this replaced a hardcoded #ffffff1a the
-// proto had picked up for dark), with one deliberate divergence: light-mode edges
-// at grey-500 rather than production's grey-300. At 300 (L~91% on a grey-50
-// canvas) the connectors were fainter than the dot texture behind them — the
-// decoration outranked the structure. 400 was tried first and still read faint;
-// 500 puts the lines at the dots' own stop, which in practice reads stronger
-// than the dots because a continuous stroke carries colour that 1px pattern
-// circles can't. If it proves out it's a fix the real canvas wants too.
-// Dots and edges don't change with the canvas fill — only the fill does — so they
-// live apart and both themes below share them verbatim.
-const CANVAS_MARKS = '[--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-500)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+// review is optional, and neither release currently sets it — selecting a member
+// leaves the canvas exactly as it was. Repainting the largest surface on screen (and,
+// before that, framing it) announced a change of mode when all that happened was a row
+// being clicked; the member button in the canvas corner names who's in focus, which is
+// where the change actually is. Kept as a hook because the mechanism is sound and the
+// question is only how loudly to state the mode.
+const CANVAS_THEMES: Record<CanvasRelease, {base: string; review?: string}> = {
+    // Phase 1 matches the shipping canvas exactly: grey-50 in light, and in dark the
+    // same --background the flow already sits on. Diverge from this only with a
+    // reason — the proto is meant to be indistinguishable from the real editor here.
+    'phase-1': {
+        base: '[--canvas-fill:var(--color-grey-50)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:var(--background)] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]'
+    },
+    // Exploration is free to diverge — its canvas is a detached window rather than a
+    // full-bleed surface, so it doesn't have to answer to the shipping editor.
+    //
+    // One step off phase 1 in each mode: grey-100 rather than grey-50 in light, and
+    // pure black rather than --background in dark. The window has to separate from
+    // the PAGE, not fill the screen, so both moves are away from the page's own fill.
+    //
+    // Dark goes DOWN, which is what makes it work. Lifting the canvas was tried first
+    // and there's no room above it: the ladder has no stop between --background
+    // (0.178) and --surface-elevated (0.204), so the only step available put the
+    // canvas on the same fill as the node cards and flattened them into it. Black is
+    // below the page instead, so the window reads against it AND the cards sit a full
+    // 0.204 above the canvas — a wider gap than they had to begin with.
+    //
+    // #000 is a literal, and it's deliberate: there is no token for it. Ghost's
+    // --color-black is oklch(20.38%), which is the same colour as the dark card
+    // surface (--color-sidebar-bg, 20.4%) — setting the canvas to it looks like
+    // nothing happened. And --background, the page, is 17.8%, DARKER than the
+    // system's own "black". So the palette has no stop below the page, and every
+    // token option lands either on the page fill or on the card fill.
+    //
+    // The one bespoke value in this table, held to the one thing tokens can't
+    // express. If a true black ever gets a token, this is the line to replace.
+    //
+    // It also retires the old objection to a black canvas — that the shipping
+    // editor's insert buttons rendered as holes on it. Here the buttons take
+    // --canvas-fill like everything else, so they're the same black and read as
+    // slots by their dashed border, which is the intent.
+    //
+    // No review entry, deliberately. Repainting the whole canvas to say a member is
+    // selected was too big a move for what it reports — the surface is the largest
+    // thing on screen and recolouring it announced a change of mode when all that
+    // happened was a row being clicked. The inset frame and the member button carry
+    // it instead, both of which sit where the change actually is.
+    exploration: {
+        base: '[--canvas-fill:var(--color-grey-100)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]'
+    }
+};
 
-export const REACT_FLOW_THEME = `[--xy-background-color:var(--color-grey-50)] dark:[--xy-background-color:var(--background)] ${CANVAS_MARKS}`;
+// Maps our names onto React Flow's. Constant — only the table above changes.
+const CANVAS_FLOW_VARS = '[--xy-background-color:var(--canvas-fill)] [--xy-background-pattern-color:var(--canvas-dots)] [--xy-edge-stroke:var(--canvas-edge)]';
 
-// Reviewing one member's run: the canvas takes a blue cast, so the mode is stated
-// by the surface itself rather than only by chrome drawn on top of it. Tinting
-// rather than darkening — a member's run is a state to be in, not a dimming of what
-// surrounds it, and the blue ties the field to the blue the current step already
-// carries on its card border.
-//
-// Light and dark are named separately because the palette doesn't flip: blue-50 is
-// the faintest wash at the light end, blue-950 the nearest equivalent at the dark
-// end. Both are one stop softer than the first pass, which read as a mode you'd been
-// dropped into rather than a tint over the one you were already in.
-//
-// Applied as a whole theme rather than layered over the default: two arbitrary
-// properties setting the same variable on one element resolve by stylesheet order,
-// not by class order, so overriding a var this way isn't reliable.
-export const REACT_FLOW_THEME_REVIEW = `[--xy-background-color:var(--color-blue-50)] dark:[--xy-background-color:var(--color-blue-950)] ${CANVAS_MARKS}`;
+// review = a member's run is in focus, so the canvas states the mode by its own
+// surface rather than only by chrome drawn over it.
+export const canvasTheme = (release: CanvasRelease, review = false): string => {
+    const theme = CANVAS_THEMES[release];
+    return `${CANVAS_FLOW_VARS} ${(review && theme.review) || theme.base}`;
+};
+
+// The dashed insert buttons read as empty slots cut out of the canvas, so they
+// take its fill — opaque, so the dot pattern doesn't show through the slot.
+// Inherited from the same region, so they can't drift from it.
+export const CANVAS_SLOT_FILL = 'bg-[var(--canvas-fill)]';
 
 // Column layout — a single vertical stack of fixed-width nodes. Node y-positions
 // are derived from each node's *rendered height* plus a constant visible gap, so
@@ -288,19 +328,28 @@ export function panTranslateExtent(
     ];
 }
 
-// Where floating chrome sits inside the canvas: 24px off the sides and the bottom,
-// 16px off the top. The horizontal figure comes from the pane beside it (px-6), so
-// chrome on the canvas lines up with chrome in the panel rather than each carrying
-// its own margin.
+// Where floating chrome sits inside the canvas: 24px off every edge.
 //
-// The bottom is 24 rather than 16 on purpose. At the top the chrome has a header
-// sitting immediately above it, which reads as the boundary and gives the eye
-// somewhere to stop; at the bottom there's nothing but the edge of the canvas, and
-// the same 16px left the controls looking dropped against it. Matching the sides is
-// what makes that corner look deliberate.
+// One number rather than a per-edge argument. It was 24 on the sides and bottom and
+// 16 at the top, each reasoned separately — the sides borrowed the pane's gutter, the
+// bottom matched the sides because 16 looked dropped against a bare edge. Four
+// defensible numbers still add up to a corner that doesn't square up, so it's one
+// value now; the canvas is a window in its own right rather than something taking its
+// measurements off the panel beside it.
 //
 // The zoom controls need it as px because React Flow positions their panel with
-// inline styles — see AutomationCanvasControls, which now takes the inset rather
-// than fixing it. Everything else on the canvas expresses the same numbers as
-// Tailwind (top-4 / left-6).
+// inline styles — see AutomationCanvasControls, which takes the inset rather than
+// fixing it. Everything else on the canvas expresses the same number as Tailwind
+// (top-6 / left-6).
 export const CANVAS_HUD_INSET = {bottom: 24, left: 24};
+
+// Floating controls on the canvas are Shade Buttons on the outline variant — the
+// same control the rest of Ghost uses — with one addition: outline is bg-transparent,
+// and a transparent button over the dot grid reads as a hole rather than a thing, so
+// they take an opaque surface. No shadow: no button in Ghost carries one, and the
+// elevation here is the border plus being opaque over a texture.
+//
+// h-9 because Shade's own two sizes disagree — size="icon" is 36px while a default
+// button is h-(--control-height) at 32px — and a labelled button next to an icon one
+// has to pick the same number or they read as different classes of control.
+export const CANVAS_HUD_BUTTON = 'h-9 bg-surface-elevated';

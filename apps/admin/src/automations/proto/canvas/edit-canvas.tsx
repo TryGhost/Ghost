@@ -10,7 +10,7 @@ import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTi
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerSummary} from '@/automations/proto/shared/trigger-config';
-import {CANVAS_HUD_INSET, CANVAS_SURFACE, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, type StepKind, formatWait, orderActions, panTranslateExtent, stepKindIcon, useCenteredColumn, useMeasuredColumn} from './flow-utils';
+import {CANVAS_HUD_INSET, CANVAS_SLOT_FILL, EDGE_STROKE, HIDDEN_HANDLE_STYLE, type StepKind, formatWait, orderActions, panTranslateExtent, stepKindIcon, useCenteredColumn, useMeasuredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter, EmailStatsInline} from './email-analytics';
 import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
@@ -28,11 +28,11 @@ const splitWait = (hours: number): {amount: number; unit: 'days' | 'hours'} => (
 const waitToHours = (amount: number, unit: 'days' | 'hours'): number => (unit === 'days' ? amount * 24 : amount);
 
 // Dashed circular "insert step" button, matched to the real add-step-edge.
-// CANVAS_SURFACE: these read as an empty slot cut out of the canvas, so they take
+// CANVAS_SLOT_FILL: these read as an empty slot cut out of the canvas, so they
 // the canvas's own fill (opaque, so the dot pattern doesn't show through the slot).
 // Previously --surface-page, which is pure black in dark mode — darker than the
 // canvas it sat on, so the buttons rendered as holes.
-const INSERT_BUTTON_CLASSES = `border-dashed border-border-default ${CANVAS_SURFACE} text-text-secondary shadow-sm hover:border-border-strong`;
+const INSERT_BUTTON_CLASSES = `border-dashed border-border-default ${CANVAS_SLOT_FILL} text-text-secondary shadow-sm hover:border-border-strong`;
 
 // The steps you can add, in the shared icon/title/description shape. Same rows
 // the trigger picker uses, so "what starts this" and "what happens next" are
@@ -238,7 +238,7 @@ const TailNode: React.FC<NodeProps> = ({data}) => {
         <div className="flex w-[400px]">
             <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
             <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
-                <button aria-label="Add step" className={`flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default ${CANVAS_SURFACE} text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none`} type="button">
+                <button aria-label="Add step" className={`flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default ${CANVAS_SLOT_FILL} text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none`} type="button">
                     <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
                 </button>
             </AddStepPopover>
@@ -439,7 +439,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerC
         <div className="relative flex size-full">
             <div ref={canvasRef} className="min-h-0 flex-1">
                 <ReactFlow
-                    className={REACT_FLOW_THEME}
                     edges={edges}
                     edgeTypes={edgeTypes}
                     maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}

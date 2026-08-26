@@ -14,7 +14,7 @@ import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
 //   once the automation exists, so its card renders locked. Chrome stays docked:
 //   header, pane and canvas are three abutting surfaces separated by rules.
 //
-// 'future' — where it's heading. Edits autosave into a draft, so the question
+// 'future' (shown as "Exploration") — where it could go. Edits autosave into a draft, so the question
 //   becomes which changes are live rather than whether they're saved, and the
 //   header carries the unpublished-changes review. The trigger becomes editable.
 //   Chrome flattens: header and pane sit unbordered on the page and the canvas
@@ -29,6 +29,11 @@ export const PHASE_SLOT: ProtoSlot = {
     // First entry is the default for fresh visitors.
     variants: [
         {id: 'phase-1', label: 'Phase 1'},
-        {id: 'future', label: 'Future'}
+        // Labelled "Exploration", not "Future". The id stays 'future' because it's
+        // internal and renaming it would only reset stored selections — but the label
+        // is what a reviewer reads, and "Future" claimed a roadmap this hasn't got.
+        // It reads as work already committed to and scheduled, which invites engineers
+        // to cost it rather than react to it. "Exploration" says what it is.
+        {id: 'future', label: 'Exploration'}
     ]
 };

@@ -10,7 +10,7 @@ import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock'
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerLabel, triggerReviewLabel, triggerSummary} from '@/automations/proto/shared/trigger-config';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {CANVAS_HUD_INSET, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REACT_FLOW_THEME_REVIEW, type StepKind, formatWait, orderActions, panTranslateExtent, stepKindIcon, useCenteredColumn, useMeasuredColumn} from './flow-utils';
+import {CANVAS_HUD_INSET, EDGE_STROKE, HIDDEN_HANDLE_STYLE, type StepKind, formatWait, orderActions, panTranslateExtent, stepKindIcon, useCenteredColumn, useMeasuredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
@@ -386,7 +386,6 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, 
         <div className="relative size-full">
             <div ref={canvasRef} className="size-full">
             <ReactFlow
-                className={focused ? REACT_FLOW_THEME_REVIEW : REACT_FLOW_THEME}
                 edges={edges}
                 maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
                 minZoom={CANVAS_ZOOM_CONFIG.minZoom}

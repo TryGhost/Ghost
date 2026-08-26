@@ -40,7 +40,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     flat = false
 }) => (
     <header className={cn(
-        'relative z-30 flex h-16 shrink-0 items-center justify-between px-4',
+        'relative z-30 flex h-16 shrink-0 items-center justify-between',
+        // Flat matches the pane's own 24px gutter, so the header's controls start on
+        // the same vertical as the column beneath them — and on the same one as the
+        // canvas HUD, which takes its 24px from the pane too. One line down the left
+        // of the screen rather than three.
+        flat ? 'px-6' : 'px-4',
         // Docked: the header is its own elevated surface, separated from the
         // content below by a rule. Flat: no fill and no rule, so the page
         // background runs straight through it.

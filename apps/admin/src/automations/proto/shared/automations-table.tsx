@@ -4,6 +4,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tr
 import {cn, formatNumber} from '@tryghost/shade/utils';
 import {Link} from '@tryghost/admin-x-framework';
 import {AUTOMATION_DESCRIPTIONS, getScenario} from './mock';
+import {startedLabel} from './member-runs';
 import {StatusBadge} from './status-badge';
 import {useVersionLink} from './use-version-link';
 
@@ -12,35 +13,38 @@ import {useVersionLink} from './use-version-link';
 // metrics (via getScenario), same row shape. Only the link destination
 // differs per concept, via `basePath`.
 
-// Deterministic "now" so relative dates stay consistent across concepts and
-// don't drift as real time passes while the proto is being reviewed.
-const NOW_MS = new Date('2026-07-21T09:12:00Z').getTime();
-
-const relRunDate = (iso: string | null): string => {
-    if (!iso) {
-        return 'Never';
-    }
-    const mins = Math.round((NOW_MS - new Date(iso).getTime()) / 60_000);
-    if (mins < 1) {
-        return 'Just now';
-    }
-    if (mins < 60) {
-        return `${mins} minute${mins === 1 ? '' : 's'} ago`;
-    }
-    const hours = Math.round(mins / 60);
-    if (hours < 24) {
-        return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-    }
-    const days = Math.round(hours / 24);
-    return `${days} day${days === 1 ? '' : 's'} ago`;
-};
+// Last entry, worded by Shade's formatTimestamp like every other timestamp in
+// Ghost — "4 hr ago", "Yesterday", then a short date.
+//
+// This was a hand-rolled ladder with its own vocabulary ("4 hours ago", "2
+// minutes ago"), which is what the runs table used to do before it moved to the
+// shared formatter. The two then disagreed about the same moment: a run read
+// "4 hr ago" in the detail pane and "4 hours ago" in the list.
+//
+// startedLabel rather than formatTimestamp directly, because fixtures are
+// authored against a fixed clock and have to be shifted onto the real one first
+// — member-runs owns that shift and exports it for exactly this reason.
+const relRunDate = (iso: string | null): string => (iso ? startedLabel(iso) : 'Never');
 
 // Shared grid template so the header and every row line up. Mobile collapses
 // to name + status; the entry/count columns appear from `lg` up.
-const gridCols = 'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_170px_130px_130px_110px]';
+//
+// The four data columns are one width, and the name takes whatever is left. They
+// used to be 170/130/130/110, sized to their own content — which was invisible
+// while every column was left-aligned, and obvious the moment the figures moved
+// to the right edge: the gaps between a heading and its own numbers were all
+// different, so the block read as drifting rather than as a grid. Equal columns
+// put every value the same distance from the one beside it.
+const gridCols = 'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_130px_130px_130px_130px]';
 
+// text-right + font-mono + text-sm is how every numeric table column in the app
+// renders — analytics newsletters, analytics growth, growth sources and post
+// analytics all carry this exact string. Numbers that stack down a column are
+// read by comparing them, and mono's fixed advance is what lets the digits line
+// up to be compared; the headline figures elsewhere stay sans because they're
+// read once rather than against each other.
 const MetricCell: React.FC<{value: number}> = ({value}) => (
-    <TableCell className={cn('hidden lg:block lg:p-4', value === 0 && 'text-muted-foreground')}>
+    <TableCell className={cn('hidden text-right font-mono text-sm lg:block lg:p-4', value === 0 && 'text-muted-foreground')}>
         {formatNumber(value)}
     </TableCell>
 );
@@ -93,8 +97,10 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({automations, 
             <TableRow className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', gridCols)}>
                 <TableHead className="lg:px-4">Name</TableHead>
                 <TableHead className="lg:px-4">Last entry</TableHead>
-                <TableHead className="lg:px-4">Total entries</TableHead>
-                <TableHead className="lg:px-4">In progress</TableHead>
+                {/* Right-aligned to sit over the right-aligned figures below, the
+                    same pairing the analytics tables use. */}
+                <TableHead className="text-right lg:px-4">Total entries</TableHead>
+                <TableHead className="text-right lg:px-4">In progress</TableHead>
                 <TableHead className="lg:px-4">Status</TableHead>
             </TableRow>
         </TableHeader>

@@ -5,6 +5,11 @@ export interface LeftPanelProps {
     scenario: AutomationScenario;
     selectedMemberId: string | null;
     onSelectMember: (runId: string | null) => void;
+    // The member search term. Owned by the screen rather than the pane, because
+    // Exploration puts the field in the header while phase 1 keeps it in the pane's
+    // own strip — same filter, two homes, so the value can't live in either one.
+    query: string;
+    onQueryChange: (query: string) => void;
     // Hold the pane toggle's footprint open ahead of the title. The button itself
     // isn't ours — it's positioned on the row that holds both the pane and the
     // canvas, so it can stay put while the pane slides out from under it — but the

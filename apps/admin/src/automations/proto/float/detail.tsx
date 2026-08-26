@@ -14,7 +14,7 @@ import {LeftPanel} from './left-panel';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig} from '@/automations/proto/shared/trigger-config';
 import {useProtoVariant} from '@/automations/proto/shared/proto-variants';
-import {CANVAS_SURFACE} from '@/automations/proto/canvas/flow-utils';
+import {CANVAS_HUD_BUTTON, CANVAS_SLOT_FILL, canvasTheme} from '@/automations/proto/canvas/flow-utils';
 import {EditCanvas} from '@/automations/proto/canvas/edit-canvas';
 import {FlowCanvas} from '@/automations/proto/canvas/flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
@@ -129,6 +129,11 @@ const AutomationFloat: React.FC = () => {
     const scenario = id ? getScenario(id) : undefined;
 
     const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+
+    // Member search. Held by the screen rather than the pane so the pane stays a
+    // presentational column — it renders the field and reports typing, and nothing
+    // about where the field lives is baked into where the value is kept.
+    const [query, setQuery] = useState('');
     const [liveStatus, setLiveStatus] = useState<LiveStatus>(scenario?.automation.status ?? 'active');
     const [saveState, setSaveState] = useState<SaveState>('saved');
     const [stopOpen, setStopOpen] = useState(false);
@@ -484,9 +489,11 @@ const AutomationFloat: React.FC = () => {
                 <div className="flex min-h-0 w-[480px] flex-1 flex-col">
                     <LeftPanel
                         flat={flatChrome}
+                        query={query}
                         reserveToggle={isPhaseOne}
                         scenario={scenario}
                         selectedMemberId={selectedMemberId}
+                        onQueryChange={setQuery}
                         onSelectMember={setSelectedMemberId}
                     />
                 </div>
@@ -498,28 +505,44 @@ const AutomationFloat: React.FC = () => {
                 background can't disagree at the edges. */}
             <div className={cn(
                 'relative min-w-0 flex-1 overflow-hidden',
-                CANVAS_SURFACE,
+                // This region owns the canvas palette. Everything inside it — both
+                // canvases and the dashed insert buttons — reads the fill, dots and
+                // edge colour from here by inheritance, so the two releases can look
+                // completely different without either canvas knowing which one it is.
+                CANVAS_SLOT_FILL,
+                canvasTheme(isPhaseOne ? 'phase-1' : 'exploration', Boolean(selectedRun)),
                 // Flat chrome makes this the only bounded thing on screen, so it
                 // reads as an object: inset from the page, with a radius closing
                 // the shape.
                 //
-                // Right and bottom only. The gaps above and to the left are
-                // already paid for — the header's own height sets the one, the
-                // pane's px-6 sets the other — so margins there stacked a second
-                // gutter on top of a gutter that was already the right size.
+                // Right and bottom always, at 24px to match the gutters the pane and
+                // the HUD already use. The gap above is already paid for by the
+                // header's own height, so a margin there would stack a second gutter
+                // on a gutter that was already the right size.
+                //
+                // Collapsing the pane MAXIMISES the canvas: every margin and the radius
+                // go, and it fills everything under the header. Windowed, it keeps its
+                // 24px on the right and bottom while the pane's own gutter holds the
+                // left — a margin there too would double that gutter.
+                //
+                // The two states are meant to read as different modes rather than as the
+                // same window at two sizes, which is why the radius goes rather than
+                // just the margins: a rounded rectangle pinned to the screen edges reads
+                // as a window that failed to fit. Transitioned on the same 150ms as the
+                // pane's width so the edges move together.
                 //
                 // Margin rather than padding on the row, so collapsing the pane
                 // slides the window leftward to the page edge instead of dragging
                 // a gutter along with it.
                 //
-                // The border runs all four sides even though only two of them are
-                // inset. In light the flow's grey-50 fill would delimit the window
-                // on its own, but in dark that fill and the page background are the
-                // same token by design — so without a rule there'd be nothing but
-                // the dot pattern marking where the canvas ends. Carrying it on the
-                // flush edges too keeps the window one closed shape rather than
-                // something that fades out where it meets the header and pane.
-                flatChrome && 'mr-3 mb-3 rounded-xl border border-border-default'
+                // No border. The flow's own fill is what delimits the window now, and
+                // a rule as well was drawing the same edge twice at a scale where the
+                // radius already reads as a shape. Worth knowing what this costs in
+                // DARK: the flow fill and the page background are the same token
+                // there by design, so the only thing marking where the canvas ends is
+                // the dot pattern stopping.
+                flatChrome && 'transition-[margin] duration-150 ease-out',
+                flatChrome && (paneCollapsed ? 'm-0 rounded-none' : 'mr-6 mb-6 ml-0 rounded-2xl')
             )}>
                 {/* Both canvases stay mounted and crossfade on mode change. No remount
                     means the incoming flow is already centred — no first-frame node flash.
@@ -528,38 +551,16 @@ const AutomationFloat: React.FC = () => {
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
                     <FlowCanvas automation={publishedFlow} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
                 </div>
-                {/* Reviewing a member: the canvas takes an inset frame, stating
-                    "you're inside this member's run" once at region scale instead of
-                    leaving it to card states.
-
-                    A hairline now, and blue rather than grey-800. The frame used to be
-                    the only thing carrying the mode, so it had to be heavy enough to
-                    be seen against an unchanged canvas; the tinted fill behind it says
-                    that now, and the frame's job shrank to closing the tinted field.
-                    One stop off the fill in each mode (blue-100 on blue-50, blue-900
-                    on blue-950) so it reads as the edge of that surface rather than a
-                    rule drawn across it. The dark: variant is the usual palette
-                    exception — these stops are fixed values, so only naming both ends
-                    gets the pairing right in each mode.
-
-                    An overlay rather than a border on the region itself, so entering
-                    review doesn't shift the canvas by the frame width. */}
-                {selectedRun && !showEditCanvas && (
-                    <div className={cn('pointer-events-none absolute inset-0 z-10 border border-blue-100 dark:border-blue-900', flatChrome && 'rounded-xl')} />
-                )}
-
                 {/* One top-left cluster, not two things at the same coordinates: the
                     pane toggle (future's — phase 1's is anchored to the row below) and
                     the member button can both be present at once, so they sit in a row
                     and neither has to know about the other.
 
-                    top-4 left-6 is the HUD inset every floating thing on this canvas
-                    uses: 16px from the top and bottom edges, 24px from the sides. Taken
-                    from the pane beside it (pt-4 / px-6), so chrome on the canvas lines
-                    up with chrome in the panel instead of each carrying its own
-                    margin. */}
+                    top-6 left-6 is the HUD inset every floating thing on this canvas
+                    uses — 24px off every edge, matching CANVAS_HUD_INSET, which the zoom
+                    controls take in the opposite corner. */}
                 {(!isPhaseOne || (selectedRun && !showEditCanvas)) && (
-                    <div className="absolute top-4 left-6 z-20">
+                    <div className="absolute top-6 left-6 z-20">
                         <Inline align="center" gap="sm">
                             {/* Phase 1's toggle is anchored to the row, not to this
                                 cluster — and once the pane collapses the canvas starts at
@@ -589,33 +590,40 @@ const AutomationFloat: React.FC = () => {
                                 permanent toggle in the header bar and never renders this.
 
                                 Ghost, with no surface of its own: this is chrome for
-                                getting the pane out of the way, not an object on the
+                                changing what the canvas occupies, not an object on the
                                 canvas, and an opaque fill here made it compete with the
-                                member button beside it. The label carries the state for
-                                screen readers, since one glyph serves both directions.
+                                member button beside it.
 
-                                Future only. Phase 1's toggle is anchored to the row
-                                instead (below) so that it can hold still while the pane
-                                slides; here the button belongs to the canvas and travels
-                                with it. */}
+                                Maximise / minimise rather than a panel glyph. The same
+                                press still shows and hides the pane, but the pane is not
+                                what you're looking at when you reach for a control in
+                                the CANVAS's corner — from here the visible effect is the
+                                canvas taking the screen and giving it back. Phase 1's
+                                toggle sits on the seam between the two regions and keeps
+                                PanelLeft, because from there it genuinely reads as the
+                                panel's control.
+
+                                Future only. Phase 1's is anchored to the row instead
+                                (below) so it can hold still while the pane collapses;
+                                here the button belongs to the canvas and travels with
+                                it. */}
                             {!isPhaseOne && (
+                                // Sits on the 24px inset as a whole object. It was a bare
+                                // ghost button pulled back by -ml-2 to put its GLYPH on
+                                // the inset — right for a mark floating on the canvas,
+                                // wrong now that it has a surface of its own.
                                 <Button
-                                    aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
-                                    aria-pressed={!paneCollapsed}
-                                    // A ghost icon button is a 36px box around a 16px
-                                    // glyph, so sitting its BOX on the 24px inset would
-                                    // put the mark itself 10px further in than every
-                                    // bordered thing beside it. -ml-2 pulls the box back
-                                    // so the glyph lands on the inset — the same trick,
-                                    // and the same value, the pane uses on its own
-                                    // leading button.
-                                    className="-ml-2"
+                                    aria-label={paneCollapsed ? 'Restore canvas' : 'Maximise canvas'}
+                                    aria-pressed={paneCollapsed}
+                                    className={CANVAS_HUD_BUTTON}
                                     size="icon"
                                     type="button"
-                                    variant="ghost"
+                                    variant="outline"
                                     onClick={() => setPaneCollapsed(!paneCollapsed)}
                                 >
-                                    <LucideIcon.PanelLeft strokeWidth={2} />
+                                    {paneCollapsed
+                                        ? <LucideIcon.Minimize strokeWidth={2} />
+                                        : <LucideIcon.Maximize strokeWidth={2} />}
                                 </Button>
                             )}
                             {/* Who you're looking at, and the way out, as one control:
@@ -638,15 +646,9 @@ const AutomationFloat: React.FC = () => {
                             {selectedRun && !showEditCanvas && (
                                 <Button
                                     aria-label={`Close ${selectedRun.member.name}'s run`}
-                                    // h-9 to match the icon buttons it lines up with —
-                                    // the pane toggle beside it and the search/filter
-                                    // pair in the pane's own strip are all size="icon",
-                                    // which Shade resolves to size-9 (36px), while a
-                                    // default button is h-(--control-height) at 32px. Four
-                                    // pixels short read as a different class of control
-                                    // sitting on the same row. cn's twMerge drops the
-                                    // variant's own height in favour of this one.
-                                    className="h-9 bg-surface-elevated shadow-sm"
+                                    // Same chrome as the maximise toggle beside it, so
+                                    // the two read as one set of canvas controls.
+                                    className={CANVAS_HUD_BUTTON}
                                     type="button"
                                     variant="outline"
                                     onClick={() => setSelectedMemberId(null)}
