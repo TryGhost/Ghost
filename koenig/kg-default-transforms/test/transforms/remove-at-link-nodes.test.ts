@@ -1,514 +1,514 @@
-import {ParagraphNode, TextNode} from 'lexical';
-import {registerRemoveAtLinkNodesTransform} from '../../src/index.js';
-import {assertTransform, createEditor} from '../utils.js';
-import type {LexicalEditor} from 'lexical';
-import {AtLinkNode, AtLinkSearchNode, ZWNJNode} from '@tryghost/kg-default-nodes';
+import { ParagraphNode, TextNode } from 'lexical';
+import { registerRemoveAtLinkNodesTransform } from '../../src/index.js';
+import { assertTransform, createEditor } from '../utils.js';
+import type { LexicalEditor } from 'lexical';
+import { AtLinkNode, AtLinkSearchNode, ZWNJNode } from '@tryghost/kg-default-nodes';
 
 const nodes = [AtLinkNode, AtLinkSearchNode, ZWNJNode, TextNode, ParagraphNode];
 
 describe('Remove AtLink nodes transform', function () {
-    it('removes when only node in paragraph', function () {
-        const before = {
-            root: {
+  it('removes when only node in paragraph', function () {
+    const before = {
+      root: {
+        children: [
+          {
+            children: [
+              {
                 children: [
-                    {
-                        children: [
-                            {
-                                children: [
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: '',
-                                        type: 'zwnj',
-                                        version: 1
-                                    },
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: 'test',
-                                        type: 'at-link-search',
-                                        version: 1,
-                                        placeholder: null
-                                    }
-                                ],
-                                direction: 'ltr',
-                                format: '',
-                                indent: 0,
-                                type: 'at-link',
-                                version: 1,
-                                linkFormat: 0
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: '',
+                    type: 'zwnj',
+                    version: 1,
+                  },
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'test',
+                    type: 'at-link-search',
+                    version: 1,
+                    placeholder: null,
+                  },
                 ],
                 direction: 'ltr',
                 format: '',
                 indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+                type: 'at-link',
+                version: 1,
+                linkFormat: 0,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const after = {
-            root: {
+    const after = {
+      root: {
+        children: [
+          {
+            children: [],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
+
+    const registerTransforms = (editor: LexicalEditor) => {
+      registerRemoveAtLinkNodesTransform(editor);
+    };
+
+    const editor = createEditor({ nodes });
+
+    assertTransform(editor, registerTransforms, before, after);
+  });
+
+  it('removes when at start of paragraph', function () {
+    const before = {
+      root: {
+        children: [
+          {
+            children: [
+              {
                 children: [
-                    {
-                        children: [],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: '',
+                    type: 'zwnj',
+                    version: 1,
+                  },
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'test',
+                    type: 'at-link-search',
+                    version: 1,
+                    placeholder: null,
+                  },
                 ],
                 direction: 'ltr',
                 format: '',
                 indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+                type: 'at-link',
+                version: 1,
+                linkFormat: 0,
+              },
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: ' After',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerRemoveAtLinkNodesTransform(editor);
-        };
+    const after = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'After',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const editor = createEditor({nodes});
+    const registerTransforms = (editor: LexicalEditor) => {
+      registerRemoveAtLinkNodesTransform(editor);
+    };
 
-        assertTransform(editor, registerTransforms, before, after);
-    });
+    const editor = createEditor({ nodes });
 
-    it('removes when at start of paragraph', function () {
-        const before = {
-            root: {
+    assertTransform(editor, registerTransforms, before, after);
+  });
+
+  it('removes when at end of paragraph', function () {
+    const before = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Before ',
+                type: 'text',
+                version: 1,
+              },
+              {
                 children: [
-                    {
-                        children: [
-                            {
-                                children: [
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: '',
-                                        type: 'zwnj',
-                                        version: 1
-                                    },
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: 'test',
-                                        type: 'at-link-search',
-                                        version: 1,
-                                        placeholder: null
-                                    }
-                                ],
-                                direction: 'ltr',
-                                format: '',
-                                indent: 0,
-                                type: 'at-link',
-                                version: 1,
-                                linkFormat: 0
-                            },
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: ' After',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: '',
+                    type: 'zwnj',
+                    version: 1,
+                  },
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'test',
+                    type: 'at-link-search',
+                    version: 1,
+                    placeholder: null,
+                  },
                 ],
                 direction: 'ltr',
                 format: '',
                 indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+                type: 'at-link',
+                version: 1,
+                linkFormat: 0,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const after = {
-            root: {
+    const after = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Before',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
+
+    const registerTransforms = (editor: LexicalEditor) => {
+      registerRemoveAtLinkNodesTransform(editor);
+    };
+
+    const editor = createEditor({ nodes });
+
+    assertTransform(editor, registerTransforms, before, after);
+  });
+
+  it('removes when surrounded by text', function () {
+    const before = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Testing Before ',
+                type: 'text',
+                version: 1,
+              },
+              {
                 children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'After',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: '',
+                    type: 'zwnj',
+                    version: 1,
+                  },
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'search',
+                    type: 'at-link-search',
+                    version: 1,
+                    placeholder: null,
+                  },
                 ],
                 direction: 'ltr',
                 format: '',
                 indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+                type: 'at-link',
+                version: 1,
+                linkFormat: 0,
+              },
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: ' After',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerRemoveAtLinkNodesTransform(editor);
-        };
+    const after = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Testing Before After',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const editor = createEditor({nodes});
+    const registerTransforms = (editor: LexicalEditor) => {
+      registerRemoveAtLinkNodesTransform(editor);
+    };
 
-        assertTransform(editor, registerTransforms, before, after);
-    });
+    const editor = createEditor({ nodes });
 
-    it('removes when at end of paragraph', function () {
-        const before = {
-            root: {
+    assertTransform(editor, registerTransforms, before, after);
+  });
+
+  it('removes when succeeded by period', function () {
+    const before = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Test ',
+                type: 'text',
+                version: 1,
+              },
+              {
                 children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Before ',
-                                type: 'text',
-                                version: 1
-                            },
-                            {
-                                children: [
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: '',
-                                        type: 'zwnj',
-                                        version: 1
-                                    },
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: 'test',
-                                        type: 'at-link-search',
-                                        version: 1,
-                                        placeholder: null
-                                    }
-                                ],
-                                direction: 'ltr',
-                                format: '',
-                                indent: 0,
-                                type: 'at-link',
-                                version: 1,
-                                linkFormat: 0
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: '',
+                    type: 'zwnj',
+                    version: 1,
+                  },
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'search',
+                    type: 'at-link-search',
+                    version: 1,
+                    placeholder: null,
+                  },
                 ],
                 direction: 'ltr',
                 format: '',
                 indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+                type: 'at-link',
+                version: 1,
+                linkFormat: 0,
+              },
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: '.',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const after = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Before',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+    const after = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Test.',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
 
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerRemoveAtLinkNodesTransform(editor);
-        };
+    const registerTransforms = (editor: LexicalEditor) => {
+      registerRemoveAtLinkNodesTransform(editor);
+    };
 
-        const editor = createEditor({nodes});
+    const editor = createEditor({ nodes });
 
-        assertTransform(editor, registerTransforms, before, after);
-    });
+    assertTransform(editor, registerTransforms, before, after);
+  });
 
-    it('removes when surrounded by text', function () {
-        const before = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Testing Before ',
-                                type: 'text',
-                                version: 1
-                            },
-                            {
-                                children: [
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: '',
-                                        type: 'zwnj',
-                                        version: 1
-                                    },
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: 'search',
-                                        type: 'at-link-search',
-                                        version: 1,
-                                        placeholder: null
-                                    }
-                                ],
-                                direction: 'ltr',
-                                format: '',
-                                indent: 0,
-                                type: 'at-link',
-                                version: 1,
-                                linkFormat: 0
-                            },
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: ' After',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+  it('can register without node loaded in editor', function () {
+    const registerTransforms = (editor: LexicalEditor) => {
+      registerRemoveAtLinkNodesTransform(editor);
+    };
 
-        const after = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Testing Before After',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+    const editor = createEditor({ nodes: [] });
 
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerRemoveAtLinkNodesTransform(editor);
-        };
-
-        const editor = createEditor({nodes});
-
-        assertTransform(editor, registerTransforms, before, after);
-    });
-
-    it('removes when succeeded by period', function () {
-        const before = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Test ',
-                                type: 'text',
-                                version: 1
-                            },
-                            {
-                                children: [
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: '',
-                                        type: 'zwnj',
-                                        version: 1
-                                    },
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: 'search',
-                                        type: 'at-link-search',
-                                        version: 1,
-                                        placeholder: null
-                                    }
-                                ],
-                                direction: 'ltr',
-                                format: '',
-                                indent: 0,
-                                type: 'at-link',
-                                version: 1,
-                                linkFormat: 0
-                            },
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: '.',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
-
-        const after = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Test.',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
-
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerRemoveAtLinkNodesTransform(editor);
-        };
-
-        const editor = createEditor({nodes});
-
-        assertTransform(editor, registerTransforms, before, after);
-    });
-
-    it('can register without node loaded in editor', function () {
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerRemoveAtLinkNodesTransform(editor);
-        };
-
-        const editor = createEditor({nodes: []});
-
-        registerTransforms(editor);
-        editor.update(() => {}, {discrete: true});
-    });
+    registerTransforms(editor);
+    editor.update(() => {}, { discrete: true });
+  });
 });

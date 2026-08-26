@@ -3,9 +3,9 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    redirectsWrongFormat: 'Incorrect redirects file format.',
-    invalidRedirectsFromRegex: 'Incorrect RegEx in redirects file.',
-    redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects'
+  redirectsWrongFormat: 'Incorrect redirects file format.',
+  invalidRedirectsFromRegex: 'Incorrect RegEx in redirects file.',
+  redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
 };
 
 /**
@@ -16,39 +16,42 @@ const messages = {
  * @param {import('@tryghost/adapter-base-redirects').RedirectConfig[]} redirects
  */
 const validate = (redirects) => {
-    if (!_.isArray(redirects)) {
-        throw new errors.ValidationError({
-            message: tpl(messages.redirectsWrongFormat),
-            help: tpl(messages.redirectsHelp)
-        });
+  if (!_.isArray(redirects)) {
+    throw new errors.ValidationError({
+      message: tpl(messages.redirectsWrongFormat),
+      help: tpl(messages.redirectsHelp),
+    });
+  }
+
+  _.each(redirects, function (redirect) {
+    // Guard the entry shape before property access. Without this,
+    // a `null` / scalar entry would throw a raw `TypeError` from
+    // `redirect.from` rather than the user-facing ValidationError.
+    if (
+      !redirect ||
+      typeof redirect !== 'object' ||
+      !isNonEmptyString(redirect.from) ||
+      !isNonEmptyString(redirect.to)
+    ) {
+      throw new errors.ValidationError({
+        message: tpl(messages.redirectsWrongFormat),
+        context: redirect,
+        help: tpl(messages.redirectsHelp),
+      });
     }
 
-    _.each(redirects, function (redirect) {
-        // Guard the entry shape before property access. Without this,
-        // a `null` / scalar entry would throw a raw `TypeError` from
-        // `redirect.from` rather than the user-facing ValidationError.
-        if (!redirect || typeof redirect !== 'object'
-            || !isNonEmptyString(redirect.from)
-            || !isNonEmptyString(redirect.to)) {
-            throw new errors.ValidationError({
-                message: tpl(messages.redirectsWrongFormat),
-                context: redirect,
-                help: tpl(messages.redirectsHelp)
-            });
-        }
-
-        try {
-            new RegExp(redirect.from);
-        } catch (error) {
-            throw new errors.ValidationError({
-                message: tpl(messages.invalidRedirectsFromRegex),
-                context: redirect,
-                help: tpl(messages.redirectsHelp)
-            });
-        }
-    });
+    try {
+      new RegExp(redirect.from);
+    } catch (error) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidRedirectsFromRegex),
+        context: redirect,
+        help: tpl(messages.redirectsHelp),
+      });
+    }
+  });
 };
 
-const isNonEmptyString = value => typeof value === 'string' && value.trim().length > 0;
+const isNonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
 
 module.exports.validate = validate;

@@ -15,33 +15,31 @@
  * receive the same promise, which only resolves once all pending work is
  * finished.
  */
-export const oneAtATime = (
-    fn: () => PromiseLike<unknown>
-): () => Promise<void> => {
-    let promise: null | Promise<void> = null;
-    let queued = false;
+export const oneAtATime = (fn: () => PromiseLike<unknown>): (() => Promise<void>) => {
+  let promise: null | Promise<void> = null;
+  let queued = false;
 
-    const run = async () => {
-        try {
-            await fn();
-        } catch {
-            // noop
-        }
+  const run = async () => {
+    try {
+      await fn();
+    } catch {
+      // noop
+    }
 
-        if (queued) {
-            queued = false;
-            promise = run();
-        } else {
-            promise = null;
-        }
-    };
+    if (queued) {
+      queued = false;
+      promise = run();
+    } else {
+      promise = null;
+    }
+  };
 
-    return () => {
-        if (promise) {
-            queued = true;
-        } else {
-            promise = run();
-        }
-        return promise;
-    };
+  return () => {
+    if (promise) {
+      queued = true;
+    } else {
+      promise = run();
+    }
+    return promise;
+  };
 };

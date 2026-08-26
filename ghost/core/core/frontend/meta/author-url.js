@@ -1,20 +1,26 @@
-const {urlService} = require('../services/proxy');
+const { urlService } = require('../services/proxy');
 const getContextObject = require('./context-object.js');
 
 function getAuthorUrl(data, absolute) {
-    let context = data.context ? data.context[0] : null;
+  let context = data.context ? data.context[0] : null;
 
-    const contextObject = getContextObject(data, context);
+  const contextObject = getContextObject(data, context);
 
-    if (data.author) {
-        return urlService.getUrlForResource({...data.author, type: 'authors'}, {absolute: absolute, withSubdirectory: true});
-    }
+  if (data.author) {
+    return urlService.getUrlForResource(
+      { ...data.author, type: 'authors' },
+      { absolute: absolute, withSubdirectory: true },
+    );
+  }
 
-    if (contextObject && contextObject.primary_author) {
-        return urlService.getUrlForResource({...contextObject.primary_author, type: 'authors'}, {absolute: absolute, withSubdirectory: true});
-    }
+  if (contextObject && contextObject.primary_author) {
+    return urlService.getUrlForResource(
+      { ...contextObject.primary_author, type: 'authors' },
+      { absolute: absolute, withSubdirectory: true },
+    );
+  }
 
-    return null;
+  return null;
 }
 
 module.exports = getAuthorUrl;

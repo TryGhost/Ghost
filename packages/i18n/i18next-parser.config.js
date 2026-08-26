@@ -1,21 +1,21 @@
-const {SUPPORTED_LOCALES} = require('./');
+const { SUPPORTED_LOCALES } = require('./');
 
 /**
  * @type {import('i18next-parser').UserConfig}
  */
 module.exports = {
-    locales: SUPPORTED_LOCALES,
+  locales: SUPPORTED_LOCALES,
 
-    keySeparator: false,
-    namespaceSeparator: false,
+  keySeparator: false,
+  namespaceSeparator: false,
 
-    defaultNamespace: process.env.NAMESPACE || 'translation',
+  defaultNamespace: process.env.NAMESPACE || 'translation',
 
-    createOldCatalogs: false,
-    indentation: 4,
-    sort: true,
+  createOldCatalogs: false,
+  indentation: 4,
+  sort: true,
 
-    failOnUpdate: process.env.CI,
+  failOnUpdate: process.env.CI,
 
-    output: 'locales/$LOCALE/$NAMESPACE.json'
+  output: 'locales/$LOCALE/$NAMESPACE.json',
 };

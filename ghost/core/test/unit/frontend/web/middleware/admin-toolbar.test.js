@@ -6,291 +6,309 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const adminToolbar = require('../../../../../core/frontend/web/middleware/admin-toolbar');
 
 describe('admin toolbar middleware', function () {
-    let sandbox;
+  let sandbox;
 
+  beforeEach(function () {
+    sandbox = sinon.createSandbox();
+    sandbox.stub(settingsCache, 'get').callsFake((key) => {
+      if (key === 'admin_session_secret') {
+        return 'admin-session-secret';
+      }
+
+      return null;
+    });
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+  });
+
+  function createResponse() {
+    const headers = {};
+
+    return {
+      locals: {},
+      getHeader(name) {
+        return headers[name];
+      },
+      setHeader(name, value) {
+        headers[name] = value;
+      },
+      redirect(status, url) {
+        this.redirectStatus = status;
+        this.redirectUrl = url;
+      },
+      get headers() {
+        return headers;
+      },
+    };
+  }
+
+  it('sets a frontend marker cookie and removes admin=1 from the URL', function () {
+    const req = {
+      headers: {},
+      originalUrl: '/welcome/?admin=1&ref=test',
+      query: {
+        admin: '1',
+        ref: 'test',
+      },
+      url: '/welcome/?admin=1&ref=test',
+    };
+    const res = createResponse();
+    const next = sinon.spy();
+
+    adminToolbar(req, res, next);
+
+    assert.equal(next.called, false);
+    assert.equal(res.redirectStatus, 302);
+    assert.equal(res.redirectUrl, '/welcome/?ref=test');
+    assert.match(res.headers['Set-Cookie'][0], /^ghost-admin-toolbar=/);
+    assert.match(res.headers['Set-Cookie'][0], /Max-Age=3600/);
+    assert.match(res.headers['Set-Cookie'][0], /HttpOnly/);
+    assert.match(res.headers['Set-Cookie'][0], /SameSite=Lax/);
+    assert.equal(res.headers['Cache-Control'], 'no-store');
+    assert.equal(res.locals.staffFrontendToolsCookieUpdated, true);
+  });
+
+  it('sets a frontend marker cookie but does not enable the toolbar when hidden by query param', function () {
+    const req = {
+      headers: {},
+      originalUrl: '/welcome/?admin=1&admin_toolbar=0&ref=test',
+      query: {
+        admin: '1',
+        admin_toolbar: '0',
+        ref: 'test',
+      },
+      url: '/welcome/?admin=1&admin_toolbar=0&ref=test',
+    };
+    const res = createResponse();
+    const next = sinon.spy();
+
+    adminToolbar(req, res, next);
+
+    assert.equal(next.calledOnce, true);
+    assert.equal(res.redirectStatus, undefined);
+    assert.equal(res.redirectUrl, undefined);
+    assert.match(res.headers['Set-Cookie'][0], /^ghost-admin-toolbar=/);
+    assert.match(res.headers['Set-Cookie'][0], /Max-Age=3600/);
+    assert.equal(res.headers['Cache-Control'], 'no-store');
+    assert.equal(res.locals.staffFrontendToolsCookieUpdated, true);
+    assert.equal(res.locals.staffFrontendToolsEnabled, false);
+  });
+
+  it('clears the frontend marker cookie and removes admin=0 from the URL', function () {
+    const req = {
+      headers: {},
+      originalUrl: '/welcome/?admin=0&ref=test',
+      query: {
+        admin: '0',
+        ref: 'test',
+      },
+      url: '/welcome/?admin=0&ref=test',
+    };
+    const res = createResponse();
+    const next = sinon.spy();
+
+    adminToolbar(req, res, next);
+
+    assert.equal(next.called, false);
+    assert.equal(res.redirectStatus, 302);
+    assert.equal(res.redirectUrl, '/welcome/?ref=test');
+    assert.match(res.headers['Set-Cookie'][0], /^ghost-admin-toolbar=;/);
+    assert.match(res.headers['Set-Cookie'][0], /Max-Age=0/);
+    assert.match(res.headers['Set-Cookie'][0], /HttpOnly/);
+    assert.equal(res.headers['Cache-Control'], 'no-store');
+  });
+
+  it('does not set a frontend marker cookie if no signing secret is configured', function () {
+    settingsCache.get.withArgs('admin_session_secret').returns(null);
+    settingsCache.get.withArgs('theme_session_secret').returns(null);
+
+    const req = {
+      headers: {},
+      originalUrl: '/welcome/?admin=1',
+      query: {
+        admin: '1',
+      },
+      url: '/welcome/?admin=1',
+    };
+    const res = createResponse();
+
+    adminToolbar(req, res, sinon.spy());
+
+    assert.equal(res.headers['Set-Cookie'], undefined);
+    assert.equal(res.redirectUrl, '/welcome/');
+  });
+
+  it('removes toolbar hide query param from clean admin redirects', function () {
+    const req = {
+      originalUrl: '/welcome/?admin=0&admin_toolbar=0&ref=test',
+      url: '/welcome/?admin=0&admin_toolbar=0&ref=test',
+    };
+
+    assert.equal(adminToolbar._private.getCleanRedirectUrl(req), '/welcome/?ref=test');
+  });
+
+  describe('subdirectory sites', function () {
     beforeEach(function () {
-        sandbox = sinon.createSandbox();
-        sandbox.stub(settingsCache, 'get').callsFake((key) => {
-            if (key === 'admin_session_secret') {
-                return 'admin-session-secret';
-            }
-
-            return null;
-        });
+      sandbox.stub(urlUtils, 'getSiteUrl').returns('https://example.com/changelog/');
+      sandbox.stub(urlUtils, 'getSubdir').returns('/changelog');
     });
 
-    afterEach(function () {
-        sandbox.restore();
+    it('restores the subdirectory when a proxy strips it from the request path', function () {
+      assert.equal(
+        adminToolbar._private.getCleanRedirectUrl({
+          originalUrl: '/?admin=1',
+          url: '/?admin=1',
+        }),
+        '/changelog/',
+      );
+
+      assert.equal(
+        adminToolbar._private.getCleanRedirectUrl({
+          originalUrl: '/welcome/?admin=1&ref=test',
+          url: '/welcome/?admin=1&ref=test',
+        }),
+        '/changelog/welcome/?ref=test',
+      );
     });
 
-    function createResponse() {
-        const headers = {};
+    it('keeps the redirect unchanged when the request path already has the subdirectory', function () {
+      assert.equal(
+        adminToolbar._private.getCleanRedirectUrl({
+          originalUrl: '/changelog/?admin=1',
+          url: '/changelog/?admin=1',
+        }),
+        '/changelog/',
+      );
 
-        return {
-            locals: {},
-            getHeader(name) {
-                return headers[name];
-            },
-            setHeader(name, value) {
-                headers[name] = value;
-            },
-            redirect(status, url) {
-                this.redirectStatus = status;
-                this.redirectUrl = url;
-            },
-            get headers() {
-                return headers;
-            }
-        };
-    }
-
-    it('sets a frontend marker cookie and removes admin=1 from the URL', function () {
-        const req = {
-            headers: {},
-            originalUrl: '/welcome/?admin=1&ref=test',
-            query: {
-                admin: '1',
-                ref: 'test'
-            },
-            url: '/welcome/?admin=1&ref=test'
-        };
-        const res = createResponse();
-        const next = sinon.spy();
-
-        adminToolbar(req, res, next);
-
-        assert.equal(next.called, false);
-        assert.equal(res.redirectStatus, 302);
-        assert.equal(res.redirectUrl, '/welcome/?ref=test');
-        assert.match(res.headers['Set-Cookie'][0], /^ghost-admin-toolbar=/);
-        assert.match(res.headers['Set-Cookie'][0], /Max-Age=3600/);
-        assert.match(res.headers['Set-Cookie'][0], /HttpOnly/);
-        assert.match(res.headers['Set-Cookie'][0], /SameSite=Lax/);
-        assert.equal(res.headers['Cache-Control'], 'no-store');
-        assert.equal(res.locals.staffFrontendToolsCookieUpdated, true);
+      assert.equal(
+        adminToolbar._private.getCleanRedirectUrl({
+          originalUrl: '/changelog/welcome/?admin=0&admin_toolbar=0',
+          url: '/changelog/welcome/?admin=0&admin_toolbar=0',
+        }),
+        '/changelog/welcome/',
+      );
     });
 
-    it('sets a frontend marker cookie but does not enable the toolbar when hidden by query param', function () {
-        const req = {
-            headers: {},
-            originalUrl: '/welcome/?admin=1&admin_toolbar=0&ref=test',
-            query: {
-                admin: '1',
-                admin_toolbar: '0',
-                ref: 'test'
-            },
-            url: '/welcome/?admin=1&admin_toolbar=0&ref=test'
-        };
-        const res = createResponse();
-        const next = sinon.spy();
+    it('redirects to the subdirectory when the toolbar is activated', function () {
+      const req = {
+        headers: {},
+        originalUrl: '/?admin=1',
+        query: {
+          admin: '1',
+        },
+        url: '/?admin=1',
+      };
+      const res = createResponse();
 
-        adminToolbar(req, res, next);
+      adminToolbar(req, res, sinon.spy());
 
-        assert.equal(next.calledOnce, true);
-        assert.equal(res.redirectStatus, undefined);
-        assert.equal(res.redirectUrl, undefined);
-        assert.match(res.headers['Set-Cookie'][0], /^ghost-admin-toolbar=/);
-        assert.match(res.headers['Set-Cookie'][0], /Max-Age=3600/);
-        assert.equal(res.headers['Cache-Control'], 'no-store');
-        assert.equal(res.locals.staffFrontendToolsCookieUpdated, true);
-        assert.equal(res.locals.staffFrontendToolsEnabled, false);
+      assert.equal(res.redirectStatus, 302);
+      assert.equal(res.redirectUrl, '/changelog/');
     });
+  });
 
-    it('clears the frontend marker cookie and removes admin=0 from the URL', function () {
-        const req = {
-            headers: {},
-            originalUrl: '/welcome/?admin=0&ref=test',
-            query: {
-                admin: '0',
-                ref: 'test'
-            },
-            url: '/welcome/?admin=0&ref=test'
-        };
-        const res = createResponse();
-        const next = sinon.spy();
+  it('marks the request when the frontend marker cookie is valid', function () {
+    const token = adminToolbar._private.createToken();
+    const req = {
+      headers: {
+        cookie: `ghost-admin-toolbar=${token}`,
+      },
+      query: {},
+    };
+    const res = createResponse();
+    const next = sinon.spy();
 
-        adminToolbar(req, res, next);
+    adminToolbar(req, res, next);
 
-        assert.equal(next.called, false);
-        assert.equal(res.redirectStatus, 302);
-        assert.equal(res.redirectUrl, '/welcome/?ref=test');
-        assert.match(res.headers['Set-Cookie'][0], /^ghost-admin-toolbar=;/);
-        assert.match(res.headers['Set-Cookie'][0], /Max-Age=0/);
-        assert.match(res.headers['Set-Cookie'][0], /HttpOnly/);
-        assert.equal(res.headers['Cache-Control'], 'no-store');
-    });
+    assert.equal(next.calledOnce, true);
+    assert.equal(res.locals.staffFrontendToolsEnabled, true);
+  });
 
-    it('does not set a frontend marker cookie if no signing secret is configured', function () {
-        settingsCache.get.withArgs('admin_session_secret').returns(null);
-        settingsCache.get.withArgs('theme_session_secret').returns(null);
+  it('does not mark the request when the valid frontend marker cookie is loaded in an iframe', function () {
+    const token = adminToolbar._private.createToken();
+    const req = {
+      headers: {
+        cookie: `ghost-admin-toolbar=${token}`,
+        'sec-fetch-dest': 'iframe',
+      },
+      query: {},
+    };
+    const res = createResponse();
+    const next = sinon.spy();
 
-        const req = {
-            headers: {},
-            originalUrl: '/welcome/?admin=1',
-            query: {
-                admin: '1'
-            },
-            url: '/welcome/?admin=1'
-        };
-        const res = createResponse();
+    adminToolbar(req, res, next);
 
-        adminToolbar(req, res, sinon.spy());
+    assert.equal(next.calledOnce, true);
+    assert.equal(res.locals.staffFrontendToolsEnabled, false);
+  });
 
-        assert.equal(res.headers['Set-Cookie'], undefined);
-        assert.equal(res.redirectUrl, '/welcome/');
-    });
+  it('does not mark the request when the frontend marker cookie is invalid', function () {
+    const req = {
+      headers: {
+        cookie: 'ghost-admin-toolbar=invalid',
+      },
+      query: {},
+    };
+    const res = createResponse();
+    const next = sinon.spy();
 
-    it('removes toolbar hide query param from clean admin redirects', function () {
-        const req = {
-            originalUrl: '/welcome/?admin=0&admin_toolbar=0&ref=test',
-            url: '/welcome/?admin=0&admin_toolbar=0&ref=test'
-        };
+    adminToolbar(req, res, next);
 
-        assert.equal(adminToolbar._private.getCleanRedirectUrl(req), '/welcome/?ref=test');
-    });
+    assert.equal(next.calledOnce, true);
+    assert.equal(res.locals.staffFrontendToolsEnabled, false);
+  });
 
-    describe('subdirectory sites', function () {
-        beforeEach(function () {
-            sandbox.stub(urlUtils, 'getSiteUrl').returns('https://example.com/changelog/');
-            sandbox.stub(urlUtils, 'getSubdir').returns('/changelog');
-        });
+  it('ignores malformed and unrelated cookies', function () {
+    assert.equal(adminToolbar._private.getCookieValue({ headers: {} }), null);
+    assert.equal(
+      adminToolbar._private.getCookieValue({
+        headers: {
+          cookie: 'bad-cookie; other=value',
+        },
+      }),
+      null,
+    );
+  });
 
-        it('restores the subdirectory when a proxy strips it from the request path', function () {
-            assert.equal(adminToolbar._private.getCleanRedirectUrl({
-                originalUrl: '/?admin=1',
-                url: '/?admin=1'
-            }), '/changelog/');
+  it('falls back to the raw cookie value when decoding fails', function () {
+    assert.equal(
+      adminToolbar._private.getCookieValue({
+        headers: {
+          cookie: 'other=value; ghost-admin-toolbar=%E0%A4%A',
+        },
+      }),
+      '%E0%A4%A',
+    );
+  });
 
-            assert.equal(adminToolbar._private.getCleanRedirectUrl({
-                originalUrl: '/welcome/?admin=1&ref=test',
-                url: '/welcome/?admin=1&ref=test'
-            }), '/changelog/welcome/?ref=test');
-        });
+  it('rejects expired frontend marker cookies', function () {
+    const now = Date.now();
+    const token = adminToolbar._private.createToken(now);
 
-        it('keeps the redirect unchanged when the request path already has the subdirectory', function () {
-            assert.equal(adminToolbar._private.getCleanRedirectUrl({
-                originalUrl: '/changelog/?admin=1',
-                url: '/changelog/?admin=1'
-            }), '/changelog/');
+    assert.equal(adminToolbar._private.hasValidToken(token, now + 60 * 60 * 1000 + 1), false);
+  });
 
-            assert.equal(adminToolbar._private.getCleanRedirectUrl({
-                originalUrl: '/changelog/welcome/?admin=0&admin_toolbar=0',
-                url: '/changelog/welcome/?admin=0&admin_toolbar=0'
-            }), '/changelog/welcome/');
-        });
+  it('rejects missing frontend marker cookies', function () {
+    assert.equal(adminToolbar._private.hasValidToken(null), false);
+  });
 
-        it('redirects to the subdirectory when the toolbar is activated', function () {
-            const req = {
-                headers: {},
-                originalUrl: '/?admin=1',
-                query: {
-                    admin: '1'
-                },
-                url: '/?admin=1'
-            };
-            const res = createResponse();
+  it('rejects frontend marker cookies when no signing secret is configured', function () {
+    const token = adminToolbar._private.createToken();
 
-            adminToolbar(req, res, sinon.spy());
+    settingsCache.get.withArgs('admin_session_secret').returns(null);
+    settingsCache.get.withArgs('theme_session_secret').returns(null);
 
-            assert.equal(res.redirectStatus, 302);
-            assert.equal(res.redirectUrl, '/changelog/');
-        });
-    });
+    assert.equal(adminToolbar._private.hasValidToken(token), false);
+  });
 
-    it('marks the request when the frontend marker cookie is valid', function () {
-        const token = adminToolbar._private.createToken();
-        const req = {
-            headers: {
-                cookie: `ghost-admin-toolbar=${token}`
-            },
-            query: {}
-        };
-        const res = createResponse();
-        const next = sinon.spy();
+  it('rejects frontend marker cookies with mismatched signature lengths', function () {
+    const token = adminToolbar._private.createToken();
+    const parts = token.split(':');
 
-        adminToolbar(req, res, next);
+    parts[2] = 'bad';
 
-        assert.equal(next.calledOnce, true);
-        assert.equal(res.locals.staffFrontendToolsEnabled, true);
-    });
-
-    it('does not mark the request when the valid frontend marker cookie is loaded in an iframe', function () {
-        const token = adminToolbar._private.createToken();
-        const req = {
-            headers: {
-                cookie: `ghost-admin-toolbar=${token}`,
-                'sec-fetch-dest': 'iframe'
-            },
-            query: {}
-        };
-        const res = createResponse();
-        const next = sinon.spy();
-
-        adminToolbar(req, res, next);
-
-        assert.equal(next.calledOnce, true);
-        assert.equal(res.locals.staffFrontendToolsEnabled, false);
-    });
-
-    it('does not mark the request when the frontend marker cookie is invalid', function () {
-        const req = {
-            headers: {
-                cookie: 'ghost-admin-toolbar=invalid'
-            },
-            query: {}
-        };
-        const res = createResponse();
-        const next = sinon.spy();
-
-        adminToolbar(req, res, next);
-
-        assert.equal(next.calledOnce, true);
-        assert.equal(res.locals.staffFrontendToolsEnabled, false);
-    });
-
-    it('ignores malformed and unrelated cookies', function () {
-        assert.equal(adminToolbar._private.getCookieValue({headers: {}}), null);
-        assert.equal(adminToolbar._private.getCookieValue({
-            headers: {
-                cookie: 'bad-cookie; other=value'
-            }
-        }), null);
-    });
-
-    it('falls back to the raw cookie value when decoding fails', function () {
-        assert.equal(adminToolbar._private.getCookieValue({
-            headers: {
-                cookie: 'other=value; ghost-admin-toolbar=%E0%A4%A'
-            }
-        }), '%E0%A4%A');
-    });
-
-    it('rejects expired frontend marker cookies', function () {
-        const now = Date.now();
-        const token = adminToolbar._private.createToken(now);
-
-        assert.equal(adminToolbar._private.hasValidToken(token, now + 60 * 60 * 1000 + 1), false);
-    });
-
-    it('rejects missing frontend marker cookies', function () {
-        assert.equal(adminToolbar._private.hasValidToken(null), false);
-    });
-
-    it('rejects frontend marker cookies when no signing secret is configured', function () {
-        const token = adminToolbar._private.createToken();
-
-        settingsCache.get.withArgs('admin_session_secret').returns(null);
-        settingsCache.get.withArgs('theme_session_secret').returns(null);
-
-        assert.equal(adminToolbar._private.hasValidToken(token), false);
-    });
-
-    it('rejects frontend marker cookies with mismatched signature lengths', function () {
-        const token = adminToolbar._private.createToken();
-        const parts = token.split(':');
-
-        parts[2] = 'bad';
-
-        assert.equal(adminToolbar._private.hasValidToken(parts.join(':')), false);
-    });
+    assert.equal(adminToolbar._private.hasValidToken(parts.join(':')), false);
+  });
 });

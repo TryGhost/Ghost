@@ -14,40 +14,40 @@
  * Returns an empty array for renames/binary patches/no patch.
  */
 export function extractAddedLines(patch) {
-    if (!patch || typeof patch !== 'string') return [];
+  if (!patch || typeof patch !== 'string') return [];
 
-    const added = [];
-    let position = 0;
-    let newLine = 0;
-    let inHunk = false;
+  const added = [];
+  let position = 0;
+  let newLine = 0;
+  let inHunk = false;
 
-    for (const line of patch.split('\n')) {
-        if (line.startsWith('@@')) {
-            const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
-            if (!match) continue;
-            newLine = parseInt(match[1], 10) - 1;
-            if (inHunk) position++; // count subsequent hunk headers
-            inHunk = true;
-            continue;
-        }
-
-        if (!inHunk) continue;
-        position++;
-
-        if (line.startsWith('+') && !line.startsWith('+++')) {
-            newLine++;
-            added.push({
-                position,
-                line: newLine,
-                content: line.slice(1)
-            });
-        } else if (line.startsWith('-') && !line.startsWith('---')) {
-            // deletion — new-file line number does not advance
-        } else {
-            // context (leading space) or `\ No newline at end of file` marker
-            if (!line.startsWith('\\')) newLine++;
-        }
+  for (const line of patch.split('\n')) {
+    if (line.startsWith('@@')) {
+      const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+      if (!match) continue;
+      newLine = parseInt(match[1], 10) - 1;
+      if (inHunk) position++; // count subsequent hunk headers
+      inHunk = true;
+      continue;
     }
 
-    return added;
+    if (!inHunk) continue;
+    position++;
+
+    if (line.startsWith('+') && !line.startsWith('+++')) {
+      newLine++;
+      added.push({
+        position,
+        line: newLine,
+        content: line.slice(1),
+      });
+    } else if (line.startsWith('-') && !line.startsWith('---')) {
+      // deletion — new-file line number does not advance
+    } else {
+      // context (leading space) or `\ No newline at end of file` marker
+      if (!line.startsWith('\\')) newLine++;
+    }
+  }
+
+  return added;
 }

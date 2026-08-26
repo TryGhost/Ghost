@@ -1,90 +1,82 @@
 import membersService from '../../services/members';
 
-const INVALIDATE_MEMBERS_CACHE = {value: '/members/'};
+const INVALIDATE_MEMBERS_CACHE = { value: '/members/' };
 
 interface DisableFrame {
-    options: {
-        id: string;
-        context: unknown;
-    };
-    data: {
-        reason: string;
-        expires_at: Date | null;
-        hide_comments: boolean;
-    };
+  options: {
+    id: string;
+    context: unknown;
+  };
+  data: {
+    reason: string;
+    expires_at: Date | null;
+    hide_comments: boolean;
+  };
 }
 
 interface EnableFrame {
-    options: {
-        id: string;
-        context: unknown;
-    };
+  options: {
+    id: string;
+    context: unknown;
+  };
 }
 
 const controller = {
-    docName: 'member_commenting',
+  docName: 'member_commenting',
 
-    disable: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: INVALIDATE_MEMBERS_CACHE
-        },
-        options: [
-            'id'
-        ],
-        data: [
-            'reason',
-            'expires_at',
-            'hide_comments'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            method: 'edit',
-            docName: 'member'
-        },
-        async query(frame: DisableFrame) {
-            return membersService.api.memberBREADService.disableCommenting(
-                frame.options.id,
-                frame.data.reason,
-                frame.data.expires_at || null,
-                frame.data.hide_comments || false,
-                frame.options.context
-            );
-        }
+  disable: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: INVALIDATE_MEMBERS_CACHE,
     },
+    options: ['id'],
+    data: ['reason', 'expires_at', 'hide_comments'],
+    validation: {
+      options: {
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      method: 'edit',
+      docName: 'member',
+    },
+    async query(frame: DisableFrame) {
+      return membersService.api.memberBREADService.disableCommenting(
+        frame.options.id,
+        frame.data.reason,
+        frame.data.expires_at || null,
+        frame.data.hide_comments || false,
+        frame.options.context,
+      );
+    },
+  },
 
-    enable: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: INVALIDATE_MEMBERS_CACHE
+  enable: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: INVALIDATE_MEMBERS_CACHE,
+    },
+    options: ['id'],
+    validation: {
+      options: {
+        id: {
+          required: true,
         },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            method: 'edit',
-            docName: 'member'
-        },
-        async query(frame: EnableFrame) {
-            return membersService.api.memberBREADService.enableCommenting(
-                frame.options.id,
-                frame.options.context
-            );
-        }
-    }
+      },
+    },
+    permissions: {
+      method: 'edit',
+      docName: 'member',
+    },
+    async query(frame: EnableFrame) {
+      return membersService.api.memberBREADService.enableCommenting(
+        frame.options.id,
+        frame.options.context,
+      );
+    },
+  },
 };
 
 // module.exports required - using `export` causes the module to fail to register

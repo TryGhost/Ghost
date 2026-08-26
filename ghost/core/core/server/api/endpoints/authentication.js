@@ -11,251 +11,253 @@ const dbBackup = require('../../data/db/backup');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
-const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
+const userService = new UsersService({ dbBackup, models, auth, apiMail, apiSettings });
 const adapterManager = require('../../services/adapter-manager').default;
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
 async function destroyRequestSession(req) {
-    if (!req || !req.session) {
-        return;
-    }
-    await new Promise((resolve, reject) => {
-        req.session.destroy(err => (err ? reject(err) : resolve()));
-    });
+  if (!req || !req.session) {
+    return;
+  }
+  await new Promise((resolve, reject) => {
+    req.session.destroy((err) => (err ? reject(err) : resolve()));
+  });
 }
 
 const messages = {
-    notTheBlogOwner: 'You are not the site owner.'
+  notTheBlogOwner: 'You are not the site owner.',
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'authentication',
+  docName: 'authentication',
 
-    setup: {
-        statusCode: 201,
-        permissions: false,
-        headers: {
-            cacheInvalidate: true
-        },
-        validation: {
-            docName: 'setup'
-        },
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(false)();
-                })
-                .then(() => {
-                    const setupDetails = {
-                        name: frame.data.setup[0].name,
-                        email: frame.data.setup[0].email,
-                        password: frame.data.setup[0].password,
-                        blogTitle: frame.data.setup[0].blogTitle,
-                        theme: frame.data.setup[0].theme,
-                        accentColor: frame.data.setup[0].accentColor,
-                        description: frame.data.setup[0].description,
-                        status: 'active'
-                    };
-
-                    return auth.setup.setupUser(setupDetails);
-                })
-                .then((data) => {
-                    try {
-                        return auth.setup.doFixtures(data);
-                    } catch (e) {
-                        return data;
-                    }
-                })
-                .then((data) => {
-                    try {
-                        return auth.setup.doProductAndNewsletter(data, api);
-                    } catch (e) {
-                        return data;
-                    }
-                })
-                .then((data) => {
-                    return auth.setup.installTheme(data, api);
-                })
-                .then((data) => {
-                    return auth.setup.doSettings(data, api.settings);
-                })
-                .then((user) => {
-                    auth.setup.sendWelcomeEmail(user.get('email'), api.mail)
-                        .catch((err) => {
-                            logging.error(err);
-                        });
-                    return user;
-                });
-        }
+  setup: {
+    statusCode: 201,
+    permissions: false,
+    headers: {
+      cacheInvalidate: true,
     },
-
-    updateSetup: {
-        headers: {
-            cacheInvalidate: true
-        },
-        permissions: async (frame) => {
-            const owner = await models.User.findOne({role: 'Owner', status: 'all'});
-            if (owner.id !== frame.options.context.user) {
-                throw new errors.NoPermissionError({message: tpl(messages.notTheBlogOwner)});
-            }
-        },
-        validation: {
-            docName: 'setup'
-        },
-        async query(frame) {
-            await auth.setup.assertSetupCompleted(true)();
-
-            const setupDetails = {
-                name: frame.data.setup[0].name,
-                email: frame.data.setup[0].email,
-                password: frame.data.setup[0].password,
-                blogTitle: frame.data.setup[0].blogTitle,
-                status: 'active'
-            };
-
-            const data = await auth.setup.setupUser(setupDetails);
-            return auth.setup.doSettings(data, api.settings);
-        }
+    validation: {
+      docName: 'setup',
     },
+    query(frame) {
+      return Promise.resolve()
+        .then(() => {
+          return auth.setup.assertSetupCompleted(false)();
+        })
+        .then(() => {
+          const setupDetails = {
+            name: frame.data.setup[0].name,
+            email: frame.data.setup[0].email,
+            password: frame.data.setup[0].password,
+            blogTitle: frame.data.setup[0].blogTitle,
+            theme: frame.data.setup[0].theme,
+            accentColor: frame.data.setup[0].accentColor,
+            description: frame.data.setup[0].description,
+            status: 'active',
+          };
 
-    isSetup: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: false,
-        async query() {
-            const isSetup = await auth.setup.checkIsSetup();
-
-            if (isSetup) {
-                return {
-                    status: true
-                };
-            }
-
-            return {
-                status: false,
-                title: config.title,
-                name: config.user_name,
-                email: config.user_email
-            };
-        }
+          return auth.setup.setupUser(setupDetails);
+        })
+        .then((data) => {
+          try {
+            return auth.setup.doFixtures(data);
+          } catch (e) {
+            return data;
+          }
+        })
+        .then((data) => {
+          try {
+            return auth.setup.doProductAndNewsletter(data, api);
+          } catch (e) {
+            return data;
+          }
+        })
+        .then((data) => {
+          return auth.setup.installTheme(data, api);
+        })
+        .then((data) => {
+          return auth.setup.doSettings(data, api.settings);
+        })
+        .then((user) => {
+          auth.setup.sendWelcomeEmail(user.get('email'), api.mail).catch((err) => {
+            logging.error(err);
+          });
+          return user;
+        });
     },
+  },
 
-    generateResetToken: {
-        headers: {
-            cacheInvalidate: false
-        },
-        validation: {
-            docName: 'password_reset'
-        },
-        permissions: true,
-        options: [
-            'email'
-        ],
-        async query(frame) {
-            await auth.setup.assertSetupCompleted(true)();
-            const token = await auth.passwordreset.generateToken(frame.data.password_reset[0].email, api.settings);
-            return auth.passwordreset.sendResetNotification(token, api.mail);
-        }
+  updateSetup: {
+    headers: {
+      cacheInvalidate: true,
     },
-
-    resetPassword: {
-        headers: {
-            cacheInvalidate: false
-        },
-        validation: {
-            docName: 'password_reset',
-            data: {
-                newPassword: {required: true},
-                ne2Password: {required: true}
-            }
-        },
-        permissions: false,
-        options: [
-            'ip'
-        ],
-        async query(frame) {
-            await auth.setup.assertSetupCompleted(true)();
-            const {options, tokenParts} = await auth.passwordreset.extractTokenParts(frame);
-            const internalOptions = Object.assign(options, {context: {internal: true}});
-
-            const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);
-
-            if (!frame.original.session) {
-                throw new errors.InternalServerError({
-                    message: 'Could not initialize an admin session during password reset.'
-                });
-            }
-
-            // Rotate the session_id and mint a fresh verified session so that
-            // any stolen or cloned copy of the pre-reset cookie is rejected
-            // on its next request.
-            await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
-                req: frame.original.session.req,
-                user: doResetParams.user,
-                ip: frame.options.ip
-            });
-
-            web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
-            return {};
-        }
+    permissions: async (frame) => {
+      const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
+      if (owner.id !== frame.options.context.user) {
+        throw new errors.NoPermissionError({ message: tpl(messages.notTheBlogOwner) });
+      }
     },
-
-    acceptInvitation: {
-        headers: {
-            cacheInvalidate: false
-        },
-        validation: {
-            docName: 'invitations'
-        },
-        permissions: false,
-        async query(frame) {
-            await auth.setup.assertSetupCompleted(true)();
-            return invitations.accept(frame.data);
-        }
+    validation: {
+      docName: 'setup',
     },
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(true)();
 
-    isInvitation: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'email'
-        ],
-        validation: {
-            docName: 'invitations'
-        },
-        permissions: false,
-        async query(frame) {
-            await auth.setup.assertSetupCompleted(true)();
-            const email = frame.data.email;
-            return models.Invite.findOne({email, status: 'sent'}, frame.options);
-        }
+      const setupDetails = {
+        name: frame.data.setup[0].name,
+        email: frame.data.setup[0].email,
+        password: frame.data.setup[0].password,
+        blogTitle: frame.data.setup[0].blogTitle,
+        status: 'active',
+      };
+
+      const data = await auth.setup.setupUser(setupDetails);
+      return auth.setup.doSettings(data, api.settings);
     },
+  },
 
-    reset: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: true,
-        async query(frame) {
-            const result = await auth.resetAuthentication({
-                schedulerAdapter,
-                userService,
-                options: frame.options
-            });
+  isSetup: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: false,
+    async query() {
+      const isSetup = await auth.setup.checkIsSetup();
 
-            // Express-session would otherwise re-save the current request's
-            // session on the response, resurrecting the row deleteAllSessions
-            // just wiped. Destroying the request session prevents the re-save
-            // and emits a Set-Cookie that expires the cookie on the client.
-            await destroyRequestSession(frame.original.session && frame.original.session.req);
+      if (isSetup) {
+        return {
+          status: true,
+        };
+      }
 
-            return result;
-        }
-    }
+      return {
+        status: false,
+        title: config.title,
+        name: config.user_name,
+        email: config.user_email,
+      };
+    },
+  },
+
+  generateResetToken: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    validation: {
+      docName: 'password_reset',
+    },
+    permissions: true,
+    options: ['email'],
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(true)();
+      const token = await auth.passwordreset.generateToken(
+        frame.data.password_reset[0].email,
+        api.settings,
+      );
+      return auth.passwordreset.sendResetNotification(token, api.mail);
+    },
+  },
+
+  resetPassword: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    validation: {
+      docName: 'password_reset',
+      data: {
+        newPassword: { required: true },
+        ne2Password: { required: true },
+      },
+    },
+    permissions: false,
+    options: ['ip'],
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(true)();
+      const { options, tokenParts } = await auth.passwordreset.extractTokenParts(frame);
+      const internalOptions = Object.assign(options, { context: { internal: true } });
+
+      const doResetParams = await auth.passwordreset.doReset(
+        internalOptions,
+        tokenParts,
+        api.settings,
+      );
+
+      if (!frame.original.session) {
+        throw new errors.InternalServerError({
+          message: 'Could not initialize an admin session during password reset.',
+        });
+      }
+
+      // Rotate the session_id and mint a fresh verified session so that
+      // any stolen or cloned copy of the pre-reset cookie is rejected
+      // on its next request.
+      await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+        req: frame.original.session.req,
+        user: doResetParams.user,
+        ip: frame.options.ip,
+      });
+
+      web.shared.middleware.api.spamPrevention
+        .userLogin()
+        .reset(frame.options.ip, `${tokenParts.email}login`);
+      return {};
+    },
+  },
+
+  acceptInvitation: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    validation: {
+      docName: 'invitations',
+    },
+    permissions: false,
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(true)();
+      return invitations.accept(frame.data);
+    },
+  },
+
+  isInvitation: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    data: ['email'],
+    validation: {
+      docName: 'invitations',
+    },
+    permissions: false,
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(true)();
+      const email = frame.data.email;
+      return models.Invite.findOne({ email, status: 'sent' }, frame.options);
+    },
+  },
+
+  reset: {
+    statusCode: 200,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    async query(frame) {
+      const result = await auth.resetAuthentication({
+        schedulerAdapter,
+        userService,
+        options: frame.options,
+      });
+
+      // Express-session would otherwise re-save the current request's
+      // session on the response, resurrecting the row deleteAllSessions
+      // just wiped. Destroying the request session prevents the re-save
+      // and emits a Set-Cookie that expires the cookie on the client.
+      await destroyRequestSession(frame.original.session && frame.original.session.req);
+
+      return result;
+    },
+  },
 };
 
 module.exports = controller;

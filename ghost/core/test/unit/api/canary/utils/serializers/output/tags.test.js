@@ -4,54 +4,54 @@ const mappers = require('../../../../../../../core/server/api/endpoints/utils/se
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/tags', function () {
-    let tagModel;
+  let tagModel;
 
-    beforeEach(function () {
-        tagModel = (data) => {
-            return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-        };
+  beforeEach(function () {
+    tagModel = (data) => {
+      return Object.assign(data, { toJSON: sinon.stub().returns(data) });
+    };
 
-        sinon.stub(mappers, 'tags').returns({});
+    sinon.stub(mappers, 'tags').returns({});
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('calls the mapper when single tag present', function () {
+    const apiConfig = { docName: 'tags' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
+
+    const ctrlResponse = tagModel(testUtils.DataGenerator.forKnex.createTag());
+
+    serializers.output.default.all(ctrlResponse, apiConfig, frame);
+
+    sinon.assert.calledOnceWithExactly(mappers.tags, ctrlResponse, frame);
+  });
+
+  it('calls the mapper with multiple tags', function () {
+    const apiConfig = { docName: 'tags' };
+    const frame = {
+      options: {
+        context: {},
+      },
+    };
+
+    const ctrlResponse = tagModel({
+      data: [
+        testUtils.DataGenerator.forKnex.createTag(),
+        testUtils.DataGenerator.forKnex.createTag(),
+      ],
+      meta: {},
     });
 
-    afterEach(function () {
-        sinon.restore();
-    });
+    serializers.output.default.all(ctrlResponse, apiConfig, frame);
 
-    it('calls the mapper when single tag present', function () {
-        const apiConfig = {docName: 'tags'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
-
-        const ctrlResponse = tagModel(testUtils.DataGenerator.forKnex.createTag());
-
-        serializers.output.default.all(ctrlResponse, apiConfig, frame);
-
-        sinon.assert.calledOnceWithExactly(mappers.tags, ctrlResponse, frame);
-    });
-
-    it('calls the mapper with multiple tags', function () {
-        const apiConfig = {docName: 'tags'};
-        const frame = {
-            options: {
-                context: {}
-            }
-        };
-
-        const ctrlResponse = tagModel({
-            data: [
-                testUtils.DataGenerator.forKnex.createTag(),
-                testUtils.DataGenerator.forKnex.createTag()
-            ],
-            meta: {}
-        });
-
-        serializers.output.default.all(ctrlResponse, apiConfig, frame);
-
-        sinon.assert.callCount(mappers.tags, 2);
-        sinon.assert.calledWithExactly(mappers.tags.getCall(0), ctrlResponse.data[0], frame);
-    });
+    sinon.assert.callCount(mappers.tags, 2);
+    sinon.assert.calledWithExactly(mappers.tags.getCall(0), ctrlResponse.data[0], frame);
+  });
 });

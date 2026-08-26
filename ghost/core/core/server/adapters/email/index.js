@@ -7,15 +7,15 @@ const adapterManager = require('../../services/adapter-manager').default;
  * @returns {Object} Email adapter instance
  */
 function getEmailAdapter(feature) {
-    let adapterName = 'email';
+  let adapterName = 'email';
 
-    if (feature) {
-        adapterName += `:${feature}`;
-    }
+  if (feature) {
+    adapterName += `:${feature}`;
+  }
 
-    return adapterManager.getAdapter(adapterName);
+  return adapterManager.getAdapter(adapterName);
 }
 
 module.exports = {
-    getEmailAdapter
+  getEmailAdapter,
 };

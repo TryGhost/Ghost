@@ -74,10 +74,13 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#onUpdate', function () {
-        it('throws error for unknown data type', function () {
-            expect(() => {
+        it('ignores unknown data types', function () {
+            run(() => {
                 service.onUpdate('UnknownType', {});
-            }).to.throw('A mutation updating UnknownType succeeded in React Admin but there is no mapping to an Ember type');
+            });
+
+            expect(store.pushPayload.called).to.be.false;
+            expect(store.push.called).to.be.false;
         });
 
         it('skips processing for null-mapped data types', function () {
@@ -85,16 +88,6 @@ describe('Unit: Service: state-bridge', function () {
 
             run(() => {
                 service.onUpdate('CustomThemeSettingsResponseType', response);
-            });
-
-            expect(store.pushPayload.called).to.be.false;
-        });
-
-        it('skips processing for automated email design data type', function () {
-            const response = {automated_email_design: [{id: '1'}]};
-
-            run(() => {
-                service.onUpdate('AutomatedEmailDesignResponseType', response);
             });
 
             expect(store.pushPayload.called).to.be.false;
@@ -276,23 +269,17 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#onInvalidate', function () {
-        it('throws error for unknown data type', function () {
-            expect(() => {
-                service.onInvalidate('UnknownType');
-            }).to.throw('A mutation invalidating UnknownType succeeded in React Admin but there is no mapping to an Ember type');
-        });
-
-        it('skips processing for null-mapped data types', function () {
+        it('ignores unknown data types', function () {
             run(() => {
-                service.onInvalidate('CustomThemeSettingsResponseType');
+                service.onInvalidate('UnknownType');
             });
 
             expect(store.unloadAll.called).to.be.false;
         });
 
-        it('skips processing for automated email design data type', function () {
+        it('skips processing for null-mapped data types', function () {
             run(() => {
-                service.onInvalidate('AutomatedEmailDesignResponseType');
+                service.onInvalidate('CustomThemeSettingsResponseType');
             });
 
             expect(store.unloadAll.called).to.be.false;
@@ -340,10 +327,14 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#onDelete', function () {
-        it('throws error for unknown data type', function () {
-            expect(() => {
+        it('ignores unknown data types', function () {
+            sinon.spy(store, 'peekRecord');
+
+            run(() => {
                 service.onDelete('UnknownType', '123');
-            }).to.throw('A mutation deleting UnknownType succeeded in React Admin but there is no mapping to an Ember type');
+            });
+
+            expect(store.peekRecord.called).to.be.false;
         });
 
         it('skips processing for null-mapped data types', function () {

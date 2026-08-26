@@ -25,7 +25,9 @@ accompanies it.
 11. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && pnpm test:unit`
 
 ## Examples
+
 See [examples.md](examples.md) for example migrations.
 
 ## Rules
+
 See [rules.md](rules.md) for rules that should always be followed when creating database migrations.

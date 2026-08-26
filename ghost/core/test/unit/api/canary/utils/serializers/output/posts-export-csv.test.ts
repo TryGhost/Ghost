@@ -1,145 +1,164 @@
 import assert from 'node:assert/strict';
-import {once} from 'node:events';
-import {Readable, Writable} from 'node:stream';
+import { once } from 'node:events';
+import { Readable, Writable } from 'node:stream';
 import * as papaparse from 'papaparse';
 const postsSerializer = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/posts');
 
 describe('Unit: posts CSV export serializer', function () {
-    it('Streams CSV response with headers', async function () {
-        const data = [{id: '1', title: 'Post'}];
-        const source = Readable.from(data, {objectMode: true});
-        const frame: {response?: Function} = {};
-        const headers: Record<string, string> = {};
-        const chunks: Buffer[] = [];
-        const nextCalls: unknown[] = [];
+  it('Streams CSV response with headers', async function () {
+    const data = [{ id: '1', title: 'Post' }];
+    const source = Readable.from(data, { objectMode: true });
+    const frame: { response?: Function } = {};
+    const headers: Record<string, string> = {};
+    const chunks: Buffer[] = [];
+    const nextCalls: unknown[] = [];
 
-        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
+    postsSerializer.exportCSV(
+      { data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv' },
+      null,
+      frame,
+    );
 
-        const response: any = new Writable({
-            write(chunk: Buffer, _encoding: string, callback: Function) {
-                chunks.push(chunk);
-                callback();
-            }
-        });
-        response.setHeader = (key: string, value: string) => {
-            headers[key] = value;
-        };
-        response.getHeader = () => undefined;
+    const response: any = new Writable({
+      write(chunk: Buffer, _encoding: string, callback: Function) {
+        chunks.push(chunk);
+        callback();
+      },
+    });
+    response.setHeader = (key: string, value: string) => {
+      headers[key] = value;
+    };
+    response.getHeader = () => undefined;
 
-        frame.response!(null, response, (err: unknown) => {
-            nextCalls.push(err);
-        });
-
-        await once(response, 'finish');
-
-        const expected = papaparse.unparse(data, {
-            escapeFormulae: true,
-            newline: '\r\n'
-        });
-
-        assert.equal(Buffer.concat(chunks).toString(), expected);
-        assert.equal(headers['Content-Type'], 'text/csv; charset=utf-8');
-        assert.equal(headers['Content-Disposition'], 'Attachment; filename="test-blog.ghost.analytics.2026-06-02.csv"');
-        assert.equal(headers['Cache-Control'], 'no-transform');
-        assert.deepEqual(nextCalls, []);
+    frame.response!(null, response, (err: unknown) => {
+      nextCalls.push(err);
     });
 
-    it('Appends no-transform to an existing Cache-Control header', async function () {
-        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
-        const frame: {response?: Function} = {};
-        const headers: Record<string, string> = {};
+    await once(response, 'finish');
 
-        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
-
-        const response: any = new Writable({
-            write(_chunk: Buffer, _encoding: string, callback: Function) {
-                callback();
-            }
-        });
-        response.setHeader = (key: string, value: string) => {
-            headers[key] = value;
-        };
-        response.getHeader = (key: string) => {
-            return key === 'Cache-Control' ? 'public, max-age=3600' : undefined;
-        };
-
-        frame.response!(null, response, () => {});
-
-        await once(response, 'finish');
-
-        assert.equal(headers['Cache-Control'], 'public, max-age=3600, no-transform');
+    const expected = papaparse.unparse(data, {
+      escapeFormulae: true,
+      newline: '\r\n',
     });
 
-    it('Does not duplicate an existing no-transform Cache-Control directive', async function () {
-        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
-        const frame: {response?: Function} = {};
-        const headers: Record<string, string> = {};
+    assert.equal(Buffer.concat(chunks).toString(), expected);
+    assert.equal(headers['Content-Type'], 'text/csv; charset=utf-8');
+    assert.equal(
+      headers['Content-Disposition'],
+      'Attachment; filename="test-blog.ghost.analytics.2026-06-02.csv"',
+    );
+    assert.equal(headers['Cache-Control'], 'no-transform');
+    assert.deepEqual(nextCalls, []);
+  });
 
-        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
+  it('Appends no-transform to an existing Cache-Control header', async function () {
+    const source = Readable.from([{ id: '1', title: 'Post' }], { objectMode: true });
+    const frame: { response?: Function } = {};
+    const headers: Record<string, string> = {};
 
-        const response: any = new Writable({
-            write(_chunk: Buffer, _encoding: string, callback: Function) {
-                callback();
-            }
-        });
-        response.setHeader = (key: string, value: string) => {
-            headers[key] = value;
-        };
-        response.getHeader = (key: string) => {
-            return key === 'Cache-Control' ? 'public, max-age=3600, No-Transform' : undefined;
-        };
+    postsSerializer.exportCSV(
+      { data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv' },
+      null,
+      frame,
+    );
 
-        frame.response!(null, response, () => {});
+    const response: any = new Writable({
+      write(_chunk: Buffer, _encoding: string, callback: Function) {
+        callback();
+      },
+    });
+    response.setHeader = (key: string, value: string) => {
+      headers[key] = value;
+    };
+    response.getHeader = (key: string) => {
+      return key === 'Cache-Control' ? 'public, max-age=3600' : undefined;
+    };
 
-        await once(response, 'finish');
+    frame.response!(null, response, () => {});
 
-        assert.equal(headers['Cache-Control'], undefined);
+    await once(response, 'finish');
+
+    assert.equal(headers['Cache-Control'], 'public, max-age=3600, no-transform');
+  });
+
+  it('Does not duplicate an existing no-transform Cache-Control directive', async function () {
+    const source = Readable.from([{ id: '1', title: 'Post' }], { objectMode: true });
+    const frame: { response?: Function } = {};
+    const headers: Record<string, string> = {};
+
+    postsSerializer.exportCSV(
+      { data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv' },
+      null,
+      frame,
+    );
+
+    const response: any = new Writable({
+      write(_chunk: Buffer, _encoding: string, callback: Function) {
+        callback();
+      },
+    });
+    response.setHeader = (key: string, value: string) => {
+      headers[key] = value;
+    };
+    response.getHeader = (key: string) => {
+      return key === 'Cache-Control' ? 'public, max-age=3600, No-Transform' : undefined;
+    };
+
+    frame.response!(null, response, () => {});
+
+    await once(response, 'finish');
+
+    assert.equal(headers['Cache-Control'], undefined);
+  });
+
+  it('Passes response stream errors to next', async function () {
+    const sourceError = new Error('response failed');
+    const source = Readable.from([{ id: '1', title: 'Post' }], { objectMode: true });
+    const frame: { response?: Function } = {};
+
+    postsSerializer.exportCSV(
+      { data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv' },
+      null,
+      frame,
+    );
+
+    const response: any = new Writable({
+      write(_chunk: unknown, _encoding: string, callback: Function) {
+        callback(sourceError);
+      },
+    });
+    response.setHeader = () => {};
+    response.getHeader = () => {};
+    response.on('error', () => {});
+
+    const err = await new Promise((resolve) => {
+      frame.response!(null, response, resolve);
     });
 
-    it('Passes response stream errors to next', async function () {
-        const sourceError = new Error('response failed');
-        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
-        const frame: {response?: Function} = {};
+    assert.equal(err, sourceError);
+  });
 
-        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
+  it('Passes missing filenames to next', async function () {
+    const source = Readable.from([{ id: '1', title: 'Post' }], { objectMode: true });
+    const frame: { response?: Function } = {};
+    const response: any = new Writable({
+      write(_chunk: unknown, _encoding: string, callback: Function) {
+        callback();
+      },
+    });
+    const headers: Record<string, string> = {};
+    response.setHeader = (key: string, value: string) => {
+      headers[key] = value;
+    };
+    response.getHeader = () => undefined;
 
-        const response: any = new Writable({
-            write(_chunk: unknown, _encoding: string, callback: Function) {
-                callback(sourceError);
-            }
-        });
-        response.setHeader = () => {};
-        response.getHeader = () => {};
-        response.on('error', () => {});
+    postsSerializer.exportCSV({ data: source }, null, frame);
 
-        const err = await new Promise((resolve) => {
-            frame.response!(null, response, resolve);
-        });
-
-        assert.equal(err, sourceError);
+    const err = await new Promise((resolve) => {
+      frame.response!(null, response, resolve);
     });
 
-    it('Passes missing filenames to next', async function () {
-        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
-        const frame: {response?: Function} = {};
-        const response: any = new Writable({
-            write(_chunk: unknown, _encoding: string, callback: Function) {
-                callback();
-            }
-        });
-        const headers: Record<string, string> = {};
-        response.setHeader = (key: string, value: string) => {
-            headers[key] = value;
-        };
-        response.getHeader = () => undefined;
-
-        postsSerializer.exportCSV({data: source}, null, frame);
-
-        const err = await new Promise((resolve) => {
-            frame.response!(null, response, resolve);
-        });
-
-        assert.equal((err as Error).message, 'Missing CSV export filename');
-        assert.deepEqual(headers, {});
-    });
+    assert.equal((err as Error).message, 'Missing CSV export filename');
+    assert.deepEqual(headers, {});
+  });
 });

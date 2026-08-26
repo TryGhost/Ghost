@@ -5,13 +5,13 @@ const adapterManager = require('../../services/adapter-manager').default;
  * @returns {Object} cache adapter instance
  */
 function getCache(feature) {
-    let adapterName = 'cache';
+  let adapterName = 'cache';
 
-    if (feature) {
-        adapterName += `:${feature}`;
-    }
+  if (feature) {
+    adapterName += `:${feature}`;
+  }
 
-    return adapterManager.getAdapter(adapterName);
+  return adapterManager.getAdapter(adapterName);
 }
 
 module.exports.getCache = getCache;

@@ -1,7 +1,12 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyString} = matchers;
+const { assertExists } = require('../../utils/assertions');
+const {
+  agentProvider,
+  mockManager,
+  fixtureManager,
+  matchers,
+} = require('../../utils/e2e-framework');
+const { anyContentVersion, anyString } = matchers;
 
 const crypto = require('crypto');
 const Papa = require('papaparse');
@@ -10,27 +15,27 @@ const moment = require('moment');
 const db = require('../../../core/server/data/db');
 
 async function createMember(data) {
-    const member = await models.Member.add({
-        email: crypto.randomUUID() + '@example.com',
-        name: '',
-        email_disabled: false,
-        ...data
-    });
+  const member = await models.Member.add({
+    email: crypto.randomUUID() + '@example.com',
+    name: '',
+    email_disabled: false,
+    ...data,
+  });
 
-    return member;
+  return member;
 }
 
 let agent;
 let tiers, labels, newsletters;
 
 function basicAsserts(member, row) {
-    // Basic checks
-    assert.equal(row.email, member.get('email'));
-    assert.equal(row.name, member.get('name'));
-    assert.equal(row.note, member.get('note') || '');
+  // Basic checks
+  assert.equal(row.email, member.get('email'));
+  assert.equal(row.name, member.get('name'));
+  assert.equal(row.note, member.get('note') || '');
 
-    assert.equal(row.deleted_at, '');
-    assert.equal(row.created_at, moment(member.get('created_at')).toISOString());
+  assert.equal(row.deleted_at, '');
+  assert.equal(row.created_at, moment(member.get('created_at')).toISOString());
 }
 
 /**
@@ -38,343 +43,398 @@ function basicAsserts(member, row) {
  * @param {(row: any) => void} asserts
  */
 async function testOutput(member, asserts, filters = []) {
-    // Add default filters that always should match
-    filters.push('limit=all');
-    filters.push(`filter=id:'${member.id}'`);
+  // Add default filters that always should match
+  filters.push('limit=all');
+  filters.push(`filter=id:'${member.id}'`);
 
-    for (const filter of filters) {
-        // Test all
-        let res = await agent
-            .get(`/members/upload/?${filter}`)
-            .expectStatus(200)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-disposition': anyString
-            });
+  for (const filter of filters) {
+    // Test all
+    let res = await agent
+      .get(`/members/upload/?${filter}`)
+      .expectStatus(200)
+      .expectEmptyBody()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-disposition': anyString,
+      });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+    assert.match(
+      res.text,
+      /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
+    );
 
-        let csv = Papa.parse(res.text, {header: true});
-        let row = csv.data.find(r => r.id === member.id);
-        assertExists(row);
+    let csv = Papa.parse(res.text, { header: true });
+    let row = csv.data.find((r) => r.id === member.id);
+    assertExists(row);
 
-        asserts(row);
+    asserts(row);
 
-        if (filter === `filter=id:'${member.id}'`) {
-            assert.equal(csv.data.length, 1);
-        }
+    if (filter === `filter=id:'${member.id}'`) {
+      assert.equal(csv.data.length, 1);
     }
+  }
 }
 
 describe('Members API — exportCSV', function () {
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('newsletters', 'tiers:archived');
-        await agent.loginAsOwner();
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('newsletters', 'tiers:archived');
+    await agent.loginAsOwner();
 
-        await models.Product.add({
-            name: 'Extra Paid Tier',
-            slug: 'extra-tier',
-            type: 'paid',
-            active: true,
-            visibility: 'public'
-        });
-
-        tiers = (await models.Product.findAll()).models.filter(m => m.get('type') === 'paid');
-        assert(tiers.length > 1, 'These tests requires at least two paid tiers');
-
-        await models.Label.add({
-            name: 'Label A'
-        });
-
-        await models.Label.add({
-            name: 'Label B'
-        });
-
-        labels = (await models.Label.findAll()).models;
-        assert(labels.length > 1, 'These tests requires at least two labels');
-
-        newsletters = (await models.Newsletter.findAll()).models;
-        assert(newsletters.length > 1, 'These tests requires at least two newsletters');
+    await models.Product.add({
+      name: 'Extra Paid Tier',
+      slug: 'extra-tier',
+      type: 'paid',
+      active: true,
+      visibility: 'public',
     });
 
-    beforeEach(function () {
-        mockManager.mockMail();
+    tiers = (await models.Product.findAll()).models.filter((m) => m.get('type') === 'paid');
+    assert(tiers.length > 1, 'These tests requires at least two paid tiers');
+
+    await models.Label.add({
+      name: 'Label A',
     });
 
-    afterEach(function () {
-        mockManager.restore();
+    await models.Label.add({
+      name: 'Label B',
     });
 
-    it('Can export tiers', async function () {
-        // Create a new member with a product (to be renamed to "tiers" once the changes is done on model layer)
-        const member = await createMember({
-            name: 'Test member',
-            products: tiers
-        });
+    labels = (await models.Label.findAll()).models;
+    assert(labels.length > 1, 'These tests requires at least two labels');
 
-        const tiersList = tiers.map(tier => tier.get('name')).sort().join(',');
+    newsletters = (await models.Newsletter.findAll()).models;
+    assert(newsletters.length > 1, 'These tests requires at least two newsletters');
+  });
 
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'false');
-            assert.equal(row.complimentary_plan, '');
-            assert.equal(row.tiers.split(',').sort().join(','), tiersList);
-        }, [`filter=tier:[${tiers[0].get('slug')}]`, 'filter=subscribed:false']);
+  beforeEach(function () {
+    mockManager.mockMail();
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('Can export tiers', async function () {
+    // Create a new member with a product (to be renamed to "tiers" once the changes is done on model layer)
+    const member = await createMember({
+      name: 'Test member',
+      products: tiers,
     });
 
-    it('Can export a member without tiers', async function () {
-        // Create a new member with a product
-        const member = await createMember({
-            name: 'Test member 2',
-            note: 'Just a note 2'
-        });
+    const tiersList = tiers
+      .map((tier) => tier.get('name'))
+      .sort()
+      .join(',');
 
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'false');
-            assert.equal(row.complimentary_plan, '');
-            assert.equal(row.tiers, '');
-        }, ['filter=subscribed:false']);
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'false');
+        assert.equal(row.complimentary_plan, '');
+        assert.equal(row.tiers.split(',').sort().join(','), tiersList);
+      },
+      [`filter=tier:[${tiers[0].get('slug')}]`, 'filter=subscribed:false'],
+    );
+  });
+
+  it('Can export a member without tiers', async function () {
+    // Create a new member with a product
+    const member = await createMember({
+      name: 'Test member 2',
+      note: 'Just a note 2',
     });
 
-    it('Can export labels', async function () {
-        // Create a new member with a product
-        const member = await createMember({
-            name: 'Test member',
-            note: 'Just a note',
-            labels: labels.map((l) => {
-                return {
-                    name: l.get('name')
-                };
-            })
-        });
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'false');
+        assert.equal(row.complimentary_plan, '');
+        assert.equal(row.tiers, '');
+      },
+      ['filter=subscribed:false'],
+    );
+  });
 
-        const labelsList = labels.map(label => label.get('name')).sort().join(',');
-
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'false');
-            assert.equal(row.complimentary_plan, '');
-            assert.equal(row.labels.split(',').sort().join(','), labelsList);
-            assert.equal(row.tiers, '');
-        }, [`filter=label:${labels[0].get('slug')}`, 'filter=subscribed:false']);
+  it('Can export labels', async function () {
+    // Create a new member with a product
+    const member = await createMember({
+      name: 'Test member',
+      note: 'Just a note',
+      labels: labels.map((l) => {
+        return {
+          name: l.get('name'),
+        };
+      }),
     });
 
-    it('Can export comped', async function () {
-        // Create a new member with a product
-        const member = await createMember({
-            name: 'Test member',
-            note: 'Just a note',
-            status: 'comped'
-        });
+    const labelsList = labels
+      .map((label) => label.get('name'))
+      .sort()
+      .join(',');
 
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'false');
-            assert.equal(row.complimentary_plan, 'true');
-            assert.equal(row.labels, '');
-            assert.equal(row.tiers, '');
-            assert.equal(row.gift_id, '');
-        }, ['filter=status:comped', 'filter=subscribed:false']);
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'false');
+        assert.equal(row.complimentary_plan, '');
+        assert.equal(row.labels.split(',').sort().join(','), labelsList);
+        assert.equal(row.tiers, '');
+      },
+      [`filter=label:${labels[0].get('slug')}`, 'filter=subscribed:false'],
+    );
+  });
+
+  it('Can export comped', async function () {
+    // Create a new member with a product
+    const member = await createMember({
+      name: 'Test member',
+      note: 'Just a note',
+      status: 'comped',
     });
 
-    it('Can export gift_id for gift members', async function () {
-        const tier = tiers[0];
-        const member = await createMember({
-            name: 'Test gift member',
-            note: 'A gift',
-            status: 'gift',
-            products: [{id: tier.id}]
-        });
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'false');
+        assert.equal(row.complimentary_plan, 'true');
+        assert.equal(row.labels, '');
+        assert.equal(row.tiers, '');
+        assert.equal(row.gift_id, '');
+      },
+      ['filter=status:comped', 'filter=subscribed:false'],
+    );
+  });
 
-        const now = new Date();
-        const gift = await models.Gift.add({
-            token: `exporter-test-token-${Date.now()}`,
-            buyer_email: 'buyer@example.com',
-            buyer_member_id: null,
-            redeemer_member_id: member.id,
-            tier_id: tier.id,
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripe_checkout_session_id: `cs_exporter_${Date.now()}`,
-            stripe_payment_intent_id: `pi_exporter_${Date.now()}`,
-            consumes_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
-            expires_at: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
-            status: 'redeemed',
-            purchased_at: now,
-            redeemed_at: now,
-            consumed_at: null,
-            expired_at: null,
-            refunded_at: null
-        });
-
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'false');
-            assert.equal(row.complimentary_plan, '');
-            assert.equal(row.gift_id, gift.id);
-            assert.equal(row.tiers, tier.get('name'));
-        }, ['filter=status:gift', 'filter=subscribed:false']);
+  it('Can export gift_id for gift members', async function () {
+    const tier = tiers[0];
+    const member = await createMember({
+      name: 'Test gift member',
+      note: 'A gift',
+      status: 'gift',
+      products: [{ id: tier.id }],
     });
 
-    it('Does not export gift_id for members whose gift is consumed', async function () {
-        const tier = tiers[0];
-        const member = await createMember({
-            name: 'Test ex-gift member',
-            note: 'Gift was consumed',
-            status: 'paid',
-            products: [{id: tier.id}]
-        });
-
-        const now = new Date();
-        await models.Gift.add({
-            token: `exporter-consumed-token-${Date.now()}`,
-            buyer_email: 'buyer@example.com',
-            buyer_member_id: null,
-            redeemer_member_id: member.id,
-            tier_id: tier.id,
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripe_checkout_session_id: `cs_exporter_consumed_${Date.now()}`,
-            stripe_payment_intent_id: `pi_exporter_consumed_${Date.now()}`,
-            consumes_at: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-            expires_at: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
-            status: 'consumed',
-            purchased_at: now,
-            redeemed_at: now,
-            consumed_at: now,
-            expired_at: null,
-            refunded_at: null
-        });
-
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.gift_id, '');
-        }, [`filter=email:'${member.get('email')}'`, 'filter=subscribed:false']);
+    const now = new Date();
+    const gift = await models.Gift.add({
+      token: `exporter-test-token-${Date.now()}`,
+      buyer_email: 'buyer@example.com',
+      buyer_member_id: null,
+      redeemer_member_id: member.id,
+      tier_id: tier.id,
+      cadence: 'year',
+      duration: 1,
+      currency: 'usd',
+      amount: 5000,
+      stripe_checkout_session_id: `cs_exporter_${Date.now()}`,
+      stripe_payment_intent_id: `pi_exporter_${Date.now()}`,
+      consumes_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
+      expires_at: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
+      status: 'redeemed',
+      purchased_at: now,
+      redeemed_at: now,
+      consumed_at: null,
+      expired_at: null,
+      refunded_at: null,
     });
 
-    it('Can export newsletters', async function () {
-        // Create a new member with a product
-        const member = await createMember({
-            name: 'Test member',
-            note: 'Just a note',
-            newsletters: [{
-                id: newsletters[0].id
-            }]
-        });
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'false');
+        assert.equal(row.complimentary_plan, '');
+        assert.equal(row.gift_id, gift.id);
+        assert.equal(row.tiers, tier.get('name'));
+      },
+      ['filter=status:gift', 'filter=subscribed:false'],
+    );
+  });
 
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'true');
-            assert.equal(row.complimentary_plan, '');
-            assert.equal(row.labels, '');
-            assert.equal(row.tiers, '');
-        }, ['filter=subscribed:true']);
+  it('Does not export gift_id for members whose gift is consumed', async function () {
+    const tier = tiers[0];
+    const member = await createMember({
+      name: 'Test ex-gift member',
+      note: 'Gift was consumed',
+      status: 'paid',
+      products: [{ id: tier.id }],
     });
 
-    it('Can export customer id', async function () {
-        // Create a new member with a product
-        const member = await createMember({
-            name: 'Test member',
-            note: 'Just a note'
-        });
-
-        const customer = await models.MemberStripeCustomer.add({
-            member_id: member.id,
-            customer_id: 'cus_12345',
-            name: 'Test member',
-            email: member.get('email')
-        });
-
-        // NOTE: we need to create a subscription here because of the way the customer id is currently fetched
-        const subscription = await models.StripeCustomerSubscription.add({
-            subscription_id: 'sub_123',
-            customer_id: customer.get('customer_id'),
-            stripe_price_id: 'price_123',
-            status: 'active',
-            cancel_at_period_end: false,
-            current_period_end: '2023-05-19 09:08:53',
-            start_date: '2020-05-19 09:08:53',
-            plan_id: 'price_1L15K4JQCtFaIJka01folNVK',
-            plan_nickname: 'Yearly',
-            plan_interval: 'year',
-            plan_amount: 5000,
-            plan_currency: 'USD'
-        });
-
-        await db.knex('members_current_subscription').insert({
-            member_id: member.id,
-            subscription_id: subscription.get('id')
-        });
-
-        await testOutput(member, (row) => {
-            basicAsserts(member, row);
-            assert.equal(row.subscribed_to_emails, 'false');
-            assert.equal(row.complimentary_plan, '');
-            assert.equal(row.labels, '');
-            assert.equal(row.tiers, '');
-            assert.equal(row.stripe_customer_id, 'cus_12345');
-        }, ['filter=subscribed:false', 'filter=subscriptions.subscription_id:sub_123']);
+    const now = new Date();
+    await models.Gift.add({
+      token: `exporter-consumed-token-${Date.now()}`,
+      buyer_email: 'buyer@example.com',
+      buyer_member_id: null,
+      redeemer_member_id: member.id,
+      tier_id: tier.id,
+      cadence: 'year',
+      duration: 1,
+      currency: 'usd',
+      amount: 5000,
+      stripe_checkout_session_id: `cs_exporter_consumed_${Date.now()}`,
+      stripe_payment_intent_id: `pi_exporter_consumed_${Date.now()}`,
+      consumes_at: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      expires_at: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
+      status: 'consumed',
+      purchased_at: now,
+      redeemed_at: now,
+      consumed_at: now,
+      expired_at: null,
+      refunded_at: null,
     });
 
-    // The single-member tests above each exercise one kind of related data in
-    // isolation. This streams a whole file of members that differ in their related
-    // data and checks each row carries its own — the streaming/batching path where a
-    // per-batch map keyed by the wrong member_id would silently cross the wires.
-    it('streams a file of mixed members, each with its own related data', async function () {
-        const tier = tiers[0];
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.gift_id, '');
+      },
+      [`filter=email:'${member.get('email')}'`, 'filter=subscribed:false'],
+    );
+  });
 
-        const plain = await createMember({name: 'Mixed Plain', note: 'plain'});
-        const tiered = await createMember({name: 'Mixed Tiered', products: [{id: tier.id}]});
-        const labelled = await createMember({name: 'Mixed Labelled', labels: labels.map(l => ({name: l.get('name')}))});
-        const comped = await createMember({name: 'Mixed Comped', status: 'comped'});
-        const subscribed = await createMember({name: 'Mixed Subscribed', newsletters: [{id: newsletters[0].id}]});
-
-        // No filter + limit=all takes the "export everything" streaming branch.
-        const res = await agent
-            .get('/members/upload/?limit=all')
-            .expectStatus(200)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-disposition': anyString
-            });
-
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
-        const rows = Papa.parse(res.text, {header: true}).data;
-        const rowFor = id => rows.find(r => r.id === id);
-
-        const labelsList = labels.map(l => l.get('name')).sort().join(',');
-
-        const p = rowFor(plain.id);
-        assertExists(p);
-        assert.equal(p.tiers, '');
-        assert.equal(p.labels, '');
-        assert.equal(p.complimentary_plan, '');
-        assert.equal(p.subscribed_to_emails, 'false');
-
-        const t = rowFor(tiered.id);
-        assertExists(t);
-        assert.equal(t.tiers, tier.get('name'));
-        assert.equal(t.labels, '');
-
-        const l = rowFor(labelled.id);
-        assertExists(l);
-        assert.equal(l.labels.split(',').sort().join(','), labelsList);
-        assert.equal(l.tiers, '');
-
-        const c = rowFor(comped.id);
-        assertExists(c);
-        assert.equal(c.complimentary_plan, 'true');
-
-        const s = rowFor(subscribed.id);
-        assertExists(s);
-        assert.equal(s.subscribed_to_emails, 'true');
+  it('Can export newsletters', async function () {
+    // Create a new member with a product
+    const member = await createMember({
+      name: 'Test member',
+      note: 'Just a note',
+      newsletters: [
+        {
+          id: newsletters[0].id,
+        },
+      ],
     });
+
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'true');
+        assert.equal(row.complimentary_plan, '');
+        assert.equal(row.labels, '');
+        assert.equal(row.tiers, '');
+      },
+      ['filter=subscribed:true'],
+    );
+  });
+
+  it('Can export customer id', async function () {
+    // Create a new member with a product
+    const member = await createMember({
+      name: 'Test member',
+      note: 'Just a note',
+    });
+
+    const customer = await models.MemberStripeCustomer.add({
+      member_id: member.id,
+      customer_id: 'cus_12345',
+      name: 'Test member',
+      email: member.get('email'),
+    });
+
+    // NOTE: we need to create a subscription here because of the way the customer id is currently fetched
+    const subscription = await models.StripeCustomerSubscription.add({
+      subscription_id: 'sub_123',
+      customer_id: customer.get('customer_id'),
+      stripe_price_id: 'price_123',
+      status: 'active',
+      cancel_at_period_end: false,
+      current_period_end: '2023-05-19 09:08:53',
+      start_date: '2020-05-19 09:08:53',
+      plan_id: 'price_1L15K4JQCtFaIJka01folNVK',
+      plan_nickname: 'Yearly',
+      plan_interval: 'year',
+      plan_amount: 5000,
+      plan_currency: 'USD',
+    });
+
+    await db.knex('members_current_subscription').insert({
+      member_id: member.id,
+      subscription_id: subscription.get('id'),
+    });
+
+    await testOutput(
+      member,
+      (row) => {
+        basicAsserts(member, row);
+        assert.equal(row.subscribed_to_emails, 'false');
+        assert.equal(row.complimentary_plan, '');
+        assert.equal(row.labels, '');
+        assert.equal(row.tiers, '');
+        assert.equal(row.stripe_customer_id, 'cus_12345');
+      },
+      ['filter=subscribed:false', 'filter=subscriptions.subscription_id:sub_123'],
+    );
+  });
+
+  // The single-member tests above each exercise one kind of related data in
+  // isolation. This streams a whole file of members that differ in their related
+  // data and checks each row carries its own — the streaming/batching path where a
+  // per-batch map keyed by the wrong member_id would silently cross the wires.
+  it('streams a file of mixed members, each with its own related data', async function () {
+    const tier = tiers[0];
+
+    const plain = await createMember({ name: 'Mixed Plain', note: 'plain' });
+    const tiered = await createMember({ name: 'Mixed Tiered', products: [{ id: tier.id }] });
+    const labelled = await createMember({
+      name: 'Mixed Labelled',
+      labels: labels.map((l) => ({ name: l.get('name') })),
+    });
+    const comped = await createMember({ name: 'Mixed Comped', status: 'comped' });
+    const subscribed = await createMember({
+      name: 'Mixed Subscribed',
+      newsletters: [{ id: newsletters[0].id }],
+    });
+
+    // No filter + limit=all takes the "export everything" streaming branch.
+    const res = await agent
+      .get('/members/upload/?limit=all')
+      .expectStatus(200)
+      .expectEmptyBody()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-disposition': anyString,
+      });
+
+    assert.match(
+      res.text,
+      /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
+    );
+    const rows = Papa.parse(res.text, { header: true }).data;
+    const rowFor = (id) => rows.find((r) => r.id === id);
+
+    const labelsList = labels
+      .map((l) => l.get('name'))
+      .sort()
+      .join(',');
+
+    const p = rowFor(plain.id);
+    assertExists(p);
+    assert.equal(p.tiers, '');
+    assert.equal(p.labels, '');
+    assert.equal(p.complimentary_plan, '');
+    assert.equal(p.subscribed_to_emails, 'false');
+
+    const t = rowFor(tiered.id);
+    assertExists(t);
+    assert.equal(t.tiers, tier.get('name'));
+    assert.equal(t.labels, '');
+
+    const l = rowFor(labelled.id);
+    assertExists(l);
+    assert.equal(l.labels.split(',').sort().join(','), labelsList);
+    assert.equal(l.tiers, '');
+
+    const c = rowFor(comped.id);
+    assertExists(c);
+    assert.equal(c.complimentary_plan, 'true');
+
+    const s = rowFor(subscribed.id);
+    assertExists(s);
+    assert.equal(s.subscribed_to_emails, 'true');
+  });
 });

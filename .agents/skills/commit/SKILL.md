@@ -23,6 +23,7 @@ Use this skill whenever the user asks you to create a git commit for the current
 5. Run `git status --short` after committing and confirm the result.
 
 ## Important
+
 - Do not push to remote unless the user explicitly asks
 - Keep commits focused and avoid bundling unrelated changes
 - If there are no relevant changes, do not create an empty commit

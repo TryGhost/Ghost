@@ -1,10 +1,10 @@
-const {addPermissionWithRoles} = require('../../utils');
+const { addPermissionWithRoles } = require('../../utils');
 
-module.exports = addPermissionWithRoles({
+module.exports = addPermissionWithRoles(
+  {
     name: 'Browse mentions',
     action: 'browse',
-    object: 'mention'
-}, [
-    'Administrator',
-    'Admin Integration'
-]);
+    object: 'mention',
+  },
+  ['Administrator', 'Admin Integration'],
+);

@@ -1,36 +1,36 @@
-import {IUnsplashProvider} from './IUnsplashProvider';
-import {Photo} from '../UnsplashTypes';
+import { IUnsplashProvider } from './IUnsplashProvider';
+import { Photo } from '../UnsplashTypes';
 
 export class PhotoUseCases {
-    private _provider: IUnsplashProvider;
+  private _provider: IUnsplashProvider;
 
-    constructor(provider: IUnsplashProvider) {
-        this._provider = provider;
+  constructor(provider: IUnsplashProvider) {
+    this._provider = provider;
+  }
+
+  async fetchPhotos(): Promise<Photo[]> {
+    return await this._provider.fetchPhotos();
+  }
+
+  async searchPhotos(term: string): Promise<Photo[]> {
+    return await this._provider.searchPhotos(term);
+  }
+
+  async triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> {
+    this._provider.triggerDownload(photo);
+  }
+
+  async fetchNextPage(): Promise<Photo[] | null> {
+    let request = await this._provider.fetchNextPage();
+
+    if (request) {
+      return request;
     }
 
-    async fetchPhotos(): Promise<Photo[]> {
-        return await this._provider.fetchPhotos();
-    }
+    return null;
+  }
 
-    async searchPhotos(term: string): Promise<Photo[]> {
-        return await this._provider.searchPhotos(term);
-    }
-
-    async triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> {
-        this._provider.triggerDownload(photo);
-    }
-
-    async fetchNextPage(): Promise<Photo[] | null> {
-        let request = await this._provider.fetchNextPage();
-
-        if (request) {
-            return request;
-        }
-
-        return null;
-    }
-
-    searchIsRunning(): boolean {
-        return this._provider.searchIsRunning();
-    }
+  searchIsRunning(): boolean {
+    return this._provider.searchIsRunning();
+  }
 }

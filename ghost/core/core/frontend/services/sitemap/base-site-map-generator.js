@@ -7,201 +7,195 @@ const localUtils = require('./utils');
 
 // Sitemap specific xml namespace declarations that should not change
 const XMLNS_DECLS = {
-    _attr: {
-        xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9',
-        'xmlns:image': 'http://www.google.com/schemas/sitemap-image/1.1'
-    }
+  _attr: {
+    xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9',
+    'xmlns:image': 'http://www.google.com/schemas/sitemap-image/1.1',
+  },
 };
 
 class BaseSiteMapGenerator {
-    constructor() {
-        this.nodeLookup = {};
-        this.nodeTimeLookup = {};
-        this.siteMapContent = new Map();
-        this.lastModified = 0;
-        this.maxPerPage = 50000;
+  constructor() {
+    this.nodeLookup = {};
+    this.nodeTimeLookup = {};
+    this.siteMapContent = new Map();
+    this.lastModified = 0;
+    this.maxPerPage = 50000;
+  }
+
+  hasCanonicalUrl(datum, url) {
+    if (!datum?.canonical_url) {
+      return false;
     }
 
-    hasCanonicalUrl(datum, url) {
-        if (!datum?.canonical_url) {
-            return false;
-        }
+    // Sitemap data comes from raw knex queries which bypass model-layer
+    // attribute transforms, so canonical_url may still be transform-ready
+    // (__GHOST_URL__/...) and must be made absolute before comparing
+    const canonicalUrl = urlUtils.transformReadyToAbsolute(datum.canonical_url);
 
-        // Sitemap data comes from raw knex queries which bypass model-layer
-        // attribute transforms, so canonical_url may still be transform-ready
-        // (__GHOST_URL__/...) and must be made absolute before comparing
-        const canonicalUrl = urlUtils.transformReadyToAbsolute(datum.canonical_url);
+    const normalizeUrl = (value) => {
+      const normalizedUrl = new URL(value);
+      normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/+$/, '');
+      return normalizedUrl.href;
+    };
 
-        const normalizeUrl = (value) => {
-            const normalizedUrl = new URL(value);
-            normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/+$/, '');
-            return normalizedUrl.href;
-        };
+    try {
+      return normalizeUrl(canonicalUrl) !== normalizeUrl(url);
+    } catch {
+      return canonicalUrl !== url;
+    }
+  }
 
-        try {
-            return normalizeUrl(canonicalUrl) !== normalizeUrl(url);
-        } catch {
-            return canonicalUrl !== url;
-        }
+  generateXmlFromNodes(page) {
+    // Get a mapping of node to timestamp
+    let nodesToProcess = _.map(this.nodeLookup, (node, id) => {
+      return {
+        id: id,
+        // Using negative here to sort newest to oldest
+        ts: -(this.nodeTimeLookup[id] || 0),
+        node: node,
+      };
+    });
+
+    // Sort nodes by timestamp
+    nodesToProcess = _.sortBy(nodesToProcess, 'ts');
+
+    // Get the page of nodes that was requested
+    nodesToProcess = nodesToProcess.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
+
+    // Do not generate empty sitemaps
+    if (nodesToProcess.length === 0) {
+      return null;
     }
 
-    generateXmlFromNodes(page) {
-        // Get a mapping of node to timestamp
-        let nodesToProcess = _.map(this.nodeLookup, (node, id) => {
-            return {
-                id: id,
-                // Using negative here to sort newest to oldest
-                ts: -(this.nodeTimeLookup[id] || 0),
-                node: node
-            };
-        });
+    // Grab just the nodes
+    const nodes = _.map(nodesToProcess, 'node');
 
-        // Sort nodes by timestamp
-        nodesToProcess = _.sortBy(nodesToProcess, 'ts');
+    const data = {
+      // Concat the elements to the _attr declaration
+      urlset: [XMLNS_DECLS].concat(nodes),
+    };
 
-        // Get the page of nodes that was requested
-        nodesToProcess = nodesToProcess.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
+    // Generate full xml
+    let sitemapXml = localUtils.getDeclarations() + xml(data);
 
-        // Do not generate empty sitemaps
-        if (nodesToProcess.length === 0) {
-            return null;
-        }
+    // Perform url transformations
+    // - Necessary because sitemap data is supplied by the router which
+    //   uses knex directly bypassing model-layer attribute transforms
+    sitemapXml = urlUtils.transformReadyToAbsolute(sitemapXml);
 
-        // Grab just the nodes
-        const nodes = _.map(nodesToProcess, 'node');
+    return sitemapXml;
+  }
 
-        const data = {
-            // Concat the elements to the _attr declaration
-            urlset: [XMLNS_DECLS].concat(nodes)
-        };
+  addUrl(url, datum) {
+    // Computed once and threaded through: the three consumers below each
+    // used to construct their own moment() from the same datum, which
+    // dominates the cost of bulk adds.
+    const lastModified = this.getLastModifiedForDatum(datum);
+    const node = this.createUrlNodeFromDatum(url, datum, lastModified);
 
-        // Generate full xml
-        let sitemapXml = localUtils.getDeclarations() + xml(data);
+    if (node && !this.hasCanonicalUrl(datum, url)) {
+      this.updateLastModified(datum, lastModified);
+      this.updateLookups(datum, node, lastModified);
+      // force regeneration of xml
+      this.siteMapContent.clear();
+    }
+  }
 
-        // Perform url transformations
-        // - Necessary because sitemap data is supplied by the router which
-        //   uses knex directly bypassing model-layer attribute transforms
-        sitemapXml = urlUtils.transformReadyToAbsolute(sitemapXml);
+  /**
+   * @returns {moment.Moment}
+   */
+  getLastModifiedForDatum(datum) {
+    if (datum.updated_at || datum.published_at || datum.created_at) {
+      const modifiedDate = datum.updated_at || datum.published_at || datum.created_at;
 
-        return sitemapXml;
+      return moment(modifiedDate);
+    } else {
+      return moment();
+    }
+  }
+
+  updateLastModified(datum, lastModified = this.getLastModifiedForDatum(datum)) {
+    if (lastModified > this.lastModified) {
+      this.lastModified = lastModified;
+    }
+  }
+
+  /**
+   *
+   * @param {string} url
+   * @param {Object} datum
+   * @returns
+   */
+  createUrlNodeFromDatum(url, datum, lastModified = this.getLastModifiedForDatum(datum)) {
+    let node;
+    let imgNode;
+
+    node = {
+      url: [{ loc: url }, { lastmod: lastModified.toISOString() }],
+    };
+
+    imgNode = this.createImageNodeFromDatum(datum);
+
+    if (imgNode) {
+      node.url.push(imgNode);
     }
 
-    addUrl(url, datum) {
-        // Computed once and threaded through: the three consumers below each
-        // used to construct their own moment() from the same datum, which
-        // dominates the cost of bulk adds.
-        const lastModified = this.getLastModifiedForDatum(datum);
-        const node = this.createUrlNodeFromDatum(url, datum, lastModified);
+    return node;
+  }
 
-        if (node && !this.hasCanonicalUrl(datum, url)) {
-            this.updateLastModified(datum, lastModified);
-            this.updateLookups(datum, node, lastModified);
-            // force regeneration of xml
-            this.siteMapContent.clear();
-        }
+  createImageNodeFromDatum(datum) {
+    // Check for cover first because user has cover but the rest only have image
+    const image = datum.cover_image || datum.profile_image || datum.feature_image;
+
+    let imageUrl;
+    let imageEl;
+
+    if (!image) {
+      return;
     }
 
-    /**
-     * @returns {moment.Moment}
-     */
-    getLastModifiedForDatum(datum) {
-        if (datum.updated_at || datum.published_at || datum.created_at) {
-            const modifiedDate = datum.updated_at || datum.published_at || datum.created_at;
+    // Grab the image url
+    imageUrl = urlUtils.urlFor('image', { image: image }, true);
 
-            return moment(modifiedDate);
-        } else {
-            return moment();
-        }
+    // Verify the url structure
+    if (!this.validateImageUrl(imageUrl)) {
+      return;
     }
 
-    updateLastModified(datum, lastModified = this.getLastModifiedForDatum(datum)) {
-        if (lastModified > this.lastModified) {
-            this.lastModified = lastModified;
-        }
+    // Create the weird xml node syntax structure that is expected
+    imageEl = [{ 'image:loc': imageUrl }, { 'image:caption': path.basename(imageUrl) }];
+
+    // Return the node to be added to the url xml node
+    return {
+      'image:image': imageEl,
+    };
+  }
+
+  validateImageUrl(imageUrl) {
+    return !!imageUrl;
+  }
+
+  getXml(page = 1) {
+    if (this.siteMapContent.has(page)) {
+      return this.siteMapContent.get(page);
     }
 
-    /**
-     *
-     * @param {string} url
-     * @param {Object} datum
-     * @returns
-     */
-    createUrlNodeFromDatum(url, datum, lastModified = this.getLastModifiedForDatum(datum)) {
-        let node;
-        let imgNode;
+    const content = this.generateXmlFromNodes(page);
+    this.siteMapContent.set(page, content);
+    return content;
+  }
 
-        node = {
-            url: [
-                {loc: url},
-                {lastmod: lastModified.toISOString()}
-            ]
-        };
+  updateLookups(datum, node, lastModified = this.getLastModifiedForDatum(datum)) {
+    this.nodeLookup[datum.id] = node;
+    this.nodeTimeLookup[datum.id] = lastModified;
+  }
 
-        imgNode = this.createImageNodeFromDatum(datum);
-
-        if (imgNode) {
-            node.url.push(imgNode);
-        }
-
-        return node;
-    }
-
-    createImageNodeFromDatum(datum) {
-        // Check for cover first because user has cover but the rest only have image
-        const image = datum.cover_image || datum.profile_image || datum.feature_image;
-
-        let imageUrl;
-        let imageEl;
-
-        if (!image) {
-            return;
-        }
-
-        // Grab the image url
-        imageUrl = urlUtils.urlFor('image', {image: image}, true);
-
-        // Verify the url structure
-        if (!this.validateImageUrl(imageUrl)) {
-            return;
-        }
-
-        // Create the weird xml node syntax structure that is expected
-        imageEl = [
-            {'image:loc': imageUrl},
-            {'image:caption': path.basename(imageUrl)}
-        ];
-
-        // Return the node to be added to the url xml node
-        return {
-            'image:image': imageEl
-        };
-    }
-
-    validateImageUrl(imageUrl) {
-        return !!imageUrl;
-    }
-
-    getXml(page = 1) {
-        if (this.siteMapContent.has(page)) {
-            return this.siteMapContent.get(page);
-        }
-
-        const content = this.generateXmlFromNodes(page);
-        this.siteMapContent.set(page, content);
-        return content;
-    }
-
-    updateLookups(datum, node, lastModified = this.getLastModifiedForDatum(datum)) {
-        this.nodeLookup[datum.id] = node;
-        this.nodeTimeLookup[datum.id] = lastModified;
-    }
-
-    reset() {
-        this.nodeLookup = {};
-        this.nodeTimeLookup = {};
-        this.siteMapContent.clear();
-        this.lastModified = 0;
-    }
+  reset() {
+    this.nodeLookup = {};
+    this.nodeTimeLookup = {};
+    this.siteMapContent.clear();
+    this.lastModified = 0;
+  }
 }
 
 module.exports = BaseSiteMapGenerator;

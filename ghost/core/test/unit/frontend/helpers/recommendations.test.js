@@ -3,69 +3,82 @@ const sinon = require('sinon');
 const api = require('../../../../core/server/api').endpoints;
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
-const {html} = require('common-tags');
+const { html } = require('common-tags');
 const loggingLib = require('@tryghost/logging');
 const proxy = require('../../../../core/frontend/services/proxy');
-const {promisify} = require('node:util');
+const { promisify } = require('node:util');
 
 const recommendations = require('../../../../core/frontend/helpers/recommendations');
 const foreach = require('../../../../core/frontend/helpers/foreach');
 const readable_url = require('../../../../core/frontend/helpers/readable_url');
-const {settingsCache} = proxy;
+const { settingsCache } = proxy;
 
 function trimSpaces(string) {
-    return string.replace(/\s+/g, '');
+  return string.replace(/\s+/g, '');
 }
 
 describe('{{#recommendations}} helper', function () {
-    let logging;
-    /** @type {sinon.SinonStub} */
-    let settingsCacheGetStub;
+  let logging;
+  /** @type {sinon.SinonStub} */
+  let settingsCacheGetStub;
 
-    beforeAll(async function () {
-        hbs.express4({
-            partialsDir: [configUtils.config.get('paths').helperTemplates]
-        });
-
-        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
-        await cachePartials();
-
-        // The recommendation template expects this helper
-        hbs.registerHelper('foreach', foreach);
-        hbs.registerHelper('readable_url', readable_url);
-
-        // Stub settings cache
-        settingsCacheGetStub = sinon.stub(settingsCache, 'get');
-        settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
-
-        // Stub Recommendation Content API
-        const meta = {pagination: {}};
-        sinon.stub(api, 'recommendationsPublic').get(() => {
-            return {
-                browse: sinon.stub().resolves({recommendations: [
-                    {id: '1', title: 'Recommendation 1', url: 'https://recommendations1.com', favicon: 'https://recommendations1.com/favicon.ico', description: 'Description 1'},
-                    {id: '2', title: 'Recommendation 2', url: 'https://recommendations2.com', favicon: 'https://recommendations2.com/favicon.ico', description: 'Description 2'}
-                ], meta: meta})
-            };
-        });
-
-        // Stub logging
-        logging = {
-            error: sinon.stub(loggingLib, 'error'),
-            warn: sinon.stub(loggingLib, 'warn')
-        };
+  beforeAll(async function () {
+    hbs.express4({
+      partialsDir: [configUtils.config.get('paths').helperTemplates],
     });
 
-    afterAll(function () {
-        sinon.restore();
+    const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+    await cachePartials();
+
+    // The recommendation template expects this helper
+    hbs.registerHelper('foreach', foreach);
+    hbs.registerHelper('readable_url', readable_url);
+
+    // Stub settings cache
+    settingsCacheGetStub = sinon.stub(settingsCache, 'get');
+    settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
+
+    // Stub Recommendation Content API
+    const meta = { pagination: {} };
+    sinon.stub(api, 'recommendationsPublic').get(() => {
+      return {
+        browse: sinon.stub().resolves({
+          recommendations: [
+            {
+              id: '1',
+              title: 'Recommendation 1',
+              url: 'https://recommendations1.com',
+              favicon: 'https://recommendations1.com/favicon.ico',
+              description: 'Description 1',
+            },
+            {
+              id: '2',
+              title: 'Recommendation 2',
+              url: 'https://recommendations2.com',
+              favicon: 'https://recommendations2.com/favicon.ico',
+              description: 'Description 2',
+            },
+          ],
+          meta: meta,
+        }),
+      };
     });
 
-    it('renders a template with recommendations', async function () {
-        const response = await recommendations.call(
-            'recommendations'
-        );
+    // Stub logging
+    logging = {
+      error: sinon.stub(loggingLib, 'error'),
+      warn: sinon.stub(loggingLib, 'warn'),
+    };
+  });
 
-        const expected = html`
+  afterAll(function () {
+    sinon.restore();
+  });
+
+  it('renders a template with recommendations', async function () {
+    const response = await recommendations.call('recommendations');
+
+    const expected = html`
         <ul class="recommendations">
             <li class="recommendation">
                 <a href="https://recommendations1.com" data-recommendation="1" target="_blank" rel="noopener">
@@ -90,105 +103,103 @@ describe('{{#recommendations}} helper', function () {
         </ul>
         `;
 
-        assert(response !== null && typeof response === 'object');
-        const actual = response.string;
+    assert(response !== null && typeof response === 'object');
+    const actual = response.string;
 
-        // Uncomment to debug
-        // console.log('Expected:');
-        // console.log(expected);
-        // console.log('Actual:');
-        // console.log(actual);
+    // Uncomment to debug
+    // console.log('Expected:');
+    // console.log(expected);
+    // console.log('Actual:');
+    // console.log(actual);
 
-        assert.equal(trimSpaces(actual), trimSpaces(expected));
-    });
+    assert.equal(trimSpaces(actual), trimSpaces(expected));
+  });
 
-    describe('when there are no recommendations', function () {
-        beforeAll(function () {
-            sinon.stub(api, 'recommendationsPublic').get(() => {
-                return {
-                    browse: () => {
-                        return new Promise((resolve) => {
-                            setTimeout(() => {
-                                resolve({recommendations: []});
-                            }, 5);
-                        });
-                    }
-                };
+  describe('when there are no recommendations', function () {
+    beforeAll(function () {
+      sinon.stub(api, 'recommendationsPublic').get(() => {
+        return {
+          browse: () => {
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                resolve({ recommendations: [] });
+              }, 5);
             });
-        });
-
-        it('renders nothing', async function () {
-            const response = await recommendations.call(
-                'recommendations'
-            );
-
-            // No HTML is rendered
-            assert(response !== null && typeof response === 'object');
-            assert.equal(response.string, '');
-        });
+          },
+        };
+      });
     });
 
-    describe('when recommendations_enabled is false', function () {
-        beforeAll(function () {
-            settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
-        });
+    it('renders nothing', async function () {
+      const response = await recommendations.call('recommendations');
 
-        it('renders nothing', async function () {
-            const response = await recommendations.call(
-                'recommendations'
-            );
+      // No HTML is rendered
+      assert(response !== null && typeof response === 'object');
+      assert.equal(response.string, '');
+    });
+  });
 
-            // No HTML is rendered
-            assert(response !== null && typeof response === 'object');
-            assert.equal(response.string, '');
-        });
+  describe('when recommendations_enabled is false', function () {
+    beforeAll(function () {
+      settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
     });
 
-    describe('when timeout is exceeded', function () {
-        let clock;
+    it('renders nothing', async function () {
+      const response = await recommendations.call('recommendations');
 
-        beforeAll(function () {
-            sinon.stub(api, 'recommendationsPublic').get(() => {
-                return {
-                    browse: () => {
-                        return new Promise((resolve) => {
-                            setTimeout(() => {
-                                resolve({recommendations: [{title: 'Recommendation 1', url: 'https://recommendations1.com'}]});
-                            }, 5);
-                        });
-                    }
-                };
+      // No HTML is rendered
+      assert(response !== null && typeof response === 'object');
+      assert.equal(response.string, '');
+    });
+  });
+
+  describe('when timeout is exceeded', function () {
+    let clock;
+
+    beforeAll(function () {
+      sinon.stub(api, 'recommendationsPublic').get(() => {
+        return {
+          browse: () => {
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                resolve({
+                  recommendations: [
+                    { title: 'Recommendation 1', url: 'https://recommendations1.com' },
+                  ],
+                });
+              }, 5);
             });
-        });
-
-        beforeEach(function () {
-            clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
-        });
-
-        afterEach(function () {
-            clock.restore();
-        });
-
-        afterAll(async function () {
-            await configUtils.restore();
-        });
-
-        it('should log an error and return safely if it hits the timeout threshold', async function () {
-            configUtils.set('optimization:getHelper:timeout:threshold', 1);
-
-            const responsePromise = recommendations.call(
-                'recommendations'
-            );
-            // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
-            await clock.tickAsync(2);
-            const response = await responsePromise;
-
-            // An error message is logged
-            sinon.assert.calledOnce(logging.error);
-
-            // No HTML is rendered
-            assert(response !== null && typeof response === 'object');
-            assert.equal(response.string, '');
-        });
+          },
+        };
+      });
     });
+
+    beforeEach(function () {
+      clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+
+    afterEach(function () {
+      clock.restore();
+    });
+
+    afterAll(async function () {
+      await configUtils.restore();
+    });
+
+    it('should log an error and return safely if it hits the timeout threshold', async function () {
+      configUtils.set('optimization:getHelper:timeout:threshold', 1);
+
+      const responsePromise = recommendations.call('recommendations');
+      // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
+      await clock.tickAsync(2);
+      const response = await responsePromise;
+
+      // An error message is logged
+      sinon.assert.calledOnce(logging.error);
+
+      // No HTML is rendered
+      assert(response !== null && typeof response === 'object');
+      assert.equal(response.string, '');
+    });
+  });
 });

@@ -30,16 +30,19 @@ for example `data-portal="signup"`.
 Share modal can be opened with `data-portal="share"` (or `#/share`).
 
 Default (zero-config) usage:
+
 ```html
 <button type="button" data-portal="share">Share</button>
 ```
 
 On pages where `{{ghost_head}}` is rendered, Portal will auto-resolve metadata from DOM tags:
+
 - URL: canonical URL (or current URL fallback)
 - Title: Open Graph title (or document title fallback)
 - Image: Open Graph image (or Twitter image fallback)
 
 Troubleshooting missing preview metadata:
+
 1. Verify the template includes `{{ghost_head}}`.
 2. Verify rendered HTML contains canonical + OG/Twitter tags.
 
@@ -85,6 +88,7 @@ pnpm test:watch
 
 Portal is primarily tested through Ghost's Playwright tests in the `e2e/`
 directory. Run them from the monorepo root:
+
 ```bash
 pnpm test:e2e
 ```

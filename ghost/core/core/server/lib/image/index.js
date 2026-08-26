@@ -12,12 +12,12 @@ const cacheStore = adapterManager.getAdapter('cache:imageSizes');
 const imageStore = adapterManager.getAdapter('storage:images');
 
 module.exports = new ImageUtils({
-    config,
-    urlUtils,
-    settingsCache,
-    storageUtils,
-    imageStore,
-    validator,
-    request,
-    cacheStore
+  config,
+  urlUtils,
+  settingsCache,
+  storageUtils,
+  imageStore,
+  validator,
+  request,
+  cacheStore,
 });

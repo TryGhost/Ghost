@@ -1,12 +1,12 @@
 const sinon = require('sinon');
-const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const assert = require('node:assert/strict');
 const configUtils = require('../../../utils/config-utils');
-const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
+const { sendEmail, matchEmailSnapshot } = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
 const fs = require('fs-extra');
-const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
+const { DEFAULT_NODES } = require('@tryghost/kg-default-nodes');
 const ImageSize = require('../../../../core/server/lib/image/image-size');
 
 const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
@@ -14,18 +14,18 @@ const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-p
 // some nodes are not cards or will never be emailed so we exclude them from tests
 // that check if all default nodes are rendered or have associated renderers called
 const excludedNodes = [
-    // only used in pages, will never be emailed
-    'collection',
-    // non-card nodes
-    'paragraph',
-    'aside',
-    'extended-text',
-    'extended-quote',
-    'extended-heading',
-    'tk',
-    'at-link',
-    'at-link-search',
-    'zwnj'
+  // only used in pages, will never be emailed
+  'collection',
+  // non-card nodes
+  'paragraph',
+  'aside',
+  'extended-text',
+  'extended-quote',
+  'extended-heading',
+  'tk',
+  'at-link',
+  'at-link-search',
+  'zwnj',
 ];
 
 /**
@@ -35,245 +35,255 @@ const excludedNodes = [
  * @returns {T & {html: string, preheader: string}}
  */
 function splitPreheader(data) {
-    // Remove the preheader span from the email using cheerio
-    const $ = cheerio.load(data.html);
-    const preheader = $('.preheader');
-    const preheaderHtml = preheader.html();
-    preheader.remove();
-    return {
-        ...data,
-        html: $.html(),
-        preheader: preheaderHtml
-    };
+  // Remove the preheader span from the email using cheerio
+  const $ = cheerio.load(data.html);
+  const preheader = $('.preheader');
+  const preheaderHtml = preheader.html();
+  preheader.remove();
+  return {
+    ...data,
+    html: $.html(),
+    preheader: preheaderHtml,
+  };
 }
 
 function createParagraphCard(text = 'Hello world.') {
-    return {
-        children: [
-            {
-                detail: 0,
-                format: 0,
-                mode: 'normal',
-                style: '',
-                text,
-                type: 'text',
-                version: 1
-            }
-        ],
-        direction: 'ltr',
-        format: '',
-        indent: 0,
-        type: 'paragraph',
-        version: 1
-    };
+  return {
+    children: [
+      {
+        detail: 0,
+        format: 0,
+        mode: 'normal',
+        style: '',
+        text,
+        type: 'text',
+        version: 1,
+      },
+    ],
+    direction: 'ltr',
+    format: '',
+    indent: 0,
+    type: 'paragraph',
+    version: 1,
+  };
 }
 
 function createImageCard(src) {
-    return {
-        type: 'image',
-        version: 1,
-        src,
-        width: null,
-        height: null,
-        title: '',
-        alt: '',
-        caption: '',
-        cardWidth: 'regular',
-        href: ''
-    };
+  return {
+    type: 'image',
+    version: 1,
+    src,
+    width: null,
+    height: null,
+    title: '',
+    alt: '',
+    caption: '',
+    cardWidth: 'regular',
+    href: '',
+  };
 }
 
 function createLexicalJson(cards = []) {
-    return JSON.stringify({
-        root: {
-            children: [
-                ...cards
-            ],
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            type: 'root',
-            version: 1
-        }
-    });
+  return JSON.stringify({
+    root: {
+      children: [...cards],
+      direction: 'ltr',
+      format: '',
+      indent: 0,
+      type: 'root',
+      version: 1,
+    },
+  });
 }
 
 let agent;
 
 describe('Can send cards via email', function () {
-    beforeEach(function () {
-        mockManager.mockMail();
-        mockManager.mockMailgun();
-        sinon.stub(Date.prototype, 'getFullYear').returns(2025); // for consistent snapshots
+  beforeEach(function () {
+    mockManager.mockMail();
+    mockManager.mockMailgun();
+    sinon.stub(Date.prototype, 'getFullYear').returns(2025); // for consistent snapshots
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
+    await models.Settings.edit(
+      [
+        {
+          key: 'email_verification_required',
+          value: false,
+        },
+      ],
+      { context: { internal: true } },
+    );
+    mockManager.restore();
+    sinon.restore();
+  });
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+
+    await fixtureManager.init('newsletters', 'members:newsletters');
+    await agent.loginAsOwner();
+  });
+
+  it('Paragraphs', async function () {
+    const data = await sendEmail(agent, {
+      lexical: createLexicalJson([createParagraphCard('This is a paragraph test.')]),
     });
 
-    afterEach(async function () {
-        await configUtils.restore();
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: false
-        }], {context: {internal: true}});
-        mockManager.restore();
-        sinon.restore();
+    // Remove the preheader span from the email using cheerio
+    const email = splitPreheader(data);
+
+    // Check only contains once in every part
+    assert.equal(email.html.match(/This is a paragraph test\./g).length, 1);
+    assert.equal(email.plaintext.match(/This is a paragraph test\./g).length, 1);
+    assert.equal(email.preheader.match(/This is a paragraph test\./g).length, 1);
+
+    await matchEmailSnapshot();
+  });
+
+  it('Signup Card', async function () {
+    const data = await sendEmail(agent, {
+      lexical: createLexicalJson([
+        createParagraphCard('This is a paragraph'),
+        {
+          type: 'signup',
+          version: 1,
+          alignment: 'left',
+          backgroundColor: '#F0F0F0',
+          backgroundImageSrc: '',
+          backgroundSize: 'cover',
+          textColor: '#000000',
+          buttonColor: 'accent',
+          buttonTextColor: '#FFFFFF',
+          buttonText: 'Subscribe',
+          disclaimer: '<span>No spam. Unsubscribe anytime.</span>',
+          header: '<span>Sign up for Koenig Lexical</span>',
+          labels: [],
+          layout: 'wide',
+          subheader:
+            "<span>There's a whole lot to discover in this editor. Let us help you settle in.</span>",
+          successMessage: 'Email sent! Check your inbox to complete your signup.',
+          swapped: false,
+        },
+      ]),
     });
 
-    beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
+    const email = splitPreheader(data);
 
-        await fixtureManager.init('newsletters', 'members:newsletters');
-        await agent.loginAsOwner();
+    // Check the plaintext does contain the paragraph, but doesn't contain the signup card
+    assert.ok(!email.html.includes('Sign up for Koenig Lexical'));
+    assert.ok(!email.plaintext.includes('Sign up for Koenig Lexical'));
+    assert.ok(!email.preheader.includes('Sign up for Koenig Lexical'));
+
+    assert.ok(email.html.includes('This is a paragraph'));
+    assert.ok(email.plaintext.includes('This is a paragraph'));
+    assert.ok(email.preheader.includes('This is a paragraph'));
+
+    await matchEmailSnapshot();
+  });
+
+  // Run the tests for a free and non-free member
+  // NOTE: this is to workaround the email snapshot utils not handling slight discrepancies in email body, but it
+  // means we can have snapshots for both free and non-free members
+  ['status:free', 'status:-free'].forEach(function (status) {
+    it(`renders the golden post correctly (${status})`, async function () {
+      const data = await sendEmail(
+        agent,
+        {
+          lexical: JSON.stringify(goldenPost),
+        },
+        status,
+      );
+
+      splitPreheader(data);
+
+      await matchEmailSnapshot();
+    });
+  });
+
+  it('renders all of the default nodes in the golden post', async function () {
+    // This test checks that all of the default nodes from @tryghost/kg-default-nodes are present in the golden post
+    // This is to ensure that if we add new cards to Koenig, they will be included in the golden post
+    // This is important because the golden post is used to test the email rendering of the cards after
+    // they have gone through the Email Renderer, which can change the HTML/CSS of the cards
+    // See the README.md in this same directory for more information.
+
+    const cardsInGoldenPost = goldenPost.root.children.map((child) => {
+      return child.type;
     });
 
-    it('Paragraphs', async function () {
-        const data = await sendEmail(agent, {
-            lexical: createLexicalJson([
-                createParagraphCard('This is a paragraph test.')
-            ])
-        });
-
-        // Remove the preheader span from the email using cheerio
-        const email = splitPreheader(data);
-
-        // Check only contains once in every part
-        assert.equal(email.html.match(/This is a paragraph test\./g).length, 1);
-        assert.equal(email.plaintext.match(/This is a paragraph test\./g).length, 1);
-        assert.equal(email.preheader.match(/This is a paragraph test\./g).length, 1);
-
-        await matchEmailSnapshot();
+    const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
+      try {
+        return node.getType();
+      } catch (error) {
+        return null;
+      }
+    }).filter((card) => {
+      return card !== null && !excludedNodes.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
     });
 
-    it('Signup Card', async function () {
-        const data = await sendEmail(agent, {
-            lexical: createLexicalJson([
-                createParagraphCard('This is a paragraph'),
-                {
-                    type: 'signup',
-                    version: 1,
-                    alignment: 'left',
-                    backgroundColor: '#F0F0F0',
-                    backgroundImageSrc: '',
-                    backgroundSize: 'cover',
-                    textColor: '#000000',
-                    buttonColor: 'accent',
-                    buttonTextColor: '#FFFFFF',
-                    buttonText: 'Subscribe',
-                    disclaimer: '<span>No spam. Unsubscribe anytime.</span>',
-                    header: '<span>Sign up for Koenig Lexical</span>',
-                    labels: [],
-                    layout: 'wide',
-                    subheader: '<span>There\'s a whole lot to discover in this editor. Let us help you settle in.</span>',
-                    successMessage: 'Email sent! Check your inbox to complete your signup.',
-                    swapped: false
-                }
-            ])
-        });
+    // Check that every card in DEFAULT_NODES are present in the golden post (with the exception of the excludedNodes above)
+    for (const card of cardsInDefaultNodes) {
+      assert.ok(
+        cardsInGoldenPost.includes(card),
+        `The golden post does not contain the ${card} card`,
+      );
+    }
+  });
 
-        const email = splitPreheader(data);
+  it('uses URL-based dimension lookup for CDN images', async function () {
+    // This test stubs ImageSize internals and asserts the URL lookup chain
+    // runs, so restore the real cache method (disableNetwork no-ops it globally).
+    mockManager.allowImageSize();
 
-        // Check the plaintext does contain the paragraph, but doesn't contain the signup card
-        assert.ok(!email.html.includes('Sign up for Koenig Lexical'));
-        assert.ok(!email.plaintext.includes('Sign up for Koenig Lexical'));
-        assert.ok(!email.preheader.includes('Sign up for Koenig Lexical'));
+    const cdnImageUrl = 'https://cdn.com/uuid/content/images/image.jpg';
 
-        assert.ok(email.html.includes('This is a paragraph'));
-        assert.ok(email.plaintext.includes('This is a paragraph'));
-        assert.ok(email.preheader.includes('This is a paragraph'));
+    const imageSizeFromUrlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({
+      width: 1200,
+      height: 800,
+    });
+    const storagePathSpy = sinon.spy(ImageSize.prototype, 'getImageSizeFromStoragePath');
 
-        await matchEmailSnapshot();
+    const data = await sendEmail(agent, {
+      feature_image: cdnImageUrl,
+      lexical: createLexicalJson([createParagraphCard('Feature image test.')]),
     });
 
-    // Run the tests for a free and non-free member
-    // NOTE: this is to workaround the email snapshot utils not handling slight discrepancies in email body, but it
-    // means we can have snapshots for both free and non-free members
-    ['status:free', 'status:-free'].forEach(function (status) {
-        it(`renders the golden post correctly (${status})`, async function () {
-            const data = await sendEmail(agent, {
-                lexical: JSON.stringify(goldenPost)
-            }, status);
+    assert.ok(data.html.includes(cdnImageUrl));
+    sinon.assert.calledWithMatch(imageSizeFromUrlStub, cdnImageUrl);
+    sinon.assert.neverCalledWithMatch(storagePathSpy, cdnImageUrl);
 
-            splitPreheader(data);
+    const $ = cheerio.load(data.html);
+    const featureImage = $(`img[src="${cdnImageUrl}"]`).first();
+    assert.ok(featureImage.length > 0);
+    assert.equal(featureImage.attr('width'), '600');
+  });
 
-            await matchEmailSnapshot();
-        });
+  it('does not use storage-path lookup for CDN post content images', async function () {
+    // This test stubs ImageSize internals and asserts the URL lookup chain
+    // runs, so restore the real cache method (disableNetwork no-ops it globally).
+    mockManager.allowImageSize();
+
+    const cdnImageUrl = 'https://cdn.com/uuid/content/images/post-image.jpg';
+
+    const urlStub = sinon
+      .stub(ImageSize.prototype, '_imageSizeFromUrl')
+      .resolves({ width: 1200, height: 800 });
+    const storagePathSpy = sinon.spy(ImageSize.prototype, 'getImageSizeFromStoragePath');
+
+    const data = await sendEmail(agent, {
+      lexical: createLexicalJson([createImageCard(cdnImageUrl)]),
     });
 
-    it('renders all of the default nodes in the golden post', async function () {
-        // This test checks that all of the default nodes from @tryghost/kg-default-nodes are present in the golden post
-        // This is to ensure that if we add new cards to Koenig, they will be included in the golden post
-        // This is important because the golden post is used to test the email rendering of the cards after
-        // they have gone through the Email Renderer, which can change the HTML/CSS of the cards
-        // See the README.md in this same directory for more information.
-
-        const cardsInGoldenPost = goldenPost.root.children.map((child) => {
-            return child.type;
-        });
-
-        const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
-            try {
-                return node.getType();
-            } catch (error) {
-                return null;
-            }
-        }).filter((card) => {
-            return card !== null && !excludedNodes.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
-        });
-
-        // Check that every card in DEFAULT_NODES are present in the golden post (with the exception of the excludedNodes above)
-        for (const card of cardsInDefaultNodes) {
-            assert.ok(cardsInGoldenPost.includes(card), `The golden post does not contain the ${card} card`);
-        }
-    });
-
-    it('uses URL-based dimension lookup for CDN images', async function () {
-        // This test stubs ImageSize internals and asserts the URL lookup chain
-        // runs, so restore the real cache method (disableNetwork no-ops it globally).
-        mockManager.allowImageSize();
-
-        const cdnImageUrl = 'https://cdn.com/uuid/content/images/image.jpg';
-
-        const imageSizeFromUrlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({
-            width: 1200,
-            height: 800
-        });
-        const storagePathSpy = sinon.spy(ImageSize.prototype, 'getImageSizeFromStoragePath');
-
-        const data = await sendEmail(agent, {
-            feature_image: cdnImageUrl,
-            lexical: createLexicalJson([
-                createParagraphCard('Feature image test.')
-            ])
-        });
-
-        assert.ok(data.html.includes(cdnImageUrl));
-        sinon.assert.calledWithMatch(imageSizeFromUrlStub, cdnImageUrl);
-        sinon.assert.neverCalledWithMatch(storagePathSpy, cdnImageUrl);
-
-        const $ = cheerio.load(data.html);
-        const featureImage = $(`img[src="${cdnImageUrl}"]`).first();
-        assert.ok(featureImage.length > 0);
-        assert.equal(featureImage.attr('width'), '600');
-    });
-
-    it('does not use storage-path lookup for CDN post content images', async function () {
-        // This test stubs ImageSize internals and asserts the URL lookup chain
-        // runs, so restore the real cache method (disableNetwork no-ops it globally).
-        mockManager.allowImageSize();
-
-        const cdnImageUrl = 'https://cdn.com/uuid/content/images/post-image.jpg';
-
-        const urlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({width: 1200, height: 800});
-        const storagePathSpy = sinon.spy(ImageSize.prototype, 'getImageSizeFromStoragePath');
-
-        const data = await sendEmail(agent, {
-            lexical: createLexicalJson([
-                createImageCard(cdnImageUrl)
-            ])
-        });
-
-        assert.ok(data.html.includes(cdnImageUrl));
-        sinon.assert.notCalled(urlStub);
-        sinon.assert.neverCalledWithMatch(storagePathSpy, sinon.match((value) => {
-            return typeof value === 'string' && value.includes('/uuid/content/images/post-image.jpg');
-        }));
-    });
+    assert.ok(data.html.includes(cdnImageUrl));
+    sinon.assert.notCalled(urlStub);
+    sinon.assert.neverCalledWithMatch(
+      storagePathSpy,
+      sinon.match((value) => {
+        return typeof value === 'string' && value.includes('/uuid/content/images/post-image.jpg');
+      }),
+    );
+  });
 });

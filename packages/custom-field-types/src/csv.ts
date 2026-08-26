@@ -1,4 +1,4 @@
-import {subFieldsOf, type FieldType} from './index.ts';
+import { subFieldsOf, type FieldType } from './index.ts';
 
 /**
  * How a field's value maps onto CSV columns.
@@ -29,12 +29,12 @@ const NAMESPACE = 'custom_fields';
 
 /** A field definition reduced to what CSV needs to know about it. */
 export interface CsvField {
-    key: string;
-    type: FieldType;
+  key: string;
+  type: FieldType;
 }
 
 function toCell(value: unknown): string {
-    return value === undefined || value === null ? '' : String(value);
+  return value === undefined || value === null ? '' : String(value);
 }
 
 // A cell holding nothing but whitespace carries no more data than an empty one, so both
@@ -42,28 +42,28 @@ function toCell(value: unknown): string {
 // scalar, and on a composite it would make an otherwise untouched address fail its "at
 // least one part filled in" rule and take the whole member row down with it.
 function isBlank(cell: string): boolean {
-    return cell.trim() === '';
+  return cell.trim() === '';
 }
 
 /** A column a field occupies, and which part of the field's value it holds. */
 export interface CsvFieldColumn {
-    column: string;
-    /** The part this column holds, or null where the field's whole value is one column. */
-    subField: string | null;
+  column: string;
+  /** The part this column holds, or null where the field's whole value is one column. */
+  subField: string | null;
 }
 
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
-    const subFields = subFieldsOf(field.type);
-    return subFields
-        ? subFields.map(sub => ({column: `${column}${SEPARATOR}${sub}`, subField: sub}))
-        : [{column, subField: null}];
+  const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+  const subFields = subFieldsOf(field.type);
+  return subFields
+    ? subFields.map((sub) => ({ column: `${column}${SEPARATOR}${sub}`, subField: sub }))
+    : [{ column, subField: null }];
 }
 
 export function isCustomFieldColumn(column: string): boolean {
-    return column === NAMESPACE || column.startsWith(`${NAMESPACE}${SEPARATOR}`);
+  return column === NAMESPACE || column.startsWith(`${NAMESPACE}${SEPARATOR}`);
 }
 
 /**
@@ -73,26 +73,29 @@ export function isCustomFieldColumn(column: string): boolean {
  * the member holds a value for it. Callers derive the CSV header from a single
  * row, so a key omitted here is a column dropped from the whole export.
  */
-export function csvCellsForFields(fields: readonly CsvField[], values: Record<string, unknown>): Record<string, string> {
-    const cells: Record<string, string> = {};
+export function csvCellsForFields(
+  fields: readonly CsvField[],
+  values: Record<string, unknown>,
+): Record<string, string> {
+  const cells: Record<string, string> = {};
 
-    for (const field of fields) {
-        const value = values[field.key];
-        const subFields = subFieldsOf(field.type);
-        const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+  for (const field of fields) {
+    const value = values[field.key];
+    const subFields = subFieldsOf(field.type);
+    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
 
-        if (!subFields) {
-            cells[column] = toCell(value);
-            continue;
-        }
-
-        const composite = (value ?? {}) as Record<string, unknown>;
-        for (const sub of subFields) {
-            cells[`${column}${SEPARATOR}${sub}`] = toCell(composite[sub]);
-        }
+    if (!subFields) {
+      cells[column] = toCell(value);
+      continue;
     }
 
-    return cells;
+    const composite = (value ?? {}) as Record<string, unknown>;
+    for (const sub of subFields) {
+      cells[`${column}${SEPARATOR}${sub}`] = toCell(composite[sub]);
+    }
+  }
+
+  return cells;
 }
 
 /**
@@ -116,47 +119,47 @@ export function csvCellsForFields(fields: readonly CsvField[], values: Record<st
  * same way a blank cell reads as no data for a whole field.
  */
 export function fieldValuesFromCsvRow(
-    fields: readonly CsvField[],
-    row: Record<string, unknown>,
-    decodeCell: (cell: string) => string = cell => cell
+  fields: readonly CsvField[],
+  row: Record<string, unknown>,
+  decodeCell: (cell: string) => string = (cell) => cell,
 ): Record<string, unknown> {
-    const values: Record<string, unknown> = {};
+  const values: Record<string, unknown> = {};
 
-    // The parser only ever sets a string cell for these columns, so a non-string is an
-    // absent column, read as untouched.
-    for (const field of fields) {
-        const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
-        const subFields = subFieldsOf(field.type);
+  // The parser only ever sets a string cell for these columns, so a non-string is an
+  // absent column, read as untouched.
+  for (const field of fields) {
+    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+    const subFields = subFieldsOf(field.type);
 
-        if (!subFields) {
-            const cell = row[column];
-            if (typeof cell === 'string') {
-                const decoded = decodeCell(cell);
-                if (!isBlank(decoded)) {
-                    values[field.key] = decoded;
-                }
-            }
-            continue;
+    if (!subFields) {
+      const cell = row[column];
+      if (typeof cell === 'string') {
+        const decoded = decodeCell(cell);
+        if (!isBlank(decoded)) {
+          values[field.key] = decoded;
         }
-
-        let anyColumnPresent = false;
-        const composite: Record<string, string> = {};
-        for (const sub of subFields) {
-            const cell = row[`${column}${SEPARATOR}${sub}`];
-            if (typeof cell !== 'string') {
-                continue;
-            }
-            anyColumnPresent = true;
-            const decoded = decodeCell(cell);
-            if (!isBlank(decoded)) {
-                composite[sub] = decoded;
-            }
-        }
-
-        if (anyColumnPresent && Object.keys(composite).length > 0) {
-            values[field.key] = composite;
-        }
+      }
+      continue;
     }
 
-    return values;
+    let anyColumnPresent = false;
+    const composite: Record<string, string> = {};
+    for (const sub of subFields) {
+      const cell = row[`${column}${SEPARATOR}${sub}`];
+      if (typeof cell !== 'string') {
+        continue;
+      }
+      anyColumnPresent = true;
+      const decoded = decodeCell(cell);
+      if (!isBlank(decoded)) {
+        composite[sub] = decoded;
+      }
+    }
+
+    if (anyColumnPresent && Object.keys(composite).length > 0) {
+      values[field.key] = composite;
+    }
+  }
+
+  return values;
 }

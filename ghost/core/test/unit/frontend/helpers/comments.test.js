@@ -1,129 +1,149 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
-const {mockManager} = require('../../../utils/e2e-framework');
+const { mockManager } = require('../../../utils/e2e-framework');
 
 const comments = require('../../../../core/frontend/helpers/comments');
 const proxy = require('../../../../core/frontend/services/proxy');
 const internalKeys = require('../../../../core/server/services/internal-keys').default;
-const {settingsCache} = proxy;
+const { settingsCache } = proxy;
 
 describe('{{comments}} helper', function () {
-    let settingsCacheGetStub;
+  let settingsCacheGetStub;
 
-    beforeEach(function () {
-        internalKeys.clear();
-        internalKeys.set('ghost-internal-frontend', Promise.resolve({id: 'k', secret: 'xyz'}));
-        mockManager.mockMail();
-        settingsCacheGetStub = sinon.stub(settingsCache, 'get');
-        configUtils.set('comments:version', 'test.version');
-    });
+  beforeEach(function () {
+    internalKeys.clear();
+    internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: 'xyz' }));
+    mockManager.mockMail();
+    settingsCacheGetStub = sinon.stub(settingsCache, 'get');
+    configUtils.set('comments:version', 'test.version');
+  });
 
-    afterEach(async function () {
-        internalKeys.clear();
-        mockManager.restore();
-        sinon.restore();
-        await configUtils.restore();
-    });
+  afterEach(async function () {
+    internalKeys.clear();
+    mockManager.restore();
+    sinon.restore();
+    await configUtils.restore();
+  });
 
-    it('returns undefined if not used withing post context', async function () {
-        settingsCacheGetStub.withArgs('members_enabled').returns(true);
-        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
+  it('returns undefined if not used withing post context', async function () {
+    settingsCacheGetStub.withArgs('members_enabled').returns(true);
+    settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-        const rendered = await comments({});
-        assert.equal(rendered, undefined);
-    });
+    const rendered = await comments({});
+    assert.equal(rendered, undefined);
+  });
 
-    it('returns a script tag', async function () {
-        settingsCacheGetStub.withArgs('members_enabled').returns(true);
-        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
+  it('returns a script tag', async function () {
+    settingsCacheGetStub.withArgs('members_enabled').returns(true);
+    settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-        const rendered = await comments.call({
-            comment_id: 'post_test',
-            id: 'post_id_123',
-            access: true
-        }, {
-            hash: {},
-            data: {
-                site: {}
-            }
-        });
-        assertExists(rendered);
-        assert(rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'));
-        assert(rendered.string.includes(`data-ghost-comments="${configUtils.config.get('url')}/"`));
-        assert(rendered.string.includes(`data-api="${configUtils.config.get('url')}/ghost/api/content/"`));
-        assert(rendered.string.includes(`data-admin="${configUtils.config.get('url')}/ghost/"`));
-        assert(rendered.string.includes('data-key="xyz"'));
-        assert(rendered.string.includes('data-title="null"'));
-        assert(rendered.string.includes('data-count="true"'));
-        assert(rendered.string.includes('data-post-id="post_id_123"'));
-        assert(rendered.string.includes('data-color-scheme="auto"'));
-        assert(rendered.string.includes('data-avatar-saturation="60"'));
-        assert(rendered.string.includes('data-accent-color=""'));
-        assert(rendered.string.includes('data-comments-enabled="all"'));
-    });
+    const rendered = await comments.call(
+      {
+        comment_id: 'post_test',
+        id: 'post_id_123',
+        access: true,
+      },
+      {
+        hash: {},
+        data: {
+          site: {},
+        },
+      },
+    );
+    assertExists(rendered);
+    assert(
+      rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'),
+    );
+    assert(rendered.string.includes(`data-ghost-comments="${configUtils.config.get('url')}/"`));
+    assert(
+      rendered.string.includes(`data-api="${configUtils.config.get('url')}/ghost/api/content/"`),
+    );
+    assert(rendered.string.includes(`data-admin="${configUtils.config.get('url')}/ghost/"`));
+    assert(rendered.string.includes('data-key="xyz"'));
+    assert(rendered.string.includes('data-title="null"'));
+    assert(rendered.string.includes('data-count="true"'));
+    assert(rendered.string.includes('data-post-id="post_id_123"'));
+    assert(rendered.string.includes('data-color-scheme="auto"'));
+    assert(rendered.string.includes('data-avatar-saturation="60"'));
+    assert(rendered.string.includes('data-accent-color=""'));
+    assert(rendered.string.includes('data-comments-enabled="all"'));
+  });
 
-    it('returns a script tag for paid only commenting', async function () {
-        settingsCacheGetStub.withArgs('members_enabled').returns(true);
-        settingsCacheGetStub.withArgs('comments_enabled').returns('paid');
+  it('returns a script tag for paid only commenting', async function () {
+    settingsCacheGetStub.withArgs('members_enabled').returns(true);
+    settingsCacheGetStub.withArgs('comments_enabled').returns('paid');
 
-        const rendered = await comments.call({
-            comment_id: 'post_test',
-            id: 'post_id_123',
-            access: true
-        }, {
-            hash: {},
-            data: {
-                site: {}
-            }
-        });
-        assertExists(rendered);
-        assert(rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'));
-        assert(rendered.string.includes(`data-ghost-comments="${configUtils.config.get('url')}/"`));
-        assert(rendered.string.includes(`data-api="${configUtils.config.get('url')}/ghost/api/content/"`));
-        assert(rendered.string.includes(`data-admin="${configUtils.config.get('url')}/ghost/"`));
-        assert(rendered.string.includes('data-key="xyz"'));
-        assert(rendered.string.includes('data-title="null"'));
-        assert(rendered.string.includes('data-count="true"'));
-        assert(rendered.string.includes('data-post-id="post_id_123"'));
-        assert(rendered.string.includes('data-color-scheme="auto"'));
-        assert(rendered.string.includes('data-avatar-saturation="60"'));
-        assert(rendered.string.includes('data-accent-color=""'));
-        assert(rendered.string.includes('data-comments-enabled="paid"'));
-    });
+    const rendered = await comments.call(
+      {
+        comment_id: 'post_test',
+        id: 'post_id_123',
+        access: true,
+      },
+      {
+        hash: {},
+        data: {
+          site: {},
+        },
+      },
+    );
+    assertExists(rendered);
+    assert(
+      rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'),
+    );
+    assert(rendered.string.includes(`data-ghost-comments="${configUtils.config.get('url')}/"`));
+    assert(
+      rendered.string.includes(`data-api="${configUtils.config.get('url')}/ghost/api/content/"`),
+    );
+    assert(rendered.string.includes(`data-admin="${configUtils.config.get('url')}/ghost/"`));
+    assert(rendered.string.includes('data-key="xyz"'));
+    assert(rendered.string.includes('data-title="null"'));
+    assert(rendered.string.includes('data-count="true"'));
+    assert(rendered.string.includes('data-post-id="post_id_123"'));
+    assert(rendered.string.includes('data-color-scheme="auto"'));
+    assert(rendered.string.includes('data-avatar-saturation="60"'));
+    assert(rendered.string.includes('data-accent-color=""'));
+    assert(rendered.string.includes('data-comments-enabled="paid"'));
+  });
 
-    it('returns undefined when comments are disabled', async function () {
-        settingsCacheGetStub.withArgs('members_enabled').returns(true);
-        settingsCacheGetStub.withArgs('comments_enabled').returns('off');
+  it('returns undefined when comments are disabled', async function () {
+    settingsCacheGetStub.withArgs('members_enabled').returns(true);
+    settingsCacheGetStub.withArgs('comments_enabled').returns('off');
 
-        const rendered = await comments.call({
-            comment_id: 'post_test',
-            id: 'post_id_123',
-            access: true
-        }, {
-            hash: {},
-            data: {
-                site: {}
-            }
-        });
-        assert.equal(rendered, undefined);
-    });
+    const rendered = await comments.call(
+      {
+        comment_id: 'post_test',
+        id: 'post_id_123',
+        access: true,
+      },
+      {
+        hash: {},
+        data: {
+          site: {},
+        },
+      },
+    );
+    assert.equal(rendered, undefined);
+  });
 
-    it('returns undefined when no access to post', async function () {
-        settingsCacheGetStub.withArgs('members_enabled').returns(true);
-        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
+  it('returns undefined when no access to post', async function () {
+    settingsCacheGetStub.withArgs('members_enabled').returns(true);
+    settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-        const rendered = await comments.call({
-            comment_id: 'post_test',
-            id: 'post_id_123',
-            access: false
-        }, {
-            hash: {},
-            data: {
-                site: {}
-            }
-        });
-        assert.equal(rendered, undefined);
-    });
+    const rendered = await comments.call(
+      {
+        comment_id: 'post_test',
+        id: 'post_id_123',
+        access: false,
+      },
+      {
+        hash: {},
+        data: {
+          site: {},
+        },
+      },
+    );
+    assert.equal(rendered, undefined);
+  });
 });

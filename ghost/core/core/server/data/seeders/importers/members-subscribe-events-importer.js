@@ -1,67 +1,77 @@
-const {TableImporter} = require('./table-importer');
-const {luck, randomDateBetween} = require('../utils/random');
-const {toDatabaseDate} = require('../../../lib/db-date');
+const { TableImporter } = require('./table-importer');
+const { luck, randomDateBetween } = require('../utils/random');
+const { toDatabaseDate } = require('../../../lib/db-date');
 
 class MembersSubscribeEventsImporter extends TableImporter {
-    static table = 'members_subscribe_events';
-    static dependencies = ['members', 'newsletters'];
+  static table = 'members_subscribe_events';
+  static dependencies = ['members', 'newsletters'];
 
-    constructor(knex, transaction) {
-        super(MembersSubscribeEventsImporter.table, knex, transaction);
+  constructor(knex, transaction) {
+    super(MembersSubscribeEventsImporter.table, knex, transaction);
+  }
+
+  async import(quantity) {
+    if (quantity === 0) {
+      return;
     }
 
-    async import(quantity) {
-        if (quantity === 0) {
-            return;
-        }
+    let offset = 0;
+    let limit = 100000;
+    this.newsletters = await this.transaction
+      .select('id')
+      .from('newsletters')
+      .orderBy('sort_order');
 
-        let offset = 0;
-        let limit = 100000;
-        this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
+    while (true) {
+      const members = await this.transaction
+        .select('id', 'created_at', 'status')
+        .from('members')
+        .limit(limit)
+        .offset(offset);
 
-        while (true) {
-            const members = await this.transaction.select('id', 'created_at', 'status').from('members').limit(limit).offset(offset);
+      if (members.length === 0) {
+        break;
+      }
 
-            if (members.length === 0) {
-                break;
-            }
+      await this.importForEach(
+        members,
+        quantity ? quantity / members.length : this.newsletters.length,
+      );
+      offset += limit;
+    }
+  }
 
-            await this.importForEach(members, quantity ? quantity / members.length : this.newsletters.length);
-            offset += limit;
-        }
+  setReferencedModel(model) {
+    this.model = model;
+    this.count = 0;
+  }
+
+  generate() {
+    const count = this.count;
+    this.count = this.count + 1;
+
+    if (count === 1 && this.model.status === 'free') {
+      return null;
     }
 
-    setReferencedModel(model) {
-        this.model = model;
-        this.count = 0;
+    let subscribed = luck(80);
+
+    if (!subscribed) {
+      return null;
     }
 
-    generate() {
-        const count = this.count;
-        this.count = this.count + 1;
+    const createdAt = toDatabaseDate(randomDateBetween(this.model.created_at, new Date()));
+    const newsletterId = this.newsletters[count % this.newsletters.length].id;
 
-        if (count === 1 && this.model.status === 'free') {
-            return null;
-        }
-
-        let subscribed = luck(80);
-
-        if (!subscribed) {
-            return null;
-        }
-
-        const createdAt = toDatabaseDate(randomDateBetween(this.model.created_at, new Date()));
-        const newsletterId = this.newsletters[count % this.newsletters.length].id;
-
-        return {
-            id: this.fastFakeObjectId(),
-            member_id: this.model.id,
-            newsletter_id: newsletterId,
-            subscribed: 1,
-            created_at: createdAt,
-            source: 'member'
-        };
-    }
+    return {
+      id: this.fastFakeObjectId(),
+      member_id: this.model.id,
+      newsletter_id: newsletterId,
+      subscribed: 1,
+      created_at: createdAt,
+      source: 'member',
+    };
+  }
 }
 
 module.exports = MembersSubscribeEventsImporter;

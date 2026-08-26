@@ -1,57 +1,61 @@
-const {fixtureManager, mockManager} = require('./e2e-framework');
+const { fixtureManager, mockManager } = require('./e2e-framework');
 const moment = require('moment');
 const models = require('../../core/server/models');
 const sinon = require('sinon');
 const jobManager = require('../../core/server/services/jobs/job-service');
 const escapeRegExp = require('lodash/escapeRegExp');
 const assert = require('node:assert/strict');
-const {assertMatchSnapshot} = require('./assertions');
+const { assertMatchSnapshot } = require('./assertions');
 
 const getDefaultNewsletter = async function () {
-    const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-    return await models.Newsletter.findOne({slug: newsletterSlug});
+  const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
+  return await models.Newsletter.findOne({ slug: newsletterSlug });
 };
 
 let postCounter = 0;
 
 async function createPublishedPostEmail(agent, settings = {}, email_recipient_filter) {
-    const post = {
-        title: 'A random test post',
-        status: 'draft',
-        feature_image_alt: 'Testing sending',
-        feature_image_caption: 'Testing <b>feature image caption</b>',
-        created_at: moment().subtract(2, 'days').toISOString(),
-        updated_at: moment().subtract(2, 'days').toISOString(),
-        ...settings
-    };
+  const post = {
+    title: 'A random test post',
+    status: 'draft',
+    feature_image_alt: 'Testing sending',
+    feature_image_caption: 'Testing <b>feature image caption</b>',
+    created_at: moment().subtract(2, 'days').toISOString(),
+    updated_at: moment().subtract(2, 'days').toISOString(),
+    ...settings,
+  };
 
-    const res = await agent.post('posts/')
-        .body({posts: [post]})
-        .expectStatus(201);
+  const res = await agent
+    .post('posts/')
+    .body({ posts: [post] })
+    .expectStatus(201);
 
-    const id = res.body.posts[0].id;
+  const id = res.body.posts[0].id;
 
-    // Make sure all posts are published in the samre order, with minimum 1s difference (to have consistent ordering when including latests posts)
-    postCounter += 1;
+  // Make sure all posts are published in the samre order, with minimum 1s difference (to have consistent ordering when including latests posts)
+  postCounter += 1;
 
-    const updatedPost = {
-        status: 'published',
-        updated_at: res.body.posts[0].updated_at,
-        // Fixed publish date to make sure snapshots are consistent
-        published_at: moment(new Date(2050, 0, 1, 12, 0, postCounter)).toISOString()
-    };
+  const updatedPost = {
+    status: 'published',
+    updated_at: res.body.posts[0].updated_at,
+    // Fixed publish date to make sure snapshots are consistent
+    published_at: moment(new Date(2050, 0, 1, 12, 0, postCounter)).toISOString(),
+  };
 
-    const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-    await agent.put(`posts/${id}/?newsletter=${newsletterSlug}${email_recipient_filter ? `&email_segment=${email_recipient_filter}` : ''}`)
-        .body({posts: [updatedPost]})
-        .expectStatus(200);
+  const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
+  await agent
+    .put(
+      `posts/${id}/?newsletter=${newsletterSlug}${email_recipient_filter ? `&email_segment=${email_recipient_filter}` : ''}`,
+    )
+    .body({ posts: [updatedPost] })
+    .expectStatus(200);
 
-    const emailModel = await models.Email.findOne({
-        post_id: id
-    });
-    assert(!!emailModel);
+  const emailModel = await models.Email.findOne({
+    post_id: id,
+  });
+  assert(!!emailModel);
 
-    return emailModel;
+  return emailModel;
 }
 let lastEmailModel;
 
@@ -64,25 +68,25 @@ let lastEmailModel;
  * @returns {Promise<SendEmail>}
  */
 async function sendEmail(agent, settings, email_recipient_filter) {
-    // Prepare a post and email model
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-    const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
+  // Prepare a post and email model
+  const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+  const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
-    assert.ok(emailModel.get('subject'));
-    assert.ok(emailModel.get('from'));
-    // posts created with mobiledoc are converted to lexical on save
-    assert.equal(emailModel.get('source_type'), 'lexical');
+  assert.ok(emailModel.get('subject'));
+  assert.ok(emailModel.get('from'));
+  // posts created with mobiledoc are converted to lexical on save
+  assert.equal(emailModel.get('source_type'), 'lexical');
 
-    // Await sending job
-    await completedPromise;
+  // Await sending job
+  await completedPromise;
 
-    await emailModel.refresh();
-    assert.equal(emailModel.get('status'), 'submitted');
+  await emailModel.refresh();
+  assert.equal(emailModel.get('status'), 'submitted');
 
-    lastEmailModel = emailModel;
+  lastEmailModel = emailModel;
 
-    // Get the email that was sent
-    return {emailModel, ...(await getLastEmail())};
+  // Get the email that was sent
+  return { emailModel, ...(await getLastEmail()) };
 }
 
 /**
@@ -90,30 +94,29 @@ async function sendEmail(agent, settings, email_recipient_filter) {
  * @returns {Promise<{emailModel: any}>}
  */
 async function sendFailedEmail(agent, settings, email_recipient_filter) {
-    // Prepare a post and email model
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-    const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
+  // Prepare a post and email model
+  const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+  const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
-    assert.ok(emailModel.get('subject'));
-    assert.ok(emailModel.get('from'));
-    // posts created with mobiledoc are converted to lexical on save
-    assert.equal(emailModel.get('source_type'), 'lexical');
+  assert.ok(emailModel.get('subject'));
+  assert.ok(emailModel.get('from'));
+  // posts created with mobiledoc are converted to lexical on save
+  assert.equal(emailModel.get('source_type'), 'lexical');
 
-    // Await sending job
-    await completedPromise;
+  // Await sending job
+  await completedPromise;
 
-    await emailModel.refresh();
-    assert.equal(emailModel.get('status'), 'failed');
+  await emailModel.refresh();
+  assert.equal(emailModel.get('status'), 'failed');
 
-    lastEmailModel = emailModel;
+  lastEmailModel = emailModel;
 
-    // Get the email that was sent
-    return {emailModel};
+  // Get the email that was sent
+  return { emailModel };
 }
 
 async function retryEmail(agent, emailId) {
-    await agent.put(`emails/${emailId}/retry`)
-        .expectStatus(200);
+  await agent.put(`emails/${emailId}/retry`).expectStatus(200);
 }
 
 /**
@@ -121,108 +124,108 @@ async function retryEmail(agent, emailId) {
  * @returns {Promise<SendEmail>}
  */
 async function getLastEmail() {
-    const mailgunCreateMessageStub = mockManager.getMailgunCreateMessageStub();
-    assert.ok(mailgunCreateMessageStub);
-    sinon.assert.called(mailgunCreateMessageStub);
+  const mailgunCreateMessageStub = mockManager.getMailgunCreateMessageStub();
+  assert.ok(mailgunCreateMessageStub);
+  sinon.assert.called(mailgunCreateMessageStub);
 
-    const messageData = mailgunCreateMessageStub.lastCall.lastArg;
-    let html = messageData.html;
-    let plaintext = messageData.text;
-    const recipientVariables = JSON.parse(messageData['recipient-variables']);
-    const recipientData = recipientVariables[Object.keys(recipientVariables)[0]];
+  const messageData = mailgunCreateMessageStub.lastCall.lastArg;
+  let html = messageData.html;
+  let plaintext = messageData.text;
+  const recipientVariables = JSON.parse(messageData['recipient-variables']);
+  const recipientData = recipientVariables[Object.keys(recipientVariables)[0]];
 
-    for (const [key, value] of Object.entries(recipientData)) {
-        html = html.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
-        plaintext = plaintext.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
-    }
+  for (const [key, value] of Object.entries(recipientData)) {
+    html = html.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
+    plaintext = plaintext.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
+  }
 
-    return {
-        emailModel: lastEmailModel,
-        ...messageData,
-        html,
-        plaintext,
-        recipientData
-    };
+  return {
+    emailModel: lastEmailModel,
+    ...messageData,
+    html,
+    plaintext,
+    recipientData,
+  };
 }
 
-function testCleanedSnapshot({html, plaintext}, ignoreReplacements) {
-    for (const {match, replacement} of ignoreReplacements) {
-        if (match instanceof RegExp) {
-            html = html.replace(match, replacement);
-            plaintext = plaintext.replace(match, replacement);
-        } else {
-            html = html.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
-            plaintext = plaintext.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
-        }
+function testCleanedSnapshot({ html, plaintext }, ignoreReplacements) {
+  for (const { match, replacement } of ignoreReplacements) {
+    if (match instanceof RegExp) {
+      html = html.replace(match, replacement);
+      plaintext = plaintext.replace(match, replacement);
+    } else {
+      html = html.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
+      plaintext = plaintext.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
     }
-    assertMatchSnapshot({html, plaintext});
+  }
+  assertMatchSnapshot({ html, plaintext });
 }
 
 async function matchEmailSnapshot() {
-    const lastEmail = await getLastEmail();
-    const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
-    const linkRegexp = /http:\/\/127\.0\.0\.1:\d+\/r\/\w+/g;
+  const lastEmail = await getLastEmail();
+  const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
+  const linkRegexp = /http:\/\/127\.0\.0\.1:\d+\/r\/\w+/g;
 
-    const ignoreReplacements = [
-        {
-            match: /\d{1,2}\s\w+\s\d{4}/g,
-            replacement: 'date'
-        },
-        {
-            // Footer year is rendered live (new Date().getFullYear()); normalise
-            // it so snapshots don't rot at every year boundary.
-            match: new RegExp(`©\\s*${new Date().getFullYear()}`, 'g'),
-            replacement: '© YYYY'
-        },
-        {
-            match: defaultNewsletter.get('uuid'),
-            replacement: 'requested-newsletter-uuid'
-        },
-        {
-            match: lastEmail.emailModel.get('post_id'),
-            replacement: 'post-id'
-        },
-        {
-            match: (await lastEmail.emailModel.getLazyRelation('post')).get('uuid'),
-            replacement: 'post-uuid'
-        },
-        {
-            match: linkRegexp,
-            replacement: 'http://127.0.0.1:2369/r/xxxxxx'
-        },
-        {
-            match: linkRegexp,
-            replacement: 'http://127.0.0.1:2369/r/xxxxxx'
-        },
-        {
-            match: /key=[0-9a-f]+/g,
-            replacement: 'key=xxxxxx'
-        }
-    ];
+  const ignoreReplacements = [
+    {
+      match: /\d{1,2}\s\w+\s\d{4}/g,
+      replacement: 'date',
+    },
+    {
+      // Footer year is rendered live (new Date().getFullYear()); normalise
+      // it so snapshots don't rot at every year boundary.
+      match: new RegExp(`©\\s*${new Date().getFullYear()}`, 'g'),
+      replacement: '© YYYY',
+    },
+    {
+      match: defaultNewsletter.get('uuid'),
+      replacement: 'requested-newsletter-uuid',
+    },
+    {
+      match: lastEmail.emailModel.get('post_id'),
+      replacement: 'post-id',
+    },
+    {
+      match: (await lastEmail.emailModel.getLazyRelation('post')).get('uuid'),
+      replacement: 'post-uuid',
+    },
+    {
+      match: linkRegexp,
+      replacement: 'http://127.0.0.1:2369/r/xxxxxx',
+    },
+    {
+      match: linkRegexp,
+      replacement: 'http://127.0.0.1:2369/r/xxxxxx',
+    },
+    {
+      match: /key=[0-9a-f]+/g,
+      replacement: 'key=xxxxxx',
+    },
+  ];
 
-    if (lastEmail.recipientData.uuid) {
-        ignoreReplacements.push({
-            match: lastEmail.recipientData.uuid,
-            replacement: 'member-uuid'
-        });
-    } else {
-        // Sometimes uuid is not used if link tracking is disabled
-        // Need to replace unsubscribe url instead (uuid is missing but it is inside the usubscribe url, causing snapshot updates)
-        // Need to use unshift to make replacement work before newsletter uuid
-        ignoreReplacements.unshift({
-            match: lastEmail.recipientData.unsubscribe_url,
-            replacement: 'unsubscribe_url'
-        });
-    }
+  if (lastEmail.recipientData.uuid) {
+    ignoreReplacements.push({
+      match: lastEmail.recipientData.uuid,
+      replacement: 'member-uuid',
+    });
+  } else {
+    // Sometimes uuid is not used if link tracking is disabled
+    // Need to replace unsubscribe url instead (uuid is missing but it is inside the usubscribe url, causing snapshot updates)
+    // Need to use unshift to make replacement work before newsletter uuid
+    ignoreReplacements.unshift({
+      match: lastEmail.recipientData.unsubscribe_url,
+      replacement: 'unsubscribe_url',
+    });
+  }
 
-    testCleanedSnapshot(lastEmail, ignoreReplacements);
+  testCleanedSnapshot(lastEmail, ignoreReplacements);
 }
 
 module.exports = {
-    getDefaultNewsletter,
-    sendEmail,
-    sendFailedEmail,
-    retryEmail,
-    matchEmailSnapshot,
-    getLastEmail
+  getDefaultNewsletter,
+  sendEmail,
+  sendFailedEmail,
+  retryEmail,
+  matchEmailSnapshot,
+  getLastEmail,
 };

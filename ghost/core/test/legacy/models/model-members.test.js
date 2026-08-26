@@ -1,615 +1,829 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const { assertExists } = require('../../utils/assertions');
 const BaseModel = require('../../../core/server/models/base');
-const {Label} = require('../../../core/server/models/label');
-const {Product} = require('../../../core/server/models/product');
-const {Member} = require('../../../core/server/models/member');
-const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
-const {Offer} = require('../../../core/server/models/offer');
-const {OfferRedemption} = require('../../../core/server/models/offer-redemption');
-const {StripeCustomerSubscription} = require('../../../core/server/models/stripe-customer-subscription');
+const { Label } = require('../../../core/server/models/label');
+const { Product } = require('../../../core/server/models/product');
+const { Member } = require('../../../core/server/models/member');
+const { MemberStripeCustomer } = require('../../../core/server/models/member-stripe-customer');
+const { Offer } = require('../../../core/server/models/offer');
+const { OfferRedemption } = require('../../../core/server/models/offer-redemption');
+const {
+  StripeCustomerSubscription,
+} = require('../../../core/server/models/stripe-customer-subscription');
 
 const testUtils = require('../../utils');
-const {StripeProduct} = require('../../../core/server/models/stripe-product');
-const {StripePrice} = require('../../../core/server/models/stripe-price');
+const { StripeProduct } = require('../../../core/server/models/stripe-product');
+const { StripePrice } = require('../../../core/server/models/stripe-price');
 
 describe('Member Model', function run() {
-    beforeAll(testUtils.teardownDb);
-    beforeEach(testUtils.setup('roles'));
-    afterEach(testUtils.teardownDb);
+  beforeAll(testUtils.teardownDb);
+  beforeEach(testUtils.setup('roles'));
+  afterEach(testUtils.teardownDb);
 
-    describe('stripeSubscriptions', function () {
-        it('It is correctly mapped to all a members subscriptions, regardless of customer', async function () {
-            const context = testUtils.context.admin;
-            await Member.add({
-                email: 'test@test.member',
-                labels: [],
-                email_disabled: false
-            }, context);
-            const member = await Member.findOne({
-                email: 'test@test.member'
-            }, context);
+  describe('stripeSubscriptions', function () {
+    it('It is correctly mapped to all a members subscriptions, regardless of customer', async function () {
+      const context = testUtils.context.admin;
+      await Member.add(
+        {
+          email: 'test@test.member',
+          labels: [],
+          email_disabled: false,
+        },
+        context,
+      );
+      const member = await Member.findOne(
+        {
+          email: 'test@test.member',
+        },
+        context,
+      );
 
-            assertExists(member, 'Member should have been created');
+      assertExists(member, 'Member should have been created');
 
-            const product = await Product.add({
-                name: 'Ghost Product',
-                slug: 'ghost-product',
-                type: 'paid'
-            }, context);
+      const product = await Product.add(
+        {
+          name: 'Ghost Product',
+          slug: 'ghost-product',
+          type: 'paid',
+        },
+        context,
+      );
 
-            await StripeProduct.add({
-                product_id: product.get('id'),
-                stripe_product_id: 'fake_product_id'
-            }, context);
+      await StripeProduct.add(
+        {
+          product_id: product.get('id'),
+          stripe_product_id: 'fake_product_id',
+        },
+        context,
+      );
 
-            await StripePrice.add({
-                stripe_price_id: 'fake_plan_id',
-                stripe_product_id: 'fake_product_id',
-                amount: 5000,
-                interval: 'monthly',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'USD',
-                type: 'recurring'
-            }, context);
+      await StripePrice.add(
+        {
+          stripe_price_id: 'fake_plan_id',
+          stripe_product_id: 'fake_product_id',
+          amount: 5000,
+          interval: 'monthly',
+          active: 1,
+          nickname: 'Monthly',
+          currency: 'USD',
+          type: 'recurring',
+        },
+        context,
+      );
 
-            await MemberStripeCustomer.add({
-                member_id: member.get('id'),
-                customer_id: 'fake_customer_id1'
-            }, context);
+      await MemberStripeCustomer.add(
+        {
+          member_id: member.get('id'),
+          customer_id: 'fake_customer_id1',
+        },
+        context,
+      );
 
-            await MemberStripeCustomer.add({
-                member_id: member.get('id'),
-                customer_id: 'fake_customer_id2'
-            }, context);
+      await MemberStripeCustomer.add(
+        {
+          member_id: member.get('id'),
+          customer_id: 'fake_customer_id2',
+        },
+        context,
+      );
 
-            await StripeCustomerSubscription.add({
-                customer_id: 'fake_customer_id1',
-                subscription_id: 'fake_subscription_id1',
-                plan_id: 'fake_plan_id',
-                stripe_price_id: 'fake_plan_id',
-                plan_amount: 1337,
-                plan_nickname: 'e-LEET',
-                plan_interval: 'year',
-                plan_currency: 'btc',
-                status: 'active',
-                start_date: new Date(),
-                current_period_end: new Date(),
-                cancel_at_period_end: false
-            }, context);
+      await StripeCustomerSubscription.add(
+        {
+          customer_id: 'fake_customer_id1',
+          subscription_id: 'fake_subscription_id1',
+          plan_id: 'fake_plan_id',
+          stripe_price_id: 'fake_plan_id',
+          plan_amount: 1337,
+          plan_nickname: 'e-LEET',
+          plan_interval: 'year',
+          plan_currency: 'btc',
+          status: 'active',
+          start_date: new Date(),
+          current_period_end: new Date(),
+          cancel_at_period_end: false,
+        },
+        context,
+      );
 
-            await StripeCustomerSubscription.add({
-                customer_id: 'fake_customer_id2',
-                subscription_id: 'fake_subscription_id2',
-                plan_id: 'fake_plan_id',
-                stripe_price_id: 'fake_plan_id',
-                plan_amount: 1337,
-                plan_nickname: 'e-LEET',
-                plan_interval: 'year',
-                plan_currency: 'btc',
-                status: 'active',
-                start_date: new Date(),
-                current_period_end: new Date(),
-                cancel_at_period_end: false
-            }, context);
+      await StripeCustomerSubscription.add(
+        {
+          customer_id: 'fake_customer_id2',
+          subscription_id: 'fake_subscription_id2',
+          plan_id: 'fake_plan_id',
+          stripe_price_id: 'fake_plan_id',
+          plan_amount: 1337,
+          plan_nickname: 'e-LEET',
+          plan_interval: 'year',
+          plan_currency: 'btc',
+          status: 'active',
+          start_date: new Date(),
+          current_period_end: new Date(),
+          cancel_at_period_end: false,
+        },
+        context,
+      );
 
-            const memberWithRelations = await Member.findOne({
-                email: 'test@test.member'
-            }, Object.assign({
-                withRelated: [
-                    'stripeSubscriptions',
-                    'stripeSubscriptions.customer'
-                ]
-            }, context));
+      const memberWithRelations = await Member.findOne(
+        {
+          email: 'test@test.member',
+        },
+        Object.assign(
+          {
+            withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer'],
+          },
+          context,
+        ),
+      );
 
-            const subscriptions = memberWithRelations.related('stripeSubscriptions').toJSON();
+      const subscriptions = memberWithRelations.related('stripeSubscriptions').toJSON();
 
-            const subscription1 = subscriptions.find(({id}) => id === 'fake_subscription_id1');
-            const subscription2 = subscriptions.find(({id}) => id === 'fake_subscription_id2');
+      const subscription1 = subscriptions.find(({ id }) => id === 'fake_subscription_id1');
+      const subscription2 = subscriptions.find(({ id }) => id === 'fake_subscription_id2');
 
-            assertExists(subscription1);
-            assertExists(subscription2);
-        });
+      assertExists(subscription1);
+      assertExists(subscription2);
     });
+  });
 
-    describe('stripeCustomers', function () {
-        it('Is correctly mapped to the stripe customers', async function () {
-            const context = testUtils.context.admin;
-            const testMember = await Member.add({
-                email: 'test@test.member',
-                email_disabled: false
-            }, context);
+  describe('stripeCustomers', function () {
+    it('Is correctly mapped to the stripe customers', async function () {
+      const context = testUtils.context.admin;
+      const testMember = await Member.add(
+        {
+          email: 'test@test.member',
+          email_disabled: false,
+        },
+        context,
+      );
 
-            await MemberStripeCustomer.add({
-                member_id: testMember.id,
-                customer_id: 'fake_customer_id1'
-            }, context);
+      await MemberStripeCustomer.add(
+        {
+          member_id: testMember.id,
+          customer_id: 'fake_customer_id1',
+        },
+        context,
+      );
 
-            const customer1 = await MemberStripeCustomer.findOne({
-                customer_id: 'fake_customer_id1'
-            }, context);
+      const customer1 = await MemberStripeCustomer.findOne(
+        {
+          customer_id: 'fake_customer_id1',
+        },
+        context,
+      );
 
-            assertExists(customer1, 'MemberStripeCustomer should have been created');
+      assertExists(customer1, 'MemberStripeCustomer should have been created');
 
-            await MemberStripeCustomer.add({
-                member_id: customer1.get('member_id'),
-                customer_id: 'fake_customer_id2'
-            }, context);
+      await MemberStripeCustomer.add(
+        {
+          member_id: customer1.get('member_id'),
+          customer_id: 'fake_customer_id2',
+        },
+        context,
+      );
 
-            const member = await Member.findOne({
-                email: 'test@test.member'
-            }, Object.assign({}, context, {
-                withRelated: ['stripeCustomers']
-            }));
+      const member = await Member.findOne(
+        {
+          email: 'test@test.member',
+        },
+        Object.assign({}, context, {
+          withRelated: ['stripeCustomers'],
+        }),
+      );
 
-            assertExists(member.related('stripeCustomers'), 'Member should have been fetched with stripeCustomers');
+      assertExists(
+        member.related('stripeCustomers'),
+        'Member should have been fetched with stripeCustomers',
+      );
 
-            const stripeCustomers = member.related('stripeCustomers');
+      const stripeCustomers = member.related('stripeCustomers');
 
-            assert.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
+      assert.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
 
-            assert.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
-            assert.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
-        });
+      assert.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
+      assert.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
     });
+  });
 
-    describe('destroy', function () {
-        it('Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions', async function () {
-            const context = testUtils.context.admin;
-            await Member.add({
-                email: 'test@test.member',
-                labels: [{
-                    name: 'A label',
-                    slug: 'a-unique-slug-for-testing-members-model'
-                }],
-                email_disabled: false
-            }, context);
-            const member = await Member.findOne({
-                email: 'test@test.member'
-            }, context);
-
-            assertExists(member, 'Member should have been created');
-
-            const label = await Label.findOne({
-                slug: 'a-unique-slug-for-testing-members-model'
-            }, context);
-
-            assertExists(label, 'Label should have been created');
-
-            const memberLabel = await BaseModel.knex('members_labels').where({
-                label_id: label.get('id'),
-                member_id: member.get('id')
-            }).select().first();
-
-            assertExists(memberLabel, 'Label should have been attached to member');
-
-            await MemberStripeCustomer.add({
-                member_id: member.get('id'),
-                customer_id: 'fake_customer_id'
-            }, context);
-
-            const customer = await MemberStripeCustomer.findOne({
-                member_id: member.get('id')
-            }, context);
-
-            assertExists(customer, 'Customer should have been created');
-
-            const product = await Product.add({
-                name: 'Ghost Product',
-                slug: 'ghost-product',
-                type: 'paid'
-            }, context);
-
-            await StripeProduct.add({
-                product_id: product.get('id'),
-                stripe_product_id: 'fake_product_id'
-            }, context);
-
-            await StripePrice.add({
-                stripe_price_id: 'fake_plan_id',
-                stripe_product_id: 'fake_product_id',
-                amount: 5000,
-                interval: 'monthly',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'USD',
-                type: 'recurring'
-            }, context);
-
-            await StripeCustomerSubscription.add({
-                customer_id: 'fake_customer_id',
-                subscription_id: 'fake_subscription_id',
-                plan_id: 'fake_plan_id',
-                stripe_price_id: 'fake_plan_id',
-                plan_amount: 1337,
-                plan_nickname: 'e-LEET',
-                plan_interval: 'year',
-                plan_currency: 'btc',
-                status: 'active',
-                start_date: new Date(),
-                current_period_end: new Date(),
-                cancel_at_period_end: false
-            }, context);
-
-            const subscription = await StripeCustomerSubscription.findOne({
-                customer_id: customer.get('customer_id')
-            }, context);
-
-            assertExists(subscription, 'Subscription should have been created');
-
-            await Member.destroy(Object.assign({
-                id: member.get('id')
-            }, context));
-
-            const memberAfterDestroy = await Member.findOne({
-                email: 'test@test.member'
-            });
-            assert.equal(memberAfterDestroy, null, 'Member should have been destroyed');
-
-            const memberLabelsAfterDestroy = await BaseModel.knex('members_labels').where({
-                label_id: label.get('id'),
-                member_id: member.get('id')
-            }).select();
-            assert.deepEqual(memberLabelsAfterDestroy, [], 'Label should have been removed from member');
-
-            const customerAfterDestroy = await MemberStripeCustomer.findOne({
-                member_id: member.get('id')
-            });
-            assert.equal(customerAfterDestroy, null, 'MemberStripeCustomer should have been destroyed');
-
-            const subscriptionAfterDestroy = await StripeCustomerSubscription.findOne({
-                customer_id: customer.get('customer_id')
-            });
-            assert.equal(subscriptionAfterDestroy, null, 'StripeCustomerSubscription should have been destroyed');
-        });
-    });
-
-    describe('findAll', function () {
-        beforeEach(testUtils.setup('members'));
-
-        it('can use search query', async function () {
-            const queryResult = await Member.findAll({search: 'egg'});
-
-            assert.equal(queryResult.length, 1);
-            assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
-        });
-    });
-
-    describe('products', function () {
-        it('Products can be added to members by the product array', async function () {
-            const context = testUtils.context.admin;
-            const product = await Product.add({
-                name: 'Product-Add-Test',
-                type: 'paid'
-            });
-            const member = await Member.add({
-                email: 'testing-products@test.member',
-                products: [{
-                    id: product.id
-                }],
-                email_disabled: false
-            }, {
-                ...context,
-                withRelated: ['products']
-            });
-
-            const createdProduct = await Product.findOne({
-                name: 'Product-Add-Test'
-            }, context);
-
-            assertExists(createdProduct, 'Product should have been created');
-
-            const products = member.related('products').toJSON();
-
-            assertExists(
-                products.find(model => model.name === 'Product-Add-Test')
-            );
-        });
-    });
-
-    describe('Filtering on products', function () {
-        it('Should allow filtering on products', async function () {
-            const context = testUtils.context.admin;
-
-            const vipProduct = await Product.add({
-                name: 'VIP',
-                slug: 'vip',
-                type: 'paid'
-            });
-            await Member.add({
-                email: 'filter-test@test.member',
-                products: [{
-                    id: vipProduct.id
-                }],
-                email_disabled: false
-            }, context);
-
-            const member = await Member.findOne({
-                email: 'filter-test@test.member'
-            }, context);
-
-            assertExists(member, 'Member should have been created');
-
-            const product = await Product.findOne({
-                slug: 'vip'
-            }, context);
-
-            assertExists(product, 'Product should have been created');
-
-            const memberProduct = await BaseModel.knex('members_products').where({
-                product_id: product.get('id'),
-                member_id: member.get('id')
-            }).select().first();
-
-            assertExists(memberProduct, 'Product should have been attached to member');
-
-            const vipProductMembers = await Member.findPage({filter: 'products:vip'});
-            const foundMemberInVIP = vipProductMembers.data.find(model => model.id === member.id);
-
-            assertExists(foundMemberInVIP, 'Member should have been included in products filter');
-
-            const podcastProductMembers = await Member.findPage({filter: 'products:podcast'});
-            const foundMemberInPodcast = podcastProductMembers.data.find(model => model.id === member.id);
-
-            assert.equal(foundMemberInPodcast, undefined, 'Member should not have been included in products filter');
-        });
-    });
-
-    describe('Filtering', function () {
-        it('Should allow filtering on name', async function () {
-            const context = testUtils.context.admin;
-
-            await Member.add({
-                name: 'Name Filter Test',
-                email: 'name-filter-test@test.member',
-                products: [{
-                    name: 'VIP',
-                    slug: 'vip',
-                    type: 'paid'
-                }],
-                email_disabled: false
-            }, context);
-
-            const member = await Member.findOne({
-                email: 'name-filter-test@test.member'
-            }, context);
-
-            assertExists(member, 'Member should have been created');
-
-            const membersByName = await Member.findPage({filter: `name:'Name Filter Test'`});
-            const foundMember = membersByName.data.find(model => model.id === member.id);
-
-            assertExists(foundMember, 'Member should have been included in name filter');
-        });
-
-        it('Should allow filtering on email', async function () {
-            const context = testUtils.context.admin;
-
-            await Member.add({
-                email: 'email-filter-test@test.member',
-                products: [{
-                    name: 'VIP',
-                    slug: 'vip',
-                    type: 'paid'
-                }],
-                email_disabled: false
-            }, context);
-
-            const member = await Member.findOne({
-                email: 'email-filter-test@test.member'
-            }, context);
-
-            assertExists(member, 'Member should have been created');
-
-            const membersByName = await Member.findPage({filter: `email:email-filter-test@test.member`});
-            const foundMember = membersByName.data.find(model => model.id === member.id);
-
-            assertExists(foundMember, 'Member should have been included in name filter');
-        });
-
-        it('Should allow filtering on subscriptions', async function () {
-            const context = testUtils.context.admin;
-            const knex = require('../../../core/server/data/db').knex;
-
-            const member = await Member.add({
-                email: 'test@test.member',
-                labels: [],
-                email_disabled: false
-            }, context);
-
-            const product = await Product.add({
-                name: 'Ghost Product',
-                slug: 'ghost-product',
-                type: 'paid'
-            }, context);
-
-            await StripeProduct.add({
-                product_id: product.get('id'),
-                stripe_product_id: 'fake_product_id'
-            }, context);
-
-            await StripePrice.add({
-                stripe_price_id: 'fake_plan_id',
-                stripe_product_id: 'fake_product_id',
-                amount: 5000,
-                interval: 'monthly',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'USD',
-                type: 'recurring'
-            }, context);
-
-            await MemberStripeCustomer.add({
-                member_id: member.get('id'),
-                customer_id: 'fake_customer_id1'
-            }, context);
-
-            await MemberStripeCustomer.add({
-                member_id: member.get('id'),
-                customer_id: 'fake_customer_id2'
-            }, context);
-
-            const subscription1 = await StripeCustomerSubscription.add({
-                customer_id: 'fake_customer_id1',
-                subscription_id: 'fake_subscription_id1',
-                plan_id: 'fake_plan_id',
-                stripe_price_id: 'fake_plan_id',
-                plan_amount: 1337,
-                plan_nickname: 'e-LEET',
-                plan_interval: 'year',
-                plan_currency: 'btc',
-                status: 'active',
-                start_date: new Date(),
-                current_period_end: new Date(),
-                cancel_at_period_end: false
-            }, context);
-
-            const subscription2 = await StripeCustomerSubscription.add({
-                customer_id: 'fake_customer_id2',
-                subscription_id: 'fake_subscription_id2',
-                plan_id: 'fake_plan_id',
-                stripe_price_id: 'fake_plan_id',
-                plan_amount: 1337,
-                plan_nickname: 'e-LEET',
-                plan_interval: 'year',
-                plan_currency: 'btc',
-                status: 'canceled',
-                start_date: new Date(),
-                current_period_end: new Date(),
-                cancel_at_period_end: false
-            }, context);
-
-            // Populate the lookup table — subscription1 is active so it wins
-            await knex('members_current_subscription').insert({
-                member_id: member.get('id'),
-                subscription_id: subscription1.get('id')
-            });
-
+  describe('destroy', function () {
+    it('Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions', async function () {
+      const context = testUtils.context.admin;
+      await Member.add(
+        {
+          email: 'test@test.member',
+          labels: [
             {
-                const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
-                assert.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
-            }
+              name: 'A label',
+              slug: 'a-unique-slug-for-testing-members-model',
+            },
+          ],
+          email_disabled: false,
+        },
+        context,
+      );
+      const member = await Member.findOne(
+        {
+          email: 'test@test.member',
+        },
+        context,
+      );
 
-            await StripeCustomerSubscription.edit({
-                status: 'canceled'
-            }, {
-                id: subscription1.id,
-                ...context
-            });
+      assertExists(member, 'Member should have been created');
 
-            // Both subscriptions are now canceled — update lookup to point to subscription1
-            // (both canceled with same current_period_end, either would work)
-            await knex('members_current_subscription')
-                .where({member_id: member.get('id')})
-                .update({subscription_id: subscription1.get('id')});
+      const label = await Label.findOne(
+        {
+          slug: 'a-unique-slug-for-testing-members-model',
+        },
+        context,
+      );
 
-            {
-                const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
-                assert.equal(members.data.length, 1, 'Can search for members with canceled subscription and no active ones');
-            }
+      assertExists(label, 'Label should have been created');
 
-            {
-                const members = await Member.findPage({filter: `subscriptions.plan_interval:year`});
-                assert.equal(members.data.length, 1, 'Can search for members by plan_interval');
-            }
+      const memberLabel = await BaseModel.knex('members_labels')
+        .where({
+          label_id: label.get('id'),
+          member_id: member.get('id'),
+        })
+        .select()
+        .first();
 
-            await StripeCustomerSubscription.edit({
-                plan_interval: 'month'
-            }, {
-                id: subscription2.id,
-                ...context
-            });
+      assertExists(memberLabel, 'Label should have been attached to member');
 
-            {
-                const members = await Member.findPage({filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`});
-                assert.equal(members.data.length, 0, 'Can search for members by plan_interval');
-            }
-        });
+      await MemberStripeCustomer.add(
+        {
+          member_id: member.get('id'),
+          customer_id: 'fake_customer_id',
+        },
+        context,
+      );
 
-        it('Subscription filter excludes members with no subscriptions at all', async function () {
-            const context = testUtils.context.admin;
+      const customer = await MemberStripeCustomer.findOne(
+        {
+          member_id: member.get('id'),
+        },
+        context,
+      );
 
-            await Member.add({
-                email: 'no-subs@test.member',
-                labels: [],
-                email_disabled: false
-            }, context);
+      assertExists(customer, 'Customer should have been created');
 
-            const activeMembers = await Member.findPage({filter: 'subscriptions.status:active'});
-            const found = activeMembers.data.find(model => model.get('email') === 'no-subs@test.member');
-            assert.equal(found, undefined, 'Member with no subscriptions should not appear in subscription status filter');
-        });
+      const product = await Product.add(
+        {
+          name: 'Ghost Product',
+          slug: 'ghost-product',
+          type: 'paid',
+        },
+        context,
+      );
 
-        it('Should allow filtering on offers redeemed', async function () {
-            const context = testUtils.context.admin;
-            let email = 'test@offers.com';
-            const member = await Member.add({
-                email: email,
-                labels: [],
-                email_disabled: false
-            }, context);
+      await StripeProduct.add(
+        {
+          product_id: product.get('id'),
+          stripe_product_id: 'fake_product_id',
+        },
+        context,
+      );
 
-            const product = await Product.add({
-                name: 'Ghost Product',
-                slug: 'ghost-product',
-                type: 'paid'
-            }, context);
+      await StripePrice.add(
+        {
+          stripe_price_id: 'fake_plan_id',
+          stripe_product_id: 'fake_product_id',
+          amount: 5000,
+          interval: 'monthly',
+          active: 1,
+          nickname: 'Monthly',
+          currency: 'USD',
+          type: 'recurring',
+        },
+        context,
+      );
 
-            const offerData = testUtils.DataGenerator.forKnex.createOffer({
-                product_id: product.get('id')
-            });
-            const offerModel = await Offer.add(offerData, {context: {internal: true}});
+      await StripeCustomerSubscription.add(
+        {
+          customer_id: 'fake_customer_id',
+          subscription_id: 'fake_subscription_id',
+          plan_id: 'fake_plan_id',
+          stripe_price_id: 'fake_plan_id',
+          plan_amount: 1337,
+          plan_nickname: 'e-LEET',
+          plan_interval: 'year',
+          plan_currency: 'btc',
+          status: 'active',
+          start_date: new Date(),
+          current_period_end: new Date(),
+          cancel_at_period_end: false,
+        },
+        context,
+      );
 
-            await StripeProduct.add({
-                product_id: product.get('id'),
-                stripe_product_id: 'fake_product_id'
-            }, context);
+      const subscription = await StripeCustomerSubscription.findOne(
+        {
+          customer_id: customer.get('customer_id'),
+        },
+        context,
+      );
 
-            await StripePrice.add({
-                stripe_price_id: 'fake_plan_id',
-                stripe_product_id: 'fake_product_id',
-                amount: 5000,
-                interval: 'monthly',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'USD',
-                type: 'recurring'
-            }, context);
+      assertExists(subscription, 'Subscription should have been created');
 
-            await MemberStripeCustomer.add({
-                member_id: member.get('id'),
-                customer_id: 'fake_customer_id1'
-            }, context);
+      await Member.destroy(
+        Object.assign(
+          {
+            id: member.get('id'),
+          },
+          context,
+        ),
+      );
 
-            const subscription = await StripeCustomerSubscription.add({
-                customer_id: 'fake_customer_id1',
-                subscription_id: 'fake_subscription_id1',
-                plan_id: 'fake_plan_id',
-                stripe_price_id: 'fake_plan_id',
-                plan_amount: 1337,
-                plan_nickname: 'e-LEET',
-                plan_interval: 'year',
-                plan_currency: 'btc',
-                status: 'active',
-                start_date: new Date(),
-                current_period_end: new Date(),
-                cancel_at_period_end: false
-            }, context);
+      const memberAfterDestroy = await Member.findOne({
+        email: 'test@test.member',
+      });
+      assert.equal(memberAfterDestroy, null, 'Member should have been destroyed');
 
-            const addRedemption = await OfferRedemption.add({
-                offer_id: offerModel.get('id'),
-                member_id: member.get('id'),
-                created_at: new Date(),
-                subscription_id: subscription.get('id')
-            }, context);
+      const memberLabelsAfterDestroy = await BaseModel.knex('members_labels')
+        .where({
+          label_id: label.get('id'),
+          member_id: member.get('id'),
+        })
+        .select();
+      assert.deepEqual(memberLabelsAfterDestroy, [], 'Label should have been removed from member');
 
-            const offerId = addRedemption.get('offer_id');
+      const customerAfterDestroy = await MemberStripeCustomer.findOne({
+        member_id: member.get('id'),
+      });
+      assert.equal(customerAfterDestroy, null, 'MemberStripeCustomer should have been destroyed');
 
-            const members = await Member.findPage({filter: `offer_redemptions:${offerId}`});
-            // convert members to json
-            const membersJson = members.data.map(model => model.toJSON());
-            assert.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
-        });
+      const subscriptionAfterDestroy = await StripeCustomerSubscription.findOne({
+        customer_id: customer.get('customer_id'),
+      });
+      assert.equal(
+        subscriptionAfterDestroy,
+        null,
+        'StripeCustomerSubscription should have been destroyed',
+      );
     });
+  });
+
+  describe('findAll', function () {
+    beforeEach(testUtils.setup('members'));
+
+    it('can use search query', async function () {
+      const queryResult = await Member.findAll({ search: 'egg' });
+
+      assert.equal(queryResult.length, 1);
+      assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
+    });
+  });
+
+  describe('products', function () {
+    it('Products can be added to members by the product array', async function () {
+      const context = testUtils.context.admin;
+      const product = await Product.add({
+        name: 'Product-Add-Test',
+        type: 'paid',
+      });
+      const member = await Member.add(
+        {
+          email: 'testing-products@test.member',
+          products: [
+            {
+              id: product.id,
+            },
+          ],
+          email_disabled: false,
+        },
+        {
+          ...context,
+          withRelated: ['products'],
+        },
+      );
+
+      const createdProduct = await Product.findOne(
+        {
+          name: 'Product-Add-Test',
+        },
+        context,
+      );
+
+      assertExists(createdProduct, 'Product should have been created');
+
+      const products = member.related('products').toJSON();
+
+      assertExists(products.find((model) => model.name === 'Product-Add-Test'));
+    });
+  });
+
+  describe('Filtering on products', function () {
+    it('Should allow filtering on products', async function () {
+      const context = testUtils.context.admin;
+
+      const vipProduct = await Product.add({
+        name: 'VIP',
+        slug: 'vip',
+        type: 'paid',
+      });
+      await Member.add(
+        {
+          email: 'filter-test@test.member',
+          products: [
+            {
+              id: vipProduct.id,
+            },
+          ],
+          email_disabled: false,
+        },
+        context,
+      );
+
+      const member = await Member.findOne(
+        {
+          email: 'filter-test@test.member',
+        },
+        context,
+      );
+
+      assertExists(member, 'Member should have been created');
+
+      const product = await Product.findOne(
+        {
+          slug: 'vip',
+        },
+        context,
+      );
+
+      assertExists(product, 'Product should have been created');
+
+      const memberProduct = await BaseModel.knex('members_products')
+        .where({
+          product_id: product.get('id'),
+          member_id: member.get('id'),
+        })
+        .select()
+        .first();
+
+      assertExists(memberProduct, 'Product should have been attached to member');
+
+      const vipProductMembers = await Member.findPage({ filter: 'products:vip' });
+      const foundMemberInVIP = vipProductMembers.data.find((model) => model.id === member.id);
+
+      assertExists(foundMemberInVIP, 'Member should have been included in products filter');
+
+      const podcastProductMembers = await Member.findPage({ filter: 'products:podcast' });
+      const foundMemberInPodcast = podcastProductMembers.data.find(
+        (model) => model.id === member.id,
+      );
+
+      assert.equal(
+        foundMemberInPodcast,
+        undefined,
+        'Member should not have been included in products filter',
+      );
+    });
+  });
+
+  describe('Filtering', function () {
+    it('Should allow filtering on name', async function () {
+      const context = testUtils.context.admin;
+
+      await Member.add(
+        {
+          name: 'Name Filter Test',
+          email: 'name-filter-test@test.member',
+          products: [
+            {
+              name: 'VIP',
+              slug: 'vip',
+              type: 'paid',
+            },
+          ],
+          email_disabled: false,
+        },
+        context,
+      );
+
+      const member = await Member.findOne(
+        {
+          email: 'name-filter-test@test.member',
+        },
+        context,
+      );
+
+      assertExists(member, 'Member should have been created');
+
+      const membersByName = await Member.findPage({ filter: `name:'Name Filter Test'` });
+      const foundMember = membersByName.data.find((model) => model.id === member.id);
+
+      assertExists(foundMember, 'Member should have been included in name filter');
+    });
+
+    it('Should allow filtering on email', async function () {
+      const context = testUtils.context.admin;
+
+      await Member.add(
+        {
+          email: 'email-filter-test@test.member',
+          products: [
+            {
+              name: 'VIP',
+              slug: 'vip',
+              type: 'paid',
+            },
+          ],
+          email_disabled: false,
+        },
+        context,
+      );
+
+      const member = await Member.findOne(
+        {
+          email: 'email-filter-test@test.member',
+        },
+        context,
+      );
+
+      assertExists(member, 'Member should have been created');
+
+      const membersByName = await Member.findPage({
+        filter: `email:email-filter-test@test.member`,
+      });
+      const foundMember = membersByName.data.find((model) => model.id === member.id);
+
+      assertExists(foundMember, 'Member should have been included in name filter');
+    });
+
+    it('Should allow filtering on subscriptions', async function () {
+      const context = testUtils.context.admin;
+      const knex = require('../../../core/server/data/db').knex;
+
+      const member = await Member.add(
+        {
+          email: 'test@test.member',
+          labels: [],
+          email_disabled: false,
+        },
+        context,
+      );
+
+      const product = await Product.add(
+        {
+          name: 'Ghost Product',
+          slug: 'ghost-product',
+          type: 'paid',
+        },
+        context,
+      );
+
+      await StripeProduct.add(
+        {
+          product_id: product.get('id'),
+          stripe_product_id: 'fake_product_id',
+        },
+        context,
+      );
+
+      await StripePrice.add(
+        {
+          stripe_price_id: 'fake_plan_id',
+          stripe_product_id: 'fake_product_id',
+          amount: 5000,
+          interval: 'monthly',
+          active: 1,
+          nickname: 'Monthly',
+          currency: 'USD',
+          type: 'recurring',
+        },
+        context,
+      );
+
+      await MemberStripeCustomer.add(
+        {
+          member_id: member.get('id'),
+          customer_id: 'fake_customer_id1',
+        },
+        context,
+      );
+
+      await MemberStripeCustomer.add(
+        {
+          member_id: member.get('id'),
+          customer_id: 'fake_customer_id2',
+        },
+        context,
+      );
+
+      const subscription1 = await StripeCustomerSubscription.add(
+        {
+          customer_id: 'fake_customer_id1',
+          subscription_id: 'fake_subscription_id1',
+          plan_id: 'fake_plan_id',
+          stripe_price_id: 'fake_plan_id',
+          plan_amount: 1337,
+          plan_nickname: 'e-LEET',
+          plan_interval: 'year',
+          plan_currency: 'btc',
+          status: 'active',
+          start_date: new Date(),
+          current_period_end: new Date(),
+          cancel_at_period_end: false,
+        },
+        context,
+      );
+
+      const subscription2 = await StripeCustomerSubscription.add(
+        {
+          customer_id: 'fake_customer_id2',
+          subscription_id: 'fake_subscription_id2',
+          plan_id: 'fake_plan_id',
+          stripe_price_id: 'fake_plan_id',
+          plan_amount: 1337,
+          plan_nickname: 'e-LEET',
+          plan_interval: 'year',
+          plan_currency: 'btc',
+          status: 'canceled',
+          start_date: new Date(),
+          current_period_end: new Date(),
+          cancel_at_period_end: false,
+        },
+        context,
+      );
+
+      // Populate the lookup table — subscription1 is active so it wins
+      await knex('members_current_subscription').insert({
+        member_id: member.get('id'),
+        subscription_id: subscription1.get('id'),
+      });
+
+      {
+        const members = await Member.findPage({
+          filter: `subscriptions.status:canceled+subscriptions.status:-active`,
+        });
+        assert.equal(
+          members.data.length,
+          0,
+          'Can search for members with canceled subscription and no active ones',
+        );
+      }
+
+      await StripeCustomerSubscription.edit(
+        {
+          status: 'canceled',
+        },
+        {
+          id: subscription1.id,
+          ...context,
+        },
+      );
+
+      // Both subscriptions are now canceled — update lookup to point to subscription1
+      // (both canceled with same current_period_end, either would work)
+      await knex('members_current_subscription')
+        .where({ member_id: member.get('id') })
+        .update({ subscription_id: subscription1.get('id') });
+
+      {
+        const members = await Member.findPage({
+          filter: `subscriptions.status:canceled+subscriptions.status:-active`,
+        });
+        assert.equal(
+          members.data.length,
+          1,
+          'Can search for members with canceled subscription and no active ones',
+        );
+      }
+
+      {
+        const members = await Member.findPage({ filter: `subscriptions.plan_interval:year` });
+        assert.equal(members.data.length, 1, 'Can search for members by plan_interval');
+      }
+
+      await StripeCustomerSubscription.edit(
+        {
+          plan_interval: 'month',
+        },
+        {
+          id: subscription2.id,
+          ...context,
+        },
+      );
+
+      {
+        const members = await Member.findPage({
+          filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`,
+        });
+        assert.equal(members.data.length, 0, 'Can search for members by plan_interval');
+      }
+    });
+
+    it('Subscription filter excludes members with no subscriptions at all', async function () {
+      const context = testUtils.context.admin;
+
+      await Member.add(
+        {
+          email: 'no-subs@test.member',
+          labels: [],
+          email_disabled: false,
+        },
+        context,
+      );
+
+      const activeMembers = await Member.findPage({ filter: 'subscriptions.status:active' });
+      const found = activeMembers.data.find(
+        (model) => model.get('email') === 'no-subs@test.member',
+      );
+      assert.equal(
+        found,
+        undefined,
+        'Member with no subscriptions should not appear in subscription status filter',
+      );
+    });
+
+    it('Should allow filtering on offers redeemed', async function () {
+      const context = testUtils.context.admin;
+      let email = 'test@offers.com';
+      const member = await Member.add(
+        {
+          email: email,
+          labels: [],
+          email_disabled: false,
+        },
+        context,
+      );
+
+      const product = await Product.add(
+        {
+          name: 'Ghost Product',
+          slug: 'ghost-product',
+          type: 'paid',
+        },
+        context,
+      );
+
+      const offerData = testUtils.DataGenerator.forKnex.createOffer({
+        product_id: product.get('id'),
+      });
+      const offerModel = await Offer.add(offerData, { context: { internal: true } });
+
+      await StripeProduct.add(
+        {
+          product_id: product.get('id'),
+          stripe_product_id: 'fake_product_id',
+        },
+        context,
+      );
+
+      await StripePrice.add(
+        {
+          stripe_price_id: 'fake_plan_id',
+          stripe_product_id: 'fake_product_id',
+          amount: 5000,
+          interval: 'monthly',
+          active: 1,
+          nickname: 'Monthly',
+          currency: 'USD',
+          type: 'recurring',
+        },
+        context,
+      );
+
+      await MemberStripeCustomer.add(
+        {
+          member_id: member.get('id'),
+          customer_id: 'fake_customer_id1',
+        },
+        context,
+      );
+
+      const subscription = await StripeCustomerSubscription.add(
+        {
+          customer_id: 'fake_customer_id1',
+          subscription_id: 'fake_subscription_id1',
+          plan_id: 'fake_plan_id',
+          stripe_price_id: 'fake_plan_id',
+          plan_amount: 1337,
+          plan_nickname: 'e-LEET',
+          plan_interval: 'year',
+          plan_currency: 'btc',
+          status: 'active',
+          start_date: new Date(),
+          current_period_end: new Date(),
+          cancel_at_period_end: false,
+        },
+        context,
+      );
+
+      const addRedemption = await OfferRedemption.add(
+        {
+          offer_id: offerModel.get('id'),
+          member_id: member.get('id'),
+          created_at: new Date(),
+          subscription_id: subscription.get('id'),
+        },
+        context,
+      );
+
+      const offerId = addRedemption.get('offer_id');
+
+      const members = await Member.findPage({ filter: `offer_redemptions:${offerId}` });
+      // convert members to json
+      const membersJson = members.data.map((model) => model.toJSON());
+      assert.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
+    });
+  });
 });

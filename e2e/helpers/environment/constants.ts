@@ -1,5 +1,5 @@
 import path from 'path';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,17 +21,17 @@ export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
  * - build: Minimal passthrough (assets served by Ghost from /content/files/)
  */
 export const CADDYFILE_PATHS = {
-    dev: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile'),
-    build: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile.build')
+  dev: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile'),
+  build: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile.build'),
 } as const;
 
 /**
  * Build mode image configuration.
  * Used for build mode - can be locally built or pulled from registry.
- * 
+ *
  * Override with environment variable:
  * - GHOST_E2E_IMAGE: Image name (default: ghost-e2e:local)
- * 
+ *
  * Examples:
  * - Local: ghost-e2e:local (built from e2e/Dockerfile.e2e)
  * - Registry: ghcr.io/tryghost/ghost:latest (as E2E base image)
@@ -46,9 +46,9 @@ export const BUILD_IMAGE = process.env.GHOST_E2E_IMAGE || 'ghost-e2e:local';
 export const BUILD_GATEWAY_IMAGE = process.env.GHOST_E2E_GATEWAY_IMAGE || 'caddy:2-alpine';
 
 export const TINYBIRD = {
-    LOCAL_HOST: 'tinybird-local',
-    PORT: 7181,
-    JSON_PATH: path.resolve(CONFIG_DIR, 'tinybird.json')
+  LOCAL_HOST: 'tinybird-local',
+  PORT: 7181,
+  JSON_PATH: path.resolve(CONFIG_DIR, 'tinybird.json'),
 };
 
 /**
@@ -56,59 +56,59 @@ export const TINYBIRD = {
  * Used when pnpm dev infrastructure is detected.
  */
 export const DEV_ENVIRONMENT = {
-    projectNamespace: DEV_COMPOSE_PROJECT,
-    networkName: DEV_NETWORK_NAME
+  projectNamespace: DEV_COMPOSE_PROJECT,
+  networkName: DEV_NETWORK_NAME,
 } as const;
 
 /**
  * Base environment variables shared by all modes.
  */
 export const BASE_GHOST_ENV = [
-    // Environment configuration
-    'NODE_ENV=development',
-    'server__host=0.0.0.0',
-    'server__port=2368',
+  // Environment configuration
+  'NODE_ENV=development',
+  'server__host=0.0.0.0',
+  'server__port=2368',
 
-    // Database configuration (database name is set per container)
-    'database__client=mysql2',
-    'database__connection__host=ghost-dev-mysql',
-    'database__connection__port=3306',
-    'database__connection__user=root',
-    'database__connection__password=root',
+  // Database configuration (database name is set per container)
+  'database__client=mysql2',
+  'database__connection__host=ghost-dev-mysql',
+  'database__connection__port=3306',
+  'database__connection__user=root',
+  'database__connection__password=root',
 
-    // Redis configuration
-    'adapters__cache__Redis__host=ghost-dev-redis',
-    'adapters__cache__Redis__port=6379',
+  // Redis configuration
+  'adapters__cache__Redis__host=ghost-dev-redis',
+  'adapters__cache__Redis__port=6379',
 
-    // Email configuration
-    'mail__transport=SMTP',
-    'mail__options__host=ghost-dev-mailpit',
-    'mail__options__port=1025',
+  // Email configuration
+  'mail__transport=SMTP',
+  'mail__options__host=ghost-dev-mailpit',
+  'mail__options__port=1025',
 
-    // Staff device verification (new-device 2FA) defaults off in development but ships
-    // on in production. Force it on so the suite stays production-representative and the
-    // 2FA settings UI / sign-in flow render regardless of the dev default.
-    'security__staffDeviceVerification=true',
+  // Staff device verification (new-device 2FA) defaults off in development but ships
+  // on in production. Force it on so the suite stays production-representative and the
+  // 2FA settings UI / sign-in flow render regardless of the dev default.
+  'security__staffDeviceVerification=true',
 
-    // Disable IndexNow pings (tests run with real network access)
-    'privacy__useIndexNow=false',
+  // Disable IndexNow pings (tests run with real network access)
+  'privacy__useIndexNow=false',
 
-    // Disable gravatar avatar lookups (real external call, no e2e coverage)
-    'privacy__useGravatar=false',
+  // Disable gravatar avatar lookups (real external call, no e2e coverage)
+  'privacy__useGravatar=false',
 
-    // Disable browser-side Sentry reporting during tests
-    'client_sentry__disabled=true'
+  // Disable browser-side Sentry reporting during tests
+  'client_sentry__disabled=true',
 ] as const;
 
 export const TEST_ENVIRONMENT = {
-    projectNamespace: 'ghost-dev-e2e',
-    gateway: {
-        image: `${DEV_COMPOSE_PROJECT}-ghost-dev-gateway`
-    },
-    ghost: {
-        image: `${DEV_COMPOSE_PROJECT}-ghost-dev`,
-        port: 2368
-    }
+  projectNamespace: 'ghost-dev-e2e',
+  gateway: {
+    image: `${DEV_COMPOSE_PROJECT}-ghost-dev-gateway`,
+  },
+  ghost: {
+    image: `${DEV_COMPOSE_PROJECT}-ghost-dev`,
+    port: 2368,
+  },
 } as const;
 
 /**
@@ -121,7 +121,8 @@ export const TEST_ENVIRONMENT = {
 
 // Dedicated DNS image for the sidecar — pinned by digest, pulled at runtime
 // (through the CI registry mirror). Deliberately NOT the Ghost application image.
-export const EGRESS_DNS_IMAGE = 'coredns/coredns:1.12.0@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97';
+export const EGRESS_DNS_IMAGE =
+  'coredns/coredns:1.12.0@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97';
 
 // CoreDNS config, bind-mounted into the sidecar at /Corefile.
 export const EGRESS_COREFILE_PATH = path.resolve(__dirname, 'Corefile');
@@ -152,27 +153,27 @@ export const EGRESS_MOCK_RESPONSE_HEADER = 'x-ghost-e2e-mocked-external';
  * - gravatar.com — gated off in e2e instead (privacy__useGravatar above).
  */
 export const EGRESS_ALLOWLIST: readonly string[] = [
-    // Local test infrastructure (not real external egress)
-    'host.docker.internal', // host gateway: fake Stripe/Mailgun servers + Caddy gateway
-    'localhost', // the site/admin under test
-    '127.0.0.1', // the site/admin under test
-    'mock.test', // e2e billing mock (billing.mock.test) served by the harness
+  // Local test infrastructure (not real external egress)
+  'host.docker.internal', // host gateway: fake Stripe/Mailgun servers + Caddy gateway
+  'localhost', // the site/admin under test
+  '127.0.0.1', // the site/admin under test
+  'mock.test', // e2e billing mock (billing.mock.test) served by the harness
 
-    // Ghost-owned
-    'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
+  // Ghost-owned
+  'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
 
-    // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
-    // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.
-    'js.stripe.com', // Stripe.js loaded by Portal/checkout
-    'm.stripe.com', // Stripe Elements
-    'm.stripe.network', // Stripe Elements
+  // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
+  // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.
+  'js.stripe.com', // Stripe.js loaded by Portal/checkout
+  'm.stripe.com', // Stripe Elements
+  'm.stripe.network', // Stripe Elements
 
-    // reCAPTCHA, pulled in by Stripe checkout
-    'google.com', // reCAPTCHA challenge (www.google.com)
-    'gstatic.com', // reCAPTCHA static assets (t0–t3.gstatic.com)
+  // reCAPTCHA, pulled in by Stripe checkout
+  'google.com', // reCAPTCHA challenge (www.google.com)
+  'gstatic.com', // reCAPTCHA static assets (t0–t3.gstatic.com)
 
-    // Other third-party services the product uses
-    'bunny.net', // web fonts (fonts.bunny.net)
-    'transistor.fm', // podcast embeds (partner.transistor.fm)
-    'geojs.io' // member signup + staff sign-in geolocation (get.geojs.io)
+  // Other third-party services the product uses
+  'bunny.net', // web fonts (fonts.bunny.net)
+  'transistor.fm', // podcast embeds (partner.transistor.fm)
+  'geojs.io', // member signup + staff sign-in geolocation (get.geojs.io)
 ];

@@ -1,12 +1,12 @@
-import type {Card} from '../types.js';
+import type { Card } from '../types.js';
 
 const paywallCard: Card = {
-    name: 'paywall',
-    type: 'dom',
+  name: 'paywall',
+  type: 'dom',
 
-    render({env: {dom}}) {
-        return dom.createComment('members-only');
-    }
+  render({ env: { dom } }) {
+    return dom.createComment('members-only');
+  },
 };
 
 export default paywallCard;

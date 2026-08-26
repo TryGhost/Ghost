@@ -90,7 +90,7 @@ jobs:
           RELEASE_DRY_RUN: ${{ inputs.dry-run || 'false' }}
           RELEASE_SKIP_CHECKS: ${{ inputs.skip-checks || 'false' }}
           RELEASE_PACKAGES_ONLY: ${{ inputs.packages-only || 'false' }}
-          GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}  # PAT for GitHub API (check polling)
+          GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }} # PAT for GitHub API (check polling)
 
       - name: Notify Slack on release failure
         if: failure()

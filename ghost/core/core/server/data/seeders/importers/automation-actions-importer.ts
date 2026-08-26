@@ -1,66 +1,70 @@
 import errors from '@tryghost/errors';
-import type {Knex} from 'knex';
-import {TableImporter} from './table-importer';
-import {toDatabaseDate} from '../../../lib/db-date';
-import {randomDateBetween} from '../utils/random';
+import type { Knex } from 'knex';
+import { TableImporter } from './table-importer';
+import { toDatabaseDate } from '../../../lib/db-date';
+import { randomDateBetween } from '../utils/random';
 
 type Automation = {
-    id: string;
-    created_at: string;
+  id: string;
+  created_at: string;
 };
 
 type AutomationAction = {
-    id: string;
-    created_at: string;
-    updated_at: string;
-    deleted_at: null;
-    automation_id: string;
-    type: 'wait' | 'send_email';
+  id: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null;
+  automation_id: string;
+  type: 'wait' | 'send_email';
 };
 
 export class AutomationActionsImporter extends TableImporter<AutomationAction, Automation> {
-    static table = 'automation_actions';
-    static dependencies = ['automations'];
+  static table = 'automation_actions';
+  static dependencies = ['automations'];
 
-    #automation?: Automation;
-    #actionIndex = 0;
+  #automation?: Automation;
+  #actionIndex = 0;
 
-    defaultQuantity = 8;
+  defaultQuantity = 8;
 
-    constructor(knex: Knex, transaction: Knex.Transaction) {
-        super(AutomationActionsImporter.table, knex, transaction);
+  constructor(knex: Knex, transaction: Knex.Transaction) {
+    super(AutomationActionsImporter.table, knex, transaction);
+  }
+
+  async import(quantity = this.defaultQuantity): Promise<void> {
+    const automations = await this.transaction
+      .select('id', 'created_at')
+      .from<Automation>('automations');
+    if (automations.length === 0) {
+      return;
     }
 
-    async import(quantity = this.defaultQuantity): Promise<void> {
-        const automations = await this.transaction.select('id', 'created_at').from<Automation>('automations');
-        if (automations.length === 0) {
-            return;
-        }
+    await this.importForEach(automations, quantity / automations.length);
+  }
 
-        await this.importForEach(automations, quantity / automations.length);
+  setReferencedModel(automation: Automation): void {
+    this.#automation = automation;
+    this.#actionIndex = 0;
+  }
+
+  generate(): AutomationAction {
+    if (!this.#automation) {
+      throw new errors.IncorrectUsageError({
+        message: 'Cannot generate automation action without an automation',
+      });
     }
 
-    setReferencedModel(automation: Automation): void {
-        this.#automation = automation;
-        this.#actionIndex = 0;
-    }
+    const createdAt = randomDateBetween(this.#automation.created_at, new Date());
+    const type = this.#actionIndex % 2 === 0 ? 'wait' : 'send_email';
+    this.#actionIndex += 1;
 
-    generate(): AutomationAction {
-        if (!this.#automation) {
-            throw new errors.IncorrectUsageError({message: 'Cannot generate automation action without an automation'});
-        }
-
-        const createdAt = randomDateBetween(this.#automation.created_at, new Date());
-        const type = this.#actionIndex % 2 === 0 ? 'wait' : 'send_email';
-        this.#actionIndex += 1;
-
-        return {
-            id: this.fastFakeObjectId(),
-            created_at: toDatabaseDate(createdAt),
-            updated_at: toDatabaseDate(createdAt),
-            deleted_at: null,
-            automation_id: this.#automation.id,
-            type
-        };
-    }
+    return {
+      id: this.fastFakeObjectId(),
+      created_at: toDatabaseDate(createdAt),
+      updated_at: toDatabaseDate(createdAt),
+      deleted_at: null,
+      automation_id: this.#automation.id,
+      type,
+    };
+  }
 }

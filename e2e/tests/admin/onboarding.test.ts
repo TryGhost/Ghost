@@ -1,54 +1,56 @@
-import {AnalyticsOverviewPage, OnboardingPage} from '@/admin-pages';
-import {expect, test} from '@/helpers/playwright';
-import type {Page} from '@playwright/test';
+import { AnalyticsOverviewPage, OnboardingPage } from '@/admin-pages';
+import { expect, test } from '@/helpers/playwright';
+import type { Page } from '@playwright/test';
 
 type ChecklistState = 'pending' | 'started' | 'completed' | 'dismissed';
 
 interface OnboardingPreferences {
-    completedSteps: string[];
-    checklistState: ChecklistState;
-    startedAt?: string;
+  completedSteps: string[];
+  checklistState: ChecklistState;
+  startedAt?: string;
 }
 
 const allSteps = ['customize-design', 'first-post', 'build-audience', 'share-publication'];
 const activeStartedAt = '2026-05-01T00:00:00.000Z';
 const legacyNavigationSteps: Array<[string, RegExp]> = [
-    ['customize-design', /\/ghost\/(?:\?[^#]*)?#\/settings\/design\/edit\?ref=setup/],
-    ['first-post', /\/ghost\/(?:\?[^#]*)?#\/editor\/post/]
+  ['customize-design', /\/ghost\/(?:\?[^#]*)?#\/settings\/design\/edit\?ref=setup/],
+  ['first-post', /\/ghost\/(?:\?[^#]*)?#\/editor\/post/],
 ];
 
-test.use({isolation: 'per-test'});
+test.use({ isolation: 'per-test' });
 
 async function getCurrentUser(page: Page) {
-    const response = await page.request.get('/ghost/api/admin/users/me/?include=roles');
-    expect(response.ok()).toBe(true);
+  const response = await page.request.get('/ghost/api/admin/users/me/?include=roles');
+  expect(response.ok()).toBe(true);
 
-    const body = await response.json();
-    return body.users[0];
+  const body = await response.json();
+  return body.users[0];
 }
 
 async function getOnboardingPreferences(page: Page) {
-    const user = await getCurrentUser(page);
-    const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
+  const user = await getCurrentUser(page);
+  const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
 
-    return preferences.onboarding;
+  return preferences.onboarding;
 }
 
 async function putOnboardingPreferences(page: Page, onboarding: OnboardingPreferences) {
-    const user = await getCurrentUser(page);
-    const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
+  const user = await getCurrentUser(page);
+  const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
 
-    preferences.onboarding = onboarding;
+  preferences.onboarding = onboarding;
 
-    const response = await page.request.put(`/ghost/api/admin/users/${user.id}/?include=roles`, {
-        data: {
-            users: [{
-                ...user,
-                accessibility: JSON.stringify(preferences)
-            }]
-        }
-    });
-    expect(response.ok()).toBe(true);
+  const response = await page.request.put(`/ghost/api/admin/users/${user.id}/?include=roles`, {
+    data: {
+      users: [
+        {
+          ...user,
+          accessibility: JSON.stringify(preferences),
+        },
+      ],
+    },
+  });
+  expect(response.ok()).toBe(true);
 }
 
 /**
@@ -61,142 +63,162 @@ async function putOnboardingPreferences(page: Page, onboarding: OnboardingPrefer
  * writes and the next one reverts it, so detach first to discard the queue and
  * write until the server agrees to cover a write already on the wire.
  */
-async function setOnboardingState(page: Page, checklistState: ChecklistState, completedSteps: string[] = [], startedAt: string | null | undefined = checklistState === 'started' ? activeStartedAt : undefined) {
-    const onboarding: OnboardingPreferences = {completedSteps, checklistState};
+async function setOnboardingState(
+  page: Page,
+  checklistState: ChecklistState,
+  completedSteps: string[] = [],
+  startedAt: string | null | undefined = checklistState === 'started' ? activeStartedAt : undefined,
+) {
+  const onboarding: OnboardingPreferences = { completedSteps, checklistState };
 
-    if (startedAt) {
-        onboarding.startedAt = startedAt;
-    }
+  if (startedAt) {
+    onboarding.startedAt = startedAt;
+  }
 
-    await page.goto('about:blank');
+  await page.goto('about:blank');
 
-    await expect(async () => {
-        await putOnboardingPreferences(page, onboarding);
-        expect(await getOnboardingPreferences(page)).toEqual(onboarding);
-    }).toPass({timeout: 15000});
+  await expect(async () => {
+    await putOnboardingPreferences(page, onboarding);
+    expect(await getOnboardingPreferences(page)).toEqual(onboarding);
+  }).toPass({ timeout: 15000 });
 }
 
-async function expectOnboardingRoute(page: Page, {returnTo = '/analytics'}: {returnTo?: string} = {}) {
-    await expect(page).toHaveURL((url) => {
-        const hashUrl = new URL(url.hash.slice(1), 'http://ghost.local');
+async function expectOnboardingRoute(
+  page: Page,
+  { returnTo = '/analytics' }: { returnTo?: string } = {},
+) {
+  await expect(page).toHaveURL((url) => {
+    const hashUrl = new URL(url.hash.slice(1), 'http://ghost.local');
 
-        return hashUrl.pathname === '/setup/onboarding' && hashUrl.searchParams.get('returnTo') === returnTo;
-    });
+    return (
+      hashUrl.pathname === '/setup/onboarding' && hashUrl.searchParams.get('returnTo') === returnTo
+    );
+  });
 }
 
 async function startOnboarding(page: Page) {
-    await setOnboardingState(page, 'started');
-    await page.goto(`/ghost/?onboardingTest=${Date.now()}#/setup/onboarding?returnTo=%2Fanalytics`);
+  await setOnboardingState(page, 'started');
+  await page.goto(`/ghost/?onboardingTest=${Date.now()}#/setup/onboarding?returnTo=%2Fanalytics`);
 
-    const onboardingPage = new OnboardingPage(page);
-    await expect(onboardingPage.checklist).toBeVisible();
+  const onboardingPage = new OnboardingPage(page);
+  await expect(onboardingPage.checklist).toBeVisible();
 }
 
 test.describe('Ghost Admin - Onboarding Checklist', () => {
-    test('firstStart root redirect lands on onboarding', async ({page}) => {
-        await setOnboardingState(page, 'pending', ['customize-design']);
+  test('firstStart root redirect lands on onboarding', async ({ page }) => {
+    await setOnboardingState(page, 'pending', ['customize-design']);
 
-        await page.goto('/ghost/#/?firstStart=true&sr_id=test-site&ssts=1778061878&ssml=test-signature');
+    await page.goto(
+      '/ghost/#/?firstStart=true&sr_id=test-site&ssts=1778061878&ssml=test-signature',
+    );
 
-        const onboardingPage = new OnboardingPage(page);
-        await expect(onboardingPage.checklist).toBeVisible();
-        await expectOnboardingRoute(page);
-        await expect(page).not.toHaveURL(/\/ghost\/#\/setup\/done/);
+    const onboardingPage = new OnboardingPage(page);
+    await expect(onboardingPage.checklist).toBeVisible();
+    await expectOnboardingRoute(page);
+    await expect(page).not.toHaveURL(/\/ghost\/#\/setup\/done/);
 
-        const preferences = await getOnboardingPreferences(page);
-        expect(preferences).toMatchObject({
-            checklistState: 'started',
-            completedSteps: []
-        });
-        expect(typeof preferences.startedAt).toBe('string');
+    const preferences = await getOnboardingPreferences(page);
+    expect(preferences).toMatchObject({
+      checklistState: 'started',
+      completedSteps: [],
     });
+    expect(typeof preferences.startedAt).toBe('string');
+  });
 
-    test('completed and dismissed users reach Analytics normally', async ({page}) => {
-        const analyticsPage = new AnalyticsOverviewPage(page);
+  test('completed and dismissed users reach Analytics normally', async ({ page }) => {
+    const analyticsPage = new AnalyticsOverviewPage(page);
 
-        await setOnboardingState(page, 'completed', allSteps);
-        await analyticsPage.goto();
-        await expect(analyticsPage.header).toBeVisible();
+    await setOnboardingState(page, 'completed', allSteps);
+    await analyticsPage.goto();
+    await expect(analyticsPage.header).toBeVisible();
 
-        await setOnboardingState(page, 'dismissed');
-        await analyticsPage.goto();
-        await expect(analyticsPage.header).toBeVisible();
+    await setOnboardingState(page, 'dismissed');
+    await analyticsPage.goto();
+    await expect(analyticsPage.header).toBeVisible();
+  });
+
+  test('pending users reach Analytics normally and are not started by the React route', async ({
+    page,
+  }) => {
+    const analyticsPage = new AnalyticsOverviewPage(page);
+
+    await setOnboardingState(page, 'pending', ['customize-design']);
+    await analyticsPage.goto();
+    await expect(analyticsPage.header).toBeVisible();
+
+    await page.goto('/ghost/#/setup/onboarding?returnTo=%2Fanalytics%3Fsource%3Dweb');
+    await expect(page).toHaveURL(/\/ghost\/#\/analytics\?source=web$/);
+
+    const preferences = await getOnboardingPreferences(page);
+    expect(preferences).toMatchObject({
+      checklistState: 'pending',
+      completedSteps: ['customize-design'],
     });
+  });
 
-    test('pending users reach Analytics normally and are not started by the React route', async ({page}) => {
-        const analyticsPage = new AnalyticsOverviewPage(page);
+  legacyNavigationSteps.forEach(([step, expectedUrl]) => {
+    test(`${step} step marks complete and navigates`, async ({ page }) => {
+      await startOnboarding(page);
 
-        await setOnboardingState(page, 'pending', ['customize-design']);
-        await analyticsPage.goto();
-        await expect(analyticsPage.header).toBeVisible();
+      const onboardingPage = new OnboardingPage(page);
+      await onboardingPage.step(step).click();
 
-        await page.goto('/ghost/#/setup/onboarding?returnTo=%2Fanalytics%3Fsource%3Dweb');
-        await expect(page).toHaveURL(/\/ghost\/#\/analytics\?source=web$/);
+      await expect(page).toHaveURL(expectedUrl);
 
-        const preferences = await getOnboardingPreferences(page);
-        expect(preferences).toMatchObject({
-            checklistState: 'pending',
-            completedSteps: ['customize-design']
-        });
+      const preferences = await getOnboardingPreferences(page);
+      expect(preferences.completedSteps).toContain(step);
     });
+  });
 
-    legacyNavigationSteps.forEach(([step, expectedUrl]) => {
-        test(`${step} step marks complete and navigates`, async ({page}) => {
-            await startOnboarding(page);
+  test('legacy started users without startedAt reach Analytics and are dismissed', async ({
+    page,
+  }) => {
+    const analyticsPage = new AnalyticsOverviewPage(page);
 
-            const onboardingPage = new OnboardingPage(page);
-            await onboardingPage.step(step).click();
+    await setOnboardingState(page, 'started', [], null);
+    await analyticsPage.goto();
 
-            await expect(page).toHaveURL(expectedUrl);
+    await expect(analyticsPage.header).toBeVisible();
 
-            const preferences = await getOnboardingPreferences(page);
-            expect(preferences.completedSteps).toContain(step);
-        });
-    });
+    await expect
+      .poll(async () => {
+        return (await getOnboardingPreferences(page))?.checklistState;
+      })
+      .toBe('dismissed');
 
-    test('legacy started users without startedAt reach Analytics and are dismissed', async ({page}) => {
-        const analyticsPage = new AnalyticsOverviewPage(page);
+    await expect
+      .poll(async () => {
+        return (await getOnboardingPreferences(page))?.completedSteps;
+      })
+      .toEqual([]);
+  });
 
-        await setOnboardingState(page, 'started', [], null);
-        await analyticsPage.goto();
+  test('skip returns to the preserved analytics URL', async ({ page }) => {
+    await startOnboarding(page);
+    await page.goto('/ghost/#/analytics?source=web');
 
-        await expect(analyticsPage.header).toBeVisible();
+    const onboardingPage = new OnboardingPage(page);
+    await expectOnboardingRoute(page, { returnTo: '/analytics?source=web' });
+    await onboardingPage.skipButton.click();
 
-        await expect.poll(async () => {
-            return (await getOnboardingPreferences(page))?.checklistState;
-        }).toBe('dismissed');
+    await expect(page).toHaveURL(/\/ghost\/#\/analytics\?source=web$/);
 
-        await expect.poll(async () => {
-            return (await getOnboardingPreferences(page))?.completedSteps;
-        }).toEqual([]);
-    });
+    const preferences = await getOnboardingPreferences(page);
+    expect(preferences.checklistState).toBe('dismissed');
+  });
 
-    test('skip returns to the preserved analytics URL', async ({page}) => {
-        await startOnboarding(page);
-        await page.goto('/ghost/#/analytics?source=web');
+  test('completing all steps returns to the preserved analytics URL', async ({ page }) => {
+    await startOnboarding(page);
+    await setOnboardingState(page, 'started', allSteps);
+    await page.goto('/ghost/#/setup/onboarding?returnTo=%2Fanalytics%3Fsource%3Dweb');
 
-        const onboardingPage = new OnboardingPage(page);
-        await expectOnboardingRoute(page, {returnTo: '/analytics?source=web'});
-        await onboardingPage.skipButton.click();
+    const onboardingPage = new OnboardingPage(page);
+    await expectOnboardingRoute(page, { returnTo: '/analytics?source=web' });
+    await onboardingPage.completeButton.click();
 
-        await expect(page).toHaveURL(/\/ghost\/#\/analytics\?source=web$/);
+    await expect(page).toHaveURL(/\/ghost\/#\/analytics\?source=web$/);
 
-        const preferences = await getOnboardingPreferences(page);
-        expect(preferences.checklistState).toBe('dismissed');
-    });
-
-    test('completing all steps returns to the preserved analytics URL', async ({page}) => {
-        await startOnboarding(page);
-        await setOnboardingState(page, 'started', allSteps);
-        await page.goto('/ghost/#/setup/onboarding?returnTo=%2Fanalytics%3Fsource%3Dweb');
-
-        const onboardingPage = new OnboardingPage(page);
-        await expectOnboardingRoute(page, {returnTo: '/analytics?source=web'});
-        await onboardingPage.completeButton.click();
-
-        await expect(page).toHaveURL(/\/ghost\/#\/analytics\?source=web$/);
-
-        const preferences = await getOnboardingPreferences(page);
-        expect(preferences.checklistState).toBe('completed');
-    });
+    const preferences = await getOnboardingPreferences(page);
+    expect(preferences.checklistState).toBe('completed');
+  });
 });
