@@ -19,7 +19,7 @@ import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useFocusContext } from '@tryghost/shade/app';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { verifyEmailToken } from '@tryghost/admin-x-framework/api/email-verification';
+import { useVerifyEmailToken } from '@tryghost/admin-x-framework/api/email-verification';
 
 type PreviewTab = 'signup' | 'account' | 'links';
 type SidebarTab = 'signupOptions' | 'lookAndFeel' | 'accountPage';
@@ -111,7 +111,7 @@ const PortalModal: React.FC = () => {
   // const tiers = getPaidActiveTiers(allTiers || []);
 
   const { mutateAsync: editTier } = useEditTier();
-  const { mutateAsync: verifyToken } = verifyEmailToken();
+  const { mutateAsync: verifyToken } = useVerifyEmailToken();
 
   const { getParam } = useQueryParams();
 

@@ -6,11 +6,11 @@ export interface WhatsNewStatus {
 }
 
 export function useWhatsNewStatus(): WhatsNewStatus {
-  const { data: whatsNewData } = useWhatsNew();
+  const { hasNew } = useWhatsNew();
   const { data: changelog } = useChangelog();
   const latestEntry = changelog?.entries[0];
 
   return {
-    showWhatsNewBanner: !!whatsNewData?.hasNew && !!latestEntry,
+    showWhatsNewBanner: hasNew && !!latestEntry,
   };
 }

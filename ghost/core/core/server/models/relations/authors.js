@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
 const { setIsRoles } = require('../role-utils');
 
 const messages = {
@@ -130,7 +129,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
           return proto.onSaving.call(this, model, attrs, options);
         });
 
-        return sequence(ops);
+        return (async () => {
+          const results = [];
+          for (const op of ops) {
+            results.push(await op());
+          }
+          return results;
+        })();
       },
 
       serialize: function serialize(options) {
@@ -224,7 +229,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
           });
         });
 
-        return sequence(ops);
+        return (async () => {
+          const results = [];
+          for (const op of ops) {
+            results.push(await op());
+          }
+          return results;
+        })();
       },
     },
     {
@@ -416,14 +427,12 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         if (isContributor && isEdit) {
           hasUserPermission = !isChangingAuthors() && isCoAuthor();
-        } else if (isContributor && isAdd) {
+        } else if ((isContributor || isAuthor) && isAdd) {
           hasUserPermission = isOwner();
-        } else if (isContributor && isDestroy) {
-          hasUserPermission = isPrimaryAuthor();
+        } else if ((isContributor || isAuthor) && isDestroy) {
+          hasUserPermission = Boolean(postModel) && isPrimaryAuthor();
         } else if (isAuthor && isEdit) {
           hasUserPermission = isCoAuthor() && !isChangingAuthors();
-        } else if (isAuthor && isAdd) {
-          hasUserPermission = isOwner();
         } else if (postModel) {
           hasUserPermission = hasUserPermission || isPrimaryAuthor();
         }

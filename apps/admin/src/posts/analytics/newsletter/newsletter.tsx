@@ -49,8 +49,8 @@ import { buildMembersUrl } from '@/members/member-route';
 import { getLinkById } from '@/posts/analytics/utils/link-helpers';
 import { hasBeenEmailed, useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
-import { useAppContext } from '@tryghost/admin-x-framework';
 import { useBulkEditLinks } from '@tryghost/admin-x-framework/api/links';
+import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-framework/api/settings';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
@@ -103,9 +103,8 @@ const Newsletter: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const ITEMS_PER_PAGE = 10;
   const { chartSize } = useResponsiveChartSize();
-  const { appSettings } = useAppContext();
-  const { emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled } =
-    appSettings?.analytics || {};
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   // Use shared post data from context
   const { post, isPostLoading, postId } = usePostAnalytics();

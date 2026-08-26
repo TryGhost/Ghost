@@ -26,7 +26,7 @@ import {
   stringToHslColor,
   useSimplePagination,
 } from '@tryghost/shade/utils';
-import { formatMemberName, getMemberInitials } from '@tryghost/shade/app';
+import { formatMemberName, getMemberInitials } from '@/members/member-format';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
 import { useState } from 'react';

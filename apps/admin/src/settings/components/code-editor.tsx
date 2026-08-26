@@ -1,9 +1,8 @@
 import React, { Suspense, forwardRef } from 'react';
 import type { CodeEditorProps } from './code-editor-view';
-import type { FetchKoenigLexical } from './html-editor';
 import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 
-export type { CodeEditorProps, FetchKoenigLexical };
+export type { CodeEditorProps };
 
 // Imported asynchronously to avoid including CodeMirror in the main bundle
 const CodeEditorView = React.lazy(() => import('./code-editor-view'));

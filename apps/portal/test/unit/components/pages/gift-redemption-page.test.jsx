@@ -123,6 +123,24 @@ describe.each([
 });
 
 describe('BetaGiftRedemptionPage', () => {
+  test('shows the intended recipient name when a different member is logged in', () => {
+    const personalizedGift = {
+      ...gift,
+      buyer_name: 'Morgan',
+      recipient_name: 'Taylor',
+    };
+    const { getByText, queryByText } = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+      member: member.free,
+      pageData: {
+        token: 'gift-token-123',
+        gift: personalizedGift,
+      },
+    });
+
+    expect(getByText('Taylor')).toBeInTheDocument();
+    expect(queryByText(member.free.name)).not.toBeInTheDocument();
+  });
+
   test('presents the buyer details and prefills the intended recipient name', () => {
     const personalizedGift = {
       ...gift,
@@ -149,9 +167,11 @@ describe('BetaGiftRedemptionPage', () => {
 
     expect(getByLabelText(/your name/i)).toHaveValue('Taylor');
     expect(getByLabelText(/your email/i)).toHaveFocus();
-    expect(container.querySelector('.gh-portal-gift-checkout-subtitle')).toHaveTextContent(
+    const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
+    expect(subtitle).toHaveTextContent(
       'Jamie has gifted you a 1-year Premium membership to The Blueprint',
     );
+    expect(subtitle).toContainHTML('<strong>1-year</strong>');
     expect(getByTestId('gift-message')).toHaveTextContent('Enjoy this!');
     expect(getByTestId('gift-message')).toHaveTextContent('Jamie');
     expect(getByText(/This gift can only be redeemed once and expires on/i)).toBeInTheDocument();

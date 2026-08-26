@@ -36,11 +36,13 @@ import {
   getGrowthContentDescription,
 } from '@/analytics/utils/content-helpers';
 import { LucideIcon, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
-import { centsToDollars } from '@tryghost/shade/app';
 import { getClickHandler } from '@/analytics/utils/url-helpers';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { centsToDollars, getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  useMembersTrackSources,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useGrowthStats } from '@/analytics/hooks/use-growth-stats';
@@ -80,7 +82,8 @@ const Growth: React.FC = () => {
     CONTENT_TYPES.POSTS_AND_PAGES,
   );
   const [searchParams] = useSearchParams();
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const membersTrackSources = useMembersTrackSources();
 
   // Get the initial tab from URL search parameters
   const initialTab = searchParams.get('tab') || 'total-members';
@@ -203,7 +206,7 @@ const Growth: React.FC = () => {
             />
           </CardContent>
         </Card>
-        {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && (
+        {paidMembersEnabled && currentKpiTab === 'paid-members' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]">
             <PaidMembersChangeChart
               isLoading={isPageLoading}
@@ -244,7 +247,7 @@ const Growth: React.FC = () => {
                     </Tabs>
                   </TableHead>
                   <TableHead className="w-[140px] text-right">
-                    {appSettings?.paidMembersEnabled ? (
+                    {paidMembersEnabled ? (
                       <SortButton
                         activeSortBy={sortBy}
                         setSortBy={setSortBy}
@@ -256,7 +259,7 @@ const Growth: React.FC = () => {
                       <>Free members</>
                     )}
                   </TableHead>
-                  {appSettings?.paidMembersEnabled && (
+                  {paidMembersEnabled && (
                     <>
                       <TableHead className="w-[140px] text-right">
                         <SortButton
@@ -297,11 +300,11 @@ const Growth: React.FC = () => {
                         />
                       </TableCell>
                     </TableRow>
-                  ) : !appSettings?.analytics.membersTrackSources ? (
+                  ) : !membersTrackSources ? (
                     <TableRow className="last:border-none">
                       <TableCell
                         className="border-none py-12 group-hover:bg-transparent!"
-                        colSpan={appSettings?.paidMembersEnabled ? 4 : 2}
+                        colSpan={paidMembersEnabled ? 4 : 2}
                       >
                         <DisabledSourcesIndicator />
                       </TableCell>
@@ -345,7 +348,7 @@ const Growth: React.FC = () => {
                           {post.free_members > 0 && '+'}
                           {formatNumber(post.free_members)}
                         </TableCell>
-                        {appSettings?.paidMembersEnabled && (
+                        {paidMembersEnabled && (
                           <>
                             <TableCell className="text-right font-mono text-sm">
                               {post.paid_members > 0 && '+'}
@@ -364,7 +367,7 @@ const Growth: React.FC = () => {
                     <TableRow className="border-none">
                       <TableCell
                         className="py-12 group-hover:bg-transparent!"
-                        colSpan={appSettings?.paidMembersEnabled ? 4 : 2}
+                        colSpan={paidMembersEnabled ? 4 : 2}
                       >
                         <EmptyIndicator
                           description="Try adjusting your date range to see more data."

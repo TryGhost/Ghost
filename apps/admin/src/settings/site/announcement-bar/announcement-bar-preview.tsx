@@ -40,6 +40,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({
       const previewUrl = new URL(url);
       previewUrl.searchParams.set('admin_toolbar', '0');
 
+      // eslint-disable-next-line no-restricted-syntax -- posts preview data to the site front-end, not the Admin API
       fetch(previewUrl.toString(), {
         method: 'POST',
         headers: {

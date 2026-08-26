@@ -134,6 +134,56 @@ describe('Account Plan Page', () => {
     });
   });
 
+  test('shows the signup gift promotion to free members choosing a plan', () => {
+    const site = {
+      ...getSiteData({ labs: { giftSubCustomization: true } }),
+      portal_signup_gift_promotion: true,
+    };
+    const member = getMemberData({ paid: false });
+    const { getByRole, mockDoActionFn } = customSetup({ site, member });
+
+    fireEvent.click(getByRole('button', { name: 'Gift a membership' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+      page: 'gift',
+      lastPage: 'accountPlan',
+    });
+  });
+
+  test('returns to account home after returning from gift checkout', () => {
+    const { getByRole, mockDoActionFn } = customSetup({ lastPage: 'accountPlan' });
+
+    fireEvent.click(getByRole('button', { name: 'Back' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', { page: 'accountHome' });
+  });
+
+  test.each([
+    {
+      label: 'the setting is disabled',
+      site: {
+        ...getSiteData({ labs: { giftSubCustomization: true } }),
+        portal_signup_gift_promotion: false,
+      },
+    },
+    {
+      label: 'the feature flag is disabled',
+      site: { ...getSiteData(), portal_signup_gift_promotion: true },
+    },
+    {
+      label: 'there is no giftable offering',
+      site: {
+        ...getSiteData({ labs: { giftSubCustomization: true }, portalPlans: ['free'] }),
+        portal_signup_gift_promotion: true,
+      },
+    },
+  ])('hides the signup gift promotion when $label', ({ site }) => {
+    const member = getMemberData({ paid: false });
+    const { queryByRole } = customSetup({ site, member });
+
+    expect(queryByRole('button', { name: 'Gift a membership' })).not.toBeInTheDocument();
+  });
+
   test('can cancel subscription for member on hidden tier', async () => {
     const overrides = generateAccountPlanFixture();
     const { queryByRole, queryByText } = customSetup(overrides);

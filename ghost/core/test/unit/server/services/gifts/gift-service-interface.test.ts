@@ -23,6 +23,7 @@ describe('GiftService interface', function () {
   function createService({
     customizationEnabled = false,
     portalPlans = ['monthly', 'yearly'],
+    timezone = 'Etc/UTC',
   } = {}) {
     const tier = {
       id: {
@@ -67,6 +68,9 @@ describe('GiftService interface', function () {
       dispatchForGift: sinon.stub().resolves(null),
       cancelPendingForGift: sinon.stub().resolves(false),
     };
+    const settingsGet = sinon.stub();
+    settingsGet.withArgs('portal_plans').returns(portalPlans);
+    settingsGet.withArgs('timezone').returns(timezone);
     const service = new GiftService({
       giftRepository,
       giftDeliveryService,
@@ -84,7 +88,7 @@ describe('GiftService interface', function () {
         isSet: sinon.stub().withArgs('giftSubCustomization').returns(customizationEnabled),
       },
       settingsCache: {
-        get: sinon.stub().withArgs('portal_plans').returns(portalPlans),
+        get: settingsGet,
       },
     } as any);
 
@@ -175,10 +179,104 @@ describe('GiftService interface', function () {
       {
         giftId: 'gift_1',
         recipientEmail: 'recipient@example.com',
+        scheduledAt: null,
       },
       { transacting: 'trx' },
     );
     assert.equal(successUrl.searchParams.get('gift_delivery'), 'email');
+  });
+
+  it('stores a scheduled email delivery as 09:00 in the publication timezone', async function () {
+    const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+    const { service, checkoutAdapter, giftRepository, giftDeliveryService } = createService({
+      customizationEnabled: true,
+      timezone: 'America/Los_Angeles',
+    });
+
+    await service.startCheckout({
+      tierId: 'tier_1',
+      cadence: 'year',
+      deliveryMethod: 'email',
+      deliveryDate: '2026-12-25',
+      recipientEmail: 'recipient@example.com',
+      buyerName: 'Buyer',
+      successUrl: 'https://example.com/',
+      buyer: {
+        memberId: null,
+        email: 'buyer@example.com',
+        name: null,
+        isAuthenticated: false,
+      },
+    });
+
+    const gift = giftRepository.create.firstCall.firstArg;
+    const successUrl = new URL(checkoutAdapter.createSession.firstCall.firstArg.successUrl);
+    const scheduledAt = new Date('2026-12-25T17:00:00.000Z');
+    assert.equal(gift.expiresAt.toISOString(), '2027-12-26T07:59:59.999Z');
+    sinon.assert.calledOnceWithExactly(
+      giftDeliveryService.createForCheckout,
+      {
+        giftId: 'gift_1',
+        recipientEmail: 'recipient@example.com',
+        scheduledAt,
+      },
+      { transacting: 'trx' },
+    );
+    assert.equal(successUrl.searchParams.get('gift_delivery_date'), '2026-12-25');
+    assert.equal(successUrl.searchParams.get('gift_scheduled_at'), String(scheduledAt.getTime()));
+    clock.restore();
+  });
+
+  it('rejects delivery dates beyond the next publication-calendar year', async function () {
+    const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+
+    await assert.rejects(
+      () =>
+        service.startCheckout({
+          tierId: 'tier_1',
+          cadence: 'year',
+          deliveryMethod: 'email',
+          deliveryDate: '2027-08-19',
+          recipientEmail: 'recipient@example.com',
+          buyerName: 'Buyer',
+          successUrl: 'https://example.com/',
+          buyer: {
+            memberId: null,
+            email: 'buyer@example.com',
+            name: null,
+            isAuthenticated: false,
+          },
+        }),
+      { context: 'Gift delivery date must be today or within the next 365 days' },
+    );
+
+    sinon.assert.notCalled(checkoutAdapter.createSession);
+    clock.restore();
+  });
+
+  it('accepts delivery exactly 365 publication-calendar days ahead', async function () {
+    const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+
+    await service.startCheckout({
+      tierId: 'tier_1',
+      cadence: 'year',
+      deliveryMethod: 'email',
+      deliveryDate: '2027-08-18',
+      recipientEmail: 'recipient@example.com',
+      buyerName: 'Buyer',
+      successUrl: 'https://example.com/',
+      buyer: {
+        memberId: null,
+        email: 'buyer@example.com',
+        name: null,
+        isAuthenticated: false,
+      },
+    });
+
+    sinon.assert.calledOnce(checkoutAdapter.createSession);
+    clock.restore();
   });
 
   it('prefers the checkout buyer name over the authenticated member name', async function () {

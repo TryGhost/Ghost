@@ -261,6 +261,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -1176,6 +1184,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -1642,6 +1658,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -2106,6 +2130,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -2619,6 +2651,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -3082,6 +3122,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -4098,6 +4146,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -4564,6 +4620,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -5028,6 +5092,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -5500,6 +5572,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -5963,6 +6043,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -6433,6 +6521,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -7293,6 +7389,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -7757,6 +7861,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -8225,6 +8337,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -8690,6 +8810,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",
@@ -9256,6 +9384,14 @@ Object {
     Object {
       "key": "portal_signup_checkbox_required",
       "value": false,
+    },
+    Object {
+      "key": "portal_signup_gift_promotion",
+      "value": true,
+    },
+    Object {
+      "key": "portal_account_gift_promotion",
+      "value": true,
     },
     Object {
       "key": "mailgun_domain",

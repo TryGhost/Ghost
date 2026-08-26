@@ -1,15 +1,13 @@
 // Framework
 export type { StatsConfig, TopLevelFrameworkProps } from './providers/framework-provider';
-export { FrameworkProvider, useFramework } from './providers/framework-provider';
-
-// App Context
-export type { AppSettings, AppContextType } from './providers/app-provider';
 export {
-  AppContext,
-  AppProvider,
-  useAppContext,
-  useWebAnalyticsEnabled,
-} from './providers/app-provider';
+  FrameworkProvider,
+  defaultUnsplashConfig,
+  useFramework,
+} from './providers/framework-provider';
+
+// Settings selectors
+export { useWebAnalyticsEnabled } from './api/settings';
 
 // Hooks
 export { useActiveVisitors } from './hooks/use-active-visitors';
@@ -26,6 +24,7 @@ export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-f
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
+export { useDocsBot } from './hooks/use-docsbot';
 
 // Analytics utilities
 export { trackEvent, trackFilterApplications } from './utils/analytics';
@@ -80,6 +79,7 @@ export {
 export { useNavigationStack } from './providers/navigation-stack-provider';
 export {
   Link,
+  NavigationType,
   Outlet,
   useBlocker,
   useLocation,
@@ -91,6 +91,7 @@ export {
   useMatch,
   useMatches,
 } from 'react-router';
+export type { BlockerFunction } from 'react-router';
 
 // Lazy component loader
 export { lazyComponent } from './utils/lazy-component';

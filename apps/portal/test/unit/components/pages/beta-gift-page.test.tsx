@@ -38,6 +38,24 @@ function setup(site: SiteData, overrideContext: Record<string, unknown> = {}) {
 }
 
 describe('BetaGiftPage', () => {
+  test.each([
+    { pickerLabel: '1 month', durationLabel: '1-month' },
+    { pickerLabel: '3 months', durationLabel: '3-month' },
+    { pickerLabel: '6 months', durationLabel: '6-month' },
+    { pickerLabel: '1 year', durationLabel: '1-year' },
+  ])('bolds the complete $durationLabel gift duration', ({ pickerLabel, durationLabel }) => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { container, getByLabelText, getByRole } = setup(site);
+
+    fireEvent.click(getByRole('radio', { name: pickerLabel }));
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+
+    expect(container.querySelector('.gh-portal-gift-email-lede')).toContainHTML(
+      `<strong>${durationLabel}</strong>`,
+    );
+  });
+
   test('offers the full fixed-duration catalogue and updates the price and request', () => {
     const site = buildSite({
       labs: {
@@ -49,7 +67,7 @@ describe('BetaGiftPage', () => {
     expect(getByRole('radio', { name: '1 month' })).toHaveAttribute('aria-checked', 'true');
     expect(getByRole('radio', { name: '3 months' })).toHaveAttribute('aria-checked', 'false');
     expect(getByRole('radio', { name: '6 months' })).toBeInTheDocument();
-    expect(getByRole('radio', { name: '12 months' })).toBeInTheDocument();
+    expect(getByRole('radio', { name: '1 year' })).toBeInTheDocument();
     expect(getAllByText('$5').length).toBeGreaterThan(0);
 
     fireEvent.click(getByRole('radio', { name: '3 months' }));
@@ -81,7 +99,7 @@ describe('BetaGiftPage', () => {
     });
   });
 
-  test('defaults to 12 months for a yearly Portal default', () => {
+  test('defaults to a year for a yearly Portal default', () => {
     const site = buildSite({
       labs: {
         giftSubCustomization: true,
@@ -90,7 +108,7 @@ describe('BetaGiftPage', () => {
     });
     const { container, getByRole } = setup(site);
 
-    expect(getByRole('radio', { name: '12 months' })).toHaveAttribute('aria-checked', 'true');
+    expect(getByRole('radio', { name: '1 year' })).toHaveAttribute('aria-checked', 'true');
 
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
     expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent(
@@ -211,7 +229,7 @@ describe('BetaGiftPage', () => {
     expect(getByRole('radio', { name: '1 month' })).toHaveAttribute('aria-checked', 'true');
     expect(getByRole('radio', { name: '3 months' })).toBeInTheDocument();
     expect(getByRole('radio', { name: '6 months' })).toBeInTheDocument();
-    expect(queryByRole('radio', { name: '12 months' })).not.toBeInTheDocument();
+    expect(queryByRole('radio', { name: '1 year' })).not.toBeInTheDocument();
   });
 
   test('keeps email details locally but omits them from link delivery', () => {
@@ -226,7 +244,7 @@ describe('BetaGiftPage', () => {
     fireEvent.change(getByLabelText('Optional message'), { target: { value: 'Enjoy!' } });
 
     fireEvent.click(getByRole('radio', { name: "I'll share it myself" }));
-    fireEvent.click(getByRole('radio', { name: 'Email it to them now' }));
+    fireEvent.click(getByRole('radio', { name: 'Email it to them' }));
 
     expect(getByLabelText("Recipient's name")).toHaveValue('Taylor');
     expect(getByLabelText("Recipient's email")).toHaveValue('recipient@example.com');
@@ -240,5 +258,64 @@ describe('BetaGiftPage', () => {
       duration: 1,
       deliveryMethod: 'link',
     });
+  });
+
+  test('schedules email delivery from the always-visible delivery date field', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { container, getByLabelText, getByRole, mockDoActionFn } = setup(site);
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.change(getByLabelText("Recipient's email"), {
+      target: { value: 'recipient@example.com' },
+    });
+    const deliveryDate = container.querySelector<HTMLInputElement>('#gift-delivery-date');
+    if (!deliveryDate) {
+      throw new Error('Expected delivery date input');
+    }
+    const scheduledDate = deliveryDate.getAttribute('max');
+    fireEvent.change(deliveryDate, { target: { value: scheduledDate } });
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'checkoutGift',
+      expect.objectContaining({
+        deliveryMethod: 'email',
+        deliveryDate: scheduledDate,
+      }),
+    );
+  });
+
+  test('disables purchase until an out-of-range delivery date is corrected', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { container, getByLabelText, getByRole, getByText, mockDoActionFn } = setup(site);
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.change(getByLabelText("Recipient's email"), {
+      target: { value: 'recipient@example.com' },
+    });
+    const deliveryDate = container.querySelector<HTMLInputElement>('#gift-delivery-date');
+    if (!deliveryDate) {
+      throw new Error('Expected delivery date input');
+    }
+    // min/max don't stop typed values, so an out-of-range date is reachable
+    fireEvent.change(deliveryDate, { target: { value: '2020-01-01' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(getByText('Choose a date from today onwards')).toBeInTheDocument();
+    expect(getByRole('button', { name: 'Continue to payment' })).toBeDisabled();
+    expect(mockDoActionFn).not.toHaveBeenCalled();
+
+    fireEvent.change(deliveryDate, { target: { value: '2999-01-01' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(getByText('Choose a date within the next year')).toBeInTheDocument();
+    expect(getByRole('button', { name: 'Continue to payment' })).toBeDisabled();
+    expect(mockDoActionFn).not.toHaveBeenCalled();
+
+    fireEvent.change(deliveryDate, { target: { value: deliveryDate.getAttribute('max') } });
+
+    expect(getByRole('button', { name: 'Continue to payment' })).not.toBeDisabled();
   });
 });

@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
-const { sequence } = require('@tryghost/promise');
 
 const models = require('../../../models');
 const baseUtils = require('../../../models/base/utils');
@@ -125,23 +124,15 @@ class FixtureManager {
     const userRolesRelation = this.fixtures.relations.find((r) => r.from.relation === 'roles');
     await this.addFixturesForRelation(userRolesRelation, localOptions);
 
-    await sequence(
-      this.fixtures.models
-        .filter((m) => !['User', 'Role'].includes(m.name))
-        .map((model) => () => {
-          logging.info('Model: ' + model.name);
-          return this.addFixturesForModel(model, localOptions);
-        }),
-    );
+    for (const model of this.fixtures.models.filter((m) => !['User', 'Role'].includes(m.name))) {
+      logging.info('Model: ' + model.name);
+      await this.addFixturesForModel(model, localOptions);
+    }
 
-    await sequence(
-      this.fixtures.relations
-        .filter((r) => r.from.relation !== 'roles')
-        .map((relation) => () => {
-          logging.info('Relation: ' + relation.from.model + ' to ' + relation.to.model);
-          return this.addFixturesForRelation(relation, localOptions);
-        }),
-    );
+    for (const relation of this.fixtures.relations.filter((r) => r.from.relation !== 'roles')) {
+      logging.info('Relation: ' + relation.from.model + ' to ' + relation.to.model);
+      await this.addFixturesForRelation(relation, localOptions);
+    }
   }
 
   /*
@@ -358,29 +349,28 @@ class FixtureManager {
       });
     }
 
-    const results = await sequence(
-      modelFixture.entries.map((entry) => async () => {
-        let data = {};
+    const results = [];
+    for (const entry of modelFixture.entries) {
+      let data = {};
 
-        // CASE: if id is specified, only query by id
-        if (entry.id) {
-          data.id = entry.id;
-        } else if (entry.slug) {
-          data.slug = entry.slug;
-        } else {
-          data = _.cloneDeep(entry);
-        }
+      // CASE: if id is specified, only query by id
+      if (entry.id) {
+        data.id = entry.id;
+      } else if (entry.slug) {
+        data.slug = entry.slug;
+      } else {
+        data = _.cloneDeep(entry);
+      }
 
-        if (modelFixture.name === 'Post') {
-          data.status = 'all';
-        }
+      if (modelFixture.name === 'Post') {
+        data.status = 'all';
+      }
 
-        const found = await models[modelFixture.name].findOne(data, options);
-        if (!found) {
-          return models[modelFixture.name].add(entry, options);
-        }
-      }),
-    );
+      const found = await models[modelFixture.name].findOne(data, options);
+      if (!found) {
+        results.push(await models[modelFixture.name].add(entry, options));
+      }
+    }
 
     return { expected: modelFixture.entries.length, done: _.compact(results).length };
   }
@@ -440,22 +430,25 @@ class FixtureManager {
       });
     });
 
-    const result = await sequence(ops);
+    const result = [];
+    for (const op of ops) {
+      result.push(await op());
+    }
     return { expected: max, done: _(result).map('length').sum() };
   }
 
   async removeFixturesForModel(modelFixture, options) {
-    const results = await sequence(
-      modelFixture.entries.map((entry) => async () => {
-        const found = models[modelFixture.name].findOne(
-          entry.id ? { id: entry.id } : entry,
-          options,
-        );
-        if (found) {
-          return models[modelFixture.name].destroy(_.extend(options, { id: found.id }));
-        }
-      }),
-    );
+    const results = [];
+    for (const entry of modelFixture.entries) {
+      const found = await models[modelFixture.name].findOne(
+        entry.id ? { id: entry.id } : entry,
+        options,
+      );
+      const result = found
+        ? await models[modelFixture.name].destroy(_.extend(options, { id: found.id }))
+        : undefined;
+      results.push(result);
+    }
 
     return { expected: modelFixture.entries.length, done: results.length };
   }
@@ -486,7 +479,11 @@ class FixtureManager {
       });
     });
 
-    return await sequence(ops);
+    const results = [];
+    for (const op of ops) {
+      results.push(await op());
+    }
+    return results;
   }
 }
 

@@ -279,6 +279,7 @@
   "stripeDirect": false,
   "machinePayments": {
     "x402": {
+      "enabled": true,
       "network": "eip155:8453",
       "stripeNetwork": "base",
       "facilitatorUrl": "https://facilitator.xpay.sh"
@@ -311,7 +312,7 @@
   },
   "portal": {
     "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-    "version": "2.70"
+    "version": "2.71"
   },
   "sodoSearch": {
     "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",

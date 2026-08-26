@@ -17,7 +17,8 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useDeleteSession } from '@tryghost/admin-x-framework/api/session';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
-import { useTheme, type ThemeMode } from '@/hooks/use-theme';
+import { type ThemeMode } from '@/hooks/use-theme';
+import { useThemeContext } from '@/providers/theme-context';
 import { useWhatsNew } from '@/whats-new/hooks/use-whats-new';
 import { useUpgradeStatus } from './hooks/use-upgrade-status';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
@@ -51,7 +52,7 @@ const THEME_LABELS = Object.fromEntries(
 ) as Record<ThemeMode, string>;
 
 function UserMenuAppearance() {
-  const { theme, setTheme, isSettingTheme } = useTheme();
+  const { theme, setTheme, isSettingTheme } = useThemeContext();
 
   return (
     <DropdownMenuSub>
@@ -118,7 +119,7 @@ interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
 }
 function UserMenu(props: UserMenuProps) {
   const currentUser = useCurrentUser();
-  const { data: whatsNewData } = useWhatsNew();
+  const { hasNew } = useWhatsNew();
   const { showUpgradeBanner } = useUpgradeStatus();
 
   return (
@@ -131,7 +132,7 @@ function UserMenu(props: UserMenuProps) {
         >
           <div className="relative">
             <UserMenuAvatar />
-            {whatsNewData?.hasNew && (
+            {hasNew && (
               <span className="absolute -top-0.5 -right-0.5">
                 <Indicator
                   data-testid="whats-new-avatar-badge"
@@ -172,7 +173,7 @@ function UserMenu(props: UserMenuProps) {
         >
           <LucideIcon.Sparkles />
           <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
-          {whatsNewData?.hasNew && (
+          {hasNew && (
             <div className="flex flex-1 justify-end">
               <Indicator
                 data-testid="whats-new-menu-badge"

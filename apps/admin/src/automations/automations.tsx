@@ -6,11 +6,9 @@ import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 const Automations: React.FC = () => {
   const { automations, error, isError, isLoading } = useVisibleAutomations();
-  const showRunAnalytics = useFeatureFlag('automationRunAnalytics');
 
   if (isError) {
     throw error instanceof Error ? error : new Error('Failed to load automations');
@@ -38,11 +36,7 @@ const Automations: React.FC = () => {
             </PageHeader>
           </ListPage.Header>
           <ListPage.Body>
-            <AutomationsList
-              automations={automations}
-              isLoading={isLoading}
-              showRunAnalytics={showRunAnalytics}
-            />
+            <AutomationsList automations={automations} isLoading={isLoading} />
             <AutomationsHelpCards />
           </ListPage.Body>
         </ListPage>

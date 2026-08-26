@@ -124,6 +124,7 @@ module.exports = function apiRoutes() {
 
   // ## Gifts
   router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
+  router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
 
   // ## Settings
   router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
@@ -405,6 +406,12 @@ module.exports = function apiRoutes() {
     mw.authAdminApi,
     labs.enabledMiddleware('selfServeArchives'),
     http(api.exports.download),
+  );
+  router.post(
+    '/exports',
+    mw.authAdminApi,
+    labs.enabledMiddleware('selfServeArchives'),
+    http(api.exports.add),
   );
 
   // ## Slack

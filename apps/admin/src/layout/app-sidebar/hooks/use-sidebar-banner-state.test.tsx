@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { useSidebarBannerState } from './use-sidebar-banner-state';
 
-const mockUseSidebarVisibility = vi.fn<() => boolean>(() => true);
+const mockUseAdminSidebarVisibility = vi.fn<() => boolean>(() => true);
 const mockUseActiveThemeErrors = vi.fn<() => { hasErrors: boolean }>(() => ({ hasErrors: false }));
 const mockUseUpgradeStatus = vi.fn<
   () => { showUpgradeBanner: boolean; trialDaysRemaining: number }
@@ -12,8 +12,8 @@ const mockUseWhatsNewStatus = vi.fn<() => { showWhatsNewBanner: boolean }>(() =>
   showWhatsNewBanner: false,
 }));
 
-vi.mock('@/ember-bridge/ember-bridge', () => ({
-  useSidebarVisibility: () => mockUseSidebarVisibility(),
+vi.mock('@/layout/sidebar-visibility', () => ({
+  useAdminSidebarVisibility: () => mockUseAdminSidebarVisibility(),
 }));
 
 vi.mock('./use-theme-errors', () => ({
@@ -44,14 +44,14 @@ vi.mock('@/whats-new/components/whats-new-banner', () => ({
 
 describe('useSidebarBannerState', () => {
   beforeEach(() => {
-    mockUseSidebarVisibility.mockReturnValue(true);
+    mockUseAdminSidebarVisibility.mockReturnValue(true);
     mockUseActiveThemeErrors.mockReturnValue({ hasErrors: false });
     mockUseUpgradeStatus.mockReturnValue({ showUpgradeBanner: false, trialDaysRemaining: 0 });
     mockUseWhatsNewStatus.mockReturnValue({ showWhatsNewBanner: false });
   });
 
   test('returns no banner when editor is open', () => {
-    mockUseSidebarVisibility.mockReturnValue(false);
+    mockUseAdminSidebarVisibility.mockReturnValue(false);
     mockUseActiveThemeErrors.mockReturnValue({ hasErrors: true });
     mockUseUpgradeStatus.mockReturnValue({ showUpgradeBanner: true, trialDaysRemaining: 7 });
     mockUseWhatsNewStatus.mockReturnValue({ showWhatsNewBanner: true });

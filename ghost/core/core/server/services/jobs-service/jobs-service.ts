@@ -11,7 +11,6 @@ import { Job, JobConstructor, JobHandler } from './job';
 export interface JobsLogger {
   error(...args: unknown[]): void;
   info(...args: unknown[]): void;
-  warn(...args: unknown[]): void;
 }
 
 export interface JobsErrorReporter {
@@ -112,11 +111,30 @@ export class JobsService {
       return;
     }
 
+    const startedAt = Date.now();
+    this.#logging.info(`[Background Job] ${envelope.type} started`);
+
     try {
       await deliver(envelope.payload);
     } catch (err) {
+      this.#logging.error(
+        err,
+        `[Background Job] ${envelope.type} failed after ${Date.now() - startedAt}ms`,
+      );
       this.#sentry?.captureException(err, { tags: { job_type: envelope.type } });
       throw err;
     }
+
+    const durationMs = Date.now() - startedAt;
+    this.#logging.info(
+      {
+        system: {
+          event: 'job.completed',
+          job_type: envelope.type,
+          duration_ms: durationMs,
+        },
+      },
+      `[Background Job] ${envelope.type} completed in ${durationMs}ms`,
+    );
   }
 }

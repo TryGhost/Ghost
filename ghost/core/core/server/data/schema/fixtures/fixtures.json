@@ -821,6 +821,11 @@
           "object_type": "gift"
         },
         {
+          "name": "Flush gift deliveries",
+          "action_type": "flushDeliveries",
+          "object_type": "gift"
+        },
+        {
           "name": "Manage gift links",
           "action_type": "manage",
           "object_type": "gift_link"
@@ -1003,7 +1008,7 @@
         "Scheduler Integration": {
           "post": "publish",
           "automation": "poll",
-          "gift": "flushReminders"
+          "gift": ["flushReminders", "flushDeliveries"]
         },
         "Self-Serve Migration Integration": {
           "db": "importContent",

@@ -7,7 +7,6 @@ import {
   getEditableCustomFieldValues,
   getEmailErrorMessage,
   getMemberEditableSlice,
-  getMemberNewslettersUiEnabled,
   getMemberSuppressionInfo,
   getNoteCharactersLeft,
   isDraftInSyncWithServer,
@@ -246,23 +245,6 @@ describe('getMemberSuppressionInfo', () => {
   });
 });
 
-describe('getMemberNewslettersUiEnabled', () => {
-  it('hides the section only when explicitly disabled', () => {
-    expect(getMemberNewslettersUiEnabled('disabled')).toBe(false);
-  });
-
-  it('shows the section for every other setting value', () => {
-    expect(getMemberNewslettersUiEnabled('all')).toBe(true);
-    expect(getMemberNewslettersUiEnabled('paid')).toBe(true);
-    expect(getMemberNewslettersUiEnabled('filter')).toBe(true);
-  });
-
-  it('shows the section while the setting is still loading (prevents a flash-out)', () => {
-    expect(getMemberNewslettersUiEnabled(undefined)).toBe(true);
-    expect(getMemberNewslettersUiEnabled(null)).toBe(true);
-  });
-});
-
 describe('toggleMemberNewsletter', () => {
   it('subscribes a member to a newsletter they are not yet subscribed to', () => {
     expect(toggleMemberNewsletter(['nl_a'], 'nl_b')).toEqual(['nl_a', 'nl_b']);
@@ -296,6 +278,18 @@ describe('isValidMemberEmail', () => {
     expect(isValidMemberEmail('a@b')).toBe(false);
     expect(isValidMemberEmail('a@b.')).toBe(false);
     expect(isValidMemberEmail('a b@example.com')).toBe(false);
+  });
+
+  it('grandfathers a stored email that no longer passes validation when unchanged', () => {
+    expect(isValidMemberEmail('legacy@mail_host.com', 'legacy@mail_host.com')).toBe(true);
+    // Trim-insensitive: the draft field may carry surrounding whitespace
+    expect(isValidMemberEmail(' legacy@mail_host.com ', 'legacy@mail_host.com')).toBe(true);
+    // Changing away from the stored value re-applies strict validation
+    expect(isValidMemberEmail('other@mail_host.com', 'legacy@mail_host.com')).toBe(false);
+    // A stored email is no excuse for a different invalid value
+    expect(isValidMemberEmail('nope', 'legacy@mail_host.com')).toBe(false);
+    // Create mode (no stored email) stays strict
+    expect(isValidMemberEmail('legacy@mail_host.com')).toBe(false);
   });
 });
 

@@ -10,6 +10,7 @@ import { SwitchStyles } from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
 import { AccountPlanPageStyles } from './pages/account-plan-page';
 import { InputFieldStyles } from './common/input-field';
+import { DatePickerStyles } from './common/date-picker';
 import { SignupPageStyles } from './pages/signup-page';
 import { ProductsSectionStyles } from './common/products-section';
 import { AvatarStyles } from './common/member-gravatar';
@@ -1357,6 +1358,7 @@ export function getFrameStyles({ site }) {
     AccountHomePageStyles +
     AccountPlanPageStyles +
     InputFieldStyles +
+    DatePickerStyles +
     ProductsSectionStyles({ site }) +
     SwitchStyles +
     ActionButtonStyles +

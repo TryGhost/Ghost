@@ -1,6 +1,9 @@
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
-import { toDatabaseDate } from '../../lib/db-date';
+import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-date';
+import { decodeGiftRow } from './gift-codec';
 import { decodeGiftDeliveryRow, encodeGiftDelivery } from './gift-delivery-codec';
+import type { Gift } from './gift';
 import type {
   GiftDeliveryData,
   GiftDeliveryOutcome,
@@ -10,6 +13,11 @@ import type { RepositoryTransactionOptions } from './gift-bookshelf-repository';
 
 export type GiftDeliveryOutcomeRecordResult = 'recorded' | 'stale' | 'not_found';
 
+export interface RecoverableGiftDelivery {
+  delivery: GiftDeliveryData;
+  gift: Gift;
+}
+
 export interface GiftDeliveryRepository {
   getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
   getByGiftId(
@@ -17,7 +25,12 @@ export interface GiftDeliveryRepository {
     options?: RepositoryTransactionOptions,
   ): Promise<GiftDeliveryData | null>;
   getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
-  findRecoverableForPurchasedGifts(staleBefore: Date, limit: number): Promise<GiftDeliveryData[]>;
+  findRecoverableForPurchasedGifts(
+    now: Date,
+    staleBefore: Date,
+    limit: number,
+  ): Promise<RecoverableGiftDelivery[]>;
+  findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]>;
   tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
   markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
   recordCancelledAcceptance(
@@ -55,6 +68,16 @@ type GiftDeliveryBookshelfModel = {
     options?: BookshelfFindOptions,
   ): Promise<BookshelfDocument<GiftDeliveryRow> | null>;
 };
+
+// A null scheduled_at means the delivery was due at purchase time, so it is
+// always due. Kept sargable against the (status, scheduled_at) index.
+function dueDeliveries(query: Knex.QueryBuilder, now: Date): void {
+  query.andWhere((due) => {
+    due
+      .whereNull('gift_deliveries.scheduled_at')
+      .orWhere('gift_deliveries.scheduled_at', '<=', toDatabaseDate(now));
+  });
+}
 
 // Deliveries that still need a send attempt: never started, or claimed by a
 // process that has since died and left the claim stale
@@ -111,17 +134,58 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
   }
 
   async findRecoverableForPurchasedGifts(
+    now: Date,
     staleBefore: Date,
     limit: number,
-  ): Promise<GiftDeliveryData[]> {
+  ): Promise<RecoverableGiftDelivery[]> {
     const rows = await this.knex('gift_deliveries')
       .select('gift_deliveries.*')
       .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
       .where('gifts.status', 'purchased')
+      .modify(dueDeliveries, now)
       .modify(recoverableDeliveries, staleBefore)
+      .orderByRaw('COALESCE(gift_deliveries.scheduled_at, gifts.purchased_at) ASC')
       .limit(limit);
 
-    return rows.map(decodeGiftDeliveryRow);
+    const deliveries: GiftDeliveryData[] = rows.map((row: unknown) => decodeGiftDeliveryRow(row));
+    if (deliveries.length === 0) {
+      return [];
+    }
+
+    const giftRows = await this.knex('gifts')
+      .select('*')
+      .whereIn(
+        'id',
+        deliveries.map((delivery) => delivery.giftId),
+      );
+    const giftsById = new Map<string, Gift>(
+      giftRows.map((row: Record<string, unknown>) => [String(row.id), decodeGiftRow(row)]),
+    );
+
+    return deliveries.map((delivery) => {
+      const gift = giftsById.get(delivery.giftId);
+      if (!gift) {
+        throw new errors.InternalServerError({
+          message: `Gift not found for recoverable delivery ${delivery.id}`,
+        });
+      }
+
+      return { delivery, gift };
+    });
+  }
+
+  // Distinct times only: the scheduler arms one flush job per scheduled
+  // time, so scheduled gifts clustering on a popular date collapse to a
+  // single row instead of one per delivery.
+  async findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]> {
+    const rows = await this.knex('gift_deliveries')
+      .distinct('gift_deliveries.scheduled_at')
+      .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
+      .where('gift_deliveries.status', 'pending')
+      .where('gifts.status', 'purchased')
+      .where('gift_deliveries.scheduled_at', '>', toDatabaseDate(now));
+
+    return rows.map((row) => fromDatabaseDate(row.scheduled_at));
   }
 
   async tryStartDelivery(
@@ -131,6 +195,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
   ): Promise<GiftDeliveryData | null> {
     const claimed = await this.knex('gift_deliveries')
       .where({ id })
+      .modify(dueDeliveries, now)
       .whereExists((query) => {
         query
           .select('gifts.id')

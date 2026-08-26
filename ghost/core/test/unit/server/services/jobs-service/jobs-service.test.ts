@@ -45,16 +45,13 @@ class FakeBackend implements JobsBackendBase {
 }
 
 function makeLogger() {
-  const calls = { error: [] as unknown[][], info: [] as unknown[][], warn: [] as unknown[][] };
+  const calls = { error: [] as unknown[][], info: [] as unknown[][] };
   const logging: JobsLogger = {
     error: (...args) => {
       calls.error.push(args);
     },
     info: (...args) => {
       calls.info.push(args);
-    },
-    warn: (...args) => {
-      calls.warn.push(args);
     },
   };
   return { logging, calls };
@@ -163,10 +160,11 @@ describe('JobsService', function () {
       assert.equal(captured.length, 1);
       assert.equal(captured[0]!.err, boom);
       assert.deepEqual(captured[0]!.context, { tags: { job_type: 'greet' } });
-      assert.equal(
-        logger.calls.error.length,
-        0,
-        'delivery failures are logged by the backend, not the service',
+      assert.equal(logger.calls.error.length, 1);
+      assert.equal(logger.calls.error[0]![0], boom);
+      assert.match(
+        String(logger.calls.error[0]![1]),
+        /^\[Background Job\] greet failed after \d+ms$/,
       );
     });
 
@@ -178,6 +176,43 @@ describe('JobsService', function () {
 
       assert.equal(logger.calls.error.length, 1);
       assert.match(String(logger.calls.error[0]![0]), /No handler registered for job type "greet"/);
+    });
+  });
+
+  describe('lifecycle logging', function () {
+    it('logs started and a structured completed event around a successful delivery', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {});
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await backend.deliver();
+
+      assert.equal(logger.calls.info.length, 2);
+      assert.equal(logger.calls.info[0]![0], '[Background Job] greet started');
+
+      const [event, message] = logger.calls.info[1]! as [
+        { system: { event: string; job_type: string; duration_ms: number } },
+        string,
+      ];
+      assert.equal(event.system.event, 'job.completed');
+      assert.equal(event.system.job_type, 'greet');
+      assert.equal(typeof event.system.duration_ms, 'number');
+      assert.match(String(message), /^\[Background Job\] greet completed in \d+ms$/);
+    });
+
+    it('does not log a completed event for a failed delivery', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {
+        throw new Error('handler exploded');
+      });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await assert.rejects(() => backend.deliver(), /handler exploded/);
+
+      assert.equal(logger.calls.info.length, 1, 'only the started line is logged');
+      assert.equal(logger.calls.error.length, 1);
     });
   });
 

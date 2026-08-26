@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 
 import {
   currentRoute,
@@ -9,6 +8,8 @@ import {
   renderAdminApp,
   type Member,
 } from '@test-utils/acceptance';
+import { membersScreen } from '@/members/members.screen';
+import { memberDetailScreen } from './member-detail.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 
 function fakeMemberDetailWorld(m: Member) {
@@ -37,10 +38,10 @@ describe('Member detail leave guard', () => {
     fakeMemberDetailWorld(m);
     await renderAdminApp(`/members/${m.id}`);
 
-    await page.getByLabelText('Name').fill('Ada B');
-    await page.getByTestId('member-detail').getByRole('link', { name: 'Members' }).click();
+    await memberDetailScreen.nameInput().fill('Ada B');
+    await memberDetailScreen.backLink().click();
 
-    await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
+    await expect.element(memberDetailScreen.leaveConfirmationText()).toBeVisible();
   });
 
   it('guards leaving via the sidebar (native hash anchor) with unsaved edits', async () => {
@@ -48,10 +49,10 @@ describe('Member detail leave guard', () => {
     fakeMemberDetailWorld(m);
     await renderAdminApp(`/members/${m.id}`);
 
-    await page.getByLabelText('Name').fill('Ada B');
-    await page.getByRole('link', { name: 'Members' }).first().click();
+    await memberDetailScreen.nameInput().fill('Ada B');
+    await sidebarScreen.shellNav().getByRole('link', { name: 'Members' }).click();
 
-    await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
+    await expect.element(memberDetailScreen.leaveConfirmationText()).toBeVisible();
   });
 
   it('keeps editing on cancel and completes the navigation on Leave', async () => {
@@ -59,15 +60,15 @@ describe('Member detail leave guard', () => {
     fakeMemberDetailWorld(m);
     await renderAdminApp(`/members/${m.id}`);
 
-    await page.getByLabelText('Name').fill('Ada B');
-    await page.getByRole('link', { name: 'Members' }).first().click();
+    await memberDetailScreen.nameInput().fill('Ada B');
+    await sidebarScreen.shellNav().getByRole('link', { name: 'Members' }).click();
 
-    await page.getByRole('button', { name: 'Stay' }).click();
-    await expect.element(page.getByLabelText('Name')).toHaveValue('Ada B');
+    await memberDetailScreen.stayButton().click();
+    await expect.element(memberDetailScreen.nameInput()).toHaveValue('Ada B');
 
-    await page.getByRole('link', { name: 'Members' }).first().click();
-    await page.getByRole('button', { name: 'Leave' }).click();
-    await expect.element(page.getByText('New member')).toBeVisible();
+    await sidebarScreen.shellNav().getByRole('link', { name: 'Members' }).click();
+    await memberDetailScreen.leaveButton().click();
+    await expect.element(membersScreen.newMemberLink()).toBeVisible();
   });
 
   it('confirms before the back button leaves a dirty member opened from the list', async () => {
@@ -77,22 +78,22 @@ describe('Member detail leave guard', () => {
 
     await sidebarScreen.navLink('Members').click();
     await expect.poll(currentRoute).toBe('/members');
-    await page.getByRole('link', { name: 'Ada Lovelace' }).click();
+    await membersScreen.link('Ada Lovelace').click();
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
-    await page.getByLabelText('Name').fill('Ada B');
+    await memberDetailScreen.nameInput().fill('Ada B');
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
     });
 
     window.history.back();
 
-    await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
-    await page.getByRole('button', { name: 'Stay' }).click();
+    await expect.element(memberDetailScreen.leaveConfirmationText()).toBeVisible();
+    await memberDetailScreen.stayButton().click();
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
-    await expect.element(page.getByLabelText('Name')).toHaveValue('Ada B');
+    await expect.element(memberDetailScreen.nameInput()).toHaveValue('Ada B');
 
     window.history.back();
-    await page.getByRole('button', { name: 'Leave' }).click();
+    await memberDetailScreen.leaveButton().click();
     await expect.poll(currentRoute).toBe('/members');
   });
 
@@ -104,13 +105,13 @@ describe('Member detail leave guard', () => {
     // Native hash navigations do not carry react-router's history index.
     // Preserve that legacy target shape before opening the React detail.
     window.history.replaceState({}, '');
-    await page.getByRole('link', { name: 'Ada Lovelace' }).click();
+    await membersScreen.link('Ada Lovelace').click();
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
-    await page.getByLabelText('Name').fill('Ada B');
+    await memberDetailScreen.nameInput().fill('Ada B');
 
     window.history.back();
 
     await expect.poll(currentRoute).toBe('/members');
-    expect(page.getByText('Are you sure you want to leave this page?').query()).toBeNull();
+    await expect.element(memberDetailScreen.leaveConfirmationText()).not.toBeInTheDocument();
   });
 });

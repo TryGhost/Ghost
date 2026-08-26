@@ -6,6 +6,7 @@ import {
 } from './utils/test-fixtures';
 import { appRender, fireEvent, waitFor, within } from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
+import { toDateValue } from '../src/utils/date-time';
 
 const defaultGiftResponse = {
   gifts: [
@@ -449,6 +450,23 @@ describe('Portal Data links:', () => {
       expect(giftSubtitle).toBeInTheDocument();
     });
 
+    test('opens gift page when both promotion settings are disabled', async () => {
+      window.location.hash = '#/portal/gift';
+
+      const site = {
+        ...FixtureSite.singleTier.basic,
+        labs: { giftSubCustomization: true },
+        portal_signup_gift_promotion: false,
+        portal_account_gift_promotion: false,
+      };
+      let { popupFrame, ...utils } = await setup({ site, showPopup: false });
+
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      expect(
+        within(popupFrame.contentDocument).getByRole('heading', { name: 'Gift a membership' }),
+      ).toBeInTheDocument();
+    });
+
     test('does not open when Stripe is disconnected', async () => {
       window.location.hash = '#/portal/gift';
 
@@ -597,7 +615,7 @@ describe('Portal Data links:', () => {
   });
 
   describe('?stripe=gift-purchase-success', () => {
-    test('opens gift success page', async () => {
+    test('opens gift success page for immediate email delivery', async () => {
       const site = {
         ...FixtureSite.singleTier.basic,
         labs: { giftSubCustomization: true },
@@ -624,7 +642,52 @@ describe('Portal Data links:', () => {
       const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
       expect(redeemUrl).toBeInTheDocument();
 
-      const duration = within(popupFrame.contentDocument).queryByText('12 months');
+      const duration = within(popupFrame.contentDocument).queryByText('1 year');
+      expect(duration).toBeInTheDocument();
+    });
+
+    test('opens gift success page with scheduled delivery wording for a future date', async () => {
+      const site = {
+        ...FixtureSite.singleTier.basic,
+        labs: { giftSubCustomization: true },
+      };
+      const tierId = site.products.find((product) => product.type === 'paid').id;
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 60);
+      const deliveryDateValue = toDateValue(futureDate);
+      const scheduledAtValue = futureDate.getTime();
+      const formattedDeliveryDate = futureDate.toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email&gift_delivery_date=${deliveryDateValue}&gift_scheduled_at=${scheduledAtValue}`;
+      window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email&gift_delivery_date=${deliveryDateValue}&gift_scheduled_at=${scheduledAtValue}`;
+      window.location.hash = '';
+      window.location.pathname = '/';
+
+      let { popupFrame, triggerButtonFrame, ...utils } = await setup({
+        site,
+        showPopup: false,
+      });
+
+      expect(triggerButtonFrame).toBeInTheDocument();
+
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      expect(popupFrame).toBeInTheDocument();
+
+      const giftTitle = within(popupFrame.contentDocument).queryByText(/your gift is scheduled/i);
+      expect(giftTitle).toBeInTheDocument();
+
+      const deliveryDate = within(popupFrame.contentDocument).queryByText(
+        new RegExp(formattedDeliveryDate, 'i'),
+      );
+      expect(deliveryDate).toBeInTheDocument();
+
+      const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
+      expect(redeemUrl).toBeInTheDocument();
+
+      const duration = within(popupFrame.contentDocument).queryByText('1 year');
       expect(duration).toBeInTheDocument();
     });
 

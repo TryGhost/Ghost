@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
+import DatePicker from '../common/date-picker';
 import SiteTitleBackButton from '../common/site-title-back-button';
 import ActionButton from '../common/action-button';
 import GiftCard from '../common/gift-card';
@@ -11,6 +12,7 @@ import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import { isCookiesDisabled } from '../../utils/helpers';
+import { addCalendarDays, getDateInputValue } from '../../utils/date-time';
 import {
   getActiveGiftDuration,
   getAvailableGiftDurations,
@@ -512,6 +514,23 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     color: var(--grey8);
     font-size: 1.2rem;
     letter-spacing: 0.02em;
+}
+
+.gh-portal-gift-checkout-delivery-date {
+    margin-top: 16px;
+}
+
+.gh-portal-gift-checkout-delivery-date .gh-portal-input {
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+
+.gh-portal-gift-checkout-delivery-error {
+    margin: 8px 0 0;
+    color: var(--red);
+    font-size: 1.3rem;
+    letter-spacing: 0.35px;
+    line-height: 1.6em;
 }
 
 .gh-portal-gift-checkout .gh-portal-btn-primary {
@@ -1227,6 +1246,32 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
         overflow: visible;
     }
 
+    /* Hide the card/email preview on mobile so that the gifting form is
+       visible */
+    .gh-portal-content.gift .gh-portal-gift-checkout-right {
+        display: none;
+    }
+
+    /* Setting this back to the brand colour because without the brandcolour
+       background the close button disappears on white. */
+    .gh-portal-popup-container.full-size.gift .gh-portal-closeicon,
+    .gh-portal-popup-container.full-size.gift .gh-portal-closeicon:hover {
+        color: var(--brandcolor) !important;
+    }
+
+    .gh-portal-content.gift .gh-portal-closeicon-container {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        top: 12px;
+        right: 12px;
+    }
+
+    html[dir="rtl"] .gh-portal-content.gift .gh-portal-closeicon-container {
+        right: unset;
+        left: 12px;
+    }
+
     .gh-portal-gift-checkout-right-panel {
         padding: 56px 24px 32px;
         border-radius: 0 0 32px 32px;
@@ -1237,19 +1282,18 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     }
 
     .gh-portal-content.gift .gh-portal-btn-site-title-back {
-        top: 16px;
-        left: 16px;
+        align-items: center;
+        height: 40px;
+        top: 12px;
+        left: 24px;
     }
 
     html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
-        right: 16px;
+        right: 24px;
         left: unset;
     }
 
-    /* The back button no longer takes part in the flow, so the delivery step
-       reserves the room it used to occupy. Only that step — the plan step's
-       button is hidden unless there's a page behind the gift page. */
-    .gh-portal-gift-checkout-left[data-step='delivery'] {
+    .gh-portal-content.gift .gh-portal-gift-checkout-left {
         padding-top: 64px;
     }
 
@@ -1322,6 +1366,9 @@ function GiftDurationSwitch({ offeredDurations, activeDuration, setSelectedDurat
 const GIFT_EMAIL_MAX_LENGTH = 191;
 const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_MESSAGE_MAX_LENGTH = 250;
+// Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost/core's gifts constants — change
+// them together.
+const GIFT_MAX_SCHEDULE_DAYS = 365;
 
 function getTierPriceLabel(product, months) {
   return formatGiftValue(getGiftPrice(product, months));
@@ -1338,6 +1385,10 @@ const BetaGiftPage = () => {
   const [buyerName, setBuyerName] = useState(member?.name || '');
   const [giftMessage, setGiftMessage] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState('email');
+  // null means untouched: the effective date then tracks "today" in the
+  // site's timezone on every render, so an untouched form still means
+  // "send now" after the page sits open across site-midnight.
+  const [deliveryDate, setDeliveryDate] = useState(null);
   const [errors, setErrors] = useState({});
   const { cardRef, containerProps: cardTiltProps } = useCardTilt();
 
@@ -1431,7 +1482,9 @@ const BetaGiftPage = () => {
   const activeDurationLabel = getGiftDurationAttributiveLabel(emailDuration);
   const isPurchasing = action === 'checkoutGift:running';
   const hasErrors =
-    step === 'plan' ? !!(errors.email || errors.buyerName) : !!errors.recipientEmail;
+    step === 'plan'
+      ? !!(errors.email || errors.buyerName)
+      : !!(errors.recipientEmail || errors.deliveryDate);
   const isDisabled = isCookiesDisabled() || isPurchasing || hasErrors;
   const isLoggedIn = !!member;
   const showBuyerName = !(member?.name || '').trim();
@@ -1441,6 +1494,9 @@ const BetaGiftPage = () => {
   // stays for the plan step and for "I'll share it myself", where no email is
   // sent and the card is what the buyer passes on.
   const showEmailPreview = step === 'delivery' && deliveryMethod === 'email';
+  const minDeliveryDate = getDateInputValue(new Date(), site.timezone);
+  const maxDeliveryDate = addCalendarDays(minDeliveryDate, GIFT_MAX_SCHEDULE_DAYS);
+  const effectiveDeliveryDate = deliveryDate ?? minDeliveryDate;
 
   const emailField = {
     type: 'email',
@@ -1498,6 +1554,7 @@ const BetaGiftPage = () => {
     setErrors((currentErrors) => ({
       ...currentErrors,
       recipientEmail: '',
+      deliveryDate: '',
     }));
     setRecipientEmail(event.target.value);
   };
@@ -1506,8 +1563,19 @@ const BetaGiftPage = () => {
     setErrors((currentErrors) => ({
       ...currentErrors,
       recipientEmail: '',
+      deliveryDate: '',
     }));
     setDeliveryMethod(method);
+  };
+
+  const handleDeliveryDateChange = (nextDate) => {
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      deliveryDate: '',
+    }));
+    // Store today as null so "send now" keeps tracking the site day across
+    // midnight; a typed past date stays put for validation to call out.
+    setDeliveryDate(nextDate === minDeliveryDate ? null : nextDate);
   };
 
   const handleContinueToDelivery = (e) => {
@@ -1543,6 +1611,7 @@ const BetaGiftPage = () => {
     const trimmedBuyerName = buyerName.trim();
     const trimmedGiftMessage = giftMessage.trim();
     const isEmailDelivery = deliveryMethod === 'email';
+    const isScheduled = isEmailDelivery && effectiveDeliveryDate > minDeliveryDate;
 
     const fieldsToValidate = [];
     if (!isLoggedIn) {
@@ -1562,6 +1631,16 @@ const BetaGiftPage = () => {
     // covers the (unlikely) mistyped-recipient case.
     if (isEmailDelivery && !trimmedRecipientEmail) {
       formErrors.recipientEmail = t("Enter the recipient's email address");
+    }
+
+    if (isEmailDelivery) {
+      if (!effectiveDeliveryDate) {
+        formErrors.deliveryDate = t('Choose a delivery date');
+      } else if (effectiveDeliveryDate < minDeliveryDate) {
+        formErrors.deliveryDate = t('Choose a date from today onwards');
+      } else if (effectiveDeliveryDate > maxDeliveryDate) {
+        formErrors.deliveryDate = t('Choose a date within the next year');
+      }
     }
 
     const formHasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
@@ -1584,6 +1663,7 @@ const BetaGiftPage = () => {
       ...(isEmailDelivery && trimmedRecipientName ? { recipientName: trimmedRecipientName } : {}),
       ...(trimmedBuyerName ? { buyerName: trimmedBuyerName } : {}),
       ...(isEmailDelivery && trimmedGiftMessage ? { personalMessage: trimmedGiftMessage } : {}),
+      ...(isScheduled ? { deliveryDate: effectiveDeliveryDate } : {}),
     });
   };
 
@@ -1755,7 +1835,7 @@ const BetaGiftPage = () => {
                         className={'gh-portal-btn' + (deliveryMethod === 'email' ? ' active' : '')}
                         onClick={() => handleDeliveryMethodChange('email')}
                       >
-                        {t('Email it to them now')}
+                        {t('Email it to them')}
                       </button>
                       <button
                         type="button"
@@ -1812,6 +1892,28 @@ const BetaGiftPage = () => {
                               {giftMessage.length}/{GIFT_MESSAGE_MAX_LENGTH}
                             </p>
                           </div>
+                        </div>
+                        <div className="gh-portal-gift-checkout-delivery-date">
+                          <div className="gh-portal-input-labelcontainer">
+                            <label className="gh-portal-input-label" htmlFor="gift-delivery-date">
+                              {t('Delivery date')}
+                            </label>
+                          </div>
+                          <DatePicker
+                            ariaLabel={t('Delivery date')}
+                            hasError={!!errors.deliveryDate}
+                            id="gift-delivery-date"
+                            max={maxDeliveryDate}
+                            min={minDeliveryDate}
+                            minLabel={t('Now')}
+                            value={effectiveDeliveryDate}
+                            onChange={handleDeliveryDateChange}
+                          />
+                          {errors.deliveryDate && (
+                            <p className="gh-portal-gift-checkout-delivery-error">
+                              {errors.deliveryDate}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1886,6 +1988,8 @@ const BetaGiftPage = () => {
                       buyerName={buyerName}
                       cadence={emailDuration.cadence}
                       duration={emailDuration.duration}
+                      deliveryDate={effectiveDeliveryDate}
+                      isScheduled={effectiveDeliveryDate > minDeliveryDate}
                       giftMessage={giftMessage}
                       recipientEmail={recipientEmail}
                       recipientName={recipientName}

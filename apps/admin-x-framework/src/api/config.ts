@@ -117,7 +117,7 @@ export type Config = {
     export?: {
       // Host archive webhook — when set, "Export data" delivers the
       // archive by email instead of a synchronous download
-      generate_archive_url?: string;
+      webhookUrl?: string;
     };
   };
   security?: {
@@ -126,6 +126,10 @@ export type Config = {
   featurebase?: {
     enabled?: boolean;
     organization?: string;
+  };
+  docsbot?: {
+    enabled?: boolean;
+    id?: string;
   };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;

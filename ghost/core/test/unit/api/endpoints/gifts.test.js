@@ -22,4 +22,16 @@ describe('Gifts controller', function () {
       assert.equal(result, undefined);
     });
   });
+
+  describe('flushDeliveries', function () {
+    it('dispatches a delivery flush event', function () {
+      const dispatch = sinon.stub(domainEvents, 'dispatch');
+
+      const result = giftsController.flushDeliveries.query({});
+
+      assert.equal(result, undefined);
+      sinon.assert.calledOnce(dispatch);
+      assert.equal(dispatch.firstCall.firstArg.constructor.name, 'StartGiftDeliveryFlushEvent');
+    });
+  });
 });

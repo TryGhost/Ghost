@@ -129,6 +129,30 @@ module.exports = {
       },
       to: { path: '^@tryghost/(shade|admin-x-framework)' },
     },
+    // ============================================================
+    // apps/ — admin is an app, not a library
+    // ============================================================
+    {
+      name: 'admin-is-app',
+      comment:
+        'No sibling app or library may depend on @tryghost/admin - whether by package specifier or by relative reach-in. Admin sits at the top of the layer stack.',
+      severity: 'error',
+      from: { path: '^apps/', pathNot: '^apps/admin/' },
+      to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
+    },
+    // ============================================================
+    // apps/admin — shared/ must stay domain-free
+    // ============================================================
+    {
+      name: 'admin-shared-no-domains',
+      comment:
+        'apps/admin/src/shared must not import from feature domains. Move code used by a single domain into that domain; keep shared/ generic. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier.',
+      severity: 'error',
+      from: { path: '^apps/admin/src/shared/' },
+      to: {
+        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|layout)($|/)',
+      },
+    },
   ],
   options: {
     doNotFollow: { path: 'node_modules' },

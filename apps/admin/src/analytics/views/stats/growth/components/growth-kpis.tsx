@@ -18,10 +18,13 @@ import {
   KpiTabValue,
 } from '@tryghost/shade/patterns';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { centsToDollars, formatDisplayDateWithRange } from '@tryghost/shade/app';
-import { formatNumber } from '@tryghost/shade/utils';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import { formatNumber, formatDisplayDateWithRange } from '@tryghost/shade/utils';
+import {
+  getEffectiveChartRange,
+  sanitizeChartData,
+  centsToDollars,
+} from '@/shared/analytics/chart-helpers';
+import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 
@@ -156,7 +159,7 @@ const GrowthKPIs: React.FC<{
   const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
   const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
   const { range } = useAnalytics();
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -290,13 +293,13 @@ const GrowthKPIs: React.FC<{
   return (
     <Tabs defaultValue={validatedInitialTab} variant="kpis">
       <TabsList
-        className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:visible! lg:grid!' : 'grid grid-cols-4'}`}
+        className={`-mx-6 ${paidMembersEnabled ? 'hidden grid-cols-4 lg:visible! lg:grid!' : 'grid grid-cols-4'}`}
       >
         <KpiTabTrigger
-          className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''}
+          className={!paidMembersEnabled ? 'cursor-auto after:hidden' : ''}
           value="total-members"
           onClick={() => {
-            if (appSettings?.paidMembersEnabled) {
+            if (paidMembersEnabled) {
               handleTabChange('total-members');
             }
           }}
@@ -309,7 +312,7 @@ const GrowthKPIs: React.FC<{
             value={formatNumber(totalMembers)}
           />
         </KpiTabTrigger>
-        {appSettings?.paidMembersEnabled && (
+        {paidMembersEnabled && (
           <>
             <KpiTabTrigger
               value="free-members"
@@ -356,7 +359,7 @@ const GrowthKPIs: React.FC<{
           </>
         )}
       </TabsList>
-      {appSettings?.paidMembersEnabled && (
+      {paidMembersEnabled && (
         <DropdownMenu>
           <DropdownMenuTrigger className="lg:hidden" asChild>
             <KpiDropdownButton>

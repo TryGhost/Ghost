@@ -49,6 +49,16 @@ const safeDecodeURIComponent = (value) => {
   }
 };
 
+const parseBooleanQueryParam = (value) => {
+  if (value === 'true') {
+    return true;
+  }
+  if (value === 'false') {
+    return false;
+  }
+  return undefined;
+};
+
 const staleGiftRedemptionRequestResult = {
   staleGiftRedemptionRequest: true,
 };
@@ -485,6 +495,16 @@ export default class App extends React.Component {
         data.site.portal_button = JSON.parse(value);
       } else if (key === 'name') {
         data.site.portal_name = JSON.parse(value);
+      } else if (key === 'signupGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_signup_gift_promotion = enabled;
+        }
+      } else if (key === 'accountGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_account_gift_promotion = enabled;
+        }
       } else if (key === 'isFree' && JSON.parse(value)) {
         allowedPlans.push('free');
       } else if (key === 'isMonthly' && JSON.parse(value)) {
@@ -639,6 +659,15 @@ export default class App extends React.Component {
       const cadence = qParams.get('gift_cadence');
       const duration = Number(qParams.get('gift_duration'));
       const deliveryMethod = qParams.get('gift_delivery');
+      const deliveryDateParam = qParams.get('gift_delivery_date');
+      const deliveryDate = /^\d{4}-\d{2}-\d{2}$/.test(deliveryDateParam || '')
+        ? deliveryDateParam
+        : null;
+      // Exact send instant in epoch ms; a delivery date without it means
+      // the send already happened.
+      const scheduledAtParam = Number(qParams.get('gift_scheduled_at'));
+      const scheduledAt =
+        Number.isFinite(scheduledAtParam) && scheduledAtParam > 0 ? scheduledAtParam : null;
       clearURLParams([
         'stripe',
         'gift_token',
@@ -646,6 +675,8 @@ export default class App extends React.Component {
         'gift_cadence',
         'gift_duration',
         'gift_delivery',
+        'gift_delivery_date',
+        'gift_scheduled_at',
       ]);
       if (token) {
         return {
@@ -657,6 +688,8 @@ export default class App extends React.Component {
             cadence,
             duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
             deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link',
+            deliveryDate,
+            scheduledAt,
           },
         };
       }

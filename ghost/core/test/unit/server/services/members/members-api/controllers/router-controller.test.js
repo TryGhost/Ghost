@@ -1127,6 +1127,7 @@ describe('RouterController', function () {
               recipientName: 'Recipient',
               buyerName: 'Buyer',
               personalMessage: 'Enjoy this gift',
+              deliveryDate: '2026-12-25',
               metadata: {
                 ghost_gift_id: 'attacker-controlled-id',
                 custom_key: 'preserved',
@@ -1142,6 +1143,7 @@ describe('RouterController', function () {
         assert.equal(input.recipientName, 'Recipient');
         assert.equal(input.buyerName, 'Buyer');
         assert.equal(input.personalMessage, 'Enjoy this gift');
+        assert.equal(input.deliveryDate, '2026-12-25');
         assert.equal('metadata' in input, false);
       });
 

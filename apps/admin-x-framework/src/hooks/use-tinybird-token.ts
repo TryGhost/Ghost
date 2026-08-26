@@ -1,5 +1,5 @@
-import { getTinybirdToken } from '../api/tinybird';
-import { useWebAnalyticsEnabled } from '../providers/app-provider';
+import { useTinybirdTokenQuery } from '../api/tinybird';
+import { useWebAnalyticsEnabled } from '../api/settings';
 
 export interface UseTinybirdTokenResult {
   token: string | undefined;
@@ -17,10 +17,10 @@ let hasLoggedConfigWarning = false;
 
 export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
   const { enabled = true } = options;
-  // Web analytics is a global kill-switch read from context, so no call site threads it.
+  // Web analytics is a global kill-switch read from settings, so no call site threads it.
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const effectiveEnabled = enabled && webAnalyticsEnabled;
-  const tinybirdQuery = getTinybirdToken({ enabled: effectiveEnabled });
+  const tinybirdQuery = useTinybirdTokenQuery({ enabled: effectiveEnabled });
 
   // A disabled React Query can keep cached data/errors, so return an idle
   // result — else direct consumers (the providers) leak a stale token.
