@@ -76,7 +76,13 @@ class PostsImporter extends BaseImporter {
    * Attaches related tags, authors, and products.
    */
   addNestedRelations() {
-    const postsById = new Map(this.dataToImport.map((post) => [post.id, post]));
+    const postsById = new Map();
+    for (const post of this.dataToImport) {
+      const postId = post.id;
+      if (!postsById.has(postId)) {
+        postsById.set(postId, post);
+      }
+    }
 
     this.requiredFromFile.posts_tags = _.orderBy(
       this.requiredFromFile.posts_tags,

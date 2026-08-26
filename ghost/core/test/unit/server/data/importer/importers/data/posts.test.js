@@ -35,6 +35,27 @@ describe('PostsImporter', function () {
       assert.equal(postIdReads, postCount);
       assert.deepEqual(posts[99].tags, [{ id: 'tag-99' }]);
     });
+
+    it('attaches relations to the first post when IDs are duplicated', function () {
+      const firstPost = { id: 'duplicate-post' };
+      const secondPost = { id: 'duplicate-post' };
+      const importer = new PostsImporter({ posts: [] });
+      importer.dataToImport = [firstPost, secondPost];
+      importer.requiredFromFile.posts_tags = [
+        {
+          post_id: 'duplicate-post',
+          tag_id: 'tag-1',
+          sort_order: 0,
+        },
+      ];
+      importer.requiredFromFile.posts_authors = [];
+      importer.requiredFromFile.posts_products = [];
+
+      importer.addNestedRelations();
+
+      assert.deepEqual(firstPost.tags, [{ id: 'tag-1' }]);
+      assert.equal(secondPost.tags, undefined);
+    });
   });
 
   describe('#beforeImport', function () {
