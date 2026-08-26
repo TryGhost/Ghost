@@ -68,11 +68,12 @@ export default function registerJobHandlers({
     await contentImport.handleJob(job);
   });
 
-  jobsService.handle(UpdateCheckJob, async () => {
+  // Both types run the same check. Delivery is keyed per type, so each class
+  // needs its own registration; the boot and recurring runs keep distinct
+  // log/Sentry identities via the envelope type, not the handler.
+  const runUpdateCheck = async () => {
     await updateCheck({ rethrowErrors: true });
-  });
-
-  jobsService.handle(UpdateCheckBootJob, async () => {
-    await updateCheck({ rethrowErrors: true });
-  });
+  };
+  jobsService.handle(UpdateCheckJob, runUpdateCheck);
+  jobsService.handle(UpdateCheckBootJob, runUpdateCheck);
 }

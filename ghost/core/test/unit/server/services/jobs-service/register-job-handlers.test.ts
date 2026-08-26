@@ -140,8 +140,11 @@ describe('register-job-handlers', function () {
   // gate, so invoking the registered handler proves the wiring without
   // touching the network.
   it('registers both update-check job types against the shared executor', async function () {
-    assert.ok(jobsService.handle.getCall(5).calledWith(UpdateCheckJob));
-    assert.ok(jobsService.handle.getCall(6).calledWith(UpdateCheckBootJob));
+    // Compare type strings, not class identity: the module under test loads
+    // its job classes through the CJS cache, a different instance from this
+    // file's ESM imports.
+    assert.equal(jobsService.handle.getCall(5).args[0].type, 'update-check');
+    assert.equal(jobsService.handle.getCall(6).args[0].type, 'update-check-boot');
 
     await jobsService.handle.getCall(5).args[1](new UpdateCheckJob());
     await jobsService.handle.getCall(6).args[1](new UpdateCheckBootJob());
