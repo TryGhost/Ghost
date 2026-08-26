@@ -14,8 +14,18 @@ function hasStripeMetadataKey(metadata, key) {
     return Object.prototype.hasOwnProperty.call(metadata || {}, key);
 }
 
-function hasConflictingCheckoutFlowMetadata(metadata) {
-    return hasStripeMetadataKey(metadata, 'ghost_donation') && hasStripeMetadataKey(metadata, 'ghost_gift');
+function isGiftCheckoutSession(session) {
+    return hasStripeMetadataKey(session.metadata, 'ghost_gift_id') || isStripeMetadataTrue(session.metadata?.ghost_gift);
+}
+
+function isDonationCheckoutSession(session) {
+    return isStripeMetadataTrue(session.metadata?.ghost_donation);
+}
+
+// Matches the donation marker on key presence, not truthiness, so an ill-formed
+// donation marker alongside a true gift marker still counts as a conflict.
+function hasConflictingCheckoutFlowMetadata(session) {
+    return hasStripeMetadataKey(session.metadata, 'ghost_donation') && isGiftCheckoutSession(session);
 }
 
 function getStripeResourceId(resource) {
@@ -25,6 +35,18 @@ function getStripeResourceId(resource) {
 
     if (resource && typeof resource === 'object' && typeof resource.id === 'string') {
         return resource.id;
+    }
+
+    return null;
+}
+
+function getGiftBuyerEmailFromSession(session) {
+    if (session.customer_details?.email) {
+        return session.customer_details.email;
+    }
+
+    if (session.customer && typeof session.customer === 'object' && !session.customer.deleted && session.customer.email) {
+        return session.customer.email;
     }
 
     return null;
@@ -65,8 +87,20 @@ module.exports = class CheckoutSessionEventService {
      * Handles a `checkout.session.completed` event
      * Delegates to the appropriate handler based on the session mode and metadata
      * @param {import('stripe').Stripe.Checkout.Session} session
+     * @param {import('stripe').Stripe.Event.Type} [eventType]
      */
-    async handleEvent(session) {
+    async handleEvent(session, eventType = 'checkout.session.completed') {
+        if (eventType === 'checkout.session.async_payment_failed') {
+            return;
+        }
+
+        if (eventType === 'checkout.session.async_payment_succeeded') {
+            if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
+                await this.handlePaymentEvent(session);
+            }
+            return;
+        }
+
         if (session.mode === 'setup') {
             await this.handleSetupEvent(session);
         }
@@ -76,16 +110,33 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (session.mode === 'payment') {
-            if (hasConflictingCheckoutFlowMetadata(session.metadata)) {
-                logging.warn('Ignoring checkout session with conflicting payment flow metadata');
+            await this.handlePaymentEvent(session);
+        }
+    }
+
+    /**
+     * Routes a `payment` mode session to the donation or gift handler. Gift purchases
+     * may complete asynchronously, so their handler only runs once Stripe reports the
+     * session as paid, whichever event carried it.
+     *
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
+    async handlePaymentEvent(session) {
+        if (hasConflictingCheckoutFlowMetadata(session)) {
+            logging.warn('Ignoring checkout session with conflicting payment flow metadata');
+            return;
+        }
+
+        if (isGiftCheckoutSession(session)) {
+            if (session.payment_status !== 'paid') {
                 return;
             }
+            await this.handleGiftEvent(session);
+            return;
+        }
 
-            if (isStripeMetadataTrue(session.metadata?.ghost_donation)) {
-                await this.handleDonationEvent(session);
-            } else if (isStripeMetadataTrue(session.metadata?.ghost_gift)) {
-                await this.handleGiftEvent(session);
-            }
+        if (isDonationCheckoutSession(session)) {
+            await this.handleDonationEvent(session);
         }
     }
 
@@ -95,10 +146,24 @@ module.exports = class CheckoutSessionEventService {
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
     async handleGiftEvent(session) {
+        const stripeCustomerId = getStripeResourceId(session.customer);
+
+        if (session.metadata?.ghost_gift_id) {
+            await this.deps.giftService.completePurchase({
+                giftId: session.metadata.ghost_gift_id,
+                buyerEmail: getGiftBuyerEmailFromSession(session),
+                stripeCustomerId,
+                stripeCheckoutSessionId: session.id,
+                stripePaymentIntentId: getStripeResourceId(session.payment_intent)
+            });
+            return;
+        }
+
+        const buyerEmail = await this.getGiftBuyerEmail(session, stripeCustomerId);
         await this.deps.giftService.completePurchase({
             token: session.metadata?.gift_token,
-            buyerEmail: session.customer_details?.email,
-            stripeCustomerId: getStripeResourceId(session.customer),
+            buyerEmail,
+            stripeCustomerId,
             tierId: session.metadata?.tier_id,
             cadence: session.metadata?.cadence,
             duration: Number(session.metadata?.duration),
@@ -107,6 +172,29 @@ module.exports = class CheckoutSessionEventService {
             stripeCheckoutSessionId: session.id,
             stripePaymentIntentId: getStripeResourceId(session.payment_intent)
         });
+    }
+
+    /**
+     * Legacy gift Checkout sessions predate persisted buyer details. If their
+     * webhook snapshot has no customer details, recover the required buyer email
+     * from the Customer associated with the session.
+     *
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     * @param {string|null} stripeCustomerId
+     * @returns {Promise<string|null>}
+     */
+    async getGiftBuyerEmail(session, stripeCustomerId) {
+        const sessionEmail = getGiftBuyerEmailFromSession(session);
+        if (sessionEmail) {
+            return sessionEmail;
+        }
+
+        if (!stripeCustomerId) {
+            return null;
+        }
+
+        const customer = await this.api.getCustomer(stripeCustomerId);
+        return customer.deleted ? null : customer.email ?? null;
     }
 
     /**

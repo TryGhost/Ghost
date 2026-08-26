@@ -2,7 +2,7 @@ import {expect} from '@playwright/test';
 import {initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 async function testHistory({page, embeddedOnUrl, path, urlHistory, sessionStorageHistory}: {page: any, embeddedOnUrl?: string, path: string, urlHistory: any[], sessionStorageHistory?: any[]}) {
     const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', embeddedOnUrl, path});
 
@@ -30,6 +30,7 @@ async function testHistory({page, embeddedOnUrl, path, urlHistory, sessionStorag
     expect(lastApiRequest.body).toHaveProperty('email', 'jamie@example.com');
     expect(lastApiRequest.body).toHaveProperty('urlHistory', urlHistory);
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 test.describe('Attribution', async () => {
     test('Sends the current path', async ({page}) => {

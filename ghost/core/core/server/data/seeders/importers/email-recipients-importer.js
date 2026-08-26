@@ -1,7 +1,8 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const generateEvents = require('../utils/event-generator');
-const databaseDate = require('../utils/database-date');
+const {randomDateBetween} = require('../utils/random');
+const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 const debug = require('@tryghost/debug')('EmailRecipientsImporter');
 
 const emailStatus = {
@@ -109,11 +110,7 @@ class EmailRecipientsImporter extends TableImporter {
                 this.membersSubscribeEventsCreatedAtsByNewsletterId.set(memberSubscribeEvent.newsletter_id, []);
             }
 
-            if (!(memberSubscribeEvent.created_at instanceof Date)) {
-                // SQLite fix
-                memberSubscribeEvent.created_at = databaseDate.parse(memberSubscribeEvent.created_at);
-            }
-            this.membersSubscribeEventsCreatedAtsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(memberSubscribeEvent.created_at.getTime());
+            this.membersSubscribeEventsCreatedAtsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(fromDatabaseDate(memberSubscribeEvent.created_at).getTime());
         }
 
         await this.importForEach(this.emailBatches, quantity ? quantity / emails.length : 1000);
@@ -123,15 +120,12 @@ class EmailRecipientsImporter extends TableImporter {
         this.batch = model;
         this.model = this.emails.get(this.batch.email_id);
         this.batchIndex = this.batch.index;
-
-        // Shallow clone members list so we can shuffle and modify it
-        const earliestOpenTime = databaseDate.parse(this.batch.updated_at);
-        const latestOpenTime = databaseDate.parse(this.batch.updated_at);
-        latestOpenTime.setDate(latestOpenTime.getDate() + 14);
+        this.batchUpdatedAt = fromDatabaseDate(this.batch.updated_at);
+        this.batchProcessedAt = toDatabaseDate(this.batchUpdatedAt);
 
         // Get all members that were subscribed to this newsletter BEFORE the batch was sent
         // We use binary search to speed up it up
-        const lastIndex = findFirstHigherIndex(this.membersSubscribeEventsCreatedAtsByNewsletterId.get(this.model.newsletter_id), earliestOpenTime);
+        const lastIndex = findFirstHigherIndex(this.membersSubscribeEventsCreatedAtsByNewsletterId.get(this.model.newsletter_id), this.batchUpdatedAt);
 
         this.membersList = this.membersSubscribeEventsByNewsletterId.get(this.model.newsletter_id).slice(0, Math.max(0, lastIndex - 1))
             .slice(this.batchIndex * 1000, (this.batchIndex + 1) * 1000)
@@ -164,7 +158,7 @@ class EmailRecipientsImporter extends TableImporter {
         }
 
         // The events are generated for a different time, so we need to move them to the batch time
-        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + databaseDate.parse(this.batch.updated_at).getTime());
+        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + this.batchUpdatedAt.getTime());
 
         if (timestamp > new Date()) {
             timestamp = new Date();
@@ -187,9 +181,7 @@ class EmailRecipientsImporter extends TableImporter {
 
         let deliveredTime;
         if (status === emailStatus.opened) {
-            const startDate = databaseDate.parse(this.batch.updated_at);
-            const endDate = timestamp;
-            deliveredTime = databaseDate.randomBetween(startDate, endDate);
+            deliveredTime = randomDateBetween(this.batchUpdatedAt, timestamp);
         }
 
         return {
@@ -198,10 +190,10 @@ class EmailRecipientsImporter extends TableImporter {
             email_id: this.model.id,
             batch_id: this.batch.id,
             member_id: member.id,
-            processed_at: databaseDate.dateToDatabaseString(this.batch.updated_at),
-            delivered_at: status === emailStatus.opened ? databaseDate.dateToDatabaseString(deliveredTime) : status === emailStatus.delivered ? databaseDate.dateToDatabaseString(timestamp) : null,
-            opened_at: status === emailStatus.opened ? databaseDate.dateToDatabaseString(timestamp) : null,
-            failed_at: status === emailStatus.failed ? databaseDate.dateToDatabaseString(timestamp) : null,
+            processed_at: this.batchProcessedAt,
+            delivered_at: status === emailStatus.opened ? toDatabaseDate(deliveredTime) : status === emailStatus.delivered ? toDatabaseDate(timestamp) : null,
+            opened_at: status === emailStatus.opened ? toDatabaseDate(timestamp) : null,
+            failed_at: status === emailStatus.failed ? toDatabaseDate(timestamp) : null,
             member_uuid: member.uuid,
             member_email: member.email,
             member_name: member.name

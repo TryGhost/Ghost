@@ -4,12 +4,13 @@ import { page, userEvent } from "vitest/browser";
 import { currentRoute, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, type RenderAdminAppOptions } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
 
-function withStripe(): RenderAdminAppOptions {
+function withStripe(settings: Record<string, string | boolean | number | null> = {}): RenderAdminAppOptions {
     return {
         boot: {
             browseSettings: {
                 response: settingsResponse({
                     settings: {
+                        ...settings,
                         donations_enabled: true,
                         stripe_connect_publishable_key: "pk_test_123",
                         stripe_connect_secret_key: "sk_test_123",
@@ -54,12 +55,34 @@ describe("Tips and donations settings", () => {
         const section = settingsScreen.tipsAndDonations();
         await expect.element(section).toBeVisible();
         await expect.element(settingsScreen.suggestedAmount()).toHaveValue("5");
-        await expect.element(section.getByRole("combobox")).toBeVisible();
+        await expect.element(section.getByRole("combobox", {name: "Currency"})).toHaveTextContent("USD");
         await expect.element(settingsScreen.donateUrl()).toHaveTextContent("http://test.com/#/portal/support");
         await userEvent.hover(settingsScreen.donateUrl().element());
 
         await expect.element(settingsScreen.previewShareableLink()).toBeVisible();
         await expect.element(settingsScreen.copyShareableLink()).toBeVisible();
+    });
+
+    it.each([
+        {amount: 725, expected: "7.25", source: "a backend number"},
+        {amount: "825", expected: "8.25", source: "a dirty local string"},
+    ])("accepts a valid suggested amount from $source", async ({amount, expected}) => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings", withStripe({donations_suggested_amount: amount}));
+
+        await expect.element(settingsScreen.suggestedAmount()).toHaveValue(expected);
+    });
+
+    it("shows the section error boundary for malformed donation settings", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings", withStripe({
+            donations_currency: "ZZZ",
+            donations_suggested_amount: "not-a-number",
+        }));
+
+        await expect.element(page.getByRole("alert")).toHaveTextContent("An error occurred loading Tips & donations. Please refresh and try again.");
+        await expect(settingsScreen.tipsAndDonations()).toHaveCount(0);
+        await expect(settingsScreen.suggestedAmount()).toHaveCount(0);
     });
 
     it("saves an updated suggested amount", async () => {

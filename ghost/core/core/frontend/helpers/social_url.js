@@ -6,7 +6,8 @@ const {socialUrls} = require('../services/proxy');
 const {localUtils} = require('../services/handlebars');
 
 // We use the name social_url to match the helper for consistency:
-module.exports = function social_url(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function social_url(options) {
     // Check for required hash option 'type'
     if (!options || !options.hash || !options.hash.type) {
         return null;

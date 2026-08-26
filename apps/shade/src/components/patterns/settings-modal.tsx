@@ -1,4 +1,3 @@
-import {useModal} from '@ebay/nice-modal-react';
 import {cva} from 'class-variance-authority';
 import {X} from 'lucide-react';
 import React, {forwardRef, useEffect, useState} from 'react';
@@ -14,8 +13,8 @@ import useGlobalDirtyState from '@/hooks/use-global-dirty-state';
 import {cn} from '@/lib/utils';
 
 /**
- * Compatibility shell for settings modals while the legacy NiceModal flows are
- * migrated to Shade's consumer-controlled Dialog primitives.
+ * Consumer-controlled settings modal shell. Legacy full-page settings dialogs
+ * still render through it; new modal flows should use Shade Dialog primitives.
  */
 export type SettingsModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
@@ -40,12 +39,12 @@ export interface SettingsModalProps {
     footerClassName?: string;
     header?: boolean;
     padding?: boolean;
-    onOk?: () => void;
+    /** May be async; the modal fires it without awaiting, so the handler owns its own error handling. */
+    onOk?: () => void | Promise<void>;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
     hideXOnMobile?: boolean;
-    /** Supersedes the NiceModal close path; without it the modal must be mounted through NiceModal. Keep its presence stable across renders — toggling defined/undefined remounts the modal subtree. */
-    onClose?: () => void;
+    onClose: () => void;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
@@ -124,9 +123,7 @@ const headerOffsets: Record<SettingsModalSize, string> = {
     bleed: '-inset-x-10'
 };
 
-type SettingsModalContentProps = Omit<SettingsModalProps, 'onClose'> & {requestClose: () => void};
-
-const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(({
+const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     'aria-label': ariaLabel,
     className,
     size = 'md',
@@ -150,7 +147,7 @@ const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(
     onCancel,
     topRightContent,
     hideXOnMobile = false,
-    requestClose,
+    onClose,
     afterClose,
     children,
     backDrop = true,
@@ -173,7 +170,7 @@ const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(
 
     const removeModal = () => {
         confirm(dirty, () => {
-            requestClose();
+            onClose();
             afterClose?.();
         });
     };
@@ -226,7 +223,7 @@ const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(
         const handleCMDS = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 event.preventDefault();
-                onOk();
+                void onOk();
             }
         };
 
@@ -295,7 +292,7 @@ const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(
                         </Button>
                     )}
                     {okLabel && (
-                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={() => void onOk?.()}>
                             {okLoading && <LoadingIndicator size='sm' />}
                             {okLabel}
                         </Button>
@@ -357,22 +354,6 @@ const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(
             <DirtyConfirmDialog {...dialogProps} />
         </>
     );
-});
-
-SettingsModalContent.displayName = 'SettingsModalContent';
-
-const NiceSettingsModal = forwardRef<HTMLElement, Omit<SettingsModalContentProps, 'requestClose'>>((props, ref) => {
-    const modal = useModal();
-    return <SettingsModalContent ref={ref} {...props} requestClose={() => modal.remove()} />;
-});
-
-NiceSettingsModal.displayName = 'NiceSettingsModal';
-
-const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({onClose, ...props}, ref) => {
-    if (onClose) {
-        return <SettingsModalContent ref={ref} {...props} requestClose={onClose} />;
-    }
-    return <NiceSettingsModal ref={ref} {...props} />;
 });
 
 SettingsModal.displayName = 'SettingsModal';

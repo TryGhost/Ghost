@@ -4,12 +4,13 @@ import Layout from '@components/layout';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, NoValueLabel, NoValueLabelIcon, Skeleton, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {H2} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingAction, SettingDescription, SettingHeader, SettingItem, SettingTitle} from './settings';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {toast} from 'sonner';
-import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, usePreferencesForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser, useUpdatePreferencesForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const Moderation: React.FC = () => {
@@ -33,6 +34,23 @@ const Moderation: React.FC = () => {
 
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
     const navigate = useNavigateWithBasePath();
+    const {data: preferences, isError: isPreferencesUnavailable, isLoading: isLoadingPreferences, isSuccess: hasPreferences} = usePreferencesForUser();
+    const updatePreferences = useUpdatePreferencesForUser({
+        onError: () => {
+            toast.error('Could not update sensitive media preference.');
+        }
+    });
+    const showSensitiveMedia = preferences?.showSensitiveMedia ?? false;
+
+    const handleShowSensitiveMediaChange = (showSensitiveMediaValue: boolean) => {
+        if (!hasPreferences) {
+            return;
+        }
+
+        updatePreferences.mutate({
+            showSensitiveMedia: showSensitiveMediaValue
+        });
+    };
 
     const handleUnblock = (account: Account) => {
         setUnblockedAccountIds((prev) => {
@@ -88,6 +106,24 @@ const Moderation: React.FC = () => {
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Moderation</H2>
                 </div>
+                {!isPreferencesUnavailable && (
+                    <div className='mt-6'>
+                        <SettingItem>
+                            <SettingHeader>
+                                <SettingTitle>Show sensitive media</SettingTitle>
+                                <SettingDescription>Display adult content or media marked as sensitive without a warning</SettingDescription>
+                            </SettingHeader>
+                            <SettingAction>
+                                <Switch
+                                    aria-label='Show sensitive media'
+                                    checked={showSensitiveMedia}
+                                    disabled={isLoadingPreferences || !hasPreferences}
+                                    onCheckedChange={handleShowSensitiveMediaChange}
+                                />
+                            </SettingAction>
+                        </SettingItem>
+                    </div>
+                )}
                 <div className='mt-6'>
                     <Tabs defaultValue="blocked_users" variant='underline'>
                         <TabsList>

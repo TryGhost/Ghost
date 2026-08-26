@@ -3,7 +3,7 @@
 /**
  * Builds the card asset manifest.
  *
- * Every card ships one optional CSS file and one optional JS file in
+ * Every card ships optional CSS and JS source files in
  * core/frontend/src/cards. A theme picks a subset of them via its `card_assets`
  * config, and Ghost serves that subset as /public/cards.min.{css,js}.
  *
@@ -32,8 +32,15 @@ const LOADERS = {
     js: {loader: 'js', target: ['es2020']}
 };
 
-async function buildType(type) {
-    const dir = path.join(srcDir, type);
+// header_v2.css is a second stylesheet for the public `header` card, not a
+// separate configurable card. This exact path override is intentional — `_vN`
+// filename suffixes are not a convention for grouping card assets.
+const PUBLIC_CARD_ASSET_NAMES = new Map([
+    ['css/header_v2.css', 'header']
+]);
+
+export async function buildType(type, sourceDir = srcDir) {
+    const dir = path.join(sourceDir, type);
     const suffix = `.${type}`;
     const files = fs.readdirSync(dir).filter(file => file.endsWith(suffix)).sort();
 
@@ -41,7 +48,17 @@ async function buildType(type) {
     for (const file of files) {
         const contents = fs.readFileSync(path.join(dir, file), 'utf8');
         const {code} = await esbuild.transform(contents, {minify: true, ...LOADERS[type]});
-        chunks[file.slice(0, -suffix.length)] = code;
+        const sourceName = file.slice(0, -suffix.length);
+        const cardName = PUBLIC_CARD_ASSET_NAMES.get(`${type}/${file}`) || sourceName;
+
+        if (Object.hasOwn(chunks, cardName)) {
+            // Match the separator used when the runtime service concatenates
+            // separate chunks, keeping the default bundle bytes stable.
+            const separator = type === 'js' ? ';\n' : '\n';
+            chunks[cardName] += `${separator}${code}`;
+        } else {
+            chunks[cardName] = code;
+        }
     }
 
     logging.debug(`✓ ${files.length} card ${type} files minified`);
@@ -49,12 +66,18 @@ async function buildType(type) {
     return chunks;
 }
 
-const manifest = {};
-for (const type of Object.keys(LOADERS)) {
-    manifest[type] = await buildType(type);
+export async function buildCardAssets() {
+    const manifest = {};
+    for (const type of Object.keys(LOADERS)) {
+        manifest[type] = await buildType(type);
+    }
+
+    fs.mkdirSync(path.dirname(destFile), {recursive: true});
+    fs.writeFileSync(destFile, JSON.stringify(manifest));
+
+    logging.debug(`Card asset manifest written to ${destFile}`);
 }
 
-fs.mkdirSync(path.dirname(destFile), {recursive: true});
-fs.writeFileSync(destFile, JSON.stringify(manifest));
-
-logging.debug(`Card asset manifest written to ${destFile}`);
+if (import.meta.main) {
+    await buildCardAssets();
+}

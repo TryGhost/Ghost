@@ -1,5 +1,4 @@
-import NiceModal from '@ebay/nice-modal-react';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {useState} from 'react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
@@ -55,17 +54,11 @@ describe('nested overlay Escape behavior', () => {
     it.each(overlayCases)('closes an uncontrolled %s before its parent SettingsModal', async (_name, Overlay) => {
         const onCancel = vi.fn();
         const onOpenChange = vi.fn();
-        const TestModal = NiceModal.create(() => (
-            <SettingsModal title="Test modal" onCancel={onCancel}>
+        render(
+            <SettingsModal title="Test modal" onCancel={onCancel} onClose={vi.fn()}>
                 <Overlay defaultOpen onOpenChange={onOpenChange} />
             </SettingsModal>
-        ));
-
-        render(<NiceModal.Provider />);
-
-        act(() => {
-            void NiceModal.show(TestModal);
-        });
+        );
 
         await screen.findByText(/Menu item|Option one|Popover content|Combobox content/);
         fireEvent.keyDown(document, {key: 'Escape'});
@@ -79,10 +72,6 @@ describe('nested overlay Escape behavior', () => {
 
         await waitFor(() => {
             expect(onCancel).toHaveBeenCalledOnce();
-        });
-
-        act(() => {
-            void NiceModal.remove(TestModal);
         });
     });
 
@@ -102,16 +91,11 @@ describe('nested overlay Escape behavior', () => {
                 </Popover>
             );
         };
-        const TestModal = NiceModal.create(() => (
-            <SettingsModal title="Test modal" onCancel={onCancel}>
+        render(
+            <SettingsModal title="Test modal" onCancel={onCancel} onClose={vi.fn()}>
                 <ControlledOverlay />
             </SettingsModal>
-        ));
-
-        render(<NiceModal.Provider />);
-        act(() => {
-            void NiceModal.show(TestModal);
-        });
+        );
 
         await screen.findByText('Controlled content');
         fireEvent.keyDown(document, {key: 'Escape'});
@@ -126,8 +110,8 @@ describe('nested overlay Escape behavior', () => {
         const onCancel = vi.fn();
         const onOuterOpenChange = vi.fn();
         const onInnerOpenChange = vi.fn();
-        const TestModal = NiceModal.create(() => (
-            <SettingsModal title="Test modal" onCancel={onCancel}>
+        render(
+            <SettingsModal title="Test modal" onCancel={onCancel} onClose={vi.fn()}>
                 <Popover defaultOpen onOpenChange={onOuterOpenChange}>
                     <PopoverTrigger>Open outer</PopoverTrigger>
                     <PopoverContent>
@@ -141,12 +125,7 @@ describe('nested overlay Escape behavior', () => {
                     </PopoverContent>
                 </Popover>
             </SettingsModal>
-        ));
-
-        render(<NiceModal.Provider />);
-        act(() => {
-            void NiceModal.show(TestModal);
-        });
+        );
 
         await screen.findByText('Inner item');
         fireEvent.keyDown(document, {key: 'Escape'});
@@ -179,16 +158,11 @@ describe('nested overlay Escape behavior', () => {
 
     it('keeps the modal open when a later document listener handles Escape', async () => {
         const onCancel = vi.fn();
-        const TestModal = NiceModal.create(() => (
-            <SettingsModal title="Test modal" onCancel={onCancel}>
+        render(
+            <SettingsModal title="Test modal" onCancel={onCancel} onClose={vi.fn()}>
                 Modal content
             </SettingsModal>
-        ));
-
-        render(<NiceModal.Provider />);
-        act(() => {
-            void NiceModal.show(TestModal);
-        });
+        );
         await screen.findByText('Modal content');
 
         const handleNestedEscape = (event: KeyboardEvent) => {

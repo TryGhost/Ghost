@@ -1,4 +1,4 @@
-import {type FieldTypePresentation, type MemberCustomField, memberCustomFieldCsvColumns, memberCustomFieldParts} from '../../../src/api/member-custom-fields';
+import {type FieldTypePresentation, type MemberCustomField, formatMemberCustomFieldValue, memberCustomFieldCsvColumns, memberCustomFieldParts} from '../../../src/api/member-custom-fields';
 
 // Compile-time cases: the build failing is the assertion. Each `@ts-expect-error` fails the
 // build if the case it names stops being an error. Declared on one line each, because the
@@ -35,7 +35,7 @@ describe('member custom fields api helpers', () => {
     describe('memberCustomFieldCsvColumns', () => {
         it('gives a scalar field one target labelled by its name', () => {
             expect(memberCustomFieldCsvColumns([field({key: 'nickname', name: 'Nickname'})])).toEqual([
-                {label: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'}
+                {label: 'Nickname', fieldName: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'}
             ]);
         });
 
@@ -43,13 +43,25 @@ describe('member custom fields api helpers', () => {
             const columns = memberCustomFieldCsvColumns([field({key: 'shipping_address', name: 'Shipping Address', type: 'address'})]);
 
             expect(columns).toEqual([
-                {label: 'Shipping Address (Address line 1)', value: 'custom_fields.shipping_address.line1', type: 'address'},
-                {label: 'Shipping Address (Address line 2)', value: 'custom_fields.shipping_address.line2', type: 'address'},
-                {label: 'Shipping Address (City)', value: 'custom_fields.shipping_address.city', type: 'address'},
-                {label: 'Shipping Address (State)', value: 'custom_fields.shipping_address.state', type: 'address'},
-                {label: 'Shipping Address (Postal code)', value: 'custom_fields.shipping_address.postal_code', type: 'address'},
-                {label: 'Shipping Address (Country)', value: 'custom_fields.shipping_address.country', type: 'address'}
+                {label: 'Shipping Address (Address line 1)', fieldName: 'Shipping Address', partLabel: 'Address line 1', value: 'custom_fields.shipping_address.line1', type: 'address'},
+                {label: 'Shipping Address (Address line 2)', fieldName: 'Shipping Address', partLabel: 'Address line 2', value: 'custom_fields.shipping_address.line2', type: 'address'},
+                {label: 'Shipping Address (City)', fieldName: 'Shipping Address', partLabel: 'City', value: 'custom_fields.shipping_address.city', type: 'address'},
+                {label: 'Shipping Address (State)', fieldName: 'Shipping Address', partLabel: 'State', value: 'custom_fields.shipping_address.state', type: 'address'},
+                {label: 'Shipping Address (Postal code)', fieldName: 'Shipping Address', partLabel: 'Postal code', value: 'custom_fields.shipping_address.postal_code', type: 'address'},
+                {label: 'Shipping Address (Country)', fieldName: 'Shipping Address', partLabel: 'Country', value: 'custom_fields.shipping_address.country', type: 'address'}
             ]);
+        });
+
+        it('keeps a bracketed name whole alongside its part', () => {
+            const columns = memberCustomFieldCsvColumns([field({key: 'address_home', name: 'Address (Home)', type: 'address'})]);
+
+            expect(columns[2]).toEqual({
+                label: 'Address (Home) (City)',
+                fieldName: 'Address (Home)',
+                partLabel: 'City',
+                value: 'custom_fields.address_home.city',
+                type: 'address'
+            });
         });
 
         it('returns no targets for an empty field set', () => {
@@ -62,7 +74,7 @@ describe('member custom fields api helpers', () => {
             const future = field({key: 'mystery', name: 'Mystery', type: 'a_type_from_the_future' as MemberCustomField['type']});
 
             expect(memberCustomFieldCsvColumns([future])).toEqual([
-                {label: 'Mystery', value: 'custom_fields.mystery', type: 'a_type_from_the_future'}
+                {label: 'Mystery', fieldName: 'Mystery', value: 'custom_fields.mystery', type: 'a_type_from_the_future'}
             ]);
         });
     });
@@ -84,6 +96,42 @@ describe('member custom fields api helpers', () => {
                 {key: 'postal_code', label: 'Postal code'},
                 {key: 'country', label: 'Country'}
             ]);
+        });
+    });
+
+    describe('formatMemberCustomFieldValue', () => {
+        it('returns a scalar value as it stands', () => {
+            expect(formatMemberCustomFieldValue('short_text', 'Editor')).toBe('Editor');
+            expect(formatMemberCustomFieldValue('long_text', 'A longer note')).toBe('A longer note');
+        });
+
+        it('formats a full address as one readable line', () => {
+            expect(formatMemberCustomFieldValue('address', {line1: '1 Main St', line2: '12 apt B', city: 'New York', state: 'NY', postal_code: '00001', country: 'US'}))
+                .toBe('1 Main St, 12 apt B, New York, NY 00001, US');
+        });
+
+        it('pairs state and postal code, and drops missing parts cleanly', () => {
+            expect(formatMemberCustomFieldValue('address', {line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE'}))
+                .toBe('1 Main St, Berlin, 10115, DE');
+            expect(formatMemberCustomFieldValue('address', {city: 'Berlin'})).toBe('Berlin');
+        });
+
+        // A surface renders its own placeholder, so every unreadable value has to reduce to
+        // the same empty string rather than leaking a raw object or the word "undefined".
+        it('formats an empty or unreadable value as an empty string', () => {
+            expect(formatMemberCustomFieldValue('address', {})).toBe('');
+            expect(formatMemberCustomFieldValue('address', null)).toBe('');
+            expect(formatMemberCustomFieldValue('address', undefined)).toBe('');
+            expect(formatMemberCustomFieldValue('address', ['a', 'b'])).toBe('');
+            // A composite type from a later build: no formatter, so no line.
+            expect(formatMemberCustomFieldValue('unheard_of' as MemberCustomField['type'], {line1: '1 Main St'})).toBe('');
+        });
+
+        // The type decides which shape is readable, so a value of the other shape is not
+        // read at all rather than being coerced into a line that misrepresents it.
+        it('reads only the shape its type declares', () => {
+            expect(formatMemberCustomFieldValue('address', '1 Main St, Berlin')).toBe('');
+            expect(formatMemberCustomFieldValue('short_text', {line1: '1 Main St'})).toBe('');
         });
     });
 });

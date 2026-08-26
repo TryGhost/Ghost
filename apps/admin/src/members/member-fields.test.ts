@@ -43,7 +43,7 @@ describe('memberFields', () => {
             'newsletter_feedback',
             'offer_redemptions',
             'count.active_stripe_customers',
-            'custom_field.:key'
+            'custom_fields.:key'
         ]);
     });
 
@@ -91,25 +91,25 @@ describe('memberFields', () => {
         expect(memberFields.label.metadata).toEqual({
             activeColumn: {
                 key: 'labels',
-                label: 'Labels',
-                include: 'labels'
-            }
+                label: 'Labels'
+            },
+            columnInclude: 'labels'
         });
 
         expect(memberFields.tier_id.metadata).toEqual({
             activeColumn: {
                 key: 'tiers',
-                label: 'Tiers',
-                include: 'tiers'
-            }
+                label: 'Tiers'
+            },
+            columnInclude: 'tiers'
         });
 
         expect(memberFields['subscriptions.current_period_end'].metadata).toEqual({
             activeColumn: {
                 key: 'subscriptions.current_period_end',
-                label: 'Next billing date',
-                include: 'subscriptions'
-            }
+                label: 'Next billing date'
+            },
+            columnInclude: 'subscriptions'
         });
     });
 

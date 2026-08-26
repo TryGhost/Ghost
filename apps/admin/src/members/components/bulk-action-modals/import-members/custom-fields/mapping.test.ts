@@ -14,9 +14,9 @@ describe('custom fields mapping helpers', () => {
     });
 
     const customFieldColumns: MemberCustomFieldCsvColumn[] = [
-        {label: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'},
-        {label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1', type: 'address'},
-        {label: 'Shipping Address (First name)', value: 'custom_fields.shipping_address.first_name', type: 'address'}
+        {label: 'Nickname', fieldName: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'},
+        {label: 'Shipping Address (Line 1)', fieldName: 'Shipping Address', partLabel: 'Line 1', value: 'custom_fields.shipping_address.line1', type: 'address'},
+        {label: 'Shipping Address (First name)', fieldName: 'Shipping Address', partLabel: 'First name', value: 'custom_fields.shipping_address.first_name', type: 'address'}
     ];
 
     it('auto-detects a custom field column by its namespaced header', () => {
@@ -52,7 +52,7 @@ describe('custom fields mapping helpers', () => {
     it('does not bind an email-valued custom field column to the member email', () => {
         const mapping = detectFieldTypes([
             {'custom_fields.contact_email': 'contact@example.com', email: 'member@example.com'}
-        ], {customFieldColumns: [{label: 'Contact email', value: 'custom_fields.contact_email', type: 'short_text'}]});
+        ], {customFieldColumns: [{label: 'Contact email', fieldName: 'Contact email', value: 'custom_fields.contact_email', type: 'short_text'}]});
 
         expect(mapping.email).toBe('email');
         expect(mapping['custom_fields.contact_email']).toBe('custom_fields.contact_email');

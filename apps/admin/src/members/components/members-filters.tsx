@@ -9,6 +9,7 @@ import {
     toOfferFilterDisplayValues,
     useMemberFilterFields
 } from '@/members/use-member-filter-fields';
+import {CUSTOM_FIELDS_PREFIX} from '@/members/member-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -104,8 +105,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const referencedCustomFieldKeys = useMemo(() => new Set(
         filters
             .map(filter => filter.field)
-            .filter(field => field.startsWith('custom_field.'))
-            .map(field => field.slice('custom_field.'.length))
+            .filter(field => field.startsWith(CUSTOM_FIELDS_PREFIX))
+            .map(field => field.slice(CUSTOM_FIELDS_PREFIX.length))
             .filter(Boolean)
     ), [filters]);
     // Only when the current filter references a custom field do we also pull the archived

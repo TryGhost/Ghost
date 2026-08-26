@@ -17,6 +17,11 @@ export default defineConfig([
         plugins: {ghost: ghostPlugin},
         rules: {
             ...ghostPlugin.configs.ts.rules,
+            // Formatting is owned by Oxfmt; keep the non-formatting rules ts-no-style also switches off
+            ...ghostPlugin.configs['ts-no-style'].rules,
+            camelcase: ghostPlugin.configs.ts.rules.camelcase,
+            curly: ghostPlugin.configs.ts.rules.curly,
+            'dot-notation': ghostPlugin.configs.ts.rules['dot-notation'],
             '@typescript-eslint/no-explicit-any': 'error'
         }
     },

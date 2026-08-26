@@ -1,18 +1,16 @@
 import React, {useEffect} from 'react';
-import {CUSTOM_FIELD_OPERATORS, CUSTOM_FIELD_SET_OPERATORS} from './member-fields';
+import {CUSTOM_FIELDS_PREFIX, CUSTOM_FIELD_OPERATORS, CUSTOM_FIELD_SET_OPERATORS} from './member-fields';
 import {FilterSegmentInput, FilterSegmentSelect} from '@tryghost/shade/patterns';
 import {createOperatorOptions} from '@/shared/filters';
 import {memberCustomFieldParts, useBrowseMemberCustomFieldsIncludingArchived} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type {CustomRendererProps} from '@tryghost/shade/patterns';
 
 // The dropdown entry has already chosen the field (its key is in `field.key` as
-// `custom_field.<key>`), so this renders only what's left in the pill: for a
+// `custom_fields.<key>`), so this renders only what's left in the pill: for a
 // composite field a part selector (with "Any" for the whole field), then the
 // operator, then the value. The predicate carries [subfield, value]; subfield is ''
 // for a scalar field or the "Any" whole-field set/unset case. The operator lives here
 // because its valid set depends on the part chosen here.
-
-const KEY_PREFIX = 'custom_field.';
 
 const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, values, onChange, operator, onOperatorChange, readOnly}) => {
     // Include-archived so an archived composite field's pill can still resolve its parts
@@ -20,7 +18,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
     const {data} = useBrowseMemberCustomFieldsIncludingArchived();
     const definitions = data?.members_custom_fields ?? [];
 
-    const fieldKey = (field.key ?? '').slice(KEY_PREFIX.length);
+    const fieldKey = (field.key ?? '').slice(CUSTOM_FIELDS_PREFIX.length);
     const definition = definitions.find(candidate => candidate.key === fieldKey);
     // The shared catalog decides which parts a type has and what they are called; a scalar
     // field has none. Its keys are the ones the predicate carries.

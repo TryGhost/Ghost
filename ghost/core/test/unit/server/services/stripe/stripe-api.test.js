@@ -812,7 +812,8 @@ describe('StripeAPI', function () {
                 duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
-                metadata: {ghost_gift: 'true', gift_token: 'abc-123'}
+                metadata: {ghost_gift_id: 'gift_123'},
+                idempotencyKey: 'gift_123'
             });
 
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
@@ -825,6 +826,8 @@ describe('StripeAPI', function () {
             assert.equal(args.line_items[0].price_data.unit_amount, 5000);
             assert.equal(args.line_items[0].price_data.currency, 'usd');
             assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Pro (1 year)');
+            assert.deepEqual(args.metadata, {ghost_gift_id: 'gift_123'});
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.args[1], {idempotencyKey: 'gift_123'});
         });
 
         it('explicitly disables Managed Payments', async function () {

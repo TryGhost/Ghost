@@ -3,7 +3,8 @@
 const {SafeString} = require('../services/handlebars');
 const {memberCountRounding, getMemberStats} = require('../utils/member-count');
 
-module.exports = async function total_paid_members () { //eslint-disable-line
+// eslint-disable-next-line
+module.exports = async function total_paid_members () {
     if (this.paid) {
         return new SafeString(memberCountRounding(this.paid));
     } else {

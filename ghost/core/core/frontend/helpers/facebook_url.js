@@ -9,7 +9,8 @@ const {localUtils} = require('../services/handlebars');
 /**
  * @deprecated Use {{social_url type="facebook"}} instead.
  */
-module.exports = function facebook_url(username, options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function facebook_url(username, options) {
     if (!options) {
         options = username;
         username = localUtils.findKey('facebook', this, options.data.site);

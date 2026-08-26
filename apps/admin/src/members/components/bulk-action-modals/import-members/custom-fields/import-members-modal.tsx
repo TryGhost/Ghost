@@ -8,13 +8,14 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 import {HostLimitError, JSONError, RequestEntityTooLargeError, ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {type ImportResponse} from '@/members/components/bulk-action-modals/import-members/state';
 import {MembersFieldMapping, detectFieldTypes, getFieldMappings} from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
+import {fieldTargets} from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
 import {buildImportResponse} from '@/members/components/bulk-action-modals/import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from '@/members/components/bulk-action-modals/import-members/reducer';
 import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
 import {memberCustomFieldCsvColumns, useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {parseCSV} from '@/members/components/bulk-action-modals/import-members/csv';
-import {useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef} from 'react';
 import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLabelPicker} from '@/members/hooks/use-label-picker';
 
@@ -65,12 +66,14 @@ export function ImportMembersModal({
     useLayoutEffect(() => {
         detectOptionsRef.current = {importMemberTier, customFieldColumns};
     }, [importMemberTier, customFieldColumns]);
-    // Native targets only. Each row's kind decides which list its picker shows, and custom
-    // targets reach it through customFieldColumns. Auto-detection still sees both, via
-    // detectOptionsRef above.
-    const fieldMappings = useMemo(
-        () => getFieldMappings({importMemberTier}),
-        [importMemberTier]
+    // Auto-detection takes customFieldColumns separately, through detectOptionsRef above: it
+    // matches on column names rather than on what is offered.
+    const targets = useMemo(
+        () => fieldTargets({
+            membershipFields: getFieldMappings({importMemberTier}),
+            customFieldColumns
+        }),
+        [importMemberTier, customFieldColumns]
     );
 
     // Whether email is mapped is the mapping step's to answer, because it is the only thing
@@ -79,7 +82,7 @@ export function ImportMembersModal({
     const labelPicker = useLabelPicker({
         selectedSlugs: state.selectedLabelSlugs,
         onSelectionChange: (slugs: string[]) => {
-            setHasEdits(true);
+            hasEditsRef.current = true;
             dispatch({type: 'SET_SELECTED_LABEL_SLUGS', selectedLabelSlugs: slugs});
         }
     });
@@ -97,7 +100,7 @@ export function ImportMembersModal({
         revokeErrorCsvUrl();
         // The modal is never unmounted (members-actions keeps it mounted and toggles `open`),
         // so anything held outside the reducer outlives Start over unless it is cleared here.
-        setHasEdits(false);
+        hasEditsRef.current = false;
         dispatch({type: 'RESET'});
     }, [revokeErrorCsvUrl]);
 
@@ -112,10 +115,14 @@ export function ImportMembersModal({
     // a mapped file: which columns are in, what each fills, the labels chosen. So dismissal
     // asks first, using the same confirmation the settings modals use.
     const {confirm, dialogProps} = useDirtyConfirmation();
-    // Whether anything would actually be lost by leaving. A file that has only been parsed is
-    // not worth asking about: re-uploading it reproduces the same detected mapping. What cannot
-    // be reproduced is what the publisher changed since, so that is what this tracks.
-    const [hasEdits, setHasEdits] = useState(false);
+    // Tracks mapping changes that would be lost on close. Parsing a file does not count because
+    // re-uploading it recreates the detected mapping.
+    //
+    // Radix refreshes its onOpenChange callback ref in a passive effect, and handles Escape on
+    // document outside React's event dispatch. Escape can therefore call the old closure before
+    // React commits the edit. Nothing renders from this flag, so a ref gives the handler the current
+    // value.
+    const hasEditsRef = useRef(false);
 
     const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen && state.status === 'UPLOADING') {
@@ -124,7 +131,7 @@ export function ImportMembersModal({
         if (!isOpen) {
             // Only the mapping step holds anything: every other one is either empty or shows a
             // result that closing is the natural end of.
-            confirm(state.status === 'MAPPING' && hasEdits, () => {
+            confirm(state.status === 'MAPPING' && hasEditsRef.current, () => {
                 const importResponse = state.importResponse ?? undefined;
                 reset();
                 onClose?.(importResponse);
@@ -133,7 +140,7 @@ export function ImportMembersModal({
             return;
         }
         onOpenChange(isOpen);
-    }, [confirm, hasEdits, onClose, onOpenChange, reset, state.importResponse, state.status]);
+    }, [confirm, onClose, onOpenChange, reset, state.importResponse, state.status]);
 
     useEffect(() => {
         if (!state.file || !customFieldsReady) {
@@ -228,7 +235,7 @@ export function ImportMembersModal({
             return;
         }
 
-        setHasEdits(true);
+        hasEditsRef.current = true;
 
         const nextMapping = state.mapping.updateMapping(from, to);
         const nextError = state.fileData && state.fileData.length === 0
@@ -400,16 +407,17 @@ export function ImportMembersModal({
 
             {(state.status === 'MAPPING' || state.status === 'UPLOADING') && state.fileData !== null && (
                 <MappingStep
-                    customFieldMappings={customFieldColumns}
                     dataPreviewIndex={state.dataPreviewIndex}
-                    fieldMappings={fieldMappings}
                     fileData={state.fileData}
                     labelPicker={labelPicker}
                     mapping={state.mapping}
                     mappingError={state.mappingError}
                     showMappingErrors={state.showMappingErrors}
                     status={state.status}
-                    onColumnsChanged={() => setHasEdits(true)}
+                    targets={targets}
+                    onColumnsChanged={() => {
+                        hasEditsRef.current = true;
+                    }}
                     onDataPreviewIndexChange={(nextIndex) => {
                         dispatch({
                             type: 'SET_DATA_PREVIEW_INDEX',

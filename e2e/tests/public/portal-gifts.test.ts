@@ -1,6 +1,12 @@
 import {FakeStripeCheckoutPage, PortalGiftPage} from '@/helpers/pages';
 import {createPaidPortalTier, expect, test} from '@/helpers/playwright';
 
+interface GiftRedemptionResponse {
+    gifts: Array<{
+        token: string;
+    }>;
+}
+
 test.describe('Ghost Public - Portal Gifts', () => {
     test.use({
         labs: {giftSubCustomization: true},
@@ -42,6 +48,15 @@ test.describe('Ghost Public - Portal Gifts', () => {
 
         const checkoutSession = stripe!.getCheckoutSessions().at(-1);
         expect(checkoutSession).toBeDefined();
+
+        const giftToken = new URL(checkoutSession!.response.success_url).searchParams.get('gift_token');
+        expect(giftToken).not.toBeNull();
+
+        const giftResponse = await page.request.get(`/members/api/gifts/${encodeURIComponent(giftToken!)}/redeem/`);
+        expect(giftResponse.ok()).toBe(true);
+
+        const giftData = await giftResponse.json() as GiftRedemptionResponse;
+        expect(giftData.gifts[0]?.token).toBe(giftToken);
 
         await page.goto(checkoutSession!.response.success_url);
         await portalGiftPage.waitForPortalToOpen();

@@ -161,7 +161,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
 }) => (
     <Popover modal={false} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
-            <Button className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
+            <Button aria-label='Reading options' className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
                 <Icon.Typography className='size-[18px]!' />
             </Button>
         </PopoverTrigger>
@@ -208,6 +208,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                 </div>
                 <div className='flex gap-2'>
                     <Button
+                        aria-label='Decrease text size'
                         className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-300 dark:bg-gray-950 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
                         disabled={currentFontSizeIndex === 0}
                         variant="secondary"
@@ -216,6 +217,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         <LucideIcon.Minus />
                     </Button>
                     <Button
+                        aria-label='Reset text size'
                         className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-300 dark:bg-gray-950 dark:text-white dark:hover:bg-gray-900'
                         variant="secondary"
                         onClick={onResetFontSize}
@@ -223,6 +225,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         <span className='text-[1.6rem] font-bold'>Aa</span>
                     </Button>
                     <Button
+                        aria-label='Increase text size'
                         className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-300 dark:bg-gray-950 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
                         disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                         variant="secondary"

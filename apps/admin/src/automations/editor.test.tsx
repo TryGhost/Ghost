@@ -177,15 +177,19 @@ type StubReactFlowProps = {
 };
 type NodeRenderProps = {id: string; data: Record<string, unknown>; type: string};
 type EdgeRenderProps = {id: string; data: Record<string, unknown>; sourceX: number; sourceY: number; targetX: number; targetY: number; sourcePosition: string; targetPosition: string};
+let mockOnMove: StubReactFlowProps['onMove'];
 
 vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onInit, onNodeClick, onNodeDoubleClick, onPaneClick, zoomOnDoubleClick}: StubReactFlowProps) => {
+        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onInit, onMove, onNodeClick, onNodeDoubleClick, onPaneClick, zoomOnDoubleClick}: StubReactFlowProps) => {
             React.useEffect(() => {
                 onInit?.(mockReactFlow);
             }, [onInit]);
+            React.useEffect(() => {
+                mockOnMove = onMove;
+            }, [onMove]);
 
             return (
                 <div className={className} data-testid='react-flow-mock' data-zoom-on-double-click={String(zoomOnDoubleClick)} onClick={onPaneClick}>
@@ -941,7 +945,14 @@ describe('AutomationEditor', () => {
             fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
             fireEvent.click(within(screen.getByRole('complementary', {name: 'Step details'})).getByRole('button', {name: 'Delete step'}));
 
-            await waitFor(() => expect(mockReactFlow.setViewport).toHaveBeenCalledWith({x: 372, y: -8, zoom: 1}));
+            await waitFor(() => expect(mockReactFlow.setViewport).toHaveBeenCalledWith(
+                {x: 372, y: -8, zoom: 1},
+                {duration: 250, interpolate: 'linear'}
+            ));
+
+            mockReactFlow.setViewport.mockClear();
+            act(() => mockOnMove?.(null, {x: 372, y: -187, zoom: 1 + Number.EPSILON}));
+            expect(mockReactFlow.setViewport).not.toHaveBeenCalled();
         } finally {
             clientWidthSpy.mockRestore();
             clientHeightSpy.mockRestore();

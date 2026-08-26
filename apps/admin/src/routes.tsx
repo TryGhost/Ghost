@@ -1,4 +1,4 @@
-import {type AdminRouteHandle, type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
+import {type AdminRouteHandle, type RouteObject, Outlet, lazyComponent, matchRoutes, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
 import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/api";
@@ -213,3 +213,14 @@ export const routes: RouteObject[] = [
         ],
     },
 ];
+
+// Ember's router only learns about a URL change from `hashchange`, which the
+// React router's pushState navigation does not fire, so links into Ember-owned
+// routes must stay native hash anchors. Everything else can be a router link
+// (and so gets router history state, which the unsaved-changes blockers need).
+const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks, TagDetailGate]);
+
+export function isEmberOwnedRoute(pathname: string): boolean {
+    const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
+    return !leaf || EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+}
