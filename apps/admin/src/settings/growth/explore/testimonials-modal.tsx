@@ -17,7 +17,7 @@ import {
 } from '@tryghost/shade/components';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { SettingsModal } from '@tryghost/shade/patterns';
-import { memberAvatarProps } from '@/members/member-format';
+import { memberAvatarProps } from '@/members/api';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
