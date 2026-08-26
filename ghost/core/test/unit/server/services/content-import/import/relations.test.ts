@@ -22,6 +22,10 @@ const userModels = (
   add: sinon.SinonStub = sinon.stub().resolves(relation('author-created')),
   getOwnerUser: sinon.SinonStub = sinon.stub().resolves(relation('owner')),
 ) => ({ findOne, add, getOwnerUser });
+const tagModels = (
+  findOne: sinon.SinonStub = sinon.stub().resolves(null),
+  add: sinon.SinonStub = sinon.stub().resolves(relation('tag-created')),
+) => ({ findOne, add });
 
 describe('CSV post relation parsing', function () {
   it('pairs author names and emails positionally to the longest list', function () {
@@ -64,7 +68,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const findTag = sinon.stub().resolves(null);
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser),
-      Tag: { findOne: findTag },
+      Tag: tagModels(findTag),
     });
     const transacting = { transaction: true };
 
@@ -103,7 +107,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser, undefined, getOwnerUser),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     const resolved = await resolver.resolve(
@@ -126,7 +130,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser, addUser, getOwnerUser),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
     const options = { importing: true, context: { internal: true }, transacting: {} };
 
@@ -157,7 +161,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser, addUser, getOwnerUser),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     const resolved = await resolver.resolve(
@@ -177,7 +181,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const addUser = sinon.stub().resolves(relation('author-created'));
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser, addUser),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     const resolved = await resolver.resolve(
@@ -200,7 +204,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser, addUser, getOwnerUser),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     const resolved = await resolver.resolve(
@@ -233,7 +237,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const failure = new Error('user creation failed');
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(sinon.stub().resolves(null), sinon.stub().rejects(failure)),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     await assert.rejects(
@@ -250,7 +254,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const failure = new Error('owner lookup failed');
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(sinon.stub().resolves(null), undefined, sinon.stub().rejects(failure)),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     await assert.rejects(
@@ -259,7 +263,7 @@ describe('BookshelfPostRelationsResolver', function () {
     );
   });
 
-  it('matches tags by exact name, explicit slug, then normalized slug', async function () {
+  it('matches tags by exact name, explicit slug, and normalized slug before creating the rest', async function () {
     const findTag = sinon.stub().callsFake(async (lookup: { name?: string; slug?: string }) => {
       if (lookup.name === 'Exact Name') {
         return relation('tag-exact');
@@ -272,9 +276,10 @@ describe('BookshelfPostRelationsResolver', function () {
       }
       return null;
     });
+    const addTag = sinon.stub().resolves(relation('tag-created'));
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(),
-      Tag: { findOne: findTag },
+      Tag: tagModels(findTag, addTag),
     });
 
     const resolved = await resolver.resolve(
@@ -289,6 +294,7 @@ describe('BookshelfPostRelationsResolver', function () {
       { id: 'tag-exact' },
       { id: 'tag-explicit-slug' },
       { id: 'tag-normalized' },
+      { id: 'tag-created' },
       { name: '#Import batch' },
     ]);
     assert.deepEqual(
@@ -306,6 +312,90 @@ describe('BookshelfPostRelationsResolver', function () {
         { name: 'Exact Name' },
       ],
     );
+    sinon.assert.calledOnceWithExactly(addTag, { name: 'Missing Tag' }, { importing: true });
+  });
+
+  it('reuses a tag created for duplicate inputs while preserving source order', async function () {
+    let created: { id: string } | null = null;
+    const findTag = sinon.stub().callsFake(async (lookup: { name?: string }) => {
+      return lookup.name === 'New Tag' ? created : null;
+    });
+    const addTag = sinon.stub().callsFake(async () => {
+      created = relation('tag-created');
+      return created;
+    });
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(),
+      Tag: tagModels(findTag, addTag),
+    });
+    const options = { importing: true, transacting: {} };
+
+    const resolved = await resolver.resolve(data, { tagNames: 'New Tag,New Tag' }, options);
+
+    assert.deepEqual(resolved.data.tags, [{ id: 'tag-created' }, { name: '#Import batch' }]);
+    sinon.assert.calledOnceWithExactly(addTag, { name: 'New Tag' }, options);
+  });
+
+  for (const code of ['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT_UNIQUE']) {
+    it(`refetches a concurrently created tag after ${code}`, async function () {
+      const duplicate = Object.assign(new Error('duplicate tag'), { code });
+      const findTag = sinon.stub().callsFake(async (_lookup: object, options: object) => {
+        return 'forUpdate' in options ? relation('tag-concurrent') : null;
+      });
+      const addTag = sinon.stub().rejects(duplicate);
+      const resolver = new BookshelfPostRelationsResolver({
+        User: userModels(),
+        Tag: tagModels(findTag, addTag),
+      });
+      const options = { importing: true, transacting: {} };
+
+      const resolved = await resolver.resolve(data, { tagNames: 'Concurrent Tag' }, options);
+
+      assert.deepEqual(resolved.data.tags, [{ id: 'tag-concurrent' }, { name: '#Import batch' }]);
+      sinon.assert.calledOnceWithExactly(addTag, { name: 'Concurrent Tag' }, options);
+      sinon.assert.calledWithExactly(
+        findTag.lastCall,
+        { name: 'Concurrent Tag' },
+        {
+          ...options,
+          forUpdate: true,
+        },
+      );
+    });
+  }
+
+  it('rethrows a duplicate error when the concurrent tag cannot be refetched', async function () {
+    const duplicate = Object.assign(new Error('duplicate tag'), { code: 'ER_DUP_ENTRY' });
+    const findTag = sinon.stub().resolves(null);
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(),
+      Tag: tagModels(findTag, sinon.stub().rejects(duplicate)),
+    });
+
+    await assert.rejects(
+      resolver.resolve(data, { tagNames: 'Missing Concurrent Tag' }, { importing: true }),
+      duplicate,
+    );
+    assert.equal(
+      findTag.getCalls().filter((call) => call.args[1].forUpdate).length,
+      3,
+      'every supported lookup is retried with a locking read',
+    );
+  });
+
+  it('propagates non-duplicate tag creation failures without refetching', async function () {
+    const failure = Object.assign(new Error('tag creation failed'), { code: 'ECONNRESET' });
+    const findTag = sinon.stub().resolves(null);
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(),
+      Tag: tagModels(findTag, sinon.stub().rejects(failure)),
+    });
+
+    await assert.rejects(
+      resolver.resolve(data, { tagNames: 'Broken Tag' }, { importing: true }),
+      failure,
+    );
+    assert.equal(findTag.getCalls().filter((call) => call.args[1].forUpdate).length, 0);
   });
 
   it('does no lookups when relation cells are absent', async function () {
@@ -313,7 +403,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const findTag = sinon.stub().resolves(null);
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(findUser),
-      Tag: { findOne: findTag },
+      Tag: tagModels(findTag),
     });
 
     const resolved = await resolver.resolve(data, {}, { importing: true });
@@ -328,7 +418,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const failure = new Error('author lookup failed');
     const resolver = new BookshelfPostRelationsResolver({
       User: userModels(sinon.stub().rejects(failure)),
-      Tag: { findOne: sinon.stub().resolves(null) },
+      Tag: tagModels(),
     });
 
     await assert.rejects(

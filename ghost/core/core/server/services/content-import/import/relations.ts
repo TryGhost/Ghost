@@ -15,6 +15,7 @@ export interface RelationModels {
   };
   Tag: {
     findOne(data: object, options: object): Promise<RelationModel | null>;
+    add(data: object, options: object): Promise<RelationModel>;
   };
 }
 
@@ -165,15 +166,39 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
         lookups.push({ slug: normalizedSlug });
       }
 
-      let tag: RelationModel | null = null;
-      for (const lookup of lookups) {
-        tag = await this._models.Tag.findOne(lookup, { ...options });
-        if (tag) {
-          break;
+      const findTag = async (lookupOptions: object = {}) => {
+        for (const lookup of lookups) {
+          const tag = await this._models.Tag.findOne(lookup, {
+            ...options,
+            ...lookupOptions,
+          });
+          if (tag) {
+            return tag;
+          }
+        }
+        return null;
+      };
+
+      let tag = await findTag();
+      if (!tag) {
+        try {
+          tag = await this._models.Tag.add({ name: reference }, { ...options });
+        } catch (error) {
+          if (!isUniqueConstraintError(error)) {
+            throw error;
+          }
+
+          // A concurrent row or import may have created the same slug after our
+          // lookup. A locking read sees that committed row under MySQL's default
+          // repeatable-read isolation, where another ordinary select may not.
+          tag = await findTag({ forUpdate: true });
+          if (!tag) {
+            throw error;
+          }
         }
       }
 
-      if (tag && !seen.has(tag.id)) {
+      if (!seen.has(tag.id)) {
         seen.add(tag.id);
         tags.push({ id: tag.id });
       }
@@ -185,4 +210,14 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
 
 function splitList(value?: string): Array<string | undefined> {
   return value?.split(',').map((part) => part.trim() || undefined) ?? [];
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+  return (
+    code === 'ER_DUP_ENTRY' || (typeof code === 'string' && code.startsWith('SQLITE_CONSTRAINT'))
+  );
 }

@@ -25,6 +25,7 @@ function harness() {
   const addUser = sinon.stub().resolves({ id: 'author-created' });
   const getOwnerUser = sinon.stub().resolves({ id: 'owner' });
   const findTag = sinon.stub().resolves(null);
+  const addTag = sinon.stub().resolves({ id: 'tag-created' });
   const add = sinon.stub().resolves(created);
   const edit = sinon.stub().resolves(updated);
   const transaction = sinon.stub().callsFake(async (callback) => callback(transacting));
@@ -32,7 +33,7 @@ function harness() {
     Base: { transaction },
     Post: { findOne, add, edit },
     User: { findOne: findUser, add: addUser, getOwnerUser },
-    Tag: { findOne: findTag },
+    Tag: { findOne: findTag, add: addTag },
   });
 
   return {
@@ -44,6 +45,7 @@ function harness() {
     addUser,
     getOwnerUser,
     findTag,
+    addTag,
     add,
     edit,
     existing,
@@ -187,6 +189,24 @@ describe('BookshelfPostsRepository', function () {
     sinon.assert.calledWithExactly(
       h.findTag,
       { name: 'Existing Tag' },
+      { ...options, transacting: h.transacting },
+    );
+  });
+
+  it('creates missing tags inside the post transaction and attaches their IDs', async function () {
+    const h = harness();
+    const options = { importing: true, context: { internal: true } };
+
+    await h.repository.write(data, options, { tagNames: 'New Tag' });
+
+    sinon.assert.calledWithExactly(
+      h.addTag,
+      { name: 'New Tag' },
+      { ...options, transacting: h.transacting },
+    );
+    sinon.assert.calledWithExactly(
+      h.add,
+      { ...data, tags: [{ id: 'tag-created' }, ...data.tags] },
       { ...options, transacting: h.transacting },
     );
   });
@@ -419,6 +439,39 @@ describe('BookshelfPostsRepository', function () {
       ...options,
       transacting: h.transacting,
     });
+  });
+
+  it('keeps tag creation in the post transaction so insert failures roll it back', async function () {
+    const h = harness();
+    const failure = new Error('post insert failed');
+    h.add.rejects(failure);
+    const options = { importing: true, context: { internal: true } };
+
+    await assert.rejects(h.repository.write(data, options, { tagNames: 'New Tag' }), failure);
+
+    sinon.assert.calledWithExactly(
+      h.addTag,
+      { name: 'New Tag' },
+      { ...options, transacting: h.transacting },
+    );
+    sinon.assert.calledWithExactly(h.add, sinon.match.object, {
+      ...options,
+      transacting: h.transacting,
+    });
+  });
+
+  it('propagates tag model failures without writing the post', async function () {
+    const h = harness();
+    const failure = new Error('tag insert failed');
+    h.addTag.rejects(failure);
+
+    await assert.rejects(
+      h.repository.write(data, { importing: true }, { tagNames: 'New Tag' }),
+      failure,
+    );
+
+    sinon.assert.notCalled(h.add);
+    sinon.assert.notCalled(h.edit);
   });
 
   it('propagates contributor model failures without writing the post', async function () {

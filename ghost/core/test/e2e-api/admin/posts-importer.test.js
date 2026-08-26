@@ -949,6 +949,87 @@ describe('Posts Importer API', function () {
     );
   });
 
+  it('Creates missing CSV tags once and preserves their order and visibility', async function () {
+    await agent.loginAsOwner();
+
+    const firstCsvPath = await csvFile(
+      'posts-import-new-tags.csv',
+      'title,tags\n' +
+        'CSV created tags one,"New CSV Tag,#CSV Internal Tag,New CSV Tag"\n' +
+        'CSV created tags two,"#CSV Internal Tag,New CSV Tag"\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', firstCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const secondCsvPath = await csvFile(
+      'posts-import-reused-tags.csv',
+      'title,tags\nCSV reused tags,New CSV Tag\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', secondCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const publicTags = await models.Tag.findAll({ filter: "name:'New CSV Tag'" });
+    const internalTags = await models.Tag.findAll({ filter: "name:'#CSV Internal Tag'" });
+    assert.equal(publicTags.length, 1, 'later rows and imports reuse the created public tag');
+    assert.equal(internalTags.length, 1, 'duplicate inputs create one internal tag');
+    const publicTag = publicTags.at(0);
+    const internalTag = internalTags.at(0);
+    assert.equal(publicTag.get('visibility'), 'public');
+    assert.equal(internalTag.get('visibility'), 'internal');
+
+    const firstPost = await models.Post.findOne(
+      { title: 'CSV created tags one', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const secondPost = await models.Post.findOne(
+      { title: 'CSV created tags two', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const reusedPost = await models.Post.findOne(
+      { title: 'CSV reused tags', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    assert.deepEqual(
+      firstPost
+        .related('tags')
+        .models.slice(0, 2)
+        .map((tag) => tag.id),
+      [publicTag.id, internalTag.id],
+    );
+    assert.deepEqual(
+      secondPost
+        .related('tags')
+        .models.slice(0, 2)
+        .map((tag) => tag.id),
+      [internalTag.id, publicTag.id],
+    );
+    assert.equal(firstPost.related('tags').length, 4, 'the two batch tags remain attached');
+    assert.equal(secondPost.related('tags').length, 4, 'the two batch tags remain attached');
+    assert.deepEqual(
+      reusedPost
+        .related('tags')
+        .models.slice(0, 1)
+        .map((tag) => tag.id),
+      [publicTag.id],
+    );
+    assert.equal(reusedPost.related('tags').length, 3, 'a later import gets its own batch tags');
+  });
+
+  it('Rolls back a newly created tag when the post model fails', async function () {
+    await agent.loginAsOwner();
+    sinon.stub(models.Post, 'add').rejects(new Error('post model failed'));
+    const tagsCsvPath = await csvFile(
+      'posts-import-tag-rollback.csv',
+      'title,tags\nCSV tag rollback,CSV Rollback Tag\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', tagsCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    assert.equal(await models.Tag.findOne({ name: 'CSV Rollback Tag' }), null);
+    assert.equal(await models.Post.findOne({ title: 'CSV tag rollback', status: 'all' }), null);
+  });
+
   it('Renders a mapped Markdown column through the post content converter', async function () {
     await agent.loginAsOwner();
 
