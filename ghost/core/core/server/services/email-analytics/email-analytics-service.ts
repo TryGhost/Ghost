@@ -559,6 +559,10 @@ export class EmailAnalyticsService {
         fetchData.lastEventTimestamp = fetchResult.safeCursor;
       }
     } catch (err) {
+      // A fetch can process events from one domain before another domain fails. Keep the
+      // in-memory cursor at the start of this run so the next attempt retries every domain.
+      fetchData.lastEventTimestamp = begin;
+
       if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
         logging.error('[EmailAnalytics] Error while fetching');
         logging.error(err);

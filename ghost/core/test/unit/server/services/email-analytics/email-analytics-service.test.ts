@@ -740,6 +740,35 @@ describe('EmailAnalyticsService', function () {
         );
       });
 
+      it('retries from the original cursor after a fetch error', async function () {
+        const initialCursor = new Date(Date.now() - 10 * 60 * 1000);
+        const fetchBegins: Date[] = [];
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (_events, _result, fetchData) => {
+          fetchData.lastEventTimestamp = new Date(initialCursor.getTime() + 1000);
+        });
+        const fetchEvents = sinon.stub().callsFake(async ({ batchHandler, begin }) => {
+          fetchBegins.push(begin);
+          await batchHandler([{ timestamp: new Date(initialCursor.getTime() + 1000) }]);
+          throw new Error('fallback fetch failed');
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(initialCursor),
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents,
+          createEventProcessor: () => eventProcessor,
+        });
+
+        await assert.rejects(service.fetchLatestNonOpenedEvents(), /fallback fetch failed/);
+        await assert.rejects(service.fetchLatestNonOpenedEvents(), /fallback fetch failed/);
+
+        assert.deepEqual(fetchBegins, [initialCursor, initialCursor]);
+        assert.deepEqual(service.getStatus().latest.lastEventTimestamp, initialCursor);
+      });
+
       it('persists and advances the last processed event timestamp', async function () {
         const lastEventTimestamp = new Date(Date.now() - 10_000);
         const setJobTimestamp = sinon.stub().resolves();
