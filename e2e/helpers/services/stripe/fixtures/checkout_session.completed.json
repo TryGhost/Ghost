@@ -34,9 +34,9 @@
       "address": {
         "city": "London",
         "country": "GB",
-        "line1": "Flat 10",
-        "line2": "1C Bethwin Road",
-        "postal_code": "SE5 0SG",
+        "line1": "Apartment 1",
+        "line2": "1 Example Street",
+        "postal_code": "EC1A 1AA",
         "state": null
       },
       "name": "Test Tester"
@@ -77,9 +77,9 @@
     "address": {
       "city": "London",
       "country": "GB",
-      "line1": "Flat 10",
-      "line2": "1C Bethwin Road",
-      "postal_code": "SE5 0SG",
+      "line1": "Apartment 1",
+      "line2": "1 Example Street",
+      "postal_code": "EC1A 1AA",
       "state": null
     },
     "business_name": "Testing Co",
@@ -138,9 +138,9 @@
     "address": {
       "city": "London",
       "country": "GB",
-      "line1": "Flat 10",
-      "line2": "1C Bethwin Road",
-      "postal_code": "SE5 0SG",
+      "line1": "Apartment 1",
+      "line2": "1 Example Street",
+      "postal_code": "EC1A 1AA",
       "state": null
     },
     "carrier": null,
