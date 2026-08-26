@@ -28,7 +28,7 @@ const messages = {
   sslRequiredForStripe:
     'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
   remoteWebhooksInDevelopment:
-    'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
+    'Cannot use remote webhooks in development. See https://docs.ghost.org/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
 const ghostMailer = new GhostMailer();

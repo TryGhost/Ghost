@@ -2,7 +2,7 @@
 
 Welcome to the Ghost codebase documentation! These docs are for anyone wanting
 to work on the Ghost codebase. For self-hosting, themes, or using Ghost APIs,
-see the [official Ghost documentation](https://ghost.org/docs/).
+see the [official Ghost documentation](https://docs.ghost.org/).
 
 ## Quick Start
 
@@ -144,10 +144,10 @@ Docker Official Image.
 
 ## Additional Resources
 
-- **[Official Documentation](https://ghost.org/docs/)** - User and developer docs
+- **[Official Documentation](https://docs.ghost.org/)** - User and developer docs
 - **[Ghost Forum](https://forum.ghost.org)** - Community support and discussions
-- **[API Documentation](https://ghost.org/docs/content-api/)** - Content and Admin API reference
-- **[Theme Documentation](https://ghost.org/docs/themes/)** - Theme development
+- **[API Documentation](https://docs.ghost.org/content-api/)** - Content and Admin API reference
+- **[Theme Documentation](https://docs.ghost.org/themes/)** - Theme development
 
 ## Getting Help
 

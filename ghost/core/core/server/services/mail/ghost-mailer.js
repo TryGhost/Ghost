@@ -100,7 +100,7 @@ function createMessage(message) {
  */
 function createMailError({ message, err, ignoreDefaultMessage } = { message: '' }) {
   const helpMessage = tpl(messages.checkEmailConfigInstructions, {
-    url: 'https://ghost.org/docs/config/#mail',
+    url: 'https://docs.ghost.org/config/#mail',
   });
   const defaultErrorMessage = tpl(messages.failedSendingEmailError);
 
