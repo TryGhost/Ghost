@@ -77,12 +77,12 @@ class PostsImporter extends BaseImporter {
    */
   addNestedRelations() {
     const postsById = new Map();
-    for (const post of this.dataToImport) {
+    _.each(this.dataToImport, (post) => {
       const postId = post.id;
       if (!postsById.has(postId)) {
         postsById.set(postId, post);
       }
-    }
+    });
 
     this.requiredFromFile.posts_tags = _.orderBy(
       this.requiredFromFile.posts_tags,

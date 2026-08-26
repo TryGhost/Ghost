@@ -56,6 +56,25 @@ describe('PostsImporter', function () {
       assert.deepEqual(firstPost.tags, [{ id: 'tag-1' }]);
       assert.equal(secondPost.tags, undefined);
     });
+
+    it('attaches relations when posts data is keyed by property', function () {
+      const post = { id: 'post-1' };
+      const importer = new PostsImporter({ posts: [] });
+      importer.dataToImport = { first: post };
+      importer.requiredFromFile.posts_tags = [
+        {
+          post_id: 'post-1',
+          tag_id: 'tag-1',
+          sort_order: 0,
+        },
+      ];
+      importer.requiredFromFile.posts_authors = [];
+      importer.requiredFromFile.posts_products = [];
+
+      importer.addNestedRelations();
+
+      assert.deepEqual(post.tags, [{ id: 'tag-1' }]);
+    });
   });
 
   describe('#beforeImport', function () {
