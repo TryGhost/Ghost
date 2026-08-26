@@ -179,6 +179,11 @@ module.exports = function MembersAPI({
     offersAPI,
     stripeAPIService,
     settingsCache,
+    // The service wrapper, not the checkout config it builds: tiers and members are
+    // initialised in the same Promise.all, so reading the property here would capture
+    // whatever it was before tiers finished — usually undefined.
+    tiersService,
+    labsService,
   });
 
   const memberController = new MemberController({
