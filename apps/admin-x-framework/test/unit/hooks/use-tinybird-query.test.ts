@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
 vi.mock('../../../src/hooks/use-tinybird-token', () => ({
@@ -217,6 +217,34 @@ describe('useTinybirdQuery', () => {
     expect(result.current.error).toBe(tokenError);
     expect(result.current.loading).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('refetches stale data when the window regains focus', async () => {
+    const { result } = renderQuery();
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Age the cached entry past the stale window, then simulate a tab return.
+    const entry = queryClient.getQueryCache().getAll()[0];
+    entry.state.dataUpdatedAt = Date.now() - 61_000;
+    act(() => {
+      focusManager.setFocused(false);
+      focusManager.setFocused(true);
+    });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    focusManager.setFocused(undefined);
+  });
+
+  it('passes the background polling flag through to the query', () => {
+    const { result } = renderQuery({
+      refetchInterval: 60_000,
+      refetchIntervalInBackground: true,
+    });
+    void result;
+    const entry = queryClient.getQueryCache().getAll()[0];
+    expect(entry.observers[0]?.options.refetchIntervalInBackground).toBe(true);
+    expect(entry.observers[0]?.options.refetchInterval).toBe(60_000);
   });
 });
 

@@ -25,6 +25,9 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
     params,
     enabled,
     refetchInterval: ACTIVE_VISITORS_REFETCH_INTERVAL,
+    // Keep counting while the tab is hidden (matches the old interval tick,
+    // which the browser throttled to roughly this cadence anyway).
+    refetchIntervalInBackground: true,
   });
 
   const currentCount = data?.[0]?.active_visitors;

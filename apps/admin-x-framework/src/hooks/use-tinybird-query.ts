@@ -23,6 +23,7 @@ export interface UseTinybirdQueryOptions {
   enabled?: boolean;
   /** Poll interval in ms (e.g. active visitors); no polling by default. */
   refetchInterval?: number;
+  refetchIntervalInBackground?: boolean;
 }
 
 export interface UseTinybirdQueryResult {
@@ -97,7 +98,14 @@ export const fetchTinybirdPipe = async ({
 };
 
 export const useTinybirdQuery = (options: UseTinybirdQueryOptions): UseTinybirdQueryResult => {
-  const { statsConfig, endpoint, params, enabled = true, refetchInterval } = options;
+  const {
+    statsConfig,
+    endpoint,
+    params,
+    enabled = true,
+    refetchInterval,
+    refetchIntervalInBackground,
+  } = options;
   // Web analytics kill-switch, read from settings so no call site threads it.
   // When off, shouldQuery is false and the hook returns empty state.
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
@@ -119,7 +127,12 @@ export const useTinybirdQuery = (options: UseTinybirdQueryOptions): UseTinybirdQ
     enabled: Boolean(shouldQuery && requestUrl && token),
     staleTime: TINYBIRD_STALE_TIME,
     retry: false,
+    // Analytics wants fresh data on return to the tab — the app-wide
+    // focus-refetch opt-out is for CRUD data, and the old charts-lib SWR
+    // layer revalidated on focus too.
+    refetchOnWindowFocus: true,
     refetchInterval,
+    refetchIntervalInBackground,
     queryFn: ({ signal }) =>
       fetchTinybirdPipe({
         url: requestUrl as string,
