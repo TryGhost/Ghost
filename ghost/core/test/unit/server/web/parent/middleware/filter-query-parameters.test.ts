@@ -103,6 +103,15 @@ describe('Middleware: filterQueryParameters', function () {
         fields: 'id,pinned',
       });
     });
+
+    it('removes nested undeclared parameters from the Express query state', async function () {
+      const state = await getRequestState('/post/?step=run-step-id&unknown[nested]=value');
+
+      assert.equal(state.originalUrl, '/post/?step=run-step-id');
+      assert.deepEqual(state.query, {
+        step: 'run-step-id',
+      });
+    });
   });
 
   it('updates the Express request and logs stripped undeclared parameters', async function () {

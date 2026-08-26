@@ -33,6 +33,19 @@ const replaceQueryString = (requestTarget: string, filteredRequestTarget: string
   return `${requestUrl.pathname}${filteredUrl.search}`;
 };
 
+const replaceParsedQuery = (query: Request['query'], requestTarget: string) => {
+  for (const parameter of Object.keys(query)) {
+    delete query[parameter];
+  }
+
+  const { searchParams } = new URL(requestTarget, REQUEST_URL_BASE);
+
+  for (const parameter of new Set(searchParams.keys())) {
+    const values = searchParams.getAll(parameter);
+    query[parameter] = values.length === 1 ? values[0] : values;
+  }
+};
+
 const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: ReadonlySet<string>) => {
   const removed = new Set<string>();
 
@@ -91,10 +104,7 @@ export function filterQueryParameters(req: Request, _res: Response, next: NextFu
 
     req.originalUrl = result.requestTarget;
     req.url = replaceQueryString(req.url, result.requestTarget);
-
-    for (const parameter of result.removedUnknownParameters) {
-      delete query[parameter];
-    }
+    replaceParsedQuery(query, result.requestTarget);
   }
 
   if (result.removedUnknownParameters.length > 0) {
