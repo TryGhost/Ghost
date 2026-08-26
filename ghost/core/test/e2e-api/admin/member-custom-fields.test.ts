@@ -1436,6 +1436,46 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(rows.length, 1);
     });
 
+    // The record has to be made at the moment of the write; nothing can reconstruct it
+    // later. What reads it is a separate question — this pins only that it is written,
+    // and that it names where the value currently held came from rather than the first.
+    // Provenance is observable nowhere else yet, so this reads the columns directly. What
+    // it pins is the outcome: every part records who wrote it, and a re-write says who
+    // wrote what is there now rather than who wrote it first.
+    it('records who wrote each value, and re-records it on every write', async function () {
+      const field = await createField({ name: 'Postal address', type: 'address' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: { line1: '1 High Street', city: 'London' } });
+
+      const writersOf = async () =>
+        models.Base.knex('members_custom_field_values')
+          .where('member_id', memberId)
+          .orderBy('path')
+          .select('path', 'written_by_type');
+
+      assert.deepEqual(await writersOf(), [
+        { path: 'city', written_by_type: 'user' },
+        { path: 'line1', written_by_type: 'user' },
+      ]);
+
+      // The owner made both writes, so every part names them rather than only the
+      // first, and the id resolves back to the actual person.
+      const [{ written_by_id: actor }] = await models.Base.knex('members_custom_field_values')
+        .where('member_id', memberId)
+        .select('written_by_id');
+      assert.ok(actor, 'the writer is identified, not merely named');
+
+      await setValues(memberId, { [field.key]: { city: 'Bristol' } });
+      assert.deepEqual(
+        await writersOf(),
+        [
+          { path: 'city', written_by_type: 'user' },
+          { path: 'line1', written_by_type: 'user' },
+        ],
+        'a re-write keeps naming who wrote what is there now',
+      );
+    });
+
     it("drops a field's values when the field is permanently deleted", async function () {
       const field = await createField({ name: 'Favourite topic' });
       const memberId = await createMember();

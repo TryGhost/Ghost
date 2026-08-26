@@ -27,6 +27,25 @@ type CustomFieldRank = { sort_order: number };
 
 type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 
+/**
+ * How a value arrived, not who caused it: who edited a member's fields is already an
+ * action, and Stripe is not a person. Open rather than a closed list, so a new integration
+ * does not have to be added to a central enumeration.
+ */
+export const WRITTEN_BY = {
+  binding: 'binding',
+  user: 'user',
+  integration: 'integration',
+  import: 'import',
+} as const;
+
+export const WrittenBy = z.object({
+  type: z.string(),
+  /** Absent for a writer with no identity to give: an import, until runs are tracked. */
+  id: z.string().nullable(),
+});
+export type WrittenBy = z.infer<typeof WrittenBy>;
+
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
@@ -37,6 +56,9 @@ export const DbCustomFieldValue = z.object({
   // Nullable like the column, though nothing here writes a null: a part with no value
   // has no row.
   value_text: z.string().nullable(),
+  // Nullable only for rows written before the columns existed; every write states a type.
+  written_by_type: z.string().nullable(),
+  written_by_id: z.string().nullable(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
