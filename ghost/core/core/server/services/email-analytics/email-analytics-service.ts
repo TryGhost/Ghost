@@ -67,12 +67,15 @@ export type EmailAnalyticsFetchResult = {
  * own analytics events. Every configured provider is polled during a fetch.
  */
 export type EmailAnalyticsProvider = {
-  fetchLatest: (batchHandler: (events: any[]) => Promise<void>, options: {
-    begin: Date;
-    end: Date;
-    maxEvents: number;
-    events?: EmailAnalyticsEvent[];
-  }) => Promise<void>;
+  fetchLatest: (
+    batchHandler: (events: any[]) => Promise<void>,
+    options: {
+      begin: Date;
+      end: Date;
+      maxEvents: number;
+      events?: EmailAnalyticsEvent[];
+    },
+  ) => Promise<void>;
 };
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes

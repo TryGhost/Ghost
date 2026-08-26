@@ -1,11 +1,20 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-import { EmailAnalyticsService, type EmailAnalyticsProvider } from '../../../../../core/server/services/email-analytics/email-analytics-service';
+import {
+  EmailAnalyticsService,
+  type EmailAnalyticsProvider,
+} from '../../../../../core/server/services/email-analytics/email-analytics-service';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
 
 type BatchHandler = (events: any[]) => Promise<void>;
-type FetchEvents = (options: { batchHandler: BatchHandler; begin: Date; end: Date; maxEvents: number; events?: string[] }) => Promise<void> | void;
+type FetchEvents = (options: {
+  batchHandler: BatchHandler;
+  begin: Date;
+  end: Date;
+  maxEvents: number;
+  events?: string[];
+}) => Promise<void> | void;
 
 type ServiceOptions = ConstructorParameters<typeof EmailAnalyticsService>[0];
 type ServiceDependencies = Omit<ServiceOptions, 'queries' | 'providers'> & {
@@ -46,11 +55,22 @@ function createService({
   // Tests express a single `provider`, or (for parity with upstream's
   // now-removed single-callback style) a bare `fetchEvents` function --
   // normalise all three into the `providers` array the service takes.
-  const resolvedProviders = providers ?? (provider ? [provider] : (fetchEvents ? [{
-    fetchLatest: async (batchHandler: BatchHandler, options: { begin: Date; end: Date; maxEvents: number; events?: string[] }) => {
-      await fetchEvents({ batchHandler, ...options });
-    }
-  }] : []));
+  const resolvedProviders =
+    providers ??
+    (provider
+      ? [provider]
+      : fetchEvents
+        ? [
+            {
+              fetchLatest: async (
+                batchHandler: BatchHandler,
+                options: { begin: Date; end: Date; maxEvents: number; events?: string[] },
+              ) => {
+                await fetchEvents({ batchHandler, ...options });
+              },
+            },
+          ]
+        : []);
 
   return new EmailAnalyticsService({
     queries,

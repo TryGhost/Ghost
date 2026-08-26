@@ -85,7 +85,9 @@ export class EmailAnalyticsServiceWrapper {
     // created here (the email-sending service keeps its own) and is given
     // this wrapper's Mailgun tags to keep newsletter and automation event
     // streams separate.
-    const emailAdapterConfig = config.get('adapters:email') as { active?: string; [key: string]: unknown } | undefined;
+    const emailAdapterConfig = config.get('adapters:email') as
+      | { active?: string; [key: string]: unknown }
+      | undefined;
     const emailProvider = emailAdapterConfig?.active?.toLowerCase() || 'mailgun';
     const providers = [];
     try {
@@ -93,7 +95,9 @@ export class EmailAnalyticsServiceWrapper {
       const AdapterClass = adapterInstance.constructor;
 
       const errorHandler = (error: Error): void => {
-        logging.info(`${this.#logPrefix} Capturing error for ${emailProvider} email provider analytics`);
+        logging.info(
+          `${this.#logPrefix} Capturing error for ${emailProvider} email provider analytics`,
+        );
         sentry.captureException(error);
       };
 
@@ -112,7 +116,9 @@ export class EmailAnalyticsServiceWrapper {
 
       providers.push(new AdapterClass(adapterConfig));
     } catch (error) {
-      logging.error(`${this.#logPrefix} Failed to load ${emailProvider} adapter: ${(error as Error).message}`);
+      logging.error(
+        `${this.#logPrefix} Failed to load ${emailProvider} adapter: ${(error as Error).message}`,
+      );
       logging.error((error as Error).stack);
       throw error;
     }
