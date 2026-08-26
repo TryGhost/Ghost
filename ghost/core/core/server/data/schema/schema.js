@@ -1108,9 +1108,10 @@ module.exports = {
     // through a tier's shipping port stays true after someone deletes that binding, even
     // though it stops being joinable.
     //
-    // Both nullable. Rows written before these columns existed have a writer nobody can
-    // recover, and an import has no id to give until runs are tracked.
-    written_by_type: { type: 'string', maxlength: 50, nullable: true },
+    // The type is the namespace the id resolves in, so every row carries one. The id is
+    // nullable for the one writer that resolves in no table: an import has none to give
+    // until runs are tracked.
+    written_by_type: { type: 'string', maxlength: 50, nullable: false },
     written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },

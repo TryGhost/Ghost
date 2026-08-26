@@ -6,7 +6,6 @@ import { resolveMaxDefinitions } from './config';
 export type { CustomField } from './models';
 export type { RequestContext } from './actions';
 export { actingContext } from './actions';
-export { WRITTEN_BY } from './schema';
 export type { WrittenBy } from './schema';
 
 // Two services from one module, split along an aggregate boundary rather than a

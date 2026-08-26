@@ -1,18 +1,40 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
+const logging = require('@tryghost/logging');
+const {
+  combineNonTransactionalMigrations,
+  createAddColumnMigration,
+  createNonTransactionalMigration,
+} = require('../../utils');
+
+const TABLE = 'members_custom_field_values';
 
 // Who wrote the value that is here now: a type and an id, the way `actions` records an
-// actor. Both nullable rather than defaulted. Every write from here on names its writer —
-// the values service takes it as a required argument, so no call site can omit one — but
-// rows written before these columns existed have a writer nobody can recover, and an import
-// has no id to give until runs are tracked. Null says exactly that, where a default would
-// assert something we would be inventing.
+// actor. The type is required because it is the namespace the id resolves in, and a value
+// nobody can be traced to is not a record of provenance. The id is nullable for the one
+// writer that resolves in no table — an import, until runs are tracked.
+//
+// Existing rows have a writer nobody can recover, so they go rather than get backfilled:
+// the feature is behind the `membersCustomFields` flag with no released data, and adding
+// a required column over them ends either in an error, as SQLite refuses one with no
+// default, or in an invented writer wherever the engine supplies its own empty string.
 module.exports = combineNonTransactionalMigrations(
-  createAddColumnMigration('members_custom_field_values', 'written_by_type', {
+  createNonTransactionalMigration(
+    async function up(knex) {
+      if (!(await knex.schema.hasColumn(TABLE, 'written_by_type'))) {
+        logging.info(`Clearing ${TABLE} of values with no recorded writer`);
+        await knex(TABLE).del();
+      }
+    },
+    async function down() {
+      // Nothing to undo: the rows are gone, and dropping the columns below is what a
+      // rollback is for.
+    },
+  ),
+  createAddColumnMigration(TABLE, 'written_by_type', {
     type: 'string',
     maxlength: 50,
-    nullable: true,
+    nullable: false,
   }),
-  createAddColumnMigration('members_custom_field_values', 'written_by_id', {
+  createAddColumnMigration(TABLE, 'written_by_id', {
     type: 'string',
     maxlength: 24,
     nullable: true,
