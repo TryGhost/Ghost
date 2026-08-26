@@ -4,7 +4,7 @@ import type { Knex } from 'knex';
 import { Gift } from './gift';
 import { decodeGiftRow, encodeGift } from './gift-codec';
 import type { GiftCadence, GiftRow } from './gift-schema';
-import { toDatabaseDate } from '../../lib/db-date';
+import { toDatabaseDate } from '../../lib/db-types/date';
 
 type ParsedNqlFilter = unknown;
 

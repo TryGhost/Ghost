@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { FieldTypeSchema } from '@tryghost/custom-field-types';
-import { DbDate } from '../../lib/db-date';
+import { DbDate } from '../../lib/db-types/date';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the

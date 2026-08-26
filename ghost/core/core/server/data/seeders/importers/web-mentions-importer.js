@@ -1,6 +1,6 @@
 const { TableImporter } = require('./table-importer');
 const { faker } = require('@faker-js/faker');
-const { toDatabaseDate } = require('../../../lib/db-date');
+const { toDatabaseDate } = require('../../../lib/db-types/date');
 
 class WebMentionsImporter extends TableImporter {
   static table = 'mentions';
