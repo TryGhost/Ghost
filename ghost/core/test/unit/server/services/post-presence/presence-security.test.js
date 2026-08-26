@@ -2,7 +2,6 @@ const { EventEmitter } = require('events');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const labs = require('../../../../../core/shared/labs');
 const models = require('../../../../../core/server/models');
 const postPresence = require('../../../../../core/server/services/post-presence');
 const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
@@ -36,11 +35,7 @@ function fakeUser({ id, roles = [] }) {
 }
 
 describe('PostPresence security: per-subscriber filtering', function () {
-  let labsStub;
-
   beforeEach(function () {
-    labsStub = sinon.stub(labs, 'isSet');
-    labsStub.withArgs('editorPresence').returns(true);
     postPresence.reset();
   });
 

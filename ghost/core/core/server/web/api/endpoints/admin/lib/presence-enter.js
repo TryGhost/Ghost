@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const labs = require('../../../../../../shared/labs');
 const models = require('../../../../../models');
 const postPresence = require('../../../../../services/post-presence');
 const permissionsService = require('../../../../../services/permissions');
@@ -14,10 +13,6 @@ const permissionsService = require('../../../../../services/permissions');
  */
 module.exports = async function presenceEnter(req, res) {
   try {
-    if (!labs.isSet('editorPresence')) {
-      res.status(404).end();
-      return;
-    }
     if (req.api_key) {
       res.status(204).end();
       return;

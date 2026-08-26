@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const labs = require('../../../../../../shared/labs');
 const postPresence = require('../../../../../services/post-presence');
 const {
   PRESENCE_EVENT_TYPES,
@@ -30,10 +29,6 @@ function toClientEvent(event) {
  * events for posts they're listed as authors on; Editor+ see all.
  */
 module.exports = async function presenceStream(req, res) {
-  if (!labs.isSet('editorPresence')) {
-    res.status(404).end();
-    return;
-  }
   if (req.api_key) {
     res.status(403).end();
     return;

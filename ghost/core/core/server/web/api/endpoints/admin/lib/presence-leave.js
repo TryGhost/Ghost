@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const labs = require('../../../../../../shared/labs');
 const postPresence = require('../../../../../services/post-presence');
 
 /**
@@ -8,10 +7,6 @@ const postPresence = require('../../../../../services/post-presence');
  */
 module.exports = function presenceLeave(req, res) {
   try {
-    if (!labs.isSet('editorPresence')) {
-      res.status(404).end();
-      return;
-    }
     if (req.api_key) {
       res.status(204).end();
       return;

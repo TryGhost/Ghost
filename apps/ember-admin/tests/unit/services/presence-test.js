@@ -6,14 +6,11 @@ import {setupTest} from 'ember-mocha';
 describe('Unit: Service: presence', function () {
     setupTest();
 
-    let service, feature, originalEventSource, eventSourceSpy;
+    let service, originalEventSource, eventSourceSpy;
 
     beforeEach(function () {
         service = this.owner.lookup('service:presence');
-        feature = this.owner.lookup('service:feature');
 
-        // Spy on the global EventSource constructor so we can assert it's
-        // never called when the flag is off.
         originalEventSource = window.EventSource;
         eventSourceSpy = sinon.stub().returns({
             close: sinon.stub(),
@@ -31,41 +28,14 @@ describe('Unit: Service: presence', function () {
         sinon.restore();
     });
 
-    describe('start() labs gate', function () {
-        it('does not open an SSE connection when editorPresence is off', function () {
-            sinon.stub(feature, 'get').withArgs('editorPresence').returns(false);
+    it('opens the SSE connection on start', function () {
+        service.start();
 
-            service.start();
-
-            expect(eventSourceSpy.called, 'EventSource should not be constructed').to.be.false;
-            expect(service._source, '_source should remain null').to.be.null;
-            expect(service._beforeUnloadHandler, 'pagehide handler should not be registered').to.be.null;
-        });
-
-        it('opens the SSE connection when editorPresence is on', function () {
-            sinon.stub(feature, 'get').withArgs('editorPresence').returns(true);
-
-            service.start();
-
-            expect(eventSourceSpy.calledOnce, 'EventSource should be constructed once').to.be.true;
-            expect(service._source, '_source should be set').to.not.be.null;
-        });
-    });
-
-    it('does not enter or leave posts while the feature is disabled', function () {
-        sinon.stub(feature, 'get').withArgs('editorPresence').returns(false);
-        const enterStub = sinon.stub(service, '_sendEnter');
-        const leaveStub = sinon.stub(service, '_sendLeave');
-
-        service.enterPost('post-1');
-        service.leavePost('post-1');
-
-        expect(enterStub.called).to.be.false;
-        expect(leaveStub.called).to.be.false;
+        expect(eventSourceSpy.calledOnce, 'EventSource should be constructed once').to.be.true;
+        expect(service._source, '_source should be set').to.not.be.null;
     });
 
     it('leaves the previous post before entering a new one', function () {
-        sinon.stub(feature, 'get').withArgs('editorPresence').returns(true);
         service._source = {close: sinon.stub()};
         const enterStub = sinon.stub(service, '_sendEnter');
         const leaveStub = sinon.stub(service, '_sendLeave');
@@ -81,7 +51,6 @@ describe('Unit: Service: presence', function () {
     });
 
     it('sends a final leave and clears state when stopped', function () {
-        sinon.stub(feature, 'get').withArgs('editorPresence').returns(true);
         const close = sinon.stub();
         const leaveStub = sinon.stub(service, '_sendLeave');
         service._source = {close};
@@ -97,7 +66,6 @@ describe('Unit: Service: presence', function () {
     });
 
     it('re-enters the current post when EventSource reconnects', function () {
-        sinon.stub(feature, 'get').withArgs('editorPresence').returns(true);
         const enterStub = sinon.stub(service, '_sendEnter');
         sinon.stub(service, '_sendLeave');
         service._currentPostId = 'post-1';
@@ -109,7 +77,6 @@ describe('Unit: Service: presence', function () {
     });
 
     it('retries EventSource construction on a later editor entry', function () {
-        sinon.stub(feature, 'get').withArgs('editorPresence').returns(true);
         sinon.stub(console, 'warn');
         sinon.stub(service, '_sendEnter');
         sinon.stub(service, '_sendLeave');

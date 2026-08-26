@@ -84,7 +84,6 @@ export default class FeatureService extends Service {
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
-    @feature('editorPresence') editorPresence;
     _user = null;
 
     @computed('settings.labs')

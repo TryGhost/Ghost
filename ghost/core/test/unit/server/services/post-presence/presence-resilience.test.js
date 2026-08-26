@@ -2,25 +2,17 @@ const { EventEmitter } = require('events');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const labs = require('../../../../../core/shared/labs');
 const postPresence = require('../../../../../core/server/services/post-presence');
 const markPostPresence = require('../../../../../core/server/services/post-presence/mark-post-presence');
 const presenceStream = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-stream');
 
 describe('PostPresence resilience', function () {
-  let labsStub;
-
-  beforeEach(function () {
-    labsStub = sinon.stub(labs, 'isSet');
-  });
-
   afterEach(function () {
     sinon.restore();
   });
 
   describe('markPostPresence — never breaks the parent API call', function () {
     it('swallows errors from postPresence.mark', function () {
-      labsStub.withArgs('editorPresence').returns(true);
       sinon.stub(postPresence, 'mark').throws(new Error('cache exploded'));
 
       assert.doesNotThrow(() =>
@@ -28,19 +20,7 @@ describe('PostPresence resilience', function () {
       );
     });
 
-    it('swallows errors from labs.isSet itself', function () {
-      // Defensive: if the labs subsystem ever throws during isSet
-      // (boot order, stubbed labs, etc.) the post API must not crash.
-      labsStub.withArgs('editorPresence').throws(new Error('labs unavailable'));
-
-      assert.doesNotThrow(() =>
-        markPostPresence({ user: { id: 'u1', get: () => 'Alice' } }, { id: 'post-1' }),
-      );
-    });
-
     it('swallows errors from frame.user.get', function () {
-      labsStub.withArgs('editorPresence').returns(true);
-
       assert.doesNotThrow(() =>
         markPostPresence(
           {
@@ -68,7 +48,6 @@ describe('PostPresence resilience', function () {
     }
 
     it('unsubscribes from the bus when the request closes', async function () {
-      labsStub.withArgs('editorPresence').returns(true);
       const baseline = postPresence._emitter.listenerCount('presence');
 
       const { req, res } = makeReqRes();
@@ -90,7 +69,6 @@ describe('PostPresence resilience', function () {
     });
 
     it('also unsubscribes when the response emits close (proxy teardown path)', async function () {
-      labsStub.withArgs('editorPresence').returns(true);
       const baseline = postPresence._emitter.listenerCount('presence');
 
       const { req, res } = makeReqRes();
@@ -101,7 +79,6 @@ describe('PostPresence resilience', function () {
     });
 
     it('does not double-unsubscribe when multiple close/error events fire', async function () {
-      labsStub.withArgs('editorPresence').returns(true);
       const baseline = postPresence._emitter.listenerCount('presence');
 
       const { req, res } = makeReqRes();

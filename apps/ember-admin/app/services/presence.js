@@ -15,7 +15,6 @@ const CONNECTING_ERROR_LOG_THRESHOLD = 3;
  * updates to the admin.
  */
 export default class PresenceService extends Service {
-    @service feature;
     @service ghostPaths;
     @service session;
 
@@ -29,9 +28,6 @@ export default class PresenceService extends Service {
 
     start() {
         if (this._source || typeof window === 'undefined' || !window.EventSource) {
-            return;
-        }
-        if (!this.feature.get('editorPresence')) {
             return;
         }
         const streamUrl = this.ghostPaths.url.api('presence', 'stream');
@@ -88,7 +84,7 @@ export default class PresenceService extends Service {
     }
 
     stop() {
-        if (this._currentPostId && this.feature.get('editorPresence')) {
+        if (this._currentPostId) {
             this._sendLeave(this._currentPostId);
         }
         if (this._source) {
@@ -109,7 +105,7 @@ export default class PresenceService extends Service {
      * presence — that would have lit up analytics views too).
      */
     enterPost(postId) {
-        if (!postId || !this.feature.get('editorPresence')) {
+        if (!postId) {
             return;
         }
         if (!this._source) {
@@ -129,7 +125,7 @@ export default class PresenceService extends Service {
     }
 
     leavePost(postId) {
-        if (!postId || !this.feature.get('editorPresence')) {
+        if (!postId) {
             return;
         }
         if (this._currentPostId === postId) {

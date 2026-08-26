@@ -6,7 +6,7 @@
             @class="gh-editor gh-view relative"
             as |editor|
         >
-            <header class="gh-editor-header br2 pe-none {{if (feature 'editorPresence') "gh-editor-header--with-presence"}}">
+            <header class="gh-editor-header br2 pe-none gh-editor-header--with-presence">
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
@@ -46,9 +46,7 @@
                     </div>
 
                     <div class="gh-editor-header-right">
-                        {{#if (feature 'editorPresence')}}
-                            <GhPresenceAvatars @postId={{this.post.id}} />
-                        {{/if}}
+                        <GhPresenceAvatars @postId={{this.post.id}} />
                         <section class="gh-editor-publish-buttons">
                             {{#unless this.post.isNew}}
                                 <Editor::PublishButtons @publishManagement={{publishManagement}} />

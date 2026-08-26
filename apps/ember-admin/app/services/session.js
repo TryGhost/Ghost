@@ -77,9 +77,6 @@ export default class SessionService extends ESASessionService {
 
         this.loadServerNotifications();
 
-        // Open the presence stream once features are loaded so the
-        // service can check the editorPresence flag. No-op when the
-        // flag is off or the browser lacks EventSource.
         this.presence.start();
 
         // pre-emptively load editor code in the background to avoid loading state when opening editor

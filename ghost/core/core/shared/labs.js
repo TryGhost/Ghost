@@ -57,7 +57,6 @@ const PRIVATE_FEATURES = [
   'tagDetailsReact',
   'selfServeArchives',
   'machinePayments',
-  'editorPresence',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

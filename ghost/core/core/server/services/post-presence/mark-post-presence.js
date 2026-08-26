@@ -1,4 +1,3 @@
-const labs = require('../../../shared/labs');
 const logging = require('@tryghost/logging');
 const postPresence = require('./index');
 
@@ -21,9 +20,6 @@ function getPostData(post) {
  */
 module.exports = function markPostPresence(frame, post) {
   try {
-    if (!labs.isSet('editorPresence')) {
-      return;
-    }
     if (!frame || !frame.user || !post) {
       return;
     }
