@@ -3,6 +3,16 @@ import {MemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
+const mockRunAnalyticsFlag = vi.hoisted(() => ({enabled: true}));
+
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>('@tryghost/admin-x-framework/hooks');
+    return {
+        ...actual,
+        useFeatureFlag: () => mockRunAnalyticsFlag.enabled
+    };
+});
+
 const {mockUseBrowseAutomations, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
     mockUseBrowseAutomations: vi.fn(),
     mockUseBrowseSettings: vi.fn(),
@@ -65,12 +75,22 @@ const automations = [{
     id: 'automation-id-1',
     name: 'Free member welcome flow',
     slug: 'member-welcome-email-free',
-    status: 'active' as const
+    status: 'active' as const,
+    stats: {
+        last_run_created_at: '2026-07-21T07:12:00.000Z',
+        total_run_count: 1432,
+        in_progress_run_count: 118
+    }
 }, {
     id: 'automation-id-2',
     name: 'Paid member welcome flow',
     slug: 'member-welcome-email-paid',
-    status: 'inactive' as const
+    status: 'inactive' as const,
+    stats: {
+        last_run_created_at: null,
+        total_run_count: 0,
+        in_progress_run_count: 0
+    }
 }];
 
 const stripeConnectedSettings = {
@@ -85,15 +105,32 @@ const renderPage = () => render(<MemoryRouter><Automations /></MemoryRouter>);
 describe('Automations', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockRunAnalyticsFlag.enabled = true;
         mockUseBrowseAutomations.mockReturnValue({data: {automations}, isError: false, isLoading: false});
         mockUseBrowseSettings.mockReturnValue({data: stripeConnectedSettings, isLoading: false});
         mockUseBrowseConfig.mockReturnValue({data: {config: {}}, isLoading: false});
         mockUseCurrentUser.mockReturnValue({data: {id: 'user-1', roles: [{name: 'Owner'}]}});
     });
 
+    it('hides run analytics when the private feature is disabled', () => {
+        mockRunAnalyticsFlag.enabled = false;
+
+        renderPage();
+
+        expect(screen.queryByRole('columnheader', {name: 'Last entry'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Total entries'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'In progress'})).not.toBeInTheDocument();
+        expect(screen.queryByText('1,432')).not.toBeInTheDocument();
+    });
+
     it('shows free and paid sequences when Stripe is connected', () => {
         renderPage();
 
+        expect(mockUseBrowseAutomations).toHaveBeenCalledWith({
+            defaultErrorHandler: false,
+            refetchOnMount: 'always',
+            staleTime: 0
+        });
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     });

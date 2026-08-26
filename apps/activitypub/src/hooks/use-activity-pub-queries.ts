@@ -9,6 +9,7 @@ import {
     type GetAccountFollowsResponse,
     type Notification,
     type Post,
+    type Preferences,
     type ReplyChainResponse,
     type SearchResults,
     type SocialWebDomain,
@@ -95,6 +96,7 @@ const QUERY_KEYS = {
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
     notificationsCount: (handle: string) => ['notifications_count', handle],
+    preferences: ['preferences'],
     blockedAccounts: (handle: string) => ['blocked_accounts', handle],
     blockedDomains: (handle: string) => ['blocked_domains', handle],
     topics: () => ['topics']
@@ -1782,6 +1784,61 @@ export function useFeedForUser(options: {enabled: boolean}) {
     };
 
     return {feedQuery, updateFeedActivity};
+}
+
+export function usePreferencesForUser() {
+    return useQuery<Preferences>({
+        queryKey: QUERY_KEYS.preferences,
+        // Preferences are owner/admin only, so a failure here is usually a 403
+        // that won't resolve by asking again. Callers fall back to hiding
+        // sensitive media.
+        retry: false,
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+
+            return api.getPreferences();
+        }
+    });
+}
+
+export function useUpdatePreferencesForUser({onError}: {onError?: () => void} = {}) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        scope: {id: 'preferences'},
+        async mutationFn(preferences: Preferences) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+
+            return api.updatePreferences(preferences);
+        },
+        async onMutate(preferences) {
+            await queryClient.cancelQueries({
+                queryKey: QUERY_KEYS.preferences
+            });
+
+            const previousPreferences = queryClient.getQueryData<Preferences>(QUERY_KEYS.preferences);
+
+            queryClient.setQueryData(QUERY_KEYS.preferences, preferences);
+
+            return {previousPreferences};
+        },
+        onError(_error, _preferences, context) {
+            if (context?.previousPreferences === undefined) {
+                // There was nothing to roll back to, so drop the optimistic
+                // value rather than leaving showSensitiveMedia: true cached.
+                queryClient.removeQueries({queryKey: QUERY_KEYS.preferences});
+            } else {
+                queryClient.setQueryData(QUERY_KEYS.preferences, context.previousPreferences);
+            }
+
+            onError?.();
+        },
+        onSuccess(preferences) {
+            queryClient.setQueryData(QUERY_KEYS.preferences, preferences);
+        }
+    });
 }
 
 export function useInboxForUser(options: {enabled: boolean}) {

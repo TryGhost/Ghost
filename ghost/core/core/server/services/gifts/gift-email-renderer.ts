@@ -5,6 +5,8 @@ import type {GiftPurchaseConfirmationData} from './email-templates/gift-purchase
 import {renderText as renderPurchaseConfirmationText} from './email-templates/gift-purchase-confirmation';
 import type {GiftReminderData} from './email-templates/gift-reminder';
 import {renderText as renderReminderText} from './email-templates/gift-reminder';
+import type {GiftDeliveryEmailData} from './email-templates/gift-delivery';
+import {renderText as renderDeliveryText} from './email-templates/gift-delivery';
 
 export type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -14,6 +16,7 @@ export class GiftEmailRenderer {
 
     private purchaseConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
     private reminderTemplate: HandlebarsTemplateDelegate | null = null;
+    private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
 
     constructor({t}: {t: Translate}) {
         this.t = t;
@@ -47,11 +50,23 @@ export class GiftEmailRenderer {
         };
     }
 
+    async renderDelivery(data: GiftDeliveryEmailData): Promise<{html: string; text: string}> {
+        if (!this.deliveryTemplate) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery.hbs'), 'utf8');
+            this.deliveryTemplate = this.handlebars.compile(source);
+        }
+
+        return {
+            html: this.deliveryTemplate(data),
+            text: renderDeliveryText(data, this.t)
+        };
+    }
+
     private registerTemplateHelpers(): void {
         this.handlebars.registerHelper('t', (key: string, options?: Handlebars.HelperOptions) => {
             const hash = options?.hash || {};
-            const escapedHash = Object.entries(hash).reduce<Record<string, string>>((acc, [name, value]) => {
-                acc[name] = this.htmlSafeInterpolationValue(value);
+            const escapedHash = Object.entries(hash).reduce<Record<string, unknown>>((acc, [name, value]) => {
+                acc[name] = typeof value === 'number' ? value : this.htmlSafeInterpolationValue(value);
                 return acc;
             }, {});
 

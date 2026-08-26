@@ -30,6 +30,10 @@ function getLatestCheckoutSession() {
     return stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
 }
 
+function getCheckoutGiftToken(checkoutSession) {
+    return new URL(checkoutSession.success_url).searchParams.get('gift_token');
+}
+
 function toWebhookMetadata(metadata) {
     const result = {};
 
@@ -70,6 +74,7 @@ async function createGift(overrides = {}) {
         amount: 5000,
         stripe_checkout_session_id: `cs_gift_${sequence}`,
         stripe_payment_intent_id: `pi_gift_${sequence}`,
+        checkout_started_at: now,
         consumes_at: null,
         expires_at: expiresAt,
         status: 'purchased',
@@ -110,6 +115,7 @@ async function expectGiftCheckoutError(bodyOverrides = {}) {
             type: 'gift',
             tierId: paidTier.id,
             cadence: 'month',
+            customerEmail: 'gift-buyer@example.com',
             metadata: {},
             ...bodyOverrides
         })
@@ -167,11 +173,12 @@ describe('Gift Subscriptions', function () {
             const checkoutSession = getLatestCheckoutSession();
 
             assert.ok(checkoutSession, 'Checkout session should be captured');
-            assert.ok(checkoutSession.metadata.ghost_gift, 'Should have ghost_gift metadata');
-            assert.equal(checkoutSession.metadata.tier_id, paidTier.id);
-            assert.equal(checkoutSession.metadata.cadence, 'month');
-            assert.equal(String(checkoutSession.metadata.duration), '1');
-            assert.ok(checkoutSession.metadata.gift_token, 'Should have a gift token');
+            assert.deepEqual(Object.keys(checkoutSession.metadata), ['ghost_gift_id']);
+            const pendingGift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(pendingGift.get('status'), 'payment_pending');
+            assert.equal(pendingGift.get('tier_id'), paidTier.id);
+            assert.equal(pendingGift.get('cadence'), 'month');
+            assert.ok(getCheckoutGiftToken(checkoutSession), 'Should have a gift token in the success URL');
 
             await stripeMocker.sendWebhook({
                 type: 'checkout.session.completed',
@@ -179,6 +186,7 @@ describe('Gift Subscriptions', function () {
                     object: {
                         id: checkoutSession.id,
                         mode: 'payment',
+                        payment_status: 'paid',
                         amount_total: paidTier.monthly_price,
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
@@ -193,7 +201,7 @@ describe('Gift Subscriptions', function () {
 
             // Verify gift record was persisted in the database
             const gift = await models.Gift.findOne({
-                token: checkoutSession.metadata.gift_token
+                id: checkoutSession.metadata.ghost_gift_id
             }, {require: true});
 
             assert.equal(gift.get('buyer_email'), 'gift-buyer@example.com');
@@ -222,6 +230,131 @@ describe('Gift Subscriptions', function () {
             });
         });
 
+        it('waits for delayed payment success before completing a gift', async function () {
+            const paidTier = await getPaidTier();
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+            const baseSession = {
+                id: checkoutSession.id,
+                mode: 'payment',
+                amount_total: paidTier.monthly_price,
+                currency: paidTier.currency.toLowerCase(),
+                customer: checkoutSession.customer,
+                customer_details: {email: 'delayed-gift-buyer@example.com'},
+                metadata: toWebhookMetadata(checkoutSession.metadata)
+            };
+
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {object: {...baseSession, payment_status: 'unpaid', payment_intent: null}}
+            });
+            await DomainEvents.allSettled();
+
+            const gift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(gift.get('status'), 'payment_pending');
+
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.async_payment_succeeded',
+                data: {object: {...baseSession, payment_status: 'paid', payment_intent: 'pi_delayed_gift'}}
+            });
+            await DomainEvents.allSettled();
+            await gift.refresh();
+
+            assert.equal(gift.get('status'), 'purchased');
+            assert.equal(gift.get('stripe_payment_intent_id'), 'pi_delayed_gift');
+        });
+
+        it('leaves a gift unpurchased when delayed payment fails', async function () {
+            const paidTier = await getPaidTier();
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+            const session = {
+                id: checkoutSession.id,
+                mode: 'payment',
+                payment_status: 'unpaid',
+                amount_total: paidTier.monthly_price,
+                currency: paidTier.currency.toLowerCase(),
+                customer: checkoutSession.customer,
+                customer_details: {email: 'failed-gift-buyer@example.com'},
+                metadata: toWebhookMetadata(checkoutSession.metadata),
+                payment_intent: 'pi_failed_gift'
+            };
+
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {object: session}
+            });
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.async_payment_failed',
+                data: {object: session}
+            });
+            await DomainEvents.allSettled();
+
+            const gift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(gift.get('status'), 'payment_pending');
+            assert.equal(gift.get('purchased_at'), null);
+        });
+
+        it('uses the persisted buyer email when the paid gift webhook has no customer details', async function () {
+            enableGiftCustomization();
+
+            const paidTier = await getPaidTier();
+            const buyerEmail = 'persisted-buyer@example.com';
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    duration: 1,
+                    customerEmail: buyerEmail,
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        id: checkoutSession.id,
+                        mode: 'payment',
+                        amount_total: paidTier.monthly_price,
+                        currency: paidTier.currency.toLowerCase(),
+                        customer: checkoutSession.customer,
+                        payment_status: 'paid',
+                        metadata: toWebhookMetadata(checkoutSession.metadata),
+                        payment_intent: 'pi_gift_no_email'
+                    }
+                }
+            });
+            await DomainEvents.allSettled();
+
+            const gift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(gift.get('status'), 'purchased');
+            assert.equal(gift.get('buyer_email'), buyerEmail);
+            mockManager.assert.sentEmail({to: 'jbloggs@example.com'});
+            mockManager.assert.sentEmail({to: buyerEmail});
+        });
+
         it('Can purchase a gift as an authenticated member', async function () {
             const paidTier = await getPaidTier();
             const email = 'gift-member-buyer@example.com';
@@ -245,7 +378,8 @@ describe('Gift Subscriptions', function () {
             const checkoutSession = getLatestCheckoutSession();
 
             assert.ok(checkoutSession, 'Checkout session should be captured');
-            assert.equal(checkoutSession.metadata.cadence, 'year');
+            const pendingGift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(pendingGift.get('cadence'), 'year');
 
             await stripeMocker.sendWebhook({
                 type: 'checkout.session.completed',
@@ -253,6 +387,7 @@ describe('Gift Subscriptions', function () {
                     object: {
                         id: checkoutSession.id,
                         mode: 'payment',
+                        payment_status: 'paid',
                         amount_total: paidTier.yearly_price,
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
@@ -267,7 +402,7 @@ describe('Gift Subscriptions', function () {
 
             // Verify gift record has buyer_member_id populated
             const gift = await models.Gift.findOne({
-                token: checkoutSession.metadata.gift_token
+                id: checkoutSession.metadata.ghost_gift_id
             }, {require: true});
 
             assert.equal(gift.get('buyer_email'), email);
@@ -290,15 +425,17 @@ describe('Gift Subscriptions', function () {
                     type: 'gift',
                     tierId: paidTier.id,
                     duration: 3,
+                    customerEmail: buyerEmail,
                     metadata: {}
                 })
                 .expectStatus(200);
 
             const checkoutSession = getLatestCheckoutSession();
 
-            assert.equal(checkoutSession.metadata.cadence, 'month');
-            assert.equal(String(checkoutSession.metadata.duration), '3');
-            assert.equal(checkoutSession.metadata.tier_id, paidTier.id);
+            const pendingGift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(pendingGift.get('cadence'), 'month');
+            assert.equal(pendingGift.get('duration'), 3);
+            assert.equal(pendingGift.get('tier_id'), paidTier.id);
             assert.ok(checkoutSession.success_url.includes('gift_duration=3'));
 
             await stripeMocker.sendWebhook({
@@ -307,6 +444,7 @@ describe('Gift Subscriptions', function () {
                     object: {
                         id: checkoutSession.id,
                         mode: 'payment',
+                        payment_status: 'paid',
                         amount_total: expectedAmount,
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
@@ -320,7 +458,7 @@ describe('Gift Subscriptions', function () {
             await DomainEvents.allSettled();
 
             const gift = await models.Gift.findOne({
-                token: checkoutSession.metadata.gift_token
+                id: checkoutSession.metadata.ghost_gift_id
             }, {require: true});
 
             assert.equal(gift.get('cadence'), 'month');
@@ -401,13 +539,15 @@ describe('Gift Subscriptions', function () {
                     type: 'gift',
                     tierId: paidTier.id,
                     cadence: 'year',
+                    customerEmail: 'legacy-gift-buyer@example.com',
                     metadata: {}
                 })
                 .expectStatus(200);
 
             const checkoutSession = getLatestCheckoutSession();
-            assert.equal(checkoutSession.metadata.cadence, 'year');
-            assert.equal(String(checkoutSession.metadata.duration), '1');
+            const pendingGift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(pendingGift.get('cadence'), 'year');
+            assert.equal(pendingGift.get('duration'), 1);
         });
 
         it('Includes gift token in the purchase success URL', async function () {
@@ -427,7 +567,7 @@ describe('Gift Subscriptions', function () {
 
             assert.ok(successUrl, 'Should have a success URL');
             assert.ok(successUrl.includes('stripe=gift-purchase-success'), 'Success URL should contain stripe=gift-purchase-success');
-            assert.ok(successUrl.includes(`gift_token=${checkoutSession.metadata.gift_token}`), 'Success URL should contain the gift token');
+            assert.ok(successUrl.includes(`gift_token=${getCheckoutGiftToken(checkoutSession)}`), 'Success URL should contain the gift token');
         });
 
         it('Handles Stripe webhook idempotency for gift purchases', async function () {
@@ -450,6 +590,7 @@ describe('Gift Subscriptions', function () {
                     object: {
                         id: checkoutSession.id,
                         mode: 'payment',
+                        payment_status: 'paid',
                         amount_total: paidTier.monthly_price,
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
@@ -468,7 +609,7 @@ describe('Gift Subscriptions', function () {
 
             // Verify only one gift record exists for this checkout session
             const gifts = await models.Gift.findAll({
-                filter: `token:'${checkoutSession.metadata.gift_token}'`
+                filter: `id:'${checkoutSession.metadata.ghost_gift_id}'`
             });
 
             assert.equal(gifts.length, 1, 'Should have exactly one gift record');
@@ -492,6 +633,7 @@ describe('Gift Subscriptions', function () {
                     type: 'gift',
                     tierId: paidTier.id,
                     duration: 3,
+                    customerEmail: 'refund-buyer@example.com',
                     metadata: {}
                 })
                 .expectStatus(200);
@@ -506,6 +648,7 @@ describe('Gift Subscriptions', function () {
                     object: {
                         id: checkoutSession.id,
                         mode: 'payment',
+                        payment_status: 'paid',
                         amount_total: expectedAmount,
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
@@ -520,7 +663,7 @@ describe('Gift Subscriptions', function () {
 
             // Verify the gift was created
             const gift = await models.Gift.findOne({
-                token: checkoutSession.metadata.gift_token
+                id: checkoutSession.metadata.ghost_gift_id
             }, {require: true});
 
             assert.equal(gift.get('status'), 'purchased');
@@ -543,7 +686,7 @@ describe('Gift Subscriptions', function () {
 
             // Verify the gift is now refunded
             const refundedGift = await models.Gift.findOne({
-                token: checkoutSession.metadata.gift_token
+                id: checkoutSession.metadata.ghost_gift_id
             }, {require: true});
 
             assert.equal(refundedGift.get('status'), 'refunded');
@@ -564,6 +707,7 @@ describe('Gift Subscriptions', function () {
                 amount: 500,
                 stripe_checkout_session_id: 'cs_ignore_non_gift',
                 stripe_payment_intent_id: 'pi_ignore_non_gift',
+                checkout_started_at: new Date(),
                 expires_at: addYears(new Date(), 10),
                 status: 'purchased',
                 purchased_at: new Date()
@@ -602,6 +746,7 @@ describe('Gift Subscriptions', function () {
                 amount: 500,
                 stripe_checkout_session_id: 'cs_ignore_sub',
                 stripe_payment_intent_id: 'pi_ignore_sub',
+                checkout_started_at: new Date(),
                 expires_at: addYears(new Date(), 10),
                 status: 'purchased',
                 purchased_at: new Date()
@@ -629,7 +774,11 @@ describe('Gift Subscriptions', function () {
 
     describe('Check if a gift is redeemable', function () {
         it('returns gift details for an anonymous visitor when the token is redeemable', async function () {
-            const gift = await createGift();
+            const gift = await createGift({
+                buyer_name: 'Jamie',
+                recipient_name: 'Taylor',
+                personal_message: 'Enjoy!'
+            });
 
             const {body} = await membersAgent
                 .get(`/api/gifts/${gift.get('token')}/redeem/`)
@@ -641,6 +790,9 @@ describe('Gift Subscriptions', function () {
             assert.equal(body.gifts[0].duration, 1);
             assert.equal(body.gifts[0].currency, 'usd');
             assert.equal(body.gifts[0].amount, 5000);
+            assert.equal(body.gifts[0].buyer_name, 'Jamie');
+            assert.equal(body.gifts[0].recipient_name, 'Taylor');
+            assert.equal(body.gifts[0].message, 'Enjoy!');
             assert.equal(body.gifts[0].expires_at, new Date(gift.get('expires_at')).toISOString());
             assert.deepEqual(body.gifts[0].tier, {
                 id: paidProduct.id,
@@ -649,6 +801,8 @@ describe('Gift Subscriptions', function () {
                 benefits: paidProduct.related('benefits').toJSON().map(item => item.name)
             });
             assert.equal(body.gifts[0].buyer_email, undefined);
+            assert.equal(body.gifts[0].recipient_email, undefined);
+            assert.equal(body.gifts[0].delivery_status, undefined);
             assert.equal(body.gifts[0].redeemed_at, undefined);
             assert.equal(body.gifts[0].status, undefined);
             assert.equal(body.gifts[0].consumes_at, null);
@@ -1235,6 +1389,7 @@ describe('Gift Subscriptions', function () {
                 amount: 5000,
                 stripe_checkout_session_id: `cs_gift_continue_${continueSequence}`,
                 stripe_payment_intent_id: `pi_gift_continue_${continueSequence}`,
+                checkout_started_at: now,
                 consumes_at: consumesAt,
                 expires_at: new Date('2030-01-01T00:00:00.000Z'),
                 status: 'redeemed',
@@ -1405,6 +1560,7 @@ describe('Gift Subscriptions', function () {
                 amount: 5000,
                 stripe_checkout_session_id: 'cs_gift_continue_unrelated',
                 stripe_payment_intent_id: 'pi_gift_continue_unrelated',
+                checkout_started_at: new Date(),
                 consumes_at: null,
                 expires_at: new Date('2030-01-01T00:00:00.000Z'),
                 status: 'purchased',

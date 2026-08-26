@@ -6,7 +6,7 @@ import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import {LabelFilterRenderer} from '@/members/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
-import {getMemberFields} from './member-fields';
+import {CUSTOM_FIELDS_PREFIX, getMemberFields} from './member-fields';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
@@ -285,8 +285,8 @@ export function useMemberFilterFields({
             let field;
             if (key.startsWith('newsletters.')) {
                 field = fields['newsletters.:slug'];
-            } else if (key.startsWith('custom_field.')) {
-                field = fields['custom_field.:key'];
+            } else if (key.startsWith(CUSTOM_FIELDS_PREFIX)) {
+                field = fields['custom_fields.:key'];
             } else {
                 field = fields[key as MemberFieldKey];
             }
@@ -371,7 +371,7 @@ export function useMemberFilterFields({
         // "Custom field" door. A simple field filters on its value; a composite field's
         // renderer opens its parts (plus "Any") in the pill.
         if (customFieldsEnabled) {
-            const customFieldFields = customFields.map(field => createFieldConfig(`custom_field.${field.key}`, {
+            const customFieldFields = customFields.map(field => createFieldConfig(`custom_fields.${field.key}`, {
                 label: field.name,
                 // The dropdown entry and the added filter show the field type's own icon
                 // rather than a generic custom-field mark.
@@ -389,7 +389,7 @@ export function useMemberFilterFields({
             // removable-only pill with an archive icon. Its key is already in the filter,
             // so the picker's own de-dup keeps it out of the add-list — it only ever
             // renders as an existing pill.
-            const archivedFieldFields = archivedCustomFields.map(field => createFieldConfig(`custom_field.${field.key}`, {
+            const archivedFieldFields = archivedCustomFields.map(field => createFieldConfig(`custom_fields.${field.key}`, {
                 label: field.name,
                 icon: React.createElement(LucideIcon.Archive, {className: 'size-4'}),
                 // Read-only: the operator and value stay visible so the segment reads

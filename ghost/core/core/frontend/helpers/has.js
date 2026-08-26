@@ -107,9 +107,11 @@ function evaluateStringMatch(expr, str, ci) {
  * @param {Object} data - global params
  */
 function evaluateList(type, expr, obj, data) {
-    return expr.split(',').map(function (prop) {
+    const props = expr.split(',').map(function (prop) {
         return prop.trim().toLocaleLowerCase();
-    })[type](function (prop) {
+    });
+
+    return props[type](function (prop) {
         if (prop.match(/^@/)) {
             return _.has(data, prop.replace(/@/, '')) && !_.isEmpty(_.get(data, prop.replace(/@/, '')));
         } else {

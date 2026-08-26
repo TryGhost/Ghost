@@ -108,7 +108,10 @@ export class StripeTestService {
         name?: string;
     } = {}): Promise<void> {
         const session = this.getCheckoutSessions()
-            .filter(item => item.response.mode === 'payment' && item.response.metadata.ghost_gift === 'true')
+            .filter((item) => {
+                return item.response.mode === 'payment'
+                    && (Boolean(item.response.metadata.ghost_gift_id) || item.response.metadata.ghost_gift === 'true');
+            })
             .at(-1);
 
         if (!session) {

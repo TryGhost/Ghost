@@ -1421,8 +1421,11 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 48, nullable: false, unique: true},
 
-        buyer_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        buyer_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         buyer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
+        buyer_name: {type: 'string', maxlength: 191, nullable: true},
+        recipient_name: {type: 'string', maxlength: 191, nullable: true},
+        personal_message: {type: 'text', maxlength: 500, nullable: true},
 
         redeemer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
 
@@ -1437,18 +1440,19 @@ module.exports = {
         currency: {type: 'string', maxlength: 50, nullable: false},
         amount: {type: 'integer', nullable: false, unsigned: true},
 
-        stripe_checkout_session_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
-        stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
+        stripe_checkout_session_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
+        stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
 
+        checkout_started_at: {type: 'dateTime', nullable: true},
         consumes_at: {type: 'dateTime', nullable: true},
-        expires_at: {type: 'dateTime', nullable: false},
+        expires_at: {type: 'dateTime', nullable: true},
 
         status: {
             type: 'string', maxlength: 50, nullable: false, validations: {
-                isIn: [['purchased', 'redeemed', 'consumed', 'expired', 'refunded']]
+                isIn: [['payment_pending', 'purchased', 'redeemed', 'consumed', 'expired', 'refunded']]
             }
         },
-        purchased_at: {type: 'dateTime', nullable: false},
+        purchased_at: {type: 'dateTime', nullable: true},
         redeemed_at: {type: 'dateTime', nullable: true},
         consumed_at: {type: 'dateTime', nullable: true},
         expired_at: {type: 'dateTime', nullable: true},
@@ -1456,7 +1460,24 @@ module.exports = {
         consumes_soon_reminder_sent_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
             ['status', 'consumes_at'],
-            ['status', 'expires_at']
+            ['status', 'expires_at'],
+            ['status', 'checkout_started_at']
+        ]
+    },
+    gift_deliveries: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        gift_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'gifts.id', cascadeDelete: true},
+        recipient_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        status: {
+            type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {
+                isIn: [['pending', 'sending', 'sent', 'failed', 'cancelled']]
+            }
+        },
+        started_at: {type: 'dateTime', nullable: true},
+        email_sent_at: {type: 'dateTime', nullable: true},
+        email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'started_at']
         ]
     }
 };

@@ -69,7 +69,7 @@ const TagDetail: React.FC = () => {
     // Lets our own post-save redirect through the unsaved-changes blocker.
     const bypassGuardRef = React.useRef(false);
     const blockedNavigationRef = React.useRef(false);
-    const proceedBlockedNavigationRef = React.useRef<() => void>(() => {});
+    const proceedBlockedNavigationAfterSaveRef = React.useRef(false);
     const [saveStatus, setSaveStatus] = React.useState<SaveStatus>('idle');
     const [showDelete, setShowDelete] = React.useState(false);
     const [isDeleting, setIsDeleting] = React.useState(false);
@@ -112,6 +112,7 @@ const TagDetail: React.FC = () => {
     React.useEffect(() => {
         bypassGuardRef.current = false;
         blockedNavigationRef.current = false;
+        proceedBlockedNavigationAfterSaveRef.current = false;
         setShowDelete(false);
         setIsDeleting(false);
         setBusyImageFields(new Set());
@@ -227,7 +228,7 @@ const TagDetail: React.FC = () => {
             touchedFieldsRef.current.clear();
             setSaveStatus('success');
             if (blockedNavigationRef.current) {
-                proceedBlockedNavigationRef.current();
+                proceedBlockedNavigationAfterSaveRef.current = true;
                 return;
             }
             // Move `/tags/new` to the saved tag and follow slug renames. A
@@ -280,21 +281,38 @@ const TagDetail: React.FC = () => {
 
     const shouldGuardNavigation = activeMutation.isPending || hasPendingImageUpload || isDeleting || hasUnsavedChanges;
     useConfirmUnload(shouldGuardNavigation);
-    const blocker = useBlocker(({currentLocation, nextLocation}) => !bypassGuardRef.current && shouldGuardNavigation && currentLocation.pathname !== nextLocation.pathname);
+    const blocker = useBlocker(({currentLocation, nextLocation}) => {
+        const shouldBlock = !bypassGuardRef.current && shouldGuardNavigation && currentLocation.pathname !== nextLocation.pathname;
+        if (shouldBlock) {
+            // The mutation can resolve before React rerenders with a blocked
+            // state, so record the navigation synchronously in the blocker.
+            blockedNavigationRef.current = true;
+        }
+        return shouldBlock;
+    });
     // Native `<a href="#/…">` navigations (the sidebar, links into Ember
     // routes) never reach the react-router blocker above. Ember's own guard
     // can't cover this screen either: with `tagDetailsReact` on, the Ember tag
     // route aborts and never registers into the `unsaved-changes` service.
-    const anchorGuard = useHashLinkNavigationGuard(shouldGuardNavigation);
+    const anchorGuard = useHashLinkNavigationGuard(shouldGuardNavigation, () => {
+        blockedNavigationRef.current = true;
+    });
     const isBlocked = blocker.state === 'blocked' || anchorGuard.isBlocked;
-    blockedNavigationRef.current = isBlocked;
-    proceedBlockedNavigationRef.current = () => {
+    if (isBlocked) {
+        blockedNavigationRef.current = true;
+    }
+    React.useEffect(() => {
+        if (!proceedBlockedNavigationAfterSaveRef.current || activeMutation.isPending || !isBlocked) {
+            return;
+        }
+        proceedBlockedNavigationAfterSaveRef.current = false;
+        blockedNavigationRef.current = false;
         if (anchorGuard.isBlocked) {
             anchorGuard.proceed();
         } else {
             blocker.proceed?.();
         }
-    };
+    }, [activeMutation.isPending, anchorGuard, blocker, isBlocked]);
     // DirtyConfirmDialog's confirm action auto-closes the dialog, firing
     // onOpenChange(false) while the blocker still reads as blocked; without
     // this flag the close handler would reset the very navigation the user
@@ -441,6 +459,8 @@ const TagDetail: React.FC = () => {
                     open={isBlocked && !activeMutation.isPending}
                     onConfirm={() => {
                         leaveConfirmedRef.current = true;
+                        blockedNavigationRef.current = false;
+                        proceedBlockedNavigationAfterSaveRef.current = false;
                         if (anchorGuard.isBlocked) {
                             anchorGuard.proceed();
                         } else {
@@ -456,6 +476,8 @@ const TagDetail: React.FC = () => {
                             return;
                         }
                         if (isBlocked) {
+                            blockedNavigationRef.current = false;
+                            proceedBlockedNavigationAfterSaveRef.current = false;
                             blocker.reset?.();
                             anchorGuard.reset();
                         }

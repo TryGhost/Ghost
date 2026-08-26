@@ -200,9 +200,11 @@ class GhostServer {
 
     /**
      * Add a task that should be called on shutdown
+     * @param {() => Promise<any>} task
+     * @param {string} [label] - name used in shutdown timing logs
      */
-    registerCleanupTask(task) {
-        this.cleanupTasks.push(task);
+    registerCleanupTask(task, label) {
+        this.cleanupTasks.push({task, label: label || `cleanup task #${this.cleanupTasks.length + 1}`});
     }
 
     /**
@@ -217,12 +219,24 @@ class GhostServer {
      */
     async _stopServer() {
         const util = require('util');
-        return util.promisify(this.httpServer.stop)();
+        const startTime = Date.now();
+        try {
+            return await util.promisify(this.httpServer.stop)();
+        } finally {
+            logging.info(`Shutdown: stopped HTTP server in ${Date.now() - startTime}ms`);
+        }
     }
 
     async _cleanup() {
-        // Wait for all cleanup tasks to finish
-        return Promise.all(this.cleanupTasks.map(task => task()));
+        // Wait for all cleanup tasks to finish, timing each so a slow one is identifiable
+        return Promise.all(this.cleanupTasks.map(async ({task, label}) => {
+            const startTime = Date.now();
+            try {
+                return await task();
+            } finally {
+                logging.info(`Shutdown: ${label} finished in ${Date.now() - startTime}ms`);
+            }
+        }));
     }
 
     /**

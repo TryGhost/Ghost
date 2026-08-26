@@ -17,6 +17,11 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 
 // A Ghost export re-imported somewhere its field no longer exists: archived since, or a
 // different site. The header says what the column is even though nothing matches it.
+// Every browse of the field list, whether or not it carries a status filter: the members
+// screen behind this modal asks for archived fields too, and an exact-path fake would
+// leave that request unhandled.
+const customFieldsBrowsePath = new RegExp('^/members/custom_fields/(\\?|$)');
+
 const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 
 /**
@@ -27,7 +32,7 @@ const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 function fakeCustomFieldsWorld() {
     const fields: Array<Record<string, unknown>> = [];
     fakeMembers([member({name: 'Ada Lovelace'})]);
-    fakeAdminEndpoint('GET', '/members/custom_fields/', () => ({members_custom_fields: fields}));
+    fakeAdminEndpoint('GET', customFieldsBrowsePath, () => ({members_custom_fields: fields}));
     const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
         meta: {stats: {imported: 1, invalid: []}, import_label: {name: 'Import', slug: 'import'}}
     });
@@ -141,6 +146,59 @@ describe('Import members custom fields', () => {
 
         await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
         await expect.element(fieldSelect('nickname')).not.toHaveTextContent('Custom');
+    });
+
+    it('selects the second of two fields sharing a name from the keyboard', async () => {
+        const {uploadApi} = fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await userEvent.fill(createForm().getByLabelText('Name'), 'Name');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Name');
+
+        await importToggle('city').click();
+        await fieldSelect('city').click();
+        await userEvent.fill(page.getByPlaceholder('Search fields...'), 'Name');
+        await expect(page.getByRole('option', {name: 'Name', exact: true})).toHaveCount(2);
+
+        // Highlighting and selecting have to agree about which of the two this is.
+        await userEvent.keyboard('{ArrowDown}{Enter}');
+
+        await expect.element(fieldSelect('city')).toHaveTextContent('Custom');
+        // A target belongs to one column at a time, so this is the custom field changing hands.
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+
+        await importToggle('nickname').click();
+        await page.getByRole('button', {name: 'Import 1 member'}).click();
+        await expect.poll(() => uploadApi.lastRequest && sentMapping(uploadApi.lastRequest.body)).toEqual({
+            email: 'email',
+            name: 'name',
+            nickname: '',
+            city: 'custom_fields.name',
+            postcode: ''
+        });
+    });
+
+    it('searches the names on the rows rather than the columns behind them', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+
+        await fieldSelect('nickname').click();
+        await userEvent.fill(page.getByPlaceholder('Search fields...'), 'custom');
+
+        // Force-mounted, so it survives any search. Nothing else should: no field is "custom".
+        await expect.element(page.getByRole('option', {name: 'Add custom field'})).toBeVisible();
+        await expect.element(page.getByRole('option', {name: 'Subscribed to emails'})).not.toBeInTheDocument();
+        await expect.element(page.getByRole('option', {name: 'Nickname'})).not.toBeInTheDocument();
+
+        await userEvent.fill(page.getByPlaceholder('Search fields...'), 'nick');
+        await expect.element(page.getByRole('option', {name: 'Nickname'})).toBeVisible();
     });
 
     it('puts the create form away when another picker is opened', async () => {
@@ -412,7 +470,7 @@ describe('Import members custom fields', () => {
     // A query whose only job is to add targets to a list must not be able to stop the import.
     it('imports with membership fields when custom fields cannot be loaded', async () => {
         fakeMembers([member({name: 'Ada Lovelace'})]);
-        fakeAdminEndpoint('GET', '/members/custom_fields/', {errors: [{message: 'nope'}]}, {status: 500});
+        fakeAdminEndpoint('GET', customFieldsBrowsePath, {errors: [{message: 'nope'}]}, {status: 500});
         const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
             meta: {stats: {imported: 1, invalid: []}, import_label: {name: 'Import', slug: 'import'}}
         });
@@ -581,6 +639,21 @@ describe('Import members custom fields', () => {
         await userEvent.keyboard('{Escape}');
         await page.getByRole('button', {name: 'Leave'}).click();
         await expect.element(fieldSelect('email')).not.toBeInTheDocument();
+    });
+
+    // Fire both DOM events in one task to cover Escape arriving before React commits the edit.
+    // userEvent adds task boundaries that let React settle and hide this race.
+    it('asks even when the dismissal lands before React has settled', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+        await expect.element(fieldSelect('email')).toBeVisible();
+
+        const toggle = importToggle('nickname').element() as HTMLElement;
+        toggle.click();
+        document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}));
+
+        await expect.element(page.getByText('Leave without importing?')).toBeVisible();
     });
 
 });

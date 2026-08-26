@@ -154,7 +154,7 @@ export const useFetchApi = () => {
     const {ghostVersion, sentryDSN} = useFramework();
 
     // Memoized so hooks that depend on fetchApi can cache
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     return useCallback(async <ResponseData = any>(
         endpoint: string | URL,
         {
@@ -167,6 +167,7 @@ export const useFetchApi = () => {
             onUploadProgress
         }: RequestOptions = {}
     ): Promise<ResponseData> => {
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         const controller = new AbortController();
 
         const requestInit: InternalRequestInit = {

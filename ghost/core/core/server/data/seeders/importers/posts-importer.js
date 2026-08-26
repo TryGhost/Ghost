@@ -2,7 +2,7 @@ const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const {luck} = require('../utils/random');
 const {TableImporter} = require('./table-importer');
-const databaseDate = require('../utils/database-date');
+const {toDatabaseDate} = require('../../../lib/db-date');
 
 class PostsImporter extends TableImporter {
     static table = 'posts';
@@ -53,9 +53,9 @@ class PostsImporter extends TableImporter {
 
         return {
             id,
-            created_at: databaseDate.dateToDatabaseString(timestamp),
-            updated_at: databaseDate.dateToDatabaseString(timestamp),
-            published_at: status === 'published' ? databaseDate.dateToDatabaseString(timestamp) : status === 'scheduled' ? databaseDate.dateToDatabaseString(faker.date.soon({days: 5, refDate: timestamp})) : null,
+            created_at: toDatabaseDate(timestamp),
+            updated_at: toDatabaseDate(timestamp),
+            published_at: status === 'published' ? toDatabaseDate(timestamp) : status === 'scheduled' ? toDatabaseDate(faker.date.soon({days: 5, refDate: timestamp})) : null,
             uuid: faker.string.uuid(),
             comment_id: this.type === 'post' ? id : null,
             title: title,

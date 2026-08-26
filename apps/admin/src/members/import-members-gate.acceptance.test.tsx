@@ -17,7 +17,7 @@ const CSV = 'email,name\nada@example.com,Ada Lovelace\n';
  */
 async function openMappingStep(labs: Record<string, boolean>) {
     fakeMembers([member({name: 'Ada Lovelace'})]);
-    fakeAdminEndpoint('GET', '/members/custom_fields/', {members_custom_fields: []});
+    fakeAdminEndpoint('GET', new RegExp('^/members/custom_fields/(\\?|$)'), {members_custom_fields: []});
     await renderAdminApp('/members', {labs});
 
     await membersScreen.openActionsMenu();

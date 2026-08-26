@@ -9,7 +9,8 @@ const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;
 
 // We use the name ghost_foot to match the helper for consistency:
-module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function ghost_foot(options) {
     const foot = [];
 
     const globalCodeinjection = settingsCache.get('codeinjection_foot');

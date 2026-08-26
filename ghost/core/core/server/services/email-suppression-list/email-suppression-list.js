@@ -63,7 +63,8 @@ class AbstractEmailSuppressionList {
      * @param {string} email
      * @returns {Promise<boolean>}
      */
-    async removeEmail(email) { // eslint-disable-line
+    // eslint-disable-next-line
+    async removeEmail(email) {
         return Promise.reject();
     }
 
@@ -71,7 +72,8 @@ class AbstractEmailSuppressionList {
      * @param {string} email
      * @returns {Promise<EmailSuppressionData>}
      */
-    async getSuppressionData(email) { // eslint-disable-line
+    // eslint-disable-next-line
+    async getSuppressionData(email) {
         return Promise.reject();
     }
 

@@ -259,7 +259,8 @@ describe('MailgunClient', function () {
                 replyTo: 'replyTo@example.com',
                 html: '<p>Test Content</p>',
                 plaintext: 'Test Content',
-                tags: ['another-tag']
+                tags: ['another-tag'],
+                disable_tracking: true
             };
             const recipientData = {
                 'test@example.com': {
@@ -279,8 +280,11 @@ describe('MailgunClient', function () {
                         /form-data; name="text"[^]*Test Content/m,
                         /form-data; name="to"[^]*test@example.com/m,
                         /form-data; name="recipient-variables"[^]*\{"test@example.com":\{"name":"Test User"\}\}/m,
-                        /form-data; name="o:tag"[^]*ghost-email/m,
-                        /form-data; name="o:tag"[^]*another-tag/m
+                        /form-data; name="o:tag"\r?\n\r?\nghost-email\r?\n--/m,
+                        /form-data; name="o:tag"\r?\n\r?\nanother-tag\r?\n--/m,
+                        /form-data; name="o:tracking"\r?\n\r?\nno\r?\n--/m,
+                        /form-data; name="o:tracking-clicks"\r?\n\r?\nno\r?\n--/m,
+                        /form-data; name="o:tracking-opens"\r?\n\r?\nno\r?\n--/m
                     ];
                     return regexList.every(regex => regex.test(body));
                 })

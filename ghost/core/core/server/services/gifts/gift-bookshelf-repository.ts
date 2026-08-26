@@ -4,6 +4,7 @@ import type {Knex} from 'knex';
 import {Gift} from './gift';
 import {decodeGiftRow, encodeGift} from './gift-codec';
 import type {GiftCadence, GiftRow} from './gift-schema';
+import {toDatabaseDate} from '../../lib/db-date';
 
 type ParsedNqlFilter = unknown;
 
@@ -66,12 +67,14 @@ export interface GiftRepository {
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
     findUnsentReminders(): Promise<Gift[]>;
+    deleteAbandonedCheckouts(cutoff: Date): Promise<number>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
     browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
-    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<string>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    deletePendingCheckout(id: string): Promise<boolean>;
     transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 }
 
@@ -89,13 +92,14 @@ type GiftEventQueryOptions = GiftEventBrowseOptions & {
 };
 
 type BookshelfFindOptions = RepositoryTransactionOptions & {
+    columns?: string[];
     filter?: string;
     require?: boolean;
 };
 
 type BookshelfDocument<T> = {
     save(data: Partial<T>, options?: BookshelfSaveOptions): Promise<BookshelfDocument<T>>;
-    toJSON(): T;
+    toJSON(): T & {id?: string};
 };
 
 type BookshelfCollection<T> = {
@@ -133,9 +137,11 @@ type GiftBookshelfModel = BookshelfModel<GiftRow>;
 
 export class GiftBookshelfRepository implements GiftRepository {
     private readonly model: GiftBookshelfModel;
+    private readonly knex: Knex;
 
-    constructor({GiftModel}: {GiftModel: GiftBookshelfModel}) {
+    constructor({GiftModel, knex}: {GiftModel: GiftBookshelfModel; knex: Knex}) {
         this.model = GiftModel;
+        this.knex = knex;
     }
 
     async existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean> {
@@ -266,8 +272,22 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
-    async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
-        await this.model.add(this.toRow(gift), options);
+    async deleteAbandonedCheckouts(cutoff: Date): Promise<number> {
+        return this.knex('gifts')
+            .where({status: 'payment_pending'})
+            .where('checkout_started_at', '<=', toDatabaseDate(cutoff))
+            .del();
+    }
+
+    async create(gift: Gift, options: RepositoryTransactionOptions = {}): Promise<string> {
+        const created = await this.model.add(this.toRow(gift), options);
+        const id = created.toJSON().id;
+
+        if (!id) {
+            throw new errors.InternalServerError({message: 'Created gift is missing an id'});
+        }
+
+        return id;
     }
 
     async update(gift: Gift, options: RepositoryTransactionOptions = {}) {
@@ -285,6 +305,14 @@ export class GiftBookshelfRepository implements GiftRepository {
             patch: true,
             ...options
         });
+    }
+
+    async deletePendingCheckout(id: string): Promise<boolean> {
+        const deleted = await this.knex('gifts')
+            .where({id, status: 'payment_pending'})
+            .del();
+
+        return deleted === 1;
     }
 
     async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {
@@ -320,7 +348,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         const queryOptions: GiftEventQueryOptions = {
             ...options,
             withRelated: [relation, 'tier'],
-            filter: `${memberIdColumn}:-null+custom:true`,
+            filter: `${memberIdColumn}:-null+${dateColumn}:-null+custom:true`,
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 replaceCustomFilter,

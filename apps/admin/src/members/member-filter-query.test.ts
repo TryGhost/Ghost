@@ -36,6 +36,28 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('reads newsletter subscription state from the slug clause polarity', () => {
+        expect(stripIds(parseMemberFilter('(newsletters.slug:-weekly,email_disabled:1)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
+        ]);
+
+        // Hand-written shapes pairing the slug with the "wrong" join and
+        // email_disabled value still follow the slug's polarity.
+        expect(stripIds(parseMemberFilter('(newsletters.slug:-weekly+email_disabled:0)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
+        ]);
+
+        expect(stripIds(parseMemberFilter('(newsletters.slug:weekly,email_disabled:1)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['subscribed']}
+        ]);
+    });
+
+    it('round-trips a mismatched unsubscribed compound to the canonical shape', () => {
+        const parsed = parseMemberFilter('(newsletters.slug:-weekly+email_disabled:0)', 'UTC');
+
+        expect(serializeMemberFilters(parsed, 'UTC')).toBe('(newsletters.slug:-weekly,email_disabled:1)');
+    });
+
     it('parses legacy scalar set filters and preserves singleton offer ids', () => {
         const parsed = parseMemberFilter('offer_redemptions:\'offer_123\'', 'UTC');
 
@@ -315,24 +337,24 @@ describe('isPredicateEnabled', () => {
 describe('member-filter-query - custom fields', () => {
     // Serialize each operator to NQL, then parse it back, and confirm the predicate
     // survives the round trip a saved segment relies on. Each field is its own
-    // predicate keyed `custom_field.<key>`; `values` is [subfield, value].
+    // predicate keyed `custom_fields.<key>`; `values` is [subfield, value].
     const cases: Array<{field: string; operator: string; values: [string, string]; nql: string}> = [
-        {field: 'custom_field.company', operator: 'is', values: ['', 'Ghost'], nql: "(custom_fields.key:'company'+custom_fields.value:'Ghost')"},
-        {field: 'custom_field.company', operator: 'is-not', values: ['', 'Ghost'], nql: "(custom_fields.key:'company'+custom_fields.value:-'Ghost')"},
-        {field: 'custom_field.company', operator: 'contains', values: ['', 'host'], nql: "(custom_fields.key:'company'+custom_fields.value:~'host')"},
-        {field: 'custom_field.company', operator: 'does-not-contain', values: ['', 'host'], nql: "(custom_fields.key:'company'+custom_fields.value:-~'host')"},
-        {field: 'custom_field.company', operator: 'starts-with', values: ['', 'Gh'], nql: "(custom_fields.key:'company'+custom_fields.value:~^'Gh')"},
-        {field: 'custom_field.company', operator: 'ends-with', values: ['', 'st'], nql: "(custom_fields.key:'company'+custom_fields.value:~$'st')"},
+        {field: 'custom_fields.company', operator: 'is', values: ['', 'Ghost'], nql: "(custom_fields.key:'company'+custom_fields.value:'Ghost')"},
+        {field: 'custom_fields.company', operator: 'is-not', values: ['', 'Ghost'], nql: "(custom_fields.key:'company'+custom_fields.value:-'Ghost')"},
+        {field: 'custom_fields.company', operator: 'contains', values: ['', 'host'], nql: "(custom_fields.key:'company'+custom_fields.value:~'host')"},
+        {field: 'custom_fields.company', operator: 'does-not-contain', values: ['', 'host'], nql: "(custom_fields.key:'company'+custom_fields.value:-~'host')"},
+        {field: 'custom_fields.company', operator: 'starts-with', values: ['', 'Gh'], nql: "(custom_fields.key:'company'+custom_fields.value:~^'Gh')"},
+        {field: 'custom_fields.company', operator: 'ends-with', values: ['', 'st'], nql: "(custom_fields.key:'company'+custom_fields.value:~$'st')"},
         // A value that ends with a literal `$` must survive as contains, not be
         // misread as ends-with when the regex source (`5\$`) is parsed back.
-        {field: 'custom_field.company', operator: 'contains', values: ['', '5$'], nql: "(custom_fields.key:'company'+custom_fields.value:~'5$')"},
-        {field: 'custom_field.shipping-address', operator: 'is', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:'GB')"},
-        {field: 'custom_field.shipping-address', operator: 'is-not', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:-'GB')"},
-        {field: 'custom_field.phone', operator: 'is-set', values: ['', ''], nql: "custom_fields.key:'phone'"},
-        {field: 'custom_field.phone', operator: 'is-not-set', values: ['', ''], nql: "custom_fields.key:-'phone'"},
+        {field: 'custom_fields.company', operator: 'contains', values: ['', '5$'], nql: "(custom_fields.key:'company'+custom_fields.value:~'5$')"},
+        {field: 'custom_fields.shipping-address', operator: 'is', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:'GB')"},
+        {field: 'custom_fields.shipping-address', operator: 'is-not', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:-'GB')"},
+        {field: 'custom_fields.phone', operator: 'is-set', values: ['', ''], nql: "custom_fields.key:'phone'"},
+        {field: 'custom_fields.phone', operator: 'is-not-set', values: ['', ''], nql: "custom_fields.key:-'phone'"},
         // A part's set / not-set targets its presence via `path`, not the whole field.
-        {field: 'custom_field.shipping-address', operator: 'is-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:'country')"},
-        {field: 'custom_field.shipping-address', operator: 'is-not-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:-'country')"}
+        {field: 'custom_fields.shipping-address', operator: 'is-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:'country')"},
+        {field: 'custom_fields.shipping-address', operator: 'is-not-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:-'country')"}
     ];
 
     it.each(cases)('serializes $field $operator to the expected NQL', ({field, operator, values, nql}) => {

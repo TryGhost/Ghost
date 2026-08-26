@@ -4,6 +4,11 @@ const ghostBookshelf = require('./base');
 const Gift = ghostBookshelf.Model.extend({
     tableName: 'gifts',
     hasTimestamps: false,
+    defaults() {
+        return {
+            checkout_started_at: new Date()
+        };
+    },
 
     buyer() {
         return this.belongsTo('Member', 'buyer_member_id', 'id');
@@ -15,6 +20,10 @@ const Gift = ghostBookshelf.Model.extend({
 
     tier() {
         return this.belongsTo('Product', 'tier_id', 'id');
+    },
+
+    delivery() {
+        return this.hasOne('GiftDelivery', 'gift_id', 'id');
     }
 }, {
     async destroy() {

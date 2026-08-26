@@ -103,12 +103,22 @@ export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType
 // As above, for a field loaded from the API.
 export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType => userTypeForFieldType(field.type);
 
-// A custom field CSV column offered as an import mapping target: the column name the
-// backend reads (`value`) and a human label for the picker.
-// The field's type rides along so a picker can show what kind of thing the column holds
-// without being handed the fields as well. Every column of a composite carries the
-// composite's own type, which is what its icon is drawn from.
-export type MemberCustomFieldCsvColumn = {label: string; value: string; type: FieldType};
+/**
+ * A custom field CSV column offered as an import mapping target.
+ *
+ * Name and part are given apart as well as joined: a name a publisher chose can hold brackets
+ * of its own, so the joined form cannot be split back into them. Every column of a composite
+ * carries the composite's own type, which is what its icon is drawn from.
+ */
+export type MemberCustomFieldCsvColumn = {
+    /** The CSV column the exporter writes and the importer reads. */
+    value: string;
+    fieldName: string;
+    partLabel?: string;
+    /** `fieldName`, or `fieldName (partLabel)`. */
+    label: string;
+    type: FieldType;
+};
 
 /**
  * The CSV import mapping targets for a set of custom fields: one per column the export
@@ -119,11 +129,16 @@ export type MemberCustomFieldCsvColumn = {label: string; value: string; type: Fi
 export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): MemberCustomFieldCsvColumn[] => {
     return fields.flatMap((field) => {
         const labels = partLabelsFor(field.type);
-        return csvColumnsForField({key: field.key, type: field.type}).map(({column, subField}) => ({
-            label: subField === null ? field.name : `${field.name} (${labels[subField]})`,
-            value: column,
-            type: field.type
-        }));
+        return csvColumnsForField({key: field.key, type: field.type}).map(({column, subField}) => {
+            const partLabel = subField === null ? undefined : labels[subField];
+            return {
+                value: column,
+                fieldName: field.name,
+                ...(partLabel === undefined ? {} : {partLabel}),
+                label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
+                type: field.type
+            };
+        });
     });
 };
 
@@ -143,6 +158,61 @@ export const memberCustomFieldParts = <T extends FieldType>(type: T): MemberCust
     }
     const labels = partLabelsFor(type);
     return partKeys.map(key => ({key, label: labels[key]}));
+};
+
+/**
+ * A value as the record of parts a composite reads from, and nothing otherwise.
+ *
+ * A predicate rather than an assertion: the same checks either way, but this one hands
+ * the narrowing to the compiler rather than overriding it, so a formatter below cannot be
+ * reached by a value nobody looked at.
+ */
+const isPartRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * How each composite type reads as one line. Written per type rather than walked from
+ * `subFieldsOf`, because where a part sits in the sentence is a fact about how the value
+ * reads, not one the value schema can supply — an address fuses state and postal code the
+ * way people write them. A part added upstream stays out of the line until someone decides
+ * where it belongs.
+ *
+ * Total over the field types, the way the presentation catalog above is: a type added
+ * upstream fails to compile here until someone has decided how its value reads, rather
+ * than reaching every surface as a blank cell. A scalar declares `undefined`, which is
+ * how "its value is already a line" is said.
+ */
+const compositeValueFormatters: {
+    [T in FieldType]: [PartsOf<T>] extends [never] ? undefined : (value: Record<string, unknown>) => string
+} = {
+    short_text: undefined,
+    long_text: undefined,
+    address: (value) => {
+        const {line1, line2, city, state, postal_code: postalCode, country} = value;
+        const statePostal = [state, postalCode].filter(Boolean).join(' ');
+        return [line1, line2, city, statePostal, country].filter(Boolean).join(', ');
+    }
+};
+
+/**
+ * A member's value for one field as a single readable line: the string itself for a
+ * scalar, and for a composite its parts joined the way that type reads — e.g.
+ * "1 Main St, 12 apt B, New York, NY 00001, US". Missing parts drop out, so a partial
+ * value still reads naturally.
+ *
+ * Empty string for a value that is not the shape its type declares: the type decides
+ * which shape is readable, so a composite reads only from its parts and a scalar only
+ * from text. Callers own their own placeholder, since "no value" reads differently in a
+ * table cell than in a detail row.
+ */
+export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): string => {
+    const formatComposite = compositeValueFormatters[type];
+
+    if (formatComposite) {
+        return isPartRecord(value) ? formatComposite(value) : '';
+    }
+
+    return typeof value === 'string' ? value : '';
 };
 
 export interface MemberCustomFieldsResponseType {

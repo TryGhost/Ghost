@@ -44,6 +44,142 @@ test.describe('Preferences', async () => {
         await mockInitialApiRequests(page);
     });
 
+    test('I can choose to show sensitive media by default', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            getMyAccount,
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            },
+            getBlockedAccounts: {
+                method: 'GET',
+                path: '/v1/blocks/accounts',
+                response: {
+                    blocked_accounts: [],
+                    next: null
+                }
+            },
+            getBlockedDomains: {
+                method: 'GET',
+                path: '/v1/blocks/domains',
+                response: {
+                    blocked_domains: [],
+                    next: null
+                }
+            },
+            updatePreferences: {
+                method: 'PUT',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: true
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/preferences');
+        await page.getByRole('link', {name: /Moderation/}).click();
+
+        const toggle = page.getByRole('switch', {name: 'Show sensitive media'});
+        await expect(toggle).toBeVisible();
+        await expect(toggle).not.toBeChecked();
+
+        await toggle.click();
+
+        await expect.poll(() => lastApiRequests.updatePreferences).toBeTruthy();
+        expect(lastApiRequests.updatePreferences?.body).toMatchObject({
+            showSensitiveMedia: true
+        });
+        await expect(toggle).toBeChecked();
+    });
+
+    test('I can turn off showing sensitive media by default', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            getMyAccount,
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: true
+                }
+            },
+            getBlockedAccounts: {
+                method: 'GET',
+                path: '/v1/blocks/accounts',
+                response: {
+                    blocked_accounts: [],
+                    next: null
+                }
+            },
+            getBlockedDomains: {
+                method: 'GET',
+                path: '/v1/blocks/domains',
+                response: {
+                    blocked_domains: [],
+                    next: null
+                }
+            },
+            updatePreferences: {
+                method: 'PUT',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/preferences');
+        await page.getByRole('link', {name: /Moderation/}).click();
+
+        const toggle = page.getByRole('switch', {name: 'Show sensitive media'});
+        await expect(toggle).toBeChecked();
+
+        await toggle.click();
+
+        await expect.poll(() => lastApiRequests.updatePreferences).toBeTruthy();
+        expect(lastApiRequests.updatePreferences?.body).toMatchObject({
+            showSensitiveMedia: false
+        });
+        await expect(toggle).not.toBeChecked();
+    });
+
+    test('I still see moderation controls when the preferences endpoint is unavailable', async ({page}) => {
+        await mockApi({page, requests: {
+            getMyAccount,
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {},
+                responseStatus: 404
+            },
+            getBlockedAccounts: {
+                method: 'GET',
+                path: '/v1/blocks/accounts',
+                response: {
+                    blocked_accounts: [],
+                    next: null
+                }
+            },
+            getBlockedDomains: {
+                method: 'GET',
+                path: '/v1/blocks/domains',
+                response: {
+                    blocked_domains: [],
+                    next: null
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/preferences');
+        await page.getByRole('link', {name: /Moderation/}).click();
+
+        await expect(page.getByRole('heading', {name: 'Moderation'})).toBeVisible();
+        await expect(page.getByRole('tab', {name: 'Blocked users'})).toBeVisible();
+        await expect(page.getByRole('switch', {name: 'Show sensitive media'})).toHaveCount(0);
+    });
+
     test('I can open the Social Web domain screen from preferences', async ({page}) => {
         await mockApi({page, requests: {
             getMyAccount: getMyIndexAccount,

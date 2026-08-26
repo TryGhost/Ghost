@@ -6,7 +6,9 @@ import type {Config} from '@tryghost/admin-x-framework/api/config';
 
 export const useVisibleAutomations = () => {
     const {data, error, isError, isLoading} = useBrowseAutomations({
-        defaultErrorHandler: false
+        defaultErrorHandler: false,
+        refetchOnMount: 'always',
+        staleTime: 0
     });
     const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings();
     const {data: configData, isLoading: isConfigLoading} = useBrowseConfig();

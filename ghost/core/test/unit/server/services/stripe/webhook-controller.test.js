@@ -98,6 +98,21 @@ describe('WebhookController', function () {
         // expect(res.end.called).to.be.true;
     });
 
+    for (const eventType of ['checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed']) {
+        it(`should handle ${eventType} event`, async function () {
+            const session = {customer: 'cust_123'};
+            deps.webhookManager.parseWebhook.returns({
+                type: eventType,
+                data: {object: session}
+            });
+
+            await controller.handle(req, res);
+
+            sinon.assert.calledOnceWithExactly(deps.checkoutSessionEventService.handleEvent, session, eventType);
+            sinon.assert.calledWith(res.writeHead, 200);
+        });
+    }
+
     it('should handle customer subscription updated event', async function () {
         const event = {
             type: 'customer.subscription.updated',

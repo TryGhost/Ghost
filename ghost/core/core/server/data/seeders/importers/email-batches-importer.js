@@ -1,6 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
-const databaseDate = require('../utils/database-date');
+const {randomDateBetween} = require('../utils/random');
+const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class EmailBatchesImporter extends TableImporter {
     static table = 'email_batches';
@@ -21,8 +22,8 @@ class EmailBatchesImporter extends TableImporter {
     }
 
     generate() {
-        const emailSentDate = databaseDate.parse(this.model.created_at);
-        const latestUpdatedDate = databaseDate.parse(this.model.created_at);
+        const emailSentDate = fromDatabaseDate(this.model.created_at);
+        const latestUpdatedDate = new Date(emailSentDate);
         latestUpdatedDate.setHours(latestUpdatedDate.getHours() + 1);
 
         return {
@@ -31,7 +32,7 @@ class EmailBatchesImporter extends TableImporter {
             mailgun_message_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.string.hexadecimal({length: 16, prefix: '', casing: 'lower'})}@m.example.com`,
             status: 'submitted', // TODO: introduce failures
             created_at: this.model.created_at,
-            updated_at: databaseDate.dateToDatabaseString(databaseDate.randomBetween(emailSentDate, latestUpdatedDate))
+            updated_at: toDatabaseDate(randomDateBetween(emailSentDate, latestUpdatedDate))
         };
     }
 }
