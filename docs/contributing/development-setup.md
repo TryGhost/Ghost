@@ -105,15 +105,20 @@ runs.
 Run one root command at a time. Each variant includes the standard development
 environment and adds the listed tooling:
 
-| Command              | Use it when working on                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm dev`           | Ghost Core, Admin, or Portal                                                            |
-| `pnpm dev:public`    | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                    |
-| `pnpm dev:lexical`   | Koenig's Lexical editor inside Ghost Admin                                              |
-| `pnpm dev:analytics` | Tinybird-backed analytics; also exposes Tinybird on port `7181`                         |
-| `pnpm dev:storage`   | S3-compatible storage through MinIO on ports `9000` and `9001`                          |
-| `pnpm dev:stripe`    | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file |
-| `pnpm dev:full`      | Public app watchers plus analytics, storage, and Stripe                                 |
+| Command                    | Use it when working on                                                                  |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                            |
+| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                    |
+| `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                              |
+| `pnpm dev:analytics`       | Tinybird-backed analytics; also exposes Tinybird on port `7181`                         |
+| `pnpm dev:analytics:local` | Analytics routed to a local TrafficAnalytics checkout on the `ghost_dev` network        |
+| `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                          |
+| `pnpm dev:stripe`          | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file |
+| `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                 |
+
+To develop against TrafficAnalytics locally, run `pnpm dev:analytics:local`,
+then run `yarn dev:ghost` from TrafficAnalytics. The local ingest service and
+worker join the Ghost development network and use its Tinybird configuration.
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.

@@ -142,6 +142,8 @@ services:
       context: ./docker/dev-gateway
       dockerfile: Dockerfile
     container_name: ghost-dev-gateway
+    environment:
+      ANALYTICS_PROXY_TARGET: ${ANALYTICS_PROXY_TARGET:-analytics:3000}
     ports:
       - '2368:80'
       - '80:80'
