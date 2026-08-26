@@ -43,6 +43,7 @@ class Mailgun extends EmailProviderBase {
             // Initialize the existing email provider
             this.#emailProvider = new MailgunEmailProvider({
                 mailgunClient,
+                config: configService,
                 errorHandler
             });
 
