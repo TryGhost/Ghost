@@ -305,7 +305,10 @@ class MembersCSVImporter {
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
     const spooled = await this._spool.write(rows);
 
-    logging.info('[Background Job] members-import queued');
+    logging.info(
+      { event: { name: 'members.import.queued' }, rows: rows.length },
+      'Members import queued',
+    );
     this._addJob({
       job: () =>
         this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
@@ -326,7 +329,7 @@ class MembersCSVImporter {
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {
     const startedAt = Date.now();
-    logging.info('[Background Job] members-import started');
+    logging.info({ event: { name: 'members.import.started' } }, 'Members import started');
     // Null until the import produces one: parsing and mapping already happened inside
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
@@ -355,10 +358,19 @@ class MembersCSVImporter {
 
     if (result) {
       logging.info(
-        `[Background Job] members-import completed in ${Date.now() - startedAt}ms: imported ${result.imported}, ${result.errors.length} row(s) rejected`,
+        {
+          event: { name: 'members.import.completed' },
+          durationMs: Date.now() - startedAt,
+          imported: result.imported,
+          rejected: result.errors.length,
+        },
+        'Members import completed',
       );
     } else {
-      logging.info(`[Background Job] members-import failed after ${Date.now() - startedAt}ms`);
+      logging.info(
+        { event: { name: 'members.import.failed' }, durationMs: Date.now() - startedAt },
+        'Members import failed',
+      );
     }
   }
 
