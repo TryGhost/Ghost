@@ -1,12 +1,14 @@
 const logging = require('@tryghost/logging');
-const postPresence = require('../../../../../services/post-presence');
+const models = require('../../../../models');
+const postPresence = require('../../../../services/post-presence');
+const permissionsService = require('../../../../services/permissions');
 const {
   PRESENCE_EVENT_TYPES,
-} = require('../../../../../services/post-presence/post-presence-service');
+} = require('../../../../services/post-presence/post-presence-service');
 const {
   hasElevatedPresenceAccess,
   canReceiveEvent,
-} = require('../../../../../services/post-presence/presence-permissions');
+} = require('../../../../services/post-presence/presence-permissions');
 
 const KEEPALIVE_MS = 30 * 1000;
 
@@ -40,7 +42,22 @@ function openSse(res) {
   }
 }
 
-module.exports = async function presenceStream(req, res) {
+function lookupErrorStatus(err) {
+  if (!err) {
+    return null;
+  }
+  const isForbidden = err.errorType === 'NoPermissionError' || err.statusCode === 403;
+  const isNotFound = err.errorType === 'NotFoundError' || err.statusCode === 404;
+  if (isForbidden) {
+    return 403;
+  }
+  if (isNotFound) {
+    return 404;
+  }
+  return null;
+}
+
+async function stream(req, res) {
   if (req.api_key) {
     res.status(403).end();
     return;
@@ -130,4 +147,82 @@ module.exports = async function presenceStream(req, res) {
   req.on('error', cleanup);
   res.on('close', cleanup);
   res.on('error', cleanup);
+}
+
+async function enter(req, res) {
+  try {
+    if (req.api_key) {
+      res.status(204).end();
+      return;
+    }
+    const postId = req.params && req.params.id;
+    const user = req.user;
+    const missingEnterTarget = !postId || !user || !user.id;
+    if (missingEnterTarget) {
+      res.status(204).end();
+      return;
+    }
+
+    let post;
+    try {
+      await permissionsService.canThis({ user: user.id }).edit.post(postId);
+      post = await models.Post.findOne(
+        { id: postId, status: 'all' },
+        {
+          context: { user: user.id },
+          withRelated: ['authors'],
+        },
+      );
+    } catch (err) {
+      const status = lookupErrorStatus(err);
+      if (status) {
+        res.status(status).end();
+        return;
+      }
+      logging.warn({ err, postId, userId: user.id }, 'presence-enter: post lookup failed');
+      res.status(204).end();
+      return;
+    }
+    if (!post) {
+      res.status(404).end();
+      return;
+    }
+
+    const authorIds = post.related('authors').map((author) => author.get('id'));
+    postPresence.mark(
+      postId,
+      {
+        id: user.id,
+        name: user.get('name'),
+        profileImage: user.get('profile_image'),
+      },
+      { authorIds },
+    );
+  } catch (err) {
+    logging.warn({ err }, 'Failed to record presence enter');
+  }
+  res.status(204).end();
+}
+
+function leave(req, res) {
+  try {
+    if (req.api_key) {
+      res.status(204).end();
+      return;
+    }
+    const postId = req.params && req.params.id;
+    const user = req.user;
+    if (postId && user && user.id) {
+      postPresence.leave(postId, user.id);
+    }
+  } catch (err) {
+    logging.warn({ err }, 'Failed to record presence leave');
+  }
+  res.status(204).end();
+}
+
+module.exports = {
+  stream,
+  enter,
+  leave,
 };

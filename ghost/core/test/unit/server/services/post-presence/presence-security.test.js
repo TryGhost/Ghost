@@ -14,9 +14,11 @@ const permissionsService = require('../../../../../core/server/services/permissi
 const {
   canReceiveEvent,
 } = require('../../../../../core/server/services/post-presence/presence-permissions');
-const presenceStream = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-stream');
-const presenceEnter = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-enter');
-const presenceLeave = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-leave');
+const {
+  stream: presenceStream,
+  enter: presenceEnter,
+  leave: presenceLeave,
+} = require('../../../../../core/server/web/api/endpoints/admin/presence-controller');
 
 function fakeReqRes(user) {
   const req = new EventEmitter();

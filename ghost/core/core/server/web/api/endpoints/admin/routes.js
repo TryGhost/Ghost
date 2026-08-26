@@ -5,9 +5,7 @@ const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
-const presenceStream = require('./lib/presence-stream');
-const presenceEnter = require('./lib/presence-enter');
-const presenceLeave = require('./lib/presence-leave');
+const presence = require('./presence-controller');
 
 const shared = require('../../../shared');
 
@@ -32,21 +30,21 @@ module.exports = function apiRoutes() {
     shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
     shared.middleware.brute.presenceStreamLimiter,
-    presenceStream,
+    presence.stream,
   );
   router.post(
     '/presence/posts/:id/enter',
     shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
     shared.middleware.brute.presenceLimiter,
-    presenceEnter,
+    presence.enter,
   );
   router.post(
     '/presence/posts/:id/leave',
     shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
     shared.middleware.brute.presenceLimiter,
-    presenceLeave,
+    presence.leave,
   );
 
   // ## Posts

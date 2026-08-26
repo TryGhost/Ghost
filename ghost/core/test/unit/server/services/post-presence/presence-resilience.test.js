@@ -6,7 +6,9 @@ const postPresence = require('../../../../../core/server/services/post-presence'
 const {
   markPostPresence,
 } = require('../../../../../core/server/services/post-presence/mark-post-presence');
-const presenceStream = require('../../../../../core/server/web/api/endpoints/admin/lib/presence-stream');
+const {
+  stream: presenceStream,
+} = require('../../../../../core/server/web/api/endpoints/admin/presence-controller');
 
 describe('PostPresence resilience', function () {
   afterEach(function () {
