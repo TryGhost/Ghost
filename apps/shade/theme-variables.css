@@ -85,7 +85,6 @@
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --table-row-hover: var(--color-gray-50);
-  --members-sticky-hover-bg: var(--table-row-hover);
   --mobile-navbar-height: 64px;
 }
 
@@ -126,7 +125,6 @@
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
   --table-row-hover: var(--color-sidebar-bg);
-  --members-sticky-hover-bg: var(--table-row-hover);
 
   --background: oklch(0.178 0.003 271);
   --foreground: var(--color-gray-200);
