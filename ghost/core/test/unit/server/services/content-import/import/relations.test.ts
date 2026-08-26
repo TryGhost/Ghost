@@ -21,7 +21,8 @@ const userModels = (
   findOne: sinon.SinonStub = sinon.stub().resolves(null),
   add: sinon.SinonStub = sinon.stub().resolves(relation('author-created')),
   getOwnerUser: sinon.SinonStub = sinon.stub().resolves(relation('owner')),
-) => ({ findOne, add, getOwnerUser });
+  getByEmail: sinon.SinonStub = sinon.stub().resolves(undefined),
+) => ({ findOne, getByEmail, add, getOwnerUser });
 const tagModels = (
   findOne: sinon.SinonStub = sinon.stub().resolves(null),
   add: sinon.SinonStub = sinon.stub().resolves(relation('tag-created')),
@@ -56,10 +57,13 @@ describe('BookshelfPostRelationsResolver', function () {
   });
 
   it('matches authors by email or a name-only slug, preserving order and uniqueness', async function () {
-    const findUser = sinon.stub().callsFake(async (lookup: { email?: string; slug?: string }) => {
-      if (lookup.email === 'alice@example.com') {
+    const getUserByEmail = sinon.stub().callsFake(async (email: string) => {
+      if (email === 'alice@example.com') {
         return relation('author-alice');
       }
+      return undefined;
+    });
+    const findUser = sinon.stub().callsFake(async (lookup: { slug?: string }) => {
       if (lookup.slug === 'charlie-example') {
         return relation('author-charlie');
       }
@@ -67,7 +71,7 @@ describe('BookshelfPostRelationsResolver', function () {
     });
     const findTag = sinon.stub().resolves(null);
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(findUser),
+      User: userModels(findUser, undefined, undefined, getUserByEmail),
       Tag: tagModels(findTag),
     });
     const transacting = { transaction: true };
@@ -88,15 +92,19 @@ describe('BookshelfPostRelationsResolver', function () {
     ]);
     assert.deepEqual(resolved.warnings, []);
     assert.deepEqual(
-      findUser.getCalls().map((call) => call.args[0]),
-      [
-        { email: 'alice@example.com' },
-        { email: 'missing@example.com' },
-        { slug: 'charlie-example' },
-      ],
-      'email-bearing entries never fall back to names and duplicates reuse the first match',
+      getUserByEmail.getCalls().map((call) => call.args[0]),
+      ['alice@example.com', 'missing@example.com'],
+      'duplicate emails reuse the first match',
     );
-    for (const call of findUser.getCalls()) {
+    sinon.assert.calledOnceWithExactly(
+      findUser,
+      { slug: 'charlie-example' },
+      {
+        importing: true,
+        transacting,
+      },
+    );
+    for (const call of getUserByEmail.getCalls()) {
       assert.deepEqual(call.args[1], { importing: true, transacting });
     }
     sinon.assert.notCalled(findTag);
@@ -129,7 +137,7 @@ describe('BookshelfPostRelationsResolver', function () {
     const addUser = sinon.stub().resolves(relation('author-created'));
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(findUser, addUser, getOwnerUser),
+      User: userModels(findUser, addUser, getOwnerUser, sinon.stub().resolves(undefined)),
       Tag: tagModels(),
     });
     const options = { importing: true, context: { internal: true }, transacting: {} };
@@ -142,7 +150,7 @@ describe('BookshelfPostRelationsResolver', function () {
 
     assert.deepEqual(resolved.data.authors, [{ id: 'author-created' }]);
     assert.deepEqual(resolved.warnings, []);
-    sinon.assert.calledWithExactly(findUser, { email: 'new@example.com' }, options);
+    sinon.assert.notCalled(findUser);
     sinon.assert.calledWithExactly(
       addUser,
       {
@@ -156,11 +164,12 @@ describe('BookshelfPostRelationsResolver', function () {
   });
 
   it('matches an existing author by email without requiring a supplied name', async function () {
-    const findUser = sinon.stub().resolves(relation('author-existing'));
+    const findUser = sinon.stub().resolves(null);
+    const getUserByEmail = sinon.stub().resolves(relation('author-existing'));
     const addUser = sinon.stub().resolves(relation('author-created'));
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(findUser, addUser, getOwnerUser),
+      User: userModels(findUser, addUser, getOwnerUser, getUserByEmail),
       Tag: tagModels(),
     });
 
@@ -172,15 +181,20 @@ describe('BookshelfPostRelationsResolver', function () {
 
     assert.deepEqual(resolved.data.authors, [{ id: 'author-existing' }]);
     assert.deepEqual(resolved.warnings, []);
+    sinon.assert.calledOnceWithExactly(getUserByEmail, 'existing@example.com', {
+      importing: true,
+    });
+    sinon.assert.notCalled(findUser);
     sinon.assert.notCalled(addUser);
     sinon.assert.notCalled(getOwnerUser);
   });
 
   it('reuses a contributor created for a duplicate email in the same row', async function () {
     const findUser = sinon.stub().resolves(null);
+    const getUserByEmail = sinon.stub().resolves(undefined);
     const addUser = sinon.stub().resolves(relation('author-created'));
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(findUser, addUser),
+      User: userModels(findUser, addUser, undefined, getUserByEmail),
       Tag: tagModels(),
     });
 
@@ -194,16 +208,19 @@ describe('BookshelfPostRelationsResolver', function () {
     );
 
     assert.deepEqual(resolved.data.authors, [{ id: 'author-created' }]);
-    sinon.assert.calledOnce(findUser);
+    sinon.assert.calledOnceWithExactly(getUserByEmail, 'new@example.com', { importing: true });
+    sinon.assert.notCalled(findUser);
     sinon.assert.calledOnce(addUser);
+    sinon.assert.calledWithMatch(addUser, { email: 'new@example.com' });
   });
 
   it('falls back to Owner for email-only, invalid, and empty entries with clear warnings', async function () {
     const findUser = sinon.stub().resolves(null);
+    const getUserByEmail = sinon.stub().resolves(undefined);
     const addUser = sinon.stub().resolves(relation('author-created'));
     const getOwnerUser = sinon.stub().resolves(relation('owner'));
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(findUser, addUser, getOwnerUser),
+      User: userModels(findUser, addUser, getOwnerUser, getUserByEmail),
       Tag: tagModels(),
     });
 
@@ -222,25 +239,22 @@ describe('BookshelfPostRelationsResolver', function () {
       'Author email "not-an-email" is invalid; assigned Owner instead.',
       'An empty author entry was assigned to Owner instead.',
     ]);
-    sinon.assert.calledOnceWithExactly(
-      findUser,
-      { email: 'missing@example.com' },
-      {
-        importing: true,
-      },
-    );
+    sinon.assert.calledOnceWithExactly(getUserByEmail, 'missing@example.com', {
+      importing: true,
+    });
+    sinon.assert.notCalled(findUser);
     sinon.assert.notCalled(addUser);
     sinon.assert.calledOnce(getOwnerUser);
   });
 
   it('does not duplicate Owner when an existing match is followed by an Owner fallback', async function () {
     const owner = relation('owner');
-    const findUser = sinon.stub().callsFake(async (lookup: { email?: string }) => {
-      return lookup.email === 'owner@example.com' ? owner : null;
+    const getUserByEmail = sinon.stub().callsFake(async (email: string) => {
+      return email === 'owner@example.com' ? owner : undefined;
     });
     const getOwnerUser = sinon.stub().resolves(owner);
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(findUser, undefined, getOwnerUser),
+      User: userModels(undefined, undefined, getOwnerUser, getUserByEmail),
       Tag: tagModels(),
     });
 
@@ -425,6 +439,19 @@ describe('BookshelfPostRelationsResolver', function () {
     assert.equal(findTag.getCalls().filter((call) => call.args[1].forUpdate).length, 0);
   });
 
+  it('propagates tag creation failures without an error code', async function () {
+    const failure = new Error('tag creation failed');
+    const resolver = new BookshelfPostRelationsResolver({
+      User: userModels(),
+      Tag: tagModels(sinon.stub().resolves(null), sinon.stub().rejects(failure)),
+    });
+
+    await assert.rejects(
+      resolver.resolve(data, { tagNames: 'Broken Tag' }, { importing: true }),
+      failure,
+    );
+  });
+
   it('does no lookups when relation cells are absent', async function () {
     const findUser = sinon.stub().resolves(null);
     const findTag = sinon.stub().resolves(null);
@@ -444,7 +471,7 @@ describe('BookshelfPostRelationsResolver', function () {
   it('propagates lookup failures to roll back the row transaction', async function () {
     const failure = new Error('author lookup failed');
     const resolver = new BookshelfPostRelationsResolver({
-      User: userModels(sinon.stub().rejects(failure)),
+      User: userModels(undefined, undefined, undefined, sinon.stub().rejects(failure)),
       Tag: tagModels(),
     });
 

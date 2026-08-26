@@ -862,7 +862,7 @@ describe('Posts Importer API', function () {
     const relationsCsvPath = await csvFile(
       'posts-import-existing-relations.csv',
       'Headline,Bylines,Emails,Topics\n' +
-        `CSV existing relations,"${emailAuthor.name}, ${nameAuthor.name}, ${emailAuthor.name}","${emailAuthor.email}, , ${emailAuthor.email}","CSV exact relation,csv-explicit-relation,CSV normalized relation,CSV exact relation"\n`,
+        `CSV existing relations,"${emailAuthor.name}, ${nameAuthor.name}, ${emailAuthor.name}","${emailAuthor.email.toUpperCase()}, , ${emailAuthor.email}","CSV exact relation,csv-explicit-relation,CSV normalized relation,CSV exact relation"\n`,
     );
     const form = new FormData();
     for (const [header, field] of Object.entries({
