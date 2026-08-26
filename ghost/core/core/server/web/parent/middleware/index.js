@@ -1,5 +1,7 @@
 module.exports = {
   emitEvents: require('./emit-events'),
+  eventLoopLag: require('./event-loop-lag').eventLoopLag,
+  parseEventLoopLagConfig: require('./event-loop-lag').parseEventLoopLagConfig,
   ghostLocals: require('./ghost-locals').ghostLocals,
   logRequest: require('./log-request'),
   queueRequest: require('./queue-request'),

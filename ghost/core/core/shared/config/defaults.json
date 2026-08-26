@@ -247,6 +247,16 @@
   "optimization": {
     "maxLimit": 100,
     "allowLimitAll": false,
+    "eventLoopLag": {
+      "enabled": false,
+      "highWaterMarkMs": 500,
+      "lowWaterMarkMs": 100,
+      "sampleWindowMs": 500,
+      "percentile": 90,
+      "resolutionMs": 20,
+      "retryAfterSeconds": 5,
+      "exemptPathPrefixes": ["/ghost/"]
+    },
     "getHelper": {
       "timeout": {
         "threshold": 5000,

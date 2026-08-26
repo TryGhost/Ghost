@@ -17,6 +17,16 @@ module.exports = function setupParentApp() {
   // Register event emitter on req/res to trigger cache invalidation webhook event
   parentApp.use(mw.emitEvents);
 
+  // Shed load as early as the stack allows, and ahead of the queue rather than
+  // behind it: a request that has already waited in the queue has paid the
+  // cost shedding exists to avoid. Sits after requestId/logRequest so shed
+  // responses stay traceable and show up in the access log.
+  const eventLoopLagConfig = mw.parseEventLoopLagConfig(config.get('optimization:eventLoopLag'));
+
+  if (eventLoopLagConfig.enabled) {
+    parentApp.use(mw.eventLoopLag(eventLoopLagConfig));
+  }
+
   // enabled gzip compression by default
   if (config.get('compress') !== false) {
     parentApp.use(compress());
