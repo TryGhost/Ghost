@@ -11,7 +11,9 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { PageHeader } from '@/components/patterns/page-header';
-import { Ellipsis, Filter as FilterIcon, Plus, Search } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { formatNumber } from '@/lib/ds-utils';
+import { Ellipsis, Filter as FilterIcon, PanelLeft, Plus, Search } from 'lucide-react';
 
 const meta = {
   title: 'Patterns / Page Header',
@@ -19,6 +21,12 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
+    docs: {
+      description: {
+        component:
+          'Page title, optional leading control, breadcrumbs, and actions with a stable title-block layout.',
+      },
+    },
   },
 } satisfies Meta<typeof PageHeader>;
 
@@ -44,7 +52,7 @@ export const Structure: Story = {
         </PageHeader.Breadcrumb>
         <PageHeader.Title>
           Members
-          <PageHeader.Count>12,345</PageHeader.Count>
+          <PageHeader.Count>{formatNumber(12345)}</PageHeader.Count>
           <PageHeader.Description>
             All members across free, paid and complimentary tiers
           </PageHeader.Description>
@@ -150,7 +158,7 @@ export const Subview: Story = {
       <PageHeader.Actions>
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <span className="size-2 rounded-full bg-green-500" />
-          18 online
+          {formatNumber(18)} online
         </span>
       </PageHeader.Actions>
     </PageHeader>
@@ -164,7 +172,7 @@ export const FilteredList: Story = {
       <PageHeader.Left>
         <PageHeader.Title>
           Members
-          <PageHeader.Count>1,886</PageHeader.Count>
+          <PageHeader.Count>{formatNumber(1886)}</PageHeader.Count>
         </PageHeader.Title>
       </PageHeader.Left>
       <PageHeader.Actions>
@@ -235,4 +243,94 @@ export const DetailPage: Story = {
       </PageHeader.Actions>
     </PageHeader>
   ),
+};
+
+export const LeadingControl: Story = {
+  render: () => (
+    <PageHeader>
+      <PageHeader.Left
+        leading={
+          <>
+            <Button aria-label="Toggle navigation" size="icon" variant="ghost">
+              <PanelLeft />
+            </Button>
+            <Separator className="h-5" orientation="vertical" />
+          </>
+        }
+      >
+        <PageHeader.Title>Library</PageHeader.Title>
+      </PageHeader.Left>
+      <PageHeader.Actions>
+        <Button>Add item</Button>
+      </PageHeader.Actions>
+    </PageHeader>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A consumer-owned leading control and decorative divider precede the title without changing its typography.',
+      },
+    },
+  },
+};
+
+export const LeadingControlWithBreadcrumb: Story = {
+  render: () => (
+    <PageHeader>
+      <PageHeader.Left
+        leading={
+          <>
+            <Button aria-label="Toggle navigation" size="icon" variant="ghost">
+              <PanelLeft />
+            </Button>
+            <Separator className="h-5" orientation="vertical" />
+          </>
+        }
+      >
+        <PageHeader.Breadcrumb>
+          <a href="#library">Library</a>
+        </PageHeader.Breadcrumb>
+        <PageHeader.Title>Item details</PageHeader.Title>
+      </PageHeader.Left>
+      <PageHeader.Actions>
+        <Button>Save</Button>
+      </PageHeader.Actions>
+    </PageHeader>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The leading slot aligns with the complete breadcrumb and title block; keyboard order stays in document order.',
+      },
+    },
+  },
+};
+
+export const DisabledLeadingControl: Story = {
+  render: () => (
+    <PageHeader>
+      <PageHeader.Left
+        leading={
+          <>
+            <Button aria-label="Toggle navigation" size="icon" variant="ghost" disabled>
+              <PanelLeft />
+            </Button>
+            <Separator className="h-5" orientation="vertical" />
+          </>
+        }
+      >
+        <PageHeader.Title>Library</PageHeader.Title>
+      </PageHeader.Left>
+    </PageHeader>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The leading slot preserves the control’s native disabled behavior and styling; hover and focus use the standard Button contract.',
+      },
+    },
+  },
 };

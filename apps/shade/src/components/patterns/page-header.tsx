@@ -121,16 +121,39 @@ function PageHeaderTitle({ className, children }: PropsWithChildrenAndClassName)
 // Main row — Left (stack: Breadcrumb + Title) + Actions
 // ---------------------------------------------------------------------------
 
-function PageHeaderLeft({ className, children }: PropsWithChildrenAndClassName) {
-  return (
+type PageHeaderLeftProps = PropsWithChildrenAndClassName & {
+  leading?: React.ReactNode;
+};
+
+function PageHeaderLeft({ className, children, leading }: PageHeaderLeftProps) {
+  const hasLeading = leading !== undefined && leading !== null && leading !== false;
+  const titleBlock = (
     <Stack
-      className={cn('h-full min-h-(--control-height) min-w-0', className)}
-      data-page-header="left"
+      className={cn('h-full min-h-(--control-height) min-w-0', !hasLeading && className)}
+      data-page-header={hasLeading ? 'title-block' : 'left'}
       gap="xs"
       justify="center"
     >
       {children}
     </Stack>
+  );
+
+  if (!hasLeading) {
+    return titleBlock;
+  }
+
+  return (
+    <Inline
+      align="center"
+      className={cn('h-full min-h-(--control-height) min-w-0', className)}
+      data-page-header="left"
+      gap="md"
+    >
+      <Inline align="center" className="shrink-0" data-page-header="leading" gap="md">
+        {leading}
+      </Inline>
+      {titleBlock}
+    </Inline>
   );
 }
 
@@ -318,7 +341,7 @@ function PageHeaderActions({ className, children }: PropsWithChildrenAndClassNam
 // ---------------------------------------------------------------------------
 
 type PageHeaderComponent = React.FC<PageHeaderProps> & {
-  Left: React.FC<PropsWithChildrenAndClassName>;
+  Left: React.FC<PageHeaderLeftProps>;
   Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
   Title: React.FC<PropsWithChildrenAndClassName>;
   Count: React.FC<PropsWithChildrenAndClassName>;

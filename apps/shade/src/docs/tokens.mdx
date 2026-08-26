@@ -70,4 +70,57 @@ Inputs, textareas, outline `Button`s, dropdown triggers, and the `inputSurface` 
 
 `DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. Treat them as one component for any surface decision — change all three together.
 
+## Scoped layout roles
+
+Layout roles describe presentation, not a product or rollout. They inherit in both
+light and dark mode; existing semantic surface, border, radius, and easing tokens
+still own those concerns. No global spacing or container defaults change.
+
+| Token                     | Default                    | Responsibility                                                                                     |
+| ------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------- |
+| `--page-gutter`           | `calc(var(--spacing) * 4)` | Horizontal padding inside a consumer's content cap                                                 |
+| `--panel-inset`           | `calc(var(--spacing) * 2)` | Outer padding of floating/inset sidebars; matches the previous `p-2`                               |
+| `--content-width`         | `var(--container-page)`    | Active, border-box content cap, including gutters                                                  |
+| `--content-width-wide`    | `var(--container-page)`    | Alternative cap selected by the consumer's responsive rule                                         |
+| `--font-feature-settings` | `normal`                   | Optional font features; loading a font and applying this property remain consumer responsibilities |
+| `--duration-layout`       | `0s`                       | Sidebar width/position transition duration; zero preserves existing immediate layout changes       |
+
+These names are available through the typed `@tryghost/shade/tokens` helpers.
+`Sidebar` consumes panel inset and layout duration. The other roles are opt-in:
+they do not change page templates or typography by themselves.
+
+For example, a consumer can scope a floating shell without changing the global
+scale. The existing sidebar width remains `300px`. The existing `radius-surface`
+and `ease-emphasized` are reused:
+
+```css
+.floating-shell {
+  --page-gutter: 40px;
+  --panel-inset: 8px;
+  --content-width: 1080px;
+  --content-width-wide: 1280px;
+  --duration-layout: 520ms;
+}
+
+.floating-shell-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--content-width);
+  padding-inline: var(--page-gutter);
+  margin-inline: auto;
+}
+
+@media (min-width: 1380px) {
+  .floating-shell {
+    --content-width: var(--content-width-wide);
+  }
+}
+```
+
+The breakpoint and these values belong to the consumer scope, not a new global
+token scale. Sidebar layout transitions use the existing emphasized easing and
+are disabled by `prefers-reduced-motion: reduce`. Consumers animating their own
+content must apply the same reduced-motion rule. See the Sidebar floating,
+collapsed, overlay, and reduced-motion stories for a complete example.
+
 </div>

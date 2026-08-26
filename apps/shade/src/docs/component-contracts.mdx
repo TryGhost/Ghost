@@ -37,4 +37,64 @@ Browse the sidebar for the live inventory and APIs. Full rules: [Layers](?path=/
 
 When you catch yourself reaching for the second kind, that's a Pattern trying to hide as a Button.
 
+## Sidebar layout and state ownership
+
+`Sidebar` and `SidebarProvider` expose additive, optional APIs. Existing consumers
+need no migration and retain their current defaults.
+
+| API                                | Default      | Contract                                                                                                                |
+| ---------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `Sidebar layout`                   | `"reserved"` | Desktop sidebar reserves a gap in document flow. `"overlay"` renders no gap, so opening it never resizes the content.   |
+| `SidebarProvider persistState`     | `true`       | Writes the existing sidebar cookie when the desktop open state changes. Set `false` when the consumer owns persistence. |
+| `SidebarProvider keyboardShortcut` | `true`       | Registers the existing Cmd/Ctrl+B listener. Set `false` to leave those events untouched.                                |
+
+Controlled `open` and `onOpenChange` continue to work with either opt-out. The
+provider does not load persisted state, know routes or permissions, or schedule
+hover interactions. A consumer that owns these policies passes its resulting
+state into the provider.
+
+```tsx
+<SidebarProvider open={open} onOpenChange={setOpen} persistState={false} keyboardShortcut={false}>
+  <Sidebar layout="overlay" variant="floating">{navigation}</Sidebar>
+  <SidebarInset>{content}</SidebarInset>
+</SidebarProvider>
+```
+
+An overlay is nonmodal: opening it does not move focus, trap focus, create a
+backdrop, or dismiss on Escape. The consumer must keep a reachable trigger and
+manage dismissal and focus return when it closes a panel containing focus. A
+collapsed offcanvas overlay is inert and hidden from assistive technology; a
+collapsed icon rail remains interactive. `SidebarTrigger` retains its accessible
+name, `aria-expanded`, and `aria-controls`. Mobile uses the existing modal Sheet
+and ignores desktop layout mode. `collapsible="none"` keeps its existing always
+visible, in-flow layout.
+
+Floating panels retain their existing surface and radius. The new scoped layout
+roles are described in [Tokens](?path=/docs/tokens-tokens-guide--docs). The default
+duration is zero; system reduced motion always disables sidebar layout motion.
+
+## PageHeader leading slot
+
+`PageHeader.Left` accepts optional `leading: ReactNode`. It places the supplied
+control and optional decorative divider before the complete breadcrumb/title
+stack. The consumer supplies the control's label, disabled state, and behavior:
+
+```tsx
+<PageHeader.Left leading={<>
+  <SidebarTrigger />
+  <Separator className="h-5" orientation="vertical" />
+</>}>
+  <PageHeader.Breadcrumb>{breadcrumb}</PageHeader.Breadcrumb>
+  <PageHeader.Title>Library</PageHeader.Title>
+</PageHeader.Left>
+```
+
+Omitting the slot retains the original DOM and spacing. With the slot present,
+`className` still applies to the outer left region. The slot does not add a tab
+stop or steal focus; keyboard order follows control, breadcrumb, and actions in
+document order. Standard Button hover, focus-visible, and disabled states apply.
+
+These are additive API changes (minor compatibility impact), with no removals,
+deprecations, or changes required in existing callers.
+
 </div>

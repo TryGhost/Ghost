@@ -48,6 +48,8 @@ const SidebarProvider = React.forwardRef<
     defaultOpen?: boolean;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
+    persistState?: boolean;
+    keyboardShortcut?: boolean;
   }
 >(
   (
@@ -55,6 +57,8 @@ const SidebarProvider = React.forwardRef<
       defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
+      persistState = true,
+      keyboardShortcut = true,
       className,
       style,
       children,
@@ -80,9 +84,11 @@ const SidebarProvider = React.forwardRef<
         }
 
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        if (persistState) {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        }
       },
-      [setOpenProp, open],
+      [setOpenProp, open, persistState],
     );
 
     // Helper to toggle the sidebar.
@@ -92,6 +98,10 @@ const SidebarProvider = React.forwardRef<
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
+      if (!keyboardShortcut) {
+        return;
+      }
+
       const handleKeyDown = (event: KeyboardEvent) => {
         if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
           event.preventDefault();
@@ -101,7 +111,7 @@ const SidebarProvider = React.forwardRef<
 
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [toggleSidebar]);
+    }, [toggleSidebar, keyboardShortcut]);
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
@@ -154,6 +164,7 @@ const Sidebar = React.forwardRef<
     side?: 'left' | 'right';
     variant?: 'sidebar' | 'floating' | 'inset';
     collapsible?: 'offcanvas' | 'icon' | 'none';
+    layout?: 'reserved' | 'overlay';
   }
 >(
   (
@@ -161,6 +172,7 @@ const Sidebar = React.forwardRef<
       side = 'left',
       variant = 'sidebar',
       collapsible = 'offcanvas',
+      layout = 'reserved',
       className,
       children,
       ...props
@@ -213,6 +225,7 @@ const Sidebar = React.forwardRef<
         ref={ref}
         className="group peer hidden text-sidebar-foreground md:block"
         data-collapsible={state === 'collapsed' ? collapsible : ''}
+        data-layout={layout}
         data-side={side}
         data-state={state}
         data-variant={variant}
@@ -220,32 +233,39 @@ const Sidebar = React.forwardRef<
         role="navigation"
       >
         {/* This is what handles the sidebar gap on desktop */}
+        {layout === 'reserved' && (
+          <div
+            className={cn(
+              'relative h-full w-(--sidebar-width) bg-transparent transition-[width] duration-(--duration-layout) ease-emphasized motion-reduce:transition-none',
+              'group-data-[collapsible=offcanvas]:w-0',
+              'group-data-[side=right]:rotate-180',
+              variant === 'floating' || variant === 'inset'
+                ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_var(--panel-inset)*2)]'
+                : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
+            )}
+            data-sidebar="gap"
+          />
+        )}
         <div
+          {...(layout === 'overlay' && state === 'collapsed' && collapsible === 'offcanvas'
+            ? { inert: '', 'aria-hidden': true }
+            : {})}
           className={cn(
-            'relative h-full w-(--sidebar-width) bg-transparent',
-            'group-data-[collapsible=offcanvas]:w-0',
-            'group-data-[side=right]:rotate-180',
-            variant === 'floating' || variant === 'inset'
-              ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_1.6rem)]'
-              : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
-          )}
-        />
-        <div
-          className={cn(
-            'absolute inset-y-0 z-10 hidden h-full w-(--sidebar-width) md:flex',
+            'absolute inset-y-0 z-10 hidden h-full w-(--sidebar-width) transition-[left,right,width] duration-(--duration-layout) ease-emphasized motion-reduce:transition-none md:flex',
             side === 'left'
               ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
               : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
             // Adjust the padding for floating and inset variants.
             variant === 'floating' || variant === 'inset'
-              ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_1.6rem_+2px)]'
+              ? 'p-(--panel-inset) group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_var(--panel-inset)*2_+_2px)]'
               : 'border-sidebar-border group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l',
             className,
           )}
           {...props}
+          data-sidebar="panel"
         >
           <div
-            className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-surface group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
             data-sidebar="sidebar"
           >
             {children}
