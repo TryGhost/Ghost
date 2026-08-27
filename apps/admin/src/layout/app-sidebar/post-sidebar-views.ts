@@ -1,5 +1,4 @@
-import { POST_VIEW_PARAMS } from '@/posts/list/post-view-params';
-import type { PostResource } from '@/posts/list/post-resource';
+import { POST_VIEW_PARAMS, type PostResource } from '@/posts/api';
 
 /**
  * Sidebar saved views for posts and pages.

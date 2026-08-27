@@ -1,5 +1,5 @@
 import { buildPostViewUrl, getDefaultPostViews, isPostViewActive } from './post-sidebar-views';
-import { getStickyPostFilterUrl } from '@/posts/list/posts-sticky-filters';
+import { getStickyPostFilterUrl, type PostResource } from '@/posts/api';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { type NavSavedView } from './nav-saved-views';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -8,7 +8,6 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
 import { useSharedViews } from './shared-views';
-import type { PostResource } from '@/posts/list/post-resource';
 
 /**
  * Everything the sidebar needs for a posts/pages nav item, from whichever
