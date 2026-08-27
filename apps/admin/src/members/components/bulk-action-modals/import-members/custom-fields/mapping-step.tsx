@@ -57,6 +57,9 @@ interface MappingStepProps {
   showMappingErrors: boolean;
   dataPreviewIndex: number;
   targets: FieldTarget[];
+  // Whether custom fields exist for this site at all. Off, no row offers to make one and the
+  // create form is unreachable, so the table is a plain mapping of columns onto member fields.
+  canCreateCustomFields: boolean;
   labelPicker: UseLabelPickerResult;
   onUpdateMapping: (from: string, to: string | null) => void;
   onFieldCreated: (columnKey: string, column: string | null) => void;
@@ -107,6 +110,7 @@ export function MappingStep({
   showMappingErrors,
   dataPreviewIndex,
   targets,
+  canCreateCustomFields,
   labelPicker,
   onUpdateMapping,
   onFieldCreated,
@@ -525,6 +529,7 @@ export function MappingStep({
                                                         second mechanism. The mapping is not lost either way —
                                                         it comes back with the row when it is selected again. */}
                               <FieldPicker
+                                canCreateField={canCreateCustomFields}
                                 className={cn(!isImported(row) && 'invisible')}
                                 columnKey={row.key}
                                 disabled={isRowLocked(row)}

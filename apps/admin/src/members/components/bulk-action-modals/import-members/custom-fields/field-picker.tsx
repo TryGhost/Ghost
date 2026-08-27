@@ -4,6 +4,7 @@ import {
   Button,
   Command,
   CommandCheck,
+  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -67,6 +68,9 @@ interface FieldPickerProps {
   disabled?: boolean;
   invalid?: boolean;
   targets: FieldTarget[];
+  // Whether the list ends with an offer to make a custom field. Off, a search that matches
+  // nothing says so instead, which the offer had been standing in for.
+  canCreateField: boolean;
   // Open and search are the caller's, not this component's: creating a composite has to
   // reopen this row's picker filtered to the field it just made, so which picker is open and
   // what it is filtered by have to be sayable from outside.
@@ -86,6 +90,7 @@ export function FieldPicker({
   disabled,
   invalid,
   targets,
+  canCreateField,
   open,
   search,
   onOpenChange,
@@ -266,7 +271,12 @@ export function FieldPicker({
                             and Enter would take whichever the DOM had first. Identity is the
                             target, which is namespaced and so already distinct; the label moves
                             to keywords for scoreByLabel. */}
-            {FIELD_SOURCE_ORDER.map((source) => (
+            {/* Empty sources are dropped rather than left to cmdk: a group with no items
+                            still owns its heading in the DOM, so a site with custom fields off would
+                            be told there is a Custom fields section and then shown nothing under it. */}
+            {FIELD_SOURCE_ORDER.filter((source) =>
+              targets.some((target) => target.source === source),
+            ).map((source) => (
               <CommandGroup key={source} heading={FIELD_SOURCES[source].heading}>
                 {targets
                   .filter((target) => target.source === source)
@@ -284,26 +294,32 @@ export function FieldPicker({
                   ))}
               </CommandGroup>
             ))}
-            {/* Its own group because cmdk hands forceMount down to every item in a
-                            group, so among the fields it would have pinned all of them. Search
-                            finding nothing is the strongest signal the field does not exist yet,
-                            which is why nothing else stands in for an empty state. */}
-            <CommandGroup forceMount>
-              {/* A publisher can name a field "New field", so the colour is what
+            {canCreateField ? (
+              /* Its own group because cmdk hands forceMount down to every item in a group, so
+                                among the fields it would have pinned all of them. Search finding nothing
+                                is the strongest signal the field does not exist yet, which is why
+                                nothing else stands in for an empty state while this is offered. */
+              <CommandGroup forceMount>
+                {/* A publisher can name a field "New field", so the colour is what
                                 sets this apart from one. */}
-              <CommandItem
-                className="font-semibold text-green"
-                value="Add custom field"
-                forceMount
-                onSelect={() => {
-                  openingCreateForm.current = true;
-                  onOpenChange(false);
-                }}
-              >
-                <LucideIcon.Plus />
-                <span>Add custom field</span>
-              </CommandItem>
-            </CommandGroup>
+                <CommandItem
+                  className="font-semibold text-green"
+                  value="Add custom field"
+                  forceMount
+                  onSelect={() => {
+                    openingCreateForm.current = true;
+                    onOpenChange(false);
+                  }}
+                >
+                  <LucideIcon.Plus />
+                  <span>Add custom field</span>
+                </CommandItem>
+              </CommandGroup>
+            ) : (
+              // With the offer gone nothing is force-mounted, so a search matching nothing
+              // would otherwise leave the list blank with no account of why.
+              <CommandEmpty>No fields found.</CommandEmpty>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
