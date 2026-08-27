@@ -59,6 +59,7 @@ describe('SettingsDataGate', () => {
       expect(started).toEqual(['config', 'current-user', 'settings', 'site']);
     });
     expect(screen.queryByText('Settings loaded')).not.toBeInTheDocument();
+    expect(document.querySelector('video')).toBeInTheDocument();
 
     act(() => {
       resolveQueries.forEach((resolve) => resolve());

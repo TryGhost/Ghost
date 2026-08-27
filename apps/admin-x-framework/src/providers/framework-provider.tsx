@@ -1,5 +1,5 @@
 import { ErrorBoundary as SentryErrorBoundary } from '@sentry/react';
-import { QueryClient, QueryClientProvider, QueryErrorResetBoundary } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, createContext, useContext, useMemo } from 'react';
 import queryClient from '../utils/query-client';
 
@@ -97,9 +97,7 @@ export function FrameworkProvider({
   return (
     <SentryErrorBoundary>
       <QueryClientProvider client={client}>
-        <QueryErrorResetBoundary>
-          <FrameworkContext.Provider value={props}>{children}</FrameworkContext.Provider>
-        </QueryErrorResetBoundary>
+        <FrameworkContext.Provider value={props}>{children}</FrameworkContext.Provider>
       </QueryClientProvider>
     </SentryErrorBoundary>
   );

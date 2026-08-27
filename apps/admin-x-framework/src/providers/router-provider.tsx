@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
-import { useQueryErrorResetBoundary } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   createHashRouter,
   RouteObject,
@@ -39,11 +39,17 @@ const scrollPositions = new Map<string, number>();
 
 function DefaultErrorPage() {
   const navigate = useReactRouterNavigate();
-  const { reset } = useQueryErrorResetBoundary();
+  const queryClient = useQueryClient();
   const backToDashboard = useCallback(() => {
-    reset();
+    // QueryErrorResetBoundary cannot express this recovery: its flag is
+    // cleared by the next query mount anywhere, so a reset followed by a
+    // navigation never survives to the re-entry. Clearing the errored
+    // entries themselves makes the next mount fetch fresh.
+    void queryClient.resetQueries({
+      predicate: (query) => query.state.status === 'error',
+    });
     navigate('/');
-  }, [navigate, reset]);
+  }, [navigate, queryClient]);
 
   return <ErrorPage onBackToDashboard={backToDashboard} />;
 }

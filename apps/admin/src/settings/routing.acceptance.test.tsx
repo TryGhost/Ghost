@@ -40,7 +40,8 @@ describe('Settings routing', () => {
     await page.getByText('← Back to the dashboard', { exact: true }).click();
     await expect.poll(currentRoute).toBe('/analytics');
 
-    // A later request succeeds after the error boundary is reset.
+    // Back to dashboard clears the errored cache entries, so re-entering
+    // settings fetches fresh instead of re-throwing the cached error.
     window.location.hash = '#/settings';
     await expect.element(settingsScreen.sidebar()).toBeVisible();
   });
