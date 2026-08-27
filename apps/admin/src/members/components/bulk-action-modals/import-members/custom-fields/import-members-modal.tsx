@@ -90,6 +90,9 @@ export function ImportMembersModal({
   // A field created from the mapping step is in here the moment it is created: the create
   // mutation puts it into the cached list, so there is no window where a row points at a
   // column the picker cannot name yet.
+  //
+  // The flag is asked again rather than left to the disabled query above: disabling stops the
+  // fetch, not the read, so a cache another screen had warmed would still be served here.
   const customFieldColumns = useMemo(
     () =>
       customFieldsEnabled
@@ -118,7 +121,7 @@ export function ImportMembersModal({
   }, [importMemberTier, customFieldColumns]);
   // Auto-detection takes customFieldColumns separately, through detectOptionsRef above: it
   // matches on column names rather than on what is offered.
-  const targets = useMemo(
+  const targetGroups = useMemo(
     () =>
       fieldTargets({
         membershipFields: getFieldMappings({ importMemberTier }),
@@ -492,7 +495,7 @@ export function ImportMembersModal({
               mappingError={state.mappingError}
               showMappingErrors={state.showMappingErrors}
               status={state.status}
-              targets={targets}
+              targetGroups={targetGroups}
               onColumnsChanged={() => {
                 hasEditsRef.current = true;
               }}

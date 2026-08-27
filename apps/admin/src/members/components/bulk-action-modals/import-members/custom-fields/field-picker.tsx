@@ -16,9 +16,8 @@ import {
   inputSurfaceClasses,
 } from '@tryghost/shade/components';
 import {
-  FIELD_SOURCES,
-  FIELD_SOURCE_ORDER,
   type FieldTarget,
+  type FieldTargetGroup,
 } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useRef } from 'react';
@@ -67,7 +66,10 @@ interface FieldPickerProps {
   value: string | null;
   disabled?: boolean;
   invalid?: boolean;
-  targets: FieldTarget[];
+  // The list as it is shown: sections in order, each already headed and populated. Everything
+  // about where a target sits and how it is named is settled by fieldTargets, so nothing here
+  // re-derives it.
+  targetGroups: FieldTargetGroup[];
   // Whether the list ends with an offer to make a custom field. Off, a search that matches
   // nothing says so instead, which the offer had been standing in for.
   canCreateField: boolean;
@@ -89,7 +91,7 @@ export function FieldPicker({
   value,
   disabled,
   invalid,
-  targets,
+  targetGroups,
   canCreateField,
   open,
   search,
@@ -106,9 +108,11 @@ export function FieldPicker({
   // its autoFocus pulled straight back inside. Both are dealt with at teardown, below.
   const openingCreateForm = useRef(false);
 
-  const selected = targets.find((target) => target.value === value);
-  const badge = selected?.contested ? FIELD_SOURCES[selected.source].badge : null;
-  const ariaKind = selected ? FIELD_SOURCES[selected.source].ariaKind : null;
+  const selected = targetGroups
+    .flatMap((group) => group.targets)
+    .find((target) => target.value === value);
+  const badge = selected?.badge ?? null;
+  const ariaKind = selected?.ariaKind ?? null;
 
   const choose = (target: string) => {
     onOpenChange(false);
@@ -271,27 +275,20 @@ export function FieldPicker({
                             and Enter would take whichever the DOM had first. Identity is the
                             target, which is namespaced and so already distinct; the label moves
                             to keywords for scoreByLabel. */}
-            {/* Empty sources are dropped rather than left to cmdk: a group with no items
-                            still owns its heading in the DOM, so a site with custom fields off would
-                            be told there is a Custom fields section and then shown nothing under it. */}
-            {FIELD_SOURCE_ORDER.filter((source) =>
-              targets.some((target) => target.source === source),
-            ).map((source) => (
-              <CommandGroup key={source} heading={FIELD_SOURCES[source].heading}>
-                {targets
-                  .filter((target) => target.source === source)
-                  .map((target) => (
-                    <CommandItem
-                      key={target.value}
-                      keywords={[target.label]}
-                      value={target.value}
-                      onSelect={() => choose(target.value)}
-                    >
-                      <TargetIcon target={target} />
-                      <span className="truncate">{target.label}</span>
-                      {value === target.value && <CommandCheck />}
-                    </CommandItem>
-                  ))}
+            {targetGroups.map((group) => (
+              <CommandGroup key={group.source} heading={group.heading}>
+                {group.targets.map((target) => (
+                  <CommandItem
+                    key={target.value}
+                    keywords={[target.label]}
+                    value={target.value}
+                    onSelect={() => choose(target.value)}
+                  >
+                    <TargetIcon target={target} />
+                    <span className="truncate">{target.label}</span>
+                    {value === target.value && <CommandCheck />}
+                  </CommandItem>
+                ))}
               </CommandGroup>
             ))}
             {canCreateField ? (
