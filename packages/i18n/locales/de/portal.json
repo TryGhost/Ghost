@@ -74,7 +74,7 @@
     "Copied": "Kopiert",
     "Copy": "Kopieren",
     "Copy link": "Link kopieren",
-    "Could not create Stripe billing portal session": "Der Stripe-Bezahlvorgang konnte nicht gestartet werden"",
+    "Could not create Stripe billing portal session": "Der Stripe-Bezahlvorgang konnte nicht gestartet werden",
     "Could not create Stripe checkout session": "Zahlungsabwicklung über Stripe konnte nicht erstellt werden",
     "Could not sign in. Login link expired.": "Anmeldung nicht möglich. Der Login-Link ist abgelaufen.",
     "Could not update email! Invalid link.": "E-Mail-Aktualisierung fehlgeschlagen. Link nicht gültig.",
