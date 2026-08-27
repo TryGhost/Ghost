@@ -29,7 +29,8 @@ export type TierCheckoutConfig = {
    */
   shipping?: {
     collect: true;
-    allowed_countries: string[];
+    /** Absent means everywhere the processor ships; a list is a restriction. */
+    allowed_countries?: string[];
     name: { custom_field_key: string };
     address: { custom_field_key: string };
   };
@@ -48,7 +49,8 @@ export type TierCheckoutConfigInput = {
     | { collect: false }
     | {
         collect: true;
-        allowed_countries: string[];
+        /** Omit to deliver everywhere. An empty list is refused, not read as everywhere. */
+        allowed_countries?: string[];
         name: { custom_field_key: string };
         address: { custom_field_key: string };
       };

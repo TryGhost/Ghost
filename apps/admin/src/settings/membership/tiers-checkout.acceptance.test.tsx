@@ -12,7 +12,6 @@ import {
   tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
-import { STRIPE_ALLOWED_COUNTRIES } from '@/settings/membership/tiers/stripe-allowed-countries';
 
 const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'free', type: 'free' });
 const supporterTier = tier({
@@ -177,6 +176,20 @@ describe('Tier checkout collection', () => {
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
   });
 
+  // The other half of the sentinel: a tier that delivers everywhere carries no list, and
+  // has to read back as "All countries" rather than as a restriction to nothing.
+  it('reads a configuration with no countries as delivering everywhere', async () => {
+    const everywhere = { ...supporterConfig.shipping };
+    delete (everywhere as { allowed_countries?: string[] }).allowed_countries;
+    checkoutWorld([{ ...supporterConfig, shipping: everywhere }]);
+    await renderAdminApp('/settings', { boot: flagOnBoot });
+
+    const modal = await openSupporterModal();
+    await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
+    await expect.element(modal.getByLabelText('Ships to')).toHaveTextContent('All countries');
+    await expect(modal.getByLabelText('Select specific countries')).toHaveCount(0);
+  });
+
   it('validates destinations inline before anything is written', async () => {
     const putApi = checkoutWorld();
     await renderAdminApp('/settings', { boot: flagOnBoot });
@@ -204,7 +217,7 @@ describe('Tier checkout collection', () => {
 
     const sent = (
       putApi.lastRequest?.body as {
-        tiers_checkout_config: [{ shipping: { collect: boolean; allowed_countries: string[] } }];
+        tiers_checkout_config: [{ shipping: { collect: boolean; allowed_countries?: string[] } }];
       }
     ).tiers_checkout_config[0];
     expect(sent).toMatchObject({
@@ -216,8 +229,9 @@ describe('Tier checkout collection', () => {
       tax_number: { collect: false },
       phone: { collect: false },
     });
-    // "All countries" is written as Stripe's full list, mirrored from the server.
-    expect(sent.shipping.allowed_countries).toHaveLength(STRIPE_ALLOWED_COUNTRIES.length);
+    // "All countries" is written as no list at all. Sending every country instead would
+    // save today's set as a restriction, and quietly exclude whatever is added next.
+    expect(sent.shipping).not.toHaveProperty('allowed_countries');
   });
 
   it('creates a destination field from inside the picker', async () => {
