@@ -54,8 +54,10 @@ const shippingWithoutAddress: TierCheckoutConfigInput = {
   },
 };
 
-const shippingWithoutCountries: TierCheckoutConfigInput = {
-  // @ts-expect-error a collecting shipping block must state its allowed countries
+// Countries are a restriction, so omitting them is how a tier says it delivers everywhere.
+// No directive here on purpose: this has to keep compiling, or Admin loses the only way to
+// express that without enumerating a set that moves.
+const shippingEverywhere: TierCheckoutConfigInput = {
   shipping: {
     collect: true,
     name: { custom_field_key: 'recipient_name' },
@@ -83,6 +85,17 @@ const response: TierCheckoutConfig = {
   phone: { collect: true, custom_field_key: 'phone' },
 };
 
+// And the same absence comes back, so a client reads everywhere the way it wrote it.
+const responseEverywhere: TierCheckoutConfig = {
+  tier_id: 'abc',
+  custom_fields: [],
+  shipping: {
+    collect: true,
+    name: { custom_field_key: 'recipient_name' },
+    address: { custom_field_key: 'shipping_address' },
+  },
+};
+
 const responseWithNullDestination: TierCheckoutConfig = {
   tier_id: 'abc',
   custom_fields: [],
@@ -105,9 +118,10 @@ describe('tiers-checkout-config wire contract', () => {
       taxWithDestination,
       shippingWithoutName,
       shippingWithoutAddress,
-      shippingWithoutCountries,
+      shippingEverywhere,
       phoneWithoutDestination,
       response,
+      responseEverywhere,
       responseWithNullDestination,
     ]) {
       expect(value).toBeTruthy();
