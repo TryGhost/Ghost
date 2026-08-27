@@ -11,10 +11,10 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 
-// Both flags: the redesigned dialog is what this file exercises, and custom fields are what it
-// exercises it for. They are separate switches — the redesign ships without custom fields.
-const FLAGS = { labs: { membersImportRedesign: true, membersCustomFields: true } };
-const WITHOUT_CUSTOM_FIELDS = { labs: { membersImportRedesign: true } };
+// The import dialog is served to everyone now, so custom fields are the only switch left, and
+// the dialog has to hold up on either side of it.
+const FLAGS = { labs: { membersCustomFields: true } };
+const WITHOUT_CUSTOM_FIELDS = { labs: {} };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
@@ -761,9 +761,9 @@ describe('Import members custom fields', () => {
     await expect.element(importMembersScreen.leaveConfirmationText()).toBeVisible();
   });
 
-  // The redesigned dialog ships on its own flag, ahead of custom fields. Off, it has to be a
-  // plain mapping of columns onto the member fields Ghost already has, with nothing about
-  // custom fields anywhere in it — including on a site that has some defined.
+  // Custom fields are still an experiment, and the import went out ahead of them. Off, it has
+  // to be a plain mapping of columns onto the member fields Ghost already has, with nothing
+  // about custom fields anywhere in it — including on a site that has some defined.
   describe('with custom fields off', () => {
     it('offers no custom field, and no way to make one', async () => {
       const { browseApi } = fakeCustomFieldsWorld([NICKNAME_FIELD]);

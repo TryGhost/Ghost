@@ -1,5 +1,3 @@
-// Every step but the mapping one is shared with the baseline modal: they are the same file
-// upload, progress and result screens, and nothing about custom fields reaches them.
 import {
   CompleteStep,
   ErrorStep,
@@ -77,10 +75,9 @@ export function ImportMembersModal({
   const { mutateAsync: importMembers } = useImportMembers();
   const importMemberTier = useFeatureFlag('importMemberTier');
 
-  // Whether custom fields exist at all is their own flag's answer, not this dialog's: the
-  // redesigned import ships on `membersImportRedesign` and has to be a plain column-to-member-field
-  // mapper while custom fields are still an experiment. Off, they are absent from every part of
-  // this file — not fetched, not offered as a target, not creatable.
+  // Custom fields are still an experiment, and this dialog has to be a plain
+  // column-to-member-field mapper without them. Off, they are absent from every part of this
+  // file — not fetched, not offered as a target, not creatable.
   const customFieldsEnabled = useFeatureFlag('membersCustomFields');
   // Defined custom fields become mapping targets. Browse returns active fields only, which
   // are the ones the importer writes to.
