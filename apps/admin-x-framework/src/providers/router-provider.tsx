@@ -46,7 +46,7 @@ function DefaultErrorPage() {
     // navigation never survives to the re-entry. Clearing the errored
     // entries themselves makes the next mount fetch fresh.
     void queryClient.resetQueries({
-      predicate: (query) => query.state.status === 'error',
+      predicate: (query) => query.state.status === 'error' && query.state.data === undefined,
     });
     navigate('/');
   }, [navigate, queryClient]);

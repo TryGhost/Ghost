@@ -10,7 +10,10 @@ const Boom = () => {
 };
 
 const renderErroredRoute = (queryClient: QueryClient) => {
-  window.location.hash = '#/test/boom';
+  // replaceState, not a hash assignment: jsdom queues an async hashchange for
+  // the latter, and react-router clears its error boundary on the location
+  // pop, remounting the error page under the test's feet.
+  window.history.replaceState(null, '', '#/test/boom');
 
   return render(
     <TestWrapper queryClient={queryClient}>
@@ -34,7 +37,7 @@ describe('default error element', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    window.location.hash = '';
+    window.history.replaceState(null, '', '#/');
   });
 
   it('resets errored queries and navigates home from the error page', async () => {
