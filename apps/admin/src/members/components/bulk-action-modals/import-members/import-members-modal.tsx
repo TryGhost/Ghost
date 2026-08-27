@@ -4,7 +4,7 @@ import {
   InitStep,
   ProcessingStep,
 } from '@/members/components/bulk-action-modals/import-members/components';
-import { MappingStep } from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping-step';
+import { MappingStep } from '@/members/components/bulk-action-modals/import-members/mapping-step';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -36,8 +36,8 @@ import {
   MembersFieldMapping,
   detectFieldTypes,
   getFieldMappings,
-} from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
-import { fieldTargets } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
+} from '@/members/components/bulk-action-modals/import-members/mapping';
+import { fieldTargets } from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { buildImportResponse } from '@/members/components/bulk-action-modals/import-members/upload';
 import { cn } from '@tryghost/shade/utils';
 import {
