@@ -133,7 +133,7 @@ describe('useActiveVisitors', () => {
     const { rerender } = renderHook(
       ({ config }: { config?: typeof statsConfig }) =>
         useActiveVisitors({ statsConfig: config, enabled: true }),
-      { initialProps: { config: statsConfig } },
+      { initialProps: { config: statsConfig as typeof statsConfig | undefined } },
     );
 
     expect(mockUseTinybirdQuery).toHaveBeenLastCalledWith(
