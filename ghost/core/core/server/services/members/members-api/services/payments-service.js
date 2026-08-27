@@ -4,581 +4,615 @@ const TierCreatedEvent = require('../../../tiers/tier-created-event');
 const TierPriceChangeEvent = require('../../../tiers/tier-price-change-event');
 const TierNameChangeEvent = require('../../../tiers/tier-name-change-event');
 const OfferCreatedEvent = require('../../../offers/domain/events/offer-created-event');
-const {BadRequestError} = require('@tryghost/errors');
+const { BadRequestError } = require('@tryghost/errors');
+const { t } = require('../../../i18n');
 
 class PaymentsService {
-    /**
-     * @param {object} deps
-     * @param {import('bookshelf').Model} deps.Offer
-     * @param {import('../../../offers/application/offers-api')} deps.offersAPI
-     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
-     * @param {{get(key: string): any}} deps.settingsCache
-     * @param {{service: import('../../../gifts/gift-service').GiftService}} deps.giftService
-     */
-    constructor(deps) {
-        /** @private */
-        this.OfferModel = deps.Offer;
-        /** @private */
-        this.StripeProductModel = deps.StripeProduct;
-        /** @private */
-        this.StripePriceModel = deps.StripePrice;
-        /** @private */
-        this.StripeCustomerModel = deps.StripeCustomer;
-        /** @private */
-        this.offersAPI = deps.offersAPI;
-        /** @private */
-        this.stripeAPIService = deps.stripeAPIService;
-        /** @private */
-        this.settingsCache = deps.settingsCache;
-        /** @private */
-        this.giftService = deps.giftService;
+  /**
+   * @param {object} deps
+   * @param {import('bookshelf').Model} deps.Offer
+   * @param {import('../../../offers/application/offers-api')} deps.offersAPI
+   * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
+   * @param {{get(key: string): any}} deps.settingsCache
+   * @param {{checkout: import('../../../tier-checkout-config').TierCheckoutConfigService}} deps.tiersService
+   * @param {{isSet(flag: string): boolean}} deps.labsService
+   */
+  constructor(deps) {
+    /** @private */
+    this.OfferModel = deps.Offer;
+    /** @private */
+    this.StripeProductModel = deps.StripeProduct;
+    /** @private */
+    this.StripePriceModel = deps.StripePrice;
+    /** @private */
+    this.StripeCustomerModel = deps.StripeCustomer;
+    /** @private */
+    this.offersAPI = deps.offersAPI;
+    /** @private */
+    this.stripeAPIService = deps.stripeAPIService;
+    /** @private */
+    this.settingsCache = deps.settingsCache;
+    /** @private */
+    this.tiersService = deps.tiersService;
+    /** @private */
+    this.labsService = deps.labsService;
+    DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
+      await this.getCouponForOffer(event.data.offer.id);
+    });
 
-        DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
-            await this.getCouponForOffer(event.data.offer.id);
+    DomainEvents.subscribe(TierCreatedEvent, async (event) => {
+      if (event.data.tier.type === 'paid') {
+        await this.getPriceForTierCadence(event.data.tier, 'month');
+        await this.getPriceForTierCadence(event.data.tier, 'year');
+      }
+    });
+
+    DomainEvents.subscribe(TierPriceChangeEvent, async (event) => {
+      if (event.data.tier.type === 'paid') {
+        await this.getPriceForTierCadence(event.data.tier, 'month');
+        await this.getPriceForTierCadence(event.data.tier, 'year');
+      }
+    });
+
+    DomainEvents.subscribe(TierNameChangeEvent, async (event) => {
+      if (event.data.tier.type === 'paid') {
+        await this.updateNameForTierProducts(event.data.tier);
+      }
+    });
+  }
+
+  /**
+   * @param {object} params
+   * @param {import('../../../tiers/tier')} params.tier
+   * @param {Tier.Cadence} params.cadence
+   * @param {Offer} [params.offer]
+   * @param {Member} [params.member]
+   * @param {number|null} [params.giftTrialDays]
+   * @param {Object.<string, any>} [params.metadata]
+   * @param {string} params.successUrl
+   * @param {string} params.cancelUrl
+   * @param {string} [params.email]
+   *
+   * @returns {Promise<URL>}
+   */
+  async getPaymentLink({
+    tier,
+    cadence,
+    offer,
+    member,
+    giftTrialDays,
+    metadata,
+    successUrl,
+    cancelUrl,
+    email,
+  }) {
+    let coupon = null;
+    let trialDays = null;
+    if (offer) {
+      if (!offer.tier) {
+        throw new BadRequestError({
+          message: 'Offer does not have a tier',
         });
-
-        DomainEvents.subscribe(TierCreatedEvent, async (event) => {
-            if (event.data.tier.type === 'paid') {
-                await this.getPriceForTierCadence(event.data.tier, 'month');
-                await this.getPriceForTierCadence(event.data.tier, 'year');
-            }
+      }
+      if (!tier.id.equals(offer.tier.id)) {
+        throw new BadRequestError({
+          message: 'This Offer is not valid for the Tier',
         });
-
-        DomainEvents.subscribe(TierPriceChangeEvent, async (event) => {
-            if (event.data.tier.type === 'paid') {
-                await this.getPriceForTierCadence(event.data.tier, 'month');
-                await this.getPriceForTierCadence(event.data.tier, 'year');
-            }
-        });
-
-        DomainEvents.subscribe(TierNameChangeEvent, async (event) => {
-            if (event.data.tier.type === 'paid') {
-                await this.updateNameForTierProducts(event.data.tier);
-            }
-        });
+      }
+      if (offer.type === 'trial') {
+        trialDays = offer.amount;
+      } else {
+        coupon = await this.getCouponForOffer(offer.id);
+      }
     }
 
-    /**
-     * @param {object} params
-     * @param {import('../../../tiers/tier')} params.tier
-     * @param {Tier.Cadence} params.cadence
-     * @param {Offer} [params.offer]
-     * @param {Member} [params.member]
-     * @param {Object.<string, any>} [params.metadata]
-     * @param {string} params.successUrl
-     * @param {string} params.cancelUrl
-     * @param {string} [params.email]
-     *
-     * @returns {Promise<URL>}
-     */
-    async getPaymentLink({tier, cadence, offer, member, metadata, successUrl, cancelUrl, email}) {
-        let coupon = null;
-        let trialDays = null;
-        if (offer) {
-            if (!offer.tier) {
-                throw new BadRequestError({
-                    message: 'Offer does not have a tier'
-                });
-            }
-            if (!tier.id.equals(offer.tier.id)) {
-                throw new BadRequestError({
-                    message: 'This Offer is not valid for the Tier'
-                });
-            }
-            if (offer.type === 'trial') {
-                trialDays = offer.amount;
-            } else {
-                coupon = await this.getCouponForOffer(offer.id);
-            }
-        }
-
-        let customer = null;
-        if (member) {
-            customer = await this.getCustomerForMember(member);
-        }
-
-        const price = await this.getPriceForTierCadence(tier, cadence);
-
-        const data = {
-            metadata,
-            successUrl: successUrl,
-            cancelUrl: cancelUrl,
-            trialDays: trialDays ?? tier.trialDays,
-            coupon: coupon?.id
-        };
-
-        // If we already have a coupon, we don't want to give trial days over it
-        if (data.coupon) {
-            delete data.trialDays;
-        }
-
-        if (!customer && email) {
-            data.customerEmail = email;
-        }
-
-        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
-
-        return session.url;
+    // Gift subscriptions owns the continuation calculation. This adapter only
+    // translates the stable decision into the recurring Stripe checkout.
+    if (trialDays === null && giftTrialDays !== undefined) {
+      trialDays = giftTrialDays;
     }
 
-    /**
-     * @param {object} params
-     * @param {Member} [params.member]
-     * @param {Object.<string, any>} [params.metadata]
-     * @param {string} params.successUrl
-     * @param {string} params.cancelUrl
-     * @param {boolean} [params.isAuthenticated]
-     * @param {string} [params.email]
-     *
-     * @returns {Promise<URL>}
-     */
-    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated, personalNote}) {
-        let customer = null;
-        if (member && isAuthenticated) {
-            customer = await this.getCustomerForMember(member);
+    let customer = null;
+    if (member) {
+      customer = await this.getCustomerForMember(member);
+    }
+
+    const price = await this.getPriceForTierCadence(tier, cadence);
+
+    const data = {
+      // The tier being bought, recorded on the session so the completed event can find
+      // the configuration that produced its questions. Nothing else carries it: a
+      // completed session names prices and products, and mapping those back is a
+      // lookup that can fail where this cannot.
+      metadata: { ...metadata, ghostTierId: tier.id.toHexString() },
+      successUrl: successUrl,
+      cancelUrl: cancelUrl,
+      trialDays: trialDays ?? tier.trialDays,
+      coupon: coupon?.id,
+      // Resolved here rather than cached with the tier, so a field archived a minute
+      // ago stops being asked on the next checkout. A failure to resolve must not
+      // stop a member paying, so it costs the questions and nothing else.
+      checkout: await this.getCheckoutConfigForTier(tier),
+    };
+
+    // If we already have a coupon, we don't want to give trial days over it
+    if (data.coupon) {
+      delete data.trialDays;
+    }
+
+    if (!customer && email) {
+      data.customerEmail = email;
+    }
+
+    const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
+
+    return session.url;
+  }
+
+  /**
+   * What this tier's checkout should ask for beyond the payment, or nothing.
+   *
+   * Undefined on every path but the configured one, including the flag being off: the
+   * session builder adds no parameters for it, so an unconfigured site's request to
+   * Stripe is exactly the request it made before this existed.
+   *
+   * @private
+   * @param {import('../../../tiers/tier')} tier
+   */
+  async getCheckoutConfigForTier(tier) {
+    const checkoutConfig = this.tiersService?.checkout;
+    if (!this.labsService?.isSet('membersCustomFields') || !checkoutConfig) {
+      return undefined;
+    }
+    try {
+      return await checkoutConfig.resolve(tier.id.toHexString());
+    } catch (err) {
+      // A checkout that asks one fewer question still takes the money; one that fails
+      // to be created takes none. This is the whole reason it is caught.
+      logging.error(
+        {
+          event: { name: 'stripe_checkout.tier_config.resolve_failed' },
+          err,
+          tierId: tier.id.toHexString(),
+        },
+        'Failed to resolve what a tier checkout should collect',
+      );
+      return undefined;
+    }
+  }
+
+  /**
+   * @param {object} params
+   * @param {Member} [params.member]
+   * @param {Object.<string, any>} [params.metadata]
+   * @param {string} params.successUrl
+   * @param {string} params.cancelUrl
+   * @param {boolean} [params.isAuthenticated]
+   * @param {string} [params.email]
+   *
+   * @returns {Promise<URL>}
+   */
+  async getDonationPaymentLink({
+    member,
+    metadata,
+    successUrl,
+    cancelUrl,
+    email,
+    isAuthenticated,
+    personalNote,
+  }) {
+    let customer = null;
+    if (member && isAuthenticated) {
+      customer = await this.getCustomerForMember(member);
+    }
+
+    const data = {
+      priceId: (await this.getPriceForDonations()).id,
+      metadata,
+      successUrl: successUrl,
+      cancelUrl: cancelUrl,
+      customer,
+      customerEmail: !customer && email ? email : null,
+      personalNote: personalNote,
+    };
+
+    const session = await this.stripeAPIService.createDonationCheckoutSession(data);
+    return session.url;
+  }
+
+  async getCustomerForMember(member) {
+    const rows = await this.StripeCustomerModel.where({
+      member_id: member.id,
+    })
+      .query()
+      .select('customer_id');
+
+    for (const row of rows) {
+      try {
+        const customer = await this.stripeAPIService.getCustomer(row.customer_id);
+        if (!customer.deleted) {
+          return customer;
         }
-
-        const data = {
-            priceId: (await this.getPriceForDonations()).id,
-            metadata,
-            successUrl: successUrl,
-            cancelUrl: cancelUrl,
-            customer,
-            customerEmail: !customer && email ? email : null,
-            personalNote: personalNote
-
-        };
-
-        const session = await this.stripeAPIService.createDonationCheckoutSession(data);
-        return session.url;
+      } catch (err) {
+        logging.warn(err);
+      }
     }
 
-    /**
-     * @param {object} params
-     * @param {import('../../../tiers/tier')} params.tier
-     * @param {'month'|'year'} params.cadence
-     * @param {number} params.duration
-     * @param {string} params.successUrl
-     * @param {string} params.cancelUrl
-     * @param {object} params.metadata
-     * @param {object} [params.member]
-     * @param {boolean} params.isAuthenticated
-     *
-     * @returns {Promise<string>}
-     */
-    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated}) {
-        let customer = null;
-        if (member && isAuthenticated) {
-            customer = await this.getCustomerForMember(member);
+    const customer = await this.createCustomerForMember(member);
+
+    return customer;
+  }
+
+  async createCustomerForMember(member) {
+    const customer = await this.stripeAPIService.createCustomer({
+      email: member.get('email'),
+      name: member.get('name'),
+    });
+
+    await this.StripeCustomerModel.add({
+      member_id: member.id,
+      customer_id: customer.id,
+      email: customer.email,
+      name: customer.name,
+    });
+
+    return customer;
+  }
+
+  /**
+   * @param {import('../../../tiers/tier')} tier
+   * @returns {Promise<{id: string}>}
+   */
+  async getProductForTier(tier) {
+    const rows = await this.StripeProductModel.where({ product_id: tier.id.toHexString() })
+      .query()
+      .select('stripe_product_id');
+
+    for (const row of rows) {
+      try {
+        const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
+        if (product.active) {
+          return { id: product.id };
         }
-
-        const amount = tier.getPrice(cadence);
-        const currency = tier.currency.toLowerCase();
-
-        const token = this.giftService.service.generateToken();
-
-        const successUrlObj = new URL(successUrl);
-        successUrlObj.searchParams.set('stripe', 'gift-purchase-success');
-        successUrlObj.searchParams.set('gift_token', token);
-
-        const data = {
-            amount,
-            currency,
-            tierName: tier.name,
-            cadence,
-            duration,
-            metadata: {
-                ...metadata,
-                ghost_gift: 'true',
-                gift_token: token,
-                tier_id: tier.id.toHexString(),
-                cadence,
-                duration: String(duration)
-            },
-            successUrl: successUrlObj.toString(),
-            cancelUrl,
-            customer
-        };
-
-        const session = await this.stripeAPIService.createGiftCheckoutSession(data);
-
-        return session.url;
+      } catch (err) {
+        logging.warn(err);
+      }
     }
 
-    async getCustomerForMember(member) {
-        const rows = await this.StripeCustomerModel.where({
-            member_id: member.id
-        }).query().select('customer_id');
+    const product = await this.createProductForTier(tier);
 
-        for (const row of rows) {
-            try {
-                const customer = await this.stripeAPIService.getCustomer(row.customer_id);
-                if (!customer.deleted) {
-                    return customer;
-                }
-            } catch (err) {
-                logging.warn(err);
-            }
+    return {
+      id: product.id,
+    };
+  }
+
+  /**
+   * @param {import('../../../tiers/tier')} tier
+   * @returns {Promise<import('stripe').default.Product>}
+   */
+  async createProductForTier(tier) {
+    const product = await this.stripeAPIService.createProduct({ name: tier.name });
+    await this.StripeProductModel.add({
+      product_id: tier.id.toHexString(),
+      stripe_product_id: product.id,
+    });
+    return product;
+  }
+
+  /**
+   * @param {import('../../../tiers/tier')} tier
+   * @returns {Promise<void>}
+   */
+  async updateNameForTierProducts(tier) {
+    const rows = await this.StripeProductModel.where({ product_id: tier.id.toHexString() })
+      .query()
+      .select('stripe_product_id');
+
+    for (const row of rows) {
+      await this.stripeAPIService.updateProduct(row.stripe_product_id, {
+        name: tier.name,
+      });
+    }
+  }
+
+  /**
+   * @returns {Promise<{id: string}>}
+   */
+  async getProductForDonations({ name }) {
+    const existingDonationPrices = await this.StripePriceModel.where({
+      type: 'donation',
+    })
+      .query()
+      .select('stripe_product_id');
+
+    for (const row of existingDonationPrices) {
+      const product = await this.StripeProductModel.where({
+        stripe_product_id: row.stripe_product_id,
+      })
+        .query()
+        .select('stripe_product_id')
+        .first();
+
+      if (product) {
+        // Check active in Stripe
+        try {
+          const stripeProduct = await this.stripeAPIService.getProduct(row.stripe_product_id);
+          if (stripeProduct.active) {
+            return { id: stripeProduct.id };
+          }
+        } catch (err) {
+          logging.warn(err);
         }
-
-        const customer = await this.createCustomerForMember(member);
-
-        return customer;
+      }
     }
 
-    async createCustomerForMember(member) {
-        const customer = await this.stripeAPIService.createCustomer({
-            email: member.get('email'),
-            name: member.get('name')
-        });
+    const product = await this.createProductForDonations({ name });
 
-        await this.StripeCustomerModel.add({
-            member_id: member.id,
-            customer_id: customer.id,
-            email: customer.email,
-            name: customer.name
-        });
+    return {
+      id: product.id,
+    };
+  }
 
-        return customer;
-    }
+  /**
+   * Stripe's nickname field is limited to 250 characters
+   * @returns {string}
+   */
+  getDonationPriceNickname() {
+    const nickname = t('Support {siteTitle}', {
+      siteTitle: this.settingsCache.get('title'),
+      interpolation: { escapeValue: false },
+    });
+    return nickname.substring(0, 250);
+  }
 
-    /**
-     * @param {import('../../../tiers/tier')} tier
-     * @returns {Promise<{id: string}>}
-     */
-    async getProductForTier(tier) {
-        const rows = await this.StripeProductModel
-            .where({product_id: tier.id.toHexString()})
-            .query()
-            .select('stripe_product_id');
+  /**
+   * @returns {Promise<{id: string}>}
+   */
+  async getPriceForDonations() {
+    const nickname = this.getDonationPriceNickname();
+    const currency = this.settingsCache.get('donations_currency');
+    const suggestedAmount = this.settingsCache.get('donations_suggested_amount');
 
-        for (const row of rows) {
-            try {
-                const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
-                if (product.active) {
-                    return {id: product.id};
-                }
-            } catch (err) {
-                logging.warn(err);
-            }
-        }
+    // Stripe requires a minimum charge amount
+    // @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+    const amount = suggestedAmount && suggestedAmount >= 100 ? suggestedAmount : 0;
 
-        const product = await this.createProductForTier(tier);
+    const price = await this.StripePriceModel.where({
+      type: 'donation',
+      active: true,
+      amount,
+      currency,
+    })
+      .query()
+      .select('stripe_price_id', 'stripe_product_id', 'id', 'nickname')
+      .first();
 
-        return {
-            id: product.id
-        };
-    }
-
-    /**
-     * @param {import('../../../tiers/tier')} tier
-     * @returns {Promise<import('stripe').default.Product>}
-     */
-    async createProductForTier(tier) {
-        const product = await this.stripeAPIService.createProduct({name: tier.name});
-        await this.StripeProductModel.add({
-            product_id: tier.id.toHexString(),
-            stripe_product_id: product.id
-        });
-        return product;
-    }
-
-    /**
-     * @param {import('../../../tiers/tier')} tier
-     * @returns {Promise<void>}
-     */
-    async updateNameForTierProducts(tier) {
-        const rows = await this.StripeProductModel
-            .where({product_id: tier.id.toHexString()})
-            .query()
-            .select('stripe_product_id');
-
-        for (const row of rows) {
-            await this.stripeAPIService.updateProduct(row.stripe_product_id, {
-                name: tier.name
-            });
-        }
-    }
-
-    /**
-     * @returns {Promise<{id: string}>}
-     */
-    async getProductForDonations({name}) {
-        const existingDonationPrices = await this.StripePriceModel
-            .where({
-                type: 'donation'
-            })
-            .query()
-            .select('stripe_product_id');
-
-        for (const row of existingDonationPrices) {
-            const product = await this.StripeProductModel
-                .where({
-                    stripe_product_id: row.stripe_product_id
-                })
-                .query()
-                .select('stripe_product_id')
-                .first();
-
-            if (product) {
-                // Check active in Stripe
-                try {
-                    const stripeProduct = await this.stripeAPIService.getProduct(row.stripe_product_id);
-                    if (stripeProduct.active) {
-                        return {id: stripeProduct.id};
-                    }
-                } catch (err) {
-                    logging.warn(err);
-                }
-            }
-        }
-
-        const product = await this.createProductForDonations({name});
-
-        return {
-            id: product.id
-        };
-    }
-
-    /**
-     * Stripe's nickname field is limited to 250 characters
-     * @returns {string}
-     */
-    getDonationPriceNickname() {
-        const nickname = 'Support ' + this.settingsCache.get('title');
-        return nickname.substring(0, 250);
-    }
-
-    /**
-     * @returns {Promise<{id: string}>}
-     */
-    async getPriceForDonations() {
-        const nickname = this.getDonationPriceNickname();
-        const currency = this.settingsCache.get('donations_currency');
-        const suggestedAmount = this.settingsCache.get('donations_suggested_amount');
-
-        // Stripe requires a minimum charge amount
-        // @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
-        const amount = suggestedAmount && suggestedAmount >= 100 ? suggestedAmount : 0;
-
-        const price = await this.StripePriceModel
-            .where({
-                type: 'donation',
-                active: true,
-                amount,
-                currency
-            })
-            .query()
-            .select('stripe_price_id', 'stripe_product_id', 'id', 'nickname')
-            .first();
-
-        if (price) {
-            if (price.nickname !== nickname) {
-                // Rename it in Stripe (in case the publication name changed)
-                try {
-                    await this.stripeAPIService.updatePrice(price.stripe_price_id, {
-                        nickname
-                    });
-
-                    // Update product too
-                    await this.stripeAPIService.updateProduct(price.stripe_product_id, {
-                        name: nickname
-                    });
-
-                    await this.StripePriceModel.edit({
-                        nickname
-                    }, {id: price.id});
-                } catch (err) {
-                    logging.warn(err);
-                }
-            }
-            return {
-                id: price.stripe_price_id
-            };
-        }
-
-        const newPrice = await this.createPriceForDonations({
+    if (price) {
+      if (price.nickname !== nickname) {
+        // Rename it in Stripe (in case the publication name changed)
+        try {
+          await this.stripeAPIService.updatePrice(price.stripe_price_id, {
             nickname,
-            currency,
-            amount
-        });
-        return {
-            id: newPrice.id
-        };
-    }
+          });
 
-    /**
-     * @returns {Promise<import('stripe').default.Price>}
-     */
-    async createPriceForDonations({currency, amount, nickname}) {
-        const product = await this.getProductForDonations({name: nickname});
+          // Update product too
+          await this.stripeAPIService.updateProduct(price.stripe_product_id, {
+            name: nickname,
+          });
 
-        const preset = amount ? amount : undefined;
-
-        // Create the price in Stripe
-        const price = await this.stripeAPIService.createPrice({
-            currency,
-            product: product.id,
-            custom_unit_amount: {
-                enabled: true,
-                preset
+          await this.StripePriceModel.edit(
+            {
+              nickname,
             },
-            nickname,
-            type: 'one-time',
-            active: true
-        });
-
-        // Save it to the database
-        await this.StripePriceModel.add({
-            stripe_price_id: price.id,
-            stripe_product_id: product.id,
-            active: price.active,
-            nickname: price.nickname,
-            currency: price.currency,
-            amount,
-            type: 'donation',
-            interval: null
-        });
-        return price;
-    }
-
-    /**
-     * @returns {Promise<import('stripe').default.Product>}
-     */
-    async createProductForDonations({name}) {
-        const product = await this.stripeAPIService.createProduct({
-            name
-        });
-
-        await this.StripeProductModel.add({
-            product_id: null,
-            stripe_product_id: product.id
-        });
-        return product;
-    }
-
-    /**
-     * @param {import('../../../tiers/tier')} tier
-     * @param {'month'|'year'} cadence
-     * @returns {Promise<{id: string}>}
-     */
-    async getPriceForTierCadence(tier, cadence) {
-        const product = await this.getProductForTier(tier);
-        const currency = tier.currency.toLowerCase();
-        const amount = tier.getPrice(cadence);
-        const rows = await this.StripePriceModel.where({
-            stripe_product_id: product.id,
-            currency,
-            interval: cadence,
-            amount,
-            active: true,
-            type: 'recurring'
-        }).query().select('id', 'stripe_price_id');
-
-        for (const row of rows) {
-            try {
-                const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
-                if (price.active && price.currency.toLowerCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
-                    return {
-                        id: price.id
-                    };
-                } else {
-                    // Update the database model to prevent future Stripe fetches when it is not needed
-                    await this.StripePriceModel.edit({
-                        active: !!price.active
-                    }, {id: row.id});
-                }
-            } catch (err) {
-                logging.error(`Failed to lookup Stripe Price ${row.stripe_price_id}`);
-                logging.error(err);
-            }
+            { id: price.id },
+          );
+        } catch (err) {
+          logging.warn(err);
         }
-
-        const price = await this.createPriceForTierCadence(tier, cadence);
-
-        return {
-            id: price.id
-        };
+      }
+      return {
+        id: price.stripe_price_id,
+      };
     }
 
-    /**
-     * @param {import('../../../tiers/tier')} tier
-     * @param {'month'|'year'} cadence
-     * @returns {Promise<import('stripe').default.Price>}
-     */
-    async createPriceForTierCadence(tier, cadence) {
-        const product = await this.getProductForTier(tier);
-        const price = await this.stripeAPIService.createPrice({
-            product: product.id,
-            interval: cadence,
-            currency: tier.currency,
-            amount: tier.getPrice(cadence),
-            nickname: cadence === 'month' ? 'Monthly' : 'Yearly',
-            type: 'recurring',
-            active: true
-        });
-        await this.StripePriceModel.add({
-            stripe_price_id: price.id,
-            stripe_product_id: product.id,
-            active: price.active,
-            nickname: price.nickname,
-            currency: price.currency,
-            amount: price.unit_amount,
-            type: 'recurring',
-            interval: cadence
-        });
-        return price;
-    }
+    const newPrice = await this.createPriceForDonations({
+      nickname,
+      currency,
+      amount,
+    });
+    return {
+      id: newPrice.id,
+    };
+  }
 
-    /**
-     * @param {string} offerId
-     *
-     * @returns {Promise<{id: string}>}
-     */
-    async getCouponForOffer(offerId) {
-        const row = await this.OfferModel.where({id: offerId}).query().select('stripe_coupon_id', 'discount_type').first();
-        if (!row || row.discount_type === 'trial') {
-            return null;
-        }
-        if (!row.stripe_coupon_id) {
-            const offer = await this.offersAPI.getOffer({id: offerId});
-            await this.createCouponForOffer(offer);
-            return this.getCouponForOffer(offerId);
-        }
-        return {
-            id: row.stripe_coupon_id
-        };
-    }
+  /**
+   * @returns {Promise<import('stripe').default.Price>}
+   */
+  async createPriceForDonations({ currency, amount, nickname }) {
+    const product = await this.getProductForDonations({ name: nickname });
 
-    /**
-     * @param {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} offer
-     */
-    async createCouponForOffer(offer) {
-        /** @type {import('stripe').Stripe.CouponCreateParams} */
-        const couponData = {
-            name: offer.name,
-            duration: offer.duration
-        };
+    const preset = amount ? amount : undefined;
 
-        if (offer.duration === 'repeating') {
-            couponData.duration_in_months = offer.duration_in_months;
-        }
+    // Create the price in Stripe
+    const price = await this.stripeAPIService.createPrice({
+      currency,
+      product: product.id,
+      custom_unit_amount: {
+        enabled: true,
+        preset,
+      },
+      nickname,
+      type: 'one-time',
+      active: true,
+    });
 
-        if (offer.type === 'percent') {
-            couponData.percent_off = offer.amount;
+    // Save it to the database
+    await this.StripePriceModel.add({
+      stripe_price_id: price.id,
+      stripe_product_id: product.id,
+      active: price.active,
+      nickname: price.nickname,
+      currency: price.currency,
+      amount,
+      type: 'donation',
+      interval: null,
+    });
+    return price;
+  }
+
+  /**
+   * @returns {Promise<import('stripe').default.Product>}
+   */
+  async createProductForDonations({ name }) {
+    const product = await this.stripeAPIService.createProduct({
+      name,
+    });
+
+    await this.StripeProductModel.add({
+      product_id: null,
+      stripe_product_id: product.id,
+    });
+    return product;
+  }
+
+  /**
+   * @param {import('../../../tiers/tier')} tier
+   * @param {'month'|'year'} cadence
+   * @returns {Promise<{id: string}>}
+   */
+  async getPriceForTierCadence(tier, cadence) {
+    const product = await this.getProductForTier(tier);
+    const currency = tier.currency.toLowerCase();
+    const amount = tier.getPrice(cadence);
+    const rows = await this.StripePriceModel.where({
+      stripe_product_id: product.id,
+      currency,
+      interval: cadence,
+      amount,
+      active: true,
+      type: 'recurring',
+    })
+      .query()
+      .select('id', 'stripe_price_id');
+
+    for (const row of rows) {
+      try {
+        const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
+        if (
+          price.active &&
+          price.currency.toLowerCase() === currency &&
+          price.unit_amount === amount &&
+          price.recurring?.interval === cadence
+        ) {
+          return {
+            id: price.id,
+          };
         } else {
-            couponData.amount_off = offer.amount;
-            couponData.currency = offer.currency;
+          // Update the database model to prevent future Stripe fetches when it is not needed
+          await this.StripePriceModel.edit(
+            {
+              active: !!price.active,
+            },
+            { id: row.id },
+          );
         }
-
-        const coupon = await this.stripeAPIService.createCoupon(couponData);
-
-        await this.OfferModel.edit({
-            stripe_coupon_id: coupon.id
-        }, {
-            id: offer.id
-        });
+      } catch (err) {
+        logging.error(`Failed to lookup Stripe Price ${row.stripe_price_id}`);
+        logging.error(err);
+      }
     }
+
+    const price = await this.createPriceForTierCadence(tier, cadence);
+
+    return {
+      id: price.id,
+    };
+  }
+
+  /**
+   * @param {import('../../../tiers/tier')} tier
+   * @param {'month'|'year'} cadence
+   * @returns {Promise<import('stripe').default.Price>}
+   */
+  async createPriceForTierCadence(tier, cadence) {
+    const product = await this.getProductForTier(tier);
+    const price = await this.stripeAPIService.createPrice({
+      product: product.id,
+      interval: cadence,
+      currency: tier.currency,
+      amount: tier.getPrice(cadence),
+      nickname: cadence === 'month' ? 'Monthly' : 'Yearly',
+      type: 'recurring',
+      active: true,
+    });
+    await this.StripePriceModel.add({
+      stripe_price_id: price.id,
+      stripe_product_id: product.id,
+      active: price.active,
+      nickname: price.nickname,
+      currency: price.currency,
+      amount: price.unit_amount,
+      type: 'recurring',
+      interval: cadence,
+    });
+    return price;
+  }
+
+  /**
+   * @param {string} offerId
+   *
+   * @returns {Promise<{id: string}>}
+   */
+  async getCouponForOffer(offerId) {
+    const row = await this.OfferModel.where({ id: offerId })
+      .query()
+      .select('stripe_coupon_id', 'discount_type')
+      .first();
+    if (!row || row.discount_type === 'trial') {
+      return null;
+    }
+    if (!row.stripe_coupon_id) {
+      const offer = await this.offersAPI.getOffer({ id: offerId });
+      await this.createCouponForOffer(offer);
+      return this.getCouponForOffer(offerId);
+    }
+    return {
+      id: row.stripe_coupon_id,
+    };
+  }
+
+  /**
+   * @param {import('../../../offers/application/offer-mapper').OfferDTO} offer
+   */
+  async createCouponForOffer(offer) {
+    /** @type {import('stripe').Stripe.CouponCreateParams} */
+    const couponData = {
+      name: offer.name,
+      duration: offer.duration,
+    };
+
+    if (offer.duration === 'repeating') {
+      couponData.duration_in_months = offer.duration_in_months;
+    }
+
+    if (offer.type === 'percent') {
+      couponData.percent_off = offer.amount;
+    } else {
+      couponData.amount_off = offer.amount;
+      couponData.currency = offer.currency;
+    }
+
+    const coupon = await this.stripeAPIService.createCoupon(couponData);
+
+    await this.OfferModel.edit(
+      {
+        stripe_coupon_id: coupon.id,
+      },
+      {
+        id: offer.id,
+      },
+    );
+  }
 }
 
 module.exports = PaymentsService;

@@ -3,160 +3,150 @@ const errors = require('@tryghost/errors');
 const models = require('../../models');
 
 const messages = {
-    labelNotFound: 'Label not found.',
-    labelAlreadyExists: 'Label already exists'
+  labelNotFound: 'Label not found.',
+  labelAlreadyExists: 'Label already exists',
 };
 
 const ALLOWED_INCLUDES = ['count.members'];
 
+// SQLITE_CONSTRAINT covers more than unique violations, but schema validation
+// rejects null/oversize names before the database, so only the unique
+// constraint on name/slug can reach this catch
+const isUniqueConstraintViolation = (error) => {
+  return error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT';
+};
+
+const handleDuplicateNameError = (error) => {
+  if (isUniqueConstraintViolation(error)) {
+    throw new errors.ValidationError({ message: tpl(messages.labelAlreadyExists) });
+  }
+
+  throw error;
+};
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'labels',
+  docName: 'labels',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'filter',
-            'fields',
-            'limit',
-            'order',
-            'page'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                }
-            }
-        },
-        permissions: true,
-        query(frame) {
-            return models.Label.findPage(frame.options);
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
+    options: ['include', 'filter', 'fields', 'limit', 'order', 'page'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'include',
-            'filter',
-            'fields'
-        ],
-        data: [
-            'id',
-            'slug'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            const model = await models.Label.findOne(frame.data, frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.labelNotFound)
-                });
-            }
-
-            return model;
-        }
+      },
     },
-
-    add: {
-        statusCode: 201,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                }
-            }
-        },
-        permissions: true,
-        query(frame) {
-            return models.Label.add(frame.data.labels[0], frame.options)
-                .catch((error) => {
-                    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                        throw new errors.ValidationError({message: tpl(messages.labelAlreadyExists)});
-                    }
-
-                    throw error;
-                });
-        }
+    permissions: true,
+    query(frame) {
+      return models.Label.findPage(frame.options);
     },
+  },
 
-    edit: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id',
-            'include'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: true,
-        async query(frame) {
-            const model = await models.Label.edit(frame.data.labels[0], frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.labelNotFound)
-                });
-            }
-
-            if (model.wasChanged()) {
-                frame.setHeader('X-Cache-Invalidate', '/*');
-            }
-
-            return model;
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
+    options: ['include', 'filter', 'fields'],
+    data: ['id', 'slug'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
+        },
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      const model = await models.Label.findOne(frame.data, frame.options);
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.labelNotFound),
+        });
+      }
 
-    destroy: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: true
+      return model;
+    },
+  },
+
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                id: {
-                    required: true
-                }
-            }
+      },
+    },
+    permissions: true,
+    query(frame) {
+      return models.Label.add(frame.data.labels[0], frame.options).catch(handleDuplicateNameError);
+    },
+  },
+
+  edit: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id', 'include'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        permissions: true,
-        query(frame) {
-            return models.Label.destroy({...frame.options, require: true});
-        }
-    }
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: true,
+    async query(frame) {
+      const model = await models.Label.edit(frame.data.labels[0], frame.options).catch(
+        handleDuplicateNameError,
+      );
+
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.labelNotFound),
+        });
+      }
+
+      if (model.wasChanged()) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+
+      return model;
+    },
+  },
+
+  destroy: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: true,
+    },
+    options: ['id'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
+        },
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: true,
+    query(frame) {
+      return models.Label.destroy({ ...frame.options, require: true });
+    },
+  },
 };
 
 module.exports = controller;

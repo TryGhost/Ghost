@@ -1,7 +1,7 @@
-const {createAddColumnMigration} = require('../../utils');
+const { createAddColumnMigration } = require('../../utils');
 
 module.exports = createAddColumnMigration('users', 'milestone_notifications', {
-    type: 'boolean',
-    nullable: false,
-    defaultTo: true
+  type: 'boolean',
+  nullable: false,
+  defaultTo: true,
 });

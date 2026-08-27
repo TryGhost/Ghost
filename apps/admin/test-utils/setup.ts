@@ -1,8 +1,4 @@
-import "@testing-library/jest-dom";
-import { expect } from "vitest";
-import matchers from "jest-extended";
-import { setupShadeMocks } from "@tryghost/admin-x-framework/test/setup";
-
-expect.extend(matchers);
+import '@testing-library/jest-dom';
+import { setupShadeMocks } from '@tryghost/admin-x-framework/test/setup';
 
 setupShadeMocks();

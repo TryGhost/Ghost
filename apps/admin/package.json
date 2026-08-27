@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/admin",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,61 +10,122 @@
     "preview": "vite preview",
     "test": "pnpm test:unit",
     "test:unit": "vitest run",
+    "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
+    "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@codemirror/lang-css": "catalog:",
+    "@codemirror/lang-html": "catalog:",
+    "@codemirror/lang-javascript": "catalog:",
+    "@codemirror/lang-json": "catalog:",
+    "@codemirror/lang-markdown": "catalog:",
+    "@codemirror/lang-yaml": "catalog:",
+    "@codemirror/search": "catalog:",
+    "@codemirror/state": "catalog:",
+    "@codemirror/theme-one-dark": "catalog:",
+    "@dnd-kit/sortable": "catalog:",
+    "@sentry/react": "catalog:",
+    "@svg-maps/world": "2.0.0",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
     "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
-    "@tryghost/admin-x-settings": "workspace:*",
-    "@tryghost/koenig-lexical": "1.8.0",
-    "@tryghost/posts": "workspace:*",
+    "@tryghost/color-utils": "catalog:",
+    "@tryghost/custom-fonts": "catalog:",
+    "@tryghost/i18n": "workspace:*",
+    "@tryghost/kg-unsplash-selector": "workspace:*",
+    "@tryghost/koenig-lexical": "workspace:*",
+    "@tryghost/nql": "catalog:",
+    "@tryghost/nql-lang": "catalog:",
+    "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
-    "@tryghost/stats": "workspace:*",
-    "mingo": "2.5.3",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "zod": "4.1.12"
+    "@tryghost/string": "catalog:",
+    "@tryghost/timezone-data": "catalog:",
+    "@uiw/react-codemirror": "catalog:",
+    "@xyflow/react": "12.11.2",
+    "clsx": "catalog:",
+    "dequal": "catalog:",
+    "i18n-iso-countries": "7.14.0",
+    "jszip": "3.10.1",
+    "lucide-react": "catalog:",
+    "mingo": "catalog:",
+    "moment": "catalog:",
+    "moment-timezone": "catalog:",
+    "papaparse": "5.5.4",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router": "catalog:",
+    "react-svg-map": "2.2.0",
+    "semver": "catalog:",
+    "sonner": "catalog:",
+    "temporal-polyfill": "catalog:",
+    "use-debounce": "10.1.1",
+    "validator": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
-    "@tailwindcss/vite": "4.2.1",
-    "@tanstack/react-query": "4.36.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "14.3.1",
-    "@types/node": "25.6.0",
-    "@types/react": "18.3.28",
-    "@types/react-dom": "18.3.7",
-    "@vitejs/plugin-react-swc": "4.1.0",
-    "eslint": "catalog:eslint9",
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@tailwindcss/vite": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@tryghost/test-data": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/papaparse": "5.5.2",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/react-svg-map": "2.1.4",
+    "@types/semver": "catalog:",
+    "@types/validator": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "eslint-plugin-react-hooks": "5.2.0",
-    "eslint-plugin-react-refresh": "0.4.24",
-    "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-    "globals": "17.4.0",
-    "jest-extended": "7.0.0",
-    "jsdom": "28.1.0",
-    "msw": "2.12.14",
+    "ghost-admin": "workspace:*",
+    "jsdom": "catalog:",
+    "msw": "catalog:",
     "sirv": "3.0.2",
-    "tailwindcss": "^4.2.2",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.58.0",
-    "vite": "7.1.12",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "4.1.2"
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vitest-browser-react": "catalog:"
   },
   "nx": {
+    "tags": [
+      "playwright"
+    ],
     "targets": {
-      "dev": {
+      "test:unit": {
         "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:acceptance": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin",
+          "command": "vite"
+        },
+        "dependsOn": [
+          "ghost-monorepo:docker:up",
           "ghost-admin:dev",
           "@tryghost/admin-x-framework:dev",
-          "@tryghost/admin-x-design-system:dev",
           "@tryghost/shade:dev"
         ]
       },
       "build:dev": {
         "dependsOn": [
-          "build",
+          "^build",
           {
             "projects": [
               "ghost-admin"
@@ -74,12 +135,22 @@
         ]
       },
       "build": {
+        "inputs": [
+          {
+            "env": "GHOST_CDN_URL"
+          },
+          {
+            "env": "IS_SHIPPING"
+          },
+          "default",
+          "^default"
+        ],
         "outputs": [
           "{projectRoot}/dist",
           "{workspaceRoot}/ghost/core/core/built/admin"
         ],
         "dependsOn": [
-          "build",
+          "^build",
           {
             "projects": [
               "ghost-admin"
@@ -93,7 +164,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-design-system",
               "@tryghost/shade"
             ],
             "target": "build"

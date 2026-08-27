@@ -1,34 +1,81 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.4.7",
+  "version": "1.6.0",
+  "description": "Comments interface for Ghost posts",
   "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
-  "unpkg": "umd/comments-ui.umd.js",
+  "repository": "https://github.com/TryGhost/Ghost",
   "files": [
     "umd/",
     "LICENSE",
     "README.md"
   ],
+  "type": "module",
+  "unpkg": "umd/comments-ui.umd.js",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently \"pnpm preview --host -l silent\" \"pnpm build:watch\"",
+    "dev": "vite build --watch --mode development",
     "dev:test": "vite build && vite preview --port 7175",
     "build": "vite build",
-    "build:watch": "vite build --watch",
-    "preview": "vite preview",
-    "test": "pnpm test:unit && pnpm test:e2e",
+    "test": "pnpm run '/^test:(types|unit)$/'",
+    "test:types": "tsc --noEmit --incremental false && tsc -p tsconfig.node.json --noEmit",
     "test:unit": "vitest run --coverage",
-    "test:e2e": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
-    "test:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 pnpm test:e2e --headed",
-    "test:e2e:full": "ALL_BROWSERS=1 pnpm test:e2e",
-    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
+    "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 pnpm test:acceptance --headed",
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
+    "lint": "pnpm run '/^lint:/'",
+    "lint:code": "eslint src --cache",
+    "lint:types": "pnpm test:types",
     "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
+    "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@doist/react-interpolate": "2.2.4",
+    "@headlessui/react": "1.7.19",
+    "@tiptap/core": "2.27.2",
+    "@tiptap/extension-blockquote": "2.27.2",
+    "@tiptap/extension-document": "2.27.2",
+    "@tiptap/extension-hard-break": "2.27.2",
+    "@tiptap/extension-link": "2.27.2",
+    "@tiptap/extension-paragraph": "2.27.2",
+    "@tiptap/extension-placeholder": "2.27.2",
+    "@tiptap/extension-text": "2.27.2",
+    "@tiptap/pm": "2.27.2",
+    "@tiptap/react": "2.27.2",
+    "@tryghost/debug": "catalog:",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17",
+    "react-string-replace": "2.0.1"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@tryghost/i18n": "workspace:*",
+    "@tryghost/nql": "catalog:",
+    "@types/react": "catalog:react17",
+    "@types/react-dom": "catalog:react17",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "autoprefixer": "10.5.4",
+    "bson-objectid": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jsdom": "catalog:",
+    "moment": "2.30.1",
+    "postcss": "catalog:",
+    "postcss-import": "16.1.1",
+    "sinon": "catalog:",
+    "tailwindcss": "catalog:tailwind3",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "browserslist": {
     "production": [
@@ -42,53 +89,21 @@
       "last 1 safari version"
     ]
   },
-  "dependencies": {
-    "@doist/react-interpolate": "2.2.1",
-    "@headlessui/react": "1.7.19",
-    "@tiptap/core": "2.26.3",
-    "@tiptap/extension-blockquote": "2.26.3",
-    "@tiptap/extension-document": "2.26.3",
-    "@tiptap/extension-hard-break": "2.26.3",
-    "@tiptap/extension-link": "2.26.3",
-    "@tiptap/extension-paragraph": "2.26.3",
-    "@tiptap/extension-placeholder": "2.26.3",
-    "@tiptap/extension-text": "2.26.3",
-    "@tiptap/pm": "2.26.3",
-    "@tiptap/react": "2.26.3",
-    "@tryghost/debug": "0.1.40",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "react-string-replace": "1.1.1"
-  },
-  "devDependencies": {
-    "@playwright/test": "1.59.1",
-    "@testing-library/jest-dom": "5.17.0",
-    "@testing-library/react": "12.1.5",
-    "@testing-library/user-event": "14.6.1",
-    "@tryghost/i18n": "workspace:*",
-    "@vitejs/plugin-react": "4.7.0",
-    "@vitest/coverage-v8": "0.34.6",
-    "autoprefixer": "10.4.21",
-    "bson-objectid": "2.0.4",
-    "concurrently": "8.2.2",
-    "eslint": "catalog:",
-    "eslint-plugin-i18next": "6.1.3",
-    "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-react-refresh": "0.4.24",
-    "eslint-plugin-tailwindcss": "3.18.2",
-    "jsdom": "28.1.0",
-    "moment": "2.30.1",
-    "postcss": "8.5.6",
-    "sinon": "^21.1.1",
-    "tailwindcss": "3.4.18",
-    "vite": "5.4.21",
-    "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "1.6.1"
-  },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/comments-ui",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
-      "i18n"
+      "i18n",
+      "public-app",
+      "playwright"
     ]
   }
 }

@@ -7,17 +7,18 @@ autoTrigger:
 
 # Format Numbers
 
-When editing `.tsx` files, ensure all user-facing numbers are formatted using the `formatNumber` utility from `@tryghost/shade`.
+When editing `.tsx` files, ensure all user-facing numbers are formatted using the `formatNumber` utility from `@tryghost/shade/utils`.
 
 ## Import
 
 ```typescript
-import {formatNumber} from '@tryghost/shade';
+import { formatNumber } from '@tryghost/shade/utils';
 ```
 
 ## When to use formatNumber
 
 Use `formatNumber()` when rendering any numeric value that is displayed to the user, including:
+
 - Member counts, visitor counts, subscriber counts
 - Email engagement metrics (opens, clicks, bounces)
 - Revenue amounts (combine with `centsToDollars()` for monetary values)
@@ -57,4 +58,4 @@ Do NOT use any of these patterns for formatting numbers in TSX files:
 - `abbreviateNumber()` - for compact notation (e.g., 1.2M, 50k)
 - `centsToDollars()` - convert cents to dollars before passing to `formatNumber`
 
-All are imported from `@tryghost/shade`.
+All are imported from `@tryghost/shade/utils`.

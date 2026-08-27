@@ -8,6 +8,10 @@ Object {
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
+    "klipy": Object {
+      "apiKey": null,
+      "contentFilter": "off",
+    },
     "labs": Object {
       "additionalPaymentMethods": true,
       "adminUIRefresh": true,
@@ -44,10 +48,6 @@ Object {
       "version": "0.3",
     },
     "stripeDirect": false,
-    "tenor": Object {
-      "contentFilter": "off",
-      "googleApiKey": null,
-    },
     "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },

@@ -1,8 +1,31 @@
 // Feature-level compositions and pattern contracts
-export * from './components/ui/filters';
-export {default as ColorPicker} from './components/features/color-picker/color-picker';
-export type {ColorPickerProps} from './components/features/color-picker/color-picker';
-export {default as PostShareModal} from './components/features/post-share-modal';
-export * from './components/features/table-filter-tabs/table-filter-tabs';
-export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';
-export type {CampaignType, TabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
+export * from './components/patterns/page-header';
+export * from './components/patterns/view-bar';
+export * from './components/patterns/filter-bar';
+export * from './components/patterns/gh-chart';
+export * from './components/patterns/kpi-card';
+export * from './components/patterns/kpi-tabs';
+export * from './components/patterns/filters';
+export * from './components/patterns/dirty-confirm-dialog';
+export * from './components/patterns/image-upload';
+export * from './components/patterns/setting-group';
+export { default as ColorPicker } from './components/patterns/color-picker';
+export {
+  ColorPickerTrigger,
+  ColorSwatch,
+  ColorSwatchRow,
+} from './components/patterns/color-picker';
+export type {
+  ColorPickerProps,
+  ColorPickerTriggerProps,
+  ColorSwatchOption,
+  ColorSwatchProps,
+  ColorSwatchRowProps,
+} from './components/patterns/color-picker';
+export { default as ShareModal } from './components/patterns/share-modal';
+export type {
+  ShareModalPreviewProps,
+  ShareModalSocialLink,
+} from './components/patterns/share-modal';
+export { SettingsModal, settingsModalVariants } from './components/patterns/settings-modal';
+export type { SettingsModalProps, SettingsModalSize } from './components/patterns/settings-modal';

@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
+const express = require('express');
+const request = require('supertest');
 const sinon = require('sinon');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
 const middleware = require('../../../../../core/frontend/services/theme-engine').middleware;
@@ -9,408 +11,316 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const customThemeSettingsCache = require('../../../../../core/shared/custom-theme-settings-cache');
 const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/shared/labs');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 const sandbox = sinon.createSandbox();
 
-function executeMiddleware(toExecute, req, res, next) {
-    const [current, ...rest] = toExecute;
-
-    current(req, res, function (err) {
-        if (err) {
-            return next(err);
-        }
-        if (!rest.length) {
-            return next();
-        }
-        return executeMiddleware(rest, req, res, next);
-    });
-}
-
 describe('Themes middleware', function () {
-    afterEach(function () {
-        sandbox.restore();
+  const app = express();
+
+  app.use(middleware);
+  app.get('/', (_req, res) => {
+    res.json({ ok: true });
+  });
+  app.use((err, _req, res, _next) => {
+    void _next;
+
+    res.status(err.statusCode || 500).json({
+      message: err.message,
+    });
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+  });
+
+  let fakeActiveTheme;
+  let fakeActiveThemeName;
+  let fakeSiteData;
+  let fakeLabsData;
+  let fakeCustomThemeSettingsData;
+  let activeThemeGetStub;
+  let settingsCacheGetStub;
+  let hbsUpdateTemplateOptionsStub;
+  let hbsUpdateLocalTemplateOptionsStub;
+
+  beforeEach(function () {
+    fakeActiveTheme = {
+      config: sandbox.stub().returns(2),
+      mount: sandbox.stub(),
+    };
+
+    fakeActiveThemeName = 'bacon-sensation';
+
+    fakeSiteData = {
+      comments_enabled: 'all',
+    };
+
+    fakeLabsData = {
+      // labs data is deep cloned,
+      // if we want to compare it
+      // we will need some unique content
+      members: true,
+      offers: true,
+    };
+
+    fakeCustomThemeSettingsData = {
+      header_typography: 'Sans-Serif',
+    };
+
+    activeThemeGetStub = sandbox.stub(activeTheme, 'get').returns(fakeActiveTheme);
+
+    settingsCacheGetStub = sandbox
+      .stub(settingsCache, 'get')
+      .withArgs('active_theme')
+      .returns(fakeActiveThemeName);
+
+    sandbox.stub(labs, 'getAll').returns(fakeLabsData);
+
+    sandbox.stub(settingsCache, 'getPublic').returns(fakeSiteData);
+
+    sandbox.stub(customThemeSettingsCache, 'getAll').returns(fakeCustomThemeSettingsData);
+
+    hbsUpdateTemplateOptionsStub = sandbox.stub(hbs, 'updateTemplateOptions');
+    hbsUpdateLocalTemplateOptionsStub = sandbox.stub(hbs, 'updateLocalTemplateOptions');
+  });
+
+  it('mounts active theme if not yet mounted', async function () {
+    fakeActiveTheme.mounted = false;
+
+    await request(app).get('/').expect(200);
+
+    sinon.assert.called(fakeActiveTheme.mount);
+    sinon.assert.calledWith(fakeActiveTheme.mount, app);
+  });
+
+  it('does not mounts the active theme if it is already mounted', async function () {
+    fakeActiveTheme.mounted = true;
+
+    await request(app).get('/').expect(200);
+
+    sinon.assert.notCalled(fakeActiveTheme.mount);
+  });
+
+  it('throws error if theme is missing', async function () {
+    activeThemeGetStub.restore();
+    activeThemeGetStub = sandbox.stub(activeTheme, 'get').returns(undefined);
+
+    await request(app).get('/').expect(500).expect({
+      message: 'The currently active theme "bacon-sensation" is missing.',
     });
 
-    let req;
-    let res;
+    sinon.assert.called(activeThemeGetStub);
+    sinon.assert.notCalled(fakeActiveTheme.mount);
+  });
 
-    let fakeActiveTheme;
-    let fakeActiveThemeName;
-    let fakeSiteData;
-    let fakeLabsData;
-    let fakeCustomThemeSettingsData;
-    let activeThemeGetStub;
-    let settingsCacheGetStub;
-    let hbsUpdateTemplateOptionsStub;
-    let hbsUpdateLocalTemplateOptionsStub;
+  describe('updateTemplateOptions', function () {
+    it('is called with correct data', async function () {
+      const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
 
-    beforeEach(function () {
-        req = {app: {}, header: () => {}};
-        res = {locals: {}};
+      await request(app).get('/').expect(200);
 
-        fakeActiveTheme = {
-            config: sandbox.stub().returns(2),
-            mount: sandbox.stub()
-        };
+      sinon.assert.calledOnce(hbsUpdateTemplateOptionsStub);
+      const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
+      const data = templateOptions.data;
 
-        fakeActiveThemeName = 'bacon-sensation';
+      assert(data && typeof data === 'object');
+      assert('site' in data);
+      assert('labs' in data);
+      assert('config' in data);
+      assert('custom' in data);
 
-        fakeSiteData = {
-            comments_enabled: 'all'
-        };
+      // Check Theme Config
+      assert(data.config && typeof data.config === 'object');
+      assert('posts_per_page' in data.config);
+      assert('image_sizes' in data.config);
+      assert.equal(Object.keys(data.config).length, themeDataExpectedProps.length);
+      // posts per page should be set according to the stub
+      assert.equal(data.config.posts_per_page, 2);
 
-        fakeLabsData = {
-            // labs data is deep cloned,
-            // if we want to compare it
-            // we will need some unique content
-            members: true,
-            offers: true
-        };
+      // Check labs config
+      assert.deepEqual(data.labs, fakeLabsData);
 
-        fakeCustomThemeSettingsData = {
-            header_typography: 'Sans-Serif'
-        };
+      assert.deepEqual(data.site, {
+        ...fakeSiteData,
 
-        activeThemeGetStub = sandbox.stub(activeTheme, 'get')
-            .returns(fakeActiveTheme);
+        // signup_url should get added
+        signup_url: '#/portal',
 
-        settingsCacheGetStub = sandbox.stub(settingsCache, 'get')
-            .withArgs('active_theme').returns(fakeActiveThemeName);
+        // the comments_enabled setting should be mapped to comments_access, and comments_enabled should be a boolean
+        comments_enabled: true,
+        comments_access: 'all',
+      });
 
-        sandbox.stub(labs, 'getAll').returns(fakeLabsData);
-
-        sandbox.stub(settingsCache, 'getPublic')
-            .returns(fakeSiteData);
-
-        sandbox.stub(customThemeSettingsCache, 'getAll')
-            .returns(fakeCustomThemeSettingsData);
-
-        hbsUpdateTemplateOptionsStub = sandbox.stub(hbs, 'updateTemplateOptions');
-        hbsUpdateLocalTemplateOptionsStub = sandbox.stub(hbs, 'updateLocalTemplateOptions');
+      assert.deepEqual(data.custom, fakeCustomThemeSettingsData);
     });
 
-    it('mounts active theme if not yet mounted', function (done) {
-        fakeActiveTheme.mounted = false;
+    it('switches @site.signup_url to RSS when signup is disabled', async function () {
+      settingsCacheGetStub.withArgs('members_signup_access').returns('none');
 
-        executeMiddleware(middleware, req, res, function next(err) {
-            try {
-                assert.equal(err, undefined);
+      await request(app).get('/').expect(200);
 
-                sinon.assert.called(fakeActiveTheme.mount);
-                sinon.assert.calledWith(fakeActiveTheme.mount, req.app);
+      const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
+      const data = templateOptions.data;
 
-                done();
-            } catch (error) {
-                done(error);
-            }
-        });
+      assertExists(data.site.signup_url);
+      assert.equal(
+        data.site.signup_url,
+        `https://feedly.com/i/subscription/feed/${encodeURIComponent(config.get('url') + '/rss/')}`,
+      );
+    });
+  });
+
+  describe('updateLocalTemplateOptions', function () {
+    it('includes admin_url ending with /ghost/ in site data', async function () {
+      await request(app).get('/').expect(200);
+
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
+
+      assert(data.site.admin_url, 'admin_url should be set in site data');
+      assert.equal(typeof data.site.admin_url, 'string');
+      assert.ok(
+        data.site.admin_url.endsWith('/ghost/'),
+        `admin_url should end with /ghost/ but got: ${data.site.admin_url}`,
+      );
     });
 
-    it('does not mounts the active theme if it is already mounted', function (done) {
-        fakeActiveTheme.mounted = true;
+    it('includes admin_url ending with /ghost/ when admin is on a separate domain', async function () {
+      sandbox.stub(urlUtils, 'getAdminUrl').returns('https://admin.example.com/');
 
-        executeMiddleware(middleware, req, res, function next(err) {
-            try {
-                assert.equal(err, undefined);
+      await request(app).get('/').expect(200);
 
-                sinon.assert.notCalled(fakeActiveTheme.mount);
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
 
-                done();
-            } catch (error) {
-                done(error);
-            }
-        });
+      assert.ok(
+        data.site.admin_url.endsWith('/ghost/'),
+        `admin_url should end with /ghost/ but got: ${data.site.admin_url}`,
+      );
+      assert.equal(data.site.admin_url, 'https://admin.example.com/ghost/');
     });
 
-    it('throws error if theme is missing', function (done) {
-        activeThemeGetStub.restore();
-        activeThemeGetStub = sandbox.stub(activeTheme, 'get')
-            .returns(undefined);
+    it('does not add a _queryCache when the getHelperDeduplication flag is disabled', async function () {
+      // fakeLabsData does not include getHelperDeduplication, so the flag is off
+      await request(app).get('/').expect(200);
 
-        executeMiddleware(middleware, req, res, function next(err) {
-            try {
-                // Did throw an error
-                assertExists(err);
-                assert.equal(err.message, 'The currently active theme "bacon-sensation" is missing.');
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
 
-                sinon.assert.called(activeThemeGetStub);
-                sinon.assert.notCalled(fakeActiveTheme.mount);
-
-                done();
-            } catch (error) {
-                done(error);
-            }
-        });
+      assert.ok(
+        !('_queryCache' in data),
+        '_queryCache should not be set when the flag is disabled',
+      );
     });
 
-    describe('updateTemplateOptions', function () {
-        it('is called with correct data', function (done) {
-            const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
+    it('adds a _queryCache Map when the getHelperDeduplication flag is enabled', async function () {
+      fakeLabsData.getHelperDeduplication = true;
 
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
+      await request(app).get('/').expect(200);
 
-                    sinon.assert.calledOnce(hbsUpdateTemplateOptionsStub);
-                    const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
-                    const data = templateOptions.data;
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
 
-                    assert(data && typeof data === 'object');
-                    assert('site' in data);
-                    assert('labs' in data);
-                    assert('config' in data);
-                    assert('custom' in data);
+      assert.ok(
+        data._queryCache instanceof Map,
+        '_queryCache should be a Map when the flag is enabled',
+      );
+    });
+  });
 
-                    // Check Theme Config
-                    assert(data.config && typeof data.config === 'object');
-                    assert('posts_per_page' in data.config);
-                    assert('image_sizes' in data.config);
-                    assert.equal(Object.keys(data.config).length, themeDataExpectedProps.length);
-                    // posts per page should be set according to the stub
-                    assert.equal(data.config.posts_per_page, 2);
+  describe('Preview Mode', function () {
+    it('calls updateLocalTemplateOptions with correct data when one parameter is set', async function () {
+      const previewString = 'c=%23000fff';
 
-                    // Check labs config
-                    assert.deepEqual(data.labs, fakeLabsData);
+      await request(app).get('/').set('x-ghost-preview', previewString).expect(200);
 
-                    assert.deepEqual(data.site, {
-                        ...fakeSiteData,
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
 
-                        // signup_url should get added
-                        signup_url: '#/portal',
-
-                        // the comments_enabled setting should be mapped to comments_access, and comments_enabled should be a boolean
-                        comments_enabled: true,
-                        comments_access: 'all'
-                    });
-
-                    assert.deepEqual(data.custom, fakeCustomThemeSettingsData);
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('switches @site.signup_url to RSS when signup is disabled', function (done) {
-            settingsCacheGetStub.withArgs('members_signup_access').returns('none');
-
-            executeMiddleware(middleware, req, res, function next() {
-                try {
-                    const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
-                    const data = templateOptions.data;
-
-                    assertExists(data.site.signup_url);
-                    assert.equal(data.site.signup_url, `https://feedly.com/i/subscription/feed/${encodeURIComponent(config.get('url') + '/rss/')}`);
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
+      assert.equal(data.site._preview, previewString);
+      assert.equal(data.site.accent_color, '#000fff');
     });
 
-    describe('updateLocalTemplateOptions', function () {
-        it('includes admin_url ending with /ghost/ in site data', function (done) {
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
+    it('calls updateLocalTemplateOptions with correct data when two parameters are set', async function () {
+      const previewString = 'c=%23000fff&icon=%2Fcontent%2Fimages%2Fmyimg.png';
 
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
+      await request(app).get('/').set('x-ghost-preview', previewString).expect(200);
 
-                    assert(data.site.admin_url, 'admin_url should be set in site data');
-                    assert.equal(typeof data.site.admin_url, 'string');
-                    assert.ok(data.site.admin_url.endsWith('/ghost/'),
-                        `admin_url should end with /ghost/ but got: ${data.site.admin_url}`);
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
 
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('includes admin_url ending with /ghost/ when admin is on a separate domain', function (done) {
-            sandbox.stub(urlUtils, 'getAdminUrl').returns('https://admin.example.com/');
-
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
-
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
-
-                    assert.ok(data.site.admin_url.endsWith('/ghost/'),
-                        `admin_url should end with /ghost/ but got: ${data.site.admin_url}`);
-                    assert.equal(data.site.admin_url, 'https://admin.example.com/ghost/');
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
+      assert.equal(data.site._preview, previewString);
+      assert.equal(data.site.accent_color, '#000fff');
+      assert.equal(data.site.icon, '/content/images/myimg.png');
     });
 
-    describe('Preview Mode', function () {
-        it('calls updateLocalTemplateOptions with correct data when one parameter is set', function (done) {
-            const previewString = 'c=%23000fff';
-            req.header = () => {
-                return previewString;
-            };
+    it('calls updateLocalTemplateOptions with correct custom theme settings data', async function () {
+      const customPreviewObject = { header_typography: 'Serif' };
+      const previewString = `custom=${encodeURIComponent(JSON.stringify(customPreviewObject))}`;
 
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
+      await request(app).get('/').set('x-ghost-preview', previewString).expect(200);
 
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
 
-                    assert.equal(data.site._preview, previewString);
-                    assert.equal(data.site.accent_color, '#000fff');
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('calls updateLocalTemplateOptions with correct data when two parameters are set', function (done) {
-            const previewString = 'c=%23000fff&icon=%2Fcontent%2Fimages%2Fmyimg.png';
-            req.header = () => {
-                return previewString;
-            };
-
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
-
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
-
-                    assert.equal(data.site._preview, previewString);
-                    assert.equal(data.site.accent_color, '#000fff');
-                    assert.equal(data.site.icon, '/content/images/myimg.png');
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('calls updateLocalTemplateOptions with correct custom theme settings data', function (done) {
-            const customPreviewObject = {header_typography: 'Serif'};
-            const previewString = `custom=${encodeURIComponent(JSON.stringify(customPreviewObject))}`;
-            req.header = () => {
-                return previewString;
-            };
-
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
-
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
-
-                    assert(data && typeof data === 'object');
-                    assert('site' in data);
-                    assert.equal(data.custom.header_typography, 'Serif');
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('calls updateLocalTemplateOptions with correct without unknown custom theme settings', function (done) {
-            const customPreviewObject = {header_typography: 'Serif', unknown_setting: true};
-            const previewString = `custom=${encodeURIComponent(JSON.stringify(customPreviewObject))}`;
-            req.header = () => {
-                return previewString;
-            };
-
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
-
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
-
-                    assert(data && typeof data === 'object');
-                    assert('site' in data);
-                    assert('custom' in data);
-
-                    assert.equal(data.custom.header_typography, 'Serif');
-
-                    assert(!('unknown_setting' in data.custom));
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('calls updateLocalTemplateOptions with no custom data when custom param is not parseable JSON', function (done) {
-            const previewString = `custom=${encodeURIComponent('<html>')}`;
-            req.header = () => {
-                return previewString;
-            };
-
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
-
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
-
-                    assert(data && typeof data === 'object');
-                    assert('site' in data);
-                    assert.deepEqual(data.custom, {});
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
-
-        it('calls updateLocalTemplateOptions with no custom data when custom param is not an object', function (done) {
-            const previewString = `custom=${encodeURIComponent('"header_typography"')}`;
-            req.header = () => {
-                return previewString;
-            };
-
-            executeMiddleware(middleware, req, res, function next(err) {
-                try {
-                    assert.equal(err, undefined);
-
-                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
-                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
-                    const data = templateOptions.data;
-
-                    assert(data && typeof data === 'object');
-                    assert('site' in data);
-                    assert.deepEqual(data.custom, {});
-
-                    done();
-                } catch (error) {
-                    done(error);
-                }
-            });
-        });
+      assert(data && typeof data === 'object');
+      assert('site' in data);
+      assert.equal(data.custom.header_typography, 'Serif');
     });
+
+    it('calls updateLocalTemplateOptions with correct without unknown custom theme settings', async function () {
+      const customPreviewObject = { header_typography: 'Serif', unknown_setting: true };
+      const previewString = `custom=${encodeURIComponent(JSON.stringify(customPreviewObject))}`;
+
+      await request(app).get('/').set('x-ghost-preview', previewString).expect(200);
+
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
+
+      assert(data && typeof data === 'object');
+      assert('site' in data);
+      assert('custom' in data);
+
+      assert.equal(data.custom.header_typography, 'Serif');
+
+      assert(!('unknown_setting' in data.custom));
+    });
+
+    it('calls updateLocalTemplateOptions with no custom data when custom param is not parseable JSON', async function () {
+      const previewString = `custom=${encodeURIComponent('<html>')}`;
+
+      await request(app).get('/').set('x-ghost-preview', previewString).expect(200);
+
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
+
+      assert(data && typeof data === 'object');
+      assert('site' in data);
+      assert.deepEqual(data.custom, {});
+    });
+
+    it('calls updateLocalTemplateOptions with no custom data when custom param is not an object', async function () {
+      const previewString = `custom=${encodeURIComponent('"header_typography"')}`;
+
+      await request(app).get('/').set('x-ghost-preview', previewString).expect(200);
+
+      sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+      const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+      const data = templateOptions.data;
+
+      assert(data && typeof data === 'object');
+      assert('site' in data);
+      assert.deepEqual(data.custom, {});
+    });
+  });
 });

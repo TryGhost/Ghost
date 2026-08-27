@@ -1,337 +1,232 @@
 import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import {DropdownMenuTrigger} from './dropdown-menu';
+import { DropdownMenuTrigger } from './dropdown-menu';
 
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from './tooltip';
-import {cn} from '@/lib/utils';
-import {cva} from 'class-variance-authority';
-import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-import {Button, ButtonProps} from './button';
+import { cn } from '@/lib/utils';
+import { cva } from 'class-variance-authority';
 
-type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
+type TabsVariant =
+  | 'segmented'
+  | 'segmented-sm'
+  | 'button'
+  | 'button-sm'
+  | 'underline'
+  | 'navbar'
+  | 'pill'
+  | 'kpis';
 
 const TabsVariantContext = React.createContext<TabsVariant>('segmented');
 
 export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
-    variant?: TabsVariant;
+  variant?: TabsVariant;
 }
 
-const tabsVariants = cva(
-    '',
-    {
-        variants: {
-            variant: {
-                segmented: '',
-                'segmented-sm': '',
-                button: '',
-                'button-sm': '',
-                underline: '',
-                navbar: '',
-                pill: '',
-                kpis: ''
-            }
-        },
-        defaultVariants: {
-            variant: 'segmented'
-        }
-    }
-);
+const tabsVariants = cva('', {
+  variants: {
+    variant: {
+      segmented: '',
+      'segmented-sm': '',
+      button: '',
+      'button-sm': '',
+      underline: '',
+      navbar: '',
+      pill: '',
+      kpis: '',
+    },
+  },
+  defaultVariants: {
+    variant: 'segmented',
+  },
+});
 
-const Tabs = React.forwardRef<
-    React.ElementRef<typeof TabsPrimitive.Root>,
-    TabsProps
->(({variant = 'segmented', ...props}, ref) => (
+const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
+  ({ variant = 'segmented', ...props }, ref) => (
     <TabsVariantContext.Provider value={variant}>
-        <TabsPrimitive.Root ref={ref} {...props} />
+      <TabsPrimitive.Root ref={ref} {...props} />
     </TabsVariantContext.Provider>
-));
+  ),
+);
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
-const tabsListVariants = cva(
-    'inline-flex items-center text-muted-foreground',
-    {
-        variants: {
-            variant: {
-                segmented: 'h-(--control-height) rounded-lg bg-muted px-[3px]',
-                'segmented-sm': 'h-8 rounded-lg bg-muted px-[3px]',
-                button: 'gap-2',
-                'button-sm': 'gap-1',
-                underline: 'w-full gap-5 border-b border-border-default',
-                navbar: 'h-[52px] items-end gap-6',
-                pill: '-ml-0.5 h-[30px] gap-px',
-                kpis: 'border-b ring-0'
-            }
-        },
-        defaultVariants: {
-            variant: 'segmented'
-        }
-    }
-);
+const tabsListVariants = cva('inline-flex items-center text-muted-foreground', {
+  variants: {
+    variant: {
+      segmented: 'h-(--control-height) rounded-lg bg-muted px-[3px]',
+      'segmented-sm': 'h-8 rounded-lg bg-muted px-[3px]',
+      button: 'gap-2',
+      'button-sm': 'gap-1',
+      underline:
+        'no-scrollbar w-full max-w-full gap-5 overflow-x-auto border-b border-border-default',
+      navbar: 'h-[52px] items-end gap-6',
+      pill: '-ml-0.5 h-[30px] gap-px',
+      // The `kpis` variant is consumed only by `features/kpi/kpi-tabs.tsx`.
+      // Kept here so the cva variant set is in one place; not for direct use by app code.
+      kpis: 'border-b ring-0',
+    },
+  },
+  defaultVariants: {
+    variant: 'segmented',
+  },
+});
 
 const TabsList = React.forwardRef<
-    React.ElementRef<typeof TabsPrimitive.List>,
-    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({className, ...props}, ref) => {
-    const variant = React.useContext(TabsVariantContext);
-    return (
-        <TabsPrimitive.List
-            ref={ref}
-            className={cn(tabsListVariants({variant, className}))}
-            {...props}
-        />
-    );
+  React.ElementRef<typeof TabsPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
+>(({ className, ...props }, ref) => {
+  const variant = React.useContext(TabsVariantContext);
+  return (
+    <TabsPrimitive.List
+      ref={ref}
+      className={cn(tabsListVariants({ variant, className }))}
+      {...props}
+    />
+  );
 });
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-    'inline-flex items-center justify-center px-3 py-1 whitespace-nowrap ring-offset-background transition-all focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
-    {
-        variants: {
-            variant: {
-                segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
-                'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
-                button: 'h-(--control-height) gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium',
-                'button-sm': 'h-6 gap-1.5 rounded-md p-2 text-xs font-normal text-text-secondary hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium data-[state=active]:text-foreground',
-                underline: 'relative h-9 px-0 text-md font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                pill: 'relative h-[30px] rounded-md px-3 text-md font-medium text-text-secondary hover:text-foreground data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-semibold data-[state=active]:text-foreground',
-                kpis: 'relative h-full! items-start! rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
-            }
-        },
-        defaultVariants: {
-            variant: 'segmented'
-        }
-    }
+  'inline-flex items-center justify-center px-3 py-1 whitespace-nowrap ring-offset-background transition-all focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
+  {
+    variants: {
+      variant: {
+        segmented: 'h-7 rounded-md text-control font-medium data-[state=active]:shadow-md',
+        'segmented-sm': 'h-[26px] rounded-md text-sm font-medium data-[state=active]:shadow-md',
+        button:
+          'h-(--control-height) gap-1.5 rounded-md py-2 text-control font-medium hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:hover:bg-tab-active',
+        'button-sm':
+          'h-6 gap-1.5 rounded-md p-2 text-sm font-medium text-text-secondary hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',
+        underline:
+          'relative h-9 px-0 text-control font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
+        navbar:
+          'relative h-[52px] px-px text-control font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
+        pill: 'relative h-[30px] rounded-md px-3 text-control font-medium text-text-secondary hover:bg-tab-hover hover:text-foreground data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',
+        kpis: 'relative h-full! items-start! rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-interactive-hover data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground',
+      },
+    },
+    defaultVariants: {
+      variant: 'segmented',
+    },
+  },
 );
 
 const TabsTrigger = React.forwardRef<
-    React.ElementRef<typeof TabsPrimitive.Trigger>,
-    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({className, ...props}, ref) => {
-    const variant = React.useContext(TabsVariantContext);
-    return (
-        <TabsPrimitive.Trigger
-            ref={ref}
-            className={cn(tabsTriggerVariants({variant, className}))}
-            {...props}
-        />
-    );
+  React.ElementRef<typeof TabsPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+>(({ className, onMouseDownCapture, ...props }, ref) => {
+  const variant = React.useContext(TabsVariantContext);
+  return (
+    <TabsPrimitive.Trigger
+      ref={ref}
+      className={cn(tabsTriggerVariants({ variant, className }))}
+      onMouseDownCapture={(event) => {
+        const activeElement = document.activeElement;
+        if (
+          activeElement instanceof HTMLElement &&
+          activeElement.matches('input, textarea, select, [contenteditable="true"]')
+        ) {
+          activeElement.blur();
+        }
+        onMouseDownCapture?.(event);
+      }}
+      {...props}
+    />
+  );
 });
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 interface TabsTriggerCountProps {
-    children: React.ReactNode;
-    className?: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
-const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({className = '', children}) => {
-    return (
-        <span className={`mt-px ml-1.5 flex h-5 items-center justify-center rounded-full bg-surface-elevated px-1.5 py-0 text-xs leading-[21px] font-semibold text-text-secondary ${className}`}>{children}</span>
-    );
+const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({ className = '', children }) => {
+  return (
+    <span
+      className={cn(
+        'mt-px ml-1.5 flex h-5 items-center justify-center rounded-full bg-secondary px-1.5 py-0 text-xs leading-[21px] font-semibold text-text-secondary',
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
 };
 TabsTriggerCount.displayName = 'TabsTriggerCount';
 
 const tabsContentVariants = cva(
-    'ring-offset-background focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-hidden',
-    {
-        variants: {
-            variant: {
-                segmented: '',
-                'segmented-sm': '',
-                button: '',
-                'button-sm': '',
-                underline: '',
-                navbar: '',
-                pill: '',
-                kpis: 'ring-0'
-            }
-        },
-        defaultVariants: {
-            variant: 'segmented'
-        }
-    }
+  'ring-offset-background focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-hidden',
+  {
+    variants: {
+      variant: {
+        segmented: '',
+        'segmented-sm': '',
+        button: '',
+        'button-sm': '',
+        underline: '',
+        navbar: '',
+        pill: '',
+        kpis: 'ring-0',
+      },
+    },
+    defaultVariants: {
+      variant: 'segmented',
+    },
+  },
 );
 
 const TabsContent = React.forwardRef<
-    React.ElementRef<typeof TabsPrimitive.Content>,
-    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({className, ...props}, ref) => {
-    const variant = React.useContext(TabsVariantContext);
-    return (
-        <TabsPrimitive.Content
-            ref={ref}
-            className={cn(tabsContentVariants({variant, className}))}
-            {...props}
-        />
-    );
+  React.ElementRef<typeof TabsPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => {
+  const variant = React.useContext(TabsVariantContext);
+  return (
+    <TabsPrimitive.Content
+      ref={ref}
+      className={cn(tabsContentVariants({ variant, className }))}
+      {...props}
+    />
+  );
 });
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
-    children: React.ReactNode;
+interface TabsDropdownTriggerProps extends Omit<
+  React.ComponentProps<typeof TabsPrimitive.Trigger>,
+  'asChild'
+> {
+  children: React.ReactNode;
 }
 
-const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
-    return (
-        <TabsTrigger className='h-auto' {...props}>
-            {children}
-        </TabsTrigger>
-    );
-};
-
-interface KpiTabValueProps {
-    color?: string;
-    icon?: keyof typeof LucideIcons;
-    label: string;
-    value: string | number;
-    diffDirection?: 'up' | 'down' | 'same' | 'hidden';
-    diffValue?: string | number;
-    diffTooltip?: React.ReactNode;
-    /** Render the diff badge as an icon-only circle (hides the percent value). */
-    diffIconOnly?: boolean;
-    className?: string;
-    'data-testid'?: string;
-}
-
-const KpiTabValue: React.FC<KpiTabValueProps> = ({
-    color,
-    icon: iconName,
-    label,
-    value,
-    diffDirection,
-    diffValue,
-    diffTooltip,
-    diffIconOnly,
-    className,
-    'data-testid': testId
-}) => {
-    const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
-
-    const diffContainerClassName = cn(
-        'flex items-center group/diff cursor-default mt-0.5',
-        diffIconOnly
-            ? 'size-5 justify-center rounded-full'
-            : 'gap-1 text-xs h-[22px] px-1.5 rounded-xs',
-        diffDirection === 'up' && 'text-state-success bg-state-success/10',
-        diffDirection === 'up' && diffTooltip && 'hover:bg-state-success/20',
-        diffDirection === 'down' && 'text-state-danger bg-state-danger/10',
-        diffDirection === 'down' && diffTooltip && 'hover:bg-state-danger/20',
-        diffDirection === 'same' && 'text-text-secondary bg-muted'
-    );
-    const badge = diffDirection && diffDirection !== 'hidden' ? (
-        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
-            {!diffIconOnly && <span className='leading-none font-medium'>{diffValue}</span>}
-            {diffDirection === 'up' &&
-                <TrendingUp className='size-3!' size={14} strokeWidth={2} />
-            }
-            {diffDirection === 'down' &&
-                <TrendingDown className='size-3!' size={14} strokeWidth={2} />
-            }
-        </div>
-    ) : null;
-
-    return (
-        <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
-            <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
-                {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
-                {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
-                {label}
-            </div>
-            <div className='flex flex-col items-start gap-2 lg:flex-row xl:gap-3'>
-                <div className='text-[2.3rem] leading-none font-semibold tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
-                    {value}
-                </div>
-                {badge && (diffTooltip ? (
-                    // Radix Tooltip portals the bubble to body so it escapes
-                    // ancestor overflow/stacking contexts that broke the
-                    // CSS-only hover variant inside narrow rails.
-                    <TooltipProvider delayDuration={150}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                {badge}
-                            </TooltipTrigger>
-                            <TooltipContent
-                                className='max-w-[300px] rounded-xs bg-background px-3 py-2 text-sm text-pretty text-foreground shadow-md'
-                                side='top'
-                                sideOffset={8}
-                            >
-                                {diffTooltip}
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                ) : badge)}
-            </div>
-        </div>
-    );
-};
-
-interface KpiDropdownButtonProps extends ButtonProps {
-    className?: string;
-    children: React.ReactNode;
-}
-
-const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonProps>(
-    ({variant = 'dropdown', className, ...props}, ref) => {
-        return (
-            <Button
-                ref={ref}
-                className={
-                    cn(
-                        'h-auto w-full rounded-none border-x-0 border-t-0 focus-visible:ring-0 bg-transparent py-5',
-                        className
-                    )
-                }
-                variant={variant}
-                {...props}
-            />
-        );
-    }
-);
-KpiDropdownButton.displayName = 'KpiDropdownButton';
-
-interface TabsDropdownTriggerProps extends Omit<React.ComponentProps<typeof TabsPrimitive.Trigger>, 'asChild'> {
-    children: React.ReactNode;
-}
-
-const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(({
-    children,
-    className,
-    ...props
-}, ref) => {
+const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(
+  ({ children, className, ...props }, ref) => {
     const variant = React.useContext(TabsVariantContext);
     return (
-        <div className="relative rounded-md hover:bg-muted">
-            <TabsPrimitive.Trigger
-                ref={ref}
-                className={cn(tabsTriggerVariants({variant, className}))}
-                {...props}
-            >
-                <div className="flex items-center gap-2">
-                    {children}
-                </div>
-            </TabsPrimitive.Trigger>
-            <DropdownMenuTrigger
-                className="absolute inset-0 size-full cursor-pointer"
-                onClick={(e) => {
-                    // Stop propagation to prevent tab change
-                    e.preventDefault();
-                }}
-            />
-        </div>
+      <div className="relative rounded-md hover:bg-tab-hover">
+        <TabsPrimitive.Trigger
+          ref={ref}
+          className={cn(tabsTriggerVariants({ variant, className }))}
+          {...props}
+        >
+          <div className="flex items-center gap-2">{children}</div>
+        </TabsPrimitive.Trigger>
+        <DropdownMenuTrigger
+          className="absolute inset-0 size-full cursor-pointer"
+          onClick={(e) => {
+            // Stop propagation to prevent tab change
+            e.preventDefault();
+          }}
+        />
+      </div>
     );
-});
+  },
+);
 TabsDropdownTrigger.displayName = 'TabsDropdownTrigger';
 
 export {
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsTriggerCount,
-    TabsContent,
-    KpiTabTrigger,
-    KpiTabValue,
-    KpiDropdownButton,
-    TabsDropdownTrigger,
-    tabsVariants
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsTriggerCount,
+  TabsContent,
+  TabsDropdownTrigger,
+  tabsVariants,
 };

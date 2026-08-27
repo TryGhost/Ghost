@@ -161,6 +161,14 @@ img.is-dark-background {
     color: {{postTitleColor}};
 }
 
+/* Outlook's Word engine ignores `inherit`, so repeat the `.post-title > table td` values */
+.post-title-heading {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: {{titleWeight}};
+}
+
 .post-title a {
     color: {{postTitleColor}} !important;
 }
@@ -494,7 +502,7 @@ h3.latest-posts-header {
 .manage-subscription {
     font-size: 15px;
     font-weight: 400;
-    text-align: right;
+    text-align: {{#if (eq site.direction "rtl")}}left{{else}}right{{/if}};
     line-height: 1.45;
     vertical-align: bottom;
 }
@@ -1089,7 +1097,7 @@ a[data-flickr-embed] img {
     table.body .manage-subscription {
         display: inline-block;
         width: 100%;
-        text-align: left !important;
+        text-align: {{#if (eq site.direction "rtl")}}right{{else}}left{{/if}} !important;
         font-size: 13px !important;
     }
 

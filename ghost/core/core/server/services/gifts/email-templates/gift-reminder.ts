@@ -1,33 +1,53 @@
+import type { Translate } from '../gift-email-renderer';
+
 export interface GiftReminderData {
-    siteTitle: string;
-    siteUrl: string;
-    siteIconUrl: string | null;
-    siteDomain: string;
-    accentColor: string | undefined;
-    memberEmail: string;
-    memberName: string | null;
-    gift: {
-        tierName: string;
-        cadenceLabel: string;
-        consumesAt: string;
-        manageSubscriptionUrl: string;
-    };
+  siteTitle: string;
+  siteUrl: string;
+  siteIconUrl: string | null;
+  siteDomain: string;
+  accentColor: string | undefined;
+  memberEmail: string;
+  firstName: string | null;
+  gift: {
+    tierName: string;
+    consumesAt: string;
+    manageSubscriptionUrl: string;
+  };
 }
 
-export function renderText(data: GiftReminderData): string {
-    const greeting = data.memberName ? `Hi ${data.memberName},` : 'Hi,';
+export function renderText(data: GiftReminderData, t: Translate): string {
+  const greeting = data.firstName
+    ? t('Hi {firstName},', { firstName: data.firstName, interpolation: { escapeValue: false } })
+    : t('Hey there,');
 
-    return `${greeting}
+  return `${greeting}
 
-Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}.
+${t('Your gift subscription to {siteTitle} ends on {consumesAt}.', {
+  siteTitle: data.siteTitle,
+  consumesAt: data.gift.consumesAt,
+  interpolation: { escapeValue: false },
+})}
 
-Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
+${t(
+  "To keep your {tierName} membership, continue with a paid subscription today and we'll automatically add the rest of your gift period as a free trial.",
+  {
+    tierName: data.gift.tierName,
+    interpolation: { escapeValue: false },
+  },
+)}
 
-To keep your access, continue with a paid subscription before your gift ends:
+${t('Continue subscription')}:
 ${data.gift.manageSubscriptionUrl}
 
----
+${t('Thanks for reading {siteTitle}.', {
+  siteTitle: data.siteTitle,
+  interpolation: { escapeValue: false },
+})}
 
-Sent to ${data.memberEmail} from ${data.siteDomain}.
-You received this email because your gift subscription to ${data.siteTitle} is ending soon.`;
+---
+${t('This message was sent from {siteDomain} to {email}.', {
+  siteDomain: data.siteDomain,
+  email: data.memberEmail,
+  interpolation: { escapeValue: false },
+})}`;
 }

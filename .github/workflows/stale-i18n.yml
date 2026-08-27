@@ -3,12 +3,16 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
+# actions/stale labels, comments on, and closes stale i18n PRs.
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   stale:
     if: github.repository_owner == 'TryGhost'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11
         with:
           stale-pr-message: |
             Thanks for contributing to Ghost's i18n :)

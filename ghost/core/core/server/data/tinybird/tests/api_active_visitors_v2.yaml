@@ -1,15 +1,14 @@
-
 - name: default_site_uuid
   description: Test active visitors with default site UUID
   parameters: site_uuid=mock_site_uuid
   expected_result: |
-    {"active_visitors":16}
+    {"active_visitors":17}
 
 - name: active_visitors_default
   description: Test active visitors with only required site_uuid parameter
   parameters: site_uuid=mock_site_uuid
   expected_result: |
-    {"active_visitors":16}
+    {"active_visitors":17}
 
 - name: active_visitors_with_post
   description: Test active visitors filtered by specific post

@@ -3,9 +3,8 @@
  * The adapter-manager loads adapters by constructing a path from the config value.
  *
  * @see core/shared/config/defaults.json
- * @see core/server/services/adapter-manager/adapter-manager.js
+ * @see core/server/services/adapter-manager/adapter-manager.ts
  */
-/* eslint-disable ghost/filenames/match-regex */
 const RedisCache = require('../lib/redis/AdapterCacheRedis');
 
 module.exports = RedisCache;

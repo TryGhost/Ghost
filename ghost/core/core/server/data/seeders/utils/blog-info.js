@@ -1,3 +1,3 @@
 module.exports = {
-    blogStartDate: new Date(2018, 5, 4)
+  blogStartDate: new Date(2018, 5, 4),
 };

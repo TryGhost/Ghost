@@ -1,0 +1,7 @@
+# Paths Nx should exclude from the project graph and `nx --affected`
+# computation. Without this, Nx's default "unknown files affect everything"
+# behaviour makes Lint, Unit tests, and per-app Build jobs run on PRs that
+# only touch dev-tooling files. Pairs with the `any-code` path filter in
+# .github/workflows/ci.yml, which also excludes these paths.
+.devcontainer/
+.vscode/

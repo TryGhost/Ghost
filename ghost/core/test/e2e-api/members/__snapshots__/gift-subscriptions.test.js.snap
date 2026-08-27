@@ -12,24 +12,6 @@ Object {
 }
 `;
 
-exports[`Gift Subscriptions Purchase Rejects purchase when labs flag is disabled 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": null,
-      "details": null,
-      "ghostErrorCode": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Gift subscriptions are not enabled on this site.",
-      "property": null,
-      "type": "BadRequestError",
-    },
-  ],
-}
-`;
-
 exports[`Gift Subscriptions Purchase Rejects purchase with an offer 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -60,17 +42,17 @@ Object {
 }
 `;
 
-exports[`Gift Subscriptions Purchase a gift Rejects purchase when labs flag is disabled 1: [body] 1`] = `
+exports[`Gift Subscriptions Purchase a gift Rejects purchase with an offer 1: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": null,
+      "context": "Offers cannot be applied to gift subscriptions",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Gift subscriptions are not enabled on this site.",
+      "message": "Bad Request.",
       "property": null,
       "type": "BadRequestError",
     },
@@ -78,12 +60,66 @@ Object {
 }
 `;
 
-exports[`Gift Subscriptions Purchase a gift Rejects purchase with an offer 1: [body] 1`] = `
+exports[`Gift Subscriptions Purchase a gift rejects unsupported, malformed, conflicting and non-paid customized gift offers 1: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Offers cannot be applied to gift subscriptions",
+      "context": "Unsupported gift duration \\"2\\"",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Bad Request.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift rejects unsupported, malformed, conflicting and non-paid customized gift offers 2: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Unsupported gift duration \\"3\\"",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Bad Request.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift rejects unsupported, malformed, conflicting and non-paid customized gift offers 3: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Gift duration \\"3\\" conflicts with cadence \\"year\\"",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Bad Request.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift rejects unsupported, malformed, conflicting and non-paid customized gift offers 4: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "The requested tier is not available for gift purchases",
       "details": null,
       "ghostErrorCode": null,
       "help": null,

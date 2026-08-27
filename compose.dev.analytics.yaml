@@ -5,17 +5,23 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.175@sha256:853fae2f7db4d280502caf4ac51090ad232395a667f405f22beb089c07ec7bcb
+    image: ghost/traffic-analytics:1.0.336@sha256:13ca3b62c1334fba8fc3c9486290ef42d1f8fb6c628e19dd75356f30cea9733d
     container_name: ghost-dev-analytics
     platform: linux/amd64
-    command: ["node", "--enable-source-maps", "dist/server.js"]
-    entrypoint: ["/app/entrypoint.sh"]
+    command: ['node', '--enable-source-maps', 'dist/server.js']
+    entrypoint: ['/app/entrypoint.sh']
     expose:
-      - "3000"
+      - '3000'
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
-      interval: 1s
-      retries: 120
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://localhost:3000'').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"',
+        ]
+      interval: 30s
+      retries: 5
+      start_period: 120s
+      start_interval: 1s
     volumes:
       - ./docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - shared-config:/mnt/shared-config:ro
@@ -29,17 +35,19 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:52ea15fc337547b13d06069c23479c293e23074d4e4a6be21253e4bd57ad12be
+    image: tinybirdco/tinybird-local:latest@sha256:cf9de0516700eea366161181e74cae943f1a7310e6f2cc4f5762cb1777ed3fb3
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
     ports:
-      - "7181:7181"
+      - '7181:7181'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
-      interval: 1s
+      test: ['CMD', 'curl', '-f', 'http://localhost:7181/v0/health']
+      interval: 30s
       timeout: 5s
-      retries: 120
+      retries: 5
+      start_period: 120s
+      start_interval: 1s
 
   tb-cli:
     build:
@@ -64,7 +72,7 @@ services:
     environment:
       # Analytics configuration
       analytics__url: http://analytics:3000
-      analytics__enabled: "true"
+      analytics__enabled: 'true'
       # Tinybird configuration
       # These static values are set here; workspaceId and adminToken are sourced from
       # /mnt/shared-config/.env.tinybird by docker/ghost-dev/entrypoint.sh
@@ -82,5 +90,3 @@ services:
 
 volumes:
   shared-config:
-
-

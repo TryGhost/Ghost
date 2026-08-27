@@ -1,0 +1,419 @@
+import moment from 'moment-timezone';
+import validator from 'validator';
+import {
+  MEMBER_CUSTOM_FIELD_TYPES,
+  memberCustomFieldParts,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { dequal } from 'dequal';
+import type { EditMemberData, Member } from '@tryghost/admin-x-framework/api/members';
+import type {
+  MemberCustomField,
+  MemberCustomFieldAddress,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
+
+// The parts of the address composite, in the order its value schema declares them, each
+// with the label every other surface shows it under.
+export const ADDRESS_PARTS = memberCustomFieldParts('address') ?? [];
+
+// Partial because a draft mid-edit (or a normalized sparse value) may hold any subset; the
+// shared AddressValue schema — enforced by the server — decides completeness.
+export type EditableAddressValue = Partial<MemberCustomFieldAddress>;
+export type EditableCustomFieldValue = string | EditableAddressValue;
+
+export interface MemberEditableLabel {
+  name: string;
+  slug: string;
+}
+
+export interface MemberEditableFields {
+  name: string;
+  email: string;
+  note: string;
+  labels: MemberEditableLabel[];
+  // Subscribed-newsletter ids, sorted, so order changes never look dirty.
+  newsletters: string[];
+  // Custom field values are deliberately NOT part of this slice: they save
+  // individually through their own per-field editor (one field, one Save),
+  // never through the page's draft/Save flow.
+}
+
+// The members API returns null (not just undefined) for unset name/email/note,
+// so accept both here rather than casting at the call sites.
+interface MemberFieldSource {
+  name?: string | null;
+  email?: string | null;
+  note?: string | null;
+  labels?: Array<{ name: string; slug: string }> | null;
+  newsletters?: Array<{ id: string }> | null;
+}
+
+// Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
+// allows 2000). The counter may go negative, matching the Ember behaviour.
+export const NOTE_MAX_LENGTH = 500;
+
+/**
+ * The editable slice used for both dirty detection (compare draft vs server) and
+ * the save payload. Name/email are trimmed to match the Ember blur-trim behaviour;
+ * note preserves its whitespace. Missing fields normalize to '' so a member with a
+ * null field and a draft with '' don't read as dirty.
+ */
+export function getMemberEditableSlice(member: MemberFieldSource): MemberEditableFields {
+  return {
+    name: (member.name ?? '').trim(),
+    email: (member.email ?? '').trim(),
+    note: member.note ?? '',
+    // Sorted by slug (deterministic byte-order, not locale-dependent) so label
+    // order — or a reordered server response — never reads as a dirty change.
+    labels: (member.labels ?? [])
+      .map((label) => ({ name: label.name, slug: label.slug }))
+      .sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0)),
+    newsletters: (member.newsletters ?? []).map((nl) => nl.id).sort(),
+  };
+}
+
+/**
+ * The custom field values from a member's `custom_fields` payload, normalized:
+ * strings trimmed, address sub-fields trimmed with empty ones dropped, and
+ * empty values ('' / {} / null) collapsing to an absent key — so "no value"
+ * reads identically however it's represented. Feeds the read-only value rows
+ * and seeds the per-field editor.
+ */
+export function getEditableCustomFieldValues(
+  customFields: Record<string, unknown> | null | undefined,
+): Record<string, EditableCustomFieldValue> {
+  const values: Record<string, EditableCustomFieldValue> = {};
+  for (const [key, value] of Object.entries(customFields ?? {})) {
+    if (typeof value === 'string' && value.trim() !== '') {
+      values[key] = value.trim();
+    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const address = normalizeAddressValue(value as Record<string, unknown>);
+      if (address) {
+        values[key] = address;
+      }
+    }
+  }
+  return values;
+}
+
+/**
+ * An address as the save should send it: every part the editor showed, trimmed, keeping
+ * the empty ones.
+ *
+ * A write touches the parts it names, so a part the person emptied has to be named — sent
+ * as empty rather than left out, which would read as "no change". An address with nothing
+ * left in it is a cleared field, which the caller says with `null` instead.
+ */
+function addressToSave(value: Record<string, unknown>): EditableAddressValue | undefined {
+  const address: EditableAddressValue = {};
+  for (const { key } of ADDRESS_PARTS) {
+    const subvalue = value[key];
+    if (typeof subvalue === 'string') {
+      address[key] = subvalue.trim();
+    }
+  }
+  return Object.values(address).some((part) => part !== '') ? address : undefined;
+}
+
+/**
+ * An address value reduced to its known sub-fields, trimmed, with empty
+ * sub-fields dropped. Undefined when nothing remains, so an all-blank address
+ * normalizes to "no value" exactly like an empty string does.
+ */
+function normalizeAddressValue(value: Record<string, unknown>): EditableAddressValue | undefined {
+  const address: EditableAddressValue = {};
+  for (const { key } of ADDRESS_PARTS) {
+    const subvalue = value[key];
+    if (typeof subvalue === 'string' && subvalue.trim() !== '') {
+      address[key] = subvalue.trim();
+    }
+  }
+  return Object.keys(address).length ? address : undefined;
+}
+
+/**
+ * Add or remove a newsletter id from the subscribed set, preserving sort order.
+ * Idempotent by construction so a repeated toggle round-trips to no change.
+ */
+export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: string): string[] {
+  if (subscribedIds.includes(newsletterId)) {
+    return subscribedIds.filter((id) => id !== newsletterId);
+  }
+  return [...subscribedIds, newsletterId].sort();
+}
+
+/**
+ * Client-side email sanity check for the save gate; the server remains
+ * authoritative. Mirrors the server's update semantics: an email is validated
+ * only when it differs from the stored one, because the server deliberately
+ * grandfathers stored emails that predate stricter validation
+ * (member-repository.js validates the email only when it changed).
+ */
+export function isValidMemberEmail(email: string, storedEmail?: string): boolean {
+  const trimmed = email.trim();
+  if (storedEmail !== undefined && trimmed === storedEmail.trim()) {
+    return true;
+  }
+  return validator.isEmail(trimmed);
+}
+
+/**
+ * Message to render under the email field. Gated on `touched` so the empty
+ * initial state on the New member screen (or an email cleared briefly during
+ * a paste) doesn't render as an error the user hasn't provoked yet. Ember's
+ * validator runs on save-attempt for the same reason
+ * (`ghost/admin/app/validators/member.js:15`).
+ */
+export function getEmailErrorMessage(
+  email: string,
+  touched: boolean,
+  storedEmail?: string,
+): string | null {
+  if (!touched) {
+    return null;
+  }
+  if (email.trim() === '') {
+    return 'Email is required.';
+  }
+  if (!isValidMemberEmail(email, storedEmail)) {
+    return 'Invalid email.';
+  }
+  return null;
+}
+
+export interface MemberSuppressionInfo {
+  // Undefined for a `suppressed:true` member without a bounce/complaint history —
+  // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
+  // that case, just without the reason line.
+  reason?: string;
+  label: string | null;
+}
+
+/**
+ * Extract a display-ready suppression status for the newsletter/suppression banner.
+ * Returns null only when the member is not suppressed. `suppressed:true` is enough
+ * to render the banner even without the info block, matching Ember's behaviour
+ * where `email_disabled` alone (with the Mailgun row already cleaned) still shows
+ * "Email disabled" + the Re-enable button. Dates use site-local formatting to
+ * match the Ember copy exactly.
+ */
+export function getMemberSuppressionInfo(
+  emailSuppression: Member['email_suppression'],
+): MemberSuppressionInfo | null {
+  if (!emailSuppression?.suppressed) {
+    return null;
+  }
+  const info = emailSuppression.info;
+  if (!info) {
+    return { label: null };
+  }
+  const { reason, timestamp } = info;
+  const date = moment(new Date(timestamp)).format('D MMM YYYY');
+  switch (reason) {
+    case 'fail':
+      return { reason, label: `Bounced on ${date}` };
+    case 'spam':
+      return { reason, label: `Flagged as spam on ${date}` };
+    default:
+      return { reason, label: `Email disabled on ${date}` };
+  }
+}
+
+/**
+ * Newsletters that Ember auto-subscribes a new member to on save. Ports
+ * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
+ * via `subscribe_on_signup` AND are visible to member-tier subscribers
+ * (`visibility: 'members'`). The result feeds the create-screen draft so
+ * the toggles render as CHECKED — matching what the admin would see if
+ * they'd opened the Ember screen — and the same list is included in the
+ * POST payload so the server never has to fall back to its own default.
+ */
+export function getDefaultNewsletterIdsForNewMember(
+  newsletters:
+    | Array<{ id: string; subscribe_on_signup?: boolean; visibility?: string | null }>
+    | undefined
+    | null,
+): string[] {
+  if (!newsletters) {
+    return [];
+  }
+  return newsletters
+    .filter((nl) => nl.subscribe_on_signup === true && nl.visibility === 'members')
+    .map((nl) => nl.id);
+}
+
+/**
+ * Characters remaining under the note soft limit. Counts unicode code points (via
+ * spread) rather than UTF-16 code units so multi-byte characters like emoji count
+ * as one — matching the Ember `gh-count-down-characters` helper. Goes negative when
+ * the limit is exceeded.
+ */
+export function getNoteCharactersLeft(note: string): number {
+  return NOTE_MAX_LENGTH - [...note].length;
+}
+
+/**
+ * Build the `useEditMember` payload for the field edits in this slice. Labels are
+ * sent as {name, slug} (server matches case-insensitively by name). Newsletters
+ * are sent as {id}[] ONLY when the user changed them, because the server replaces
+ * the subscription set with exactly what we send — including [] which would
+ * unsubscribe the member from every newsletter. Callers pass the server baseline
+ * so we can tell "unchanged" from "all newsletters removed".
+ */
+export function buildMemberFieldEditPayload(
+  id: string,
+  draft: MemberEditableFields,
+  serverBaseline: MemberEditableFields,
+): EditMemberData {
+  const normalized = normalizeDraftForComparison(draft);
+  const payload: EditMemberData = {
+    id,
+    name: normalized.name,
+    email: normalized.email,
+    note: normalized.note,
+    labels: normalized.labels,
+  };
+  if (!dequal(normalized.newsletters, serverBaseline.newsletters)) {
+    payload.newsletters = normalized.newsletters.map((nlId) => ({ id: nlId }));
+  }
+  return payload;
+}
+
+/**
+ * A value exactly as the save will send it, or undefined for one that clears the field.
+ *
+ * One statement of that, because validating anything else is validating a value nobody
+ * sends: the editor keeps an emptied address part so the save can name it, while the
+ * display form drops it, and a check run against the second cannot see what the first
+ * would be told about.
+ */
+function customFieldValueToSave(
+  value: EditableCustomFieldValue,
+): EditableCustomFieldValue | undefined {
+  return typeof value === 'string' ? value.trim() || undefined : addressToSave(value);
+}
+
+/**
+ * The save payload for ONE custom field, from the per-field editor. Merge
+ * semantics do the rest: only this key is touched, `null` clears it, and an
+ * address is sent whole (the merge is per field, not per sub-field).
+ */
+export function buildCustomFieldSavePayload(
+  memberId: string,
+  fieldKey: string,
+  value: EditableCustomFieldValue,
+): EditMemberData {
+  return { id: memberId, custom_fields: { [fieldKey]: customFieldValueToSave(value) ?? null } };
+}
+
+/**
+ * Client-side validation of custom field values against the shared catalog
+ * schemas. Each rule carries its own message, so what this returns for a
+ * violation is the same sentence the server returns for it, and the screen
+ * reads the same whichever tier caught it. Returns messages keyed by
+ * `fieldKey` (scalar) or `fieldKey.subfield` (composite sub-field), matching
+ * the path shape of the server's 422 `property` so both error sources render
+ * through one map. Cleared/empty values are always valid — fields are optional.
+ */
+export function getCustomFieldValidationErrors(
+  draftCustomFields: Record<string, EditableCustomFieldValue>,
+  fields: MemberCustomField[],
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const field of fields) {
+    const draft = draftCustomFields[field.key];
+    // Checked as the save would send it, so what passes here is what the server is
+    // asked to accept. A value that clears the field is always valid: no field is
+    // required, and a clear says nothing for a rule to be about.
+    const value = draft === undefined ? undefined : customFieldValueToSave(draft);
+    if (value === undefined) {
+      continue;
+    }
+    // Runtime guard for a future type this build doesn't know; the server
+    // remains authoritative for those.
+    const definition = MEMBER_CUSTOM_FIELD_TYPES[field.type];
+    if (!definition) {
+      continue;
+    }
+    const result = definition.value.safeParse(value);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const key = [field.key, ...issue.path].join('.');
+        errors[key] ??= issue.message;
+      }
+    }
+  }
+  return errors;
+}
+
+/**
+ * Field-level errors from a failed member save. The values service names the
+ * offending field in `property` as `custom_fields.<key>[.<subfield>]` with the
+ * reason in `context` (see members-custom-fields/values-service.ts), so the
+ * message can be rendered under the exact input it belongs to. Returns
+ * undefined when the failure isn't custom-fields shaped, letting callers fall
+ * back to the generic toast.
+ */
+export function parseCustomFieldServerErrors(error: unknown): Record<string, string> | undefined {
+  const data = (
+    error as {
+      data?: {
+        errors?: Array<{
+          property?: string | null;
+          context?: string | null;
+          message?: string | null;
+        }>;
+      };
+    } | null
+  )?.data;
+  const errors: Record<string, string> = {};
+  for (const apiError of data?.errors ?? []) {
+    if (apiError.property?.startsWith('custom_fields.')) {
+      errors[apiError.property.slice('custom_fields.'.length)] =
+        apiError.context || apiError.message || 'Invalid value.';
+    }
+  }
+  return Object.keys(errors).length ? errors : undefined;
+}
+
+/**
+ * Resolve a list of selected label slugs back to full {name, slug} objects using a
+ * known-labels lookup. A slug missing from the lookup falls back to using the slug
+ * as the name — callers must ensure freshly-created labels are recorded first so a
+ * real name is never lost (which would make the server create a duplicate).
+ */
+export function resolveSlugsToLabels(
+  slugs: string[],
+  known: ReadonlyMap<string, MemberEditableLabel>,
+): MemberEditableLabel[] {
+  return slugs.map((slug) => known.get(slug) ?? { name: slug, slug });
+}
+
+/**
+ * Normalize an already-shaped draft for dirty comparison. The draft carries user
+ * input for string fields (which may contain leading/trailing whitespace); the
+ * relation lists (labels, newsletters) are already in their normalized shape.
+ * Trims strings so whitespace-only differences don't read as dirty.
+ */
+export function normalizeDraftForComparison(draft: MemberEditableFields): MemberEditableFields {
+  return {
+    name: draft.name.trim(),
+    email: draft.email.trim(),
+    note: draft.note,
+    labels: draft.labels,
+    newsletters: draft.newsletters,
+  };
+}
+
+/**
+ * Whether the current draft still matches the last server baseline it was seeded
+ * from — i.e. the user has made no local edits. When true, a fresh server value
+ * (from a background refetch) can safely replace the draft without clobbering user
+ * input; when false, the draft holds unsaved edits and must be preserved.
+ * Comparison is on the normalized slice so whitespace-only differences don't count.
+ */
+export function isDraftInSyncWithServer(
+  draft: MemberEditableFields | undefined,
+  serverBaseline: MemberEditableFields | undefined,
+): boolean {
+  return !draft || (!!serverBaseline && dequal(normalizeDraftForComparison(draft), serverBaseline));
+}

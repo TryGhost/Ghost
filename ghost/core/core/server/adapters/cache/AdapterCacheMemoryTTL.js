@@ -1,5 +1,5 @@
 const TTLCache = require('@isaacs/ttlcache');
-const Base = require('@tryghost/adapter-base-cache');
+const { CacheBase } = require('@tryghost/adapter-base-cache');
 
 /**
  * Cache adapter compatible wrapper around TTLCache
@@ -8,47 +8,47 @@ const Base = require('@tryghost/adapter-base-cache');
  * - it supports time-to-live (TTL)
  * - it supports a max number of items
  */
-class AdapterCacheMemoryTTL extends Base {
-    #cache;
+class AdapterCacheMemoryTTL extends CacheBase {
+  #cache;
 
-    /**
-     *
-     * @param {Object} [deps]
-     * @param {number} [deps.max] - The max number of items to keep in the cache.
-     * @param {number} [deps.ttl] - The max time in ms to store items
-     */
-    constructor({max = Infinity, ttl = Infinity} = {}) {
-        super();
+  /**
+   *
+   * @param {Object} [deps]
+   * @param {number} [deps.max] - The max number of items to keep in the cache.
+   * @param {number} [deps.ttl] - The max time in ms to store items
+   */
+  constructor({ max = Infinity, ttl = Infinity } = {}) {
+    super();
 
-        this.#cache = new TTLCache({max, ttl});
-    }
+    this.#cache = new TTLCache({ max, ttl });
+  }
 
-    get(key) {
-        return this.#cache.get(key);
-    }
+  get(key) {
+    return this.#cache.get(key);
+  }
 
-    /**
-     *
-     * @param {string} key
-     * @param {*} value
-     * @param {Object} [options]
-     * @param {number} [options.ttl]
-    */
-    set(key, value, {ttl} = {}) {
-        this.#cache.set(key, value, {ttl});
-    }
+  /**
+   *
+   * @param {string} key
+   * @param {*} value
+   * @param {Object} [options]
+   * @param {number} [options.ttl]
+   */
+  set(key, value, { ttl } = {}) {
+    this.#cache.set(key, value, { ttl });
+  }
 
-    reset() {
-        this.#cache.clear();
-    }
+  reset() {
+    this.#cache.clear();
+  }
 
-    /**
-     * Helper method to assist "getAll" type of operations
-     * @returns {Array<String>} all keys present in the cache
-     */
-    keys() {
-        return [...this.#cache.keys()];
-    }
+  /**
+   * Helper method to assist "getAll" type of operations
+   * @returns {Array<String>} all keys present in the cache
+   */
+  keys() {
+    return [...this.#cache.keys()];
+  }
 }
 
 module.exports = AdapterCacheMemoryTTL;

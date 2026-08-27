@@ -1,4 +1,4 @@
-import {GlobalStyles} from './global.styles';
+import { GlobalStyles } from './global.styles';
 
 const NotificationStyles = `
     .gh-portal-notification-wrapper {
@@ -87,6 +87,12 @@ const NotificationStyles = `
         color: var(--red);
     }
 
+    .gh-portal-notification-closebutton {
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
     .gh-portal-notification-closeicon {
         color: var(--grey8);
         cursor: pointer;
@@ -147,8 +153,6 @@ const NotificationStyles = `
     }
 `;
 
-const NotificationStyle =
-    GlobalStyles +
-    NotificationStyles;
+const NotificationStyle = GlobalStyles + NotificationStyles;
 
 export default NotificationStyle;

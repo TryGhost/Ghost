@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
@@ -10,240 +9,266 @@ const controllers = require('../../../../../../core/frontend/services/routing/co
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
 
-function failTest(done) {
-    return function (err) {
-        assertExists(err);
-        done(err);
-    };
-}
-
 describe('Unit - services/routing/controllers/collection', function () {
-    let req;
-    let res;
-    let fetchDataStub;
-    let renderStub;
-    let posts;
-    let postsPerPage;
-    let ownsStub;
+  let req;
+  let res;
+  let fetchDataStub;
+  let renderStub;
+  let posts;
+  let postsPerPage;
+  let ownsResourceStub;
+  let next;
 
-    beforeEach(function () {
-        postsPerPage = 5;
+  beforeEach(function () {
+    postsPerPage = 5;
 
-        posts = [
-            testUtils.DataGenerator.forKnex.createPost()
-        ];
+    posts = [testUtils.DataGenerator.forKnex.createPost()];
 
-        fetchDataStub = sinon.stub();
-        renderStub = sinon.stub();
+    fetchDataStub = sinon.stub();
+    renderStub = sinon.stub();
+    next = sinon.stub();
 
-        sinon.stub(dataService, 'fetchData').get(function () {
-            return fetchDataStub;
-        });
-
-        sinon.stub(security.string, 'safe').returns('safe');
-
-        sinon.stub(themeEngine, 'getActive').returns({
-            updateTemplateOptions: sinon.stub(),
-            config: function (key) {
-                assert.equal(key, 'posts_per_page');
-                return postsPerPage;
-            }
-        });
-
-        sinon.stub(renderer, 'renderEntries').returns(renderStub);
-
-        ownsStub = sinon.stub(routerManager, 'owns');
-        ownsStub.withArgs('identifier', posts[0].id).returns(true);
-
-        req = {
-            path: '/',
-            params: {},
-            route: {}
-        };
-
-        res = {
-            routerOptions: {
-                identifier: 'identifier'
-            },
-            render: sinon.spy(),
-            redirect: sinon.spy()
-        };
+    sinon.stub(dataService, 'fetchData').get(function () {
+      return fetchDataStub;
     });
 
-    afterEach(function () {
-        sinon.restore();
+    sinon.stub(security.string, 'safe').returns('safe');
+
+    sinon.stub(themeEngine, 'getActive').returns({
+      updateTemplateOptions: sinon.stub(),
+      config: function (key) {
+        assert.equal(key, 'posts_per_page');
+        return postsPerPage;
+      },
     });
 
-    it('no params', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
+    sinon.stub(renderer, 'renderEntries').returns(renderStub);
 
-        controllers.collection(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.calledOnce(ownsStub);
-            done();
-        }).catch(done);
+    ownsResourceStub = sinon.stub(routerManager, 'ownsResource');
+    ownsResourceStub.withArgs('identifier', posts[0]).returns(true);
+
+    req = {
+      path: '/',
+      params: {},
+      route: {},
+    };
+
+    res = {
+      routerOptions: {
+        identifier: 'identifier',
+      },
+      render: sinon.spy(),
+      redirect: sinon.spy(),
+    };
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('no params', async function () {
+    fetchDataStub
+      .withArgs({ page: 1, slug: undefined, limit: postsPerPage }, res.routerOptions)
+      .resolves({
+        posts: posts,
+        meta: {
+          pagination: {
+            pages: 5,
+          },
+        },
+      });
+
+    await controllers.collection(req, res, next);
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.notCalled(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.calledOnce(ownsResourceStub);
+    sinon.assert.notCalled(next);
+  });
+
+  it('pass page param', async function () {
+    req.params.page = 2;
+
+    fetchDataStub
+      .withArgs({ page: 2, slug: undefined, limit: postsPerPage }, res.routerOptions)
+      .resolves({
+        posts: posts,
+        meta: {
+          pagination: {
+            pages: 5,
+          },
+        },
+      });
+
+    await controllers.collection(req, res, next);
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.notCalled(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.calledOnce(ownsResourceStub);
+    sinon.assert.notCalled(next);
+  });
+
+  it('update hbs engine: router defines limit', async function () {
+    res.routerOptions.limit = 3;
+    req.params.page = 2;
+
+    fetchDataStub.withArgs({ page: 2, slug: undefined, limit: 3 }, res.routerOptions).resolves({
+      posts: posts,
+      meta: {
+        pagination: {
+          pages: 3,
+        },
+      },
     });
 
-    it('pass page param', function (done) {
-        req.params.page = 2;
+    await controllers.collection(req, res, next);
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.calledOnce(
+      themeEngine
+        .getActive()
+        .updateTemplateOptions.withArgs({ data: { config: { posts_per_page: 3 } } }),
+    );
+    sinon.assert.notCalled(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.calledOnce(ownsResourceStub);
+    sinon.assert.notCalled(next);
+  });
 
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
+  it('page param too big', async function () {
+    req.params.page = 6;
 
-        controllers.collection(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.calledOnce(ownsStub);
-            done();
-        }).catch(done);
+    fetchDataStub
+      .withArgs({ page: 6, slug: undefined, limit: postsPerPage }, res.routerOptions)
+      .resolves({
+        posts: posts,
+        meta: {
+          pagination: {
+            pages: 5,
+          },
+        },
+      });
+
+    await controllers.collection(req, res, next);
+    sinon.assert.calledWith(next, sinon.match.instanceOf(errors.NotFoundError));
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.notCalled(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.notCalled(renderStub);
+    sinon.assert.notCalled(ownsResourceStub);
+  });
+
+  it('slug param', async function () {
+    req.params.slug = 'unsafe';
+
+    fetchDataStub
+      .withArgs({ page: 1, slug: 'safe', limit: postsPerPage }, res.routerOptions)
+      .resolves({
+        posts: posts,
+        meta: {
+          pagination: {
+            pages: 5,
+          },
+        },
+      });
+
+    await controllers.collection(req, res, next);
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.calledOnce(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.calledOnce(ownsResourceStub);
+    sinon.assert.notCalled(next);
+  });
+
+  it('invalid posts per page', async function () {
+    postsPerPage = -1;
+
+    fetchDataStub.withArgs({ page: 1, slug: undefined }, res.routerOptions).resolves({
+      posts: posts,
+      meta: {
+        pagination: {
+          pages: 5,
+        },
+      },
     });
 
-    it('update hbs engine: router defines limit', function (done) {
-        res.routerOptions.limit = 3;
-        req.params.page = 2;
+    await controllers.collection(req, res, next);
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.notCalled(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.calledOnce(ownsResourceStub);
+    sinon.assert.notCalled(next);
+  });
 
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 3
-                    }
-                }
-            });
+  it('restores type and status stripped by the Content API before ownership check', async function () {
+    // The Content API strips `type` and `status` from public posts, but the
+    // lazy URL service evaluates the base filter `status:published+type:post`
+    // to decide ownership. The collection router knows it serves published
+    // posts of a given type, so the controller must restore both — otherwise
+    // an owned post is wrongly disowned and dropped from the collection.
+    const post = testUtils.DataGenerator.forKnex.createPost();
+    delete post.type;
+    delete post.status;
 
-        controllers.collection(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.calledOnce(ownsStub);
-            done();
-        }).catch(done);
-    });
+    posts = [post];
+    res.routerOptions.resourceType = 'posts';
 
-    it('page param too big', function (done) {
-        req.params.page = 6;
+    ownsResourceStub.reset();
+    ownsResourceStub.returns(true);
 
-        fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
+    fetchDataStub
+      .withArgs({ page: 1, slug: undefined, limit: postsPerPage }, res.routerOptions)
+      .resolves({
+        posts: posts,
+        meta: {
+          pagination: {
+            pages: 5,
+          },
+        },
+      });
 
-        controllers.collection(req, res, function (err) {
-            assert.equal((err instanceof errors.NotFoundError), true);
+    await controllers.collection(req, res, next);
 
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.notCalled(renderStub);
-            sinon.assert.notCalled(ownsStub);
-            done();
-        });
-    });
+    const resource = ownsResourceStub.firstCall.args[1];
+    assert.equal(resource.type, 'posts');
+    assert.equal(resource.status, 'published');
+    sinon.assert.notCalled(next);
+  });
 
-    it('slug param', function (done) {
-        req.params.slug = 'unsafe';
+  it('should verify if post belongs to collection', async function () {
+    posts = [
+      testUtils.DataGenerator.forKnex.createPost({ url: '/a/' }),
+      testUtils.DataGenerator.forKnex.createPost({ url: '/b/' }),
+      testUtils.DataGenerator.forKnex.createPost({ url: '/c/' }),
+      testUtils.DataGenerator.forKnex.createPost({ url: '/d/' }),
+    ];
 
-        fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
+    res.routerOptions.filter = 'featured:true';
 
-        controllers.collection(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.calledOnce(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.calledOnce(ownsStub);
-            done();
-        }).catch(done);
-    });
+    ownsResourceStub.reset();
+    ownsResourceStub.withArgs('identifier', posts[0]).returns(false);
+    ownsResourceStub.withArgs('identifier', posts[1]).returns(true);
+    ownsResourceStub.withArgs('identifier', posts[2]).returns(false);
+    ownsResourceStub.withArgs('identifier', posts[3]).returns(false);
 
-    it('invalid posts per page', function (done) {
-        postsPerPage = -1;
+    fetchDataStub
+      .withArgs({ page: 1, slug: undefined, limit: postsPerPage }, res.routerOptions)
+      .resolves({
+        posts: posts,
+        data: {
+          tag: [testUtils.DataGenerator.forKnex.createTag()],
+        },
+        meta: {
+          pagination: {
+            pages: 5,
+          },
+        },
+      });
 
-        fetchDataStub.withArgs({page: 1, slug: undefined}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
-
-        controllers.collection(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.calledOnce(ownsStub);
-            done();
-        }).catch(done);
-    });
-
-    it('should verify if post belongs to collection', function (done) {
-        posts = [
-            testUtils.DataGenerator.forKnex.createPost({url: '/a/'}),
-            testUtils.DataGenerator.forKnex.createPost({url: '/b/'}),
-            testUtils.DataGenerator.forKnex.createPost({url: '/c/'}),
-            testUtils.DataGenerator.forKnex.createPost({url: '/d/'})
-        ];
-
-        res.routerOptions.filter = 'featured:true';
-
-        ownsStub.reset();
-        ownsStub.withArgs('identifier', posts[0].id).returns(false);
-        ownsStub.withArgs('identifier', posts[1].id).returns(true);
-        ownsStub.withArgs('identifier', posts[2].id).returns(false);
-        ownsStub.withArgs('identifier', posts[3].id).returns(false);
-
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                data: {
-                    tag: [testUtils.DataGenerator.forKnex.createTag()]
-                },
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
-
-        controllers.collection(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.callCount(ownsStub, 4);
-            done();
-        }).catch(done);
-    });
+    await controllers.collection(req, res, next);
+    sinon.assert.calledOnce(themeEngine.getActive);
+    sinon.assert.notCalled(security.string.safe);
+    sinon.assert.calledOnce(fetchDataStub);
+    sinon.assert.callCount(ownsResourceStub, 4);
+    sinon.assert.notCalled(next);
+  });
 });

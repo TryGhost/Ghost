@@ -1,22 +1,25 @@
 import * as React from 'react';
 
-import {cn} from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
-    ({className, type, ...props}, ref) => {
-        return (
-            <input
-                ref={ref}
-                className={cn(
-                    'flex h-9 w-full rounded-md border border-border-default bg-surface-elevated px-3 py-1 text-base transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25 disabled:cursor-not-allowed disabled:opacity-50',
-                    className
-                )}
-                type={type}
-                {...props}
-            />
-        );
-    }
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        ref={ref}
+        className={cn(
+          inputSurface('self'),
+          inputSurfaceClasses.disabledFieldSelf,
+          'flex h-(--control-height) w-full px-3 py-1 text-control file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground',
+          className,
+        )}
+        type={type}
+        {...props}
+      />
+    );
+  },
 );
 Input.displayName = 'Input';
 
-export {Input};
+export { Input };

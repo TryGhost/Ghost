@@ -1,0 +1,57 @@
+{
+  "name": "@tryghost/admin-toolbar",
+  "version": "0.1.11",
+  "description": "Frontend staff toolbar for Ghost sites",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch --mode development",
+    "lint": "eslint src test --cache",
+    "test": "pnpm test:unit",
+    "test:unit": "pnpm run build && vitest run",
+    "preship": "pnpm lint",
+    "ship": "node ../../scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "preact": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
+    "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "globals": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin-toolbar",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
+    "tags": [
+      "public-app"
+    ]
+  }
+}

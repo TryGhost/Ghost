@@ -38,7 +38,7 @@ fi
 if [ ! -z "$third_line" ]; then
     if [[ "$third_line" =~ ^(refs|ref:) ]]; then
         echo -e "${red}Error: Third line should not start with 'refs' or 'ref:'${no_color}" >&2
-        echo -e "Use 'ref <issue link>', 'fixes <issue link>', or 'closes <issue link>' instead" >&2
+        echo -e "Use a supported keyword like 'ref', 'close', 'fixes', 'related to', or 'contributes to' followed by an issue link (or 'no ref')" >&2
         echo -e "${yellow}Press Enter to edit the message...${no_color}" >&2
         read < /dev/tty # Wait for Enter key press from the terminal
 
@@ -67,8 +67,9 @@ if [ ! -z "$third_line" ]; then
         # If fixed, the script will continue to the next checks
     fi
 
-    if ! [[ "$third_line" =~ ^(ref|fixes|closes)\ .*$ ]]; then
-        echo -e "${yellow}Warning: Third line should start with 'ref', 'fixes', or 'closes' followed by an issue link${no_color}" >&2
+    if ! [[ "$third_line" =~ ^(close|closes|closed|closing|fix|fixes|fixed|fixing|resolve|resolves|resolved|resolving|complete|completes|completed|completing|ref|references|part\ of|related\ to|contributes\ to|towards)\ .*$ ]] \
+       && ! [[ "$third_line" == "no ref" ]]; then
+        echo -e "${yellow}Warning: Third line should start with a supported issue-link keyword (for example: 'ref', 'close', 'fixes', 'related to', or 'contributes to') or be 'no ref'${no_color}" >&2
     fi
 fi
 
@@ -78,13 +79,18 @@ if [ -z "$body" ]; then
     echo -e "The body should explain: why this, why now, why not something else?"
 fi
 
-# Check for emoji in user-facing changes
-if [[ "$subject" =~ ^[^[:space:]]*[[:space:]] ]]; then
-    first_word="${subject%% *}"
-    if [[ ! "$first_word" =~ ^[[:punct:]] ]]; then
-        echo -e "${yellow}Warning: User-facing changes should start with an emoji${no_color}"
-        echo -e "Common emojis: ✨ (Feature), 🎨 (Improvement), 🐛 (Bug Fix), 🌐 (i18n), 💡 (User-facing)"
-    fi
+# Give concise release-note guidance. Whether a change is user-facing requires
+# human judgment, so these notices are informative rather than enforcement.
+first_word="${subject%% *}"
+contributor_emojis="✨ 🎨 🐛 🌐 💡"
+
+if [[ "$first_word" =~ ^(✨|🎨|🐛|🌐|💡|🔒)$ ]]; then
+    echo -e "${yellow}Notice: Keep the emoji only for a significant user-facing PR title or squash commit.${no_color}"
+elif [[ -n "$(printf '%s' "$first_word" | LC_ALL=C tr -d '\000-\177')" ]]; then
+    echo -e "${yellow}Warning: Unsupported leading emoji. Use one of: ${contributor_emojis}${no_color}"
+    echo -e "Emoji selection only matters for user-facing PR titles and squash commits."
+else
+    echo -e "${yellow}Notice: If this is a significant user-facing PR title or squash commit, add one of: ${contributor_emojis}${no_color}"
 fi
 
 # Check for past tense verbs in subject

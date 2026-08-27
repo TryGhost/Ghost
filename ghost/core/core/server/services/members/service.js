@@ -4,197 +4,246 @@ const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./members-config-provider');
-const makeMembersCSVImporter = require('./importer');
+const { makeImporter, makeExporter } = require('./import-export');
+const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
-const urlUtils = require('../../../shared/url-utils');
-const labsService = require('../../../shared/labs');
+const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
-const {GhostMailer} = require('../mail');
+const { GhostMailer } = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
+const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
-const {verificationWebhookService} = require('../verification/verification-webhook-service');
+const { verificationWebhookService } = require('../verification/verification-webhook-service');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
 const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
 
 const messages = {
-    noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
-    sslRequiredForStripe: 'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
-    remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.'
+  noLiveKeysInDevelopment:
+    'Cannot use live stripe keys in development. Please restart in production mode.',
+  sslRequiredForStripe:
+    'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
+  remoteWebhooksInDevelopment:
+    'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
 const ghostMailer = new GhostMailer();
 
 const membersConfig = new MembersConfigProvider({
-    settingsHelpers,
-    settingsCache,
-    urlUtils
+  settingsHelpers,
+  settingsCache,
+  urlUtils,
 });
 
 const membersStats = new MembersStats({
-    db: db,
-    settingsCache: settingsCache,
-    isSQLite: DatabaseInfo.isSQLite(db.knex)
+  db: db,
+  settingsCache: settingsCache,
+  isSQLite: DatabaseInfo.isSQLite(db.knex),
 });
 
 let membersApi;
 let verificationTrigger;
 
-const initMembersCSVImporter = ({stripeAPIService}) => {
-    return makeMembersCSVImporter({
-        storagePath: config.getContentPath('data'),
-        getTimezone: () => settingsCache.get('timezone'),
-        getMembersRepository: async () => {
-            const api = await module.exports.api;
-            return api.members;
+const buildImporterDeps = ({ stripeAPIService }) => {
+  // Required here, not statically: boot builds the custom fields services before this
+  // one (the exporter below relies on the same).
+  const customFields = require('../members-custom-fields');
+  return {
+    getTimezone: () => settingsCache.get('timezone'),
+    // A getter rather than a value because the threshold is an operator
+    // setting that can change between requests
+    getInlineThreshold: () =>
+      resolveInlineThreshold(config.get('members:importer:inlineThreshold')),
+    getMembersRepository: async () => {
+      const api = await module.exports.api;
+      return api.members;
+    },
+    getDefaultTier: () => {
+      return tiersService.api.readDefaultTier();
+    },
+    getTierByName: async (name) => {
+      const tiers = await tiersService.api.browse({
+        filter: {
+          name,
         },
-        getDefaultTier: () => {
-            return tiersService.api.readDefaultTier();
-        },
-        getTierByName: async (name) => {
-            const tiers = await tiersService.api.browse({
-                filter: {
-                    name
-                }
-            });
+      });
 
-            if (tiers.data.length > 0) {
-                // It is possible that there are multiple tiers with the same name so return the last one in the array -
-                // `tiersService.api.browse` returns all tiers, but without any ordering applied, so we assume that
-                // the last one in the array is the most recently created
-                return tiers.data.pop();
-            }
+      if (tiers.data.length > 0) {
+        // It is possible that there are multiple tiers with the same name so return the last one in the array -
+        // `tiersService.api.browse` returns all tiers, but without any ordering applied, so we assume that
+        // the last one in the array is the most recently created
+        return tiers.data.pop();
+      }
 
-            return null;
-        },
-        sendEmail: ghostMailer.send.bind(ghostMailer),
-        isSet: flag => labsService.isSet(flag),
-        addJob: jobsService.addJob.bind(jobsService),
-        knex: db.knex,
-        urlFor: urlUtils.urlFor.bind(urlUtils),
-        context: {
-            importer: true
-        },
-        stripeAPIService,
-        productRepository: membersApi.productRepository
-    });
+      return null;
+    },
+    getGiftService: () => giftService.service,
+    sendEmail: ghostMailer.send.bind(ghostMailer),
+    addJob: jobsService.addJob.bind(jobsService),
+    knex: db.knex,
+    urlFor: urlUtils.urlFor.bind(urlUtils),
+    stripeAPIService,
+    productRepository: membersApi.productRepository,
+    customFields: {
+      definitions: customFields.definitions,
+      values: customFields.values,
+    },
+  };
 };
 
 const initVerificationTrigger = () => {
-    return new VerificationTrigger({
-        getApiTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
-        getAdminTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
-        getImportTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
-        isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
-        isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
-        setVerificationRequired: value => settingsCache.set('email_verification_required', {value}),
-        sendVerificationWebhook: verificationWebhookService.sendVerificationWebhook.bind(verificationWebhookService),
-        membersStats,
-        Settings: models.Settings,
-        eventRepository: membersApi.events
-    });
+  return new VerificationTrigger({
+    getApiTriggerThreshold: () =>
+      _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
+    getAdminTriggerThreshold: () =>
+      _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
+    getImportTriggerThreshold: () =>
+      _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+    isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
+    isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
+    setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),
+    sendVerificationWebhook: verificationWebhookService.sendVerificationWebhook.bind(
+      verificationWebhookService,
+    ),
+    membersStats,
+    Settings: models.Settings,
+    eventRepository: membersApi.events,
+  });
 };
 
 module.exports = {
-    async init() {
-        const stripeService = require('../stripe');
-        const createMembersApiInstance = require('./api');
-        const env = config.get('env');
+  async init() {
+    const stripeService = require('../stripe');
+    const createMembersApiInstance = require('./api');
+    const env = config.get('env');
 
-        // @TODO Move to stripe service
-        if (env !== 'production') {
-            if (stripeService.api.configured && stripeService.api.mode === 'live') {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.noLiveKeysInDevelopment)
-                });
+    // @TODO Move to stripe service
+    if (env !== 'production') {
+      if (stripeService.api.configured && stripeService.api.mode === 'live') {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.noLiveKeysInDevelopment),
+        });
+      }
+    } else {
+      const siteUrl = urlUtils.getSiteUrl();
+      if (!/^https/.test(siteUrl) && stripeService.api.configured) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.sslRequiredForStripe),
+        });
+      }
+    }
+
+    if (!membersApi) {
+      membersApi = createMembersApiInstance(membersConfig);
+
+      membersApi.bus.on('error', function (err) {
+        logging.error(err);
+      });
+    }
+
+    module.exports.requestIntegrityTokenProvider = new RequestIntegrityTokenProvider({
+      themeSecret: settingsCache.get('theme_session_secret'),
+      tokenDuration: 1000 * 60 * 5,
+    });
+
+    module.exports.ssr = MembersSSR({
+      cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
+      cookieKeys: [settingsCache.get('theme_session_secret')],
+      cookieName: 'ghost-members-ssr',
+      cookiePath: urlUtils.getSubdir() || '/',
+      getMembersApi: () => module.exports.api,
+    });
+
+    if (!verificationTrigger) {
+      verificationTrigger = initVerificationTrigger();
+    }
+    module.exports.verificationTrigger = verificationTrigger;
+
+    const importerDeps = buildImporterDeps({ stripeAPIService: stripeService.api });
+    const membersCSVImporter = makeImporter(importerDeps);
+    // The importer takes plain arguments and returns the domain outcome; callers build
+    // the request and shape the response. importCSV decides inline vs deferred by load
+    // (the endpoint); importInline always runs now (the Revue data import). This only
+    // supplies the verification trigger, a members-service internal.
+    module.exports.importCSV = (request) =>
+      membersCSVImporter.importCSV(request, verificationTrigger);
+    module.exports.importInline = (request) =>
+      membersCSVImporter.importInline(request, verificationTrigger);
+
+    // Constructed here rather than required statically: the exporter needs the
+    // custom fields services, which boot builds before this one.
+    const customFields = require('../members-custom-fields');
+    module.exports.export = makeExporter({
+      definitions: customFields.definitions,
+      values: customFields.values,
+    });
+
+    if (!env?.startsWith('testing')) {
+      const membersMigrationJobName = 'members-migrations';
+      if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
+        logging.info(`[Background Job] ${membersMigrationJobName} queued`);
+        jobsService.addOneOffJob({
+          name: membersMigrationJobName,
+          offloaded: false,
+          job: async () => {
+            const startedAt = Date.now();
+            logging.info(`[Background Job] ${membersMigrationJobName} started`);
+            try {
+              const result = await stripeService.migrations.execute();
+              logging.info(
+                `[Background Job] ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`,
+              );
+              return result;
+            } catch (err) {
+              logging.error(
+                err,
+                `[Background Job] ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
+              );
+              throw err;
             }
-        } else {
-            const siteUrl = urlUtils.getSiteUrl();
-            if (!/^https/.test(siteUrl) && stripeService.api.configured) {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.sslRequiredForStripe)
-                });
-            }
-        }
-
-        if (!membersApi) {
-            membersApi = createMembersApiInstance(membersConfig);
-
-            membersApi.bus.on('error', function (err) {
-                logging.error(err);
-            });
-        }
-
-        module.exports.ssr = MembersSSR({
-            cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
-            cookieKeys: [settingsCache.get('theme_session_secret')],
-            cookieName: 'ghost-members-ssr',
-            getMembersApi: () => module.exports.api
+          },
         });
 
-        if (!verificationTrigger) {
-            verificationTrigger = initVerificationTrigger();
-        }
-        module.exports.verificationTrigger = verificationTrigger;
+        await jobsService.awaitOneOffCompletion(membersMigrationJobName);
+      } else {
+        logging.info(
+          `[Background Job] ${membersMigrationJobName} skipped because it has already run`,
+        );
+      }
+    }
 
-        const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});
-        module.exports.processImport = async (options) => {
-            return await membersCSVImporter.process({...options, verificationTrigger});
-        };
+    // Schedule daily cron job to clean expired comp subs
+    memberJobs.scheduleExpiredCompCleanupJob();
+  },
+  contentGating: require('./content-gating'),
 
-        if (!env?.startsWith('testing')) {
-            const membersMigrationJobName = 'members-migrations';
-            if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
-                jobsService.addOneOffJob({
-                    name: membersMigrationJobName,
-                    offloaded: false,
-                    job: stripeService.migrations.execute.bind(stripeService.migrations)
-                });
+  // Create an "all active paid tiers" member shim for rendering gated content
+  // without a logged-in member (post previews, gift-links reader path).
+  createPaidMemberShim: require('./create-paid-member-shim').createPaidMemberShim,
 
-                await jobsService.awaitOneOffCompletion(membersMigrationJobName);
-            }
-        }
+  config: membersConfig,
 
-        // Schedule daily cron job to clean expired comp subs
-        memberJobs.scheduleExpiredCompCleanupJob();
+  get api() {
+    return membersApi;
+  },
 
-        // Schedule daily cron job to clean expired tokens
-        memberJobs.scheduleTokenCleanupJob();
+  ssr: null,
+  verificationTrigger: null,
 
-        // Schedule daily cron jobs to clean up consumed/expired gifts and to
-        // send gift reminder emails.
-        if (labsService.isSet('giftSubscriptions')) {
-            memberJobs.scheduleGiftCleanupJob();
-            memberJobs.scheduleGiftReminderJob();
-        }
-    },
-    contentGating: require('./content-gating'),
+  requestIntegrityTokenProvider: null,
 
-    config: membersConfig,
+  stripeConnect: require('./stripe-connect'),
 
-    get api() {
-        return membersApi;
-    },
+  importCSV: null,
+  importInline: null,
 
-    ssr: null,
-    verificationTrigger: null,
-
-    requestIntegrityTokenProvider: new RequestIntegrityTokenProvider({
-        themeSecret: settingsCache.get('theme_session_secret'),
-        tokenDuration: 1000 * 60 * 5
-    }),
-
-    stripeConnect: require('./stripe-connect'),
-
-    processImport: null,
-
-    stats: membersStats,
-    export: require('./exporter/query')
+  stats: membersStats,
+  export: null,
 };
 
 module.exports.middleware = require('./middleware');

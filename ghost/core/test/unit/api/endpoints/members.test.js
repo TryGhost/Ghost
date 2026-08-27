@@ -1,84 +1,79 @@
 const sinon = require('sinon');
-const rewire = require('rewire');
+const assert = require('node:assert/strict');
+const membersController = require('../../../../core/server/api/endpoints/members');
+const membersService = require('../../../../core/server/services/members');
 
 describe('Members controller', function () {
-    let models, membersController, mockMembersService, mockSettingsCache, mockMoment;
+  let importCSVStub;
+  let originalImportCSV;
 
-    before(function () {
-        models = require('../../../../core/server/models');
-        models.init();
+  beforeEach(function () {
+    originalImportCSV = membersService.importCSV;
+    importCSVStub = sinon.stub().resolves({ deferred: true, originalImportSize: 2 });
+    membersService.importCSV = importCSVStub;
+  });
+
+  afterEach(function () {
+    membersService.importCSV = originalImportCSV;
+    sinon.restore();
+  });
+
+  describe('importCSV', function () {
+    // The endpoint adapts the request frame into the import service's arguments and
+    // shapes the outcome into the response envelope. The recipient is the request
+    // user; the service resolves the owner fallback, so the endpoint only reads the
+    // user's email (or null).
+    it('adapts the request frame into the import service arguments', async function () {
+      const frame = {
+        user: { get: sinon.stub().returns('user@example.com') },
+        file: { path: 'test.csv' },
+        data: { mapping: { email: 'email' }, labels: [{ name: 'x' }] },
+      };
+
+      await membersController.importCSV.query(frame);
+
+      sinon.assert.calledOnceWithExactly(importCSVStub, {
+        filePath: 'test.csv',
+        mapping: { email: 'email' },
+        extraLabels: [{ name: 'x' }],
+        requestUserEmail: 'user@example.com',
+      });
     });
 
-    beforeEach(function () {
-        // Use rewire to load the members controller and replace its dependencies
-        membersController = rewire('../../../../core/server/api/endpoints/members');
+    it('passes a null recipient when the request has no user', async function () {
+      await membersController.importCSV.query({ user: null, file: { path: 'test.csv' }, data: {} });
 
-        // Create mocks
-        mockMembersService = {
-            processImport: sinon.stub().resolves({
-                meta: {stats: {imported: 1}}
-            })
-        };
-
-        mockSettingsCache = {
-            get: sinon.stub().withArgs('timezone').returns('UTC')
-        };
-
-        mockMoment = sinon.stub().returns({
-            tz: sinon.stub().returnsThis(),
-            format: sinon.stub().returns('2023-01-01 12:00')
-        });
-
-        // Replace the dependencies in the rewired module
-        membersController.__set__('membersService', mockMembersService);
-        membersController.__set__('settingsCache', mockSettingsCache);
-        membersController.__set__('moment', mockMoment);
+      const args = importCSVStub.getCall(0).args[0];
+      assert.equal(args.requestUserEmail, null);
+      assert.deepEqual(args.extraLabels, []);
     });
 
-    afterEach(function () {
-        sinon.restore();
+    it('shapes an inline outcome into stats and label', async function () {
+      importCSVStub.resolves({
+        deferred: false,
+        originalImportSize: 2,
+        result: { imported: 2, errors: [], importLabel: { name: 'Import', slug: 'import' } },
+      });
+
+      const response = await membersController.importCSV.query({
+        file: { path: 't.csv' },
+        data: {},
+      });
+
+      assert.equal(response.meta.originalImportSize, 2);
+      assert.deepEqual(response.meta.stats, { imported: 2, invalid: [] });
+      assert.deepEqual(response.meta.import_label, { name: 'Import', slug: 'import' });
     });
 
-    describe('importCSV', function () {
-        it('uses frame.user.email when frame.user is present', async function () {
-            const mockUser = {
-                get: sinon.stub().returns('user@example.com')
-            };
-            const frame = {
-                user: mockUser,
-                file: {path: 'test.csv'},
-                data: {mapping: {}, labels: []}
-            };
+    it('shapes a deferred outcome into just the accepted size', async function () {
+      importCSVStub.resolves({ deferred: true, originalImportSize: 5000 });
 
-            await membersController.importCSV.query(frame);
+      const response = await membersController.importCSV.query({
+        file: { path: 't.csv' },
+        data: {},
+      });
 
-            // Verify the user's email was used
-            sinon.assert.calledWith(mockUser.get, 'email');
-            sinon.assert.calledWith(mockMembersService.processImport, sinon.match({
-                user: {email: 'user@example.com'}
-            }));
-        });
-
-        it('uses owner email fallback when frame.user is missing', async function () {
-            const mockOwnerUser = {
-                get: sinon.stub().returns('owner@example.com')
-            };
-            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwnerUser);
-
-            const frame = {
-                user: null, // No user in frame (integration auth scenario)
-                file: {path: 'test.csv'},
-                data: {mapping: {}, labels: []}
-            };
-
-            await membersController.importCSV.query(frame);
-
-            // Verify the owner fallback path was used
-            sinon.assert.calledOnce(models.User.getOwnerUser);
-            sinon.assert.calledWith(mockOwnerUser.get, 'email');
-            sinon.assert.calledWith(mockMembersService.processImport, sinon.match({
-                user: {email: 'owner@example.com'}
-            }));
-        });
+      assert.deepEqual(response.meta, { originalImportSize: 5000 });
     });
+  });
 });

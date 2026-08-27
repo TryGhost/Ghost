@@ -9,6 +9,7 @@ yarn-error.log*
 
 # Runtime data
 pids
+.ghost-dev
 *.pid
 *.seed
 *.pid.lock
@@ -72,6 +73,8 @@ typings/
 .vscode/*
 !.vscode/launch.json
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
 # OSX
 .DS_Store
@@ -94,6 +97,9 @@ typings/
 /ghost/core/content/media/**/*
 /ghost/core/content/files/**/*
 /ghost/core/content/public/*
+# Boot-generated public assets (admin-auth, .well-known) when tests use the
+# fixtures dir as the content path — same as content/public above (PLA-152).
+/ghost/core/test/utils/fixtures/public/
 /ghost/core/content/adapters/storage/**/*
 /ghost/core/content/adapters/scheduling/**/*
 /ghost/core/content/themes/casper
@@ -125,9 +131,9 @@ test/functional/*.png
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
 /ghost/core/core/frontend/public/private.min.js
+/ghost/core/core/frontend/public/cards.manifest.json
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
-!docker/caddy/Caddyfile
 !docker/dev-gateway/Caddyfile
 
 # Playwright state with cookies it keeps across tests
@@ -137,7 +143,10 @@ Caddyfile
 /test-results
 
 # Admin
-/ghost/admin/dist
+/apps/ember-admin/dist
+
+# Admin Toolbar
+/apps/admin-toolbar/umd
 
 # Comments-UI
 /apps/comments-ui/umd
@@ -166,15 +175,12 @@ Caddyfile
 # Build files
 /apps/*/build
 /ghost/*/build
+/koenig/*/build
+/packages/**/build
 # Typescript build artifacts
 tsconfig.tsbuildinfo
 
 # Admin X
-/apps/admin-x-settings/dist
-/apps/admin-x-settings/dist-ssr
-/apps/admin-x-settings/test-results/
-/apps/admin-x-settings/playwright-report/
-/apps/admin-x-settings/playwright/.cache/
 
 # Tinybird
 .tinyb
@@ -192,6 +198,9 @@ yalc.lock
 # A folder for AI generated files
 # useful for keeping local plans etc
 /ai
+
+# Amp generates thread-specific portal state at runtime
+/.amp/portals/
 
 # direnv environment loader files
 .envrc
@@ -211,3 +220,5 @@ yalc.lock
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+.nx/migrate-runs

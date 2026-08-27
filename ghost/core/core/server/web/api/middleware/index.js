@@ -1,5 +1,7 @@
+const { corsCaching, corsMiddleware } = require('./cors');
+
 module.exports = {
-    cors: require('./cors'),
-    updateUserLastSeen: require('./update-user-last-seen'),
-    upload: require('./upload')
+  cors: [corsCaching, corsMiddleware],
+  updateUserLastSeen: require('./update-user-last-seen'),
+  upload: require('./upload'),
 };

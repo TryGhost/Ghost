@@ -1,38 +1,41 @@
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
+const adapterManager = require('../adapter-manager').default;
 
 const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
-const CustomRedirectsAPI = require('./custom-redirects-api');
+const { RedirectsService } = require('./redirects-service');
 const validation = require('./validation');
-const {getBackupRedirectsFilePath} = require('./utils');
 
-let customRedirectsAPI;
+let redirectsService;
 let redirectManager;
 
+const makeRedirectManager = () =>
+  new DynamicRedirectManager({
+    permanentMaxAge: config.get('caching:customRedirects:maxAge'),
+    getSubdirectoryURL: (pathname) => urlUtils.urlJoin(urlUtils.getSubdir(), pathname),
+  });
+
 module.exports = {
-    init() {
-        redirectManager = new DynamicRedirectManager({
-            permanentMaxAge: config.get('caching:customRedirects:maxAge'),
-            getSubdirectoryURL: (pathname) => {
-                return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
-            }
-        });
+  init() {
+    redirectManager = makeRedirectManager();
 
-        customRedirectsAPI = new CustomRedirectsAPI({
-            basePath: config.getContentPath('data'),
-            redirectManager,
-            getBackupFilePath: getBackupRedirectsFilePath,
-            validate: validation.validate.bind(validation)
-        });
+    const store = adapterManager.getAdapter('redirects');
 
-        return customRedirectsAPI.init();
-    },
+    redirectsService = new RedirectsService({
+      store,
+      redirectManager,
+      validate: validation.validate.bind(validation),
+      createDryRunManager: makeRedirectManager,
+    });
 
-    get api() {
-        return customRedirectsAPI;
-    },
+    return redirectsService.init();
+  },
 
-    get middleware() {
-        return redirectManager.handleRequest;
-    }
+  get api() {
+    return redirectsService;
+  },
+
+  get middleware() {
+    return redirectManager.handleRequest;
+  },
 };

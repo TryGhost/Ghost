@@ -1,342 +1,403 @@
 import assert from 'assert/strict';
-import {ActivityPubService} from '../../../../../core/server/services/activitypub/activity-pub-service';
-import knex, {Knex} from 'knex';
-import type {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/identity-token-service';
+import { ActivityPubService } from '../../../../../core/server/services/activitypub/activity-pub-service';
+import knex, { Knex } from 'knex';
+import type { IdentityTokenService } from '../../../../../core/server/services/identity-tokens/identity-token-service';
 import nock from 'nock';
+import { vi, type Mock } from 'vitest';
 
 async function getKnexInstance() {
-    const knexInstance = knex({
-        client: 'sqlite',
-        connection: {
-            filename: ':memory:'
-        },
-        useNullAsDefault: true
-    });
+  const knexInstance = knex({
+    client: 'better-sqlite3',
+    connection: {
+      filename: ':memory:',
+    },
+    useNullAsDefault: true,
+  });
 
-    await knexInstance.schema.createTable('users', (table) => {
-        table.string('id').primary();
-        table.string('email');
-    });
+  await knexInstance.schema.createTable('users', (table) => {
+    table.string('id').primary();
+    table.string('email');
+  });
 
-    await knexInstance.schema.createTable('roles', (table) => {
-        table.string('id').primary();
-        table.string('name');
-    });
+  await knexInstance.schema.createTable('roles', (table) => {
+    table.string('id').primary();
+    table.string('name');
+  });
 
-    await knexInstance.schema.createTable('roles_users', (table) => {
-        table.string('id').primary();
-        table.string('user_id').references('users.id');
-        table.string('role_id').references('roles.id');
-    });
+  await knexInstance.schema.createTable('roles_users', (table) => {
+    table.string('id').primary();
+    table.string('user_id').references('users.id');
+    table.string('role_id').references('roles.id');
+  });
 
-    await knexInstance.schema.createTable('integrations', (table) => {
-        table.string('id').primary();
-        table.string('slug');
-        table.string('type');
-    });
+  await knexInstance.schema.createTable('integrations', (table) => {
+    table.string('id').primary();
+    table.string('slug');
+    table.string('type');
+  });
 
-    await knexInstance.schema.createTable('webhooks', (table) => {
-        table.string('id').primary();
-        table.string('event');
-        table.string('target_url');
-        table.string('api_version');
-        table.string('name');
-        table.string('secret');
-        table.string('integration_id');
-        table.datetime('created_at');
-    });
+  await knexInstance.schema.createTable('webhooks', (table) => {
+    table.string('id').primary();
+    table.string('event');
+    table.string('target_url');
+    table.string('api_version');
+    table.string('name');
+    table.string('secret');
+    table.string('integration_id');
+    table.datetime('created_at');
+  });
 
-    await knexInstance.insert({
-        id: 'owner-role-id',
-        name: 'Owner'
-    }).into('roles');
+  await knexInstance
+    .insert({
+      id: 'owner-role-id',
+      name: 'Owner',
+    })
+    .into('roles');
 
-    return knexInstance;
+  return knexInstance;
 }
 
 async function addOwnerUser(knexInstance: Knex) {
-    await knexInstance.insert({
-        id: 'non-standard-id',
-        email: 'owner@user.com'
-    }).into('users');
+  await knexInstance
+    .insert({
+      id: 'non-standard-id',
+      email: 'owner@user.com',
+    })
+    .into('users');
 
-    await knexInstance.insert({
-        id: 'roles-users-id',
-        user_id: 'non-standard-id',
-        role_id: 'owner-role-id'
-    }).into('roles_users');
+  await knexInstance
+    .insert({
+      id: 'roles-users-id',
+      user_id: 'non-standard-id',
+      role_id: 'owner-role-id',
+    })
+    .into('roles_users');
 }
 async function addActivityPubIntegration(knexInstance: Knex) {
-    await knexInstance.insert({
-        id: 'integration_id',
-        slug: 'ghost-activitypub',
-        type: 'internal'
-    }).into('integrations');
+  await knexInstance
+    .insert({
+      id: 'integration_id',
+      slug: 'ghost-activitypub',
+      type: 'internal',
+    })
+    .into('integrations');
 }
 
+// Matches the service's Logger interface method signature so the mock logger is
+// assignable to it, while staying a vi.fn() Mock so tests can read .mock.calls.
+type LogFn = (message: string) => void;
+
 describe('ActivityPubService', function () {
-    it('Can initialise the webhooks', async function () {
-        const knexInstance = await getKnexInstance();
-        await addOwnerUser(knexInstance);
-        await addActivityPubIntegration(knexInstance);
+  let logging: {
+    info: Mock<LogFn>;
+    warn: Mock<LogFn>;
+    error: Mock<LogFn>;
+  };
 
-        const siteUrl = new URL('http://fake-site-url');
-        const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200, {
-                webhook_secret: 'webhook_secret_baby!!'
-            });
+  beforeEach(function () {
+    // Inject a silent logger so the service's operational info/warn logs are
+    // swallowed; error is a spy so tests can assert expected errors are logged.
+    logging = {
+      info: vi.fn<LogFn>(),
+      warn: vi.fn<LogFn>(),
+      error: vi.fn<LogFn>(),
+    };
+  });
 
-        const logging = console;
-        const identityTokenService = {
-            getTokenForUser(email: string, role: string) {
-                return `token:${email}:${role}`;
-            }
-        };
-        const service = new ActivityPubService(
-            knexInstance,
-            siteUrl,
-            logging,
-            identityTokenService as unknown as IdentityTokenService
-        );
+  afterEach(function () {
+    // Restore any spies (isolate:false shares the module registry per worker).
+    vi.restoreAllMocks();
+  });
 
-        await service.initialiseWebhooks();
+  it('Can initialise the webhooks', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
 
-        assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl)
+      .get('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200, {
+        webhook_secret: 'webhook_secret_baby!!',
+      });
 
-        const webhooks = await knexInstance.select('*').from('webhooks');
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
 
-        const expectedWebhookCount = 4;
-        const expectedWebhookSecret = 'webhook_secret_baby!!';
-        const expectedWebhookIntegrationId = 'integration_id';
+    await service.initialiseWebhooks();
 
-        assert.equal(webhooks.length, expectedWebhookCount);
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
 
-        for (const webhook of webhooks) {
-            assert.equal(webhook.secret, expectedWebhookSecret);
-            assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
-        }
+    const webhooks = await knexInstance.select('*').from('webhooks');
 
-        await knexInstance.destroy();
-    });
+    const expectedWebhookCount = 4;
+    const expectedWebhookSecret = 'webhook_secret_baby!!';
+    const expectedWebhookIntegrationId = 'integration_id';
 
-    it('Will not reinitialise webhooks if they are already good', async function () {
-        const knexInstance = await getKnexInstance();
-        await addOwnerUser(knexInstance);
-        await addActivityPubIntegration(knexInstance);
+    assert.equal(webhooks.length, expectedWebhookCount);
 
-        const siteUrl = new URL('http://fake-site-url');
-        const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200, {
-                webhook_secret: 'webhook_secret_baby!!'
-            });
+    for (const webhook of webhooks) {
+      assert.equal(webhook.secret, expectedWebhookSecret);
+      assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
+    }
 
-        const logging = console;
-        const identityTokenService = {
-            getTokenForUser(email: string, role: string) {
-                return `token:${email}:${role}`;
-            }
-        };
-        const service = new ActivityPubService(
-            knexInstance,
-            siteUrl,
-            logging,
-            identityTokenService as unknown as IdentityTokenService
-        );
+    await knexInstance.destroy();
+  });
 
-        await service.initialiseWebhooks();
+  it('Will not reinitialise webhooks if they are already good', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
 
-        assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl)
+      .get('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200, {
+        webhook_secret: 'webhook_secret_baby!!',
+      });
 
-        const webhooks = await knexInstance.select('*').from('webhooks');
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
 
-        const expectedWebhookCount = 4;
-        const expectedWebhookSecret = 'webhook_secret_baby!!';
-        const expectedWebhookIntegrationId = 'integration_id';
+    await service.initialiseWebhooks();
 
-        assert.equal(webhooks.length, expectedWebhookCount);
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
 
-        for (const webhook of webhooks) {
-            assert.equal(webhook.secret, expectedWebhookSecret);
-            assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
-        }
+    const webhooks = await knexInstance.select('*').from('webhooks');
 
-        nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200, {
-                webhook_secret: 'webhook_secret_baby!!'
-            });
+    const expectedWebhookCount = 4;
+    const expectedWebhookSecret = 'webhook_secret_baby!!';
+    const expectedWebhookIntegrationId = 'integration_id';
 
-        await service.initialiseWebhooks();
+    assert.equal(webhooks.length, expectedWebhookCount);
 
-        const webhooksAfterSecondInitialisation = await knexInstance.select('*').from('webhooks');
+    for (const webhook of webhooks) {
+      assert.equal(webhook.secret, expectedWebhookSecret);
+      assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
+    }
 
-        assert.deepEqual(webhooksAfterSecondInitialisation, webhooks, 'Expected webhooks to be unchanged');
+    nock(siteUrl)
+      .get('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200, {
+        webhook_secret: 'webhook_secret_baby!!',
+      });
 
-        await knexInstance.destroy();
-    });
+    await service.initialiseWebhooks();
 
-    it('Can handle a misconfigured webhook', async function () {
-        const knexInstance = await getKnexInstance();
-        await addOwnerUser(knexInstance);
-        await addActivityPubIntegration(knexInstance);
+    const webhooksAfterSecondInitialisation = await knexInstance.select('*').from('webhooks');
 
-        const siteUrl = new URL('http://fake-site-url');
-        const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200, {
-                webhook_secret: 'webhook_secret_baby!!'
-            });
+    assert.deepEqual(
+      webhooksAfterSecondInitialisation,
+      webhooks,
+      'Expected webhooks to be unchanged',
+    );
 
-        const logging = console;
-        const identityTokenService = {
-            getTokenForUser(email: string, role: string) {
-                return `token:${email}:${role}`;
-            }
-        };
-        const service = new ActivityPubService(
-            knexInstance,
-            siteUrl,
-            logging,
-            identityTokenService as unknown as IdentityTokenService
-        );
+    await knexInstance.destroy();
+  });
 
-        await service.initialiseWebhooks();
+  it('Can handle a misconfigured webhook', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
 
-        assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl)
+      .get('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200, {
+        webhook_secret: 'webhook_secret_baby!!',
+      });
 
-        const webhooks = await knexInstance.select('*').from('webhooks');
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
 
-        const expectedWebhookCount = 4;
-        const expectedWebhookSecret = 'webhook_secret_baby!!';
-        const expectedWebhookIntegrationId = 'integration_id';
+    await service.initialiseWebhooks();
 
-        assert.equal(webhooks.length, expectedWebhookCount);
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
 
-        for (const webhook of webhooks) {
-            assert.equal(webhook.secret, expectedWebhookSecret);
-            assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
-        }
+    const webhooks = await knexInstance.select('*').from('webhooks');
 
-        await knexInstance('webhooks').update({event: 'wrong.event'}).limit(1);
+    const expectedWebhookCount = 4;
+    const expectedWebhookSecret = 'webhook_secret_baby!!';
+    const expectedWebhookIntegrationId = 'integration_id';
 
-        nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200, {
-                webhook_secret: 'webhook_secret_baby!!'
-            });
+    assert.equal(webhooks.length, expectedWebhookCount);
 
-        await service.initialiseWebhooks();
+    for (const webhook of webhooks) {
+      assert.equal(webhook.secret, expectedWebhookSecret);
+      assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
+    }
 
-        const webhooksAfterSecondInitialisation = await knexInstance.select('*').from('webhooks');
+    await knexInstance('webhooks').update({ event: 'wrong.event' }).limit(1);
 
-        assert.equal(webhooksAfterSecondInitialisation.length, expectedWebhookCount);
+    nock(siteUrl)
+      .get('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200, {
+        webhook_secret: 'webhook_secret_baby!!',
+      });
 
-        for (const webhook of webhooksAfterSecondInitialisation) {
-            assert.equal(webhook.secret, expectedWebhookSecret);
-            assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
-        }
+    await service.initialiseWebhooks();
 
-        assert.notDeepEqual(webhooksAfterSecondInitialisation, webhooks, 'Expected webhooks to be changed');
+    const webhooksAfterSecondInitialisation = await knexInstance.select('*').from('webhooks');
 
-        await knexInstance.destroy();
-    });
+    assert.equal(webhooksAfterSecondInitialisation.length, expectedWebhookCount);
 
-    it('Can handle missing integration without erroring', async function () {
-        const knexInstance = await getKnexInstance();
-        await addOwnerUser(knexInstance);
+    for (const webhook of webhooksAfterSecondInitialisation) {
+      assert.equal(webhook.secret, expectedWebhookSecret);
+      assert.equal(webhook.integration_id, expectedWebhookIntegrationId);
+    }
 
-        const siteUrl = new URL('http://fake-site-url');
-        const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200, {
-                webhook_secret: 'webhook_secret_baby!!'
-            });
+    assert.notDeepEqual(
+      webhooksAfterSecondInitialisation,
+      webhooks,
+      'Expected webhooks to be changed',
+    );
 
-        const logging = console;
-        const identityTokenService = {
-            getTokenForUser(email: string, role: string) {
-                return `token:${email}:${role}`;
-            }
-        };
-        const service = new ActivityPubService(
-            knexInstance,
-            siteUrl,
-            logging,
-            identityTokenService as unknown as IdentityTokenService
-        );
+    assert(
+      logging.error.mock.calls.some(
+        ([message]) =>
+          typeof message === 'string' && message.startsWith('Could not find webhook for'),
+      ),
+      'Expected an error to be logged when a webhook is misconfigured',
+    );
 
-        await service.initialiseWebhooks();
+    await knexInstance.destroy();
+  });
 
-        assert(!scope.isDone(), 'Expected the ActivityPub site endpoint not to be called');
+  it('Can handle missing integration without erroring', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
 
-        await knexInstance.destroy();
-    });
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl)
+      .get('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200, {
+        webhook_secret: 'webhook_secret_baby!!',
+      });
 
-    it('Can handle errors getting the webhook secret without erroring', async function () {
-        const knexInstance = await getKnexInstance();
-        await addActivityPubIntegration(knexInstance);
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
 
-        const siteUrl = new URL('http://fake-site-url');
+    await service.initialiseWebhooks();
 
-        const logging = console;
-        const identityTokenService = {
-            getTokenForUser(email: string, role: string) {
-                return `token:${email}:${role}`;
-            }
-        };
-        const service = new ActivityPubService(
-            knexInstance,
-            siteUrl,
-            logging,
-            identityTokenService as unknown as IdentityTokenService
-        );
+    assert(!scope.isDone(), 'Expected the ActivityPub site endpoint not to be called');
 
-        await service.initialiseWebhooks();
+    assert(
+      logging.error.mock.calls.some(
+        ([message]) =>
+          typeof message === 'string' && message.startsWith('No ActivityPub integration found'),
+      ),
+      'Expected an error to be logged when the integration is missing',
+    );
 
-        const webhooks = await knexInstance.select('*').from('webhooks');
+    await knexInstance.destroy();
+  });
 
-        assert.equal(webhooks.length, 0, 'There should be no webhooks');
+  it('Can handle errors getting the webhook secret without erroring', async function () {
+    const knexInstance = await getKnexInstance();
+    await addActivityPubIntegration(knexInstance);
 
-        await knexInstance.destroy();
-    });
+    const siteUrl = new URL('http://fake-site-url');
 
-    it('Can disable the site', async function () {
-        const knexInstance = await getKnexInstance();
-        await addOwnerUser(knexInstance);
-        await addActivityPubIntegration(knexInstance);
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
 
-        const siteUrl = new URL('http://fake-site-url');
-        const scope = nock(siteUrl)
-            .delete('/.ghost/activitypub/v1/site/')
-            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
-            .reply(200);
+    await service.initialiseWebhooks();
 
-        const logging = console;
-        const identityTokenService = {
-            getTokenForUser(email: string, role: string) {
-                return `token:${email}:${role}`;
-            }
-        };
+    const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const service = new ActivityPubService(
-            knexInstance,
-            siteUrl,
-            logging,
-            identityTokenService as unknown as IdentityTokenService
-        );
+    assert.equal(webhooks.length, 0, 'There should be no webhooks');
 
-        await service.disableSite();
+    assert(
+      logging.error.mock.calls.some(
+        ([message]) =>
+          typeof message === 'string' &&
+          message.startsWith('Could not get webhook secret for ActivityPub'),
+      ),
+      'Expected an error to be logged when the webhook secret could not be retrieved',
+    );
 
-        assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+    await knexInstance.destroy();
+  });
 
-        await knexInstance.destroy();
-    });
+  it('Can disable the site', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl)
+      .delete('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200);
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.disableSite();
+
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+
+    await knexInstance.destroy();
+  });
 });

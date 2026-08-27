@@ -2,11 +2,19 @@ const clean = require('../utils/clean');
 const url = require('../utils/url');
 
 module.exports = (model, frame) => {
-    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+  const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
-    url.forUser(model.id, jsonModel, frame.options);
+  url.forUser(model.id, jsonModel, frame.options);
 
-    clean.author(jsonModel, frame);
+  // Force-loaded for the URL computation, not requested by the caller (the
+  // author permalink substitutes :slug, so `?fields=url` pulls it in).
+  if (frame.forcedUrlColumns && frame.forcedUrlColumns.routerType === 'authors') {
+    frame.forcedUrlColumns.columns.forEach((column) => {
+      delete jsonModel[column];
+    });
+  }
 
-    return jsonModel;
+  clean.author(jsonModel, frame);
+
+  return jsonModel;
 };

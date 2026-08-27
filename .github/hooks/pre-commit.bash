@@ -3,6 +3,11 @@
 
 [ -n "$CI" ] && exit 0
 
+green='\033[0;32m'
+no_color='\033[0m'
+grey='\033[0;90m'
+red='\033[0;31m'
+
 pnpm lint-staged --relative
 lintStatus=$?
 
@@ -11,13 +16,62 @@ if [ $lintStatus -ne 0 ]; then
     exit 1
 fi
 
-green='\033[0;32m'
-no_color='\033[0m'
-grey='\033[0;90m'
-red='\033[0;31m'
+##
+## 1) Scan staged text files for secrets
+##
+
+scan_staged_secrets() {
+    local file
+    local files_scanned=0
+    local scan_status=0
+    local tmpfile
+
+    if ! pnpm exec secretlint --version >/dev/null 2>&1; then
+        echo -e "${red}secretlint is not available. Run pnpm install from the repository root.${no_color}"
+        return 1
+    fi
+
+    if ! tmpfile=$(mktemp); then
+        echo -e "${red}Could not create temp file for secret scanning${no_color}"
+        return 1
+    fi
+
+    echo -e "Scanning staged files for secrets ${grey}(pre-commit hook)${no_color} "
+
+    while IFS= read -r -d '' file; do
+        if ! git show ":$file" > "$tmpfile"; then
+            scan_status=1
+            continue
+        fi
+
+        if LC_ALL=C grep -Iq . "$tmpfile"; then
+            files_scanned=$((files_scanned + 1))
+
+            if ! pnpm exec secretlint --format=compact --stdinFileName="$file" < "$tmpfile"; then
+                scan_status=1
+            fi
+        fi
+    done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+    if [ $files_scanned -eq 0 ]; then
+        echo "No staged text files to scan, continuing..."
+    fi
+
+    rm -f "$tmpfile"
+
+    return $scan_status
+}
+
+scan_staged_secrets
+secretScanStatus=$?
+
+if [ $secretScanStatus -ne 0 ]; then
+    echo -e "${red}❌ Secret scanning failed${no_color}"
+    exit 1
+fi
 
 ##
-## 1) Check and remove submodules before committing
+## 2) Check and remove submodules before committing
 ##
 
 ROOT_DIR=$(git rev-parse --show-cdup)
@@ -47,70 +101,24 @@ else
 fi
 
 ##
-## 2) Suggest shipping a new version of @tryghost/activitypub when changes are detected
-##    The intent is to ship smaller changes more frequently to production
+## 3) Remind about publishable package changes that lack a changeset
 ##
 
-increment_version() {
-    local package_json_path=$1
-    local version_type=$2
+echo -e "Checking for changesets ${grey}(pre-commit hook)${no_color} "
 
-    local current_version
-    current_version=$(grep '"version":' "$package_json_path" | awk -F '"' '{print $4}')
+# Compare the branch against main (same check CI runs on the PR). Non-blocking on
+# purpose: the changeset is often added in a later commit, so failing here would
+# block work-in-progress commits. CI's "Check app version bump" job is the hard
+# gate — this is only a reminder.
+CHANGESET_BASE=$(git merge-base main HEAD 2>/dev/null || git merge-base origin/main HEAD 2>/dev/null || true)
+# Write the staged index to a tree so the check sees the commit being created,
+# not just what's already in HEAD. change-check.js accepts any tree-ish as head.
+STAGED_TREE=$(git write-tree 2>/dev/null || true)
 
-    IFS='.' read -r major minor patch <<< "$current_version"
-
-    case "$version_type" in
-        major) ((major++)); minor=0; patch=0 ;;
-        minor) ((minor++)); patch=0 ;;
-        patch) ((patch++)) ;;
-        *) echo "Invalid version type"; exit 1 ;;
-    esac
-
-    new_version="$major.$minor.$patch"
-
-    # Update package.json with new version
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
-    else
-        # Linux and others
-        sed -i -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
-    fi
-
-    echo "Updated version to $new_version in $package_json_path"
-}
-
-AP_BUMP_NEEDED=false
-MODIFIED_FILES=$(git diff --cached --name-only)
-
-for FILE in $MODIFIED_FILES; do
-    if [[ "$FILE" == apps/activitypub/* ]]; then
-        AP_BUMP_NEEDED=true
-        break
-    fi
-done
-
-if [[ "$AP_BUMP_NEEDED" == true ]]; then
-    echo -e "\nYou have made changes to @tryghost/activitypub."
-    echo -e "Would you like to ship a new version? (yes)"
-    read -r new_version </dev/tty
-
-    if [[ -z "$new_version" || "$new_version" == "yes" || "$new_version" == "y" ]]; then
-        echo -e "Is that a patch, minor or major? (patch)"
-        read -r version_type </dev/tty
-
-        # Default to patch
-        if [[ -z "$version_type" ]]; then
-            version_type="patch"
-        fi
-
-        if [[ "$version_type" != "patch" && "$version_type" != "minor" && "$version_type" != "major" ]]; then
-            echo -e "${red}Invalid input. Skipping version bump.${no_color}"
-        else
-            echo "Bumping version ($version_type)..."
-            increment_version "apps/activitypub/package.json" "$version_type"
-            git add apps/activitypub/package.json
-        fi
-    fi
+if [ -z "$CHANGESET_BASE" ] || [ -z "$STAGED_TREE" ]; then
+    echo "No merge-base with main, skipping changeset check..."
+elif node scripts/change-check.js "$CHANGESET_BASE" "$STAGED_TREE"; then
+    echo "Changesets look good, continuing..."
+else
+    echo -e "${grey}⚠️  Reminder only (not blocking) — run 'pnpm change' to add a changeset. CI enforces this.${no_color}"
 fi

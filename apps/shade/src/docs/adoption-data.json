@@ -1,0 +1,1583 @@
+{
+  "snapshot": {
+    "generatedAt": "2026-08-05T13:31:39.708Z",
+    "sha": "e56a23045ca33e4b8da7e966201e41e75c11c96a",
+    "branch": "steve-pla-244-collapse-shades-transitional-posts-stats-subpath"
+  },
+  "summary": {
+    "adminReactFilesTotal": 702,
+    "adminReactFilesUsingShade": 377,
+    "shadeAdoptionPct": 53.7,
+    "uniqueShadeComponentsUsed": 306,
+    "adminXDsComponentsStillUsed": 0
+  },
+  "apps": [
+    {
+      "name": "admin",
+      "files": 601,
+      "shadeFiles": 328,
+      "adminXDsFiles": 0,
+      "shadeComponents": [
+        {
+          "name": "Button",
+          "count": 148
+        },
+        {
+          "name": "LucideIcon",
+          "count": 134
+        },
+        {
+          "name": "formatNumber",
+          "count": 73
+        },
+        {
+          "name": "FieldLabel",
+          "count": 54
+        },
+        {
+          "name": "Field",
+          "count": 52
+        },
+        {
+          "name": "cn",
+          "count": 46
+        },
+        {
+          "name": "Input",
+          "count": 44
+        },
+        {
+          "name": "LoadingIndicator",
+          "count": 40
+        },
+        {
+          "name": "FieldDescription",
+          "count": 36
+        },
+        {
+          "name": "SettingsModal",
+          "count": 35
+        },
+        {
+          "name": "FieldError",
+          "count": 33
+        },
+        {
+          "name": "Tabs",
+          "count": 30
+        },
+        {
+          "name": "TabsList",
+          "count": 30
+        },
+        {
+          "name": "Card",
+          "count": 28
+        },
+        {
+          "name": "CardContent",
+          "count": 28
+        },
+        {
+          "name": "Switch",
+          "count": 28
+        },
+        {
+          "name": "Select",
+          "count": 26
+        },
+        {
+          "name": "SelectContent",
+          "count": 26
+        },
+        {
+          "name": "SelectItem",
+          "count": 26
+        },
+        {
+          "name": "SelectTrigger",
+          "count": 26
+        },
+        {
+          "name": "SelectValue",
+          "count": 26
+        },
+        {
+          "name": "TabsTrigger",
+          "count": 26
+        },
+        {
+          "name": "FieldGroup",
+          "count": 26
+        },
+        {
+          "name": "Inline",
+          "count": 25
+        },
+        {
+          "name": "EmptyIndicator",
+          "count": 24
+        },
+        {
+          "name": "Separator",
+          "count": 22
+        },
+        {
+          "name": "DialogFooter",
+          "count": 21
+        },
+        {
+          "name": "Text",
+          "count": 20
+        },
+        {
+          "name": "Dialog",
+          "count": 19
+        },
+        {
+          "name": "DialogContent",
+          "count": 19
+        },
+        {
+          "name": "DialogTitle",
+          "count": 19
+        },
+        {
+          "name": "SettingGroupContent",
+          "count": 19
+        },
+        {
+          "name": "CardHeader",
+          "count": 19
+        },
+        {
+          "name": "CardTitle",
+          "count": 19
+        },
+        {
+          "name": "formatPercentage",
+          "count": 19
+        },
+        {
+          "name": "Stack",
+          "count": 18
+        },
+        {
+          "name": "TabsContent",
+          "count": 18
+        },
+        {
+          "name": "DropdownMenuItem",
+          "count": 18
+        },
+        {
+          "name": "DialogHeader",
+          "count": 17
+        },
+        {
+          "name": "DropdownMenu",
+          "count": 17
+        },
+        {
+          "name": "DropdownMenuContent",
+          "count": 17
+        },
+        {
+          "name": "DropdownMenuTrigger",
+          "count": 17
+        },
+        {
+          "name": "CardDescription",
+          "count": 16
+        },
+        {
+          "name": "Textarea",
+          "count": 14
+        },
+        {
+          "name": "getRangeDates",
+          "count": 14
+        },
+        {
+          "name": "ActionList",
+          "count": 14
+        },
+        {
+          "name": "FieldContent",
+          "count": 14
+        },
+        {
+          "name": "ActionListItem",
+          "count": 13
+        },
+        {
+          "name": "ActionListItemContent",
+          "count": 13
+        },
+        {
+          "name": "TableRow",
+          "count": 12
+        },
+        {
+          "name": "ValueSource",
+          "count": 12
+        },
+        {
+          "name": "InputGroup",
+          "count": 11
+        },
+        {
+          "name": "InputGroupAddon",
+          "count": 11
+        },
+        {
+          "name": "Table",
+          "count": 11
+        },
+        {
+          "name": "TableCell",
+          "count": 11
+        },
+        {
+          "name": "formatQueryDate",
+          "count": 11
+        },
+        {
+          "name": "FieldSet",
+          "count": 11
+        },
+        {
+          "name": "ActionListItemActions",
+          "count": 11
+        },
+        {
+          "name": "Avatar",
+          "count": 11
+        },
+        {
+          "name": "Banner",
+          "count": 10
+        },
+        {
+          "name": "Box",
+          "count": 10
+        },
+        {
+          "name": "ToggleGroup",
+          "count": 10
+        },
+        {
+          "name": "ToggleGroupItem",
+          "count": 10
+        },
+        {
+          "name": "Skeleton",
+          "count": 10
+        },
+        {
+          "name": "InputGroupInput",
+          "count": 10
+        },
+        {
+          "name": "TableBody",
+          "count": 10
+        },
+        {
+          "name": "Badge",
+          "count": 10
+        },
+        {
+          "name": "BarChartLoadingIndicator",
+          "count": 10
+        },
+        {
+          "name": "TableHead",
+          "count": 9
+        },
+        {
+          "name": "TableHeader",
+          "count": 9
+        },
+        {
+          "name": "Popover",
+          "count": 9
+        },
+        {
+          "name": "PopoverContent",
+          "count": 9
+        },
+        {
+          "name": "PopoverTrigger",
+          "count": 9
+        },
+        {
+          "name": "FieldLegend",
+          "count": 9
+        },
+        {
+          "name": "MultiSelectCombobox",
+          "count": 9
+        },
+        {
+          "name": "SkeletonTable",
+          "count": 9
+        },
+        {
+          "name": "PageHeader",
+          "count": 8
+        },
+        {
+          "name": "ImageUpload",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadAction",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadActions",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadDropzone",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadImage",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadPreview",
+          "count": 8
+        },
+        {
+          "name": "Label",
+          "count": 8
+        },
+        {
+          "name": "ButtonProps",
+          "count": 8
+        },
+        {
+          "name": "DialogDescription",
+          "count": 8
+        },
+        {
+          "name": "AlertDialog",
+          "count": 8
+        },
+        {
+          "name": "AlertDialogContent",
+          "count": 8
+        },
+        {
+          "name": "AlertDialogDescription",
+          "count": 8
+        },
+        {
+          "name": "AlertDialogFooter",
+          "count": 8
+        },
+        {
+          "name": "AlertDialogHeader",
+          "count": 8
+        },
+        {
+          "name": "AlertDialogTitle",
+          "count": 8
+        },
+        {
+          "name": "NoValueLabel",
+          "count": 8
+        },
+        {
+          "name": "DataList",
+          "count": 8
+        },
+        {
+          "name": "DataListBar",
+          "count": 8
+        },
+        {
+          "name": "DataListBody",
+          "count": 8
+        },
+        {
+          "name": "DataListItemContent",
+          "count": 8
+        },
+        {
+          "name": "DataListItemValue",
+          "count": 8
+        },
+        {
+          "name": "DataListItemValueAbs",
+          "count": 8
+        },
+        {
+          "name": "DataListItemValuePerc",
+          "count": 8
+        },
+        {
+          "name": "DataListRow",
+          "count": 8
+        },
+        {
+          "name": "Container",
+          "count": 7
+        },
+        {
+          "name": "DirtyConfirmDialog",
+          "count": 7
+        },
+        {
+          "name": "Tooltip",
+          "count": 7
+        },
+        {
+          "name": "TooltipContent",
+          "count": 7
+        },
+        {
+          "name": "TooltipTrigger",
+          "count": 7
+        },
+        {
+          "name": "FilterOption",
+          "count": 7
+        },
+        {
+          "name": "Filter",
+          "count": 7
+        },
+        {
+          "name": "DropdownMenuSeparator",
+          "count": 7
+        },
+        {
+          "name": "CardFooter",
+          "count": 7
+        },
+        {
+          "name": "Sheet",
+          "count": 7
+        },
+        {
+          "name": "SheetContent",
+          "count": 7
+        },
+        {
+          "name": "SheetHeader",
+          "count": 7
+        },
+        {
+          "name": "SheetTitle",
+          "count": 7
+        },
+        {
+          "name": "ChartConfig",
+          "count": 7
+        },
+        {
+          "name": "AlertDialogCancel",
+          "count": 7
+        },
+        {
+          "name": "useDirtyConfirmation",
+          "count": 6
+        },
+        {
+          "name": "SidebarMenu",
+          "count": 6
+        },
+        {
+          "name": "useFocusContext",
+          "count": 6
+        },
+        {
+          "name": "Dropzone",
+          "count": 6
+        },
+        {
+          "name": "NoValueLabelIcon",
+          "count": 6
+        },
+        {
+          "name": "Combobox",
+          "count": 6
+        },
+        {
+          "name": "ComboboxContent",
+          "count": 6
+        },
+        {
+          "name": "ComboboxTrigger",
+          "count": 6
+        },
+        {
+          "name": "ComboboxValue",
+          "count": 6
+        },
+        {
+          "name": "SheetDescription",
+          "count": 6
+        },
+        {
+          "name": "SheetTrigger",
+          "count": 6
+        },
+        {
+          "name": "HTable",
+          "count": 6
+        },
+        {
+          "name": "GhAreaChart",
+          "count": 6
+        },
+        {
+          "name": "formatDisplayDate",
+          "count": 6
+        },
+        {
+          "name": "getScrollParent",
+          "count": 5
+        },
+        {
+          "name": "InputGroupText",
+          "count": 5
+        },
+        {
+          "name": "TooltipProvider",
+          "count": 5
+        },
+        {
+          "name": "ValueSourceParams",
+          "count": 5
+        },
+        {
+          "name": "ValueSourceState",
+          "count": 5
+        },
+        {
+          "name": "InputGroupButton",
+          "count": 5
+        },
+        {
+          "name": "NavbarActions",
+          "count": 5
+        },
+        {
+          "name": "DataListHead",
+          "count": 5
+        },
+        {
+          "name": "DataListHeader",
+          "count": 5
+        },
+        {
+          "name": "ChartContainer",
+          "count": 5
+        },
+        {
+          "name": "Recharts",
+          "count": 5
+        },
+        {
+          "name": "SidebarGroup",
+          "count": 5
+        },
+        {
+          "name": "centsToDollars",
+          "count": 5
+        },
+        {
+          "name": "ListPage",
+          "count": 4
+        },
+        {
+          "name": "Breadcrumb",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbItem",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbLink",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbList",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbPage",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbSeparator",
+          "count": 4
+        },
+        {
+          "name": "FilterFieldConfig",
+          "count": 4
+        },
+        {
+          "name": "useGlobalDirtyState",
+          "count": 4
+        },
+        {
+          "name": "SettingGroup",
+          "count": 4
+        },
+        {
+          "name": "CopyField",
+          "count": 4
+        },
+        {
+          "name": "CopyFieldActions",
+          "count": 4
+        },
+        {
+          "name": "CopyFieldContent",
+          "count": 4
+        },
+        {
+          "name": "CopyFieldCopyButton",
+          "count": 4
+        },
+        {
+          "name": "CopyFieldLabel",
+          "count": 4
+        },
+        {
+          "name": "CopyFieldValue",
+          "count": 4
+        },
+        {
+          "name": "KpiDropdownButton",
+          "count": 4
+        },
+        {
+          "name": "KpiTabTrigger",
+          "count": 4
+        },
+        {
+          "name": "KpiTabValue",
+          "count": 4
+        },
+        {
+          "name": "formatDuration",
+          "count": 4
+        },
+        {
+          "name": "GhAreaChartDataItem",
+          "count": 4
+        },
+        {
+          "name": "ChartTooltip",
+          "count": 4
+        },
+        {
+          "name": "formatTimestamp",
+          "count": 4
+        },
+        {
+          "name": "formatMemberName",
+          "count": 4
+        },
+        {
+          "name": "SidebarGroupContent",
+          "count": 4
+        },
+        {
+          "name": "CustomRendererProps",
+          "count": 3
+        },
+        {
+          "name": "Filters",
+          "count": 3
+        },
+        {
+          "name": "ShareModal",
+          "count": 3
+        },
+        {
+          "name": "SelectGroup",
+          "count": 3
+        },
+        {
+          "name": "SelectLabel",
+          "count": 3
+        },
+        {
+          "name": "PreviewChrome",
+          "count": 3
+        },
+        {
+          "name": "Checkbox",
+          "count": 3
+        },
+        {
+          "name": "ModalPage",
+          "count": 3
+        },
+        {
+          "name": "SortableList",
+          "count": 3
+        },
+        {
+          "name": "RadioGroup",
+          "count": 3
+        },
+        {
+          "name": "RadioGroupItem",
+          "count": 3
+        },
+        {
+          "name": "createFilter",
+          "count": 3
+        },
+        {
+          "name": "KpiCardHeader",
+          "count": 3
+        },
+        {
+          "name": "KpiCardHeaderLabel",
+          "count": 3
+        },
+        {
+          "name": "KpiCardHeaderValue",
+          "count": 3
+        },
+        {
+          "name": "SimplePagination",
+          "count": 3
+        },
+        {
+          "name": "SimplePaginationNavigation",
+          "count": 3
+        },
+        {
+          "name": "SimplePaginationNextButton",
+          "count": 3
+        },
+        {
+          "name": "SimplePaginationPreviousButton",
+          "count": 3
+        },
+        {
+          "name": "useSimplePagination",
+          "count": 3
+        },
+        {
+          "name": "CommandItem",
+          "count": 3
+        },
+        {
+          "name": "formatDisplayDateWithRange",
+          "count": 3
+        },
+        {
+          "name": "DropdownMenuCheckboxItem",
+          "count": 2
+        },
+        {
+          "name": "DetailPage",
+          "count": 2
+        },
+        {
+          "name": "FacebookLogo",
+          "count": 2
+        },
+        {
+          "name": "GoogleLogo",
+          "count": 2
+        },
+        {
+          "name": "XLogo",
+          "count": 2
+        },
+        {
+          "name": "H3",
+          "count": 2
+        },
+        {
+          "name": "ShareModalSocialLink",
+          "count": 2
+        },
+        {
+          "name": "Kbd",
+          "count": 2
+        },
+        {
+          "name": "inputSurface",
+          "count": 2
+        },
+        {
+          "name": "ColorSwatchOption",
+          "count": 2
+        },
+        {
+          "name": "ColorSwatchRow",
+          "count": 2
+        },
+        {
+          "name": "Indicator",
+          "count": 2
+        },
+        {
+          "name": "TabsTriggerCount",
+          "count": 2
+        },
+        {
+          "name": "abbreviateNumber",
+          "count": 2
+        },
+        {
+          "name": "SettingGroupValue",
+          "count": 2
+        },
+        {
+          "name": "SettingGroupValueContent",
+          "count": 2
+        },
+        {
+          "name": "SettingGroupValueTitle",
+          "count": 2
+        },
+        {
+          "name": "GhostOrb",
+          "count": 2
+        },
+        {
+          "name": "getRangeForStartDate",
+          "count": 2
+        },
+        {
+          "name": "Flag",
+          "count": 2
+        },
+        {
+          "name": "Icon",
+          "count": 2
+        },
+        {
+          "name": "ChartTooltipContent",
+          "count": 2
+        },
+        {
+          "name": "AvatarFallback",
+          "count": 2
+        },
+        {
+          "name": "Navbar",
+          "count": 2
+        },
+        {
+          "name": "PageMenu",
+          "count": 2
+        },
+        {
+          "name": "PageMenuItem",
+          "count": 2
+        },
+        {
+          "name": "H1",
+          "count": 2
+        },
+        {
+          "name": "FilterBar",
+          "count": 2
+        },
+        {
+          "name": "ComboboxOptionSource",
+          "count": 2
+        },
+        {
+          "name": "Command",
+          "count": 2
+        },
+        {
+          "name": "CommandEmpty",
+          "count": 2
+        },
+        {
+          "name": "CommandList",
+          "count": 2
+        },
+        {
+          "name": "SidebarMenuButton",
+          "count": 2
+        },
+        {
+          "name": "SidebarMenuItem",
+          "count": 2
+        },
+        {
+          "name": "useSidebar",
+          "count": 2
+        },
+        {
+          "name": "SidebarMenuBadge",
+          "count": 2
+        },
+        {
+          "name": "ShadeApp",
+          "count": 1
+        },
+        {
+          "name": "Accordion",
+          "count": 1
+        },
+        {
+          "name": "AccordionContent",
+          "count": 1
+        },
+        {
+          "name": "AccordionItem",
+          "count": 1
+        },
+        {
+          "name": "AccordionTrigger",
+          "count": 1
+        },
+        {
+          "name": "FilterDatePicker",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupActions",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupDescription",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupDetails",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupHeader",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupTitle",
+          "count": 1
+        },
+        {
+          "name": "FetchKoenigLexical",
+          "count": 1
+        },
+        {
+          "name": "StickyFooter",
+          "count": 1
+        },
+        {
+          "name": "ColorPicker",
+          "count": 1
+        },
+        {
+          "name": "ColorPickerTrigger",
+          "count": 1
+        },
+        {
+          "name": "TextElement",
+          "count": 1
+        },
+        {
+          "name": "TextLeading",
+          "count": 1
+        },
+        {
+          "name": "TextSize",
+          "count": 1
+        },
+        {
+          "name": "SettingsModalSize",
+          "count": 1
+        },
+        {
+          "name": "Grid",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuLabel",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuRadioGroup",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuRadioItem",
+          "count": 1
+        },
+        {
+          "name": "GhostLogo",
+          "count": 1
+        },
+        {
+          "name": "DragIndicator",
+          "count": 1
+        },
+        {
+          "name": "SortableItemContainerProps",
+          "count": 1
+        },
+        {
+          "name": "stringToHslColor",
+          "count": 1
+        },
+        {
+          "name": "getMemberInitials",
+          "count": 1
+        },
+        {
+          "name": "AlertDialogAction",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuGroup",
+          "count": 1
+        },
+        {
+          "name": "formatDisplayTime",
+          "count": 1
+        },
+        {
+          "name": "FilterFieldGroup",
+          "count": 1
+        },
+        {
+          "name": "CommandGroup",
+          "count": 1
+        },
+        {
+          "name": "FooterRenderProps",
+          "count": 1
+        },
+        {
+          "name": "RenderItemProps",
+          "count": 1
+        },
+        {
+          "name": "InputGroupTextarea",
+          "count": 1
+        },
+        {
+          "name": "CommandCheck",
+          "count": 1
+        },
+        {
+          "name": "SidebarInset",
+          "count": 1
+        },
+        {
+          "name": "SidebarProvider",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuSub",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuSubContent",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuSubTrigger",
+          "count": 1
+        },
+        {
+          "name": "AvatarImage",
+          "count": 1
+        },
+        {
+          "name": "SidebarTrigger",
+          "count": 1
+        },
+        {
+          "name": "Sidebar",
+          "count": 1
+        },
+        {
+          "name": "SidebarHeader",
+          "count": 1
+        },
+        {
+          "name": "SidebarFooter",
+          "count": 1
+        },
+        {
+          "name": "SidebarContent",
+          "count": 1
+        },
+        {
+          "name": "badgeVariants",
+          "count": 1
+        },
+        {
+          "name": "ContextMenu",
+          "count": 1
+        },
+        {
+          "name": "ContextMenuContent",
+          "count": 1
+        },
+        {
+          "name": "ContextMenuItem",
+          "count": 1
+        },
+        {
+          "name": "ContextMenuSeparator",
+          "count": 1
+        },
+        {
+          "name": "ContextMenuTrigger",
+          "count": 1
+        },
+        {
+          "name": "HoverCard",
+          "count": 1
+        },
+        {
+          "name": "HoverCardContent",
+          "count": 1
+        },
+        {
+          "name": "HoverCardTrigger",
+          "count": 1
+        },
+        {
+          "name": "DropdownMenuShortcut",
+          "count": 1
+        },
+        {
+          "name": "getYRange",
+          "count": 1
+        },
+        {
+          "name": "EmptyCard",
+          "count": 1
+        },
+        {
+          "name": "calculateYAxisWidth",
+          "count": 1
+        },
+        {
+          "name": "SimplePaginationPages",
+          "count": 1
+        },
+        {
+          "name": "NavbarNavigation",
+          "count": 1
+        },
+        {
+          "name": "TableFooter",
+          "count": 1
+        },
+        {
+          "name": "TableHeadButton",
+          "count": 1
+        }
+      ],
+      "adminXDsComponents": []
+    },
+    {
+      "name": "activitypub",
+      "files": 101,
+      "shadeFiles": 49,
+      "adminXDsFiles": 0,
+      "shadeComponents": [
+        {
+          "name": "LucideIcon",
+          "count": 39
+        },
+        {
+          "name": "Button",
+          "count": 38
+        },
+        {
+          "name": "Skeleton",
+          "count": 17
+        },
+        {
+          "name": "LoadingIndicator",
+          "count": 17
+        },
+        {
+          "name": "H4",
+          "count": 10
+        },
+        {
+          "name": "Dialog",
+          "count": 7
+        },
+        {
+          "name": "DialogContent",
+          "count": 7
+        },
+        {
+          "name": "Separator",
+          "count": 7
+        },
+        {
+          "name": "NoValueLabel",
+          "count": 6
+        },
+        {
+          "name": "NoValueLabelIcon",
+          "count": 6
+        },
+        {
+          "name": "H2",
+          "count": 6
+        },
+        {
+          "name": "DialogHeader",
+          "count": 5
+        },
+        {
+          "name": "DialogTitle",
+          "count": 5
+        },
+        {
+          "name": "DialogTrigger",
+          "count": 5
+        },
+        {
+          "name": "Input",
+          "count": 5
+        },
+        {
+          "name": "AlertDialog",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogCancel",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogContent",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogDescription",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogFooter",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogHeader",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogTitle",
+          "count": 4
+        },
+        {
+          "name": "Popover",
+          "count": 4
+        },
+        {
+          "name": "PopoverContent",
+          "count": 4
+        },
+        {
+          "name": "PopoverTrigger",
+          "count": 4
+        },
+        {
+          "name": "AlertDialogAction",
+          "count": 3
+        },
+        {
+          "name": "buttonVariants",
+          "count": 3
+        },
+        {
+          "name": "cn",
+          "count": 3
+        },
+        {
+          "name": "H3",
+          "count": 3
+        },
+        {
+          "name": "formatNumber",
+          "count": 3
+        },
+        {
+          "name": "Avatar",
+          "count": 3
+        },
+        {
+          "name": "AvatarFallback",
+          "count": 3
+        },
+        {
+          "name": "AvatarImage",
+          "count": 3
+        },
+        {
+          "name": "AlertDialogTrigger",
+          "count": 2
+        },
+        {
+          "name": "Badge",
+          "count": 2
+        },
+        {
+          "name": "Tabs",
+          "count": 2
+        },
+        {
+          "name": "TabsContent",
+          "count": 2
+        },
+        {
+          "name": "TabsList",
+          "count": 2
+        },
+        {
+          "name": "TabsTrigger",
+          "count": 2
+        },
+        {
+          "name": "abbreviateNumber",
+          "count": 2
+        },
+        {
+          "name": "PopoverClose",
+          "count": 2
+        },
+        {
+          "name": "Tooltip",
+          "count": 2
+        },
+        {
+          "name": "TooltipContent",
+          "count": 2
+        },
+        {
+          "name": "TooltipProvider",
+          "count": 2
+        },
+        {
+          "name": "TooltipTrigger",
+          "count": 2
+        },
+        {
+          "name": "DialogClose",
+          "count": 2
+        },
+        {
+          "name": "DialogFooter",
+          "count": 2
+        },
+        {
+          "name": "Field",
+          "count": 2
+        },
+        {
+          "name": "FieldError",
+          "count": 2
+        },
+        {
+          "name": "FieldLabel",
+          "count": 2
+        },
+        {
+          "name": "DialogDescription",
+          "count": 2
+        },
+        {
+          "name": "H1",
+          "count": 2
+        },
+        {
+          "name": "ShadeApp",
+          "count": 1
+        },
+        {
+          "name": "TabsTriggerCount",
+          "count": 1
+        },
+        {
+          "name": "ToggleGroup",
+          "count": 1
+        },
+        {
+          "name": "ToggleGroupItem",
+          "count": 1
+        },
+        {
+          "name": "Form",
+          "count": 1
+        },
+        {
+          "name": "FormControl",
+          "count": 1
+        },
+        {
+          "name": "FormDescription",
+          "count": 1
+        },
+        {
+          "name": "FormField",
+          "count": 1
+        },
+        {
+          "name": "FormItem",
+          "count": 1
+        },
+        {
+          "name": "FormLabel",
+          "count": 1
+        },
+        {
+          "name": "FormMessage",
+          "count": 1
+        },
+        {
+          "name": "Textarea",
+          "count": 1
+        },
+        {
+          "name": "Inline",
+          "count": 1
+        },
+        {
+          "name": "FieldDescription",
+          "count": 1
+        },
+        {
+          "name": "EmptyIndicator",
+          "count": 1
+        },
+        {
+          "name": "Icon",
+          "count": 1
+        },
+        {
+          "name": "ButtonProps",
+          "count": 1
+        },
+        {
+          "name": "HoverCard",
+          "count": 1
+        },
+        {
+          "name": "HoverCardContent",
+          "count": 1
+        },
+        {
+          "name": "HoverCardTrigger",
+          "count": 1
+        },
+        {
+          "name": "AnimatedNumber",
+          "count": 1
+        }
+      ],
+      "adminXDsComponents": []
+    }
+  ],
+  "topShadeComponents": [
+    {
+      "name": "Button",
+      "count": 186
+    },
+    {
+      "name": "LucideIcon",
+      "count": 173
+    },
+    {
+      "name": "formatNumber",
+      "count": 76
+    },
+    {
+      "name": "LoadingIndicator",
+      "count": 57
+    },
+    {
+      "name": "FieldLabel",
+      "count": 56
+    },
+    {
+      "name": "Field",
+      "count": 54
+    },
+    {
+      "name": "cn",
+      "count": 49
+    },
+    {
+      "name": "Input",
+      "count": 49
+    },
+    {
+      "name": "FieldDescription",
+      "count": 37
+    },
+    {
+      "name": "SettingsModal",
+      "count": 35
+    },
+    {
+      "name": "FieldError",
+      "count": 35
+    },
+    {
+      "name": "Tabs",
+      "count": 32
+    },
+    {
+      "name": "TabsList",
+      "count": 32
+    },
+    {
+      "name": "Separator",
+      "count": 29
+    },
+    {
+      "name": "Card",
+      "count": 28
+    },
+    {
+      "name": "CardContent",
+      "count": 28
+    },
+    {
+      "name": "Switch",
+      "count": 28
+    },
+    {
+      "name": "TabsTrigger",
+      "count": 28
+    },
+    {
+      "name": "Skeleton",
+      "count": 27
+    },
+    {
+      "name": "Select",
+      "count": 26
+    }
+  ],
+  "adminXDsComponentsAggregate": [],
+  "ember": {
+    "hbsFiles": 193,
+    "spiritUtilityFiles": 69,
+    "patternFiles": 8,
+    "componentCssFiles": 23
+  },
+  "publicApps": {
+    "count": 5,
+    "names": ["portal", "comments-ui", "signup-form", "sodo-search", "announcement-bar"]
+  }
+}

@@ -1,16 +1,13 @@
-/* eslint-disable max-lines */
-
-const _ = require('lodash');
-
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const logging = require('@tryghost/logging');
+const urlUtils = require('../../../shared/url-utils').default;
 const jobsService = require('../jobs');
-const databaseInfo = require('../../data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('./update-check-service');
+const { NotificationEmailService } = require('../notifications/notification-email');
 
 /**
  * Initializes and triggers update check
@@ -21,66 +18,73 @@ const UpdateCheckService = require('./update-check-service');
  * @returns {Promise<any>}
  */
 module.exports = async ({
-    rethrowErrors = false,
-    forceUpdate = config.get('updateCheck:forceUpdate'),
-    updateCheckUrl = config.get('updateCheck:url')
+  rethrowErrors = false,
+  forceUpdate = config.get('updateCheck:forceUpdate'),
+  updateCheckUrl = config.get('updateCheck:url'),
 } = {}) => {
-    if (!forceUpdate) {
-        const allowedCheckEnvironments = ['development', 'production'];
-
-        // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments
-        if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-            return;
-        }
+  if (!forceUpdate) {
+    // CASE: The check will not happen if your env is not in the allowed defined environments
+    if (!config.isProductionOrDevelopment()) {
+      return;
     }
+  }
 
-    const {GhostMailer} = require('../mail');
-    const ghostMailer = new GhostMailer();
+  const mailService = require('../mail');
+  const ghostMailer = new mailService.GhostMailer();
 
-    const updateChecker = new UpdateCheckService({
-        api: {
-            settings: {
-                read: api.settings.read,
-                edit: api.settings.edit
-            },
-            posts: {
-                browse: api.posts.browse
-            },
-            users: {
-                browse: api.users.browse
-            },
-            notifications: {
-                add: api.notifications.add
-            }
-        },
-        config: {
-            mail: config.get('mail'),
-            env: config.get('env'),
-            databaseType: databaseInfo.getEngine(),
-            checkEndpoint: updateCheckUrl,
-            isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
-            notificationGroups: config.get('notificationGroups'),
-            siteUrl: urlUtils.urlFor('home', true),
-            forceUpdate,
-            ghostVersion: ghostVersion.original,
-            rethrowErrors
-        },
-        request,
-        sendEmail: ghostMailer.send.bind(ghostMailer)
-    });
+  const notificationEmailService = new NotificationEmailService({
+    mailer: ghostMailer,
+    generateEmailContent: mailService.utils.generateContent,
+    getSiteUrl: () => urlUtils.urlFor('home', true),
+  });
 
-    await updateChecker.check();
+  const updateChecker = new UpdateCheckService({
+    api: {
+      settings: {
+        read: api.settings.read,
+        edit: api.settings.edit,
+      },
+      users: {
+        browse: api.users.browse,
+      },
+      notifications: {
+        add: api.notifications.add,
+      },
+    },
+    config: {
+      checkEndpoint: updateCheckUrl,
+      notificationGroups: config.get('notificationGroups'),
+      siteUrl: urlUtils.urlFor('home', true),
+      forceUpdate,
+      ghostVersion: ghostVersion.original,
+      rethrowErrors,
+    },
+    request,
+    notificationEmailService,
+  });
+
+  await updateChecker.check();
 };
 
 module.exports.scheduleRecurringJobs = () => {
-    // use a random seconds/minutes/hours value to avoid spikes to the update service API
-    const s = Math.floor(Math.random() * 60); // 0-59
-    const m = Math.floor(Math.random() * 60); // 0-59
-    const h = Math.floor(Math.random() * 24); // 0-23
+  // use a random seconds/minutes/hours value to avoid spikes to the update service API
+  const s = Math.floor(Math.random() * 60); // 0-59
+  const m = Math.floor(Math.random() * 60); // 0-59
+  const h = Math.floor(Math.random() * 24); // 0-23
 
-    jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`, // Every day
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check'
-    });
+  const at = `${s} ${m} ${h} * * *`;
+  logging.info(`[Background Job] update-check scheduled at ${at}`);
+  jobsService.addJob({
+    at, // Every day
+    job: require('path').resolve(__dirname, 'run-update-check.js'),
+    name: 'update-check',
+  });
+};
+
+module.exports.scheduleBootJob = () => {
+  logging.info('[Background Job] update-check-boot queued');
+  jobsService.addJob({
+    job: require('path').resolve(__dirname, 'run-update-check.js'),
+    name: 'update-check-boot',
+  });
 };

@@ -1,5 +1,4 @@
-import { test as baseTest } from "vitest";
-import { setupServer } from "msw/node";
+import { setupServer } from 'msw/node';
 
 /**
  * Extended test fixture with MSW server (PyTest-style fixtures for Vitest).
@@ -10,9 +9,10 @@ import { setupServer } from "msw/node";
  * Usage:
  *
  * @example
- * // Import explicitly from this module
- * import { testWithServer as test } from "@test/fixtures/msw";
+ * // Compose the fixture into your test via vitest's test.extend
+ * import { serverFixture } from "@test-utils/fixtures/msw";
  * import { http, HttpResponse } from "msw";
+ * const test = baseTest.extend({ ...serverFixture });
  *
  * describe("useChangelog", () => {
  *   // Server auto-initializes when you destructure { server }
@@ -40,15 +40,14 @@ import { setupServer } from "msw/node";
  * Can be composed with other fixtures using spread syntax.
  */
 export const serverFixture = {
-    server: async ({ task }: { task: unknown }, provide: (value: ReturnType<typeof setupServer>) => Promise<void>) => {
-        void task;
-        const server = setupServer();
-        server.listen({ onUnhandledRequest: "warn" });
-        await provide(server);
-        server.close();
-    },
+  server: async (
+    { task }: { task: unknown },
+    provide: (value: ReturnType<typeof setupServer>) => Promise<void>,
+  ) => {
+    void task;
+    const server = setupServer();
+    server.listen({ onUnhandledRequest: 'warn' });
+    await provide(server);
+    server.close();
+  },
 } as const;
-
-export const testWithServer = baseTest.extend<{
-    server: ReturnType<typeof setupServer>;
-}>(serverFixture);

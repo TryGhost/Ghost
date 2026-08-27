@@ -9,110 +9,143 @@ const RoutingService = require('./routing-service');
 const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
 const jobsService = require('../mentions-jobs');
 
-function getPostUrl(post) {
-    const jsonModel = {};
-    outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
-    return jsonModel.url;
+// Serializes a post model to the data the URL service needs, loading the
+// relations it reads for filtered collections (event-emitted models don't
+// reliably carry them).
+async function getPostData(post) {
+  const missing = urlService.getRequiredRelations().filter((relation) => !post.relations[relation]);
+  if (missing.length) {
+    await post.load(missing);
+  }
+  return post.toJSON();
+}
+
+function getPostUrl(id, postData) {
+  const jsonModel = { ...postData };
+  // The URL service routes by resource type. Pages and posts share the Post
+  // model, so the page's own type must reach forPost — otherwise it defaults
+  // to 'posts', matches no post collection, and 404s.
+  const type = postData.type === 'page' ? 'pages' : 'posts';
+  outputSerializerUrlUtil.forPost(id, jsonModel, { options: {} }, type);
+  return jsonModel.url;
+}
+
+// Reports the same queued/started/finished/failed lifecycle for every mentions
+// background job. The wrapped callback's result and errors pass through unchanged,
+// so job manager outcomes and retries are unaffected.
+function makeLoggingJobService() {
+  return {
+    async addJob(name, fn) {
+      logging.info(`[Background Job] ${name} queued`);
+      jobsService.addJob({
+        name,
+        job: async () => {
+          const startedAt = Date.now();
+          logging.info(`[Background Job] ${name} started`);
+          try {
+            const result = await fn();
+            logging.info(`[Background Job] ${name} completed in ${Date.now() - startedAt}ms`);
+            return result;
+          } catch (err) {
+            logging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
+            throw err;
+          }
+        },
+        offloaded: false,
+      });
+    },
+  };
 }
 
 module.exports = {
-    /** @type {import('./mentions-api')} */
-    api: null,
-    /** @type {import('./bookshelf-mention-repository')} */
-    repository: null,
-    controller: new MentionController(),
-    metadata: new WebmentionMetadata(),
-    /** @type {import('./mention-sending-service')} */
-    sendingService: null,
-    didInit: false,
-    async init() {
-        if (this.didInit) {
-            return;
-        }
-        this.didInit = true;
-        const repository = new BookshelfMentionRepository({
-            MentionModel: models.Mention,
-            DomainEvents
-        });
-        this.repository = repository;
-
-        const webmentionMetadata = this.metadata;
-        const discoveryService = new MentionDiscoveryService({externalRequest});
-        const resourceService = new ResourceService({
-            urlUtils,
-            urlService
-        });
-
-        const routingService = new RoutingService({
-            siteUrl: new URL(urlUtils.getSiteUrl()),
-            resourceService,
-            externalRequest
-        });
-
-        const api = new MentionsAPI({
-            repository,
-            webmentionMetadata,
-            resourceService,
-            routingService
-        });
-
-        this.api = api;
-
-        this.controller.init({
-            api,
-            jobService: {
-                async addJob(name, fn) {
-                    jobsService.addJob({
-                        name,
-                        job: fn,
-                        offloaded: false
-                    });
-                }
-            },
-            mentionResourceService: {
-                async getByID(id) {
-                    if (!id) {
-                        return null;
-                    }
-                    const post = await models.Post.findOne({id: id.toHexString()});
-
-                    if (!post) {
-                        return null;
-                    }
-                    return {
-                        id: id,
-                        name: post.get('title'),
-                        type: post.get('type')
-                    };
-                }
-            }
-        });
-
-        const sendingService = new MentionSendingService({
-            discoveryService,
-            externalRequest,
-            getSiteUrl: () => urlUtils.urlFor('home', true),
-            getPostUrl: post => getPostUrl(post),
-            isEnabled: () => !settingsCache.get('is_private'),
-            jobService: {
-                async addJob(name, fn) {
-                    jobsService.addJob({
-                        name,
-                        job: fn,
-                        offloaded: false
-                    });
-                }
-            }
-        });
-        sendingService.listen(events);
-
-        this.sendingService = sendingService;
+  /** @type {import('./mentions-api')} */
+  api: null,
+  /** @type {import('./bookshelf-mention-repository')} */
+  repository: null,
+  controller: new MentionController(),
+  metadata: new WebmentionMetadata(),
+  /** @type {import('./mention-sending-service')} */
+  sendingService: null,
+  didInit: false,
+  async init() {
+    if (this.didInit) {
+      return;
     }
+    this.didInit = true;
+    const repository = new BookshelfMentionRepository({
+      MentionModel: models.Mention,
+      DomainEvents,
+    });
+    this.repository = repository;
+
+    const webmentionMetadata = this.metadata;
+    const discoveryService = new MentionDiscoveryService({ externalRequest });
+    const resourceService = new ResourceService({
+      urlUtils,
+      urlService,
+    });
+
+    const routingService = new RoutingService({
+      siteUrl: new URL(urlUtils.getSiteUrl()),
+      resourceService,
+      externalRequest,
+    });
+
+    const api = new MentionsAPI({
+      repository,
+      webmentionMetadata,
+      resourceService,
+      routingService,
+    });
+
+    this.api = api;
+
+    this.controller.init({
+      api,
+      jobService: makeLoggingJobService(),
+      mentionResourceService: {
+        async getByID(id) {
+          if (!id) {
+            return null;
+          }
+          const post = await models.Post.findOne({ id: id.toHexString() });
+
+          if (!post) {
+            return null;
+          }
+          return {
+            id: id,
+            name: post.get('title'),
+            type: post.get('type'),
+          };
+        },
+      },
+    });
+
+    const sendingService = new MentionSendingService({
+      discoveryService,
+      externalRequest,
+      getSiteUrl: () => urlUtils.urlFor('home', true),
+      getPostData: (post) => getPostData(post),
+      getPostUrl: (id, data) => getPostUrl(id, data),
+      isEnabled: () => !settingsCache.get('is_private'),
+      jobService: makeLoggingJobService(),
+    });
+    sendingService.listen(events);
+
+    this.sendingService = sendingService;
+  },
 };
+
+// exposed for testing
+module.exports.getPostData = getPostData;
+module.exports.getPostUrl = getPostUrl;
+module.exports.makeLoggingJobService = makeLoggingJobService;

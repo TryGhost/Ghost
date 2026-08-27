@@ -11,23 +11,23 @@ const defaultContentAPISecretKey = DataGenerator.Content.api_keys[1].secret;
  * @param {string} options.originURL
  */
 class ContentAPITestAgent extends TestAgent {
-    constructor(app, options) {
-        super(app, options);
-    }
+  constructor(app, options) {
+    super(app, options);
+  }
 
-    async authenticateWithKey(key) {
-        this.defaults.queryParams = {
-            key
-        };
-    }
+  async authenticateWithKey(key) {
+    this.defaults.queryParams = {
+      key,
+    };
+  }
 
-    /**
-     *
-     * @description Authenticate with default content api keys
-     */
-    authenticate() {
-        return this.authenticateWithKey(defaultContentAPISecretKey);
-    }
+  /**
+   *
+   * @description Authenticate with default content api keys
+   */
+  authenticate() {
+    return this.authenticateWithKey(defaultContentAPISecretKey);
+  }
 }
 
 module.exports = ContentAPITestAgent;

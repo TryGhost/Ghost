@@ -1,74 +1,97 @@
 const omit = require('lodash/omit');
 const security = require('@tryghost/security');
 const ghostBookshelf = require('./base');
-const {Role} = require('./role');
+const { Role } = require('./role');
 
-const ApiKey = ghostBookshelf.Model.extend({
+// secretlint-disable-next-line @secretlint/secretlint-rule-pattern
+const ApiKey = ghostBookshelf.Model.extend(
+  {
     tableName: 'api_keys',
 
     actionsCollectCRUD: true,
     actionsResourceType: 'api_key',
 
     defaults() {
-        const secret = security.secret.create(this.get('type'));
+      const secret = security.secret.create(this.get('type'));
 
-        return {
-            secret
-        };
+      return {
+        secret,
+      };
     },
 
     role() {
-        return this.belongsTo('Role');
+      return this.belongsTo('Role');
     },
 
     integration() {
-        return this.belongsTo('Integration');
+      return this.belongsTo('Integration');
     },
 
     user() {
-        return this.belongsTo('User');
+      return this.belongsTo('User');
     },
 
     format(attrs) {
-        return omit(attrs, 'role');
+      return omit(attrs, 'role');
     },
 
     onSaving(model, attrs, options) {
-        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+      ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
-        // enforce roles which are currently hardcoded
-        // - admin key = Adminstrator role
-        // - content key = no role
-        if (this.hasChanged('type') || this.hasChanged('role_id')) {
-            if (this.get('type') === 'admin') {
-                return Role.findOne({name: attrs.role || 'Admin Integration'}, Object.assign({}, options, {columns: ['id']}))
-                    .then((role) => {
-                        this.set('role_id', role.get('id'));
-                    });
-            }
-
-            if (this.get('type') === 'content') {
-                this.set('role_id', null);
-            }
+      // enforce roles which are currently hardcoded
+      // - admin key = Adminstrator role
+      // - content key = no role
+      if (this.hasChanged('type') || this.hasChanged('role_id')) {
+        if (this.get('type') === 'admin') {
+          return Role.findOne(
+            { name: attrs.role || 'Admin Integration' },
+            Object.assign({}, options, { columns: ['id'] }),
+          ).then((role) => {
+            this.set('role_id', role.get('id'));
+          });
         }
+
+        if (this.get('type') === 'content') {
+          this.set('role_id', null);
+        }
+      }
     },
     onUpdated(model, options) {
-        if (this.previous('secret') !== this.get('secret')) {
-            this.addAction(model, 'refreshed', options);
-        }
-    }
-}, {
+      if (this.previous('secret') !== this.get('secret')) {
+        this.addAction(model, 'refreshed', options);
+      }
+    },
+  },
+  {
     refreshSecret(data, options) {
-        const secret = security.secret.create(data.type);
-        return this.edit(Object.assign({}, data, {secret}), options);
-    }
-});
+      const secret = security.secret.create(data.type);
+      return this.edit(Object.assign({}, data, { secret }), options);
+    },
+
+    /**
+     * Refresh the secret on every API key row, returning the count rotated.
+     * Used by the danger-zone reset flow; callers are expected to wrap this
+     * in a transaction.
+     *
+     * @param {Object} options
+     * @returns {Promise<{count: number}>}
+     */
+    async refreshAllSecrets(options) {
+      const apiKeys = await this.findAll(options);
+      for (const apiKey of apiKeys.models) {
+        await this.refreshSecret(apiKey.toJSON(), Object.assign({}, options, { id: apiKey.id }));
+      }
+      return { count: apiKeys.length };
+    },
+  },
+);
 
 const ApiKeys = ghostBookshelf.Collection.extend({
-    model: ApiKey
+  model: ApiKey,
 });
 
 module.exports = {
-    ApiKey: ghostBookshelf.model('ApiKey', ApiKey),
-    ApiKeys: ghostBookshelf.collection('ApiKeys', ApiKeys)
+  // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
+  ApiKey: ghostBookshelf.model('ApiKey', ApiKey),
+  ApiKeys: ghostBookshelf.collection('ApiKeys', ApiKeys),
 };
