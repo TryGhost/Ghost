@@ -210,7 +210,7 @@ const BetaGiftPage = () => {
     placeholder: t('Jamie Larson'),
     label: t('Your name'),
     name: 'buyerName',
-    required: false,
+    required: true,
     maxLength: GIFT_NAME_MAX_LENGTH,
     errorMessage: errors.buyerName || '',
   };
@@ -262,17 +262,19 @@ const BetaGiftPage = () => {
   };
 
   const handleContinueToDelivery = () => {
-    if (!isLoggedIn) {
-      const formErrors = validateInputForm({
-        fields: [{ ...emailField, value: email.trim() }],
-      });
-      const formHasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
+    const fieldsToValidate = !isLoggedIn ? [{ ...emailField, value: email.trim() }] : [];
+    const formErrors = validateInputForm({ fields: fieldsToValidate });
 
-      setErrors(formErrors);
+    if (!buyerName.trim()) {
+      formErrors.buyerName = t('Enter your name');
+    }
 
-      if (formHasErrors) {
-        return;
-      }
+    const formHasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
+
+    setErrors(formErrors);
+
+    if (formHasErrors) {
+      return;
     }
     setStep('delivery');
   };
@@ -296,18 +298,11 @@ const BetaGiftPage = () => {
     const isScheduled = isEmailDelivery && effectiveDeliveryDate > minDeliveryDate;
 
     const fieldsToValidate: GiftInputField[] = [];
-    if (!isLoggedIn) {
-      fieldsToValidate.push({ ...emailField, value: customerEmail });
-    }
     if (isEmailDelivery && trimmedRecipientEmail) {
       fieldsToValidate.push({ ...recipientEmailField, value: trimmedRecipientEmail });
     }
 
     const formErrors = validateInputForm({ fields: fieldsToValidate });
-
-    if (isEmailDelivery && !trimmedBuyerName) {
-      formErrors.buyerName = t('Enter your name');
-    }
 
     // No confirm-email field: the buyer gets a confirmation copy, which covers the unlikely
     // mistyped-recipient case.
@@ -330,9 +325,6 @@ const BetaGiftPage = () => {
     setErrors(formErrors);
 
     if (formHasErrors) {
-      if (formErrors.buyerName) {
-        setStep('plan');
-      }
       return;
     }
 
@@ -343,7 +335,7 @@ const BetaGiftPage = () => {
       deliveryMethod,
       ...(isEmailDelivery ? { recipientEmail: trimmedRecipientEmail } : {}),
       ...(isEmailDelivery && trimmedRecipientName ? { recipientName: trimmedRecipientName } : {}),
-      ...(trimmedBuyerName ? { buyerName: trimmedBuyerName } : {}),
+      buyerName: trimmedBuyerName,
       ...(isEmailDelivery && trimmedGiftMessage ? { personalMessage: trimmedGiftMessage } : {}),
       ...(isScheduled ? { deliveryDate: effectiveDeliveryDate } : {}),
     });
