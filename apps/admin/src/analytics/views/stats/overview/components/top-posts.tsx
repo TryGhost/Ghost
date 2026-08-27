@@ -1,4 +1,4 @@
-import FeatureImagePlaceholder from '@/analytics/views/stats/components/feature-image-placeholder';
+import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import React from 'react';
 import {
   Card,

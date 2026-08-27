@@ -214,6 +214,7 @@ describe('Tier checkout collection', () => {
     await page.getByRole('option', { name: nameField.name }).click();
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect.poll(() => putApi.requests.length).toBe(1);
 
     const sent = (
       putApi.lastRequest?.body as {

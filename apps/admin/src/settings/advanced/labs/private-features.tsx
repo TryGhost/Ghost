@@ -101,6 +101,12 @@ const features: Feature[] = [
     flag: 'giftSubCustomization',
   },
   {
+    title: 'React posts & pages lists',
+    description:
+      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'postsListReact',
+  },
+  {
     title: 'Self-serve archives',
     description:
       'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',

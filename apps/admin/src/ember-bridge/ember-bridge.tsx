@@ -98,6 +98,10 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
   tier: 'TiersResponseType',
   user: 'UsersResponseType',
   post: 'PostsResponseType',
+  // Without this, saving a page in the (Ember) editor never invalidates the
+  // React pages list, so a newly created page only appears after a manual
+  // refresh. Harmless while Ember owned /pages; visible as soon as React does.
+  page: 'PagesResponseType',
   member: 'MembersResponseType',
   tag: 'TagsResponseType',
   label: 'LabelsResponseType',
@@ -177,11 +181,22 @@ export function useEmberDataSync() {
         return;
       }
 
-      // Invalidate all queries matching this data type
+      /**
+       * Saving a post or page can *create* tags: a tag typed into the
+       * editor is written as part of that post's own save, as an embedded
+       * relation. Ember therefore reports a `post` change and never a
+       * `tag` one — so without this the posts list's tag filter keeps
+       * serving a cached list, and a tag the user just made is missing
+       * from it until a full browser reload.
+       */
+      const alsoInvalidate =
+        modelName === 'post' || modelName === 'page' ? ['TagsResponseType'] : [];
+      const dataTypes = new Set([reactDataType, ...alsoInvalidate]);
+
       void queryClient.invalidateQueries({
         predicate: (query) => {
           // Query keys are structured as [dataType, url]
-          return query.queryKey[0] === reactDataType;
+          return dataTypes.has(query.queryKey[0] as string);
         },
       });
     };
