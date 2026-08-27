@@ -38,14 +38,16 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // inherit these env vars and get the same values when they load a fresh nconf
 // instance.
 //
-// Each worker gets its own random database so the DB suites can run in
-// parallel without sharing state. CI pins only the MySQL host and port; a local
-// database name override is treated as the base name in the same way.
+// Each worker gets its own random database under the run prefix established by
+// globalSetup. The prefix lets global teardown discover and remove every schema
+// after the workers exit, including locally where the MySQL volume persists.
+const mysqlBase = process.env.GHOST_TEST_DB_BASE;
+const mysqlRunId = process.env.GHOST_TEST_DB_RUN_ID;
+if (!mysqlBase || !mysqlRunId) {
+  throw new Error('DB test setup requires vitest-global-db-setup.ts');
+}
 const mysqlId = crypto.randomBytes(4).toString('hex');
-const mysqlBase = process.env.database__connection__database;
-process.env.database__connection__database = mysqlBase
-  ? `${mysqlBase}_${mysqlId}`
-  : `ghost_testing_${mysqlId}`;
+process.env.database__connection__database = `${mysqlBase}_${mysqlRunId}_${mysqlId}`;
 
 // Flush this worker's V8 coverage after every file. The external c8 collector
 // reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
@@ -66,10 +68,6 @@ if (process.env.NODE_V8_COVERAGE) {
     }
   });
 }
-
-// NOTE: each worker still leaves a DB behind — vitest force-terminates its
-// workers, so a process 'exit' handler can't reclaim it. The random databases
-// are ephemeral in CI because the MySQL container dies with the job.
 
 const canonicalTestPort = 2369;
 // The per-fork port must be unique among forks running concurrently. Each test

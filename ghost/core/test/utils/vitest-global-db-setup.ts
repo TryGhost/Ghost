@@ -8,15 +8,14 @@
 // MySQL restores from a same-server template via a bulk table copy that keeps
 // the restore byte-faithful to a fresh init.
 //
-// The fork learns the template is ready via an inherited env var — env set here,
-// before the forks spawn, is inherited by them. We point the DB config at the
-// template location while building; the forks derive the same location from
-// their own (session-suffixed) config value via the shared pure helpers in
-// db-template-paths.js.
+// The forks inherit a run ID and base database name set here before they spawn.
+// Those values give every worker a unique, discoverable database name so global
+// teardown can remove all schemas created by this run.
 
 // Register tsx's CommonJS hook so requiring Ghost's .ts sources works here too
 // (mirrors vitest-setup-db.ts). Must run before any Ghost source is required.
 require('tsx/cjs');
+const crypto = require('crypto');
 
 // Reject vitest's own NODE_ENV='test' default (Ghost has no config.test.json);
 // use the MySQL test environment. Mirrors vitest-setup-db.ts so the template is
@@ -29,18 +28,22 @@ export default async function setup() {
   // env vars carry no per-fork session suffix, so deriving template locations
   // from them yields exactly the values the forks compute from their suffixed
   // config. Captured before loading config so it reflects the true base.
-  const base = {
+  const run = {
     mysqlBase: process.env.database__connection__database || 'ghost_testing',
+    runId: crypto.randomBytes(4).toString('hex'),
   };
+  process.env.GHOST_TEST_DB_BASE = run.mysqlBase;
+  process.env.GHOST_TEST_DB_RUN_ID = run.runId;
 
   // Load Ghost's runtime overrides (nconf wiring) and the template builder.
   require('../../core/server/overrides');
-  const { buildTemplate, dropTemplate } = require('./db-template');
+  const { buildTemplate, dropRunDatabases } = require('./db-template');
 
-  await buildTemplate(base);
+  await buildTemplate(run);
 
-  // Teardown: drop the template once all forks have exited. Best effort.
+  // Teardown: drop the template and every worker database once all forks have
+  // exited. Best effort.
   return async () => {
-    await dropTemplate(base);
+    await dropRunDatabases(run);
   };
 }

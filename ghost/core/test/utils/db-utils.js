@@ -99,17 +99,9 @@ const isMySQLSnapshotCurrent = () => {
 
 const resetMySQLFromSnapshot = async () => {
   if (!isMySQLSnapshotCurrent()) {
-    if (dbTemplate.hasTemplate()) {
-      // First provision in this fork: load the schema + fixtures from the
-      // run's shared (migrated + seeded) template — a same-server bulk
-      // table copy rather than a full migrate+seed — then build the
-      // per-process snapshot tables so later in-fork resets take the fast
-      // restoreMySQLSnapshot path.
-      await dbTemplate.restoreFromTemplate();
-    } else {
-      await truncateAll();
-      await knexMigrator.init({ only: 3 });
-    }
+    // First provision in this fork: load the schema + fixtures from the run's
+    // shared template, then build snapshot tables for later in-fork resets.
+    await dbTemplate.restoreFromTemplate();
     await createMySQLSnapshot();
     return;
   }

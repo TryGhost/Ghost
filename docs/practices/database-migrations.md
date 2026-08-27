@@ -86,7 +86,9 @@ state that existed before `up()`.
 
 ### Testing
 
-Test migrations against MySQL, Ghost's supported production database.
+The database-backed migration suites run against MySQL, Ghost's supported
+production database. Changes to retained SQLite compatibility paths should add
+focused unit coverage for that dialect.
 
 Run the schema integrity test after changing `schema.js`, fixtures, default
 settings, or default routes. Update only the expected hash for the change you

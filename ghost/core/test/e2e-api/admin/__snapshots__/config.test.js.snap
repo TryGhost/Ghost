@@ -4,7 +4,7 @@ exports[`Config API As Owner Can retrieve config and all expected properties 1: 
 Object {
   "config": Object {
     "clientExtensions": Object {},
-    "database": StringMatching /mysql\\|mysql2/,
+    "database": StringMatching /\\^mysql\\(\\?:5\\|8\\)\\?\\$/,
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": "testing-mysql",

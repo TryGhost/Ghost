@@ -41,7 +41,7 @@ describe('Config API', function () {
         .expectStatus(200)
         .matchBodySnapshot({
           config: {
-            database: stringMatching(/mysql|mysql2/),
+            database: stringMatching(/^mysql(?:5|8)?$/),
             environment: 'testing-mysql',
             version: stringMatching(/\d+\.\d+\.\d+/),
             // labs is matched dynamically so adding/removing feature
@@ -64,7 +64,7 @@ describe('Config API', function () {
         })
         .matchHeaderSnapshot({
           'content-version': anyContentVersion,
-          'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
+          'content-length': anyContentLength, // Length can differ slightly based on environment and version values
           etag: anyEtag,
         });
     });

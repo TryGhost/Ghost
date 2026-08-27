@@ -8,7 +8,6 @@ const db = require('../../core/server/data/db');
 const schemaModule = require('../../core/server/data/schema');
 const schemaTables = Object.keys(schemaModule.tables);
 const schemaViews = schemaModule.views || {};
-const { deriveMySQLTemplateDatabase } = require('./db-template-paths');
 
 // A migrated + seeded database is expensive to build (full knex-migrator init:
 // create every table, record all ~120 versioned migrations as applied, and
@@ -24,41 +23,28 @@ const { deriveMySQLTemplateDatabase } = require('./db-template-paths');
 //
 // MySQL restores via a same-server `SHOW CREATE TABLE` + `INSERT ... SELECT`.
 //
-// Readiness is published from globalSetup to the forks via an env var (forks
-// inherit the main process env at spawn time). When it is unset — e.g.
-// `test:single` on one file with no globalSetup — the callers fall back to a full
-// knex-migrator init, so behaviour is unchanged outside the orchestrated run.
-//
 // SCOPE: only the db.reset() provisioning path (agentProvider-based e2e / e2e-api
 // / e2e-* suites) uses this. The getFixtureOps `testUtils.setup()` path
 // (integration/legacy) opens Ghost's bookshelf connection BEFORE provisioning, so
 // that path still does a full init — those suites run isolate:true (a fresh
 // process per file), so the per-file boot, not provisioning, is their cost.
 
-const TEMPLATE_ENV_VAR = 'GHOST_TEST_DB_TEMPLATE_READY';
-
 const getResetTables = () => {
   return schemaTables.concat(['migrations']);
 };
 
-/**
- * Whether the shared template has been built for this run (published by
- * globalSetup). Callers use this to choose a cheap restore over a full init.
- * @returns {boolean}
- */
-const hasTemplate = () => {
-  return process.env[TEMPLATE_ENV_VAR] === '1';
+const deriveMySQLTemplateDatabase = (database) => {
+  return `${database}_template`;
 };
 
 /**
- * Resolve the template database name from the CURRENT fork connection's config.
- * config holds the suffixed per-fork value; the pure deriver strips that suffix
- * so this resolves to the same template globalSetup built from the un-suffixed
- * base.
+ * Resolve the template database name for the current run.
+ * globalSetup publishes the unsuffixed base before workers spawn, so every fork
+ * resolves the same template database.
  * @returns {string}
  */
 const getForkTemplateDatabase = () => {
-  return deriveMySQLTemplateDatabase(config.get('database:connection:database'));
+  return deriveMySQLTemplateDatabase(process.env.GHOST_TEST_DB_BASE);
 };
 
 /**
@@ -92,11 +78,11 @@ const ensureForkDatabaseExists = async () => {
  * knex-migrator reset + init. A fresh KnexMigrator is constructed AFTER the config
  * override so it reads the template location via MigratorConfig.js.
  *
- * @param {{mysqlBase?: string}} base the run's base DB identifier, un-suffixed
+ * @param {{mysqlBase: string}} run the run's base DB identifier
  */
-const buildTemplate = async (base) => {
+const buildTemplate = async (run) => {
   debug('Building shared DB template');
-  config.set('database:connection:database', deriveMySQLTemplateDatabase(base.mysqlBase));
+  config.set('database:connection:database', deriveMySQLTemplateDatabase(run.mysqlBase));
 
   // Construct after the override so MigratorConfig.js captures the template
   // location. reset({force}) drops the template DB (DROP DATABASE, tolerating
@@ -106,16 +92,14 @@ const buildTemplate = async (base) => {
   await knexMigrator.reset({ force: true });
   await knexMigrator.init();
 
-  process.env[TEMPLATE_ENV_VAR] = '1';
   debug('Shared DB template ready');
 };
 
 /**
  * Restore the current fork's per-process database from the shared template.
- * Assumes the caller has verified hasTemplate(). Copies every table from the
- * template DB into the fork DB by replaying the exact schema and copying its
- * data. The template is referenced by qualified name on the fork's bound
- * connection.
+ * Copies every table from the template DB into the fork DB by replaying the
+ * exact schema and copying its data. The template is referenced by qualified
+ * name on the fork's bound connection.
  */
 const restoreFromTemplate = async () => {
   const templateDb = getForkTemplateDatabase();
@@ -171,30 +155,50 @@ const restoreFromTemplate = async () => {
 };
 
 /**
- * Drop the shared template database. Called from globalSetup teardown. Best
- * effort — on CI the whole server is ephemeral; this is for local hygiene and to
- * avoid a stale template surviving into the next run.
+ * Drop the shared template and every worker database for this run. Called from
+ * globalSetup teardown after all workers have exited. Best effort so cleanup
+ * cannot hide a test failure.
  *
- * @param {{mysqlBase?: string}} base the run's base DB id
+ * @param {{mysqlBase: string, runId: string}} run the run's database identifiers
  */
-const dropTemplate = async (base) => {
+const dropRunDatabases = async (run) => {
   try {
     // Point config at the template and let knex-migrator reset({force}) drop
     // that database — reusing the same connection path build used, so we never
     // bind Ghost's singleton db.knex to a template.
-    config.set('database:connection:database', deriveMySQLTemplateDatabase(base.mysqlBase));
+    config.set('database:connection:database', deriveMySQLTemplateDatabase(run.mysqlBase));
     const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
     await knexMigrator.reset({ force: true });
   } catch (err) {
     debug(`Failed to drop template (ignored): ${err.message}`);
   }
+
+  const connectionConfig = config.get('database:connection');
+  const connectionWithoutDb = { ...connectionConfig };
+  delete connectionWithoutDb.database;
+  const admin = knex({
+    client: config.get('database:client'),
+    connection: connectionWithoutDb,
+  });
+  try {
+    const [rows] = await admin.raw('SHOW DATABASES');
+    const prefix = `${run.mysqlBase}_${run.runId}_`;
+    const workerDatabases = rows
+      .map((row) => Object.values(row)[0])
+      .filter((name) => typeof name === 'string' && name.startsWith(prefix));
+
+    for (const workerDatabase of workerDatabases) {
+      await admin.raw('DROP DATABASE IF EXISTS ??', [workerDatabase]);
+    }
+  } catch (err) {
+    debug(`Failed to drop worker databases (ignored): ${err.message}`);
+  } finally {
+    await admin.destroy();
+  }
 };
 
 module.exports = {
-  TEMPLATE_ENV_VAR,
-  deriveMySQLTemplateDatabase,
-  hasTemplate,
   buildTemplate,
   restoreFromTemplate,
-  dropTemplate,
+  dropRunDatabases,
 };

@@ -181,8 +181,5 @@ describe('Exporter', function () {
     });
 
     assert.equal(_.find(exportData.data.settings, { key: 'permalinks' }), undefined);
-
-    // should not export sqlite data
-    assert.equal(exportData.data.sqlite_sequence, undefined);
   });
 });

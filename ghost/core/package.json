@@ -387,12 +387,6 @@
           "{projectRoot}/coverage-e2e"
         ]
       },
-      "test:ci:legacy": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ]
-      },
       "test:ci:integration": {
         "dependsOn": [
           "build:assets",
