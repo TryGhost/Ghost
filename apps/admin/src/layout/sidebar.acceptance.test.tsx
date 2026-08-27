@@ -5,6 +5,7 @@ import type { StateBridge } from '@/ember-bridge';
 import {
   activeThemeResponse,
   allowUnhandledRequests,
+  configResponse,
   currentRoute,
   fakeAdminEndpoint,
   fakeEndpoint,
@@ -56,6 +57,28 @@ afterEach(() => {
 });
 
 describe('Sidebar navigation', () => {
+  it('keeps the shell hidden until Admin 7 eligibility is known', async () => {
+    fakeTags([]);
+    let resolveConfig!: (value: ReturnType<typeof configResponse>) => void;
+    const pendingConfig = new Promise<ReturnType<typeof configResponse>>((resolve) => {
+      resolveConfig = resolve;
+    });
+
+    await renderAdminApp('/tags', {
+      boot: { browseConfig: { response: () => pendingConfig } },
+    });
+
+    const getShell = () =>
+      document.querySelector('[data-sidebar="sidebar"]')?.closest('.group\\/sidebar-wrapper');
+    await expect.poll(getShell).toBeTruthy();
+    const shell = getShell()!;
+    expect(shell).toHaveClass('invisible');
+
+    resolveConfig(configResponse({ labs: { admin7PageChrome: true } }));
+    await expect.poll(() => shell?.classList.contains('invisible')).toBe(false);
+    expect(shell).toHaveClass('admin7');
+  });
+
   it('uses the static Admin 7 shell without reading the saved menu visibility', async () => {
     fakeTags([]);
     const me = currentUserResponse();
@@ -73,8 +96,36 @@ describe('Sidebar navigation', () => {
     await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
     const tagsPage = page.getByTestId('tags-page').element();
     const pageContainer = tagsPage.parentElement!;
+    const pageHeader = tagsPage.querySelector('[data-list-page="header"]')!;
     expect(getComputedStyle(pageContainer).maxWidth).toBe('1080px');
     expect(getComputedStyle(tagsPage).paddingLeft).toBe('40px');
+    expect(getComputedStyle(pageHeader).paddingTop).toBe('28px');
+
+    const legacyPage = document.createElement('div');
+    legacyPage.className = 'gh-canvas';
+    const legacyHeader = document.createElement('div');
+    legacyHeader.className = 'gh-canvas-header';
+    legacyPage.appendChild(legacyHeader);
+    tagsPage.closest('main')!.appendChild(legacyPage);
+    expect(getComputedStyle(legacyPage).maxWidth).toBe('1080px');
+    expect(getComputedStyle(legacyPage).paddingLeft).toBe('40px');
+    expect(getComputedStyle(legacyHeader).paddingLeft).toBe('40px');
+    expect(getComputedStyle(legacyHeader).paddingTop).toBe('28px');
+
+    const networkHeader = document.createElement('div');
+    networkHeader.dataset.networkHeader = 'header';
+    tagsPage.closest('main')!.appendChild(networkHeader);
+    expect(getComputedStyle(networkHeader).paddingTop).toBe('8px');
+
+    const errorSurface = document.createElement('div');
+    errorSurface.className = 'admin-x-container-error';
+    const backgroundReference = document.createElement('div');
+    backgroundReference.className = 'bg-background';
+    tagsPage.closest('main')!.append(errorSurface, backgroundReference);
+    expect(getComputedStyle(errorSurface).backgroundColor).toBe(
+      getComputedStyle(backgroundReference).backgroundColor,
+    );
+
     expect(document.querySelector('[data-sidebar="sidebar"]')).not.toBeNull();
     expect(document.querySelector('[data-sidebar="sidebar"]')?.parentElement).toHaveClass('p-2');
     expect(document.querySelector('[data-state="collapsed"]')).toBeNull();

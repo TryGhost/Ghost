@@ -168,6 +168,13 @@ describe('Analytics overview', () => {
     await renderAdminApp('/analytics', { boot });
     await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
     await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
+    await expect
+      .poll(
+        () =>
+          getComputedStyle(document.querySelector<HTMLElement>('[data-header="header"]')!)
+            .paddingTop,
+      )
+      .toBe('28px');
     await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
     const tooltip = page.getByRole('tooltip');
     await expect.element(tooltip).toHaveTextContent(/trending/);

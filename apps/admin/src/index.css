@@ -211,6 +211,12 @@ body.react-admin #root .shade.shade-admin {
   overflow: hidden;
 }
 
+/* Ember starts as a body-level sibling before React's bridge relocates it.
+   Only the bridge-owned copy inside #root should ever be paintable. */
+body.react-admin > #ember-app {
+  visibility: hidden;
+}
+
 /* iOS safe area handling for mobile navbar */
 body.react-admin .safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);

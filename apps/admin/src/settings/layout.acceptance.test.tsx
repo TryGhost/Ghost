@@ -21,10 +21,14 @@ describe('Settings layout', () => {
       await renderAdminApp('/settings', { labs: { admin7PageChrome: enabled } });
 
       await expect.element(settingsScreen.search()).toBeVisible();
+      const titleAndDescriptionEdit = settingsScreen
+        .titleAndDescription()
+        .getByRole('button', { name: 'Edit' });
+      await expect.element(titleAndDescriptionEdit).toBeVisible();
       const elements = [
         ...page.getByRole('heading', { name: 'General settings', exact: true }).elements(),
         settingsScreen.search().element(),
-        settingsScreen.titleAndDescription().getByRole('button', { name: 'Edit' }).element(),
+        titleAndDescriptionEdit.element(),
       ];
       for (const element of elements) {
         await expect

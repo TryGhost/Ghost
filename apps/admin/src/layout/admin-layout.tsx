@@ -21,9 +21,21 @@ const admin7PageChromeClassName = [
   'admin7:[&_[data-detail-page=detail-page]]:px-(--page-gutter)',
   'admin7:[&_[data-list-page=header]]:-mx-(--page-gutter)',
   'admin7:[&_[data-list-page=header]]:px-(--page-gutter)',
+  'admin7:[&_[data-list-page=header]]:pt-[28px]',
+  'admin7:[&_[data-detail-page=header]]:pt-[28px]',
+  'admin7:[&_[data-network-header=header]]:pt-[8px]',
   'admin7:[&_[data-page-header=main]]:flex-wrap',
   'admin7:[&_[data-page-header=left]]:h-auto',
   'admin7:[&_[data-page-header=left]]:max-w-full',
+  'admin7:[&_.admin-x-container-error]:bg-background',
+  'admin7:[&_.gh-canvas]:max-w-(--content-width)',
+  'admin7:[&_.gh-canvas]:px-(--page-gutter)',
+  'admin7:[&_.gh-main-width]:max-w-(--content-width)',
+  'admin7:[&_.gh-main-width]:px-(--page-gutter)',
+  'admin7:[&_.gh-canvas-header]:-mx-(--page-gutter)',
+  'admin7:[&_.gh-canvas-header]:px-(--page-gutter)',
+  'admin7:[&_.gh-canvas-header]:pt-[28px]!',
+  'admin7:[&_.gh-canvas-header]:pb-[28px]!',
 ].join(' ');
 
 interface AdminLayoutProps {
@@ -34,7 +46,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
   const isContributor = currentUser && isContributorUser(currentUser);
-  const { enabled: admin7Enabled, pageChromeEnabled } = useAdmin7({
+  const {
+    isReady: admin7Ready,
+    enabled: admin7Enabled,
+    pageChromeEnabled,
+  } = useAdmin7({
     hasNavigation: sidebarVisible,
     isEligibleUser: !!currentUser && !isContributor,
   });
@@ -56,6 +72,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <SidebarProvider
       className={cn(
+        !admin7Ready && 'invisible',
         admin7Enabled && 'admin7',
         pageChromeEnabled &&
           'overflow-hidden [--content-width:1080px] [--page-gutter:40px] [--sidebar-width:316px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-[var(--border-subtle)] [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',

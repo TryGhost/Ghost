@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
+import type { ConfigResponse } from '@tryghost/test-data';
 
 import {
   currentRoute,
@@ -128,6 +129,24 @@ function seedEmptyPostAnalyticsWorld() {
 }
 
 describe('Post analytics overview', () => {
+  it('uses the Admin 7 page-header spacing', async () => {
+    seedPostAnalyticsWorld();
+    const boot = webAnalyticsBootOverrides();
+    const config = boot.browseConfig?.response as ConfigResponse;
+    config.config.labs = { ...config.config.labs, admin7PageChrome: true };
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot });
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
+    await expect
+      .poll(
+        () =>
+          getComputedStyle(document.querySelector<HTMLElement>('[data-header="header"]')!)
+            .paddingTop,
+      )
+      .toBe('28px');
+  });
+
   it('renders the seeded post with web and growth sections', async () => {
     const { postsApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });

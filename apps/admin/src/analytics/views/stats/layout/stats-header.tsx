@@ -31,7 +31,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
     <>
       <header className="z-40 -mx-6 bg-white/70 backdrop-blur-md dark:bg-background admin7:-mx-(--page-gutter)">
         <div
-          className="relative flex w-full items-center justify-between gap-5 px-6 pt-5 pb-0 admin7:flex-wrap admin7:px-(--page-gutter)"
+          className="relative flex w-full items-center justify-between gap-5 px-6 pt-5 pb-0 admin7:flex-wrap admin7:px-(--page-gutter) admin7:pt-[28px]!"
           data-header="header"
         >
           <H1

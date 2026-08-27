@@ -6,6 +6,7 @@ import {
   matchRoutes,
   redirect,
 } from '@tryghost/admin-x-framework';
+import { useMemo } from 'react';
 
 // ActivityPub
 import { FeatureFlagsProvider, routes as activityPubRoutes } from '@tryghost/activitypub/api';
