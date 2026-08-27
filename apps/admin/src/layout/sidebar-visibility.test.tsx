@@ -15,6 +15,11 @@ const useThemeContextMock =
 const saveVisibleMock = vi.fn<(visible: boolean) => Promise<void>>();
 const navigationMock = vi.fn<() => { data?: { menu: { visible: boolean } } }>();
 const toastErrorMock = vi.fn();
+const tagDetailsOwnerMock = vi.fn<() => 'react' | 'ember' | 'pending'>().mockReturnValue('ember');
+
+vi.mock('@/use-flag-gated-route-owner', () => ({
+  useFlagGatedRouteOwner: () => tagDetailsOwnerMock(),
+}));
 
 vi.mock('./app-sidebar/hooks/use-navigation-preferences', () => ({
   useNavigationPreferences: () => navigationMock(),
@@ -114,28 +119,77 @@ describe('Admin sidebar controller', () => {
     navigationMock.mockReturnValue({ data: { menu: { visible: true } } });
     saveVisibleMock.mockReset().mockResolvedValue(undefined);
     toastErrorMock.mockClear();
+    tagDetailsOwnerMock.mockReturnValue('ember');
   });
 
-  it.each(['/members', '/members/', '/members/import', '/members/import/'])(
-    'integrates the Members list header at %s',
-    async (pathname) => {
-      const { hasAdminSidebarToggle } = await import('./use-admin-sidebar');
-      expect(hasAdminSidebarToggle(pathname)).toBe(true);
-    },
-  );
+  it.each([
+    '/members',
+    '/members/',
+    '/members/import',
+    '/members/new',
+    '/members/abc',
+    '/tags',
+    '/comments',
+    '/automations',
+    '/analytics',
+    '/analytics/web/',
+    '/analytics/growth',
+    '/analytics/newsletters',
+    '/posts/analytics/abc',
+    '/posts/analytics/abc/web',
+    '/posts/analytics/abc/growth',
+    '/posts/analytics/abc/newsletter',
+    '/activitypub',
+    '/activitypub/reader/abc',
+    '/activitypub/notes',
+    '/activitypub/notes/abc',
+    '/activitypub/explore/topic',
+    '/activitypub/profile/handle/followers',
+    '/activitypub/notifications',
+    '/activitypub/preferences/move',
+    '/activitypub/welcome/1',
+  ])('integrates the React header at %s', async (pathname) => {
+    const { hasAdminSidebarToggle } = await import('./use-admin-sidebar');
+    expect(hasAdminSidebarToggle(pathname)).toBe(true);
+  });
 
-  it.each(['/members/new', '/members/abc', '/members-activity', '/tags', '/settings'])(
-    'keeps navigation open on an unintegrated route: %s',
-    async (pathname) => {
-      const { useAdminSidebar } = await import('./use-admin-sidebar');
-      navigationMock.mockReturnValue({ data: { menu: { visible: false } } });
-      useLocationMock.mockReturnValue({ pathname, key: pathname });
-      const { result } = renderHook(() => useAdminSidebar(true));
-      expect(result.current.enabled).toBe(false);
-      expect(result.current.open).toBe(true);
-      expect(result.current.animate).toBe(false);
-    },
-  );
+  it.each([
+    '/members-activity',
+    '/members/abc/unknown',
+    '/settings',
+    '/tags/slug',
+    '/editor/post/abc',
+    '/automations/abc',
+    '/analytics/unknown',
+    '/posts/analytics/abc/debug',
+    '/activitypub/unknown',
+    '/activitypub/preferences/unknown',
+  ])('keeps navigation open on an unintegrated route: %s', async (pathname) => {
+    const { useAdminSidebar } = await import('./use-admin-sidebar');
+    navigationMock.mockReturnValue({ data: { menu: { visible: false } } });
+    useLocationMock.mockReturnValue({ pathname, key: pathname });
+    const { result } = renderHook(() => useAdminSidebar(true));
+    expect(result.current.enabled).toBe(false);
+    expect(result.current.open).toBe(true);
+    expect(result.current.animate).toBe(false);
+  });
+
+  it('follows the separate tag detail route owner without losing the saved choice', async () => {
+    const { useAdminSidebar } = await import('./use-admin-sidebar');
+    navigationMock.mockReturnValue({ data: { menu: { visible: false } } });
+    useLocationMock.mockReturnValue({ pathname: '/tags/news', key: 'tag' });
+    const { result, rerender } = renderHook(() => useAdminSidebar(true));
+    expect(result.current.enabled).toBe(false);
+    expect(result.current.open).toBe(true);
+    tagDetailsOwnerMock.mockReturnValue('react');
+    rerender();
+    expect(result.current.enabled).toBe(true);
+    expect(result.current.open).toBe(false);
+    tagDetailsOwnerMock.mockReturnValue('pending');
+    rerender();
+    expect(result.current.enabled).toBe(false);
+    expect(result.current.open).toBe(true);
+  });
 
   it('resolves saved visibility without animation and preserves it across excluded modes', async () => {
     const { useAdminSidebar } = await import('./use-admin-sidebar');

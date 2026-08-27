@@ -1,3 +1,5 @@
+import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
+import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -27,7 +29,7 @@ import {
   PageMenu,
   PageMenuItem,
 } from '@tryghost/shade/components';
-import { H1 } from '@tryghost/shade/primitives';
+import { H1, Inline } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
   formatDisplayDate,
@@ -61,6 +63,7 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
+  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -151,32 +154,35 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
 
   return (
     <>
-      <header className="z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background">
+      <header className="admin7-header-gutter z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background">
         <div
           className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0"
           data-header="header"
         >
           <div className="flex w-full flex-col gap-6">
-            <div className="flex w-full flex-col justify-between md:flex-row md:items-center">
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <button
-                        className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                        type="button"
-                        onClick={() => navigate('/analytics/')}
-                      >
-                        Analytics
-                      </button>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Post analytics</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
+            <div className="admin7-custom-header-main flex w-full flex-col justify-between md:flex-row md:items-center">
+              <Inline align="center" gap="md">
+                {sidebarEnabled && <AdminSidebarToggle />}
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild>
+                        <button
+                          className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+                          type="button"
+                          onClick={() => navigate('/analytics/')}
+                        >
+                          Analytics
+                        </button>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </Inline>
               <div className="flex w-full items-center gap-2 md:w-auto">
                 {webAnalyticsEnabled && !post?.email_only && (
                   <div className="mr-3 flex grow items-center gap-2 md:grow-0">

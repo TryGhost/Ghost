@@ -1,6 +1,7 @@
 import { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
+import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import {
   useNavigationMenuVisibility,
   useNavigationPreferences,
@@ -13,14 +14,31 @@ export const AdminSidebarContext = createContext<{
 // Page layout only depends on eligibility, not saving or animation bookkeeping.
 export const AdminSidebarLayoutContext = createContext(false);
 
-// Only integrate screens with a header toggle. Other routes must retain an open
-// sidebar until their headers provide a way to reopen it.
-export function hasAdminSidebarToggle(pathname: string): boolean {
-  return /^\/members(?:\/import)?\/?$/.test(pathname);
+// Only integrate screens with a header control. Unknown paths and full-screen
+// editors retain open navigation; tag details keep their independent owner flag.
+const sidebarHeaderRoutes = [
+  /^\/members(?:\/[^/]+)?\/?$/,
+  /^\/(?:tags|comments|automations)\/?$/,
+  /^\/analytics(?:\/(?:web|growth|newsletters))?\/?$/,
+  /^\/posts\/analytics\/[^/]+(?:\/(?:web|growth|newsletter))?\/?$/,
+  /^\/activitypub\/?$/,
+  /^\/activitypub\/(?:reader|notes|explore)(?:\/[^/]+)?\/?$/,
+  /^\/activitypub\/notifications\/?$/,
+  /^\/activitypub\/profile(?:\/[^/]+(?:\/[^/]+)?)?\/?$/,
+  /^\/activitypub\/preferences(?:\/(?:moderation|bluesky-sharing|move|handle))?\/?$/,
+  /^\/activitypub\/welcome(?:\/[123])?\/?$/,
+];
+
+export function hasAdminSidebarToggle(pathname: string, reactTagDetails = false): boolean {
+  return (
+    sidebarHeaderRoutes.some((route) => route.test(pathname)) ||
+    (reactTagDetails && /^\/tags\/[^/]+\/?$/.test(pathname))
+  );
 }
 
 export function useAdminSidebar(pageChromeEnabled: boolean) {
   const location = useLocation();
+  const tagDetailsOwner = useFlagGatedRouteOwner('tagDetailsReact');
   const { data: preferences } = useNavigationPreferences();
   const preferencesReady = preferences !== undefined;
   const [persistedVisible, saveVisible] = useNavigationMenuVisibility();
@@ -29,7 +47,8 @@ export function useAdminSidebar(pageChromeEnabled: boolean) {
   const savingRef = useRef(false);
   const layoutRef = useRef<HTMLDivElement | null>(null);
   const [motion, setMotion] = useState<{ routeKey: string } | null>(null);
-  const enabled = pageChromeEnabled && hasAdminSidebarToggle(location.pathname);
+  const enabled =
+    pageChromeEnabled && hasAdminSidebarToggle(location.pathname, tagDetailsOwner === 'react');
   const savedVisible = pendingVisible ?? persistedVisible;
 
   useEffect(() => {

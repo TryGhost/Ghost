@@ -1,3 +1,5 @@
+import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
+import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import React from 'react';
 import TagDeleteModal from './tag-delete-modal';
 import TagDetailForm from './tag-detail-form';
@@ -51,6 +53,7 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
+  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -361,7 +364,7 @@ const TagDetail: React.FC = () => {
   // Holding on `blogUrl` keeps host-less URL previews from ever painting;
   // the shell's sidebar has normally warmed the site query already.
   const showEditor = !!draft && !!blogUrl && (isCreating || !!tag);
-  let title = '';
+  let title = notFound ? 'Tag not found' : '';
   if (isCreating) {
     title = 'New tag';
   } else if (draft && showEditor) {
@@ -370,17 +373,20 @@ const TagDetail: React.FC = () => {
     title = tag.name;
   }
 
-  if (notFound) {
+  if (notFound && !sidebarEnabled) {
     return <NotFound />;
   }
 
   return (
     <Box className="size-full">
-      <Container className="relative flex h-full flex-col" size="page">
+      <Container
+        className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+        size="page"
+      >
         <DetailPage data-testid="tag-detail">
           <DetailPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left>
+              <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem>
@@ -465,6 +471,7 @@ const TagDetail: React.FC = () => {
           </DetailPage.Header>
 
           <DetailPage.Body>
+            {notFound && <NotFound />}
             {loadError && (
               <div
                 className="flex flex-1 flex-col items-center justify-center gap-3"

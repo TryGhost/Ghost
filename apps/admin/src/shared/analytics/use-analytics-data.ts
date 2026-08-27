@@ -29,9 +29,8 @@ export interface AnalyticsFrameworkData {
  * its own. It is still requested here so its loading and error states gate the
  * views the way GlobalDataProvider used to.
  *
- * Throws on request error. `apps/admin` mounts no `errorElement`, so this
- * surfaces through React Router's default error boundary; the standalone
- * StatsErrorBoundary that used to catch it is gone along with the standalone app.
+ * Throws on request error. Admin's route error boundary preserves the existing
+ * error body and, on eligible pages, the shell navigation control.
  */
 export const useAnalyticsData = (): AnalyticsFrameworkData => {
   const settings = useBrowseSettings();

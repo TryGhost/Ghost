@@ -1,3 +1,5 @@
+import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
+import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import AutomationsHelpCards from './components/automations-help-cards';
 import AutomationsList from './components/automations-list';
 import React from 'react';
@@ -8,6 +10,7 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 
 const Automations: React.FC = () => {
+  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const { automations, error, isError, isLoading } = useVisibleAutomations();
 
   if (isError) {
@@ -16,11 +19,14 @@ const Automations: React.FC = () => {
 
   return (
     <Box className="size-full" data-sentry-mask="true">
-      <Container className="relative flex h-full flex-col" size="page">
+      <Container
+        className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+        size="page"
+      >
         <ListPage data-testid="automations-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left>
+              <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
                 <PageHeader.Title>
                   <span className="inline-flex items-baseline gap-2">
                     Automations

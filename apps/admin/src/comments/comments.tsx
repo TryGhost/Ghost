@@ -1,3 +1,5 @@
+import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
+import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -26,6 +28,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   timezone,
   singleCommentId,
 }) => {
+  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
@@ -89,11 +92,14 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 
   return (
     <Box className="size-full">
-      <Container className="relative flex h-full flex-col" size="page">
+      <Container
+        className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+        size="page"
+      >
         <ListPage data-testid="comments-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left>
+              <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
                 <PageHeader.Title>Comments</PageHeader.Title>
               </PageHeader.Left>
               {!singleCommentId && !hasFilters && (
@@ -176,6 +182,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 };
 
 const Comments: React.FC = () => {
+  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const [searchParams] = useSearchParams();
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const singleCommentId = useMemo(() => getSingleCommentIdParam(searchParams), [searchParams]);
@@ -187,11 +194,14 @@ const Comments: React.FC = () => {
   if (shouldDelayHydration) {
     return (
       <Box className="size-full">
-        <Container className="relative flex h-full flex-col" size="page">
+        <Container
+          className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+          size="page"
+        >
           <ListPage>
             <ListPage.Header>
               <PageHeader blurredBackground={false} sticky={false}>
-                <PageHeader.Left>
+                <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
                   <PageHeader.Title>Comments</PageHeader.Title>
                 </PageHeader.Left>
               </PageHeader>

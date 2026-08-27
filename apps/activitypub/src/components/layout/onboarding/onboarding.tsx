@@ -4,6 +4,7 @@ import {
   parseAccessibilitySettings,
   updateAccessibilitySettings,
 } from '@utils/accessibility';
+import { HostHeader } from '../host-header';
 import { Outlet } from '@tryghost/admin-x-framework';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditUser } from '@tryghost/admin-x-framework/api/users';
@@ -52,9 +53,12 @@ export const useOnboardingStatus = () => {
 
 const Onboarding: React.FC = () => {
   return (
-    <div className="h-full pt-14">
-      <Outlet />
-    </div>
+    <>
+      <HostHeader />
+      <div className="h-full pt-14">
+        <Outlet />
+      </div>
+    </>
   );
 };
 

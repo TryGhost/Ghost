@@ -163,7 +163,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   return (
     <Box className="size-full">
       <Container
-        className={cn('relative flex h-full flex-col', sidebarEnabled && 'admin7-members-content')}
+        className={cn('relative flex h-full flex-col', sidebarEnabled && 'admin7-page-content')}
         size="page"
       >
         <ListPage data-testid="members-page">
@@ -349,10 +349,7 @@ const Members: React.FC = () => {
     return (
       <Box className="size-full">
         <Container
-          className={cn(
-            'relative flex h-full flex-col',
-            sidebarEnabled && 'admin7-members-content',
-          )}
+          className={cn('relative flex h-full flex-col', sidebarEnabled && 'admin7-page-content')}
           size="page"
         >
           <ListPage>

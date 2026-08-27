@@ -1,3 +1,5 @@
+import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
+import { AdminSidebarToggle } from './admin-sidebar-toggle';
 import React from 'react';
 import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -13,6 +15,13 @@ import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
+
+// Stable host slot: sidebar saves must not rerender the Network content tree.
+const networkPageChrome = {
+  headerLeading: <AdminSidebarToggle />,
+  contentClassName: 'admin7-page-content',
+  contentGutter: 'var(--page-gutter)',
+};
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -84,7 +93,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <SidebarInset
             className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
           >
-            <main className="flex-1">{children}</main>
+            <main className="flex-1">
+              <ActivityPubHostLayoutProvider
+                value={sidebar.enabled ? networkPageChrome : undefined}
+              >
+                {children}
+              </ActivityPubHostLayoutProvider>
+            </main>
             <MobileNavBar />
           </SidebarInset>
         </SidebarProvider>

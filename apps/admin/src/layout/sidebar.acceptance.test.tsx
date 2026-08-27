@@ -1,3 +1,4 @@
+import { deferred } from '@/utils/deferred';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { StateBridge } from '@/ember-bridge';
 import { page, userEvent } from 'vitest/browser';
@@ -9,6 +10,11 @@ import {
   fakeAdminEndpoint,
   fakeEndpoint,
   fakeTags,
+  fakeComments,
+  fakeAutomations,
+  fakeNewsletters,
+  fakeTiers,
+  fakeAnalyticsOverview,
   fakeMembers,
   member,
   browseResponse,
@@ -17,6 +23,7 @@ import {
   configResponse,
   staffRole,
   staffUser,
+  fakeUsers,
   settingsResponse,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
@@ -787,7 +794,7 @@ describe('Members floating sidebar', () => {
   const layout = () => document.querySelector('.admin7-sidebar-layout') as HTMLElement;
   const panel = () => sidebarScreen.shellNav().element() as HTMLElement;
   const surface = () => panel().querySelector('[data-sidebar="sidebar"]') as HTMLElement;
-  const content = () => document.querySelector('.admin7-members-content') as HTMLElement;
+  const content = () => document.querySelector('.admin7-page-content') as HTMLElement;
   const savedUser = (visible: boolean, nightShift = 'light') => {
     const me = currentUserResponse();
     me.users[0].accessibility = JSON.stringify({
@@ -1170,7 +1177,7 @@ describe('Members floating sidebar', () => {
       expect(layout().dataset.sidebarMotion).toBe('snap');
       await page.viewport(1280, 800);
       // Use navigation history rather than clicking the deliberately inert sidebar.
-      window.location.hash = '#/tags';
+      window.location.hash = '#/site';
       await expect.element(sidebarScreen.navLink('Members')).toBeVisible();
       expect(layout()).toBeNull();
       await sidebarScreen.selectAppearance('dark');
@@ -1396,4 +1403,321 @@ describe('Members floating sidebar', () => {
       releaseMembers();
     },
   );
+});
+
+describe('React page chrome integration', () => {
+  const toggle = () => page.getByRole('button', { name: /^(Show|Hide) sidebar$/ });
+  const savedClosed = () => {
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      navigation: { expanded: { posts: false, members: true }, menu: { visible: false } },
+      whatsNew: { lastSeenDate: '2026-08-26T00:00:00.000Z' },
+    });
+    return me;
+  };
+  function seedPages() {
+    fakeTags([]);
+    fakeMembers([]);
+    fakeComments([]);
+    fakeAutomations([]);
+    fakeNewsletters([]);
+    fakeTiers([]);
+    fakeAnalyticsOverview();
+  }
+
+  it.each(['/tags', '/comments', '/automations', '/members/new', '/tags/new', '/analytics'])(
+    'keeps one working toggle and one content cap on %s',
+    async (route) => {
+      seedPages();
+      await renderAdminApp(route, {
+        labs: { admin7PageChrome: true, tagDetailsReact: true, automations: true },
+        boot: { browseMe: { response: savedClosed() } },
+      });
+      await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+      await expect(toggle()).toHaveCount(1);
+      expect(document.querySelectorAll('.admin7-page-content')).toHaveLength(1);
+      const content = document.querySelector('.admin7-page-content') as HTMLElement;
+      expect(getComputedStyle(content).maxWidth).toBe('1080px');
+      const gutter = content.querySelector(
+        '[data-list-page="list-page"], [data-detail-page="detail-page"], .admin7-page-gutter',
+      ) as HTMLElement;
+      expect(getComputedStyle(gutter).paddingLeft).toBe('40px');
+      expect(getComputedStyle(gutter).paddingRight).toBe('40px');
+      expect(toggle().element().getBoundingClientRect().left).toBeCloseTo(
+        content.getBoundingClientRect().left + 40,
+        0,
+      );
+      await toggle().click();
+      await expect.element(toggle()).toHaveAttribute('aria-expanded', 'true');
+      await expect.element(toggle()).toHaveAttribute('aria-disabled', 'false');
+      await expect
+        .element(
+          page.getByTestId('admin-sidebar').getByRole('link', { name: 'Members', exact: true }),
+        )
+        .toBeVisible();
+      try {
+        await page.viewport(801, 800);
+        await expect.element(toggle()).toBeVisible();
+        const header = toggle()
+          .element()
+          .closest('[data-page-header="main"], [data-header="header"]');
+        expect(header?.getBoundingClientRect().right).toBeLessThanOrEqual(801);
+        expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(801);
+        await page.viewport(1600, 1000);
+        expect(getComputedStyle(content).maxWidth).toBe('1280px');
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    },
+  );
+
+  it.each(['/tags', '/members/missing'])(
+    'keeps the toggle while %s data is still loading',
+    async (route) => {
+      seedPages();
+      const pending = deferred<unknown>();
+      const path = route === '/tags' ? /^\/tags\// : /^\/members\/missing\//;
+      const capture = fakeAdminEndpoint('GET', path, () => pending.promise);
+      try {
+        await renderAdminApp(route, {
+          labs: { admin7PageChrome: true },
+          boot: { browseMe: { response: savedClosed() } },
+        });
+        await expect.poll(() => capture.requests.length).toBeGreaterThan(0);
+        await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+        await expect(toggle()).toHaveCount(1);
+        await toggle().click();
+        await expect
+          .element(
+            page.getByTestId('admin-sidebar').getByRole('link', { name: 'Members', exact: true }),
+          )
+          .toBeVisible();
+      } finally {
+        pending.resolve(route === '/tags' ? browseResponse('tags', []) : { members: [] });
+      }
+    },
+  );
+
+  it('preserves closed state through list/detail navigation and leaves Ember tag details open', async () => {
+    seedPages();
+    await renderAdminApp('/members', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: savedClosed() } },
+    });
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    for (const route of ['/members/new', '/tags', '/comments', '/members']) {
+      window.location.hash = `#${route}`;
+      await expect.poll(currentRoute).toBe(route);
+      await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+      expect(
+        document.querySelector('.admin7-sidebar-layout')?.getAttribute('data-sidebar-motion'),
+      ).toBe('snap');
+    }
+    window.location.hash = '#/tags/legacy';
+    await expect
+      .element(
+        page.getByTestId('admin-sidebar').getByRole('link', { name: 'Members', exact: true }),
+      )
+      .toBeVisible();
+    await expect(toggle()).toHaveCount(0);
+    expect(document.querySelector('.admin7-sidebar-layout')).toBeNull();
+  });
+
+  it.each(['member', 'tag'])('keeps a reopening control on a missing %s', async (kind) => {
+    seedPages();
+    const route = kind === 'member' ? '/members/missing' : '/tags/missing';
+    const path = kind === 'member' ? /^\/members\/missing\// : /^\/tags\/slug\/missing\//;
+    fakeAdminEndpoint(
+      'GET',
+      path,
+      kind === 'member'
+        ? { members: [] }
+        : { errors: [{ message: 'Not found', type: 'NotFoundError' }] },
+      { status: kind === 'member' ? 200 : 404 },
+    );
+    await renderAdminApp(route, {
+      labs: { admin7PageChrome: true, tagDetailsReact: true },
+      boot: { browseMe: { response: savedClosed() } },
+    });
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle()).toHaveCount(1);
+    await expect
+      .element(
+        page.getByText(kind === 'member' ? 'This member couldn’t be found.' : 'Page not found', {
+          exact: true,
+        }),
+      )
+      .toBeVisible();
+  });
+  it.each(['/automations', '/analytics'])(
+    'retains the error boundary and reopen control after %s fails',
+    async (route) => {
+      seedPages();
+      const boot = { browseMe: { response: savedClosed() } };
+      if (route === '/automations') {
+        fakeAdminEndpoint(
+          'GET',
+          /^\/automations\//,
+          { errors: [{ message: 'Failed to load automations' }] },
+          { status: 500 },
+        );
+      } else {
+        fakeAdminEndpoint(
+          'GET',
+          /^\/site\//,
+          { errors: [{ message: 'Failed to load site' }] },
+          { status: 500 },
+        );
+      }
+      // React's development error replay emits window errors even when the
+      // router boundary catches them. Capture and assert only this expected API
+      // failure; do not globally ignore browser errors for the suite.
+      const renderErrors: string[] = [];
+      const captureError = (event: ErrorEvent) => {
+        const error: unknown = event.error;
+        renderErrors.push(error instanceof Error ? error.message : event.message);
+        event.preventDefault();
+      };
+      window.addEventListener('error', captureError);
+      try {
+        await renderAdminApp(route, { labs: { admin7PageChrome: true, automations: true }, boot });
+        await expect
+          .element(page.getByRole('heading', { name: 'Loading interrupted' }))
+          .toBeVisible();
+        await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+        await expect(toggle()).toHaveCount(1);
+        await toggle().click();
+        await expect
+          .element(
+            page.getByTestId('admin-sidebar').getByRole('link', { name: 'Members', exact: true }),
+          )
+          .toBeVisible();
+      } finally {
+        window.removeEventListener('error', captureError);
+      }
+      expect(renderErrors.length).toBeGreaterThan(0);
+      expect(
+        renderErrors.every((message) =>
+          message.includes(route === '/automations' ? 'loading automations' : 'loading site'),
+        ),
+      ).toBe(true);
+    },
+  );
+});
+
+describe('Embedded Network page chrome', () => {
+  const base = 'http://test.com/.ghost/activitypub/v1/';
+  const toggle = () => page.getByRole('button', { name: /^(Show|Hide) sidebar$/ });
+  function seedNetwork(onboarded = true) {
+    fakeUnreadNotifications(0);
+    fakeEndpoint('GET', `${base}topics`, { topics: [] });
+    fakeEndpoint('GET', `${base}preferences`, {});
+    fakeEndpoint('GET', 'http://test.com/.ghost/activitypub/users/index', {
+      id: 'https://example.com/ap/me',
+      preferredUsername: 'index',
+      name: 'Network account',
+    });
+    fakeEndpoint('GET', `${base}posts/me`, { posts: [], next: null });
+    fakeEndpoint('GET', `${base}recommendations`, { accounts: [] });
+    fakeEndpoint('GET', `${base}feed/reader`, { posts: [], next: null });
+    fakeEndpoint('GET', `${base}feed/notes`, { posts: [], next: null });
+    fakeEndpoint('GET', `${base}account/me`, {
+      id: 'me',
+      apId: 'https://example.com/ap/me',
+      name: 'Network account',
+      handle: '@me@example.com',
+      bio: '',
+      url: 'https://example.com',
+      avatarUrl: '',
+      bannerImageUrl: null,
+      customFields: {},
+      attachment: [],
+      postCount: 0,
+      likedCount: 0,
+      followingCount: 0,
+      followerCount: 0,
+      followsMe: false,
+      followedByMe: false,
+      blockedByMe: false,
+      domainBlockedByMe: false,
+    });
+    fakeUsers([]);
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      navigation: { expanded: { posts: false, members: true }, menu: { visible: false } },
+      apOnboarding: { welcomeStepsFinished: onboarded },
+      whatsNew: { lastSeenDate: '2026-08-26T00:00:00.000Z' },
+    });
+    return {
+      labs: { admin7PageChrome: true },
+      boot: { ...socialWebEnabled().boot, browseMe: { response: me } },
+    };
+  }
+
+  it('keeps its own navigation and scroll root while the Admin sidebar is collapsed', async () => {
+    await renderAdminApp('/activitypub/reader', seedNetwork());
+    await expect.element(page.getByRole('heading', { name: 'Reader', exact: true })).toBeVisible();
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle()).toHaveCount(1);
+    const scrollRoot = document.querySelector('[data-scrollable-container]') as HTMLElement;
+    expect(getComputedStyle(scrollRoot).overflowY).toBe('auto');
+    expect(document.querySelectorAll('.admin7-page-content')).toHaveLength(1);
+    await page.getByRole('link', { name: 'Notes', exact: true }).click();
+    await expect.poll(currentRoute).toBe('/activitypub/notes');
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle()).toHaveCount(1);
+    await toggle().click();
+    await expect
+      .element(
+        page.getByTestId('admin-sidebar').getByRole('link', { name: 'Members', exact: true }),
+      )
+      .toBeVisible();
+    try {
+      await page.viewport(800, 800);
+      await expect(toggle()).toHaveCount(0);
+      expect(document.querySelector('.admin7-page-content')).toBeNull();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('keeps the toggle in the profile back-only header', async () => {
+    await renderAdminApp('/activitypub/profile', seedNetwork());
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle()).toHaveCount(1);
+    await expect
+      .element(page.getByRole('heading', { name: 'Network account', exact: true }))
+      .toBeVisible();
+  });
+
+  it('keeps a reopening control on Network onboarding', async () => {
+    await renderAdminApp('/activitypub/welcome/1', seedNetwork(false));
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle()).toHaveCount(1);
+    await expect
+      .element(page.getByRole('heading', { name: 'Increase your reach, with the social web.' }))
+      .toBeVisible();
+  });
+
+  it('keeps a reopening control on Network API errors', async () => {
+    const options = seedNetwork();
+    fakeEndpoint(
+      'GET',
+      `${base}feed/reader`,
+      { message: 'Site missing', code: 'SITE_MISSING' },
+      { status: 403 },
+    );
+    await renderAdminApp('/activitypub/reader', options);
+    await expect
+      .element(page.getByRole('heading', { name: 'Site not configured correctly' }))
+      .toBeVisible();
+    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle()).toHaveCount(1);
+    await toggle().click();
+    await expect
+      .element(
+        page.getByTestId('admin-sidebar').getByRole('link', { name: 'Members', exact: true }),
+      )
+      .toBeVisible();
+  });
 });

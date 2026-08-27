@@ -6,8 +6,7 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin-7/fonts.css';
 
-/* Members is the first integrated page. Keep the rollout's dimensions local:
-   other pages retain their existing containers until their headers opt in. */
+/* Only integrated React surfaces adopt the shared page chrome dimensions. */
 .admin7-sidebar-layout {
   --panel-inset: 8px;
   --page-gutter: 40px;
@@ -57,31 +56,51 @@
   overflow-anchor: none;
 }
 
-.admin7-members-content {
+.admin7-page-content {
   max-width: var(--content-width);
 }
 
-.admin7-members-content > [data-list-page='list-page'] {
+.admin7-page-content > [data-list-page='list-page'],
+.admin7-page-content > [data-detail-page='detail-page'],
+.admin7-page-content .admin7-page-gutter {
   padding-inline: var(--page-gutter);
 }
 
-.admin7-members-content [data-list-page='header'] {
+.admin7-page-content [data-list-page='header'],
+.admin7-page-content .admin7-header-gutter {
   margin-inline: calc(var(--page-gutter) * -1);
   padding-inline: var(--page-gutter);
 }
 
-/* An open panel leaves less room than the viewport's responsive breakpoints
-   imply. Let Members actions take a second row before they cover the title. */
-.admin7-members-content [data-page-header='main'] {
+/* Analytics charts must not size their grid track beyond the available page. */
+.admin7-page-content > [data-admin-content-grid] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.admin7-page-content .admin7-header-gutter {
+  padding-inline: 0;
+}
+
+.admin7-page-content .admin7-header-gutter > [data-header='header'] {
+  padding-inline: var(--page-gutter);
+}
+
+.admin7-page-content .admin7-custom-header-main {
   flex-wrap: wrap;
 }
 
-.admin7-members-content [data-page-header='left'] {
-  flex-shrink: 0;
+/* An open panel leaves less room than the viewport's responsive breakpoints
+   imply. Let header actions take a second row before they cover the title. */
+.admin7-page-content [data-page-header='main'] {
+  flex-wrap: wrap;
 }
 
-.admin7-members-content [data-page-header='left'],
-.admin7-members-content [data-page-header='title-block'] {
+.admin7-page-content [data-page-header='left'] {
+  max-width: 100%;
+}
+
+.admin7-page-content [data-page-header='left'],
+.admin7-page-content [data-page-header='title-block'] {
   height: auto;
 }
 
