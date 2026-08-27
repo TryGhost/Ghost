@@ -107,37 +107,41 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
     return <AutomationsListSkeleton />;
   }
 
+  const showRunAnalytics = automations.every((automation) => automation.stats !== undefined);
+
   return (
     <Table
       aria-label="Automations"
-      className="flex table-fixed flex-col lg:table"
+      className={cn('flex table-fixed flex-col lg:table', !showRunAnalytics && 'border-t')}
       data-testid="automations-list"
     >
-      <TableHeader className="hidden lg:table-header-group">
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="lg:px-4" scope="col">
-            Name
-          </TableHead>
-          {AUTOMATION_STAT_COLUMNS.map((column) => (
-            <TableHead
-              key={column.key}
-              className={cn('lg:px-4', column.widthClassName)}
-              scope="col"
-            >
-              {column.label}
+      {showRunAnalytics && (
+        <TableHeader className="hidden lg:table-header-group">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="lg:px-4" scope="col">
+              Name
             </TableHead>
-          ))}
-          <TableHead className="w-28 lg:px-4" scope="col">
-            Status
-          </TableHead>
-        </TableRow>
-      </TableHeader>
+            {AUTOMATION_STAT_COLUMNS.map((column) => (
+              <TableHead
+                key={column.key}
+                className={cn('lg:px-4', column.widthClassName)}
+                scope="col"
+              >
+                {column.label}
+              </TableHead>
+            ))}
+            <TableHead className="w-28 lg:px-4" scope="col">
+              Status
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+      )}
       <TableBody className="flex flex-col lg:table-row-group">
         {automations.map((automation) => {
           const description = AUTOMATION_DESCRIPTIONS[automation.slug];
-          const lastEntry = automation.stats.last_run_created_at;
-          const totalEntries = automation.stats.total_run_count;
-          const inProgressEntries = automation.stats.in_progress_run_count;
+          const lastEntry = automation.stats?.last_run_created_at;
+          const totalEntries = automation.stats?.total_run_count ?? 0;
+          const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
           const statCells = {
             lastEntry: {
               content: lastEntry ? (
@@ -176,28 +180,34 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                 </Link>
                 {description && <span className="block text-muted-foreground">{description}</span>}
               </TableHead>
-              {AUTOMATION_STAT_COLUMNS.map((column) => {
-                const cell = statCells[column.key];
+              {showRunAnalytics &&
+                AUTOMATION_STAT_COLUMNS.map((column) => {
+                  const cell = statCells[column.key];
 
-                return (
-                  <TableCell
-                    key={column.key}
-                    className={cn(
-                      'row-start-2 flex min-w-0 flex-col p-0 lg:table-cell lg:p-4',
-                      column.widthClassName,
-                      cell.isEmpty && 'text-muted-foreground',
-                    )}
-                  >
-                    {cell.content}
-                    {/* The column headers are hidden below `lg`, so each stat
-                        carries its own label there. */}
-                    <span className="mt-0.5 text-sm leading-tight whitespace-nowrap text-muted-foreground lg:hidden">
-                      {column.label}
-                    </span>
-                  </TableCell>
-                );
-              })}
-              <TableCell className="col-start-4 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
+                  return (
+                    <TableCell
+                      key={column.key}
+                      className={cn(
+                        'row-start-2 flex min-w-0 flex-col p-0 lg:table-cell lg:p-4',
+                        column.widthClassName,
+                        cell.isEmpty && 'text-muted-foreground',
+                      )}
+                    >
+                      {cell.content}
+                      {/* The column headers are hidden below `lg`, so each stat
+                          carries its own label there. */}
+                      <span className="mt-0.5 text-sm leading-tight whitespace-nowrap text-muted-foreground lg:hidden">
+                        {column.label}
+                      </span>
+                    </TableCell>
+                  );
+                })}
+              <TableCell
+                className={cn(
+                  'col-start-4 row-start-1 w-auto p-0 text-right lg:table-cell lg:p-4',
+                  showRunAnalytics ? 'lg:w-28 lg:text-left' : 'lg:w-32',
+                )}
+              >
                 <AutomationStatusBadge status={automation.status} />
               </TableCell>
             </TableRow>
