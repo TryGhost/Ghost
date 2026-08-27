@@ -670,17 +670,17 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
+    const jobsService = require('./server/services/jobs-service').init();
+
     await initServices({ ghostServer, config, prometheusClient });
 
     debug('Begin: Register job handlers');
     const assert = require('node:assert/strict');
-    const jobsServiceWrapper = require('./server/services/jobs-service');
     const registerJobHandlers =
       require('./server/services/jobs-service/register-job-handlers').default;
     const mediaInliner = require('./server/services/media-inliner');
     const gifts = require('./server/services/gifts');
     const memberJobs = require('./server/services/members/jobs');
-    const jobsService = jobsServiceWrapper.init();
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     registerJobHandlers({
