@@ -71,6 +71,8 @@ services:
     container_name: ghost-dev
     working_dir: /home/ghost/ghost/core
     command: ['pnpm', 'dev']
+    # The entrypoint drains Ghost before exiting; give that longer than Docker's 10s
+    stop_grace_period: 45s
     volumes:
       # Mount the backend source as whole-directory mounts instead of
       # enumerating each server-graph workspace package. `pnpm dev` runs in
