@@ -1,7 +1,6 @@
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
-import { STRIPE_ALLOWED_COUNTRIES } from './stripe-allowed-countries';
 import {
   Combobox,
   ComboboxContent,
@@ -23,6 +22,7 @@ import {
   Separator,
   Switch,
 } from '@tryghost/shade/components';
+import { STRIPE_ALLOWED_COUNTRIES } from '@tryghost/checkout';
 import { type ErrorMessages, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { Text } from '@tryghost/shade/primitives';
 import {

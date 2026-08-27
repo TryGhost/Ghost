@@ -787,6 +787,9 @@ importers:
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.20
