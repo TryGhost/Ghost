@@ -2149,6 +2149,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../packages/checkout
       '@tryghost/custom-field-types':
         specifier: workspace:*
         version: link:../packages/custom-field-types
