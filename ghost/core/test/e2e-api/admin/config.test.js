@@ -41,8 +41,8 @@ describe('Config API', function () {
         .expectStatus(200)
         .matchBodySnapshot({
           config: {
-            database: stringMatching(/sqlite3|mysql|mysql2/),
-            environment: stringMatching(/^testing/),
+            database: stringMatching(/mysql|mysql2/),
+            environment: 'testing-mysql',
             version: stringMatching(/\d+\.\d+\.\d+/),
             // labs is matched dynamically so adding/removing feature
             // flags doesn't churn the snapshot
