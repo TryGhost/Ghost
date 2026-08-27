@@ -343,7 +343,9 @@ async function writeOptions(
   now: Date,
 ): Promise<void> {
   const all = z.encode(optionsCodec, {
-    shippingAllowedCountries: stated.shipping?.collect ? stated.shipping.allowed_countries : [],
+    shippingAllowedCountries: stated.shipping?.collect
+      ? (stated.shipping.allowed_countries ?? null)
+      : null,
     taxNumber: stated.tax_number?.collect ?? false,
   });
 
