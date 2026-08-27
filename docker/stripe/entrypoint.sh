@@ -3,6 +3,9 @@
 # Entrypoint script for the Stripe CLI service in compose.yml
 ## This script fetches the webhook secret from Stripe CLI and writes it to a shared config file
 ## that the Ghost server can read to verify webhook signatures.
+## Events forwarded by `stripe listen` use the Stripe account's default API version, not
+## the version Ghost registers with in production, so their shape can differ from what
+## production receives. Use `pnpm dev:stripe:remote` when the shape matters.
 
 # Note: the stripe CLI container is based on alpine, hence `sh` instead of `bash`.
 set -eu
