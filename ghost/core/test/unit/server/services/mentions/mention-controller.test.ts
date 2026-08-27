@@ -2,21 +2,24 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
 import logging from '@tryghost/logging';
-
+// Required, not imported: the controller requires the same module, and an ESM
+// import would give this test a second copy of the class to compare against.
+const ProcessWebmentionJob =
+  require('../../../../../core/server/services/mentions/process-webmention-job').default;
 const MentionController = require('../../../../../core/server/services/mentions/mention-controller');
 
 describe('MentionController', function () {
   let controller: any;
   let api: { processWebmention: sinon.SinonStub };
-  let jobService: { addJob: sinon.SinonStub };
+  let jobsService: { dispatch: sinon.SinonStub };
   let loggingStub: sinon.SinonStubbedInstance<typeof logging>;
 
   beforeEach(async function () {
     api = { processWebmention: sinon.stub().resolves() };
-    jobService = { addJob: sinon.stub() };
+    jobsService = { dispatch: sinon.stub().resolves() };
     loggingStub = sinon.stub(logging);
     controller = new MentionController();
-    await controller.init({ api, jobService, mentionResourceService: { getByID: sinon.stub() } });
+    await controller.init({ api, jobsService, mentionResourceService: { getByID: sinon.stub() } });
   });
 
   afterEach(function () {
@@ -72,7 +75,7 @@ describe('MentionController', function () {
   });
 
   describe('receive', function () {
-    it('queues a job that processes the webmention off the request', async function () {
+    it('dispatches a job that processes the webmention off the request', async function () {
       await controller.receive({
         data: {
           source: 'https://source.com/post/',
@@ -82,14 +85,13 @@ describe('MentionController', function () {
       });
 
       sinon.assert.notCalled(api.processWebmention);
-      sinon.assert.calledOnce(jobService.addJob);
+      sinon.assert.calledOnce(jobsService.dispatch);
 
-      await jobService.addJob.firstCall.args[1]();
-
-      const webmention = api.processWebmention.firstCall.args[0];
-      assert.deepEqual(webmention.source, new URL('https://source.com/post/'));
-      assert.deepEqual(webmention.target, new URL('https://target.com/post/'));
-      assert.deepEqual(webmention.payload, { withExtension: true });
+      const job = jobsService.dispatch.firstCall.args[0];
+      assert.ok(job instanceof ProcessWebmentionJob);
+      assert.equal(job.source, 'https://source.com/post/');
+      assert.equal(job.target, 'https://target.com/post/');
+      assert.deepEqual(job.payload, { withExtension: true });
     });
   });
 });

@@ -327,7 +327,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient }) {
+async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
@@ -393,7 +393,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   await Promise.all([
     identityTokens.init(),
     memberAttribution.init(),
-    mentionsService.init(),
+    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -672,7 +672,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     const jobsService = require('./server/services/jobs-service').init();
 
-    await initServices({ ghostServer, config, prometheusClient });
+    await initServices({ ghostServer, config, prometheusClient, jobsService });
 
     debug('Begin: Register job handlers');
     const assert = require('node:assert/strict');
@@ -681,13 +681,16 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const mediaInliner = require('./server/services/media-inliner');
     const gifts = require('./server/services/gifts');
     const memberJobs = require('./server/services/members/jobs');
+    const mentionsService = require('./server/services/mentions');
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
+    assert(mentionsService.controller, 'Mentions controller should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
       giftService: gifts.service,
       mediaInliner: mediaInliner.getInstance(),
+      mentionsController: mentionsService.controller,
     });
     await jobsService.start();
     debug('End: Register job handlers');

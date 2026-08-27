@@ -6,6 +6,7 @@ import ExternalMediaInliner from '../../../../../core/server/services/media-inli
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
 import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
+import ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -15,6 +16,7 @@ describe('register-job-handlers', function () {
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
   let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
   let giftService: { cleanup: sinon.SinonStub };
+  let mentionsController: { processWebmention: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -34,12 +36,14 @@ describe('register-job-handlers', function () {
       cleanExpiredComped: sinon.stub().resolves(),
     };
     giftService = { cleanup: sinon.stub().resolves() };
+    mentionsController = { processWebmention: sinon.stub().resolves() };
 
     registerJobHandlers({
       jobsService,
       memberJobs,
       giftService,
       mediaInliner,
+      mentionsController,
     });
   });
 
@@ -117,5 +121,18 @@ describe('register-job-handlers', function () {
     const updateCheckHandler = handlerFor('update-check');
 
     await updateCheckHandler(new UpdateCheckJob());
+  });
+
+  it('runs process-webmention with the injected mentions controller', async function () {
+    const processWebmentionHandler = handlerFor('process-webmention');
+    const job = new ProcessWebmentionJob({
+      source: 'https://source.com/post/',
+      target: 'https://target.com/post/',
+      payload: {},
+    });
+
+    await processWebmentionHandler(job);
+
+    assert.ok(mentionsController.processWebmention.calledOnceWithExactly(job));
   });
 });

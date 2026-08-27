@@ -8,6 +8,8 @@ import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
+import type MentionController from '../mentions/mention-controller';
+import ProcessWebmentionJob from '../mentions/process-webmention-job';
 
 const updateCheck = require('../update-check');
 
@@ -19,6 +21,7 @@ interface RegisterJobHandlersDependencies {
   };
   giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
+  mentionsController: MentionController;
 }
 
 export default function registerJobHandlers({
@@ -26,6 +29,7 @@ export default function registerJobHandlers({
   memberJobs,
   giftService,
   mediaInliner,
+  mentionsController,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -49,5 +53,9 @@ export default function registerJobHandlers({
 
   jobsService.handle(UpdateCheckJob, async () => {
     await updateCheck({ rethrowErrors: true });
+  });
+
+  jobsService.handle(ProcessWebmentionJob, async (job) => {
+    await mentionsController.processWebmention(job);
   });
 }
