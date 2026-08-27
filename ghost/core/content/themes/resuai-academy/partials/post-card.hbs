@@ -1,0 +1,12 @@
+<article class="post-card {{post_class}}">
+  <a class="post-image" href="{{url}}" aria-label="{{title}}">
+    {{#if feature_image}}<img src="{{img_url feature_image size="m"}}" alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}" loading="lazy">{{else}}<span class="image-placeholder">ResuAI Academy</span>{{/if}}
+    {{#if featured}}<span class="featured-badge">Featured</span>{{/if}}
+  </a>
+  <div class="post-card-content">
+    <div class="post-meta">{{#primary_tag}}<a href="{{url}}">{{name}}</a>{{/primary_tag}}<span>{{reading_time}}</span></div>
+    <h3><a href="{{url}}">{{title}}</a></h3>
+    <p>{{excerpt words="24"}}</p>
+    <a class="read-link" href="{{url}}">Study this topic →</a>
+  </div>
+</article>
