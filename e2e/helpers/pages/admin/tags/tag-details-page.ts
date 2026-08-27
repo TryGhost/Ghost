@@ -1,5 +1,12 @@
 import { AdminPage } from '@/admin-pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  deleteTagMenuItem,
+  descriptionFieldLabel,
+  nameFieldLabel,
+  slugFieldLabel,
+  tagsBackLink,
+} from '@tryghost/test-data/selectors/tags';
 
 export class TagDetailsPage extends AdminPage {
   readonly nameInput: Locator;
@@ -13,14 +20,14 @@ export class TagDetailsPage extends AdminPage {
   constructor(page: Page) {
     super(page);
 
-    this.nameInput = page.getByRole('textbox', { name: 'Name' });
-    this.slugInput = page.getByRole('textbox', { name: 'Slug' });
-    this.descriptionInput = page.getByRole('textbox', { name: 'Description' });
+    this.nameInput = page.getByRole('textbox', { name: nameFieldLabel });
+    this.slugInput = page.getByRole('textbox', { name: slugFieldLabel });
+    this.descriptionInput = page.getByRole('textbox', { name: descriptionFieldLabel });
     this.saveButton = page.getByRole('button', { name: 'Save' });
     this.saveButtonSuccess = page.getByRole('button', { name: 'Saved' });
-    this.deleteButton = page.getByRole('button', { name: 'Delete tag' });
+    this.deleteButton = page.getByRole('button', { name: deleteTagMenuItem });
 
-    this.backLink = page.locator('[data-test-link="tags-back"]');
+    this.backLink = page.locator(`[data-test-link="${tagsBackLink}"]`);
   }
 
   async fillTagName(name: string) {

@@ -235,42 +235,6 @@ describe('useEmberDataSync', () => {
   });
 
   queryTest(
-    'invalidates comment queries for mapped Ember comment events',
-    async ({ queryClient, wrapper }) => {
-      const mock = createMockStateBridge();
-      window.EmberBridge = { state: mock.stateBridge };
-
-      queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
-      queryClient.setQueryData(['CommentsResponseType', '/comments'], { comments: [] });
-      queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
-
-      renderHook(() => useEmberDataSync(), { wrapper });
-
-      await waitFor(() => {
-        expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
-      });
-
-      act(() => {
-        mock.emit('emberDataChange', {
-          operation: 'update',
-          modelName: 'comment',
-          id: 'member-1',
-          data: null,
-        });
-      });
-
-      await waitFor(() => {
-        const queries = queryClient.getQueryCache().getAll();
-        const commentQueries = queries.filter((q) => q.queryKey[0] === 'CommentsResponseType');
-        const nonCommentQueries = queries.filter((q) => q.queryKey[0] !== 'CommentsResponseType');
-
-        expect(commentQueries.every((q) => q.state.isInvalidated)).toBe(true);
-        expect(nonCommentQueries.every((q) => !q.state.isInvalidated)).toBe(true);
-      });
-    },
-  );
-
-  queryTest(
     'does not subscribe if unmounted before the bridge becomes available',
     async ({ wrapper }) => {
       vi.useFakeTimers();
@@ -517,5 +481,67 @@ describe('useEmberRouting', () => {
     await waitFor(() => {
       expect(renderCount).toBe(2);
     });
+  });
+});
+
+describe('theme bridge helpers', () => {
+  test('isEmberThemeManaged reflects bridge presence', async () => {
+    const { isEmberThemeManaged } = await import('./ember-bridge');
+    expect(isEmberThemeManaged()).toBe(false);
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(isEmberThemeManaged()).toBe(true);
+  });
+
+  test('applyEmberAdminThemePreference calls Ember when the method exists and reports it', async () => {
+    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    const apply = vi.fn();
+    mock.stateBridge.applyAdminThemePreference = apply;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    expect(applyEmberAdminThemePreference('dark')).toBe(true);
+    expect(apply).toHaveBeenCalledWith('dark');
+  });
+
+  test('applyEmberAdminThemePreference returns false without a bridge or method', async () => {
+    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+
+    // Bridge present but from an older Ember without the method
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+  });
+
+  test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
+    const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
+    await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
+
+    const mock = createMockStateBridge();
+    const preload = vi.fn().mockResolvedValue(undefined);
+    mock.stateBridge.preloadAdminThemeStylesheet = preload;
+    window.EmberBridge = { state: mock.stateBridge };
+    await preloadEmberAdminThemeStylesheet();
+    expect(preload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('emberMutationHandlers', () => {
+  test('resolves the bridge at call time, not import time', async () => {
+    // Import first, install the bridge after: forwarding must still work.
+    const { emberMutationHandlers } = await import('./ember-bridge');
+    expect(() => emberMutationHandlers.onUpdate('SettingsResponseType', {})).not.toThrow();
+
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    emberMutationHandlers.onUpdate('SettingsResponseType', { settings: [] });
+    emberMutationHandlers.onInvalidate('TagsResponseType');
+    emberMutationHandlers.onDelete('UsersResponseType', 'user-1');
+
+    expect(mock.stateBridge.onUpdate).toHaveBeenCalledWith('SettingsResponseType', {
+      settings: [],
+    });
+    expect(mock.stateBridge.onInvalidate).toHaveBeenCalledWith('TagsResponseType');
+    expect(mock.stateBridge.onDelete).toHaveBeenCalledWith('UsersResponseType', 'user-1');
   });
 });

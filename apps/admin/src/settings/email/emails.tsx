@@ -27,7 +27,7 @@ import {
   TabsTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { useNewslettersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -228,11 +228,8 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
 };
 
 const Emails: React.FC = () => {
-  const { settings, config } = useGlobalData();
-  const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [
-    string,
-  ];
-  const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+  const { config } = useGlobalData();
+  const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
   const visibleSearchKeywords = [
     searchKeywords.enableNewsletters,

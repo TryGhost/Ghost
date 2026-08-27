@@ -68,6 +68,7 @@ export const BASE_GHOST_ENV = [
   'NODE_ENV=development',
   'server__host=0.0.0.0',
   'server__port=2368',
+  'queryParameterFiltering__enabled=true',
 
   // Database configuration (database name is set per container)
   'database__client=mysql2',

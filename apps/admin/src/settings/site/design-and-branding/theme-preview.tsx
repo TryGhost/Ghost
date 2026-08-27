@@ -86,6 +86,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url, isVisible = 
       const previewUrl = new URL(url);
       previewUrl.searchParams.set('admin_toolbar', '0');
 
+      // eslint-disable-next-line no-restricted-syntax -- posts preview data to the site front-end, not the Admin API
       void fetch(previewUrl.toString(), {
         method: 'POST',
         headers: {

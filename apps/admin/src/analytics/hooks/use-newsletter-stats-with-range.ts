@@ -5,7 +5,7 @@ import {
   useNewsletterStats,
   useSubscriberCount,
 } from '@tryghost/admin-x-framework/api/stats';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useMemo } from 'react';
 

@@ -479,6 +479,17 @@ async function initBackgroundServices({ config }) {
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
+  // Runs before activitypub.init for the same reason as the send recovery
+  // above: gifts would otherwise go uncleaned for the life of the process
+  // if an unrelated background service fails.
+  try {
+    const giftJobs = require('./server/services/gifts/jobs');
+    await giftJobs.scheduleGiftCleanupJob(require('./server/services/jobs-service').getInstance());
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
   const activitypub = require('./server/services/activitypub');
   await activitypub.init();
   // Load email analytics recurring jobs
@@ -590,7 +601,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const rootApp = require('./app')();
 
     if (server) {
-      const GhostServer = require('./server/ghost-server');
+      const { GhostServer } = require('./server/ghost-server');
       ghostServer = new GhostServer({
         url: config.getSiteUrl(),
         env: config.get('env'),
@@ -642,10 +653,19 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     await initServices({ ghostServer, config, prometheusClient });
 
     debug('Begin: Register job handlers');
-    const jobsService = require('./server/services/jobs-service');
-    const service = jobsService.init();
-    require('./server/services/jobs-service/register-job-handlers').default();
-    await service.start();
+    const jobsServiceWrapper = require('./server/services/jobs-service');
+    const registerJobHandlers =
+      require('./server/services/jobs-service/register-job-handlers').default;
+    const mediaInliner = require('./server/services/media-inliner');
+    const db = require('./server/data/db');
+    const jobsService = jobsServiceWrapper.init();
+    registerJobHandlers({
+      jobsService,
+      db,
+      logging,
+      mediaInliner: mediaInliner.getInstance(),
+    });
+    await jobsService.start();
     debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 

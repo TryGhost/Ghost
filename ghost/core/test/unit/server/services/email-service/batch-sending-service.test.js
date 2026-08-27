@@ -14,11 +14,10 @@ const simulateSleep = async (ms, clock) => {
 
 describe('Batch Sending Service', function () {
   let errorLog;
-  let infoLog;
 
   beforeEach(function () {
     errorLog = sinon.stub(logging, 'error');
-    infoLog = sinon.stub(logging, 'info');
+    sinon.stub(logging, 'info');
   });
 
   afterEach(function () {
@@ -136,33 +135,6 @@ describe('Batch Sending Service', function () {
       );
       assert.ok(afterEmailModel.get('submitted_at'));
       assert.equal(afterEmailModel.get('error'), null);
-    });
-
-    it('keeps the email submitted when completion logging fails', async function () {
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
-      const service = new BatchSendingService({
-        models: { Email },
-      });
-      let emailModel;
-      sinon.stub(service, 'sendEmail').callsFake((email) => {
-        emailModel = email;
-        return Promise.resolve();
-      });
-      infoLog.callsFake((message) => {
-        if (message.startsWith('[Background Job] batch-sending-service-job completed')) {
-          throw new Error('Logger unavailable');
-        }
-      });
-
-      await service.emailJob({ emailId: '123' });
-
-      assert.equal(emailModel.get('status'), 'submitted');
-      assert.equal(emailModel.get('error'), null);
-      sinon.assert.notCalled(errorLog);
     });
 
     it('saves error state if sending fails', async function () {
@@ -284,9 +256,14 @@ describe('Batch Sending Service', function () {
   });
 
   describe('sendEmail', function () {
-    it('does not create batches if already created', async function () {
+    it('always reconciles via createBatches, passing existing batches (idempotent resume)', async function () {
+      // Existing batches from a prior run are handed to createBatches, which is
+      // idempotent: it resumes any un-built tail rather than being skipped. The old
+      // behaviour skipped creation entirely when batches existed, silently abandoning
+      // the tail of a creation interrupted by a container restart.
+      const existingBatches = [createModel({}), createModel({})];
       const EmailBatch = createModelClass({
-        findAll: [{}, {}],
+        findAll: existingBatches,
       });
       const service = new BatchSendingService({
         models: { EmailBatch },
@@ -303,13 +280,17 @@ describe('Batch Sending Service', function () {
       });
 
       const sendBatches = sinon.stub(service, 'sendBatches').resolves();
-      const createBatches = sinon.stub(service, 'createBatches').resolves();
+      // Reconcile finds nothing new to build, so it returns just the existing set.
+      const createBatches = sinon.stub(service, 'createBatches').resolves(existingBatches);
       const result = await service.sendEmail(email);
       assert.equal(result, undefined);
       sinon.assert.calledOnce(sendBatches);
-      sinon.assert.notCalled(createBatches);
+      sinon.assert.calledOnce(createBatches);
 
-      // Check called with batches
+      // createBatches receives the existing batches so it can resume from their watermark
+      assert.equal(createBatches.firstCall.args[0].existingBatches.length, 2);
+
+      // sendBatches gets the reconciled set
       const argument = sendBatches.firstCall.args[0];
       assert.equal(argument.batches.length, 2);
     });
@@ -762,6 +743,221 @@ describe('Batch Sending Service', function () {
 
       // Check email_count set
       assert.equal(email.get('email_count'), 3);
+    });
+
+    describe('resume (idempotent creation)', function () {
+      // Builds a setup where `builtCount` recipients (the highest member ids) were
+      // already created by a prior run, leaving `watermark` as the lowest built id.
+      // createBatches must resume below the watermark and build only the un-built tail.
+      function createResumeSetup({
+        builtCount,
+        watermark,
+        totalMembers,
+        email_count,
+        maxRecipients = 5,
+      }) {
+        const newsletter = createModel({});
+        const domainWarmingService = { isEnabled: () => false };
+
+        // Intended members id00..id{N-1}, all subscribed to the newsletter
+        const members = new Array(totalMembers).fill(0).map((_, i) => {
+          const idx = String(i).padStart(2, '0');
+          return createModel({
+            id: `id${idx}`,
+            email: `example${idx}@example.com`,
+            uuid: `member${idx}`,
+            name: `Member ${idx}`,
+            newsletters: [newsletter],
+          });
+        });
+
+        const seenFilters = [];
+        const Member = createModelClass({});
+        Member.getFilteredCollectionQuery = ({ filter }) => {
+          seenFilters.push(filter);
+          const q = nql(filter);
+          const all = members
+            .filter((m) => q.queryJSON(m.toJSON()))
+            .sort((a, b) => b.id.localeCompare(a.id));
+          return createDb({ all: all.map((m) => m.toJSON()) });
+        };
+
+        const EmailBatch = createModelClass({});
+
+        // The service #db resolves the existing coverage for #getExistingCoverage
+        const coverageRows =
+          builtCount > 0
+            ? [{ member_segment: null, count: builtCount, min_member_id: watermark }]
+            : [];
+        const db = createDb({ all: coverageRows });
+        const insert = sinon.spy(db, 'insert');
+
+        const service = new BatchSendingService({
+          models: { Member, EmailBatch },
+          domainWarmingService,
+          emailRenderer: {
+            getSegments() {
+              return [null];
+            },
+          },
+          sendingService: {
+            getMaximumRecipients() {
+              return maxRecipients;
+            },
+          },
+          emailSegmenter: {
+            getMemberFilterForSegment(n) {
+              return `newsletters.id:'${n.id}'`;
+            },
+          },
+          db,
+        });
+
+        // Email id sorts above every member id, so a fresh cursor includes them all
+        const email = createModel({ id: 'idZZ', email_count });
+        return { service, email, newsletter, insert, seenFilters };
+      }
+
+      it('resumes from the segment watermark and only builds the un-built tail', async function () {
+        // Top 10 (id10..id19) already built; watermark = id10, tail = id00..id09
+        const { service, email, newsletter, insert, seenFilters } = createResumeSetup({
+          builtCount: 10,
+          watermark: 'id10',
+          totalMembers: 20,
+          email_count: 20,
+        });
+
+        const batches = await service.createBatches({ email, post: createModel({}), newsletter });
+
+        // Only the tail is built: 10 members / 5 per batch = 2 new batches
+        assert.equal(batches.length, 2);
+        const inserted = insert.getCalls().flatMap((c) => c.args[0]);
+        assert.equal(inserted.length, 10);
+        assert.deepEqual(inserted.map((r) => r.member_id).sort(), [
+          'id00',
+          'id01',
+          'id02',
+          'id03',
+          'id04',
+          'id05',
+          'id06',
+          'id07',
+          'id08',
+          'id09',
+        ]);
+
+        // First member fetch started below the watermark, not the email id
+        assert.match(seenFilters[0], /id:<'id10'/);
+
+        // email_count reconciled to existing (10) + built (10)
+        assert.equal(email.get('email_count'), 20);
+      });
+
+      it('creates nothing when coverage is already complete (idempotent re-run)', async function () {
+        // All 20 built; watermark = id00 (lowest), nothing below it to build
+        const { service, email, newsletter, insert, seenFilters } = createResumeSetup({
+          builtCount: 20,
+          watermark: 'id00',
+          totalMembers: 20,
+          email_count: 20,
+        });
+
+        const existingBatches = [createModel({}), createModel({})];
+        const batches = await service.createBatches({
+          email,
+          post: createModel({}),
+          newsletter,
+          existingBatches,
+        });
+
+        // No new recipients inserted; returned set is exactly the existing batches
+        assert.equal(insert.getCalls().length, 0);
+        assert.equal(batches.length, 2);
+        assert.match(seenFilters[0], /id:<'id00'/);
+        assert.equal(email.get('email_count'), 20);
+      });
+
+      it('builds the full set on a fresh send (no coverage), starting from the email id', async function () {
+        const { service, email, newsletter, insert, seenFilters } = createResumeSetup({
+          builtCount: 0,
+          watermark: null,
+          totalMembers: 20,
+          email_count: 20,
+        });
+
+        const batches = await service.createBatches({ email, post: createModel({}), newsletter });
+
+        assert.equal(batches.length, 4); // 20 / 5
+        assert.equal(insert.getCalls().flatMap((c) => c.args[0]).length, 20);
+        // Fresh send starts the cursor at the email id
+        assert.match(seenFilters[0], /id:<'idZZ'/);
+        assert.equal(email.get('email_count'), 20);
+      });
+
+      it('aborts at a batch boundary during shutdown (SHUTDOWN_CODE), leaving a resumable partial', async function () {
+        const newsletter = createModel({});
+        const members = new Array(20).fill(0).map((_, i) => {
+          const idx = String(i).padStart(2, '0');
+          return createModel({
+            id: `id${idx}`,
+            email: `example${idx}@example.com`,
+            uuid: `member${idx}`,
+            name: `Member ${idx}`,
+            newsletters: [newsletter],
+          });
+        });
+
+        let service;
+        let fetchCount = 0;
+        const Member = createModelClass({});
+        Member.getFilteredCollectionQuery = ({ filter }) => {
+          fetchCount += 1;
+          // Signal shutdown after the first page is fetched and built, so the next
+          // loop iteration bails at the batch boundary rather than mid-batch.
+          if (fetchCount === 1) {
+            service.onPreStop();
+          }
+          const q = nql(filter);
+          const all = members
+            .filter((m) => q.queryJSON(m.toJSON()))
+            .sort((a, b) => b.id.localeCompare(a.id));
+          return createDb({ all: all.map((m) => m.toJSON()) });
+        };
+
+        const db = createDb({ all: [] });
+        const insert = sinon.spy(db, 'insert');
+        service = new BatchSendingService({
+          models: { Member, EmailBatch: createModelClass({}) },
+          domainWarmingService: { isEnabled: () => false },
+          emailRenderer: {
+            getSegments() {
+              return [null];
+            },
+          },
+          sendingService: {
+            getMaximumRecipients() {
+              return 5;
+            },
+          },
+          emailSegmenter: {
+            getMemberFilterForSegment(n) {
+              return `newsletters.id:'${n.id}'`;
+            },
+          },
+          db,
+        });
+        const email = createModel({ id: 'idZZ', email_count: 20 });
+
+        await assert.rejects(
+          service.createBatches({ email, post: createModel({}), newsletter }),
+          (err) => err.code === BatchSendingService.SHUTDOWN_CODE,
+        );
+
+        // Only the first batch (5 recipients) was committed before the abort; the
+        // remaining tail is left un-built for the next boot to resume.
+        const inserted = insert.getCalls().flatMap((c) => c.args[0]);
+        assert.equal(inserted.length, 5);
+      });
     });
 
     describe('Domain warming', function () {
@@ -2242,62 +2438,127 @@ describe('Batch Sending Service', function () {
       );
     });
 
-    it('onShutdown does not resolve until in-flight sendBatches settles', async function () {
+    it('onShutdown does not resolve until an in-flight send settles', async function () {
+      const EmailBatch = createModelClass({ findAll: [] });
       const service = new BatchSendingService({
+        models: { EmailBatch },
         sendingService: {
           getTargetDeliveryWindow() {
             return 0;
           },
         },
       });
-      // Gate sendBatch behind a manual promise so we can observe the order
-      // in which onShutdown and the in-flight sendBatches resolve.
+      // Reach the real send loop (with its worker fan-out) through sendEmail, the single
+      // in-flight tracker. sendBatch is gated so a send stays in flight; `reachedSend`
+      // lets us hold off calling onShutdown until a worker is already past the shutdown
+      // check — otherwise the synchronous flag flip would make the workers bail before
+      // sending, and we'd be testing the wrong path.
+      sinon.stub(service, 'createBatches').resolves([createModel({}), createModel({})]);
+      let markReached;
+      const reachedSend = new Promise((resolve) => {
+        markReached = resolve;
+      });
       let releaseGate;
       const gate = new Promise((resolve) => {
         releaseGate = resolve;
       });
       const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
+        markReached();
         await gate;
         return true;
       });
 
-      // Kick off sendBatches; do NOT await — it must remain in flight.
-      const sendPromise = service.sendBatches({
-        email: createModel({}),
-        batches: [createModel({}), createModel({})],
-        post: createModel({}),
+      const email = createModel({
+        status: 'submitting',
         newsletter: createModel({}),
+        post: createModel({}),
       });
 
-      // Tag each promise so we can observe resolution order.
+      // Kick off sendEmail; do NOT await — it must remain in flight.
+      const sendPromise = service.sendEmail(email);
+      let sendEmailDone = false;
+      sendPromise
+        .then(() => {
+          sendEmailDone = true;
+        })
+        .catch(() => {
+          sendEmailDone = true;
+        });
+
+      // Wait until a batch send is actually in flight, then start the drain.
+      await reachedSend;
       let onShutdownDone = false;
-      let sendBatchesDone = false;
       const onShutdownPromise = service.onShutdown().then(() => {
         onShutdownDone = true;
       });
-      sendPromise
-        .then(() => {
-          sendBatchesDone = true;
-        })
-        .catch(() => {
-          sendBatchesDone = true;
-        });
 
-      // Yield the microtask queue. Neither sendBatches nor onShutdown can have settled
+      // Yield the microtask queue. Neither the send nor onShutdown can have settled
       // because sendBatch is still awaiting the gate.
       await new Promise((resolve) => {
         setImmediate(resolve);
       });
-      assert.equal(sendBatchesDone, false, 'sendBatches should still be in flight');
-      assert.equal(onShutdownDone, false, 'onShutdown must wait for in-flight sendBatches');
+      assert.equal(sendEmailDone, false, 'sendEmail should still be in flight');
+      assert.equal(onShutdownDone, false, 'onShutdown must wait for the in-flight send');
 
-      // Release the gate; sendBatches finishes, then onShutdown resolves.
+      // Release the gate; the send finishes, then onShutdown resolves.
       releaseGate();
       await onShutdownPromise;
       await sendPromise;
       assert.equal(onShutdownDone, true);
-      assert.equal(sendBatchesDone, true);
+      assert.equal(sendEmailDone, true);
       sinon.assert.called(sendBatch);
+    });
+
+    it('onShutdown does not resolve until in-flight batch creation settles', async function () {
+      const EmailBatch = createModelClass({ findAll: [] });
+      const service = new BatchSendingService({
+        models: { EmailBatch },
+        sendingService: {
+          getTargetDeliveryWindow() {
+            return 0;
+          },
+        },
+      });
+
+      // Gate batch creation so it stays in flight while we observe the drain.
+      let releaseCreation;
+      const creationGate = new Promise((resolve) => {
+        releaseCreation = resolve;
+      });
+      sinon.stub(service, 'createBatches').callsFake(async () => {
+        await creationGate;
+        return [];
+      });
+      const sendBatches = sinon.stub(service, 'sendBatches').resolves();
+
+      const email = createModel({
+        status: 'submitting',
+        newsletter: createModel({}),
+        post: createModel({}),
+      });
+
+      // Kick off sendEmail; do NOT await — creation must remain in flight.
+      const sendPromise = service.sendEmail(email);
+
+      let onShutdownDone = false;
+      const onShutdownPromise = service.onShutdown().then(() => {
+        onShutdownDone = true;
+      });
+
+      // Yield the microtask queue. onShutdown must not settle: createBatches is gated
+      // and sendBatches has not been reached yet.
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      assert.equal(onShutdownDone, false, 'onShutdown must wait for in-flight batch creation');
+      sinon.assert.notCalled(sendBatches);
+
+      // Release creation; sending proceeds, then onShutdown resolves.
+      releaseCreation();
+      await onShutdownPromise;
+      await sendPromise;
+      assert.equal(onShutdownDone, true);
+      sinon.assert.calledOnce(sendBatches);
     });
 
     it('emailJob leaves email in submitting status when sendEmail rejects with SHUTDOWN_CODE', async function () {

@@ -15,7 +15,7 @@ describe('Gift', function () {
     stripeCheckoutSessionId: 'cs_123',
     stripePaymentIntentId: 'pi_456',
     purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-    expiresAt: new Date('2027-08-19T06:59:59.999Z'),
+    expiryTimeZone: 'America/Los_Angeles',
   };
 
   describe('fromPurchase', function () {
@@ -29,7 +29,7 @@ describe('Gift', function () {
       const gift = Gift.fromPurchase(purchaseData);
 
       assert.equal(gift.purchasedAt?.toISOString(), purchaseData.purchasedAt.toISOString());
-      assert.equal(gift.expiresAt?.toISOString(), purchaseData.expiresAt.toISOString());
+      assert.equal(gift.expiresAt?.toISOString(), '2027-08-19T06:59:59.999Z');
     });
 
     it('sets null defaults for redemption fields', function () {
@@ -74,6 +74,8 @@ describe('Gift', function () {
         duration: 1,
         currency: 'usd',
         amount: 5000,
+        expiryAnchor: null,
+        expiryTimeZone: 'America/Los_Angeles',
       });
 
       assert.equal(gift.status, 'payment_pending');
@@ -92,13 +94,44 @@ describe('Gift', function () {
         stripeCheckoutSessionId: 'cs_123',
         stripePaymentIntentId: 'pi_123',
         purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-        expiresAt: new Date('2027-08-19T06:59:59.999Z'),
+        expiryTimeZone: 'America/Los_Angeles',
       });
       assert.equal(purchased?.status, 'purchased');
       assert.equal(purchased?.recipientName, 'Recipient');
       assert.equal(purchased?.currency, 'usd');
       assert.equal(purchased?.amount, 5000);
       assert.ok(purchased?.expiresAt);
+    });
+
+    it('owns the scheduled expiry deadline before purchase completes', function () {
+      const gift = Gift.fromCheckout({
+        token: 'pending-token',
+        buyerEmail: null,
+        buyerMemberId: null,
+        buyerName: 'Buyer',
+        recipientName: 'Recipient',
+        personalMessage: 'Enjoy this gift',
+        tierId: 'tier_1',
+        cadence: 'year',
+        duration: 1,
+        currency: 'usd',
+        amount: 5000,
+        expiryAnchor: new Date('2026-12-25T17:00:00.000Z'),
+        expiryTimeZone: 'America/Los_Angeles',
+      });
+
+      assert.equal(gift.expiresAt?.toISOString(), '2027-12-26T07:59:59.999Z');
+
+      const purchased = gift.completePurchase({
+        buyerEmail: 'buyer@example.com',
+        buyerMemberId: null,
+        stripeCheckoutSessionId: 'cs_123',
+        stripePaymentIntentId: 'pi_123',
+        purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
+        expiryTimeZone: 'America/Los_Angeles',
+      });
+
+      assert.equal(purchased?.expiresAt?.toISOString(), '2027-12-26T07:59:59.999Z');
     });
   });
 
@@ -290,6 +323,24 @@ describe('Gift', function () {
       assert.equal(redeemed.consumesAt?.toISOString(), '2026-07-11T12:00:00.000Z');
     });
 
+    it('starts the full paid duration at redemption for a scheduled gift', function () {
+      const gift = buildGift({
+        cadence: 'month',
+        duration: 6,
+      });
+      const redeemedAt = new Date('2027-02-10T12:00:00.000Z');
+
+      const redeemed = gift.redeem({
+        memberId: 'member_2',
+        redeemedAt,
+      });
+
+      assert.equal(redeemed.consumesAt?.getFullYear(), 2027);
+      assert.equal(redeemed.consumesAt?.getMonth(), 7);
+      assert.equal(redeemed.consumesAt?.getDate(), redeemedAt.getDate());
+      assert.equal(redeemed.consumesAt?.getHours(), redeemedAt.getHours());
+    });
+
     it('keeps month-end redemption math stable for shorter months', function () {
       const gift = buildGift({
         cadence: 'month',
@@ -452,6 +503,25 @@ describe('Gift', function () {
       const result = gift.remind();
 
       assert.equal(result, null);
+    });
+  });
+
+  describe('reminderDueAt', function () {
+    it('is 7 days before the gifted access ends', function () {
+      const gift = buildGift({
+        status: 'redeemed',
+        redeemerMemberId: 'member_2',
+        redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+        consumesAt: new Date('2027-04-11T12:00:00.000Z'),
+      });
+
+      assert.deepEqual(gift.reminderDueAt(), new Date('2027-04-04T12:00:00.000Z'));
+    });
+
+    it('is null before the gift is redeemed', function () {
+      const gift = buildGift({ consumesAt: null });
+
+      assert.equal(gift.reminderDueAt(), null);
     });
   });
 

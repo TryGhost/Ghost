@@ -1,5 +1,6 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import { integrations } from '@tryghost/test-data/selectors/settings';
 
 export class IntegrationsSection extends BasePage {
   readonly integrationsSection: Locator;
@@ -10,7 +11,7 @@ export class IntegrationsSection extends BasePage {
   constructor(page: Page) {
     super(page, 'ghost/#/settings/integrations');
 
-    this.integrationsSection = page.getByTestId('integrations');
+    this.integrationsSection = page.getByTestId(integrations);
     this.integrationsHeading = page.getByRole('heading', { level: 5, name: 'Integrations' });
     this.integrationsDescription = page.getByText('Make Ghost work with apps and tools');
     this.integrationsAddButton = page.getByRole('button', { name: 'Add custom integration' });

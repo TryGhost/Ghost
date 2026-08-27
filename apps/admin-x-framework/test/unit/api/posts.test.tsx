@@ -12,13 +12,19 @@ describe('posts api', () => {
       const { result } = renderHookWithProviders(() => useImportContentCSV());
 
       await act(async () => {
-        await result.current.mutateAsync(file);
+        await result.current.mutateAsync({
+          file,
+          mapping: { Headline: 'title', Body: '', Published: 'published_at' },
+        });
       });
 
       expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/posts/upload/');
       expect(mock.calls[0][1].method).toBe('POST');
       expect(mock.calls[0][1].body).toBeInstanceOf(FormData);
       expect(mock.calls[0][1].body.get('postsfile')).toBe(file);
+      expect(mock.calls[0][1].body.get('mapping[Headline]')).toBe('title');
+      expect(mock.calls[0][1].body.get('mapping[Body]')).toBe('');
+      expect(mock.calls[0][1].body.get('mapping[Published]')).toBe('published_at');
       expect(mock.calls[0][1].headers).not.toHaveProperty('content-type');
     });
   });
@@ -36,7 +42,9 @@ describe('posts api', () => {
 
     try {
       const { result } = renderHookWithProviders(() => useImportContentCSV(), { queryClient });
-      const importPromise = result.current.mutateAsync(file).catch((error) => error);
+      const importPromise = result.current
+        .mutateAsync({ file, mapping: { title: 'title' } })
+        .catch((error) => error);
 
       await vi.advanceTimersByTimeAsync(600);
 
@@ -46,5 +54,21 @@ describe('posts api', () => {
       globalThis.fetch = originalFetch;
       vi.useRealTimers();
     }
+  });
+
+  it('uploads a mapped CSV ZIP through the posts endpoint', async () => {
+    const file = new File(['PK'], 'posts.zip', { type: 'application/zip' });
+
+    await withMockFetch({}, async (mock) => {
+      const { result } = renderHookWithProviders(() => useImportContentCSV());
+
+      await act(async () => {
+        await result.current.mutateAsync({ file, mapping: { Headline: 'title' } });
+      });
+
+      expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/posts/upload/');
+      expect(mock.calls[0][1].body.get('postsfile')).toBe(file);
+      expect(mock.calls[0][1].body.get('mapping[Headline]')).toBe('title');
+    });
   });
 });

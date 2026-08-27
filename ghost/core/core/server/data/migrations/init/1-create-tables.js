@@ -3,7 +3,6 @@ const schema = require('../../schema').tables;
 const views = require('../../schema').views;
 const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema);
-const { sequence } = require('@tryghost/promise');
 
 module.exports.up = async (options) => {
   const connection = options.connection;
@@ -11,12 +10,10 @@ module.exports.up = async (options) => {
   const existingTables = await commands.getTables(connection);
   const missingTables = schemaTables.filter((t) => !existingTables.includes(t));
 
-  await sequence(
-    missingTables.map((table) => async () => {
-      logging.info('Creating table: ' + table);
-      await commands.createTable(table, connection);
-    }),
-  );
+  for (const table of missingTables) {
+    logging.info('Creating table: ' + table);
+    await commands.createTable(table, connection);
+  }
 
   // Create views after tables exist. View creation is idempotent
   // (createViewOrReplace) so adding a new view to views.js does not require
@@ -38,9 +35,9 @@ module.exports.up = async (options) => {
 
         // Reference between tables!
         schemaTables.reverse();
-        await sequence(schemaTables.map(table => async () => {
+        for (const table of schemaTables) {
             logging.info('Drop table: ' + table);
             await commands.deleteTable(table, connection);
-        }));
+        }
     };
  */

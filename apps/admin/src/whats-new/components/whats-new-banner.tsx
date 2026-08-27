@@ -5,13 +5,13 @@ import { useWhatsNew, useDismissWhatsNew } from '@/whats-new/hooks/use-whats-new
 import { useChangelog } from '@/whats-new/hooks/use-changelog';
 
 function WhatsNewBanner() {
-  const { data: whatsNewData } = useWhatsNew();
+  const { hasNew } = useWhatsNew();
   const { data: changelog } = useChangelog();
   const { mutate: dismissWhatsNew } = useDismissWhatsNew();
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Don't show if dismissed or no new content
-  if (isDismissed || !whatsNewData?.hasNew) {
+  if (isDismissed || !hasNew) {
     return null;
   }
 

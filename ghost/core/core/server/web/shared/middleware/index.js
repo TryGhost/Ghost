@@ -8,7 +8,7 @@ module.exports = {
   },
 
   get cacheControl() {
-    return require('./cache-control');
+    return require('./cache-control').cacheControl;
   },
 
   get maxLimitCap() {

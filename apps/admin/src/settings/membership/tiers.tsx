@@ -26,7 +26,7 @@ import {
   TabsTrigger,
 } from '@tryghost/shade/components';
 import { ChevronDown } from 'lucide-react';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import {
   type Setting,
@@ -44,7 +44,7 @@ import { currencySelectGroups, validateCurrencyAmount } from '@tryghost/admin-x-
 import { formatNumber } from '@tryghost/shade/utils';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';

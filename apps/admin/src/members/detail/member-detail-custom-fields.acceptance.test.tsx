@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
+  fakeMemberCustomFields,
   fakeMembers,
   member,
   renderAdminApp,
   type Member,
 } from '@test-utils/acceptance';
+import { memberDetailScreen } from './member-detail.screen';
 
 const FLAGS = { labs: { membersCustomFields: true } };
 
@@ -51,7 +53,7 @@ function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>
   fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), () => ({
     members: [{ ...current, custom_fields: { ...values } }],
   }));
-  fakeAdminEndpoint('GET', '/members/custom_fields/', { members_custom_fields: FIELDS });
+  fakeMemberCustomFields(FIELDS);
   fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
     events: [],
     meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
@@ -72,7 +74,7 @@ function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>
   });
 }
 
-const modal = () => page.getByTestId('member-custom-field-edit-modal');
+const modal = () => memberDetailScreen.fieldEditModal();
 
 describe('Member detail custom fields', () => {
   it('renders the member’s values as a read-only record, addresses as one line', async () => {
@@ -80,12 +82,14 @@ describe('Member detail custom fields', () => {
     fakeMemberDetailWorld(m, { job_title: 'Editor', home_address: ADDRESS });
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await expect.element(page.getByText('Editor')).toBeVisible();
-    await expect.element(page.getByText('1 Main St, Berlin, 10115, DE')).toBeVisible();
+    await expect.element(memberDetailScreen.fieldValue('Editor')).toBeVisible();
+    await expect
+      .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, DE'))
+      .toBeVisible();
     // Company has no value: its row shows the empty dash, and nothing on
     // the page is an editable input for custom fields.
-    await expect.element(page.getByText('–').first()).toBeVisible();
-    expect(page.getByRole('textbox', { name: 'Job title' }).elements()).toHaveLength(0);
+    await expect.element(memberDetailScreen.emptyValueDash()).toBeVisible();
+    await expect.element(memberDetailScreen.fieldTextbox('Job title')).not.toBeInTheDocument();
   });
 
   it('saves one field through its own editor without touching the page Save', async () => {
@@ -93,16 +97,14 @@ describe('Member detail custom fields', () => {
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor', company: 'Ghost' });
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Publisher');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     // The row reflects the save; the page Save never became involved.
-    await expect.element(page.getByText('Publisher')).toBeVisible();
-    expect(modal().elements()).toHaveLength(0);
-    await expect
-      .element(page.getByTestId('member-detail').getByRole('button', { name: 'Save', exact: true }))
-      .toBeDisabled();
+    await expect.element(memberDetailScreen.fieldValue('Publisher')).toBeVisible();
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.saveButton()).toBeDisabled();
     // The payload was a single-field merge patch: only this key, nothing else.
     const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
     expect(saved.members[0].custom_fields).toEqual({ job_title: 'Publisher' });
@@ -115,21 +117,19 @@ describe('Member detail custom fields', () => {
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
     // Dirty the page draft by editing the name, without saving it.
-    await page.getByLabelText('Name').fill('Ada L.');
-    const pageSave = page
-      .getByTestId('member-detail')
-      .getByRole('button', { name: 'Save', exact: true });
+    await memberDetailScreen.nameInput().fill('Ada L.');
+    const pageSave = memberDetailScreen.saveButton();
     await expect.element(pageSave).toBeEnabled();
 
     // A custom-field save triggers a member refetch. That refetch must not
     // reseed the page draft — the unsaved name edit has to survive, and the
     // field payload must not carry the name.
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Publisher');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
-    await expect.element(page.getByText('Publisher')).toBeVisible();
+    await expect.element(memberDetailScreen.fieldValue('Publisher')).toBeVisible();
 
-    await expect.element(page.getByLabelText('Name')).toHaveValue('Ada L.');
+    await expect.element(memberDetailScreen.nameInput()).toHaveValue('Ada L.');
     await expect.element(pageSave).toBeEnabled();
     expect(editApi.lastRequest?.body).toEqual({
       members: [{ id: m.id, custom_fields: { job_title: 'Publisher' } }],
@@ -141,14 +141,14 @@ describe('Member detail custom fields', () => {
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor' });
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     // The editor closes only on save success — the reliable "saved" signal
     // here, since other empty rows already show the dash.
-    await expect.poll(() => modal().elements().length).toBe(0);
-    await expect.element(page.getByText('–').first()).toBeVisible();
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.emptyValueDash()).toBeVisible();
     const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
     expect(saved.members[0].custom_fields).toEqual({ job_title: null });
   });
@@ -160,18 +160,18 @@ describe('Member detail custom fields', () => {
 
     // Dirty: Escape must NOT close it — typed values can't be lost to a
     // stray key or click; Cancel is the one explicit discard.
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Publisher');
     await userEvent.keyboard('{Escape}');
     await expect.element(modal()).toBeVisible();
     await modal().getByRole('button', { name: 'Cancel' }).click();
-    await expect.poll(() => modal().elements().length).toBe(0);
+    await expect.element(modal()).not.toBeInTheDocument();
 
     // Pristine: Escape dismisses without ceremony.
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await expect.element(modal()).toBeVisible();
     await userEvent.keyboard('{Escape}');
-    await expect.poll(() => modal().elements().length).toBe(0);
+    await expect.element(modal()).not.toBeInTheDocument();
   });
 
   it('cancelling the editor discards the edit', async () => {
@@ -179,11 +179,11 @@ describe('Member detail custom fields', () => {
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor' });
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Publisher');
     await modal().getByRole('button', { name: 'Cancel' }).click();
 
-    await expect.element(page.getByText('Editor')).toBeVisible();
+    await expect.element(memberDetailScreen.fieldValue('Editor')).toBeVisible();
     expect(editApi.requests).toHaveLength(0);
   });
 
@@ -194,13 +194,15 @@ describe('Member detail custom fields', () => {
 
     // Hong Kong has no postal code, so leaving it empty is a complete address
     // rather than an incomplete one.
-    await page.getByRole('button', { name: 'Edit Home address' }).click();
+    await memberDetailScreen.editFieldButton('Home address').click();
     await modal().getByLabelText('Address line 1').fill('Flat 3, 8 Wan Chai Road');
     await modal().getByLabelText('City').fill('Hong Kong');
     await modal().getByLabelText('Country').fill('HK');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    await expect.element(page.getByText('Flat 3, 8 Wan Chai Road, Hong Kong, HK')).toBeVisible();
+    await expect
+      .element(memberDetailScreen.fieldValue('Flat 3, 8 Wan Chai Road, Hong Kong, HK'))
+      .toBeVisible();
     const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
     expect(saved.members[0].custom_fields).toEqual({
       home_address: { line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', country: 'HK' },
@@ -212,7 +214,7 @@ describe('Member detail custom fields', () => {
     const editApi = fakeMemberDetailWorld(m, {});
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await page.getByRole('button', { name: 'Edit Home address' }).click();
+    await memberDetailScreen.editFieldButton('Home address').click();
     await modal().getByLabelText('Address line 1').fill('1 Main St');
     await modal().getByLabelText('City').fill('Berlin');
     await modal().getByLabelText('Postal code').fill('10115');
@@ -228,7 +230,9 @@ describe('Member detail custom fields', () => {
     await modal().getByLabelText('Country').fill('DE');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    await expect.element(page.getByText('1 Main St, Berlin, 10115, DE')).toBeVisible();
+    await expect
+      .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, DE'))
+      .toBeVisible();
     const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
     expect(saved.members[0].custom_fields).toEqual({ home_address: ADDRESS });
   });
@@ -254,7 +258,7 @@ describe('Member detail custom fields', () => {
     );
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await page.getByRole('button', { name: 'Edit Job title' }).click();
+    await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Editor');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
@@ -269,14 +273,14 @@ describe('Member detail custom fields', () => {
     fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), {
       members: [{ ...m, custom_fields: {} }],
     });
-    fakeAdminEndpoint('GET', '/members/custom_fields/', { members_custom_fields: [] });
+    fakeMemberCustomFields([]);
     fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
       events: [],
       meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
     });
     await renderAdminApp(`/members/${m.id}`, FLAGS);
 
-    await expect.element(page.getByLabelText('Name')).toBeVisible();
-    expect(page.getByTestId('member-custom-fields-field').elements()).toHaveLength(0);
+    await expect.element(memberDetailScreen.nameInput()).toBeVisible();
+    await expect.element(memberDetailScreen.customFieldsSection()).not.toBeInTheDocument();
   });
 });

@@ -24,7 +24,7 @@ const baseFeaturebaseTokenQuery = createQuery<FeaturebaseTokenResponseType>({
   path: '/featurebase/token/',
 });
 
-export const getFeaturebaseToken = (options: { enabled?: boolean } = {}) => {
+export const useFeaturebaseToken = (options: { enabled?: boolean } = {}) => {
   return baseFeaturebaseTokenQuery({
     ...FEATUREBASE_QUERY_OPTIONS,
     ...options,

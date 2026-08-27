@@ -18,6 +18,19 @@ function prefixUrl(url: string, base: string): string {
   return `${normalizedBase}/${url}`;
 }
 
+function normalizeBuildPermissions(directory: string): void {
+  fs.chmodSync(directory, 0o755);
+
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      normalizeBuildPermissions(entryPath);
+    } else if (entry.isFile()) {
+      fs.chmodSync(entryPath, 0o644);
+    }
+  }
+}
+
 // Vite plugin to extract styles and scripts from Ghost admin index.html
 export function emberAssetsPlugin() {
   let config: ResolvedConfig;
@@ -138,6 +151,12 @@ export function emberAssetsPlugin() {
           // Copy React index.html, overwriting the existing index.html
           const forwardIndexFile = path.resolve(GHOST_ADMIN_PATH, 'index.html');
           fs.copyFileSync(reactIndexFile, forwardIndexFile);
+
+          // Nx preserves output modes in its local and remote caches. Normalize
+          // both declared outputs so a cache entry created with a restrictive
+          // umask remains readable when restored by another user or in Docker.
+          normalizeBuildPermissions(config.build.outDir);
+          normalizeBuildPermissions(GHOST_ADMIN_PATH);
         } catch (error) {
           throw new Error(
             `Failed to copy admin assets: ${error instanceof Error ? error.message : String(error)}`,

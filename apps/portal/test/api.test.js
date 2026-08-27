@@ -70,6 +70,35 @@ describe('Portal API gift redemption', () => {
     );
   });
 
+  test('preserves the gift error code from the members api', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              message: 'This gift has expired.',
+              code: 'GIFT_EXPIRED',
+            },
+          ],
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' })).rejects.toEqual(
+      new HumanReadableError('This gift has expired.', {
+        code: 'GIFT_EXPIRED',
+      }),
+    );
+  });
+
   test('preserves the api error message for 404 members api gift responses', async () => {
     const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
@@ -307,6 +336,35 @@ describe('Portal API gift checkout', () => {
       buyerName: 'Jamie',
       personalMessage: 'Enjoy!',
     });
+  });
+
+  test('sends a scheduled gift delivery date', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
+
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            url: 'https://checkout.stripe.com/gift-session',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+    });
+
+    await ghostApi.member.checkoutGift({
+      tierId: 'tier_123',
+      duration: 3,
+      deliveryMethod: 'email',
+      recipientEmail: 'recipient@example.com',
+      deliveryDate: '2026-12-25',
+    });
+
+    const [, request] = requestSpy.mock.calls.at(-1);
+    expect(JSON.parse(request.body)).toMatchObject({ deliveryDate: '2026-12-25' });
   });
 });
 

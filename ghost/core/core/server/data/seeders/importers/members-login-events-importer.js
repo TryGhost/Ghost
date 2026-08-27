@@ -1,7 +1,7 @@
 const { TableImporter } = require('./table-importer');
 const { luck } = require('../utils/random');
 const generateEvents = require('../utils/event-generator');
-const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-date');
+const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 
 class MembersLoginEventsImporter extends TableImporter {
   static table = 'members_login_events';

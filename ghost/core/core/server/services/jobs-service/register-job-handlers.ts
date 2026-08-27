@@ -1,36 +1,39 @@
-import { getInstance } from './index';
+import errors from '@tryghost/errors';
+import { JobsService } from './jobs-service';
 import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import cleanTokens from '../members/jobs/clean-tokens-task';
+import * as gifts from '../gifts';
+import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
+import ExternalMediaInliner from '../media-inliner/external-media-inliner';
+import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 
-const jobLogging = require('../jobs/job-logging');
+interface RegisterJobHandlersDependencies {
+  jobsService: JobsService;
+  db: typeof import('../../data/db');
+  logging: typeof import('@tryghost/logging');
+  mediaInliner: ExternalMediaInliner;
+}
 
-export default function registerJobHandlers(): void {
-  const jobsService = getInstance();
-  const db = require('../../data/db');
-
+export default function registerJobHandlers({
+  jobsService,
+  db,
+  logging,
+  mediaInliner,
+}: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
-    const startedAt = Date.now();
-    jobLogging.info('[Background Job] clean-tokens started');
+    await cleanTokens({ db, logging });
+  });
 
-    try {
-      const deletedCount = await cleanTokens({ db });
-      const durationMs = Date.now() - startedAt;
-      jobLogging.info(
-        {
-          system: {
-            event: 'clean_tokens.completed',
-            deleted_count: deletedCount,
-            duration_ms: durationMs,
-          },
-        },
-        `[Background Job] clean-tokens completed in ${durationMs}ms: removed ${deletedCount} tokens older than 24 hours`,
-      );
-    } catch (error) {
-      jobLogging.error(
-        error,
-        `[Background Job] clean-tokens failed after ${Date.now() - startedAt}ms`,
-      );
-      throw error;
+  jobsService.handle(CleanGiftsJob, async () => {
+    if (!gifts.service) {
+      throw new errors.IncorrectUsageError({
+        message: 'clean-gifts ran before the gifts service was initialised',
+      });
     }
+    await gifts.service.cleanup();
+  });
+
+  jobsService.handle(ExternalMediaInlinerJob, async (job) => {
+    await mediaInliner.inline(job.domains);
   });
 }

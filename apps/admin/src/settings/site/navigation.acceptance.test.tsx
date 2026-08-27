@@ -2,20 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from '@test-utils/acceptance';
-import * as sel from '@tryghost/test-data/selectors/settings';
 import { settingsScreen } from '@/settings/settings.screen';
 
-function primaryNavigation() {
-  return settingsScreen.navigationModal().getByRole('tabpanel').first();
-}
-
-function existingItem(index = 0) {
-  return primaryNavigation().getByTestId(sel.navigationItemEditor).nth(index);
-}
-
-function newItem() {
-  return primaryNavigation().getByTestId(sel.newNavigationItem);
-}
+const primaryNavigation = settingsScreen.navigationPrimaryPanel;
+const existingItem = (index = 0) => primaryNavigation().itemEditor(index);
+const newItem = () => primaryNavigation().newItem();
 
 describe('Navigation settings', () => {
   it('edits primary and secondary navigation', async () => {
@@ -37,11 +28,11 @@ describe('Navigation settings', () => {
     await newItem().getByLabelText('URL').fill('/new');
 
     await secondaryTab.click();
-    const secondary = modal.getByRole('tabpanel').last();
-    const secondaryItem = secondary.getByTestId(sel.navigationItemEditor).first();
+    const secondary = settingsScreen.navigationSecondaryPanel();
+    const secondaryItem = secondary.itemEditor();
     await secondaryItem.getByLabelText('Label').fill('existing item 2');
     await secondaryItem.getByLabelText('URL').fill('/existing2');
-    const newSecondary = secondary.getByTestId(sel.newNavigationItem);
+    const newSecondary = secondary.newItem();
     await newSecondary.getByLabelText('Label').fill('new item 2');
     await newSecondary.getByLabelText('URL').click();
     await userEvent.keyboard('{Backspace}');
@@ -89,13 +80,13 @@ describe('Navigation settings', () => {
     fakeSettingsScreens();
     await renderAdminApp('/settings/navigation/edit');
 
-    await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(2);
+    await expect(primaryNavigation().itemEditors()).toHaveCount(2);
     const item = newItem();
     await item.getByLabelText('Label').fill('');
     await item.getByLabelText('URL').click();
     await userEvent.keyboard('{Backspace}google.com');
     await userEvent.tab();
-    await item.getByTestId(sel.addButton).click();
+    await item.addButton().click();
     await expect.element(item).toHaveTextContent(/You must specify a label/);
     await expect.element(item).toHaveTextContent(/You must specify a valid URL or relative path/);
 
@@ -104,9 +95,9 @@ describe('Navigation settings', () => {
     await userEvent.keyboard('{Backspace}');
     await item.getByLabelText('URL').fill('https://google.com');
     await userEvent.tab();
-    await item.getByTestId(sel.addButton).click();
+    await item.addButton().click();
 
-    await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(3);
+    await expect(primaryNavigation().itemEditors()).toHaveCount(3);
     const added = existingItem(2);
     await expect.element(added.getByLabelText('Label')).toHaveValue('Label');
     await expect.element(added.getByLabelText('URL')).toHaveValue('https://google.com/');
@@ -121,7 +112,7 @@ describe('Navigation settings', () => {
 
     await newItem().getByLabelText('Label').fill('Label');
     await newItem().getByLabelText('URL').fill('https://google.com');
-    await newItem().getByTestId(sel.addButton).click();
+    await newItem().addButton().click();
     await settingsScreen.navigationModal().getByRole('button', { name: 'Close' }).click();
 
     await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);

@@ -29,16 +29,20 @@ import {
   getDefaultNewsletterIdsForNewMember,
   getEmailErrorMessage,
   getMemberEditableSlice,
-  getMemberNewslettersUiEnabled,
   isDraftInSyncWithServer,
   isValidMemberEmail,
   normalizeDraftForComparison,
 } from './member-detail-edit';
 import { dequal } from 'dequal';
 import { deriveMemberDetailBackPath } from './member-detail-nav';
-import { formatMemberName } from '@tryghost/shade/app';
-import { getMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { formatMemberName } from '@/members/member-format';
+import { useMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
+import {
+  getSettingValue,
+  useBrowseSettings,
+  useNewslettersEnabled,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
@@ -74,7 +78,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const customFieldsEnabled = useFeatureFlag('membersCustomFields');
 
   // `include=tiers` mirrors the Ember route so complimentary tiers arrive with the member.
-  const { data, isLoading, error, refetch } = getMember(memberId, {
+  const { data, isLoading, error, refetch } = useMember(memberId, {
     enabled: !!memberId && !isCreating,
     searchParams: { include: customFieldsEnabled ? 'tiers,custom_fields' : 'tiers' },
     defaultErrorHandler: false,
@@ -201,7 +205,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     when: hasUnsavedChanges,
     confirmUnloadWhen: activeMutation.isPending || hasUnsavedChanges,
   });
-  const emailValid = !!draft && isValidMemberEmail(draft.email);
+  const emailValid = !!draft && isValidMemberEmail(draft.email, member?.email ?? undefined);
   // `touched` is set on the email field's first blur. That keeps the New
   // member screen from painting an "Email is required." error before the
   // user has done anything, matching Ember's save-time-only validator
@@ -211,7 +215,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   React.useEffect(() => {
     setEmailTouched(false);
   }, [member?.id, isCreating]);
-  const emailError = draft ? getEmailErrorMessage(draft.email, emailTouched) : null;
+  const emailError = draft
+    ? getEmailErrorMessage(draft.email, emailTouched, member?.email ?? undefined)
+    : null;
 
   // The sidebar's identity block (avatar + heading) reads from a "committed"
   // copy of name/email that only advances on blur, not per keystroke.
@@ -543,6 +549,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
  */
 const MemberDetail: React.FC = () => {
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const newslettersEnabled = useNewslettersEnabled();
 
   if (isSettingsLoading || !settingsData?.settings) {
     return (
@@ -560,10 +568,6 @@ const MemberDetail: React.FC = () => {
     );
   }
 
-  const editorDefaultRecipients = getSettingValue<string>(
-    settingsData.settings,
-    'editor_default_email_recipients',
-  );
   const membersSignupAccess = getSettingValue<string>(
     settingsData.settings,
     'members_signup_access',
@@ -573,12 +577,10 @@ const MemberDetail: React.FC = () => {
     <MemberDetailPage
       // Hidden when the site can't sign up members or has email disabled:
       // the numbers are always zero and only add noise. Mirrors Ember.
-      engagementEnabled={membersSignupAccess !== 'none' && editorDefaultRecipients !== 'disabled'}
-      newslettersUiEnabled={getMemberNewslettersUiEnabled(editorDefaultRecipients)}
+      engagementEnabled={membersSignupAccess !== 'none' && newslettersEnabled === true}
+      newslettersUiEnabled={newslettersEnabled === true}
       // Sites without paid memberships never see subscription UI.
-      paidMembersEnabled={
-        getSettingValue<boolean>(settingsData.settings, 'paid_members_enabled') === true
-      }
+      paidMembersEnabled={paidMembersEnabled === true}
     />
   );
 };

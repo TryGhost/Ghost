@@ -431,6 +431,7 @@ async function checkoutGift({ data, state, api }) {
       recipientName,
       buyerName,
       personalMessage,
+      deliveryDate,
     } = data;
     await api.member.checkoutGift({
       tierId,
@@ -441,6 +442,7 @@ async function checkoutGift({ data, state, api }) {
       ...(recipientName ? { recipientName } : {}),
       ...(buyerName ? { buyerName } : {}),
       ...(personalMessage ? { personalMessage } : {}),
+      ...(deliveryDate ? { deliveryDate } : {}),
     });
     return {
       action: 'checkoutGift:success',

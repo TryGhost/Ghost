@@ -18,13 +18,20 @@ vi.mock('../../../src/hooks/use-tinybird-token', () => ({
   useTinybirdToken: vi.fn(),
 }));
 
+// Web analytics kill-switch: on for these tests, so useTinybirdQuery queries.
+vi.mock('../../../src/api/settings', () => ({
+  useWebAnalyticsEnabled: vi.fn(),
+}));
+
 import { useQuery } from '@tinybirdco/charts';
 import { getStatEndpointUrl } from '../../../src/utils/stats-config';
 import { useTinybirdToken } from '../../../src/hooks/use-tinybird-token';
+import { useWebAnalyticsEnabled } from '../../../src/api/settings';
 
 const mockUseQuery = vi.mocked(useQuery);
 const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
 const mockUseTinybirdToken = vi.mocked(useTinybirdToken);
+const mockUseWebAnalyticsEnabled = vi.mocked(useWebAnalyticsEnabled);
 const statsConfig = {
   id: 'test-site-id',
   endpoint: 'https://api.test.com',
@@ -65,6 +72,7 @@ describe('useActiveVisitors', () => {
       error: null,
       refetch: vi.fn(),
     });
+    mockUseWebAnalyticsEnabled.mockReturnValue(true);
   });
 
   afterEach(() => {

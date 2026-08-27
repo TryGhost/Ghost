@@ -157,6 +157,18 @@ const createDb = ({ first, all }: DbOptions = {}) => {
     whereNull: function () {
       return this;
     },
+    join: function () {
+      return this;
+    },
+    groupBy: function () {
+      return this;
+    },
+    count: function () {
+      return this;
+    },
+    min: function () {
+      return this;
+    },
     select: function () {
       return this;
     },

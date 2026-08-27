@@ -95,6 +95,7 @@ module.exports = function apiRoutes() {
 
   // ## Gifts
   router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
+  router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
 
   // ## Settings
   router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
@@ -145,6 +146,25 @@ module.exports = function apiRoutes() {
   // Tiers
   router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
   router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
+  // What a tier's checkout asks for, read when a Stripe checkout session is built.
+  // Registered before /tiers/:id so the literal path isn't captured by :id.
+  //
+  // A sub-resource rather than a key on the tier, because the tier payload is a public
+  // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
+  // rendered by themes. This is admin-only configuration that no client renders, since
+  // the questions are drawn by Stripe's own checkout page rather than by Portal.
+  //
+  // Named for the configuration rather than the checkout, so it cannot be mistaken for
+  // the session that `create-stripe-checkout-session` creates from it.
+  router.get('/tiers/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.browse));
+  router.get('/tiers/:id/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.read));
+  router.put(
+    '/tiers/:id/checkout_config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('membersCustomFields'),
+    http(api.tiersCheckoutConfig.edit),
+  );
+
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
@@ -175,14 +195,11 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Member custom field definitions — gated by the members_custom_fields flag.
+  // Member custom field definitions. Reading them is open: a site that has never
+  // turned the flag on has none, so the answer is an empty list rather than a 404, and
+  // Admin can ask without first knowing whether it may. Changing them is gated.
   // Registered before /members/:id so the literal path isn't captured by :id.
-  router.get(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.browse),
-  );
+  router.get('/members/custom_fields', mw.authAdminApi, http(api.membersCustomFields.browse));
   router.post(
     '/members/custom_fields',
     mw.authAdminApi,
@@ -196,12 +213,7 @@ module.exports = function apiRoutes() {
     labs.enabledMiddleware('membersCustomFields'),
     http(api.membersCustomFields.reorder),
   );
-  router.get(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.read),
-  );
+  router.get('/members/custom_fields/:key', mw.authAdminApi, http(api.membersCustomFields.read));
   router.put(
     '/members/custom_fields/:key',
     mw.authAdminApi,
@@ -376,6 +388,12 @@ module.exports = function apiRoutes() {
     mw.authAdminApi,
     labs.enabledMiddleware('selfServeArchives'),
     http(api.exports.download),
+  );
+  router.post(
+    '/exports',
+    mw.authAdminApi,
+    labs.enabledMiddleware('selfServeArchives'),
+    http(api.exports.add),
   );
 
   // ## Slack

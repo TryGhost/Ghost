@@ -10,7 +10,14 @@ import {
   useMemberFilterFields,
 } from '@/members/use-member-filter-fields';
 import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import {
+  useBrowseSettings,
+  useEmailTrackClicks,
+  useEmailTrackOpens,
+  useMembersTrackSources,
+  useNewslettersEnabled,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
@@ -68,12 +75,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const { data: settingsData } = useBrowseSettings({});
 
   const settings = settingsData?.settings || [];
-  const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
-  const emailFiltersEnabled =
-    getSettingValue<string>(settings, 'editor_default_email_recipients') !== 'disabled';
-  const membersTrackSources = getSettingValue<boolean>(settings, 'members_track_sources') === true;
-  const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
-  const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
+  const paidMembersEnabled = usePaidMembersEnabled() === true;
+  // Email filters stay visible while settings load; only a settled 'disabled' hides them.
+  const emailFiltersEnabled = useNewslettersEnabled() ?? true;
+  const membersTrackSources = useMembersTrackSources() === true;
+  const emailTrackOpens = useEmailTrackOpens() === true;
+  const emailTrackClicks = useEmailTrackClicks() === true;
   const siteTimezone = getSiteTimezone(settings);
 
   const newsletters = newslettersData?.newsletters || [];

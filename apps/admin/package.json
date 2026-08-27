@@ -36,7 +36,6 @@
     "@tryghost/i18n": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
-    "@tryghost/limit-service": "catalog:",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/nql-string": "workspace:*",
@@ -66,6 +65,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-eslint-react": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/jest-dom": "catalog:",

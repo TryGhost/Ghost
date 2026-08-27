@@ -1,10 +1,11 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { userEvent, type Locator } from 'vitest/browser';
 
 import {
   configResponse,
   currentRoute,
   fakeAdminEndpoint,
+  fakeAutomatedEmails,
   fakeNewsletters,
   fakeSettingsScreens,
   fakeTiers,
@@ -111,10 +112,6 @@ const previewResponse = (
   automated_emails: [{ html, plaintext: 'Preview content', subject }],
 });
 
-function fakeAutomatedEmails(emails: AutomatedEmailFixture[] = [freeWelcomeEmail]) {
-  return fakeAdminEndpoint('GET', '/automated_emails/', { automated_emails: emails });
-}
-
 function fakeRecentPosts() {
   fakeAdminEndpoint('GET', /^\/posts\/\?filter=status%3Apublished&fields=/, {
     posts: [],
@@ -157,27 +154,23 @@ async function openWelcomeEmailModal(
   return modal;
 }
 
-async function editorElement(modal: ReturnType<typeof page.getByTestId>) {
+async function editorElement(modal: Locator) {
   const editor = modal.getByRole('textbox').first();
   await expect.element(editor).toBeVisible();
   return editor;
 }
 
-async function clearEditor(modal: ReturnType<typeof page.getByTestId>) {
+async function clearEditor(modal: Locator) {
   const editor = await editorElement(modal);
   await editor.fill('');
   await editor.click();
   return editor;
 }
 
-async function chooseSlashMenuItem(
-  modal: ReturnType<typeof page.getByTestId>,
-  command: string,
-  label: string,
-) {
+async function chooseSlashMenuItem(modal: Locator, command: string, label: string) {
   await clearEditor(modal);
   await userEvent.keyboard(`/${command}`);
-  await expect.element(page.getByText(label, { exact: true })).toBeVisible();
+  await expect.element(settingsScreen.slashMenuItem(label)).toBeVisible();
   await userEvent.keyboard('{Enter}');
 }
 
@@ -198,7 +191,7 @@ describe('Member welcome emails', () => {
   it('previews the unsaved draft only after Preview is selected', async () => {
     fakeSettingsScreens();
     fakeDefaultNewsletter();
-    fakeAutomatedEmails();
+    fakeAutomatedEmails([freeWelcomeEmail]);
     fakeRecentPosts();
     const previewApi = fakeAdminEndpoint(
       'POST',
@@ -207,16 +200,16 @@ describe('Member welcome emails', () => {
     );
     await renderAdminApp('/settings/memberemails');
 
-    await settingsScreen.memberEmails().getByTestId('free-welcome-email-preview').click();
-    const modal = page.getByTestId('welcome-email-modal');
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    const modal = settingsScreen.welcomeEmailModal();
     const editor = await editorElement(modal);
     await editor.click();
     await userEvent.keyboard(' Draft note');
     expect(previewApi.requests).toHaveLength(0);
 
-    await modal.getByTestId('welcome-email-mode-preview').click();
+    await settingsScreen.welcomeEmailModePreview().click();
 
-    await expect.element(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+    await expect.element(settingsScreen.welcomeEmailPreviewIframe()).toBeVisible();
     const previewBody = previewApi.lastRequest?.body as
       | { subject?: string; lexical?: string }
       | undefined;
@@ -224,10 +217,10 @@ describe('Member welcome emails', () => {
     expect(previewBody?.subject).toBe(freeWelcomeEmail.subject);
     expect(previewBody?.lexical).toContain('Draft note');
     await expect
-      .element(modal.getByTestId('welcome-email-preview-iframe'))
+      .element(settingsScreen.welcomeEmailPreviewIframe())
       .toHaveAttribute('sandbox', 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
 
-    await modal.getByTestId('welcome-email-mode-edit').click();
+    await settingsScreen.welcomeEmailModeEdit().click();
     await expect.element(editor).toHaveTextContent('Draft note');
   });
 
@@ -247,10 +240,10 @@ describe('Member welcome emails', () => {
     });
     await renderAdminApp('/settings/memberemails');
 
-    await settingsScreen.memberEmails().getByTestId('free-welcome-email-preview').click();
-    const modal = page.getByTestId('welcome-email-modal');
-    await modal.getByTestId('welcome-email-mode-preview').click();
-    const subject = modal.getByTestId('welcome-email-preview-subject');
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    const modal = settingsScreen.welcomeEmailModal();
+    await settingsScreen.welcomeEmailModePreview().click();
+    const subject = settingsScreen.welcomeEmailPreviewSubject();
     await expect.element(subject).toHaveValue('Welcome {first_name}');
     await subject.fill('Welcome {first_name}!');
     await modal.getByRole('button', { name: 'Save' }).click();
@@ -264,7 +257,7 @@ describe('Member welcome emails', () => {
   it('shows invalid draft preview errors inline without issuing another request', async () => {
     fakeSettingsScreens();
     fakeDefaultNewsletter();
-    fakeAutomatedEmails();
+    fakeAutomatedEmails([freeWelcomeEmail]);
     fakeRecentPosts();
     const previewApi = fakeAdminEndpoint(
       'POST',
@@ -273,41 +266,40 @@ describe('Member welcome emails', () => {
     );
     await renderAdminApp('/settings/memberemails');
 
-    await settingsScreen.memberEmails().getByTestId('free-welcome-email-preview').click();
-    const modal = page.getByTestId('welcome-email-modal');
-    await modal.getByTestId('welcome-email-mode-preview').click();
-    await expect.element(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    await settingsScreen.welcomeEmailModePreview().click();
+    await expect.element(settingsScreen.welcomeEmailPreviewIframe()).toBeVisible();
     expect(previewApi.requests).toHaveLength(1);
 
-    await modal.getByTestId('welcome-email-preview-subject').fill('   ');
-    await modal.getByTestId('welcome-email-mode-edit').click();
-    await modal.getByTestId('welcome-email-mode-preview').click();
+    await settingsScreen.welcomeEmailPreviewSubject().fill('   ');
+    await settingsScreen.welcomeEmailModeEdit().click();
+    await settingsScreen.welcomeEmailModePreview().click();
 
     await expect
-      .element(modal.getByTestId('welcome-email-preview-error'))
+      .element(settingsScreen.welcomeEmailPreviewError())
       .toHaveTextContent('A subject is required');
     expect(previewApi.requests).toHaveLength(1);
   });
 
   it('refetches the current draft whenever Preview is re-entered', async () => {
-    const modal = await openWelcomeEmailModal();
+    await openWelcomeEmailModal();
     const previewApi = fakeAdminEndpoint(
       'POST',
       `/automated_emails/${freeWelcomeEmail.id}/preview/`,
       previewResponse(),
     );
 
-    await modal.getByTestId('welcome-email-mode-preview').click();
-    await expect.element(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
-    await modal.getByTestId('welcome-email-mode-edit').click();
-    await modal.getByTestId('welcome-email-mode-preview').click();
-    await expect.element(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+    await settingsScreen.welcomeEmailModePreview().click();
+    await expect.element(settingsScreen.welcomeEmailPreviewIframe()).toBeVisible();
+    await settingsScreen.welcomeEmailModeEdit().click();
+    await settingsScreen.welcomeEmailModePreview().click();
+    await expect.element(settingsScreen.welcomeEmailPreviewIframe()).toBeVisible();
 
     expect(previewApi.requests).toHaveLength(2);
   });
 
   it('sizes a long preview iframe to its document height', async () => {
-    const modal = await openWelcomeEmailModal();
+    await openWelcomeEmailModal();
     fakeAdminEndpoint(
       'POST',
       `/automated_emails/${freeWelcomeEmail.id}/preview/`,
@@ -317,10 +309,10 @@ describe('Member welcome emails', () => {
       ),
     );
 
-    await modal.getByTestId('welcome-email-mode-preview').click();
-    const previewFrame = modal.getByTestId('welcome-email-preview-iframe');
+    await settingsScreen.welcomeEmailModePreview().click();
+    const previewFrame = settingsScreen.welcomeEmailPreviewIframe();
     await expect.element(previewFrame).toBeVisible();
-    await expect(modal.getByTestId('welcome-email-preview-loading')).toHaveCount(0);
+    await expect(settingsScreen.welcomeEmailPreviewLoading()).toHaveCount(0);
 
     const iframe = previewFrame.element() as HTMLIFrameElement;
     const documentHeight = Math.max(
@@ -338,9 +330,9 @@ describe('Member welcome emails', () => {
       previewResponse(),
     );
     const modal = await openWelcomeEmailModal();
-    await modal.getByTestId('welcome-email-mode-preview').click();
+    await settingsScreen.welcomeEmailModePreview().click();
     await modal.getByRole('button', { name: 'Test' }).click();
-    const dropdown = page.getByTestId('test-email-dropdown');
+    const dropdown = settingsScreen.testEmailDropdown();
     await expect.element(dropdown).toBeVisible();
 
     await userEvent.keyboard('{Escape}');
@@ -355,8 +347,8 @@ describe('Member welcome emails', () => {
     await expect(modal).toHaveCount(0);
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
 
-    await settingsScreen.memberEmails().getByTestId('free-welcome-email-preview').click();
-    const reopened = page.getByTestId('welcome-email-modal');
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    const reopened = settingsScreen.welcomeEmailModal();
     const editor = await editorElement(reopened);
     await editor.click();
     await userEvent.keyboard(' Updated');
@@ -391,7 +383,7 @@ describe('Member welcome emails', () => {
 
     pasteText('https://ghost.org/');
 
-    await expect.element(modal.getByTestId('embed-iframe')).toBeVisible();
+    await expect.element(settingsScreen.embedIframe()).toBeVisible();
     expect(oembedApi.lastRequest?.url).toContain('url=https%3A%2F%2Fghost.org%2F');
   });
 
@@ -407,13 +399,13 @@ describe('Member welcome emails', () => {
       },
     });
     await chooseSlashMenuItem(modal, 'bookmark', 'Bookmark');
-    const bookmarkUrl = modal.getByTestId('bookmark-url');
+    const bookmarkUrl = settingsScreen.bookmarkUrl();
     await expect.element(bookmarkUrl).toBeVisible();
     await bookmarkUrl.fill('https://ghost.org/');
     await userEvent.keyboard('{Enter}');
 
     await expect
-      .element(modal.getByTestId('bookmark-title'))
+      .element(settingsScreen.bookmarkTitle())
       .toHaveTextContent('Ghost: The Creator Economy Platform');
     expect(oembedApi.lastRequest?.url).toContain('type=bookmark');
   });
@@ -426,9 +418,9 @@ describe('Member welcome emails', () => {
 
     await chooseSlashMenuItem(modal, command, label);
 
-    const cardElement = document.querySelector(`[data-kg-card="${card}"]`);
-    expect(cardElement).not.toBeNull();
-    await expect.element(page.elementLocator(cardElement!)).toBeVisible();
+    const cardLocator = settingsScreen.koenigCard(card);
+    expect(cardLocator).not.toBeNull();
+    await expect.element(cardLocator!).toBeVisible();
   });
 
   it.each([
@@ -442,12 +434,12 @@ describe('Member welcome emails', () => {
     });
     await clearEditor(modal);
     await userEvent.keyboard('/');
-    await expect.element(page.getByText('Image', { exact: true })).toBeVisible();
+    await expect.element(settingsScreen.slashMenuItem('Image')).toBeVisible();
 
     if (configured) {
-      await expect.element(page.getByText('GIF', { exact: true })).toBeVisible();
+      await expect.element(settingsScreen.slashMenuItem('GIF')).toBeVisible();
     } else {
-      await expect(page.getByText('GIF', { exact: true })).toHaveCount(0);
+      await expect(settingsScreen.slashMenuItem('GIF')).toHaveCount(0);
     }
   });
 
@@ -468,9 +460,9 @@ describe('Member welcome emails', () => {
     fakeAdminEndpoint('POST', `/automated_emails/${email.id}/preview/`, previewResponse());
     await renderAdminApp('/settings/memberemails');
 
-    await settingsScreen.memberEmails().getByTestId('free-welcome-email-preview').click();
-    const modal = page.getByTestId('welcome-email-modal');
-    await modal.getByTestId('welcome-email-mode-preview').click();
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    const modal = settingsScreen.welcomeEmailModal();
+    await settingsScreen.welcomeEmailModePreview().click();
 
     await expect.element(modal).toHaveTextContent('Automated Sender');
     await expect.element(modal).toHaveTextContent('automated@example.com');
@@ -496,13 +488,12 @@ describe('Member welcome emails', () => {
     fakeAdminEndpoint('POST', `/automated_emails/${email.id}/preview/`, previewResponse());
     await renderAdminApp('/settings/memberemails');
 
-    const section = settingsScreen.memberEmails();
     await expect
-      .element(section.getByTestId('free-welcome-email-title'))
+      .element(settingsScreen.freeWelcomeEmailTitle())
       .toHaveTextContent('Free members welcome email');
-    await section.getByTestId('free-welcome-email-preview').click();
-    const modal = page.getByTestId('welcome-email-modal');
-    await modal.getByTestId('welcome-email-mode-preview').click();
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    const modal = settingsScreen.welcomeEmailModal();
+    await settingsScreen.welcomeEmailModePreview().click();
 
     await expect.element(modal).toHaveTextContent('Newsletter Sender');
     await expect.element(modal).toHaveTextContent('newsletter@example.com');
@@ -519,13 +510,10 @@ describe('Member welcome emails', () => {
     });
     await renderAdminApp('/settings/memberemails');
 
-    const section = settingsScreen.memberEmails();
-    await expect
-      .element(section.getByTestId('free-welcome-email-preview'))
-      .toHaveTextContent('Welcome to');
-    await section.getByTestId('free-welcome-email-preview').click();
+    await expect.element(settingsScreen.freeWelcomeEmailPreview()).toHaveTextContent('Welcome to');
+    await settingsScreen.freeWelcomeEmailPreview().click();
 
-    await expect.element(page.getByTestId('welcome-email-modal')).toBeVisible();
+    await expect.element(settingsScreen.welcomeEmailModal()).toBeVisible();
     expect(addApi.lastRequest?.body).toMatchObject({
       automated_emails: [{ slug: 'member-welcome-email-free', status: 'inactive' }],
     });
@@ -534,14 +522,14 @@ describe('Member welcome emails', () => {
   it('opens an existing welcome email without creating another row', async () => {
     fakeSettingsScreens();
     fakeDefaultNewsletter();
-    fakeAutomatedEmails();
+    fakeAutomatedEmails([freeWelcomeEmail]);
     fakeRecentPosts();
     const addApi = fakeAdminEndpoint('POST', '/automated_emails/', { automated_emails: [] });
     await renderAdminApp('/settings/memberemails');
 
-    await settingsScreen.memberEmails().getByTestId('free-welcome-email-preview').click();
+    await settingsScreen.freeWelcomeEmailPreview().click();
 
-    await expect.element(page.getByTestId('welcome-email-modal')).toBeVisible();
+    await expect.element(settingsScreen.welcomeEmailModal()).toBeVisible();
     expect(addApi.requests).toHaveLength(0);
   });
 
@@ -555,7 +543,9 @@ describe('Member welcome emails', () => {
     await renderAdminApp('/settings/memberemails');
 
     await settingsScreen.memberEmails().getByRole('switch').first().click();
-    await expect.element(page.getByText('Free members welcome email enabled')).toBeVisible();
+    await expect
+      .element(settingsScreen.notification('Free members welcome email enabled'))
+      .toBeVisible();
     expect(addApi.lastRequest?.body).toMatchObject({
       automated_emails: [{ slug: 'member-welcome-email-free', status: 'active' }],
     });
@@ -572,7 +562,9 @@ describe('Member welcome emails', () => {
     await renderAdminApp('/settings/memberemails');
 
     await settingsScreen.memberEmails().getByRole('switch').first().click();
-    await expect.element(page.getByText('Free members welcome email enabled')).toBeVisible();
+    await expect
+      .element(settingsScreen.notification('Free members welcome email enabled'))
+      .toBeVisible();
     expect(editApi.lastRequest?.body).toMatchObject({
       automated_emails: [{ id: inactive.id, status: 'active' }],
     });
@@ -581,14 +573,16 @@ describe('Member welcome emails', () => {
   it('updates an active row to inactive', async () => {
     fakeSettingsScreens();
     fakeDefaultNewsletter();
-    fakeAutomatedEmails();
+    fakeAutomatedEmails([freeWelcomeEmail]);
     const editApi = fakeAdminEndpoint('PUT', `/automated_emails/${freeWelcomeEmail.id}/`, {
       automated_emails: [{ ...freeWelcomeEmail, status: 'inactive' }],
     });
     await renderAdminApp('/settings/memberemails');
 
     await settingsScreen.memberEmails().getByRole('switch').first().click();
-    await expect.element(page.getByText('Free members welcome email disabled')).toBeVisible();
+    await expect
+      .element(settingsScreen.notification('Free members welcome email disabled'))
+      .toBeVisible();
     expect(editApi.lastRequest?.body).toMatchObject({
       automated_emails: [{ id: freeWelcomeEmail.id, status: 'inactive' }],
     });
@@ -597,7 +591,7 @@ describe('Member welcome emails', () => {
   it('shows and enables the paid welcome email row when Stripe is connected', async () => {
     fakeSettingsScreens();
     fakeDefaultNewsletter();
-    fakeAutomatedEmails();
+    fakeAutomatedEmails([freeWelcomeEmail]);
     fakeRecentPosts();
     fakeTiers([tier({ name: 'Supporter' })]);
     const addApi = fakeAdminEndpoint('POST', '/automated_emails/', {
@@ -622,7 +616,9 @@ describe('Member welcome emails', () => {
 
     await paidRow.getByRole('switch').click();
 
-    await expect.element(page.getByText('Paid members welcome email enabled')).toBeVisible();
+    await expect
+      .element(settingsScreen.notification('Paid members welcome email enabled'))
+      .toBeVisible();
     expect(addApi.lastRequest?.body).toMatchObject({
       automated_emails: [{ slug: 'member-welcome-email-paid', status: 'active' }],
     });
@@ -703,7 +699,7 @@ describe('Member welcome emails', () => {
       )?.getAttribute('srcdoc') ?? '';
     expect(srcdoc).toContain('Newest preview');
     expect(srcdoc).not.toContain('Stale preview');
-    await expect.element(page.getByTestId('welcome-email-preview-loading')).not.toBeInTheDocument();
+    await expect.element(settingsScreen.welcomeEmailPreviewLoading()).not.toBeInTheDocument();
     expect(
       previewApi.requests.map((request) => (request.body as { subject: string }).subject),
     ).toEqual([freeWelcomeEmail.subject, 'Stale draft', 'Newest draft']);
@@ -714,7 +710,7 @@ describe('Member welcome emails', () => {
     async function openCustomizeModal({ icon }: { icon?: string } = {}) {
       fakeSettingsScreens();
       fakeDefaultNewsletter();
-      fakeAutomatedEmails();
+      fakeAutomatedEmails([freeWelcomeEmail]);
       fakeAdminEndpoint('GET', '/automated_emails/design/', {
         automated_email_design: [automatedEmailDesign],
       });
@@ -724,7 +720,7 @@ describe('Member welcome emails', () => {
         settings ? { boot: { browseSettings: { response: settings } } } : undefined,
       );
       await settingsScreen.memberEmails().getByRole('button', { name: 'Customize' }).click();
-      const modal = page.getByTestId('welcome-email-customize-modal');
+      const modal = settingsScreen.welcomeEmailCustomizeModal();
       await expect.element(modal).toBeVisible();
       await expect.element(modal.getByRole('button', { name: 'Save' })).toBeVisible();
       return modal;
@@ -775,7 +771,7 @@ describe('Member welcome emails', () => {
           sender_reply_to: 'newsletter',
         }),
       ]);
-      fakeAutomatedEmails();
+      fakeAutomatedEmails([freeWelcomeEmail]);
       fakeAdminEndpoint('GET', '/automated_emails/design/', {
         automated_email_design: [automatedEmailDesign],
       });
@@ -788,7 +784,7 @@ describe('Member welcome emails', () => {
         boot: { browseConfig: { response: config }, browseSettings: { response: settings } },
       });
       await settingsScreen.memberEmails().getByRole('button', { name: 'Customize' }).click();
-      const modal = page.getByTestId('welcome-email-customize-modal');
+      const modal = settingsScreen.welcomeEmailCustomizeModal();
 
       await expect
         .element(modal.getByLabelText('Sender name'))
@@ -836,11 +832,11 @@ describe('Member welcome emails', () => {
       await renderAdminApp('/settings/emails', { labs: { automations: true } });
       const emails = settingsScreen.emails();
       await emails.getByRole('tab', { name: 'Automation emails' }).click();
-      await emails
-        .getByTestId('automations-transactional-row')
+      await settingsScreen
+        .automationsTransactionalRow()
         .getByRole('button', { name: 'Edit' })
         .click();
-      const modal = page.getByTestId('welcome-email-customize-modal');
+      const modal = settingsScreen.welcomeEmailCustomizeModal();
       await expect.element(modal).toBeVisible();
       const addApi = fakeAdminEndpoint('POST', '/automated_emails/', { automated_emails: [] });
       fakeAdminEndpoint('PUT', '/automated_emails/design/', {
@@ -870,7 +866,7 @@ describe('Member welcome emails', () => {
         sender_email: 'test@example.com',
         sender_reply_to: 'custom-reply@example.com',
       });
-      fakeAutomatedEmails();
+      fakeAutomatedEmails([freeWelcomeEmail]);
       fakeAdminEndpoint('GET', '/automated_emails/design/', {
         automated_email_design: [automatedEmailDesign],
       });

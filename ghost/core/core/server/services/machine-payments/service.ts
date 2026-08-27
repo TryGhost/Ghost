@@ -47,6 +47,8 @@ type ChallengeOrFulfillOptions = {
   resourceType: 'posts' | 'pages';
   description?: string;
   renderMarkdown: (entry: Record<string, unknown>) => string;
+  /** When set, unpaid 402 responses carry this markdown preview instead of problem+json. */
+  renderPreviewMarkdown?: (terms: PaymentTerms) => string;
   contentLocation: string;
 };
 
@@ -195,7 +197,7 @@ export class MachinePaymentsService {
       return await this.#handleFulfill(credentialed, request, terms, options);
     }
 
-    return await this.#paymentRequiredResponse(request, terms);
+    return await this.#paymentRequiredResponse(request, terms, options);
   }
 
   async #handleFulfill(
@@ -289,7 +291,11 @@ export class MachinePaymentsService {
     return new Response(body, { status: 200, headers });
   }
 
-  async #paymentRequiredResponse(request: Request, terms: PaymentTerms): Promise<Response> {
+  async #paymentRequiredResponse(
+    request: Request,
+    terms: PaymentTerms,
+    options: ChallengeOrFulfillOptions,
+  ): Promise<Response> {
     const results = await Promise.allSettled(
       this.adapters.map((adapter) => adapter.challenge(request, terms)),
     );
@@ -310,18 +316,26 @@ export class MachinePaymentsService {
       });
     }
 
+    const previewBody = options.renderPreviewMarkdown?.(terms) || null;
     const headers = new Headers({
       'Cache-Control': 'no-store',
-      'Content-Type': 'application/problem+json',
+      'Content-Type': previewBody ? 'text/markdown; charset=utf-8' : 'application/problem+json',
     });
+
+    if (previewBody && options.contentLocation) {
+      headers.set('Content-Location', options.contentLocation);
+    }
 
     for (const challenge of challenges) {
       if (challenge.headers) {
         challenge.headers.forEach((value, key) => {
           // Preserve every WWW-Authenticate (mpp compose can emit several)
-          // and keep distinct payment challenge headers.
+          // and keep distinct payment challenge headers. Do not let adapter
+          // Content-Type overwrite the preview body type.
           if (key.toLowerCase() === 'www-authenticate') {
             headers.append(key, value);
+          } else if (key.toLowerCase() === 'content-type') {
+            // Keep our chosen body content type.
           } else if (!headers.has(key)) {
             headers.set(key, value);
           }
@@ -329,18 +343,19 @@ export class MachinePaymentsService {
       }
     }
 
-    return new Response(
+    const body =
+      previewBody ||
       JSON.stringify({
         type: 'https://paymentauth.org/problems/payment-required',
         title: 'Payment Required',
         status: 402,
         detail: 'Payment is required to access this markdown content.',
-      }),
-      {
-        status: 402,
-        headers,
-      },
-    );
+      });
+
+    return new Response(body, {
+      status: 402,
+      headers,
+    });
   }
 
   #paymentCredentialErrorResponse(err: unknown): Response {

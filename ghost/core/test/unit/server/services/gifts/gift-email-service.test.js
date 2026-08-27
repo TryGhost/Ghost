@@ -27,6 +27,7 @@ describe('GiftEmailService', function () {
   };
 
   const getFromAddress = () => 'Test Site <noreply@example.com>';
+  const getReplyToAddress = () => 'support@example.com';
 
   const blogIcon = {
     getIconUrl: () => 'https://example.com/icon.png',
@@ -64,6 +65,7 @@ describe('GiftEmailService', function () {
     tierName: 'Gold',
     cadence: 'year',
     duration: 1,
+    scheduledAt: null,
     expiresAt: new Date('2027-04-07'),
   };
 
@@ -79,6 +81,7 @@ describe('GiftEmailService', function () {
       settingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -98,6 +101,7 @@ describe('GiftEmailService', function () {
         to: 'buyer@example.com',
         subject: 'Your gift is ready',
         from: 'Test Site <noreply@example.com>',
+        replyTo: 'support@example.com',
         disableTracking: true,
       }),
     );
@@ -122,6 +126,45 @@ describe('GiftEmailService', function () {
     }
   });
 
+  it('tells the buyer when a scheduled gift will be sent', async function () {
+    const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await service.sendPurchaseConfirmation({
+      ...defaultData,
+      recipientEmail: 'recipient@example.com',
+      scheduledAt,
+    });
+
+    const message = transactionalMailer.send.firstCall.firstArg;
+    assert.match(message.subject, /^Your gift will be sent on /);
+    for (const field of ['html', 'text']) {
+      sinon.assert.match(message[field], sinon.match('Your gift is scheduled'));
+      sinon.assert.match(message[field], sinon.match('will be sent to'));
+    }
+    sinon.assert.match(message.html, sinon.match('<strong>1-year</strong>'));
+    sinon.assert.match(message.text, sinon.match('1-year'));
+  });
+
+  it('sends a best-effort buyer confirmation after recipient acceptance', async function () {
+    await service.sendGiftSentConfirmation({
+      buyerEmail: 'buyer@example.com',
+      recipientEmail: 'recipient@example.com',
+      token: 'abc-123',
+      expiresAt: new Date('2027-04-07'),
+    });
+
+    const message = transactionalMailer.send.firstCall.firstArg;
+    sinon.assert.match(message, {
+      to: 'buyer@example.com',
+      subject: 'Your gift has been sent',
+      replyTo: 'support@example.com',
+      disableTracking: true,
+    });
+    for (const field of ['html', 'text']) {
+      sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+      sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
+    }
+  });
+
   it('tells the buyer to share the gift link after permanent delivery failure', async function () {
     await service.sendDeliveryFailureNotification({
       buyerEmail: 'buyer@example.com',
@@ -134,6 +177,7 @@ describe('GiftEmailService', function () {
     sinon.assert.match(message, {
       to: 'buyer@example.com',
       subject: "We couldn't deliver your gift",
+      replyTo: 'support@example.com',
       disableTracking: true,
     });
     assert.equal(message.tags, undefined);
@@ -153,7 +197,7 @@ describe('GiftEmailService', function () {
       sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
       sinon.assert.match(msg[field], sinon.match('Gold'));
     }
-    sinon.assert.match(msg.html, sinon.match('<strong>1</strong>-year'));
+    sinon.assert.match(msg.html, sinon.match('<strong>1-year</strong>'));
     sinon.assert.match(msg.text, sinon.match('1-year'));
   });
 
@@ -161,7 +205,7 @@ describe('GiftEmailService', function () {
     await service.sendPurchaseConfirmation({ ...defaultData, cadence: 'month' });
 
     const message = transactionalMailer.send.firstCall.firstArg;
-    sinon.assert.match(message.html, sinon.match('<strong>1</strong>-month'));
+    sinon.assert.match(message.html, sinon.match('<strong>1-month</strong>'));
     sinon.assert.match(message.text, sinon.match('1-month'));
   });
 
@@ -187,6 +231,7 @@ describe('GiftEmailService', function () {
       settingsCache: localizedSettingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -225,6 +270,7 @@ describe('GiftEmailService', function () {
       settingsCache: noTitleSettingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -255,6 +301,7 @@ describe('GiftEmailService', function () {
       settingsCache: hostileSettingsCache,
       urlUtils,
       getFromAddress,
+      getReplyToAddress,
       blogIcon,
       t: translate(),
     });
@@ -306,6 +353,7 @@ describe('GiftEmailService', function () {
       const message = bulkMailer.send.firstCall.firstArg;
       sinon.assert.match(message, {
         subject: 'Buyer sent you a gift',
+        replyTo: 'support@example.com',
         tags: ['gift-delivery'],
         disable_tracking: true,
       });
@@ -330,11 +378,15 @@ describe('GiftEmailService', function () {
           'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
         ),
       );
-      sinon.assert.match(message.html, sinon.match('Redeem your gift:'));
+      sinon.assert.match(message.html, sinon.match('Redeem your gift</a>'));
+      sinon.assert.match(
+        message.html,
+        sinon.match((value) => !value.includes('Redeem your gift:')),
+      );
       sinon.assert.match(
         message.html,
         sinon.match(
-          '<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site',
+          '<strong>Buyer</strong> has gifted you a <strong>1-year</strong> <strong>Gold</strong> membership to Test Site',
         ),
       );
       sinon.assert.match(
@@ -352,6 +404,7 @@ describe('GiftEmailService', function () {
         settingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon: { getIconUrl: () => null },
         t: translate(),
       });
@@ -399,6 +452,7 @@ describe('GiftEmailService', function () {
         settingsCache: siteSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -440,6 +494,7 @@ describe('GiftEmailService', function () {
         settingsCache: invalidLocaleSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -473,6 +528,7 @@ describe('GiftEmailService', function () {
         settingsCache: invalidColorSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -521,6 +577,7 @@ describe('GiftEmailService', function () {
           to: 'recipient@example.com',
           subject: 'Buyer sent you a gift',
           from: 'Test Site <noreply@example.com>',
+          replyTo: 'support@example.com',
           tags: ['gift-delivery'],
           disableTracking: true,
           forceTextContent: true,
@@ -530,7 +587,7 @@ describe('GiftEmailService', function () {
       );
     });
 
-    it('uses an attributive plural cadence for multi-month gifts', async function () {
+    it.each([3, 6])('uses an attributive cadence for a %s-month gift', async function (duration) {
       await service.sendGiftDelivery({
         recipientEmail: 'recipient@example.com',
         recipientName: null,
@@ -541,20 +598,20 @@ describe('GiftEmailService', function () {
         tierName: 'Gold',
         benefits: [],
         cadence: 'month',
-        duration: 3,
+        duration,
         expiresAt: new Date('2027-04-07'),
       });
 
       const message = bulkMailer.send.firstCall.firstArg;
-      sinon.assert.match(message.plaintext, sinon.match('a 3-month Gold membership'));
-      sinon.assert.match(message.html, sinon.match('<strong>3</strong>-month'));
+      sinon.assert.match(message.plaintext, sinon.match(`a ${duration}-month Gold membership`));
+      sinon.assert.match(message.html, sinon.match(`<strong>${duration}-month</strong>`));
       sinon.assert.match(
         message.html,
-        sinon.match((value) => !value.includes('3 months')),
+        sinon.match((value) => !value.includes(`${duration} months`)),
       );
       sinon.assert.match(
         message.plaintext,
-        sinon.match((value) => !value.includes('3 months')),
+        sinon.match((value) => !value.includes(`${duration} months`)),
       );
     });
 
@@ -598,6 +655,7 @@ describe('GiftEmailService', function () {
         settingsCache: literalSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });
@@ -691,6 +749,7 @@ describe('GiftEmailService', function () {
           to: 'member@example.com',
           subject: 'Your gift subscription is ending soon',
           from: 'Test Site <noreply@example.com>',
+          replyTo: 'support@example.com',
         }),
       );
     });
@@ -763,6 +822,7 @@ describe('GiftEmailService', function () {
         settingsCache: localizedSettingsCache,
         urlUtils,
         getFromAddress,
+        getReplyToAddress,
         blogIcon,
         t: translate(),
       });

@@ -290,7 +290,7 @@ export const useImportMembers = createMutation<ImportMembersResponseType, Import
   invalidateQueries: { dataType },
 });
 
-export const getMember = createQueryWithId<MembersResponseType>({
+export const useMember = createQueryWithId<MembersResponseType>({
   dataType,
   path: (id) => `/members/${id}/`,
 });
@@ -575,7 +575,7 @@ export interface MemberSigninUrlResponseType {
 // The Admin API wraps the controller payload in the `member_signin_urls` array
 // envelope (see `member-signin-urls.js` + framework serializer). Unwrap here so
 // consumers get the flat `{member_id, url}` object they actually want.
-export const getMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
+export const useMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
   dataType: 'MemberSigninUrlResponseType',
   path: (id) => `/members/${id}/signin_urls/`,
   returnData: (originalData) => {

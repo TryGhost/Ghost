@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('importer:base');
 const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
 const models = require('../../../../models');
 
 class Base {
@@ -346,7 +345,9 @@ class Base {
       });
     });
 
-    await sequence(ops);
+    for (const op of ops) {
+      await op();
+    }
   }
 }
 

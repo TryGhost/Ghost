@@ -30,7 +30,7 @@ ImageHandler = {
 
       file.originalPath = noBaseDir;
       file.name = noGhostDirs;
-      file.targetDir = path.join(config.getContentPath('images'), path.dirname(noGhostDirs));
+      file.targetDir = path.join(store.storagePath, path.dirname(noGhostDirs));
       return file;
     });
 
@@ -41,7 +41,7 @@ ImageHandler = {
             '/',
             urlUtils.getSubdir(),
             store.staticFileURLPrefix,
-            path.relative(config.getContentPath('images'), targetFilename),
+            path.relative(store.storagePath, targetFilename),
           );
 
           return image;

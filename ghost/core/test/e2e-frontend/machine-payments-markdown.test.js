@@ -79,13 +79,15 @@ describe('Machine payments markdown routing', function () {
     sinon.restore();
   });
 
-  it('refuses free-members-only posts with 403 markdown', async function () {
+  it('serves free-preview markdown for members-only posts', async function () {
     const res = await request
       .get(`/${membersSlug}.md`)
-      .expect(403)
+      .expect(200)
       .expect('Content-Type', /text\/markdown/);
 
-    assert.match(res.text, /Members-only content/);
+    assert.match(res.text, /# /);
+    assert.match(res.text, /This post is for subscribers only\./);
+    assert.match(res.text, /Subscribe:/);
     assert.doesNotMatch(res.text, /Secret paid body/);
   });
 
@@ -107,6 +109,7 @@ describe('Machine payments markdown routing', function () {
     const [, options] = machinePayments.challengeOrFulfill.firstCall.args;
     assert.equal(options.resourceType, 'posts');
     assert.equal(options.contentLocation, `/${paidSlug}.md`);
+    assert.equal(typeof options.renderPreviewMarkdown, 'function');
   });
 
   it('serves paid markdown after the orchestrator fulfills payment', async function () {
@@ -139,15 +142,72 @@ describe('Machine payments markdown routing', function () {
     assert.match(res.text, /Secret paid body/);
   });
 
-  it('refuses paid posts when they are not purchasable', async function () {
+  it('serves free-preview markdown for paid posts when they are not purchasable', async function () {
     sinon.stub(machinePayments, 'isPurchasable').returns(false);
 
     const res = await request
       .get(`/${paidSlug}.md`)
-      .expect(403)
+      .expect(200)
       .expect('Content-Type', /text\/markdown/);
 
-    assert.match(res.text, /Members-only content/);
+    assert.match(res.text, /This post is for paying subscribers only\./);
+    assert.match(res.text, /Subscribe:/);
+    assert.doesNotMatch(res.text, /Secret paid body/);
+  });
+
+  it('serves paywall preview content on gated .md when a paywall card is present', async function () {
+    const previewSlug = 'mp-paid-preview-markdown';
+    await testUtils.fixtures.insertPosts([
+      testUtils.DataGenerator.forKnex.createPost({
+        slug: previewSlug,
+        title: 'Paywall Preview Post',
+        custom_excerpt: 'Custom teaser excerpt',
+        visibility: 'paid',
+        status: 'published',
+        published_at: moment().toDate(),
+        lexical: testUtils.DataGenerator.markdownToLexical(
+          'Free preview above the wall\n\n<!--members-only-->\n\nSecret paid body',
+        ),
+      }),
+    ]);
+    sinon.stub(machinePayments, 'isPurchasable').returns(false);
+
+    const res = await request
+      .get(`/${previewSlug}.md`)
+      .expect(200)
+      .expect('Content-Type', /text\/markdown/);
+
+    assert.match(res.text, /# Paywall Preview Post/);
+    assert.match(res.text, /Free preview above the wall/);
+    assert.match(res.text, /Custom teaser excerpt/);
+    assert.match(res.text, /This post is for paying subscribers only\./);
+    assert.doesNotMatch(res.text, /Secret paid body/);
+  });
+
+  it('serves title and excerpt without body when gated post has no paywall card', async function () {
+    const noPreviewSlug = 'mp-paid-no-preview-markdown';
+    await testUtils.fixtures.insertPosts([
+      testUtils.DataGenerator.forKnex.createPost({
+        slug: noPreviewSlug,
+        title: 'No Preview Paid Post',
+        custom_excerpt: 'Only the excerpt is public',
+        visibility: 'paid',
+        status: 'published',
+        published_at: moment().toDate(),
+        lexical: testUtils.DataGenerator.markdownToLexical('Secret paid body with no paywall'),
+      }),
+    ]);
+    sinon.stub(machinePayments, 'isPurchasable').returns(false);
+
+    const res = await request
+      .get(`/${noPreviewSlug}.md`)
+      .expect(200)
+      .expect('Content-Type', /text\/markdown/);
+
+    assert.match(res.text, /# No Preview Paid Post/);
+    assert.match(res.text, /Only the excerpt is public/);
+    assert.match(res.text, /This post is for paying subscribers only\./);
+    assert.doesNotMatch(res.text, /Secret paid body with no paywall/);
   });
 
   it('ignores Payment credentials on HTML permalinks for gated posts', async function () {
@@ -164,10 +224,10 @@ describe('Machine payments markdown routing', function () {
     assert.equal(res.headers['www-authenticate'], undefined);
   });
 
-  it('ignores Payment credentials on Accept markdown negotiation for gated posts', async function () {
+  it('ignores Payment credentials on HTML permalinks even when Accept prefers markdown', async function () {
     const challengeOrFulfill = sinon.stub(machinePayments, 'challengeOrFulfill');
 
-    // Accept negotiation only unlocks public entries; paid HTML stays membership-gated.
+    // Canonical URLs always render HTML; markdown lives on explicit `.md` URLs.
     const res = await request
       .get(`/${paidSlug}/`)
       .set('Accept', 'text/markdown')

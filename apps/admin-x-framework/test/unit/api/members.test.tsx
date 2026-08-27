@@ -5,7 +5,7 @@ import type { UserRoleType } from '../../../src/api/roles';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
 import {
   getMemberCountQueryKey,
-  getMemberSigninUrl,
+  useMemberSigninUrl,
   useAddMember,
   useBrowseMembersInfinite,
   useBulkDeleteMembers,
@@ -502,7 +502,7 @@ describe('members api', () => {
           },
         },
         async (mock) => {
-          const { result } = renderHookWithProviders(() => getMemberSigninUrl('member-1'), {
+          const { result } = renderHookWithProviders(() => useMemberSigninUrl('member-1'), {
             queryClient,
           });
 

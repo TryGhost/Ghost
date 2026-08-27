@@ -2,7 +2,8 @@ import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
 type Feature = {
   title: string;
@@ -70,12 +71,6 @@ const features: Feature[] = [
     description:
       'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication',
-  },
-  {
-    title: 'Navigation icons & visibility',
-    description:
-      'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
-    flag: 'navigationIcons',
   },
   {
     title: 'React tag details',

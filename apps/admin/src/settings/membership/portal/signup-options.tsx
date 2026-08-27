@@ -1,4 +1,5 @@
 import HtmlField from '@/settings/components/html-field';
+import GiftPromotionField from './gift-promotion-field';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   Checkbox,
@@ -14,6 +15,7 @@ import {
   SelectValue,
   Switch,
 } from '@tryghost/shade/components';
+import { formatNumber } from '@tryghost/shade/utils';
 import {
   type Setting,
   type SettingValue,
@@ -104,7 +106,6 @@ const SignupOptions: React.FC<{
   const isSignupAllowed = membersSignupAccess === 'all' || membersSignupAccess === 'paid';
   const isFreeSignupAllowed = membersSignupAccess === 'all';
   const isStripeEnabled = checkStripeEnabled(localSettings, config);
-
   const tiersCheckboxes: SignupCheckbox[] = [];
 
   if (localTiers) {
@@ -244,8 +245,9 @@ const SignupOptions: React.FC<{
           hint={
             errors.portal_signup_terms_html || (
               <>
-                Recommended: <strong>115</strong> characters. You&apos;ve used{' '}
-                <strong className="text-green">{signupTermsLength}</strong>
+                Recommended: <strong>{formatNumber(signupTermsMaxLength)}</strong> characters.
+                You&apos;ve used{' '}
+                <strong className="text-green">{formatNumber(signupTermsLength)}</strong>
               </>
             )
           }
@@ -269,6 +271,12 @@ const SignupOptions: React.FC<{
             />
           </Field>
         )}
+
+        <GiftPromotionField
+          localSettings={localSettings}
+          settingKey="portal_signup_gift_promotion"
+          updateSetting={updateSetting}
+        />
       </FieldGroup>
     </div>
   );

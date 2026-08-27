@@ -1,13 +1,12 @@
 import { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { TestWrapper } from '@tryghost/admin-x-framework/test/test-utils';
+import { FrameworkProvider, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
 
 export type TestWrapperComponent = ({ children }: { children: ReactNode }) => JSX.Element;
 
 /**
  * Creates a test QueryClient with sensible defaults for testing
  *
- * Ported from admin-x-framework to reduce external dependencies.
  * Configures QueryClient for optimal test performance:
  * - No retries (tests should pass on first attempt)
  * - No caching (tests should be isolated)
@@ -25,6 +24,41 @@ function createTestQueryClient(): QueryClient {
       },
     },
   });
+}
+
+const defaultFrameworkProps: TopLevelFrameworkProps = {
+  externalNavigate: () => {},
+  ghostVersion: '5.x',
+  onDelete: () => {},
+  onInvalidate: () => {},
+  onUpdate: () => {},
+  sentryDSN: null,
+  unsplashConfig: {
+    Authorization: '',
+    'Accept-Version': '',
+    'Content-Type': '',
+    'App-Pragma': '',
+    'X-Unsplash-Cache': false,
+  },
+};
+
+/**
+ * Wraps children in the runtime FrameworkProvider (which owns the
+ * QueryClientProvider) with inert framework props, mirroring the provider
+ * stack unit-tested hooks run under in the app.
+ */
+export function TestWrapper({
+  children,
+  queryClient = createTestQueryClient(),
+}: {
+  children: ReactNode;
+  queryClient?: QueryClient;
+}) {
+  return (
+    <FrameworkProvider {...defaultFrameworkProps} queryClient={queryClient}>
+      {children}
+    </FrameworkProvider>
+  );
 }
 
 /**
@@ -63,6 +97,7 @@ function createTestQueryClient(): QueryClient {
  * QueryClient + wrapper fixture definitions.
  * Can be composed with other fixtures using spread syntax.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- test fixture module, never a fast-refresh target
 export const queryClientFixtures = {
   // Test-scoped fixture: create fresh QueryClient for each test
   queryClient: async (

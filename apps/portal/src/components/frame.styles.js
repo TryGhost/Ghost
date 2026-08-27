@@ -10,6 +10,7 @@ import { SwitchStyles } from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
 import { AccountPlanPageStyles } from './pages/account-plan-page';
 import { InputFieldStyles } from './common/input-field';
+import { DatePickerStyles } from './common/date-picker';
 import { SignupPageStyles } from './pages/signup-page';
 import { ProductsSectionStyles } from './common/products-section';
 import { AvatarStyles } from './common/member-gravatar';
@@ -24,7 +25,7 @@ import { TipsAndDonationsSuccessStyle } from './pages/support-success';
 import { GiftRedemptionStyles } from './pages/gift-redemption-page';
 import { BetaGiftRedemptionStyles } from './pages/beta-gift-redemption-page';
 import { GiftPageStyles } from './pages/gift-page';
-import { BetaGiftPageStyles } from './pages/beta-gift-page';
+import { BetaGiftPageStyles } from './pages/beta-gift-page.styles';
 import { GiftSuccessStyle } from './pages/gift-success-page';
 import { BetaGiftSuccessStyle } from './pages/beta-gift-success-page';
 import { TipsAndDonationsErrorStyle } from './pages/support-error';
@@ -1357,6 +1358,7 @@ export function getFrameStyles({ site }) {
     AccountHomePageStyles +
     AccountPlanPageStyles +
     InputFieldStyles +
+    DatePickerStyles +
     ProductsSectionStyles({ site }) +
     SwitchStyles +
     ActionButtonStyles +

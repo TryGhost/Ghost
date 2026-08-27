@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import validator from 'validator';
