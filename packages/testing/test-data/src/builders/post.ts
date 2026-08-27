@@ -65,7 +65,7 @@ export interface Post {
     track_clicks?: boolean;
   } | null;
   /** Only present when the request includes `newsletter`; the newsletter the email went to. */
-  newsletter?: { id: string; feedback_enabled?: boolean } | null;
+  newsletter?: { id: string; name?: string; feedback_enabled?: boolean } | null;
   created_at: string;
   updated_at: string;
   published_at: string | null;

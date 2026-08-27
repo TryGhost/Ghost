@@ -65,10 +65,7 @@ export const postsListScreen = {
   rowLink: () => page.getByTestId(postListItemLink),
   /** A metric column, found by its label ("Opens", "Members", …). */
   metricCell: (label: string) =>
-    page
-      .getByTestId(postsListItem)
-      .getByRole('link', { name: new RegExp(label) })
-      .first(),
+    page.getByTestId(postsListItem).getByLabelText(new RegExp(label)).first(),
   /** The hover breakdown, which Radix portals out of the row. */
   metricPanel: () => page.getByTestId(postMetricPanel),
   /** The right-click menu, which Radix portals out of the list. */

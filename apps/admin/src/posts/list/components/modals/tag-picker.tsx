@@ -8,6 +8,8 @@ import type { Tag } from '@tryghost/admin-x-framework/api/tags';
 interface TagPickerProps {
   /** Every tag on the site, already ordered for display. */
   tags: Tag[];
+  /** False until the server has answered for the current search term. */
+  allowCreation: boolean;
   selected: TagToAdd[];
   onToggle: (tag: TagToAdd) => void;
   /**
@@ -52,7 +54,13 @@ type PickerOption = { kind: 'tag'; tag: Tag } | { kind: 'create'; name: string }
  * Owning the list also means the highlight covers the "Create" row, which is
  * where you want to be after typing a name that does not exist yet.
  */
-export function TagPicker({ tags, selected, onToggle, onSearchChange }: TagPickerProps) {
+export function TagPicker({
+  allowCreation,
+  tags,
+  selected,
+  onToggle,
+  onSearchChange,
+}: TagPickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [highlighted, setHighlighted] = useState(0);
@@ -128,7 +136,10 @@ export function TagPicker({ tags, selected, onToggle, onSearchChange }: TagPicke
   // Offered only when nothing existing carries that name — otherwise
   // "Create" would make a duplicate of something one row below it.
   const canCreate =
-    term.length > 0 && !tags.some((tag) => tag.name.toLowerCase() === term.toLowerCase());
+    allowCreation &&
+    term.length > 0 &&
+    !tags.some((tag) => tag.name.toLowerCase() === term.toLowerCase()) &&
+    !selected.some((tag) => tag.name.toLowerCase() === term.toLowerCase());
 
   const options: PickerOption[] = [
     ...matches.map((tag) => ({ kind: 'tag' as const, tag })),

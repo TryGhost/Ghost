@@ -740,6 +740,35 @@ describe('EmailAnalyticsService', function () {
         );
       });
 
+      it('retries from the original cursor after a fetch error', async function () {
+        const initialCursor = new Date(Date.now() - 10 * 60 * 1000);
+        const fetchBegins: Date[] = [];
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (_events, _result, fetchData) => {
+          fetchData.lastEventTimestamp = new Date(initialCursor.getTime() + 1000);
+        });
+        const fetchEvents = sinon.stub().callsFake(async ({ batchHandler, begin }) => {
+          fetchBegins.push(begin);
+          await batchHandler([{ timestamp: new Date(initialCursor.getTime() + 1000) }]);
+          throw new Error('fallback fetch failed');
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(initialCursor),
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents,
+          createEventProcessor: () => eventProcessor,
+        });
+
+        await assert.rejects(service.fetchLatestNonOpenedEvents(), /fallback fetch failed/);
+        await assert.rejects(service.fetchLatestNonOpenedEvents(), /fallback fetch failed/);
+
+        assert.deepEqual(fetchBegins, [initialCursor, initialCursor]);
+        assert.deepEqual(service.getStatus().latest.lastEventTimestamp, initialCursor);
+      });
+
       it('persists and advances the last processed event timestamp', async function () {
         const lastEventTimestamp = new Date(Date.now() - 10_000);
         const setJobTimestamp = sinon.stub().resolves();
@@ -771,6 +800,72 @@ describe('EmailAnalyticsService', function () {
           service.getStatus().latestOpened.lastEventTimestamp,
           new Date(lastEventTimestamp.getTime() + 1000),
         );
+      });
+
+      it('resumes from a capped sending domain until all of its events are processed', async function () {
+        const newerDomainTimestamp = new Date(Date.now() - 70_000);
+        const fallbackTimestamps = [
+          new Date(Date.now() - 120_000),
+          new Date(Date.now() - 119_000),
+          new Date(Date.now() - 118_000),
+          new Date(Date.now() - 117_000),
+        ];
+        const setJobTimestamp = sinon.stub().resolves();
+        const processedEventIds = new Set<string>();
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (events, _result, fetchData) => {
+          for (const event of events) {
+            processedEventIds.add(event.id);
+            if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
+              fetchData.lastEventTimestamp = event.timestamp;
+            }
+          }
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp,
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents: async ({ batchHandler, begin }) => {
+            const fetchIndex = fetchBegins.push(begin) - 1;
+            const firstFallbackIndex = fetchIndex;
+            const safeCursor = fallbackTimestamps[firstFallbackIndex + 1];
+
+            await batchHandler([{ id: 'primary-10', timestamp: newerDomainTimestamp }]);
+            await batchHandler([
+              {
+                id: `fallback-${firstFallbackIndex + 1}`,
+                timestamp: fallbackTimestamps[firstFallbackIndex],
+              },
+              {
+                id: `fallback-${firstFallbackIndex + 2}`,
+                timestamp: safeCursor,
+              },
+            ]);
+            return { safeCursor };
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+        const fetchBegins: Date[] = [];
+
+        await service.fetchLatestNonOpenedEvents({ maxEvents: 2 });
+        await service.fetchLatestNonOpenedEvents({ maxEvents: 2 });
+        await service.fetchLatestNonOpenedEvents({ maxEvents: 2 });
+
+        assert.deepEqual(
+          setJobTimestamp
+            .getCalls()
+            .filter((call) => call.args[1] === 'finished')
+            .map((call) => call.args[2]),
+          fallbackTimestamps.slice(1),
+        );
+        assert.deepEqual(fetchBegins.slice(1), fallbackTimestamps.slice(1, 3));
+        assert.deepEqual(
+          [...processedEventIds],
+          ['primary-10', 'fallback-1', 'fallback-2', 'fallback-3', 'fallback-4'],
+        );
+        assert.deepEqual(service.getStatus().latest.lastEventTimestamp, fallbackTimestamps[3]);
       });
     });
 

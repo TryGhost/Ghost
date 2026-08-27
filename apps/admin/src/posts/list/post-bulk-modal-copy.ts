@@ -35,7 +35,7 @@ export function getBulkConfirmCopy(
   const noun = resource === 'pages' ? 'page' : 'post';
   const subject = isSingle ? `this ${noun}` : `these ${noun}s`;
   // A single post is named; several are counted.
-  const target = isSingle ? `"${title ?? ''}"` : `${count} ${noun}s`;
+  const target = isSingle ? (title ? `"${title}"` : `this ${noun}`) : `${count} ${noun}s`;
 
   // Unpublish and unschedule share a body — both revert to a private draft —
   // and neither carries the permanence warning, because neither is permanent.

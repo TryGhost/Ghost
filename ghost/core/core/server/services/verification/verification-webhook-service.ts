@@ -1,7 +1,6 @@
-import crypto from 'crypto';
+import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const ghostVersion = require('@tryghost/version');
 const config = require('../../../shared/config');
 
 type VerificationTriggerMethod = 'admin' | 'api' | 'import';
@@ -26,7 +25,6 @@ type VerificationWebhookServiceDependencies = {
   request: (url: string, options: unknown) => Promise<unknown>;
 };
 
-const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_RETRY_LIMIT = 5;
 
 export class VerificationWebhookService {
@@ -47,19 +45,6 @@ export class VerificationWebhookService {
       webhookSecret: this.#config.get('hostSettings:emailVerification:webhookSecret') || '',
       siteId: this.#config.get('hostSettings:siteId') || null,
     };
-  }
-
-  #computeSignature(timestamp: string, body: string, secret: string): string {
-    const baseString = `${timestamp}:${body}`;
-    return crypto.createHmac('sha256', secret).update(baseString).digest('base64');
-  }
-
-  #sanitizeWebhookUrl(webhookUrl: string): string {
-    try {
-      return new URL(webhookUrl).origin;
-    } catch {
-      return '[invalid webhook url]';
-    }
   }
 
   /**
@@ -94,33 +79,13 @@ export class VerificationWebhookService {
       method,
     };
 
-    const requestBody = JSON.stringify(payload);
-    const timestamp = Date.now().toString();
+    const requestOptions = buildSignedWebhookRequest({
+      payload,
+      secret: typeof webhookSecret === 'string' && webhookSecret !== '' ? webhookSecret : undefined,
+      retryLimit: process.env.NODE_ENV?.startsWith('test') ? 0 : MAX_RETRY_LIMIT,
+    });
 
-    const headers: Record<string, string | number> = {
-      'Content-Length': Buffer.byteLength(requestBody),
-      'Content-Type': 'application/json',
-      'Content-Version': `v${ghostVersion.safe}`,
-      'X-Ghost-Request-Timestamp': timestamp,
-    };
-
-    if (typeof webhookSecret === 'string' && webhookSecret !== '') {
-      headers['X-Ghost-Signature'] = this.#computeSignature(timestamp, requestBody, webhookSecret);
-    }
-
-    const requestOptions = {
-      method: 'POST',
-      body: requestBody,
-      headers,
-      timeout: {
-        request: REQUEST_TIMEOUT_MS,
-      },
-      retry: {
-        limit: process.env.NODE_ENV?.startsWith('test') ? 0 : MAX_RETRY_LIMIT,
-      },
-    };
-
-    const sanitizedWebhookUrl = this.#sanitizeWebhookUrl(webhookUrl);
+    const sanitizedWebhookUrl = sanitizeWebhookUrl(webhookUrl);
     this.#logging.info(`Triggering verification webhook to "${sanitizedWebhookUrl}"`);
 
     try {

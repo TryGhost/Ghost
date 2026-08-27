@@ -45,7 +45,7 @@ test.describe('Ghost Admin - Posts List divergences (React only)', () => {
    * port: the Ember behaviour is a bug worth reporting separately rather than
    * reproducing. Asserted only against React, because Ember would fail it.
    */
-  test('React copies a real preview link for a draft', async ({ page }) => {
+  test('copy preview link for draft - copies real preview url', async ({ page }) => {
     // Recorded rather than read back: clipboard *read* permission is
     // denied in this harness, and what matters is the value the app hands
     // to the clipboard, not the clipboard itself.
@@ -96,7 +96,7 @@ test.describe('Ghost Admin - Posts List divergences (React only)', () => {
    * React; the Ember behaviour is a bug worth reporting separately rather
    * than reproducing.
    */
-  test('React removes an unpublished post from the published section of the unfiltered list', async () => {
+  test('unpublish post from unfiltered list - removes it from published section', async () => {
     await postFactory.create({ title: 'Was published', status: 'published', featured: false });
     await postFactory.create({ title: 'Existing draft', status: 'draft', featured: false });
 

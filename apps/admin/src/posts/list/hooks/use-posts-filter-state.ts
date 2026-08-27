@@ -4,7 +4,7 @@ import {
   serializePostFilters,
 } from '@/posts/list/post-filter-query';
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams } from '@tryghost/admin-x-framework';
 import type { Filter } from '@tryghost/shade/patterns';
 import type { PostListParams } from '@/posts/list/post-query-params';
 
@@ -119,7 +119,7 @@ export function usePostsFilterState(): UsePostsFilterStateReturn {
     [apply],
   );
 
-  const hasFilters = POST_FILTER_PARAMS.some((param) => Boolean(params[param]));
+  const hasFilters = filters.length > 0;
 
   return { filters, params, order, setFilters, setOrder, clearFilters, hasFilters };
 }

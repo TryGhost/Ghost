@@ -1,13 +1,6 @@
 import { Navigate, Outlet, useLocation, useMatches } from '@tryghost/admin-x-framework';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-
-type CurrentUser = NonNullable<ReturnType<typeof useCurrentUser>['data']>;
-
-export type AccessRule = (user: CurrentUser, location: { pathname: string }) => boolean;
-
-export interface AccessRouteHandle {
-  requiresAccess?: AccessRule;
-}
+import type { AccessRouteHandle, AccessRule } from './route-access';
 
 /**
  * Guard component that keeps staff users out of routes their role can't use.

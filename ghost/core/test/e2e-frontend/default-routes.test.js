@@ -17,6 +17,7 @@ const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
 const { cardAssets } = require('../../core/frontend/services/assets-minification');
+const ghostVersion = require('@tryghost/version');
 const origCache = _.cloneDeep(settingsCache);
 
 function assertCorrectFrontendHeaders(res) {
@@ -323,8 +324,8 @@ describe('Default Frontend routing', function () {
     describe('AMP Disabled', function () {
       it('/amp/ should redirect to regular post, including any query params', async function () {
         await request
-          .get('/welcome/amp/?q=a')
-          .expect('Location', '/welcome/?q=a')
+          .get('/welcome/amp/?ref=a')
+          .expect('Location', '/welcome/?ref=a')
           .expect(301)
           .expect(assertCorrectFrontendHeaders);
       });
@@ -595,7 +596,11 @@ describe('Default Frontend routing', function () {
       await request
         .get('/private/?r=%2Fwelcome%2F')
         .expect(200)
-        .expect(assertCorrectFrontendHeaders);
+        .expect(assertCorrectFrontendHeaders)
+        .expect((res) => {
+          const $ = cheerio.load(res.text);
+          assert.equal($('meta[name="generator"]').attr('content'), `Ghost ${ghostVersion.safe}`);
+        });
     });
 
     it('should redirect, NOT 404 for private route with extra path', async function () {

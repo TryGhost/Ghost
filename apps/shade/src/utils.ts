@@ -16,7 +16,10 @@ export {
   formatPercentage,
   formatDisplayDate,
   formatDisplayTime,
+  formatDisplayDateWithRange,
   getCountryFlag,
   stringToHslColor,
   abbreviateNumber,
+  getYRange,
+  calculateYAxisWidth,
 } from './lib/ds-utils';

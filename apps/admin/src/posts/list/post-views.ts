@@ -3,7 +3,7 @@ import {
   type SharedView,
   findMatchingSharedViewIndexes,
   hasSharedViewNameConflict,
-} from '@/members/shared-views';
+} from '@/members/api';
 import type { PostListParams } from '@/posts/list/post-query-params';
 import type { PostResource } from '@/posts/list/post-resource';
 
@@ -15,7 +15,7 @@ import type { PostResource } from '@/posts/list/post-resource';
  * up correctly in the Ember sidebar and vice versa while both exist.
  *
  * The generic save/delete plumbing is shared with members via
- * `@/members/shared-views`; only the filter shape differs.
+ * `@/members/api`; only the filter shape differs.
  */
 
 /** Ember picks one of these at random for a new view. */

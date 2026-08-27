@@ -21,17 +21,22 @@ import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { TagDetailGate } from './tag-detail-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
-import { OnboardingRedirect } from './onboarding/onboarding-redirect';
-import { type AccessRouteHandle, RouteAccessGuard } from './route-access-guard';
-import { canAccessSettingsRoute } from './settings/settings-access';
-import { settingsRouteChildren } from './settings/routes';
+import { type AccessRouteHandle } from './route-access';
+import { RouteAccessGuard } from './route-access-guard';
+import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
+import { lazyCommentsScreen } from './comments/api';
+import { membersRouteChildren } from './members/api';
+import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
+import { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './posts/api';
+import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
+import { lazyTagsScreen } from './tags/api';
 import {
   canManageAutomations,
   canManageMembers,
   canManageTags,
 } from '@tryghost/admin-x-framework/api/users';
 
-import { NotFound } from './not-found';
+import { NotFound } from './shared/not-found';
 
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
@@ -76,28 +81,6 @@ const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map((path) => ({
     : emberFallbackHandle,
 }));
 
-const membersRoute: RouteObject = {
-  path: '/members',
-  handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
-  children: [
-    {
-      index: true,
-      lazy: lazyComponent(() => import('./members/members')),
-    },
-    {
-      path: 'import',
-      lazy: lazyComponent(() => import('./members/members')),
-    },
-    {
-      // Covers both edit (`:member_id`) and create (the sentinel `new`)
-      // — real member ids are 24-char hex ObjectIds, so they can't
-      // collide with the literal "new".
-      path: ':member_id',
-      lazy: lazyComponent(() => import('./members/detail/member-detail')),
-    },
-  ],
-};
-
 const appRoutes: RouteObject[] = [
   {
     // Role-based landing dispatch, including the hosted-signup
@@ -114,17 +97,17 @@ const appRoutes: RouteObject[] = [
   {
     path: '/tags',
     handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
-    lazy: lazyComponent(() => import('./tags/tags')),
+    lazy: lazyComponent(lazyTagsScreen),
   },
   {
     path: '/comments',
     handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
-    lazy: lazyComponent(() => import('./comments/comments')),
+    lazy: lazyComponent(lazyCommentsScreen),
   },
   {
     path: '/automations',
     handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
-    lazy: lazyComponent(() => import('./automations/automations')),
+    lazy: lazyComponent(lazyAutomationsScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,
@@ -134,7 +117,7 @@ const appRoutes: RouteObject[] = [
       hideAdminSidebar: true,
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
-    lazy: lazyComponent(() => import('./automations/editor')),
+    lazy: lazyComponent(lazyAutomationEditorScreen),
   },
   {
     // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
@@ -147,31 +130,15 @@ const appRoutes: RouteObject[] = [
     Component: TagDetailGate,
     handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
   },
-  membersRoute,
+  {
+    path: '/members',
+    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
+    children: membersRouteChildren,
+  },
   {
     path: '/posts/analytics/:postId',
-    lazy: async () => {
-      const [{ default: PostAnalyticsProvider }, { default: PostAnalytics }] = await Promise.all([
-        import('./posts/analytics/providers/post-analytics-provider'),
-        import('./posts/analytics/post-analytics'),
-      ]);
-      return {
-        element: (
-          <PostAnalyticsProvider>
-            <PostAnalytics />
-          </PostAnalyticsProvider>
-        ),
-      };
-    },
-    children: [
-      { path: '', lazy: lazyComponent(() => import('./posts/analytics/overview/overview')) },
-      { path: 'web', lazy: lazyComponent(() => import('./posts/analytics/web/web')) },
-      { path: 'growth', lazy: lazyComponent(() => import('./posts/analytics/growth/growth')) },
-      {
-        path: 'newsletter',
-        lazy: lazyComponent(() => import('./posts/analytics/newsletter/newsletter')),
-      },
-    ],
+    lazy: lazyPostAnalyticsRoot,
+    children: postAnalyticsRouteChildren,
   },
   {
     // Analytics routes folded directly into the shell table. The
@@ -190,7 +157,7 @@ const appRoutes: RouteObject[] = [
   },
   {
     path: 'setup/onboarding',
-    lazy: lazyComponent(() => import('./onboarding/onboarding-route')),
+    lazy: lazyComponent(lazyOnboardingScreen),
   },
   {
     path: `network`,
@@ -214,7 +181,7 @@ const appRoutes: RouteObject[] = [
     // hideAdminSidebar lives on the handle, not the lazy module, so the shell
     // hides at first paint instead of waiting on the settings chunk.
     path: `settings`,
-    lazy: lazyComponent(() => import('./settings/settings')),
+    lazy: lazyComponent(lazySettingsScreen),
     children: settingsRouteChildren,
     handle: {
       allowInForceUpgrade: true,

@@ -54,6 +54,10 @@ describe('parsePostFilters', () => {
     expect(parsePostFilters({ type: '' })).toEqual([]);
   });
 
+  it('ignores whitespace-only strings', () => {
+    expect(parsePostFilters({ tag: '   ' })).toEqual([]);
+  });
+
   // A saved view can point at a tag that was later renamed, or at a value a
   // newer Ember build understands. Dropping it would silently rewrite the
   // user's URL and corrupt their view.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyPostViewDelete, applyPostViewSave } from './post-views-storage';
-import type { SharedView } from '@/members/shared-views';
+import type { SharedView } from '@/members/api';
 
 /**
  * Views for members, posts and pages all live in ONE `shared_views` setting,

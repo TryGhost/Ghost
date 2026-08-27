@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
 import { Button, Input } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';

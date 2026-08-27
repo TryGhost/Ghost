@@ -8,7 +8,7 @@ import { useNavigate } from '@tryghost/admin-x-framework';
 import { useState } from 'react';
 import type { PostListParams } from '@/posts/list/post-query-params';
 import type { PostResource } from '@/posts/list/post-resource';
-import type { SharedView } from '@/members/shared-views';
+import type { SharedView } from '@/members/api';
 
 interface ManagePostViewPopoverProps {
   resource: PostResource;

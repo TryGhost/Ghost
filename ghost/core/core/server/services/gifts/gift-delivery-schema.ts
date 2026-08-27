@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DbDate } from '../../lib/db-date';
+import { DbDate } from '../../lib/db-types/date';
 import type { CamelKeys } from '../../lib/case-keys';
 
 export const GiftDeliveryStatusSchema = z.enum([
@@ -24,6 +24,7 @@ export const DbGiftDelivery = z.object({
   gift_id: z.string(),
   recipient_email: z.string().email(),
   status: GiftDeliveryStatusSchema.default('pending'),
+  scheduled_at: DbDate.nullable().default(null),
   started_at: DbDate.nullable().default(null),
   email_sent_at: DbDate.nullable().default(null),
   email_provider_message_id: z.string().nullable().default(null),

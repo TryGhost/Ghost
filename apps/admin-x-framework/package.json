@@ -75,8 +75,8 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@tinybirdco/charts": "0.3.0",
     "@tryghost/custom-field-types": "workspace:*",
+    "@tryghost/limit-service": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "bson-objectid": "catalog:",

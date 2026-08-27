@@ -91,7 +91,7 @@ describe('Migrations', function () {
     // Custom assertion to wrap all permissions
     function assertCompletePermissions(permissions) {
       // If you have to change this number, please add the relevant `assertHavePermission` checks below
-      assert.equal(permissions.length, 142);
+      assert.equal(permissions.length, 143);
 
       assertHavePermission(permissions, 'Export database', [
         'Administrator',
@@ -183,6 +183,7 @@ describe('Migrations', function () {
         'Super Editor',
       ]);
       assertHavePermission(permissions, 'Flush gift reminders', ['Scheduler Integration']);
+      assertHavePermission(permissions, 'Flush gift deliveries', ['Scheduler Integration']);
       assertHavePermission(permissions, 'Manage gift links', [
         'Administrator',
         'Editor',

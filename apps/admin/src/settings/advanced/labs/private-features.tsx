@@ -2,7 +2,8 @@ import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
 type Feature = {
   title: string;
@@ -72,12 +73,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Navigation icons & visibility',
-    description:
-      'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
-    flag: 'navigationIcons',
-  },
-  {
     title: 'React tag details',
     description:
       'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
@@ -87,6 +82,12 @@ const features: Feature[] = [
     title: 'Member custom fields',
     description: 'Let admins create and manage custom field definitions for members',
     flag: 'membersCustomFields',
+  },
+  {
+    title: 'Members import redesign',
+    description:
+      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
+    flag: 'membersImportRedesign',
   },
   {
     title: 'Paywall improvements',

@@ -54,7 +54,14 @@ export function ConfirmBulkActionModal({
         }
       }}
     >
-      <AlertDialogContent data-testid={`bulk-${action}-modal`}>
+      <AlertDialogContent
+        data-testid={`bulk-${action}-modal`}
+        onEscapeKeyDown={(event: KeyboardEvent) => {
+          if (isRunning) {
+            event.preventDefault();
+          }
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{copy.title}</AlertDialogTitle>
           <AlertDialogDescription>{copy.body}</AlertDialogDescription>

@@ -9,6 +9,7 @@ import {
   fakePostsListScreen,
   post,
   renderAdminApp,
+  settingsResponse,
   staffRole,
   tag,
 } from '@test-utils/acceptance';
@@ -155,6 +156,22 @@ describe('Posts list rows', () => {
     await expect
       .element(postsListScreen.rowLink().first())
       .toHaveAttribute('href', `#/editor/page/${target.id}`);
+  });
+
+  it('renders page metrics without linking to post analytics', async () => {
+    fakePages([post({ title: 'A tracked page', status: 'published' })]);
+    await renderAdminApp('/pages?type=published', {
+      ...FLAG_ON,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({ settings: { web_analytics_enabled: true } }),
+        },
+      },
+    });
+
+    const visitors = postsListScreen.metricCell('Visitors');
+    await expect.element(visitors).toBeVisible();
+    await expect.element(visitors).not.toHaveAttribute('href');
   });
 });
 

@@ -36,12 +36,14 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
     startedAt = null,
     deliveryStatus = 'pending',
     giftStatus = 'purchased',
-    purchasedAt = new Date(),
+    purchasedAt = new Date('2026-01-01T00:00:00.000Z'),
+    scheduledAt = null,
   }: {
     startedAt?: Date | null;
     deliveryStatus?: string;
     giftStatus?: string;
     purchasedAt?: Date;
+    scheduledAt?: Date | null;
   } = {}) {
     giftSequence += 1;
     const gift = await models.Gift.add({
@@ -74,6 +76,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
       gift_id: gift.id,
       recipient_email: `recipient-${giftSequence}@example.com`,
       status: deliveryStatus,
+      scheduled_at: scheduledAt,
       started_at: startedAt,
       email_sent_at: null,
       email_provider_message_id: null,
@@ -113,6 +116,16 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
 
     return { gift, delivery };
   }
+
+  it('finds an email delivery by gift token', async function () {
+    const { gift, delivery } = await createPendingEmailGift({ deliveryStatus: 'failed' });
+
+    assert.equal(
+      (await deliveryRepository.getByGiftToken(gift.get('token')))?.recipientEmail,
+      delivery.get('recipient_email'),
+    );
+    assert.equal(await deliveryRepository.getByGiftToken('missing-token'), null);
+  });
 
   it('allows exactly one concurrent caller to start a pending delivery', async function () {
     const startedAt = new Date();
@@ -207,12 +220,45 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
       startedAt: now,
     });
 
-    const deliveries = await deliveryRepository.findRecoverableForPurchasedGifts(staleBefore, 100);
+    const deliveries = await deliveryRepository.findRecoverableForPurchasedGifts(
+      now,
+      staleBefore,
+      100,
+    );
 
     assert.deepEqual(
-      new Set(deliveries.map((delivery) => delivery.id)),
+      new Set(deliveries.map(({ delivery }) => delivery.id)),
       new Set([purchased.delivery.id, stale.delivery.id]),
     );
+    assert.ok(deliveries.every(({ gift }) => gift.status === 'purchased'));
+  });
+
+  it('keeps future deliveries pending until their scheduled time', async function () {
+    const now = new Date('2026-08-18T12:00:00.000Z');
+    const future = await createPendingEmailGift({
+      purchasedAt: new Date('2026-08-18T10:00:00.000Z'),
+      scheduledAt: new Date('2026-12-25T09:00:00.000Z'),
+    });
+
+    assert.equal(
+      await deliveryRepository.tryStartDelivery(
+        future.delivery.id,
+        now,
+        new Date('2026-08-18T11:00:00.000Z'),
+      ),
+      null,
+    );
+    assert.deepEqual(
+      await deliveryRepository.findRecoverableForPurchasedGifts(
+        now,
+        new Date('2026-08-18T11:00:00.000Z'),
+        100,
+      ),
+      [],
+    );
+
+    const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(now);
+    assert.deepEqual(scheduled, [new Date('2026-12-25T09:00:00.000Z')]);
   });
 
   it('allows exactly one concurrent caller to reclaim a stale sending delivery', async function () {

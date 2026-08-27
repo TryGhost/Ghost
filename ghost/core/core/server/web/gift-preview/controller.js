@@ -72,6 +72,11 @@ async function giftPreview(req, res) {
   const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
   const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
 
+  const imageMeta = `<meta property="og:image" content="${escapeHtml(ogImage)}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">`;
+  const twitterImageMeta = `\n    <meta name="twitter:image" content="${escapeHtml(ogImage)}">`;
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -85,15 +90,12 @@ async function giftPreview(req, res) {
     <meta property="og:title" content="${escapeHtml(ogTitle)}">
     <meta property="og:description" content="${escapeHtml(ogDescription)}">
     <meta property="og:url" content="${escapeHtml(ogUrl)}">
-    <meta property="og:image" content="${escapeHtml(ogImage)}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    ${imageMeta}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(ogTitle)}">
-    <meta name="twitter:description" content="${escapeHtml(ogDescription)}">
-    <meta name="twitter:image" content="${escapeHtml(ogImage)}">
+    <meta name="twitter:description" content="${escapeHtml(ogDescription)}">${twitterImageMeta}
 
     <!-- Redirect -->
     <meta http-equiv="refresh" content="0;url=${escapeHtml(redirectUrl)}">

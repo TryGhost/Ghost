@@ -41,6 +41,12 @@ describe('formatPostTime', () => {
         formatPostTime('2026-08-04T23:30:00.000Z', { timezone: TZ, now: EARLY, scheduled: true }),
       ).toBe('at 23:30 (UTC) Today');
     });
+
+    it('uses the exact hour distance at the relative-time boundary', () => {
+      expect(formatPostTime('2026-08-04T13:59:00.000Z', { timezone: TZ, now: EARLY })).toBe(
+        '13:59 (UTC) Today',
+      );
+    });
   });
 
   describe('yesterday', () => {

@@ -1,15 +1,13 @@
 import { z } from 'zod';
-import ContentCSVImporter, {
-  type ImportRequest,
-  type ImportAccepted,
-  type FailureReporter,
-} from './import/importer';
+import ContentCSVImporter, { type ImportAccepted, type FailureReporter } from './import/importer';
+import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
+import { importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
+import { prepareImportSource } from './import/source';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
-const importRequestSchema = z.object({ filePath: z.string().min(1) });
 // A junk timezone setting falls back to UTC rather than mis-stamping the batch tag.
 const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 
@@ -45,10 +43,11 @@ function makeImporter(): ContentCSVImporter {
 
   return new ContentCSVImporter({
     readRows: readPostRows,
-    posts: {
-      create: (data, options) => models.Post.add(data, options),
-    },
+    prepareSource: prepareImportSource,
+    posts: new BookshelfPostsRepository(models),
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
+    getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
+    getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),
@@ -71,5 +70,15 @@ export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
   if (!importer) {
     throw new errors.InternalServerError({ message: 'Content import service used before init' });
   }
-  return importer.importCSV(importRequestSchema.parse(request));
+
+  const parsedRequest = importRequestSchema.safeParse(request);
+
+  if (!parsedRequest.success) {
+    throw new errors.ValidationError({
+      message: parsedRequest.error.issues[0]?.message ?? 'Invalid content import request',
+      err: parsedRequest.error,
+    });
+  }
+
+  return importer.importCSV(parsedRequest.data);
 }

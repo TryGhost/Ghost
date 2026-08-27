@@ -98,7 +98,7 @@ function FeatureImage({ post }: { post: PostListItem }) {
       <div
         className={cn(FEATURE_IMAGE_GEOMETRY, 'bg-muted bg-cover bg-center')}
         role="presentation"
-        style={{ backgroundImage: `url(${post.feature_image})` }}
+        style={{ backgroundImage: `url(${JSON.stringify(post.feature_image)})` }}
       />
     );
   }

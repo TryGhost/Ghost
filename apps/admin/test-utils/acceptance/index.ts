@@ -5,12 +5,14 @@ export type { RenderAdminAppOptions } from './render-admin-app';
 export {
   defineResource,
   fakeActions,
+  fakeAutomatedEmails,
   fakeAutomations,
   fakeComments,
   fakeEditSettings,
   fakeIntegrations,
   fakeInvites,
   fakeLabels,
+  fakeMemberCustomFields,
   fakeMembers,
   fakeNewsletters,
   fakeOffers,
@@ -21,6 +23,7 @@ export {
   fakeSettingsScreens,
   fakeTags,
   fakeThemes,
+  fakeThemeUpload,
   fakeTiers,
   fakeUsers,
 } from './resources';

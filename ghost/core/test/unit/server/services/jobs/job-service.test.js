@@ -5,7 +5,6 @@ const sinon = require('sinon');
 describe('JobService', function () {
   const jobServicePath = '../../../../../core/server/services/jobs/job-service';
   const mentionsJobServicePath = '../../../../../core/server/services/mentions-jobs/job-service';
-  const jobLoggingPath = '../../../../../core/server/services/jobs/job-logging';
   let originalLoad;
   let workerMessageHandler;
   let workerErrorHandler;
@@ -73,7 +72,6 @@ describe('JobService', function () {
     };
 
     delete require.cache[require.resolve(jobServicePath)];
-    delete require.cache[require.resolve(jobLoggingPath)];
     require(jobServicePath);
   });
 
@@ -81,7 +79,6 @@ describe('JobService', function () {
     Module._load = originalLoad;
     delete require.cache[require.resolve(jobServicePath)];
     delete require.cache[require.resolve(mentionsJobServicePath)];
-    delete require.cache[require.resolve(jobLoggingPath)];
     sinon.restore();
   });
 
@@ -129,14 +126,6 @@ describe('JobService', function () {
     sinon.assert.notCalled(info);
   });
 
-  it('does not let worker status logging failures escape', function () {
-    info.throws(new Error('Logger unavailable'));
-
-    assert.doesNotThrow(() =>
-      workerMessageHandler({ name: 'clean-tokens', message: 'execution started' }),
-    );
-  });
-
   it('adds the common marker to worker failures', function () {
     const error = new Error('Job failed');
 
@@ -144,19 +133,6 @@ describe('JobService', function () {
 
     sinon.assert.calledOnceWithExactly(errorLog, error, '[Background Job] clean-tokens failed');
     sinon.assert.notCalled(info);
-  });
-
-  it('does not let worker failure logging failures escape either job manager', function () {
-    errorLog.throws(new Error('Logger unavailable'));
-
-    assert.doesNotThrow(() =>
-      workerErrorHandler(new Error('Job failed'), { name: 'clean-tokens' }),
-    );
-
-    require(mentionsJobServicePath);
-    assert.doesNotThrow(() =>
-      workerErrorHandler(new Error('Job failed'), { name: 'send-webmentions' }),
-    );
   });
 });
 

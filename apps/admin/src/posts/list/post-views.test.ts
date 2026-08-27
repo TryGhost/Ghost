@@ -8,7 +8,7 @@ import {
   findActivePostView,
 } from './post-views';
 import { hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
-import type { SharedView } from '@/members/shared-views';
+import type { SharedView } from '@/members/api';
 
 const view = (name: string, filter: Record<string, string | null>): SharedView => ({
   name,

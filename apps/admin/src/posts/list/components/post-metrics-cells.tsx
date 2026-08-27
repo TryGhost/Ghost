@@ -125,6 +125,33 @@ export function PostMetricsCells({
               {group.map((column) => {
                 const Icon = POST_METRIC_ICONS[column.key];
                 const value = metricValue(column, post, visitorCounts, memberCounts);
+                const content = (
+                  <Inline align="center" gap="xs" justify="end">
+                    <Icon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+                    {/* Small and unbolded, as Ember's
+                                          are — its `.gh-post-list-analytics-metric`
+                                          is midgrey at normal weight. The
+                                          figures are secondary to the
+                                          title, not competing with it. */}
+                    <Text className="font-mono" size="sm">
+                      {value}
+                    </Text>
+                  </Inline>
+                );
+
+                if (resource === 'pages') {
+                  return (
+                    <span
+                      key={column.key}
+                      aria-label={`${column.label}: ${value}`}
+                      className="min-w-16"
+                      title={column.label}
+                      data-ignore-select
+                    >
+                      {content}
+                    </span>
+                  );
+                }
 
                 return (
                   <a
@@ -158,17 +185,7 @@ export function PostMetricsCells({
                     // Not part of row selection — Phase 6 relies on this.
                     data-ignore-select
                   >
-                    <Inline align="center" gap="xs" justify="end">
-                      <Icon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
-                      {/* Small and unbolded, as Ember's
-                                                are — its `.gh-post-list-analytics-metric`
-                                                is midgrey at normal weight. The
-                                                figures are secondary to the
-                                                title, not competing with it. */}
-                      <Text className="font-mono" size="sm">
-                        {value}
-                      </Text>
-                    </Inline>
+                    {content}
                   </a>
                 );
               })}

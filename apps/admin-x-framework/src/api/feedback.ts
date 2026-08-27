@@ -22,7 +22,7 @@ export interface FeedbackResponseType {
 
 const dataType = 'FeedbackResponseType';
 
-export const getPostFeedback = createQueryWithId<FeedbackResponseType>({
+export const usePostFeedbackQuery = createQueryWithId<FeedbackResponseType>({
   dataType,
   path: (id) => `/feedback/${id}/`,
 });

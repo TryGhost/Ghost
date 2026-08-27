@@ -1,5 +1,6 @@
 import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { FlagGatedRoute } from './flag-gated-route';
+import { lazyPagesListRoute, lazyPostsListRoute } from './posts/api';
 import { lazy } from 'react';
 
 /**
@@ -12,8 +13,8 @@ import { lazy } from 'react';
  * bridge, so that host has to stay mounted. The React screens open the modal
  * directly and don't need it.
  */
-const PostsListReact = lazy(() => import('./posts/list/posts-route'));
-const PagesListReact = lazy(() => import('./posts/list/pages-route'));
+const PostsListReact = lazy(lazyPostsListRoute);
+const PagesListReact = lazy(lazyPagesListRoute);
 
 export function PostsListGate() {
   return (

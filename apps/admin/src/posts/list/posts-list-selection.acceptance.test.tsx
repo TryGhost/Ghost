@@ -146,6 +146,16 @@ describe('Posts list selection', () => {
       .toBe('inverted');
   });
 
+  it('selects everything on Cmd+A when CapsLock reports an uppercase key', async () => {
+    await renderList();
+
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'A', metaKey: true }),
+    );
+
+    await expect.poll(() => postsListScreen.selectedTitles().length).toBe(4);
+  });
+
   // The inverted selection has to survive a deselect, since that is what
   // produces the `(filter)+id:-[…]` shape bulk actions send.
   it('lets a row be taken back out after Cmd+A', async () => {

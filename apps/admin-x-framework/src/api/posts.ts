@@ -113,7 +113,7 @@ export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & { 
   },
 });
 
-export const getPost = createQueryWithId<PostsResponseType>({
+export const usePost = createQueryWithId<PostsResponseType>({
   dataType,
   path: (id) => `/posts/${id}/`,
 });
@@ -168,13 +168,21 @@ export const useCopyPost = createMutation<PostsResponseType, string>({
   path: (id) => `/posts/${id}/copy/`,
 });
 
-export const useImportContentCSV = createMutation<unknown, File>({
+export interface ImportContentCSVPayload {
+  file: File;
+  mapping: Record<string, string>;
+}
+
+export const useImportContentCSV = createMutation<unknown, ImportContentCSVPayload>({
   method: 'POST',
   retry: false,
   path: () => '/posts/upload/',
-  body: (file) => {
+  body: ({ file, mapping }) => {
     const formData = new FormData();
     formData.append('postsfile', file);
+    for (const [header, field] of Object.entries(mapping)) {
+      formData.append(`mapping[${header}]`, field);
+    }
     return formData;
   },
 });

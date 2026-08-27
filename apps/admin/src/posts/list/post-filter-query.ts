@@ -44,7 +44,7 @@ export function parsePostFilters(params: PostListParams): Filter<string>[] {
   return POST_FILTER_PARAMS.flatMap((param, index) => {
     const value = params[param];
 
-    if (value === null || value === undefined || value === '') {
+    if (value === null || value === undefined || value.trim() === '') {
       return [];
     }
 

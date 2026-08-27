@@ -58,6 +58,13 @@ describe('usePostsFilterState', () => {
     expect(result.current.hasFilters).toBe(false);
   });
 
+  it('does not treat a whitespace-only URL value as a filter', () => {
+    const { result } = renderState('/posts?tag=%20%20');
+
+    expect(result.current.filters).toEqual([]);
+    expect(result.current.hasFilters).toBe(false);
+  });
+
   // A URL is a saved view's identity. Rewriting it on load - even
   // canonicalising it - would silently corrupt the user's view, and the
   // Ember screen would then read something different.

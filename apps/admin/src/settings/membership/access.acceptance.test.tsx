@@ -234,8 +234,13 @@ describe('Access settings', () => {
 
     await choose('default-post-access-select', 'Specific tiers');
     await settingsScreen.access().getByTestId('tiers-select').click();
-    await settingsScreen.selectOption(basic.name).click();
-    await settingsScreen.selectOption(premium.name).click();
+    const basicOption = settingsScreen.tierOption(basic.name);
+    await expect.element(basicOption).toBeVisible();
+    await basicOption.click();
+
+    const premiumOption = settingsScreen.tierOption(premium.name);
+    await expect.element(premiumOption).toBeVisible();
+    await premiumOption.click();
     await settingsScreen.access().getByRole('button', { name: 'Save' }).click();
 
     await expect

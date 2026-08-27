@@ -21,7 +21,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { ModalPage } from '@tryghost/shade/page-templates';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { getPaidActiveTiers, useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 
 interface PortalLinkPrefs {
@@ -46,10 +46,10 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({ name, value }) => {
 const PortalLinks: React.FC = () => {
   const [isDataAttributes, setIsDataAttributes] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
-  const { siteData, settings } = useGlobalData();
+  const { siteData } = useGlobalData();
   const { data: { tiers: allTiers } = {} } = useBrowseTiers();
   const tiers = getPaidActiveTiers(allTiers || []);
-  const [paidMembersEnabled] = getSettingValues(settings, ['paid_members_enabled']) as [boolean];
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   useEffect(() => {
     if (tiers?.length && !selectedTier) {

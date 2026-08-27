@@ -23,9 +23,12 @@ transactions, or Stripe objects.
 - `processReminders()`, `processConsumed()`, and `processExpired()` own gift
   lifecycle work. `GiftDeliveryService` owns email-delivery creation,
   post-commit dispatch, cancellation, and processing behind a separate
-  interface. Email delivery starts immediately after purchase through an
-  in-process event. Delivery claims are atomic; stale in-progress claims are
-  retried after a crash, so mail-transport acceptance is at least once.
+  interface. Immediate email delivery starts after purchase through an
+  in-process event; scheduled email delivery becomes eligible at the
+  GiftDelivery's `scheduledAt` and uses the same processing path. Gift links
+  remain redeemable from purchase. Delivery claims are atomic;
+  stale in-progress claims are retried after a crash, so mail-transport
+  acceptance is at least once.
 - `GiftDeliveryService.recordOutcome(...)` retains only the newest Mailgun
   delivery outcome; mail transport acceptance remains the authoritative sent
   fact. A newly recorded permanent provider failure sends the buyer a

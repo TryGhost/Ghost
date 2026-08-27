@@ -4,7 +4,7 @@ import {
   useBrowseSettings,
   useEditSettings,
 } from '@tryghost/admin-x-framework/api/settings';
-import { parseAllSharedViewsJSON, type SharedView } from '@/members/shared-views';
+import { parseAllSharedViewsJSON, type SharedView } from '@/members/api';
 import { useCallback } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { PostListParams } from '@/posts/list/post-query-params';

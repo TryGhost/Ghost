@@ -132,12 +132,12 @@ export function getPostStatusLabel(post: PostListItem, resource: PostResource = 
     case 'scheduled':
       return 'Scheduled';
     case 'published':
-      if (didEmailFail(post)) {
+      if (didPostEmailFail(post, resource)) {
         return 'Published but failed to send newsletter';
       }
       return wasEmailed(post, resource) ? 'Published and sent' : 'Published';
     case 'sent':
-      return didEmailFail(post) ? 'Failed to send newsletter' : 'Sent';
+      return didPostEmailFail(post, resource) ? 'Failed to send newsletter' : 'Sent';
     default:
       return 'Draft';
   }

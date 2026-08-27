@@ -18,7 +18,7 @@ const limits = require('../../../core/server/services/limits');
 const { anyErrorId } = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 111;
+const CURRENT_SETTINGS_COUNT = 113;
 
 const settingsMatcher = {};
 
@@ -41,10 +41,10 @@ const matchSettingsArray = (length) => {
     settingsArray[38] = publicHashSettingMatcher;
   }
 
-  if (length > 72) {
+  if (length > 74) {
     // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
     // Item at index x is the lab settings, which changes as we add and remove features
-    settingsArray[72] = labsSettingMatcher;
+    settingsArray[74] = labsSettingMatcher;
   }
 
   return settingsArray;
@@ -272,6 +272,37 @@ describe('Settings API', function () {
           assert.equal(emailVerificationRequired.value, false);
         });
       emailMockReceiver.assertSentEmailCount(0);
+    });
+
+    it('can disable Portal gift promotion settings', async function () {
+      try {
+        await agent
+          .put('settings/')
+          .body({
+            settings: [
+              { key: 'portal_signup_gift_promotion', value: false },
+              { key: 'portal_account_gift_promotion', value: false },
+            ],
+          })
+          .expectStatus(200)
+          .expect(({ body }) => {
+            const signupPromotion = body.settings.find(
+              (setting) => setting.key === 'portal_signup_gift_promotion',
+            );
+            const accountPromotion = body.settings.find(
+              (setting) => setting.key === 'portal_account_gift_promotion',
+            );
+            assert.equal(signupPromotion.value, false);
+            assert.equal(accountPromotion.value, false);
+          });
+
+        assert.equal(settingsCache.get('portal_signup_gift_promotion'), false);
+        assert.equal(settingsCache.get('portal_account_gift_promotion'), false);
+        emailMockReceiver.assertSentEmailCount(0);
+      } finally {
+        await models.Settings.edit({ key: 'portal_signup_gift_promotion', value: true });
+        await models.Settings.edit({ key: 'portal_account_gift_promotion', value: true });
+      }
     });
 
     it('can disable llms_enabled', async function () {

@@ -26,10 +26,11 @@ import { STATS_RANGES } from '@/shared/analytics/constants';
 import {
   centsToDollars,
   formatQueryDate,
+  getEffectiveChartRange,
   getRangeDates,
   getRangeForStartDate,
-} from '@tryghost/shade/app';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+  sanitizeChartData,
+} from '@/shared/analytics/chart-helpers';
 import {
   hasBeenEmailed,
   isPublishedOnly,
@@ -38,7 +39,13 @@ import {
 } from '@tryghost/admin-x-framework';
 import { useActiveGiftLink } from '@tryghost/admin-x-framework/api/gift-links';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  useEmailTrackClicks,
+  useEmailTrackOpens,
+  useMembersTrackSources,
+  usePaidMembersEnabled,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { useEffect, useMemo, useState } from 'react';
 import { useGiftLinkUsage } from '@/posts/analytics/hooks/use-gift-link-usage';
@@ -49,10 +56,11 @@ const Overview: React.FC = () => {
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
   const { totals, isLoading: isTotalsLoading, currencySymbol } = usePostReferrers(postId);
-  const { appSettings } = useAppContext();
-  const { emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled } =
-    appSettings?.analytics || {};
-  const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
+  const membersTrackSources = useMembersTrackSources();
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
 
   // Gift link card: only for eligible posts. Read the active link (without
   // minting) to scope the usage count to the current token, matching the modal.
@@ -161,10 +169,8 @@ const Overview: React.FC = () => {
   const showNewsletterSection =
     hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
   const showWebSection = !post?.email_only && webAnalyticsEnabled;
-  const showGrowthSection = appSettings?.analytics.membersTrackSources;
-  const showGiftLinkCard = Boolean(
-    canManageGiftLink && post && appSettings?.analytics.webAnalytics,
-  );
+  const showGrowthSection = membersTrackSources;
+  const showGiftLinkCard = Boolean(canManageGiftLink && post && webAnalyticsEnabled);
 
   // Redirect to Growth tab if this is a published-only post with web analytics disabled
   // Only redirect if Growth section is available
@@ -250,7 +256,7 @@ const Overview: React.FC = () => {
                             </KpiCardValue>
                           </KpiCardContent>
                         </KpiCard>
-                        {appSettings?.paidMembersEnabled && (
+                        {paidMembersEnabled && (
                           <>
                             <KpiCard className="grow gap-1 py-0">
                               <KpiCardLabel>Paid members</KpiCardLabel>

@@ -275,6 +275,22 @@ describe('Posts list bulk actions', () => {
       });
     });
 
+    it('searches tags on the server before offering creation', async () => {
+      const existing = tag({ id: 't1', name: 'C++', slug: 'c-plus-plus' });
+      fakePosts([post({ title: 'Target', status: 'draft' })]);
+      const tags = fakeTags(({ filter }) => (filter?.includes('tags.name:~') ? [existing] : []));
+      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+      await postsListScreen.listItems().first().click({ button: 'right' });
+      await postsListScreen.contextMenuItem('Add a tag').click();
+      await postsListScreen.tagSearchInput().fill('C++');
+
+      await expect.poll(() => tags.lastRequest?.filter).toContain("tags.name:~'C++'");
+      await expect.element(postsListScreen.tagOption('C++')).toBeVisible();
+      await expect(postsListScreen.tagOption(/Create/)).toHaveCount(0);
+    });
+
     /**
      * A tag typed here is created server-side as a side effect of the post
      * save, so nothing in the tag cache knows it exists. Without this the

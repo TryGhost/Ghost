@@ -188,6 +188,21 @@ describe('getPostStatusLabel', () => {
     ).toBe('Failed to send newsletter');
   });
 
+  it.each([
+    ['published', 'Published'],
+    ['sent', 'Sent'],
+  ] as const)('ignores stale failed-email data on a %s page', (status, label) => {
+    expect(
+      getPostStatusLabel(
+        post({
+          status,
+          email: { status: 'failed', email_count: 10, opened_count: 0 },
+        }),
+        'pages',
+      ),
+    ).toBe(label);
+  });
+
   it('notes that a published post was also emailed', () => {
     expect(
       getPostStatusLabel(

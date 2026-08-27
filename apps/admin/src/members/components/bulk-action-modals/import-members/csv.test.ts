@@ -32,16 +32,97 @@ describe('csv helpers', () => {
     ]);
   });
 
-  it('serializes error rows to a downloadable CSV string', () => {
+  it('serializes error rows into the members export format', () => {
     const output = unparseErrorCSV([
       {
         name: 'Alice',
         email: 'bad@example.com',
+        subscribed: true,
+        complimentary_plan: false,
+        labels: [{ name: 'vip' }, { name: 'gold' }],
         error: 'Invalid email, "quote"',
       },
     ]);
 
-    expect(output).toContain('"name","email","error"');
-    expect(output).toContain('"Alice","bad@example.com","Invalid email, ""quote"""');
+    expect(output).toContain(
+      '"email","name","note","subscribed_to_emails","complimentary_plan","stripe_customer_id","created_at","labels","gift_id","error"',
+    );
+    expect(output).toContain('"vip,gold"');
+    expect(output.split('\n')[1]).toContain('"true"');
+    expect(output).not.toContain('[object Object]');
+    expect(output).toContain('"Invalid email, ""quote"""');
+  });
+
+  it('does not invent subscription columns when the source omitted them', () => {
+    const output = unparseErrorCSV([
+      {
+        email: 'a@example.com',
+        labels: [],
+        error: 'nope',
+      },
+    ]);
+
+    const [header] = output.split('\r\n');
+    expect(header).not.toContain('subscribed_to_emails');
+    expect(header).not.toContain('complimentary_plan');
+  });
+
+  it('drops malformed label entries instead of crashing the download', () => {
+    const output = unparseErrorCSV([
+      {
+        email: 'a@example.com',
+        labels: [null, { name: 'vip' }, 42, { name: 'gold' }],
+        error: 'nope',
+      },
+    ]);
+
+    expect(output).toContain('"vip,gold"');
+    expect(output).not.toContain('[object Object]');
+  });
+
+  it('escapes formula-like values before writing the downloadable CSV', () => {
+    const output = unparseErrorCSV([
+      {
+        name: '=1+2',
+        email: 'a@example.com',
+        error: 'nope',
+      },
+    ]);
+
+    expect(output).toContain(`"'=1+2"`);
+  });
+
+  it('keeps a column carried only by a later row, with the error column last', () => {
+    const output = unparseErrorCSV([
+      { email: 'a@example.com', labels: [], error: 'nope' },
+      {
+        email: 'b@example.com',
+        labels: [],
+        newsletters: [{ name: 'Daily News' }],
+        'custom_fields.topic': 'ghosts',
+        error: 'nope',
+      },
+    ]);
+
+    const header = output.split('\n')[0].trimEnd();
+    expect(header).toContain('"newsletters"');
+    expect(header).toContain('"custom_fields.topic"');
+    expect(header.endsWith('"error"')).toBe(true);
+  });
+
+  it('carries the newsletters column only when the submitted file did', () => {
+    const withColumn = unparseErrorCSV([
+      {
+        email: 'a@example.com',
+        labels: [],
+        newsletters: [{ name: 'Daily News' }],
+        error: 'nope',
+      },
+    ]);
+    expect(withColumn).toContain('"newsletters"');
+    expect(withColumn).toContain('"Daily News"');
+
+    const withoutColumn = unparseErrorCSV([{ email: 'a@example.com', labels: [], error: 'nope' }]);
+    expect(withoutColumn.split('\n')[0]).not.toContain('newsletters');
   });
 });

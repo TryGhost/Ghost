@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { fakePages, fakePosts, fakePostsListScreen, renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakePages,
+  fakePosts,
+  fakePostsListScreen,
+  renderAdminApp,
+  type ResourceCapture,
+} from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -17,13 +23,16 @@ const FLAG_OFF = { labs: { postsListReact: false } };
  * in apps/ember-admin/tests/acceptance/posts-list-react-flag-test.js.
  */
 describe('Posts and pages list flag', () => {
+  let pagesApi: ResourceCapture;
+  let postsApi: ResourceCapture;
+
   // The screen queries once per status bucket as soon as it mounts; the
   // content is irrelevant here, this file is only about which implementation
   // serves the route.
   beforeEach(() => {
     fakePostsListScreen();
-    fakePosts([]);
-    fakePages([]);
+    postsApi = fakePosts([]);
+    pagesApi = fakePages([]);
   });
 
   describe.each([
@@ -67,5 +76,7 @@ describe('Posts and pages list flag', () => {
 
     await expect.element(postsListScreen.page('pages')).toBeVisible();
     await expect(postsListScreen.page('posts')).toHaveCount(0);
+    await expect.poll(() => pagesApi.requests.length).toBeGreaterThan(0);
+    expect(postsApi.requests).toHaveLength(0);
   });
 });

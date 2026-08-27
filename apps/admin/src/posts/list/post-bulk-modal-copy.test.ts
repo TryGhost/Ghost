@@ -21,6 +21,12 @@ describe('getBulkConfirmCopy', () => {
     );
   });
 
+  it('falls back to the resource name when a single post has no title', () => {
+    expect(getBulkConfirmCopy('delete', { count: 1, resource: 'posts' }).body).toBe(
+      'You’re about to delete this post. This is permanent! We warned you, k?',
+    );
+  });
+
   it('counts several posts rather than naming them', () => {
     expect(getBulkConfirmCopy('delete', { count: 12, resource: 'posts' })).toEqual({
       title: 'Are you sure you want to delete these posts?',

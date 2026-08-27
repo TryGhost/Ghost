@@ -2,7 +2,7 @@ const { faker } = require('@faker-js/faker');
 const errors = require('@tryghost/errors');
 const { TableImporter } = require('./table-importer');
 const { randomDateBetween } = require('../utils/random');
-const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-date');
+const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 
 class OfferRedemptionsImporter extends TableImporter {
   static table = 'offer_redemptions';

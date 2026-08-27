@@ -41,10 +41,7 @@ const renderWithRoutes = () =>
   render(
     <MemoryRouter initialEntries={['/automations']}>
       <Routes>
-        <Route
-          element={<AutomationsList automations={automations} showRunAnalytics={true} />}
-          path="/automations"
-        />
+        <Route element={<AutomationsList automations={automations} />} path="/automations" />
         <Route element={<AutomationEditorRoute />} path="/automations/:id" />
       </Routes>
     </MemoryRouter>,
@@ -61,7 +58,7 @@ describe('AutomationsList', () => {
   });
 
   it('renders fetched automations with private beta copy and status labels', () => {
-    renderWithRouter(<AutomationsList automations={automations} showRunAnalytics={true} />);
+    renderWithRouter(<AutomationsList automations={automations} />);
 
     expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
@@ -81,18 +78,9 @@ describe('AutomationsList', () => {
   });
 
   it('renders Never when an automation has no last entry', () => {
-    renderWithRouter(<AutomationsList automations={[automations[1]]} showRunAnalytics={true} />);
+    renderWithRouter(<AutomationsList automations={[automations[1]]} />);
 
     expect(screen.getByText('Never')).toBeInTheDocument();
-  });
-
-  it('hides run analytics when the feature is disabled', () => {
-    renderWithRouter(<AutomationsList automations={automations} showRunAnalytics={false} />);
-
-    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
-    expect(screen.queryByText('1,432')).not.toBeInTheDocument();
   });
 
   it('links each row to the automation sequence by id', () => {
@@ -138,7 +126,7 @@ describe('AutomationsList', () => {
   });
 
   it('renders a table skeleton while loading', () => {
-    renderWithRouter(<AutomationsList isLoading={true} showRunAnalytics={true} />);
+    renderWithRouter(<AutomationsList isLoading={true} />);
 
     expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
   });

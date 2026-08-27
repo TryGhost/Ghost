@@ -2,7 +2,6 @@
 const _ = require('lodash');
 const crypto = require('crypto');
 const moment = require('moment');
-const { sequence } = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
@@ -1052,7 +1051,11 @@ Post = ghostBookshelf.Model.extend(
         }
       }
 
-      return sequence(ops);
+      const results = [];
+      for (const op of ops) {
+        results.push(await op());
+      }
+      return results;
     },
 
     published_by: function publishedBy() {

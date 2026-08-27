@@ -1,7 +1,7 @@
 import { buildPostView, type PostViewColor } from '@/posts/list/post-views';
-import { normalizeSharedViewName } from '@/members/shared-views';
+import { normalizeSharedViewName } from '@/members/api';
 import type { PostListParams } from '@/posts/list/post-query-params';
-import type { SharedView } from '@/members/shared-views';
+import type { SharedView } from '@/members/api';
 
 /**
  * Reading and writing the posts entries of the shared `shared_views` setting,

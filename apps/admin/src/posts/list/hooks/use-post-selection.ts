@@ -103,7 +103,7 @@ export function usePostSelection({ orderedIds, allFilter, enabled }: UsePostSele
         return;
       }
 
-      if ((event.metaKey || event.ctrlKey) && !event.shiftKey && event.key === 'a') {
+      if ((event.metaKey || event.ctrlKey) && !event.shiftKey && event.key.toLowerCase() === 'a') {
         dispatch({ type: 'selectAll' });
         // Otherwise the browser selects every word on the page too.
         event.preventDefault();

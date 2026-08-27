@@ -11,6 +11,8 @@ import { TagPicker } from '@/posts/list/components/modals/tag-picker';
 import { tagKey, type TagToAdd } from '@/posts/list/components/modals/tag-selection';
 import { useBrowseTags } from '@tryghost/admin-x-framework/api/tags';
 import { useMemo, useState } from 'react';
+import { useDebounce } from 'use-debounce';
+import { escapeNqlString } from '@tryghost/nql-string';
 
 export type { TagToAdd };
 
@@ -36,9 +38,15 @@ interface AddTagModalProps {
 export function AddTagModal({ isRunning, onConfirm, onCancel }: AddTagModalProps) {
   const [selected, setSelected] = useState<TagToAdd[]>([]);
   const [search, setSearch] = useState('');
+  const term = search.trim();
+  const [debouncedTerm] = useDebounce(term, 250);
 
-  const { data: tagsData } = useBrowseTags({
-    searchParams: { limit: '100', order: 'name asc' },
+  const { data: tagsData, isFetching } = useBrowseTags({
+    searchParams: {
+      limit: '100',
+      order: 'name asc',
+      ...(debouncedTerm ? { filter: `tags.name:~${escapeNqlString(debouncedTerm)}` } : {}),
+    },
     filter: {},
   });
   const tags = useMemo(() => tagsData?.tags ?? [], [tagsData]);
@@ -83,7 +91,13 @@ export function AddTagModal({ isRunning, onConfirm, onCancel }: AddTagModalProps
           </DialogDescription>
         </DialogHeader>
 
-        <TagPicker selected={selected} tags={tags} onSearchChange={setSearch} onToggle={toggle} />
+        <TagPicker
+          allowCreation={!isFetching && term === debouncedTerm}
+          selected={selected}
+          tags={tags}
+          onSearchChange={setSearch}
+          onToggle={toggle}
+        />
 
         <DialogFooter>
           <Button disabled={isRunning} variant="outline" onClick={onCancel}>

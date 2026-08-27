@@ -56,7 +56,7 @@ export function formatPostTime(
   const offset = utcOffsetLabel(target);
 
   // A draft edited, a post published, or a post scheduled within 12 hours.
-  if (Math.abs(reference.diff(target, 'hours')) <= 12) {
+  if (Math.abs(reference.diff(target, 'hours', true)) <= 12) {
     return target.from(reference);
   }
 

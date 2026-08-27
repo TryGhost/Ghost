@@ -189,6 +189,22 @@ describe('private.hbs template translation', function () {
         );
       });
 
+      it('renders the Ghost version in the generator meta tag', function () {
+        const context = {
+          safeVersion: '6.60',
+          site: {
+            title: 'Test',
+            url: 'http://test.local',
+            locale: 'en',
+            admin_url: 'http://test.local/ghost/',
+          },
+        };
+        const html = renderPrivateTemplate(context);
+
+        assertExists(html);
+        assert(html.includes('<meta name="generator" content="Ghost 6.60">'));
+      });
+
       it('renders the site description below the site title when present', function () {
         const context = {
           site: {

@@ -1,5 +1,10 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  customFieldListItem,
+  customFieldModal,
+  customFields,
+} from '@tryghost/test-data/selectors/settings';
 
 /**
  * Settings -> Membership -> Custom fields. The whole section is behind the
@@ -14,13 +19,13 @@ export class CustomFieldsSection extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.section = page.getByTestId('custom-fields');
+    this.section = page.getByTestId(customFields);
     this.addButton = this.section.getByRole('button', { name: 'Add custom field' });
-    this.modal = page.getByTestId('custom-field-modal');
+    this.modal = page.getByTestId(customFieldModal);
   }
 
   listItem(name: string): Locator {
-    return this.section.getByTestId('custom-field-list-item').filter({ hasText: name });
+    return this.section.getByTestId(customFieldListItem).filter({ hasText: name });
   }
 
   /**

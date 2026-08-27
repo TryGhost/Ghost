@@ -1,6 +1,6 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '@/settings/assets/images/integrations/ghost-transistor.png';
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import {
   Field,
@@ -22,13 +22,13 @@ import { useBrowseIntegrations } from '@tryghost/admin-x-framework/api/integrati
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useEffect, useState } from 'react';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useRefreshAPIKey } from '@tryghost/admin-x-framework/api/api-keys';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 function TransistorModal() {
   const { updateRoute } = useSettingsNavigation();
-  const { config, settings } = useGlobalData();
+  const { settings } = useGlobalData();
   const { mutateAsync: editSettings } = useEditSettings();
   const { data: { integrations } = { integrations: [] } } = useBrowseIntegrations();
 
@@ -37,7 +37,7 @@ function TransistorModal() {
   const { confirm } = useConfirmation();
   const [regenerated, setRegenerated] = useState(false);
 
-  const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+  const builtInApiIntegrationsDisabled = useHostLimits()?.customIntegrations?.disabled;
   const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
   const [enabled, setEnabled] = useState<boolean>(!!transistorEnabled);
   const [okLabel, setOkLabel] = useState('Save');
