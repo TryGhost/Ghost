@@ -95,6 +95,15 @@ describe('Job: Clean expired comped', function () {
     };
     events.on('member.edited', onMemberEdited);
 
+    // Installed before the first dispatch and consulted by count, so the
+    // repeat-run wait below cannot be satisfied by the first run's straggler
+    // completion log (the task emits events before it logs completion)
+    const loggingInfoSpy = sinon.spy(logging, 'info');
+    const completedLogCount = () =>
+      loggingInfoSpy
+        .getCalls()
+        .filter((call) => call.args[0]?.system?.event === 'clean_expired_comped.completed').length;
+
     try {
       await getJobsService().dispatch(new CleanExpiredCompedJob());
 
@@ -139,20 +148,14 @@ describe('Job: Clean expired comped', function () {
         .where({ member_id: sameDayMemberId });
       assert.equal(sameDayRelations.length, 1, 'The same-day product relation is kept');
 
+      const firstRunLogged = await waitFor(async () => completedLogCount() === 1);
+      assert.ok(firstRunLogged, 'The first run logs its completion event');
+
       // A repeat run must be a no-op: no duplicate status history, no new events
       editedEvents.length = 0;
-      const loggingInfoSpy = sinon.spy(logging, 'info');
-      try {
-        await getJobsService().dispatch(new CleanExpiredCompedJob());
-        const repeatCompleted = await waitFor(async () => {
-          return loggingInfoSpy
-            .getCalls()
-            .some((call) => call.args[0]?.system?.event === 'clean_expired_comped.completed');
-        });
-        assert.ok(repeatCompleted, 'The repeat run finishes and logs its completion event');
-      } finally {
-        loggingInfoSpy.restore();
-      }
+      await getJobsService().dispatch(new CleanExpiredCompedJob());
+      const repeatCompleted = await waitFor(async () => completedLogCount() === 2);
+      assert.ok(repeatCompleted, 'The repeat run finishes and logs its completion event');
 
       const statusEventsAfterRepeat = await compedToFreeEvents(expiredMemberId);
       assert.equal(statusEventsAfterRepeat.length, 1, 'A repeat run adds no status history');
@@ -164,6 +167,7 @@ describe('Job: Clean expired comped', function () {
       const activeMemberAfterRepeat = await models.Member.findOne({ id: activeMemberId });
       assert.equal(activeMemberAfterRepeat.get('status'), 'comped');
     } finally {
+      loggingInfoSpy.restore();
       events.removeListener('member.edited', onMemberEdited);
     }
   });
