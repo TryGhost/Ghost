@@ -5,6 +5,8 @@ import readPostRows from './import/reader';
 import { importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
 import { prepareImportSource } from './import/source';
+import { PostMediaInliner } from './import/media';
+import { isLocalMediaUrl } from './import/local-media-url';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
@@ -25,6 +27,8 @@ function makeImporter(): ContentCSVImporter {
   const jobsService = require('../jobs');
   const settingsCache = require('../../../shared/settings-cache');
   const urlService = require('../url');
+  const mediaInlinerService = require('../media-inliner');
+  const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
 
   // Inline jobs never reach the job manager's Sentry handler, which is wired to the
@@ -48,6 +52,20 @@ function makeImporter(): ContentCSVImporter {
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
+    createMediaInliner: () =>
+      new PostMediaInliner({
+        media: mediaInlinerService.getInstance(),
+        isLocalMediaUrl: (sourceUrl) =>
+          isLocalMediaUrl(sourceUrl, {
+            siteUrl: config.getSiteUrl(),
+            subdir: config.getSubdir(),
+            assetBaseUrls: [
+              config.get('urls:image'),
+              config.get('urls:media'),
+              config.get('urls:files'),
+            ],
+          }),
+      }),
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),

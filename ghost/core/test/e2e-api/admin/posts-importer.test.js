@@ -11,9 +11,19 @@ const {
 } = require('../../utils/e2e-framework');
 const { cacheInvalidateHeaderNotSet } = assertions;
 const path = require('path');
+const nock = require('nock');
 const models = require('../../../core/server/models');
 const jobsService = require('../../../core/server/services/jobs');
+const mediaInlinerService = require('../../../core/server/services/media-inliner');
+const {
+  PostMediaInliner,
+  isBlockedMediaUrl,
+} = require('../../../core/server/services/content-import/import/media');
+const {
+  isLocalMediaUrl,
+} = require('../../../core/server/services/content-import/import/local-media-url');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
+const urlUtils = require('../../../core/shared/url-utils').default;
 const { compress } = require('@tryghost/zip');
 const sinon = require('sinon');
 
@@ -21,6 +31,7 @@ const csvPath = path.join(__dirname, '../../utils/fixtures/csv/valid-posts-impor
 
 // Test CSVs are written inline to a temp dir rather than committed as fixtures.
 let tmpDir;
+let remoteImportedMediaUrls = [];
 const getImportedAssetPaths = () => [
   path.join(adapterManager.getAdapter('storage:images').storagePath, 'csv-zip-photo.jpg'),
   path.join(adapterManager.getAdapter('storage:media').storagePath, 'csv-zip-movie.mp4'),
@@ -57,6 +68,23 @@ const zipFile = async (name, files) => {
   return zipPath;
 };
 
+const cleanupRemoteImportedMedia = async () => {
+  const storageByDirectory = {
+    images: adapterManager.getAdapter('storage:images'),
+    media: adapterManager.getAdapter('storage:media'),
+    files: adapterManager.getAdapter('storage:files'),
+  };
+  for (const mediaUrl of new Set(remoteImportedMediaUrls)) {
+    const absoluteUrl = urlUtils.transformReadyToAbsolute(mediaUrl);
+    const directory = new URL(absoluteUrl).pathname.match(/\/content\/(images|media|files)\//)?.[1];
+    if (directory) {
+      const storage = storageByDirectory[directory];
+      await storage.delete(storage.urlToPath(absoluteUrl));
+    }
+  }
+  remoteImportedMediaUrls = [];
+};
+
 describe('Posts Importer API', function () {
   let agent;
 
@@ -74,6 +102,7 @@ describe('Posts Importer API', function () {
     // Each test logs in as a different role — reset the login rate limiter
     // so the repeated logins don't trip spam prevention
     await resetRateLimits();
+    remoteImportedMediaUrls = [];
     await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
   });
 
@@ -81,8 +110,10 @@ describe('Posts Importer API', function () {
     // Every accepted upload schedules a background import — drain it so a job
     // doesn't run on into another test (or another file on this fork's DB)
     await jobsService.allSettled();
+    await cleanupRemoteImportedMedia();
     await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
     mockManager.restore();
+    nock.cleanAll();
     sinon.restore();
   });
 
@@ -134,6 +165,255 @@ describe('Posts Importer API', function () {
       .expect(cacheInvalidateHeaderNotSet());
   });
 
+  it('downloads and stores referenced CSV media before creating the post', async function () {
+    await agent.loginAsOwner();
+    const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+    const [audioFixture, videoFixture, fileFixture] = await Promise.all([
+      fs.readFile(path.join(__dirname, '../../utils/fixtures/media/sample.mp3')),
+      fs.readFile(path.join(__dirname, '../../utils/fixtures/media/sample_640x360.mp4')),
+      fs.readFile(path.join(__dirname, '../../utils/fixtures/files/test.pdf')),
+    ]);
+    const origin = 'https://csv-import-assets.example';
+    const requests = [
+      nock(origin).get('/body.jpg').reply(200, GIF1x1),
+      nock(origin).get('/og.jpg').reply(200, GIF1x1),
+      nock(origin).get('/twitter.jpg').reply(200, GIF1x1),
+      nock(origin).get('/audio.mp3').reply(200, audioFixture),
+      nock(origin).get('/video.mp4').reply(200, videoFixture),
+      nock(origin).get('/guide.pdf').reply(200, fileFixture),
+    ];
+    const html =
+      `<p><img src="${origin}/body.jpg"></p>` +
+      `<div class="kg-card kg-audio-card"><div class="kg-audio-player-container"><audio src="${origin}/audio.mp3"></audio></div></div>` +
+      `<figure class="kg-card kg-video-card"><div class="kg-video-container"><video src="${origin}/video.mp4"></video></div></figure>` +
+      `<div class="kg-card kg-file-card"><a href="${origin}/guide.pdf"><div class="kg-file-card-title">Guide</div><div class="kg-file-card-filename">guide.pdf</div></a></div>`;
+    const csvValue = (value) => `"${value.replaceAll('"', '""')}"`;
+    const csv = [
+      'title,html,markdown,feature_image,og_image,twitter_image',
+      `Remote CSV media,${csvValue(html)},,${origin}/body.jpg,${origin}/og.jpg,${origin}/twitter.jpg`,
+      `Remote Markdown media,,${csvValue(`![Remote](${origin}/body.jpg)`)},,,`,
+    ].join('\n');
+    const filePath = await csvFile('remote-media.csv', csv);
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await jobsService.allSettled();
+
+    for (const request of requests) {
+      assert.equal(request.isDone(), true, request.pendingMocks().join(', '));
+    }
+    const post = await models.Post.findOne(
+      { title: 'Remote CSV media', status: 'all' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    const lexical = JSON.parse(post.get('lexical'));
+    const nodeByType = (type) => lexical.root.children.find((node) => node.type === type);
+    const storedUrls = [
+      nodeByType('image').src,
+      nodeByType('audio').src,
+      nodeByType('video').src,
+      nodeByType('file').src,
+      post.get('feature_image'),
+      post.related('posts_meta').get('og_image'),
+      post.related('posts_meta').get('twitter_image'),
+    ];
+    const markdownPost = await models.Post.findOne({
+      title: 'Remote Markdown media',
+      status: 'all',
+    });
+    assert.ok(markdownPost);
+    const markdownLexical = JSON.parse(markdownPost.get('lexical'));
+    const markdownImage = markdownLexical.root.children.find((node) => node.type === 'image').src;
+    assert.equal(post.get('feature_image'), nodeByType('image').src);
+    assert.equal(markdownImage, nodeByType('image').src);
+    storedUrls.push(markdownImage);
+    remoteImportedMediaUrls.push(...storedUrls);
+    for (const storedUrl of storedUrls) {
+      const absoluteUrl = new URL(urlUtils.transformReadyToAbsolute(storedUrl));
+      assert.equal(absoluteUrl.origin, new URL(urlUtils.getSiteUrl()).origin);
+      assert.match(absoluteUrl.pathname, /\/content\/(?:images|media|files)\//);
+    }
+    assert.doesNotMatch(post.get('html'), /csv-import-assets\.example/);
+    assert.doesNotMatch(markdownPost.get('html'), /csv-import-assets\.example/);
+  });
+
+  it('isolates unsupported referenced media to its CSV row', async function () {
+    await agent.loginAsOwner();
+    const origin = 'https://csv-import-assets.example';
+    const unsupportedFixture = await fs.readFile(
+      path.join(__dirname, '../../unit/server/services/media-inliner/test/fixtures/fixture.exe'),
+    );
+    const request = nock(origin).get('/unsupported.exe').reply(200, unsupportedFixture);
+    const filePath = await csvFile(
+      'unsupported-remote-media.csv',
+      `title,feature_image\nUnsupported remote media,${origin}/unsupported.exe\nContinues after media failure,\n`,
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await jobsService.allSettled();
+
+    assert.equal(request.isDone(), true, request.pendingMocks().join(', '));
+    const post = await models.Post.findOne({ title: 'Unsupported remote media', status: 'all' });
+    assert.equal(post, null);
+    const continuedPost = await models.Post.findOne({
+      title: 'Continues after media failure',
+      status: 'all',
+    });
+    assert.ok(continuedPost);
+  });
+
+  it('preserves current-site media URLs without fetching or validating them', async function () {
+    await agent.loginAsOwner();
+    const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+    const imageUrl = `${siteUrl}/content/images/already-stored.jpg`;
+    const unsplashUrl = 'https://images.unsplash.com/photo-123?fit=crop&w=1200';
+    const gravatarUrl = 'https://www.gravatar.com/avatar/abc123?s=200';
+    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
+    const filePath = await csvFile(
+      'local-media.csv',
+      [
+        'title,html,feature_image',
+        `Local media,"<p><img src=""${imageUrl}"" /></p>",${imageUrl}`,
+        `Unsplash media,"<p><img src=""${unsplashUrl}"" /></p>",${unsplashUrl}`,
+        `Gravatar media,"<p><img src=""${gravatarUrl}"" /></p>",${gravatarUrl}`,
+      ].join('\n'),
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await jobsService.allSettled();
+
+    sinon.assert.notCalled(importUrl);
+    const post = await models.Post.findOne({ title: 'Local media', status: 'all' });
+    assert.ok(post);
+    assert.ok(post.get('feature_image').endsWith('/content/images/already-stored.jpg'));
+    assert.match(post.get('html'), /\/content\/images\/already-stored\.jpg/);
+
+    for (const [title, sourceUrl] of [
+      ['Unsplash media', unsplashUrl],
+      ['Gravatar media', gravatarUrl],
+    ]) {
+      const blockedPost = await models.Post.findOne({ title, status: 'all' });
+      assert.ok(blockedPost);
+      assert.equal(blockedPost.get('feature_image'), sourceUrl);
+      assert.ok(blockedPost.get('html').includes(new URL(sourceUrl).hostname));
+    }
+  });
+
+  it('classifies local media URL variants used by importer configuration', function () {
+    const options = {
+      siteUrl: 'https://example.com/blog/',
+      subdir: 'blog',
+      assetBaseUrls: [
+        'not a URL',
+        'https://assets.example/c/site/',
+        'https://root-assets.example/',
+        null,
+      ],
+    };
+
+    for (const sourceUrl of [
+      '__GHOST_URL__/content/images/image.jpg',
+      '/content/media/video.mp4',
+      '/blog/content/files/guide.pdf',
+      '//example.com/blog/content/images/image.jpg',
+      'https://assets.example/c/site/content/images/image.jpg',
+      'https://root-assets.example/anything/image.jpg',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), true, sourceUrl);
+    }
+
+    for (const sourceUrl of [
+      '/blogger/content/images/image.jpg',
+      'https://assets.example/c/site-other/image.jpg',
+      'https://example.com/blog/content/images-other/image.jpg',
+      'https://external.example/content/images/image.jpg',
+      'not a URL',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), false, sourceUrl);
+    }
+
+    assert.equal(
+      isLocalMediaUrl('https://example.com/content/images/image.jpg', {
+        ...options,
+        siteUrl: 'not a URL',
+      }),
+      false,
+    );
+  });
+
+  it('rewrites media in raw Lexical HTML and Markdown card content', async function () {
+    const origin = 'https://raw-card-assets.example';
+    const importUrl = sinon.stub().callsFake(async (sourceUrl) => ({
+      status: 'stored',
+      sourceUrl,
+      storedUrl: sourceUrl.replace(origin, '__GHOST_URL__/content/images'),
+    }));
+    const inliner = new PostMediaInliner({
+      media: { importUrl },
+      isLocalMediaUrl: () => false,
+    });
+    const data = {
+      feature_image: 'https://images.unsplash.com/photo-123',
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            {
+              type: 'before-after',
+              beforeImage: { src: `${origin}/before.jpg` },
+              afterImage: { src: `${origin}/after.jpg` },
+            },
+            {
+              type: 'html',
+              html:
+                `<img src="${origin}/image.jpg" srcset="${origin}/small.jpg 1x, ${origin}/large.jpg 2x">` +
+                `<div style="background-image: url('${origin}/background.jpg')"></div>` +
+                `<style>.hero { background: url(${origin}/style.jpg) }</style>`,
+            },
+            {
+              type: 'markdown',
+              markdown: `![Remote](${origin}/markdown.jpg)`,
+            },
+          ],
+        },
+      }),
+    };
+
+    await inliner.inline(data);
+
+    const lexical = JSON.parse(data.lexical);
+    assert.equal(
+      lexical.root.children[0].beforeImage.src,
+      '__GHOST_URL__/content/images/before.jpg',
+    );
+    assert.equal(lexical.root.children[0].afterImage.src, '__GHOST_URL__/content/images/after.jpg');
+    assert.doesNotMatch(lexical.root.children[1].html, /raw-card-assets\.example/);
+    assert.doesNotMatch(lexical.root.children[2].markdown, /raw-card-assets\.example/);
+    assert.equal(data.feature_image, 'https://images.unsplash.com/photo-123');
+    assert.equal(isBlockedMediaUrl('https://gravatar.com/avatar/abc123'), true);
+    assert.equal(isBlockedMediaUrl('https://gravatar.com.evil.example/avatar/abc123'), false);
+    assert.equal(isBlockedMediaUrl('not a URL'), false);
+    assert.equal(importUrl.callCount, 8);
+  });
+
+  it('fails the run when media inlining throws an unexpected error', async function () {
+    await agent.loginAsOwner();
+    const sourceUrl = 'https://unexpected-media-error.example/image.jpg';
+    const importUrl = sinon
+      .stub(mediaInlinerService.getInstance(), 'importUrl')
+      .rejects(new Error('Unexpected media importer failure'));
+    const filePath = await csvFile(
+      'unexpected-media-error.csv',
+      `title,feature_image\nUnexpected media failure,${sourceUrl}\n`,
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await jobsService.allSettled();
+
+    sinon.assert.calledOnceWithExactly(importUrl, sourceUrl);
+    const post = await models.Post.findOne({ title: 'Unexpected media failure', status: 'all' });
+    assert.equal(post, null);
+  });
+
   it('Imports the single mapped CSV inside a ZIP', async function () {
     await agent.loginAsOwner();
 
@@ -160,6 +440,7 @@ describe('Posts Importer API', function () {
 
   it('Stores and rewrites wrapped image, media, and file assets before importing posts', async function () {
     await agent.loginAsOwner();
+    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
 
     const csv =
       'title,html,markdown,feature_image,og_image,twitter_image\n' +
@@ -179,6 +460,8 @@ describe('Posts Importer API', function () {
       .expectStatus(202);
     assert.equal(body.meta.total, 3);
     await jobsService.allSettled();
+
+    sinon.assert.notCalled(importUrl);
 
     for (const filePath of getImportedAssetPaths().slice(0, 3)) {
       assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);

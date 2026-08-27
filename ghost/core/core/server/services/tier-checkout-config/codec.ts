@@ -7,20 +7,26 @@ import { CheckoutOptions } from './models';
 const SEPARATOR = ',';
 
 export const optionsCodec = z.codec(DbCheckoutOptions, CheckoutOptions, {
+  // An absent list is everywhere, so the column is null rather than a copy of every
+  // country. An empty list is neither, and stays representable on purpose: nothing writes
+  // one, and the session builder refuses to collect against it rather than asking the
+  // processor for an address form it would never render.
   decode: (columns) => ({
-    shippingAllowedCountries: splitList(columns.shipping_allowed_countries),
+    shippingAllowedCountries:
+      columns.shipping_allowed_countries === null
+        ? null
+        : splitList(columns.shipping_allowed_countries),
     taxNumber: columns.tax_number_collect,
   }),
   encode: (options) => ({
-    shipping_allowed_countries: options.shippingAllowedCountries.length
-      ? joinList(options.shippingAllowedCountries)
-      : null,
+    shipping_allowed_countries:
+      options.shippingAllowedCountries === null ? null : joinList(options.shippingAllowedCountries),
     tax_number_collect: options.taxNumber,
   }),
 });
 
-function splitList(stored: string | null): string[] {
-  return stored ? stored.split(SEPARATOR).filter(Boolean) : [];
+function splitList(stored: string): string[] {
+  return stored.split(SEPARATOR).filter(Boolean);
 }
 
 function joinList(values: string[]): string {

@@ -7,6 +7,7 @@ const {
   matchers,
 } = require('../../utils/e2e-framework');
 const nock = require('nock');
+const { STRIPE_ALLOWED_COUNTRIES } = require('@tryghost/checkout');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
 const urlServiceUtils = require('../../utils/url-service-utils');
@@ -858,6 +859,46 @@ describe('Create Stripe Checkout Session', function () {
       assert.equal(sessionBody['custom_fields[0][type]'], 'text');
       assert.equal(sessionBody['shipping_address_collection[allowed_countries][0]'], 'GB');
       assert.equal(sessionBody['shipping_address_collection[allowed_countries][1]'], 'IE');
+    });
+
+    // Ghost stores "everywhere" as no countries at all, and Stripe has no way to say that:
+    // `allowed_countries` is the only key `shipping_address_collection` has, so a request
+    // that leaves it out carries no parameter, and Stripe creates a session that succeeds
+    // and collects no address. Measured against the live API, not read from the reference,
+    // which calls the list optional. So the expansion has to happen before the request —
+    // and this is what proves it did.
+    it('asks Stripe for every country when a tier delivers everywhere', async function () {
+      const {
+        body: {
+          members_custom_fields: [address],
+        },
+      } = await adminAgent
+        .post('/members/custom_fields/')
+        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+
+      await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
+        tiers_checkout_config: [
+          {
+            shipping: {
+              collect: true,
+              name: { custom_field_key: 'shipping_name' },
+              address: { custom_field_key: address.key },
+            },
+          },
+        ],
+      });
+
+      const sessionBody = await startCheckout();
+
+      const sent = Object.keys(sessionBody).filter((key) =>
+        key.startsWith('shipping_address_collection[allowed_countries]'),
+      );
+      assert.equal(
+        sent.length,
+        STRIPE_ALLOWED_COUNTRIES.length,
+        'a tier that delivers everywhere has to name every country Stripe ships to',
+      );
+      assert.equal(sessionBody['shipping_address_collection[allowed_countries][0]'], 'AC');
     });
 
     // The safety property: a site that configured nothing sends what it always sent.

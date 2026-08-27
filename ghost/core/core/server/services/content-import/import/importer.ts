@@ -11,6 +11,7 @@ import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
+import { MediaInliningFailure, type PostMediaInlining } from './media';
 
 export type { ImportRequest } from './schema';
 
@@ -60,6 +61,7 @@ interface ImporterDeps {
   getHtmlToLexical: () => HtmlToLexical;
   getMarkdownToHtml: () => MarkdownToHtml;
   getCleanHTML: () => CleanHTML;
+  createMediaInliner: () => PostMediaInlining;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -83,6 +85,7 @@ class ContentCSVImporter {
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
   private _getCleanHTML: () => CleanHTML;
+  private _createMediaInliner: () => PostMediaInlining;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -98,6 +101,7 @@ class ContentCSVImporter {
     getHtmlToLexical,
     getMarkdownToHtml,
     getCleanHTML,
+    createMediaInliner,
     addJob,
     report,
     store,
@@ -112,6 +116,7 @@ class ContentCSVImporter {
     this._getHtmlToLexical = getHtmlToLexical;
     this._getMarkdownToHtml = getMarkdownToHtml;
     this._getCleanHTML = getCleanHTML;
+    this._createMediaInliner = createMediaInliner;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -186,9 +191,10 @@ class ContentCSVImporter {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
+      const media = this._createMediaInliner();
       let successfulWrites = 0;
-      let failedWrites = 0;
-      let firstWriteFailure: unknown;
+      let failedRows = 0;
+      let firstRowFailure: unknown;
 
       for (const [index, row] of rows.entries()) {
         const line = index + 2;
@@ -209,6 +215,27 @@ class ContentCSVImporter {
 
           // Anything other than an expected source-row refusal is an importer
           // failure. Stop the run before misclassifying it as a lost write.
+          throw error;
+        }
+
+        try {
+          await media.inline(data);
+        } catch (error) {
+          if (error instanceof MediaInliningFailure) {
+            if (failedRows === 0) {
+              firstRowFailure = error;
+            }
+            failedRows += 1;
+            this._store.record(runId, {
+              line,
+              title: row.title,
+              status: 'failed',
+              reason: messageOf(error),
+              mediaFailures: error.failures,
+            });
+            continue;
+          }
+
           throw error;
         }
 
@@ -251,10 +278,10 @@ class ContentCSVImporter {
           warnings = result.warnings;
           successfulWrites += 1;
         } catch (error) {
-          if (failedWrites === 0) {
-            firstWriteFailure = error;
+          if (failedRows === 0) {
+            firstRowFailure = error;
           }
-          failedWrites += 1;
+          failedRows += 1;
           this._store.record(runId, {
             line,
             title: row.title,
@@ -282,14 +309,14 @@ class ContentCSVImporter {
         this._store.record(runId, outcome);
       }
 
-      if (failedWrites > 0 && successfulWrites === 0) {
+      if (failedRows > 0 && successfulWrites === 0) {
         this._report(
           new errors.InternalServerError({
             message: tpl(messages.allWritesFailed, {
-              count: failedWrites,
-              postNoun: failedWrites === 1 ? 'post' : 'posts',
+              count: failedRows,
+              postNoun: failedRows === 1 ? 'post' : 'posts',
             }),
-            err: firstWriteFailure,
+            err: firstRowFailure,
           }),
         );
       }
