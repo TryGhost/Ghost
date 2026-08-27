@@ -36,16 +36,18 @@ async function openMappingStep(labs: Record<string, boolean>) {
 }
 
 describe('Import members gate', () => {
-  it('serves the redesigned import when the flag is on', async () => {
-    await openMappingStep({ membersImportRedesign: true });
+  // On by default now that it is GA, which is what every site gets.
+  it('serves the redesigned import by default', async () => {
+    await openMappingStep({});
 
     // A checkbox per column exists only in the redesigned dialog: it is what decides whether
     // a column is imported there, a job the select does in the import as it shipped.
     await expect.element(importMembersScreen.importToggle('name')).toBeVisible();
   });
 
-  it('serves the import as it shipped when the flag is off', async () => {
-    await openMappingStep({});
+  // Only reachable by turning the GA flag off, which is what the kill switch does.
+  it('serves the import as it shipped when the flag is turned off', async () => {
+    await openMappingStep({ membersImportRedesign: false });
 
     // No checkbox, and the selects carry no accessible name — the shipped import never gave
     // them one, which is itself a marker that this is that file and not ours, so the probe
@@ -59,7 +61,7 @@ describe('Import members gate', () => {
   // Custom fields are no longer what chooses between the two: they are an experiment the
   // redesign is meant to ship ahead of, so on their own they must move nothing.
   it('serves the import as it shipped when only custom fields are on', async () => {
-    await openMappingStep({ membersCustomFields: true });
+    await openMappingStep({ membersImportRedesign: false, membersCustomFields: true });
 
     await expect.element(importMembersScreen.importToggle('name')).not.toBeInTheDocument();
     await expect.element(page.getByRole('combobox').first()).toBeVisible();
