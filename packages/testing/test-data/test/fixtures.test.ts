@@ -14,7 +14,6 @@ describe('boot fixtures', () => {
     const expected = {
       postsListReact: true,
       membersActivityReact: true,
-      membersImportRedesign: true,
       superEditors: false,
       editorExcerpt: false,
       additionalPaymentMethods: false,

@@ -1,5 +1,3 @@
-// Every step but the mapping one is shared with the baseline modal: they are the same file
-// upload, progress and result screens, and nothing about custom fields reaches them.
 import {
   CompleteStep,
   ErrorStep,
