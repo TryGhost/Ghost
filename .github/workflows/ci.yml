@@ -2074,10 +2074,6 @@ jobs:
             echo "build_required=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Set up Docker Buildx
-        if: matrix.analytics == 'true' && (needs.job_setup.outputs.changed_tb_cli == 'true' || steps.pull_tb_cli.outputs.build_required == 'true')
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
-
       - name: Build Tinybird CLI image
         if: matrix.analytics == 'true' && (needs.job_setup.outputs.changed_tb_cli == 'true' || steps.pull_tb_cli.outputs.build_required == 'true')
         env:
@@ -2089,8 +2085,8 @@ jobs:
           else
             echo "GHCR image not available, building from source"
           fi
-          docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
-          docker buildx prune --all --force
+          docker build --tag "$COMPOSE_IMAGE" --file docker/tb-cli/Dockerfile .
+          docker builder prune --all --force
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image
