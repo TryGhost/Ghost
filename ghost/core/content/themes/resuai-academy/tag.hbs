@@ -1,0 +1,3 @@
+{{!< default}}
+<section class="archive-hero"><div class="shell"><span class="eyebrow">Learning path</span><h1>{{tag.name}}</h1>{{#if tag.description}}<p>{{tag.description}}</p>{{/if}}</div></section>
+<section class="section shell"><div class="post-grid">{{#foreach posts}}{{> "post-card"}}{{else}}<div class="empty-state"><h3>Lessons are being prepared</h3><p>Join free to receive updates when new resources are published.</p><a class="button primary" href="#/portal/signup">Join free</a></div>{{/foreach}}</div>{{pagination}}</section>
