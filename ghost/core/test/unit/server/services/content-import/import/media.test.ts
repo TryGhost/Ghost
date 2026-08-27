@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {
+  isBlockedMediaUrl,
   MediaInliningFailure,
   PostMediaInliner,
 } from '../../../../../../core/server/services/content-import/import/media';
@@ -268,6 +269,54 @@ describe('PostMediaInliner', function () {
 
     assert.equal(data.lexical, lexical);
     sinon.assert.notCalled(h.importUrl);
+  });
+
+  it('preserves media hosted on blocked domains without importing or caching it', async function () {
+    const h = harness();
+    const unsplashUrl = 'https://images.unsplash.com/photo-123?fit=crop&w=1200';
+    const gravatarUrl = '//www.gravatar.com/avatar/abc123?s=200';
+    const data = postData({
+      feature_image: unsplashUrl,
+      posts_meta: { og_image: gravatarUrl },
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            { type: 'image', src: unsplashUrl },
+            { type: 'image', src: gravatarUrl },
+          ],
+        },
+      }),
+    });
+
+    await h.inliner.inline(data);
+
+    assert.equal(data.feature_image, unsplashUrl);
+    assert.equal(data.posts_meta?.og_image, gravatarUrl);
+    assert.equal(JSON.parse(data.lexical ?? '{}').root.children[0].src, unsplashUrl);
+    assert.equal(JSON.parse(data.lexical ?? '{}').root.children[1].src, gravatarUrl);
+    sinon.assert.notCalled(h.importUrl);
+    sinon.assert.notCalled(h.localUrl);
+  });
+
+  it('matches blocked domains without matching lookalike hostnames', function () {
+    for (const sourceUrl of [
+      'https://images.unsplash.com/image.jpg',
+      'https://gravatar.com/avatar/abc123',
+      '//www.gravatar.com/avatar/abc123',
+      'https://secure.gravatar.com/avatar/abc123',
+      'https://cdn.images.unsplash.com/image.jpg',
+    ]) {
+      assert.equal(isBlockedMediaUrl(sourceUrl), true, sourceUrl);
+    }
+
+    for (const sourceUrl of [
+      'https://images.unsplash.com.evil.example/image.jpg',
+      'https://notgravatar.com/avatar/abc123',
+      'https://gravatar.com.evil.example/avatar/abc123',
+      'not a URL',
+    ]) {
+      assert.equal(isBlockedMediaUrl(sourceUrl), false, sourceUrl);
+    }
   });
 
   it('recognizes Ghost placeholders and root-relative content paths', function () {

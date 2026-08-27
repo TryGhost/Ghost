@@ -53,12 +53,25 @@ const MARKDOWN_MEDIA_FIELDS: Record<string, string[]> = {
   markdown: ['markdown'],
 };
 
+const BLOCKED_MEDIA_DOMAINS = ['images.unsplash.com', 'gravatar.com'];
+
 function isRecord(value: unknown): value is JSONRecord {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isRemoteMediaUrl(value: string): boolean {
   return /^(?:https?:)?\/\//i.test(value.trim());
+}
+
+export function isBlockedMediaUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim().replace(/^\/\//, 'https://'));
+    return BLOCKED_MEDIA_DOMAINS.some(
+      (domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`),
+    );
+  } catch {
+    return false;
+  }
 }
 
 function getPath(record: JSONRecord, path: string): unknown {
@@ -140,7 +153,11 @@ export class PostMediaInliner implements PostMediaInlining {
   }
 
   private async inlineUrl(sourceUrl: string): Promise<string> {
-    if (!isRemoteMediaUrl(sourceUrl) || this._isLocalMediaUrl(sourceUrl)) {
+    if (
+      !isRemoteMediaUrl(sourceUrl) ||
+      isBlockedMediaUrl(sourceUrl) ||
+      this._isLocalMediaUrl(sourceUrl)
+    ) {
       return sourceUrl;
     }
 
