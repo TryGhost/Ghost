@@ -56,10 +56,6 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // nothing exactly as a fresh name would. mysql keeps a random per-fork name: it
 // has no /tmp to bound (CI databases die with the job) and a random name sidesteps
 // the same stale-reuse hazard without a pre-boot DROP.
-const poolSlot = parseInt(process.env.VITEST_POOL_ID || '', 10);
-const sqliteId = Number.isInteger(poolSlot)
-  ? `pool_${poolSlot}`
-  : crypto.randomBytes(4).toString('hex');
 if (process.env.NODE_ENV.includes('mysql')) {
   const mysqlId = crypto.randomBytes(4).toString('hex');
   const mysqlBase = process.env.database__connection__database;
@@ -67,6 +63,10 @@ if (process.env.NODE_ENV.includes('mysql')) {
     ? `${mysqlBase}_${mysqlId}`
     : `ghost_testing_${mysqlId}`;
 } else {
+  const poolSlot = parseInt(process.env.VITEST_POOL_ID || '', 10);
+  const sqliteId = Number.isInteger(poolSlot)
+    ? `pool_${poolSlot}`
+    : crypto.randomBytes(4).toString('hex');
   const sqliteBase = process.env.database__connection__filename;
   process.env.database__connection__filename = sqliteBase
     ? `${sqliteBase.replace(/\.db$/i, '')}-${sqliteId}.db`
