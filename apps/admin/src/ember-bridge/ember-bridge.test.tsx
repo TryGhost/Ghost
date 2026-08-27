@@ -416,6 +416,7 @@ describe('useEmberRouting', () => {
 
   baseTest('returns bridge routing methods when bridge is available', () => {
     const mock = createMockStateBridge();
+    mock.stateBridge.isRouteActive = vi.fn(() => true);
     window.EmberBridge = { state: mock.stateBridge };
 
     const { result } = renderHook(() => useEmberRouting());
@@ -423,9 +424,11 @@ describe('useEmberRouting', () => {
     expect(result.current).toHaveProperty('getRouteUrl');
     expect(result.current).toHaveProperty('isRouteActive');
 
-    // Should be using bridge methods, not defaults
+    // Should be using bridge methods, not defaults. The active-state method is
+    // wrapped so the app can ignore stale Ember state on React-owned routes.
     expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    expect(result.current.isRouteActive('posts')).toBe(true);
+    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
   });
 
   baseTest('switches to bridge methods when bridge becomes available', async () => {
@@ -439,6 +442,7 @@ describe('useEmberRouting', () => {
 
     // Bridge becomes available
     const mock = createMockStateBridge();
+    mock.stateBridge.isRouteActive = vi.fn(() => true);
     window.EmberBridge = { state: mock.stateBridge };
 
     // Wait for the subscription interval to fire
@@ -448,7 +452,8 @@ describe('useEmberRouting', () => {
 
     // Now should be using bridge methods
     expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    expect(result.current.isRouteActive('posts')).toBe(true);
+    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
   });
 
   baseTest('re-renders when route changes', async () => {

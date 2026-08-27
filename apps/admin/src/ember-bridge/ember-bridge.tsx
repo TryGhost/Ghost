@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { EmberContext } from './ember-context';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -360,6 +361,7 @@ const defaultRouting: EmberRouting = {
  * ```
  */
 export function useEmberRouting(): EmberRouting {
+  const emberContext = useContext(EmberContext);
   const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
   const [, forceUpdate] = useState(0);
 
@@ -385,7 +387,12 @@ export function useEmberRouting(): EmberRouting {
 
   return {
     getRouteUrl: bridge.getRouteUrl,
-    isRouteActive: bridge.isRouteActive,
+    // React-owned navigations use pushState, which Ember does not observe.
+    // Only trust Ember's route state while the current route is actually
+    // rendering an Ember fallback. Outside EmberProvider (mainly unit tests
+    // and standalone consumers), preserve the bridge's original behaviour.
+    isRouteActive: (...args) =>
+      (emberContext?.isFallbackPresent ?? true) && bridge.isRouteActive(...args),
   };
 }
 
