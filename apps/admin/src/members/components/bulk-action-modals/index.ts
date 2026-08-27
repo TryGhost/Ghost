@@ -2,4 +2,4 @@ export { AddLabelModal } from './add-label-modal';
 export { RemoveLabelModal } from './remove-label-modal';
 export { UnsubscribeModal } from './unsubscribe-modal';
 export { DeleteModal } from './delete-modal';
-export { ImportMembersModal } from './import-members/custom-fields/import-members-modal';
+export { ImportMembersModal } from './import-members/import-members-modal';
