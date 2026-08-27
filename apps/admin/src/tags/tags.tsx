@@ -1,6 +1,5 @@
-import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
-import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import React from 'react';
+import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
 import TagsList from './components/tags-list';
 import { AdminLink } from '@/shared/admin-link';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -19,7 +18,7 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { useBrowseTags } from '@tryghost/admin-x-framework/api/tags';
 
 const Tags: React.FC = () => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
+  const pageChromeEnabled = useAdminPageChrome();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = searchParams.get('type') ?? 'public';
 
@@ -33,13 +32,13 @@ const Tags: React.FC = () => {
   return (
     <Box className="size-full">
       <Container
-        className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
         size="page"
       >
         <ListPage data-testid="tags-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
+              <PageHeader.Left>
                 <PageHeader.Title>Tags</PageHeader.Title>
               </PageHeader.Left>
               <PageHeader.Actions>

@@ -8,7 +8,6 @@ const accountMigrationPath = 'preferences/move';
 export type CustomRouteObject = RouteObject & {
   pageTitle?: string;
   children?: CustomRouteObject[];
-  hideHostHeaderLeading?: boolean;
   showBackButton?: boolean;
 };
 
@@ -50,7 +49,6 @@ export const routes: CustomRouteObject[] = [
       {
         path: 'notes/:postId',
         lazy: lazyComponent(() => import('./views/feed/note')),
-        hideHostHeaderLeading: true,
         pageTitle: 'Note',
       },
       {
@@ -71,31 +69,26 @@ export const routes: CustomRouteObject[] = [
       {
         path: 'profile',
         lazy: lazyComponent(() => import('./views/profile')),
-        hideHostHeaderLeading: true,
         pageTitle: 'Profile',
       },
       {
         path: 'profile/likes',
         lazy: lazyComponent(() => import('./views/profile')),
-        hideHostHeaderLeading: true,
         pageTitle: 'Profile',
       },
       {
         path: 'profile/following',
         lazy: lazyComponent(() => import('./views/profile')),
-        hideHostHeaderLeading: true,
         pageTitle: 'Profile',
       },
       {
         path: 'profile/followers',
         lazy: lazyComponent(() => import('./views/profile')),
-        hideHostHeaderLeading: true,
         pageTitle: 'Profile',
       },
       {
         path: 'profile/:handle/:tab?',
         lazy: lazyComponent(() => import('./views/profile')),
-        hideHostHeaderLeading: true,
         pageTitle: 'Profile',
       },
       {

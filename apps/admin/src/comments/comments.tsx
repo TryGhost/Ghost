@@ -1,6 +1,5 @@
-import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
-import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import CommentsFilters from './components/comments-filters';
+import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
 import CommentsList from './components/comments-list';
 import { Box, Container } from '@tryghost/shade/primitives';
 import React, { useCallback, useMemo } from 'react';
@@ -28,7 +27,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   timezone,
   singleCommentId,
 }) => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
+  const pageChromeEnabled = useAdminPageChrome();
   const [searchParams, setSearchParams] = useSearchParams();
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
@@ -93,13 +92,13 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   return (
     <Box className="size-full">
       <Container
-        className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
         size="page"
       >
         <ListPage data-testid="comments-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
+              <PageHeader.Left>
                 <PageHeader.Title>Comments</PageHeader.Title>
               </PageHeader.Left>
               {!singleCommentId && !hasFilters && (
@@ -182,7 +181,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 };
 
 const Comments: React.FC = () => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
+  const pageChromeEnabled = useAdminPageChrome();
   const [searchParams] = useSearchParams();
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const singleCommentId = useMemo(() => getSingleCommentIdParam(searchParams), [searchParams]);
@@ -195,13 +194,13 @@ const Comments: React.FC = () => {
     return (
       <Box className="size-full">
         <Container
-          className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+          className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
           size="page"
         >
           <ListPage>
             <ListPage.Header>
               <PageHeader blurredBackground={false} sticky={false}>
-                <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
+                <PageHeader.Left>
                   <PageHeader.Title>Comments</PageHeader.Title>
                 </PageHeader.Left>
               </PageHeader>

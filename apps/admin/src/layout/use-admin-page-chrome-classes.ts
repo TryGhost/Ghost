@@ -10,7 +10,6 @@ const ADMIN_VISUAL_SCOPES = {
 } as const;
 
 interface AdminPageChromeEligibility {
-  // Route eligibility, not the user's saved choice to collapse the sidebar.
   hasNavigation: boolean;
   isEligibleUser: boolean;
 }
@@ -23,19 +22,9 @@ export function useAdminPageChromeClasses({
   const isMobile = useIsMobile();
   const { resolvedTheme, isThemeReady } = useThemeContext();
   const { pathname } = useLocation();
-  // React sees the URL before Ember emits its fullscreen visibility update.
-  // Exclude the editor immediately, including direct loads and transitions.
-  const isEditor = /^\/editor(?:\/|$)/.test(pathname);
   const isSettings = /^\/settings(?:\/|$)/.test(pathname);
 
-  if (
-    !enabled ||
-    !isEligibleUser ||
-    isEditor ||
-    isMobile ||
-    !isThemeReady ||
-    resolvedTheme !== 'light'
-  ) {
+  if (!enabled || !isEligibleUser || isMobile || !isThemeReady || resolvedTheme !== 'light') {
     return undefined;
   }
 

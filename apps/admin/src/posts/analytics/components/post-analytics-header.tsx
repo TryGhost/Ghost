@@ -1,5 +1,3 @@
-import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
-import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -29,7 +27,7 @@ import {
   PageMenu,
   PageMenuItem,
 } from '@tryghost/shade/components';
-import { H1, Inline } from '@tryghost/shade/primitives';
+import { H1 } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
   formatDisplayDate,
@@ -63,7 +61,6 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -161,28 +158,25 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
         >
           <div className="flex w-full flex-col gap-6">
             <div className="admin7-custom-header-main flex w-full flex-col justify-between md:flex-row md:items-center">
-              <Inline align="center" gap="md">
-                {sidebarEnabled && <AdminSidebarToggle />}
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <button
-                          className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                          type="button"
-                          onClick={() => navigate('/analytics/')}
-                        >
-                          Analytics
-                        </button>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Post analytics</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </Inline>
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <button
+                        className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+                        type="button"
+                        onClick={() => navigate('/analytics/')}
+                      >
+                        Analytics
+                      </button>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
               <div className="flex w-full items-center gap-2 md:w-auto">
                 {webAnalyticsEnabled && !post?.email_only && (
                   <div className="mr-3 flex grow items-center gap-2 md:grow-0">

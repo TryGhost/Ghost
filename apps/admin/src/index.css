@@ -6,18 +6,13 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin-7/fonts.css';
 
-/* Only integrated React surfaces adopt the shared page chrome dimensions. */
+/* The shell owns the static sidebar treatment; React surfaces opt into the
+   content dimensions with admin7-page-content. */
 .admin7-sidebar-layout {
-  --panel-inset: 8px;
   --page-gutter: 40px;
   --content-width: 1080px;
   --content-width-wide: 1280px;
-  --duration-layout: 0s;
   overflow: hidden;
-}
-
-.admin7-sidebar-layout[data-sidebar-motion='animate'] {
-  --duration-layout: 520ms;
 }
 
 .admin7-sidebar-layout [data-sidebar='sidebar'] {
@@ -26,34 +21,8 @@
   box-shadow: none;
 }
 
-/* The panel's size is fixed; only its position changes. Move that layer with a
-   transform while the separate gap continues to resize the page content. */
-.admin7-sidebar-layout [data-sidebar='panel'] {
-  left: 0;
-  transform: translateX(0);
-  transition-property: transform;
-}
-
-.admin7-sidebar-layout [data-state='collapsed'] [data-sidebar='panel'] {
-  transform: translateX(-100%);
-}
-
-/* Removing transition-property also cancels an in-flight transition. Merely
-   changing its duration to zero does not stop an existing browser animation. */
-[data-sidebar-motion='snap'] [data-sidebar='gap'],
-[data-sidebar-motion='snap'] [data-sidebar='panel'] {
-  transition: none;
-}
-
 .admin7-sidebar-layout > main {
   min-width: 0;
-}
-
-/* Reflow can make the focused sticky toggle the browser's scroll anchor and
-   jump the list back to its original position. Keep the user's scroll offset
-   while the sidebar changes width; normal list anchoring stays untouched. */
-.admin7-sidebar-layout[data-sidebar-motion='animate'] > main {
-  overflow-anchor: none;
 }
 
 .admin7-page-content {
@@ -97,27 +66,12 @@
 
 .admin7-page-content [data-page-header='left'] {
   max-width: 100%;
-}
-
-.admin7-page-content [data-page-header='left'],
-.admin7-page-content [data-page-header='title-block'] {
   height: auto;
 }
 
 @media (min-width: 1380px) {
   .admin7-sidebar-layout {
     --content-width: var(--content-width-wide);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin7-sidebar-layout[data-sidebar-motion='animate'] {
-    --duration-layout: 0s;
-  }
-
-  .admin7-sidebar-layout [data-sidebar='gap'],
-  .admin7-sidebar-layout [data-sidebar='panel'] {
-    transition: none;
   }
 }
 

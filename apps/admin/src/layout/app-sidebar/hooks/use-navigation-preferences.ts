@@ -5,7 +5,6 @@ import {
   type NavigationPreferences,
 } from '@/hooks/user-preferences';
 import { useMutation, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query';
-import { useCallback } from 'react';
 
 export const useNavigationPreferences = (): UseQueryResult<NavigationPreferences> => {
   return useUserPreferences({
@@ -56,10 +55,11 @@ export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => Pro
 
   const visible = navigationPreferences?.menu.visible;
 
-  const setVisible = useCallback(
-    (value: boolean) => editNavigationPreferences({ menu: { visible: value } }),
-    [editNavigationPreferences],
-  );
+  const setVisible = async (value: boolean) => {
+    return editNavigationPreferences({
+      menu: { visible: value },
+    });
+  };
 
   return [visible ?? true, setVisible];
 };

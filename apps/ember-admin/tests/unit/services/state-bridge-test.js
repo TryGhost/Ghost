@@ -130,63 +130,6 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.pushPayload.called).to.be.false;
         });
 
-        describe('UsersResponseType side effects', function () {
-            function setCurrentUser(theme) {
-                run(() => store.pushPayload('user', {users: [{
-                    id: 'current-user',
-                    accessibility: JSON.stringify({nightShift: theme, navigation: {menu: {visible: true}}})
-                }]}));
-                const user = store.peekRecord('user', 'current-user');
-                service.session.user = user;
-                feature.set('_user', user);
-                sinon.stub(feature, '_setAdminTheme');
-                return user;
-            }
-
-            function updateUser(theme, id = 'current-user') {
-                const accessibility = JSON.stringify({nightShift: theme, navigation: {menu: {visible: false}}});
-                run(() => service.onUpdate('UsersResponseType', {users: [{id, accessibility}]}));
-                return accessibility;
-            }
-
-            for (const theme of ['light', 'dark', 'system']) {
-                it(`keeps ${theme} animations running when only navigation preferences change`, function () {
-                    const user = setCurrentUser(theme);
-                    const accessibility = updateUser(theme);
-
-                    expect(user.accessibility).to.equal(accessibility);
-                    expect(feature._setAdminTheme.called).to.be.false;
-                });
-            }
-
-            for (const [before, after] of [[true, 'dark'], [false, 'light'], [undefined, 'light'], ['invalid', 'light']]) {
-                it(`does not reapply the theme when ${before} is normalized to ${after}`, function () {
-                    setCurrentUser(before);
-                    updateUser(after);
-
-                    expect(feature._setAdminTheme.called).to.be.false;
-                });
-            }
-
-            for (const [before, after] of [['light', 'dark'], ['dark', 'light'], ['light', 'system'], ['system', 'light'], [false, true], [true, false]]) {
-                it(`applies a changed theme from ${before} to ${after}`, function () {
-                    setCurrentUser(before);
-                    updateUser(after);
-
-                    expect(feature._nightShiftPref).to.equal(after);
-                    expect(feature._setAdminTheme.calledOnce).to.be.true;
-                });
-            }
-
-            it('does not change appearance when another user is updated', function () {
-                setCurrentUser('light');
-                updateUser('dark', 'other-user');
-
-                expect(feature._nightShiftPref).to.equal('light');
-                expect(feature._setAdminTheme.called).to.be.false;
-            });
-        });
-
         describe('SettingsResponseType side effects', function () {
             it('updates config.blogTitle when settings are updated', function () {
                 const response = {

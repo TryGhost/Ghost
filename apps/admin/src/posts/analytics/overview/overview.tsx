@@ -1,5 +1,3 @@
-import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
-import { useContext } from 'react';
 import DisabledSourcesIndicator from '@/shared/analytics/disabled-sources-indicator';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import KpiCard, {
@@ -54,7 +52,6 @@ import { useGiftLinkUsage } from '@/posts/analytics/hooks/use-gift-link-usage';
 import { usePostReferrers } from '@/posts/analytics/hooks/use-post-referrers';
 
 const Overview: React.FC = () => {
-  const sidebarEnabled = useContext(AdminSidebarLayoutContext);
   const navigate = useNavigate();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
@@ -191,12 +188,7 @@ const Overview: React.FC = () => {
 
   // First we have to wait for the post to be loaded to determine what sections (web, newsletter etc.) should be displayed
   if (isPostLoading) {
-    return (
-      <>
-        {sidebarEnabled && <PostAnalyticsHeader currentTab="Overview" />}
-        <BarChartLoadingIndicator />
-      </>
-    );
+    return <BarChartLoadingIndicator />;
   }
 
   return (

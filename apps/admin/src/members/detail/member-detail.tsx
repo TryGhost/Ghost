@@ -1,6 +1,5 @@
-import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
-import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import MemberActionsMenu from './member-actions-menu';
+import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
 import MemberActivityFeed from './member-activity-feed';
 import MemberCustomFieldsField from './member-custom-fields-field';
 import MemberDetailForm from './member-detail-form';
@@ -69,7 +68,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   newslettersUiEnabled,
   engagementEnabled,
 }) => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
+  const pageChromeEnabled = useAdminPageChrome();
   const { member_id: memberId = '' } = useParams<{ member_id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -362,13 +361,13 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   return (
     <Box className="size-full">
       <Container
-        className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
+        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
         size="page"
       >
         <DetailPage data-testid="member-detail">
           <DetailPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left leading={sidebarEnabled ? <AdminSidebarToggle /> : undefined}>
+              <PageHeader.Left>
                 {/*
                  * Breadcrumb sits directly under Left rather than inside
                  * PageHeader.Breadcrumb — that slot adds a `pt-1` offset that
@@ -554,7 +553,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
  * answers exist.
  */
 const MemberDetail: React.FC = () => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const paidMembersEnabled = usePaidMembersEnabled();
   const newslettersEnabled = useNewslettersEnabled();
@@ -562,20 +560,8 @@ const MemberDetail: React.FC = () => {
   if (isSettingsLoading || !settingsData?.settings) {
     return (
       <Box className="size-full">
-        <Container
-          className={`relative flex h-full flex-col${sidebarEnabled ? ' admin7-page-content' : ''}`}
-          size="page"
-        >
+        <Container className="relative flex h-full flex-col" size="page">
           <DetailPage>
-            {sidebarEnabled && (
-              <DetailPage.Header>
-                <PageHeader blurredBackground={false} sticky={false}>
-                  <PageHeader.Left leading={<AdminSidebarToggle />}>
-                    <PageHeader.Title>Members</PageHeader.Title>
-                  </PageHeader.Left>
-                </PageHeader>
-              </DetailPage.Header>
-            )}
             <DetailPage.Body>
               <div className="flex flex-1 items-center justify-center">
                 <LoadingIndicator size="lg" />

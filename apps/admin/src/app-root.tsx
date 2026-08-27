@@ -1,4 +1,3 @@
-import { AdminPageError } from './layout/admin-page-error';
 import { StrictMode } from 'react';
 import {
   FrameworkProvider,
@@ -11,8 +10,6 @@ import App from './app.tsx';
 import { routes } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
-
-const routeErrorElement = <AdminPageError />;
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
@@ -35,7 +32,7 @@ export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps 
   return (
     <StrictMode>
       <FrameworkProvider {...framework}>
-        <RouterProvider errorElement={routeErrorElement} prefix={'/'} routes={routes}>
+        <RouterProvider prefix={'/'} routes={routes}>
           <ThemeProvider>
             <ThemedAdminApp />
           </ThemeProvider>

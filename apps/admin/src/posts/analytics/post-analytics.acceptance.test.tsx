@@ -1,10 +1,8 @@
-import type { ConfigResponse } from '@tryghost/test-data';
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 
 import {
   currentRoute,
-  currentUserResponse,
   fakeAdminStats,
   fakeAdminEndpoint,
   fakeMembers,
@@ -338,35 +336,4 @@ describe('Post analytics newsletter', () => {
     await expect.element(page.getByText('1,000').first()).toBeVisible();
     await expect.element(page.getByText('400').first()).toBeVisible();
   });
-});
-
-describe('Post analytics page chrome', () => {
-  it.each(['', '/web', '/growth', '/newsletter'])(
-    'keeps one saved sidebar toggle on %s',
-    async (tab) => {
-      seedPostAnalyticsWorld();
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), { posts: [seededPost()] });
-      fakeAdminStats.newsletterBasic([]);
-      fakeAdminStats.newsletterClicks([]);
-      const me = currentUserResponse();
-      me.users[0].accessibility = JSON.stringify({
-        navigation: { expanded: { posts: false, members: true }, menu: { visible: false } },
-        whatsNew: { lastSeenDate: '2026-08-26T00:00:00.000Z' },
-      });
-      const boot = webAnalyticsBootOverrides();
-      const config = boot.browseConfig?.response as ConfigResponse;
-      config.config.labs = { ...config.config.labs, admin7PageChrome: true };
-      await renderAdminApp(`/posts/analytics/${POST_ID}${tab}`, {
-        labs: { admin7PageChrome: true },
-        boot: { ...boot, browseMe: { response: me } },
-      });
-      const toggle = page.getByRole('button', { name: /^(Show|Hide) sidebar$/ });
-      await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
-      await expect(toggle).toHaveCount(1);
-      await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-      expect(document.querySelectorAll('.admin7-page-content')).toHaveLength(1);
-      await toggle.click();
-      await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
-    },
-  );
 });

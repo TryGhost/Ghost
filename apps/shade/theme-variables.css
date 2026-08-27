@@ -91,13 +91,6 @@
   --table-row-selected: var(--color-blue-50);
   --members-sticky-hover-bg: var(--table-row-hover);
   --mobile-navbar-height: 64px;
-  /* Opt-in layout roles. Consumers override these on their own shell scope. */
-  --page-gutter: calc(var(--spacing) * 4);
-  --panel-inset: calc(var(--spacing) * 2);
-  --content-width: var(--container-page);
-  --content-width-wide: var(--container-page);
-  --font-feature-settings: normal;
-  --duration-layout: 0s;
 }
 
 .dark {

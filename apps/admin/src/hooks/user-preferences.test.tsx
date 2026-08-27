@@ -18,7 +18,6 @@ import type {
   User,
 } from '@tryghost/admin-x-framework/api/users';
 import type { SetupServer } from 'msw/node';
-import { useNavigationMenuVisibility } from '@/layout/app-sidebar/hooks/use-navigation-preferences';
 
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
@@ -321,28 +320,6 @@ describe('useUserPreferences', () => {
   });
 
   describe('query options', () => {
-    editTest(
-      'keeps the menu setter stable across saves and parent rerenders',
-      async ({ setup, wrapper }) => {
-        await setup();
-        const { result, rerender } = renderHook(() => useNavigationMenuVisibility(), { wrapper });
-        const setVisible = result.current[1];
-        rerender();
-        expect(result.current[1]).toBe(setVisible);
-
-        await act(async () => {
-          await setVisible(false);
-        });
-        await waitFor(() => expect(result.current[0]).toBe(false));
-        expect(result.current[1]).toBe(setVisible);
-        await act(async () => {
-          await setVisible(true);
-        });
-        await waitFor(() => expect(result.current[0]).toBe(true));
-        expect(result.current[1]).toBe(setVisible);
-      },
-    );
-
     queryTest('supports select option to transform data', async ({ server, wrapper }) => {
       server.use(
         http.get(USERS_API_URL, () => {
@@ -478,57 +455,6 @@ describe('useUserPreferences', () => {
 });
 
 describe('useEditUserPreferences', () => {
-  editTest(
-    'serializes sidebar and appearance writes without losing navigation or unrelated preferences',
-    async ({ setup, server, wrapper }) => {
-      const { query, mutation } = await setup({
-        accessibility: JSON.stringify({
-          navigation: { expanded: { posts: false, members: false }, menu: { visible: true } },
-          nightShift: 'light',
-          customPreference: 'preserved',
-        }),
-      });
-      const appearance = renderHook(() => useEditUserPreferences(), { wrapper });
-      const writes: Array<Record<string, unknown>> = [];
-      let releaseFirst!: () => void;
-      const firstWrite = new Promise<void>((resolve) => {
-        releaseFirst = resolve;
-      });
-      server.use(
-        http.put<{ id: string }, UpdateUserRequestBody>(
-          USER_UPDATE_API_URL,
-          async ({ request }) => {
-            const body = await request.json();
-            writes.push(JSON.parse(body.users[0].accessibility ?? '{}') as Record<string, unknown>);
-            if (writes.length === 1) {
-              await firstWrite;
-            }
-            return HttpResponse.json({ users: [{ ...mockUser, ...body.users[0] }] });
-          },
-        ),
-      );
-      let sidebarSave!: Promise<void>;
-      let appearanceSave!: Promise<void>;
-      act(() => {
-        sidebarSave = mutation.current.mutateAsync({ navigation: { menu: { visible: false } } });
-        appearanceSave = appearance.result.current.mutateAsync({ nightShift: 'dark' });
-      });
-      await waitFor(() => expect(writes).toHaveLength(1));
-      expect(writes[0].nightShift).toBe('light');
-      await act(async () => {
-        releaseFirst();
-        await Promise.all([sidebarSave, appearanceSave]);
-      });
-      expect(writes).toHaveLength(2);
-      expect(writes[1]).toMatchObject({
-        navigation: { expanded: { posts: false, members: false }, menu: { visible: false } },
-        nightShift: 'dark',
-        customPreference: 'preserved',
-      });
-      await waitFor(() => expect(query.current.data).toMatchObject(writes[1]));
-    },
-  );
-
   describe('editing preferences', () => {
     editTest('merges new preferences with existing ones', async ({ setup }) => {
       const { query, mutation } = await setup({

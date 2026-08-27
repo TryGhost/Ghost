@@ -17,13 +17,7 @@ import {
   SidebarMenuSkeleton,
   SidebarProvider,
   SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { Box, Stack, Text } from '@/components/primitives';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/patterns/page-header';
-import { Separator } from '@/components/ui/separator';
-import { formatNumber } from '@/lib/ds-utils';
-import './sidebar.stories.css';
+} from './sidebar';
 import {
   Home,
   Inbox,
@@ -92,7 +86,7 @@ const AppSidebarContent = () => {
               <SidebarMenuButton tooltip="Inbox">
                 <Inbox />
                 <span>Inbox</span>
-                <SidebarMenuBadge>{formatNumber(24)}</SidebarMenuBadge>
+                <SidebarMenuBadge>24</SidebarMenuBadge>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -377,110 +371,6 @@ export const WithSkeletonLoading: Story = {
     docs: {
       description: {
         story: 'Sidebar with skeleton loading states for menu items.',
-      },
-    },
-  },
-};
-
-function LayoutExample({
-  layout = 'reserved',
-  defaultOpen = true,
-  reducedMotion = false,
-}: {
-  layout?: 'reserved' | 'overlay';
-  defaultOpen?: boolean;
-  reducedMotion?: boolean;
-}) {
-  return (
-    <SidebarProvider
-      className={`sidebar-layout-example ${reducedMotion ? 'sidebar-layout-example-reduced-motion' : ''}`}
-      defaultOpen={defaultOpen}
-      keyboardShortcut={false}
-      persistState={false}
-    >
-      <Sidebar layout={layout} variant="floating">
-        <MinimalSidebarContent />
-      </Sidebar>
-      <SidebarInset className="min-w-0">
-        <Stack className="sidebar-layout-example-content" gap="lg">
-          <PageHeader blurredBackground={false} sticky={false}>
-            <PageHeader.Left
-              leading={
-                layout === 'reserved' && (
-                  <>
-                    <SidebarTrigger />
-                    <Separator className="h-5" orientation="vertical" />
-                  </>
-                )
-              }
-            >
-              <PageHeader.Title>Library</PageHeader.Title>
-            </PageHeader.Left>
-            <PageHeader.Actions>
-              {layout === 'overlay' && <SidebarTrigger />}
-              <Button variant="outline">Add item</Button>
-            </PageHeader.Actions>
-          </PageHeader>
-          <Box
-            className="rounded-surface border border-border-default bg-surface-elevated"
-            padding="lg"
-          >
-            <Text as="p">
-              Use the header control to toggle navigation.{' '}
-              {layout === 'overlay'
-                ? 'The overlay leaves this content at its full width.'
-                : 'The sidebar reserves space beside this content while open.'}
-            </Text>
-          </Box>
-        </Stack>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-}
-
-export const FloatingLayout: Story = {
-  render: () => <LayoutExample />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Scoped presentation tokens animate a floating sidebar and its reserved content space.',
-      },
-    },
-  },
-};
-
-export const CollapsedLayout: Story = {
-  render: () => <LayoutExample defaultOpen={false} />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'A collapsed offcanvas sidebar leaves the header control available to reopen navigation.',
-      },
-    },
-  },
-};
-
-export const OverlayLayout: Story = {
-  render: () => <LayoutExample layout="overlay" />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Nonmodal overlay navigation never reserves content space. Toggle with the header control; there is no hover or persistence policy in Shade.',
-      },
-    },
-  },
-};
-
-export const ReducedMotion: Story = {
-  render: () => <LayoutExample reducedMotion />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Zero layout duration demonstrates immediate state changes. All layout examples also honor the system reduced-motion preference.',
       },
     },
   },

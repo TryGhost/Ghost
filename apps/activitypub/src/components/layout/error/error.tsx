@@ -2,12 +2,11 @@ import Layout from '@components/layout/layout';
 import { Button } from '@tryghost/shade/components';
 import { EmptyViewIcon, EmptyViewIndicator } from '@src/components/global/empty-view-indicator';
 import { H4 } from '@tryghost/shade/primitives';
-import { HostHeader } from '../host-header';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { useRouteError } from 'react-router';
 
-const ErrorContent = ({ statusCode, errorCode }: { statusCode?: number; errorCode?: string }) => {
+const Error = ({ statusCode, errorCode }: { statusCode?: number; errorCode?: string }) => {
   const routeError = useRouteError();
   const navigate = useNavigate();
 
@@ -122,17 +121,6 @@ const ErrorContent = ({ statusCode, errorCode }: { statusCode?: number; errorCod
         </a>
       </div>
     </div>
-  );
-};
-
-const Error = (props: { statusCode?: number; errorCode?: string }) => {
-  const routeError = useRouteError();
-  return (
-    <>
-      {/* Route errors already render Layout and its normal header. */}
-      {!routeError && <HostHeader />}
-      <ErrorContent {...props} />
-    </>
   );
 };
 

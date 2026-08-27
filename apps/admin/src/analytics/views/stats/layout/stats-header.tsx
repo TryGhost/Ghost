@@ -1,7 +1,5 @@
-import { AdminSidebarToggle } from '@/layout/admin-sidebar-toggle';
-import { AdminSidebarLayoutContext } from '@/layout/use-admin-sidebar';
 import React from 'react';
-import { H1, Inline } from '@tryghost/shade/primitives';
+import { H1 } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { Navbar, NavbarNavigation, PageMenu, PageMenuItem } from '@tryghost/shade/components';
 import { useActiveVisitors, useLocation, useNavigate } from '@tryghost/admin-x-framework';
@@ -16,7 +14,6 @@ interface StatsHeaderProps {
 }
 
 const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
-  const sidebarEnabled = React.useContext(AdminSidebarLayoutContext);
   const navigate = useNavigate();
   const location = useLocation();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
@@ -37,15 +34,12 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
           className="admin7-custom-header-main relative flex w-full items-center justify-between gap-5 px-6 pt-5 pb-0"
           data-header="header"
         >
-          <Inline align="center" gap="md">
-            {sidebarEnabled && <AdminSidebarToggle />}
-            <H1
-              className="flex min-h-[var(--control-height)] items-center text-lg font-semibold tracking-normal whitespace-nowrap"
-              data-header="header-title"
-            >
-              Analytics
-            </H1>
-          </Inline>
+          <H1
+            className="flex min-h-[var(--control-height)] items-center text-lg font-semibold tracking-normal whitespace-nowrap"
+            data-header="header-title"
+          >
+            Analytics
+          </H1>
           {webAnalyticsEnabled && (
             <div className="flex items-center gap-2">
               {site?.url && (

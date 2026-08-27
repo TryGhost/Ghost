@@ -69,10 +69,11 @@ function MembersList({
 }: MembersListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const stickyHeaderRef = useRef<HTMLTableSectionElement>(null);
-  const pinnedHeaderRef = useRef<HTMLDivElement>(null);
   const scrollingMemberHeaderRef = useRef<HTMLTableCellElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const [stickyColumnWidth, setStickyColumnWidth] = useState(0);
+  const [stickyTop, setStickyTop] = useState(0);
   const [showPinnedEdge, setShowPinnedEdge] = useState(false);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems);
   const layout = useMemo(() => {
@@ -115,9 +116,10 @@ function MembersList({
     const pageHeader = pageHeaderRef?.current;
     const stickyHeader = stickyHeaderRef.current;
     const scrollingMemberHeader = scrollingMemberHeaderRef.current;
-    const stickyRoot = pinnedHeaderRef.current;
 
-    if (!pageHeader || !stickyHeader || !scrollingMemberHeader || !stickyRoot) {
+    if (!pageHeader || !stickyHeader || !scrollingMemberHeader) {
+      setStickyColumnWidth(0);
+      setStickyTop(0);
       return;
     }
 
@@ -125,102 +127,62 @@ function MembersList({
     const initialMarginBottom = pageHeader.style.marginBottom;
     const basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
     const baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
-    const desktop = window.matchMedia('(min-width: 1024px)');
-
-    // Read once before any writes. Subsequent resize notifications already
-    // contain border-box dimensions; measuring again would force layout during
-    // each frame of the sidebar's width transition.
-    let pageHeaderHeight = pageHeader.getBoundingClientRect().height;
-    let stickyHeaderHeight = stickyHeader.getBoundingClientRect().height;
-    let memberHeaderWidth = scrollingMemberHeader.getBoundingClientRect().width;
-    let extraHeaderPadding = 0;
-
-    const setStyle = (element: HTMLElement, property: string, value: string, priority = '') => {
-      if (
-        element.style.getPropertyValue(property) !== value ||
-        element.style.getPropertyPriority(property) !== priority
-      ) {
-        element.style.setProperty(property, value, priority);
-      }
-    };
 
     const resetHeaderSpacing = () => {
       if (initialPaddingBottom) {
-        setStyle(pageHeader, 'padding-bottom', initialPaddingBottom);
+        pageHeader.style.setProperty('padding-bottom', initialPaddingBottom);
       } else {
         pageHeader.style.removeProperty('padding-bottom');
       }
       if (initialMarginBottom) {
-        setStyle(pageHeader, 'margin-bottom', initialMarginBottom);
+        pageHeader.style.setProperty('margin-bottom', initialMarginBottom);
       } else {
         pageHeader.style.removeProperty('margin-bottom');
       }
     };
 
     const updateStickyPosition = () => {
-      if (!desktop.matches) {
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+      if (!isDesktop) {
         resetHeaderSpacing();
-        pageHeaderHeight -= extraHeaderPadding;
-        extraHeaderPadding = 0;
-        stickyRoot.style.removeProperty('--members-sticky-column-width');
-        stickyRoot.style.removeProperty('--members-sticky-top');
+        setStickyColumnWidth(0);
+        setStickyTop(0);
         return;
       }
 
-      // Account for the padding already represented in the observed size before
-      // changing it. A wrapping header can change height while its width moves.
-      const stickyTop = Math.max(pageHeaderHeight - extraHeaderPadding, 0);
-      setStyle(
-        pageHeader,
+      const stickyHeaderHeight = stickyHeader.getBoundingClientRect().height;
+      const memberHeaderWidth = scrollingMemberHeader.getBoundingClientRect().width;
+      pageHeader.style.setProperty(
         'padding-bottom',
         `${basePaddingBottom + stickyHeaderHeight}px`,
         'important',
       );
-      setStyle(
-        pageHeader,
+      pageHeader.style.setProperty(
         'margin-bottom',
         `${baseMarginBottom - stickyHeaderHeight}px`,
         'important',
       );
-      pageHeaderHeight += stickyHeaderHeight - extraHeaderPadding;
-      extraHeaderPadding = stickyHeaderHeight;
+      const pageHeaderHeight = pageHeader.getBoundingClientRect().height;
 
-      // Geometry belongs to these elements, not React state: changing the pinned
-      // column's width must not render every visible member row on every frame.
-      setStyle(stickyRoot, '--members-sticky-column-width', `${memberHeaderWidth}px`);
-      setStyle(stickyRoot, '--members-sticky-top', `${stickyTop}px`);
+      setStickyColumnWidth(memberHeaderWidth);
+      setStickyTop(Math.max(pageHeaderHeight - stickyHeaderHeight, 0));
     };
 
     updateStickyPosition();
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      // Collect the whole batch before writing so observer entry ordering cannot
-      // turn a header-height change into a read/write feedback loop.
-      for (const entry of entries) {
-        const box = entry.borderBoxSize[0];
-        const height = box?.blockSize ?? entry.target.getBoundingClientRect().height;
-        if (entry.target === pageHeader) {
-          pageHeaderHeight = height;
-        } else if (entry.target === stickyHeader) {
-          stickyHeaderHeight = height;
-        } else if (entry.target === scrollingMemberHeader) {
-          memberHeaderWidth = box?.inlineSize ?? entry.target.getBoundingClientRect().width;
-        }
-      }
+    const resizeObserver = new ResizeObserver(() => {
       updateStickyPosition();
     });
 
     resizeObserver.observe(pageHeader);
     resizeObserver.observe(stickyHeader);
     resizeObserver.observe(scrollingMemberHeader);
-    desktop.addEventListener('change', updateStickyPosition);
+    window.addEventListener('resize', updateStickyPosition);
 
     return () => {
-      resizeObserver.disconnect();
-      desktop.removeEventListener('change', updateStickyPosition);
       resetHeaderSpacing();
-      stickyRoot.style.removeProperty('--members-sticky-column-width');
-      stickyRoot.style.removeProperty('--members-sticky-top');
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateStickyPosition);
     };
   }, [activeColumns.length, pageHeaderRef, showEmailOpenRate]);
 
@@ -247,22 +209,22 @@ function MembersList({
   return (
     <div ref={parentRef} className="w-full min-w-0" data-testid="members-list-scroll-root">
       <div
-        ref={pinnedHeaderRef}
         className="sticky z-[50] hidden overflow-visible bg-transparent lg:block"
-        style={{ top: 'var(--members-sticky-top, 0px)' }}
+        style={{ top: stickyTop }}
       >
         <div className="relative">
           <PinnedMemberHeader
-            columnStyle={{
-              ...columnStyles.member,
-              width: `var(--members-sticky-column-width, ${columnStyles.member.width})`,
-            }}
+            columnStyle={stickyColumnWidth > 0 ? { width: stickyColumnWidth } : columnStyles.member}
             showPinnedEdge={showPinnedEdge}
           />
           <div
             ref={headerScrollRef}
             className="w-full overflow-hidden"
-            style={{ clipPath: 'inset(0 0 0 var(--members-sticky-column-width, 0px))' }}
+            style={
+              stickyColumnWidth > 0
+                ? { clipPath: `inset(0 0 0 ${stickyColumnWidth}px)` }
+                : undefined
+            }
           >
             <Table
               aria-hidden="true"

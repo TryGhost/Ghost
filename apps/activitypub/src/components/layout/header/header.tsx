@@ -1,8 +1,7 @@
 import React from 'react';
 import { Button } from '@tryghost/shade/components';
-import { H1, Inline } from '@tryghost/shade/primitives';
+import { H1 } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useActivityPubHostLayout } from '../host-context';
 import { useNavigationStack, useRouteHasParams } from '@tryghost/admin-x-framework';
 
 import BackButton from '@src/components/global/back-button';
@@ -44,12 +43,10 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ onToggleMobileSideb
 };
 
 const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, showBorder = true }) => {
-  const hostLayout = useActivityPubHostLayout();
   const { canGoBack } = useNavigationStack();
   const currentPage = useCurrentPage();
   const routeHasParams = useRouteHasParams();
   const activeRoute = useActiveRoute();
-  const hostHeaderLeading = activeRoute?.hideHostHeaderLeading ? null : hostLayout?.headerLeading;
 
   // Logic for special pages
   let onlyBackButton = false;
@@ -68,25 +65,15 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, showBorder = tru
     <>
       {onlyBackButton ? (
         <div className="sticky top-5 left-0 z-50 inline-block max-lg:flex max-lg:items-center max-lg:justify-between max-lg:pr-[15.5px] max-md:top-4">
-          {hostHeaderLeading ? (
-            <Inline align="center" gap="md" style={{ paddingInline: hostLayout?.contentGutter }}>
-              {hostHeaderLeading}
-              {backActive && <BackButton className="-ml-2" />}
-            </Inline>
-          ) : (
-            <div>{backActive && <BackButton className="ml-6 max-md:ml-[10px]" />}</div>
-          )}
+          <div>{backActive && <BackButton className="ml-6 max-md:ml-[10px]" />}</div>
           {!backActive && <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />}
         </div>
       ) : (
         <div className="sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-background">
           <div
-            className={`relative flex h-[72px] items-center justify-between gap-5 px-[var(--network-gutter,min(4vw,24px))] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[var(--network-gutter,min(4vw,24px))] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950' : ''}`}
+            className={`relative flex h-[72px] items-center justify-between gap-5 px-[min(4vw,24px)] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[min(4vw,24px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950' : ''}`}
           >
-            <Inline align="center" gap="md">
-              {hostHeaderLeading}
-              <HeaderTitle backIcon={backActive} title={activeRoute?.pageTitle || ''} />
-            </Inline>
+            <HeaderTitle backIcon={backActive} title={activeRoute?.pageTitle || ''} />
             <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />
           </div>
         </div>
