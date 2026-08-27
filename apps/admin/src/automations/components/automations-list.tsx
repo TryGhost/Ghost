@@ -19,18 +19,25 @@ const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
   'member-welcome-email-paid': 'Welcome new paid members after they start their subscription.',
 };
 
+// Widths are scoped to `lg` because below that the stats lay out on the row's
+// grid rather than in table cells, where a fixed width would fight the columns.
 const AUTOMATION_STAT_COLUMNS = [
-  { key: 'lastEntry', label: 'Last entry', widthClassName: 'w-40', skeletonWidthClassName: 'w-20' },
+  {
+    key: 'lastEntry',
+    label: 'Last entry',
+    widthClassName: 'lg:w-40',
+    skeletonWidthClassName: 'w-20',
+  },
   {
     key: 'totalEntries',
     label: 'Total entries',
-    widthClassName: 'w-32',
+    widthClassName: 'lg:w-32',
     skeletonWidthClassName: 'w-10',
   },
   {
     key: 'inProgressEntries',
     label: 'In progress',
-    widthClassName: 'w-32',
+    widthClassName: 'lg:w-32',
     skeletonWidthClassName: 'w-10',
   },
 ] as const;
@@ -65,21 +72,24 @@ const AutomationsListSkeleton: React.FC = () => {
           <TableRow
             key={index}
             aria-hidden="true"
-            className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 p-2 lg:table-row lg:p-0"
+            className="grid w-full grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 lg:table-row lg:gap-0 lg:p-0"
           >
-            <TableCell className="min-w-0 p-0 lg:table-cell lg:p-4">
+            <TableCell className="col-span-3 row-start-1 min-w-0 p-0 lg:table-cell lg:p-4">
               <Skeleton className="mb-1 h-3 w-48 max-w-full " />
               <Skeleton className="h-3 w-80 max-w-full" />
             </TableCell>
             {AUTOMATION_STAT_COLUMNS.map((column) => (
               <TableCell
                 key={column.key}
-                className={cn('hidden lg:table-cell lg:p-4', column.widthClassName)}
+                className={cn(
+                  'row-start-2 min-w-0 p-0 lg:table-cell lg:p-4',
+                  column.widthClassName,
+                )}
               >
                 <Skeleton className={cn('h-3', column.skeletonWidthClassName)} />
               </TableCell>
             ))}
-            <TableCell className="w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
+            <TableCell className="col-start-4 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
               <Skeleton className="ml-auto h-3 w-16 lg:ml-0" />
             </TableCell>
           </TableRow>
@@ -150,12 +160,12 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
           return (
             <TableRow
               key={automation.slug}
-              className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 p-2 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:p-0"
+              className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
               data-testid="automation-list-row"
               onClick={handleRowClick}
             >
               <TableHead
-                className="h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"
+                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"
                 scope="row"
               >
                 <Link
@@ -173,16 +183,21 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                   <TableCell
                     key={column.key}
                     className={cn(
-                      'hidden lg:table-cell lg:p-4',
+                      'row-start-2 flex min-w-0 flex-col p-0 lg:table-cell lg:p-4',
                       column.widthClassName,
                       cell.isEmpty && 'text-muted-foreground',
                     )}
                   >
                     {cell.content}
+                    {/* The column headers are hidden below `lg`, so each stat
+                        carries its own label there. */}
+                    <span className="mt-0.5 text-sm leading-tight whitespace-nowrap text-muted-foreground lg:hidden">
+                      {column.label}
+                    </span>
                   </TableCell>
                 );
               })}
-              <TableCell className="w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
+              <TableCell className="col-start-4 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
                 <AutomationStatusBadge status={automation.status} />
               </TableCell>
             </TableRow>
