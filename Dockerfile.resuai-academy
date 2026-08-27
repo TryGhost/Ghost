@@ -1,0 +1,10 @@
+FROM ghost:6-alpine
+
+USER root
+COPY ghost/core/content/themes/resuai-academy /opt/resuai-academy
+COPY docker/resuai-academy-entrypoint.sh /usr/local/bin/resuai-academy-entrypoint.sh
+RUN chmod +x /usr/local/bin/resuai-academy-entrypoint.sh \
+    && chown -R node:node /opt/resuai-academy
+
+ENTRYPOINT ["/usr/local/bin/resuai-academy-entrypoint.sh"]
+CMD ["node", "current/index.js"]
