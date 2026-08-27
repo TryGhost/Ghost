@@ -10,7 +10,11 @@ vi.mock('../../../src/api/settings', () => ({
   useWebAnalyticsEnabled: vi.fn(),
 }));
 
-import { fetchTinybirdPipe, useTinybirdQuery } from '../../../src/hooks/use-tinybird-query';
+import {
+  fetchTinybirdPipe,
+  parseTinybirdPipeResponse,
+  useTinybirdQuery,
+} from '../../../src/hooks/use-tinybird-query';
 import { useTinybirdToken } from '../../../src/hooks/use-tinybird-token';
 import { useWebAnalyticsEnabled } from '../../../src/api/settings';
 
@@ -301,5 +305,26 @@ describe('fetchTinybirdPipe', () => {
       fetchTinybirdPipe({ url: PIPE_URL, token: 'token-a', refreshToken }),
     ).rejects.toThrow('Tinybird request failed (500): boom');
     expect(refreshToken).not.toHaveBeenCalled();
+  });
+});
+
+describe('parseTinybirdPipeResponse', () => {
+  it('accepts the envelope with loose pipe-shaped rows', () => {
+    const body = {
+      data: [{ pathname: '/', visits: 3, referrer: null }],
+      meta: [{ name: 'visits', type: 'UInt64' }],
+    };
+    expect(parseTinybirdPipeResponse(body)).toBe(body);
+    expect(parseTinybirdPipeResponse({})).toEqual({});
+    expect(parseTinybirdPipeResponse({ data: null, meta: null })).toEqual({
+      data: null,
+      meta: null,
+    });
+  });
+
+  it('rejects non-envelope bodies', () => {
+    for (const bad of [null, [], 'error', { data: 'nope' }, { data: [1, 2] }, { meta: 'x' }]) {
+      expect(() => parseTinybirdPipeResponse(bad)).toThrow('unexpected response shape');
+    }
   });
 });

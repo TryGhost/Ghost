@@ -94,7 +94,30 @@ export const fetchTinybirdPipe = async ({
     throw new Error(`Tinybird request failed (${response.status}): ${body || response.statusText}`);
   }
 
-  return (await response.json()) as TinybirdPipeResponse;
+  const body: unknown = await response.json();
+  return parseTinybirdPipeResponse(body);
+};
+
+/**
+ * Structural guard for the external response envelope. Rows are pipe-shaped
+ * (each pipe returns its own columns), so cells are deliberately not
+ * validated per field — only the envelope: `data`/`meta` must be arrays of
+ * objects when present.
+ */
+export const parseTinybirdPipeResponse = (body: unknown): TinybirdPipeResponse => {
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    throw new Error('Tinybird returned an unexpected response shape');
+  }
+  const { data, meta } = body as { data?: unknown; meta?: unknown };
+  const isObjectArray = (value: unknown): boolean =>
+    Array.isArray(value) && value.every((row) => row !== null && typeof row === 'object');
+  if (data !== undefined && data !== null && !isObjectArray(data)) {
+    throw new Error('Tinybird returned an unexpected response shape');
+  }
+  if (meta !== undefined && meta !== null && !isObjectArray(meta)) {
+    throw new Error('Tinybird returned an unexpected response shape');
+  }
+  return body as TinybirdPipeResponse;
 };
 
 export const useTinybirdQuery = (options: UseTinybirdQueryOptions): UseTinybirdQueryResult => {
