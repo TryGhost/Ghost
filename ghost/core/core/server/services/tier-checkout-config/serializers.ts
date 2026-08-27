@@ -8,7 +8,7 @@ import { TierCheckoutConfig } from './models';
 
 // Every country Stripe will take, sent at once, was measured as accepted — so the only
 // ceiling is the list itself, and a request naming more than there are countries is naming
-// something twice.
+// something twice. A request that means all of them omits the list instead.
 const MAX_ALLOWED_COUNTRIES = STRIPE_ALLOWED_COUNTRIES.length;
 
 const QuestionInput = z.object({
@@ -60,10 +60,14 @@ export const CheckoutConfigInput = z.strictObject({
       z.strictObject({ collect: z.literal(false) }),
       z.strictObject({
         collect: z.literal(true),
+        // Absent means everywhere the processor ships. Empty is refused rather than
+        // read as everywhere: a publisher who cleared the list said something, and it
+        // was not "deliver worldwide".
         allowed_countries: z
           .array(CountryCode, { error: 'Choose at least one country you deliver to.' })
           .min(1, { error: 'Choose at least one country you deliver to.' })
-          .max(MAX_ALLOWED_COUNTRIES),
+          .max(MAX_ALLOWED_COUNTRIES)
+          .optional(),
         name: Destination,
         address: Destination,
       }),
@@ -94,7 +98,8 @@ const CollectionResource = z.object({
 
 const ShippingResource = z.object({
   collect: z.literal(true),
-  allowed_countries: z.array(z.string()),
+  /** Absent means everywhere, the same way it does on the way in. */
+  allowed_countries: z.array(z.string()).optional(),
   name: z.object({ custom_field_key: z.string() }),
   address: z.object({ custom_field_key: z.string() }),
 });
@@ -124,7 +129,9 @@ export const toCheckoutConfigResponse = z
         ? {
             shipping: {
               collect: true as const,
-              allowed_countries: config.shipping.allowedCountries,
+              ...(config.shipping.allowedCountries
+                ? { allowed_countries: config.shipping.allowedCountries }
+                : {}),
               name: { custom_field_key: config.shipping.nameCustomFieldKey },
               address: { custom_field_key: config.shipping.addressCustomFieldKey },
             },
