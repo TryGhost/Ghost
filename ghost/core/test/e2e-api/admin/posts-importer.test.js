@@ -14,6 +14,7 @@ const path = require('path');
 const nock = require('nock');
 const models = require('../../../core/server/models');
 const jobsService = require('../../../core/server/services/jobs');
+const mediaInlinerService = require('../../../core/server/services/media-inliner');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const urlUtils = require('../../../core/shared/url-utils').default;
 const { compress } = require('@tryghost/zip');
@@ -254,6 +255,26 @@ describe('Posts Importer API', function () {
     assert.ok(continuedPost);
   });
 
+  it('preserves current-site media URLs without fetching or validating them', async function () {
+    await agent.loginAsOwner();
+    const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+    const imageUrl = `${siteUrl}/content/images/already-stored.jpg`;
+    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
+    const filePath = await csvFile(
+      'local-media.csv',
+      `title,html,feature_image\nLocal media,"<p><img src=""${imageUrl}"" /></p>",${imageUrl}\n`,
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await jobsService.allSettled();
+
+    sinon.assert.notCalled(importUrl);
+    const post = await models.Post.findOne({ title: 'Local media', status: 'all' });
+    assert.ok(post);
+    assert.ok(post.get('feature_image').endsWith('/content/images/already-stored.jpg'));
+    assert.match(post.get('html'), /\/content\/images\/already-stored\.jpg/);
+  });
+
   it('Imports the single mapped CSV inside a ZIP', async function () {
     await agent.loginAsOwner();
 
@@ -280,6 +301,7 @@ describe('Posts Importer API', function () {
 
   it('Stores and rewrites wrapped image, media, and file assets before importing posts', async function () {
     await agent.loginAsOwner();
+    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
 
     const csv =
       'title,html,markdown,feature_image,og_image,twitter_image\n' +
@@ -299,6 +321,8 @@ describe('Posts Importer API', function () {
       .expectStatus(202);
     assert.equal(body.meta.total, 3);
     await jobsService.allSettled();
+
+    sinon.assert.notCalled(importUrl);
 
     for (const filePath of getImportedAssetPaths().slice(0, 3)) {
       assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);

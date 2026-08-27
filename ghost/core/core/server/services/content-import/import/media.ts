@@ -103,11 +103,19 @@ export interface PostMediaInlining {
 
 export class PostMediaInliner implements PostMediaInlining {
   private _media: ExternalMediaImporter;
+  private _isLocalMediaUrl: (sourceUrl: string) => boolean;
   private _cache = new Map<string, Promise<ExternalMediaImportResult>>();
   private _failures = new Map<string, MediaFailure>();
 
-  constructor({ media }: { media: ExternalMediaImporter }) {
+  constructor({
+    media,
+    isLocalMediaUrl,
+  }: {
+    media: ExternalMediaImporter;
+    isLocalMediaUrl: (sourceUrl: string) => boolean;
+  }) {
     this._media = media;
+    this._isLocalMediaUrl = isLocalMediaUrl;
   }
 
   async inline(data: PostData): Promise<void> {
@@ -132,7 +140,7 @@ export class PostMediaInliner implements PostMediaInlining {
   }
 
   private async inlineUrl(sourceUrl: string): Promise<string> {
-    if (!isRemoteMediaUrl(sourceUrl)) {
+    if (!isRemoteMediaUrl(sourceUrl) || this._isLocalMediaUrl(sourceUrl)) {
       return sourceUrl;
     }
 

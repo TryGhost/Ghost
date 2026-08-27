@@ -4,6 +4,7 @@ import {
   MediaInliningFailure,
   PostMediaInliner,
 } from '../../../../../../core/server/services/content-import/import/media';
+import { isLocalMediaUrl } from '../../../../../../core/server/services/content-import/import/local-media-url';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
 import type { ExternalMediaImportResult } from '../../../../../../core/server/services/media-inliner/types';
 
@@ -17,7 +18,11 @@ const postData = (overrides: Partial<PostData> = {}): PostData => ({
   ...overrides,
 });
 
-function harness() {
+function harness({
+  localUrl = sinon.stub<[string], boolean>().returns(false),
+}: {
+  localUrl?: sinon.SinonStub<[string], boolean>;
+} = {}) {
   const importUrl = sinon
     .stub<[string], Promise<ExternalMediaImportResult>>()
     .callsFake(async (sourceUrl: string) => {
@@ -30,9 +35,10 @@ function harness() {
     });
   const inliner = new PostMediaInliner({
     media: { importUrl },
+    isLocalMediaUrl: localUrl,
   });
 
-  return { inliner, importUrl };
+  return { inliner, importUrl, localUrl };
 }
 
 describe('PostMediaInliner', function () {
@@ -264,6 +270,103 @@ describe('PostMediaInliner', function () {
     sinon.assert.notCalled(h.importUrl);
   });
 
+  it('recognizes Ghost placeholders and root-relative content paths', function () {
+    const options = {
+      siteUrl: 'https://example.com/blog/',
+      subdir: 'blog',
+      assetBaseUrls: [],
+    };
+
+    for (const sourceUrl of [
+      '__GHOST_URL__/content/images/image.jpg',
+      '__GHOST_URL__/anything',
+      '/content/images/image.jpg',
+      '/content/images',
+      '/content/media/video.mp4',
+      '/content/files/guide.pdf',
+      '/blog/content/images/image.jpg',
+      '/blog/content/media/video.mp4',
+      '/blog/content/files/guide.pdf',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), true, sourceUrl);
+    }
+
+    assert.equal(isLocalMediaUrl('/content/images-other/image.jpg', options), false);
+    assert.equal(isLocalMediaUrl('/blogger/content/images/image.jpg', options), false);
+  });
+
+  it('recognizes current-site content URLs with configured subdirectories', function () {
+    const options = {
+      siteUrl: 'https://example.com/blog/',
+      subdir: '/blog',
+      assetBaseUrls: [],
+    };
+
+    for (const sourceUrl of [
+      'http://example.com/content/images/image.jpg',
+      '//example.com/blog/content/media/video.mp4',
+      'https://example.com/blog/content/files/guide.pdf',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), true, sourceUrl);
+    }
+
+    for (const sourceUrl of [
+      'https://example.com/about/image.jpg',
+      'https://example.com/blog/content/images-other/image.jpg',
+      'https://example.com.evil/content/images/image.jpg',
+      'https://external.example/content/images/image.jpg',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), false, sourceUrl);
+    }
+  });
+
+  it('recognizes configured storage and CDN URL prefixes without near-matching', function () {
+    const options = {
+      siteUrl: 'https://example.com/',
+      subdir: '',
+      assetBaseUrls: [
+        'https://images.example/c/site/content/images/',
+        'https://assets.example/c/site',
+        null,
+        undefined,
+      ],
+    };
+
+    for (const sourceUrl of [
+      'http://images.example/c/site/content/images/image.jpg',
+      '//assets.example/c/site/content/media/video.mp4',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), true, sourceUrl);
+    }
+
+    for (const sourceUrl of [
+      'https://images.example/c/site/content/images-other/image.jpg',
+      'https://assets.example/c/site-other/content/files/guide.pdf',
+      'https://assets.example.evil/c/site/content/files/guide.pdf',
+      'not a URL',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), false, sourceUrl);
+    }
+  });
+
+  it('does not import or cache URLs classified as local', async function () {
+    const sourceUrl = 'https://example.com/content/images/existing.jpg';
+    const localUrl = sinon.stub<[string], boolean>();
+    localUrl.onFirstCall().returns(true);
+    localUrl.onSecondCall().returns(false);
+    const h = harness({ localUrl });
+    const first = postData({ feature_image: sourceUrl });
+    const second = postData({ feature_image: sourceUrl });
+
+    await h.inliner.inline(first);
+    await h.inliner.inline(second);
+
+    assert.equal(first.feature_image, sourceUrl);
+    assert.equal(second.feature_image, '__GHOST_URL__/content/files/existing.jpg');
+    sinon.assert.calledTwice(localUrl);
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+  });
+
   it('processes protocol-relative media URLs', async function () {
     const h = harness();
     const data = postData({ feature_image: '//assets.test/protocol-relative.jpg' });
@@ -417,7 +520,10 @@ describe('PostMediaInliner', function () {
   it('does not share cached URLs across media-inliner instances', async function () {
     const h = harness();
     const sourceUrl = 'https://assets.test/separate-imports.jpg';
-    const nextImportInliner = new PostMediaInliner({ media: { importUrl: h.importUrl } });
+    const nextImportInliner = new PostMediaInliner({
+      media: { importUrl: h.importUrl },
+      isLocalMediaUrl: h.localUrl,
+    });
 
     await h.inliner.inline(postData({ feature_image: sourceUrl }));
     await nextImportInliner.inline(postData({ feature_image: sourceUrl }));
