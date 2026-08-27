@@ -149,6 +149,15 @@ describe('Posts Importer API', function () {
     assert.match(email.html, /Updated:<\/strong> 0/);
     assert.match(email.html, /Skipped:<\/strong> 0/);
     assert.match(email.html, /Failed:<\/strong> 0/);
+
+    const draft = await models.Post.findOne({ title: 'Completion email draft', status: 'all' });
+    assert.ok(draft);
+    assert.match(email.html, /Completion email created/);
+    assert.match(email.html, /\/completion-email-created\//);
+    assert.ok(
+      email.html.includes(`/#/editor/post/${draft.id}`),
+      'the draft links to its Admin editor',
+    );
   });
 
   it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {

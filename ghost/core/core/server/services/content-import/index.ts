@@ -12,6 +12,7 @@ import { ImportRunStore } from './import/store';
 import { prepareImportSource } from './import/source';
 import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
+import { urlForImportedPost } from './import/post-link';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
@@ -32,6 +33,7 @@ function makeImporter(): ContentCSVImporter {
   const jobsService = require('../jobs');
   const settingsCache = require('../../../shared/settings-cache');
   const urlService = require('../url');
+  const urlUtils = require('../../../shared/url-utils').default;
   const mediaInlinerService = require('../media-inliner');
   const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
@@ -82,9 +84,15 @@ function makeImporter(): ContentCSVImporter {
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),
-    // Degrades to the 404 URL for a post the URL service cannot route yet (e.g. a draft).
     urlForPost: (post) =>
-      urlService.getUrlForResource({ ...post.toJSON(), type: 'posts' }, { absolute: true }),
+      urlForImportedPost(post, {
+        adminUrl: urlUtils.urlFor('admin', true),
+        publishedUrl: (publishedPost) =>
+          urlService.getUrlForResource(
+            { ...publishedPost.toJSON(), type: 'posts' },
+            { absolute: true },
+          ),
+      }),
     newRunId: () => new ObjectID().toHexString(),
     getTimezone: () => timezoneSchema.parse(settingsCache.get('timezone')),
   });

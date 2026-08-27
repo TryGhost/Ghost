@@ -85,4 +85,59 @@ describe('content import completion email', function () {
     assert.match(email.html, /unsafe&lt;email@example\.com/);
     assert.doesNotMatch(email.html, /unsafe<email@example\.com/);
   });
+
+  it('links every created and updated post with a resolved URL', function () {
+    const email = buildCompletionEmail(
+      run({
+        rows: [
+          {
+            line: 2,
+            title: 'Published & linked',
+            status: 'created',
+            url: 'https://example.com/published/?one=1&two=2',
+          },
+          {
+            line: 3,
+            title: '<Draft>',
+            status: 'updated',
+            url: 'https://example.com/ghost/#/editor/post/draft-id',
+          },
+          { line: 4, title: 'No URL', status: 'created' },
+          {
+            line: 5,
+            title: 'Skipped URL',
+            status: 'skipped',
+            url: 'https://example.com/must-not-render/',
+          },
+        ],
+      }),
+      'owner@example.com',
+    );
+
+    assert.match(email.html, /Imported posts/);
+    assert.match(email.html, /Published &amp; linked/);
+    assert.match(email.html, /published\/\?one=1&amp;two=2/);
+    assert.match(email.html, /&lt;Draft&gt;/);
+    assert.match(email.html, /#\/editor\/post\/draft-id/);
+    assert.doesNotMatch(email.html, /No URL/);
+    assert.doesNotMatch(email.html, /must-not-render/);
+  });
+
+  it('uses the row number when a linked outcome has no title', function () {
+    const email = buildCompletionEmail(
+      run({
+        rows: [
+          {
+            line: 7,
+            title: null,
+            status: 'created',
+            url: 'https://example.com/untitled/',
+          },
+        ],
+      }),
+      'owner@example.com',
+    );
+
+    assert.match(email.html, />Row 7<\/a>/);
+  });
 });
