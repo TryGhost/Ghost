@@ -249,6 +249,69 @@ describe('Tier checkout collection', () => {
     });
   });
 
+  it('collects checkout settings while creating a tier, in one Save', async () => {
+    const createdTier = tier({
+      id: '645453f4d254799990dd0e99',
+      name: 'Print Edition',
+      slug: 'print-edition',
+      monthly_price: 800,
+      yearly_price: 8000,
+    });
+    let saved = false;
+    fakeSettingsScreens();
+    fakeTiers(() => (saved ? [freeTier, supporterTier, createdTier] : [freeTier, supporterTier]));
+    fakeMemberCustomFields([addressField, nameField]);
+    fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
+    const createApi = fakeAdminEndpoint('POST', '/tiers/', () => {
+      saved = true;
+      return { tiers: [createdTier] };
+    });
+    const putApi = fakeAdminEndpoint(
+      'PUT',
+      `/tiers/${createdTier.id}/checkout_config/`,
+      ({ body }) => ({
+        tiers_checkout_config: [
+          { tier_id: createdTier.id, custom_fields: [], ...(body as object) },
+        ],
+      }),
+    );
+    await renderAdminApp('/settings', { boot: flagOnBoot });
+
+    await settingsScreen.tiers().getByRole('button', { name: 'Add tier' }).click();
+    const modal = settingsScreen.tierDetailModal();
+    await modal.getByLabelText('Name', { exact: true }).fill(createdTier.name);
+    await modal.getByLabelText('Monthly price').fill('8');
+    await modal.getByLabelText('Yearly price').fill('80');
+
+    // The checkout card is present during creation, under the same conditions as prices.
+    await modal.getByLabelText('Collect shipping address').click();
+    await modal.getByLabelText('Save address as').click();
+    await page.getByRole('option', { name: addressField.name }).click();
+    await modal.getByLabelText('Save recipient name as').click();
+    await page.getByRole('option', { name: nameField.name }).click();
+
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+
+    expect(createApi.lastRequest?.body).toMatchObject({ tiers: [{ name: createdTier.name }] });
+    const sent = (
+      putApi.lastRequest?.body as { tiers_checkout_config: [{ shipping: { collect: boolean } }] }
+    ).tiers_checkout_config[0];
+    expect(sent).toMatchObject({
+      shipping: {
+        collect: true,
+        name: { custom_field_key: nameField.key },
+        address: { custom_field_key: addressField.key },
+      },
+      tax_number: { collect: false },
+      phone: { collect: false },
+    });
+
+    // The one Save covered both writes: closing asks no questions.
+    await modal.getByRole('button', { name: 'Close' }).click();
+    await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
+  });
+
   it('asks before discarding unsaved checkout edits', async () => {
     checkoutWorld();
     await renderAdminApp('/settings', { boot: flagOnBoot });
