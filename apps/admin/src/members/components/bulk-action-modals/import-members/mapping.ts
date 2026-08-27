@@ -4,10 +4,16 @@ import {
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-type FieldMappingOptions = {
+/**
+ * What auto-detection is allowed to map a column onto.
+ *
+ * `customFieldColumns` is the redesigned import's alone — it is the only one that offers
+ * custom fields, so it is the only one that passes any. Detection is shared with the import
+ * as it shipped, which passes none.
+ */
+type DetectionOptions = {
   importMemberTier?: boolean;
-  // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
-  // empty when the feature is off.
+  // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns).
   customFieldColumns?: MemberCustomFieldCsvColumn[];
 };
 
@@ -40,7 +46,7 @@ const SUPPORTED_TYPES = [
 function getSupportedTypes({
   importMemberTier = false,
   customFieldColumns = [],
-}: FieldMappingOptions = {}): string[] {
+}: DetectionOptions = {}): string[] {
   return [
     ...SUPPORTED_TYPES,
     ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : []),
@@ -48,15 +54,15 @@ function getSupportedTypes({
   ];
 }
 
+/**
+ * Everything a column can be imported as. Native targets only, on both sides of the flag: the
+ * import as it shipped has no others, and the redesigned one offers custom fields from a list
+ * of its own rather than folded in here.
+ */
 export function getFieldMappings({
   importMemberTier = false,
-  customFieldColumns = [],
-}: FieldMappingOptions = {}) {
-  return [
-    ...FIELD_MAPPINGS,
-    ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : []),
-    ...customFieldColumns,
-  ];
+}: { importMemberTier?: boolean } = {}) {
+  return [...FIELD_MAPPINGS, ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])];
 }
 
 const AUTO_DETECTED_TYPES = ['email'];
@@ -186,7 +192,7 @@ export function sampleData(
  */
 export function detectFieldTypes(
   data: Record<string, string>[],
-  options: FieldMappingOptions = {},
+  options: DetectionOptions = {},
 ): Record<string, string> {
   const sampledData = sampleData(data);
   const mapping: Record<string, string> = {};
