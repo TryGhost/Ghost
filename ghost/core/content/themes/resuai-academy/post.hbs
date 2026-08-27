@@ -1,0 +1,20 @@
+{{!< default}}
+{{#post}}
+<article class="article {{post_class}}">
+  <header class="article-header shell narrow">
+    <div class="post-meta">{{#primary_tag}}<a href="{{url}}">{{name}}</a>{{/primary_tag}}<span>{{reading_time}}</span><span>{{date format="D MMM YYYY"}}</span></div>
+    <h1>{{title}}</h1>
+    {{#if custom_excerpt}}<p class="article-excerpt">{{custom_excerpt}}</p>{{/if}}
+    {{#if feature_image}}<figure class="article-hero"><img src="{{img_url feature_image size="l"}}" alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">{{#if feature_image_caption}}<figcaption>{{feature_image_caption}}</figcaption>{{/if}}</figure>{{/if}}
+  </header>
+  <div class="article-layout shell">
+    <div class="article-content gh-content">
+      {{#if access}}{{content}}{{else}}
+      {{#if excerpt}}<p>{{excerpt}}</p>{{/if}}
+      <div class="paywall"><span class="eyebrow">Premium lesson</span><h2>Continue learning with ResuAI Academy</h2><p>Unlock complete exam notes, explanations, licensing roadmaps and premium healthcare career resources.</p><a class="button primary" href="#/portal/signup">View membership options</a><a class="login-link" href="#/portal/signin">Already a member? Sign in</a></div>
+      {{/if}}
+    </div>
+    <aside class="article-aside"><div class="aside-card"><strong>Exam preparation reminder</strong><p>Use this material for learning and revision. Always confirm current requirements with the relevant licensing authority.</p></div><a class="aside-link" href="https://resuaibuilder.com">Build your healthcare CV →</a></aside>
+  </div>
+</article>
+{{/post}}
