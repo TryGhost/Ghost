@@ -2060,28 +2060,37 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
+      - name: Pull Tinybird CLI image
+        id: pull_tb_cli
+        if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tb_cli != 'true'
+        run: |
+          COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
+          if docker pull ghcr.io/tryghost/tb-cli:latest; then
+            docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
+            echo "Pulled tb-cli from GHCR"
+            echo "build_required=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "GHCR image not available, building from source"
+            echo "build_required=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Docker Buildx
+        if: matrix.analytics == 'true' && (needs.job_setup.outputs.changed_tb_cli == 'true' || steps.pull_tb_cli.outputs.build_required == 'true')
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
-      - name: Pull or build Tinybird CLI Image
-        if: matrix.analytics == 'true'
+      - name: Build Tinybird CLI image
+        if: matrix.analytics == 'true' && (needs.job_setup.outputs.changed_tb_cli == 'true' || steps.pull_tb_cli.outputs.build_required == 'true')
         env:
           CHANGED_TB_CLI: ${{ needs.job_setup.outputs.changed_tb_cli }}
         run: |
           COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
-          # GHCR's :latest is only republished from main, so it can't reflect a
-          # Dockerfile change under review — build from source when this PR
-          # touches it, otherwise take the prebuilt fast path.
           if [[ "$CHANGED_TB_CLI" == 'true' ]]; then
             echo "docker/tb-cli changed, building from source"
-            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
-          elif docker pull ghcr.io/tryghost/tb-cli:latest 2>/dev/null; then
-            echo "Pulled tb-cli from GHCR"
-            docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
           else
             echo "GHCR image not available, building from source"
-            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
           fi
+          docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
+          docker buildx prune --all --force
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image
@@ -2102,6 +2111,12 @@ jobs:
         # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
         # (admin, apps, ghost/core). Scope the install to cut shard setup time.
         run: pnpm install --frozen-lockfile --filter @tryghost/e2e...
+
+      - name: Report Analytics runner disk usage
+        if: matrix.analytics == 'true'
+        run: |
+          df -h /
+          docker system df
 
       - name: Prepare E2E CI job
         env:
