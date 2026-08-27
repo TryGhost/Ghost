@@ -4,16 +4,11 @@ import {
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-/**
- * What auto-detection is allowed to map a column onto.
- *
- * `customFieldColumns` is the redesigned import's alone — it is the only one that offers
- * custom fields, so it is the only one that passes any. Detection is shared with the import
- * as it shipped, which passes none.
- */
+/** What auto-detection is allowed to map a column onto. */
 type DetectionOptions = {
   importMemberTier?: boolean;
-  // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns).
+  // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
+  // none where the site has custom fields switched off.
   customFieldColumns?: MemberCustomFieldCsvColumn[];
 };
 
@@ -55,9 +50,8 @@ function getSupportedTypes({
 }
 
 /**
- * Everything a column can be imported as. Native targets only, on both sides of the flag: the
- * import as it shipped has no others, and the redesigned one offers custom fields from a list
- * of its own rather than folded in here.
+ * Everything a column can be imported as, before custom fields. They are offered from their own
+ * section of the picker rather than folded in here, so this stays the list Ghost always has.
  */
 export function getFieldMappings({
   importMemberTier = false,
@@ -254,4 +248,23 @@ export function formatImportError(error: string): string {
       /No such customer:[\s\S]*/,
       'Could not find Stripe customer',
     );
+}
+
+/**
+ * The field name to suggest for a column no defined field matches.
+ *
+ * A namespaced column comes from a Ghost export, so it carries a namespace that is noise
+ * to a publisher and a key that was machine-minted from a name in the first place: both
+ * are stripped back towards what someone would have typed. A column from anywhere else is
+ * already the publisher's own wording, so only its separators and first letter are
+ * touched. It is a starting point either way, and the form lets them edit it.
+ */
+export function suggestedFieldName(column: string): string {
+  // A custom field column is `custom_fields.<key>` or `custom_fields.<key>.<part>`. The name
+  // being suggested is the field's, so the part is dropped: `custom_fields.home-address.city`
+  // names a field called "Home address" whose City part this column holds, and the part is
+  // asked for separately. A bare `custom_fields` column has no key, so it suggests the namespace itself.
+  const segments = isCustomFieldColumn(column) ? column.split('.').slice(1, 2) : [column];
+  const words = (segments[0] ?? column).replace(/[._-]+/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }

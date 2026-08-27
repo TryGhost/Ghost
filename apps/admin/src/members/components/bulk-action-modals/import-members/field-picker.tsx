@@ -18,7 +18,7 @@ import {
 import {
   type FieldTarget,
   type FieldTargetGroup,
-} from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
+} from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useRef } from 'react';
 

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { CreateFieldForm } from '@/members/components/bulk-action-modals/import-members/custom-fields/create-field-form';
+import { CreateFieldForm } from '@/members/components/bulk-action-modals/import-members/create-field-form';
 import {
   APIError,
   HostLimitError,
@@ -24,15 +24,15 @@ import {
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { FieldPicker } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-picker';
+import { FieldPicker } from '@/members/components/bulk-action-modals/import-members/field-picker';
 import { LabelPicker } from '@/members/label-picker';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
   MembersFieldMapping,
   columnsOf,
-} from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
+} from '@/members/components/bulk-action-modals/import-members/mapping';
 import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
+import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
 
