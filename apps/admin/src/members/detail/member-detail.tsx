@@ -1,5 +1,4 @@
 import MemberActionsMenu from './member-actions-menu';
-import { admin7PageClassName } from '@/layout/admin7';
 import MemberActivityFeed from './member-activity-feed';
 import MemberCustomFieldsField from './member-custom-fields-field';
 import MemberDetailForm from './member-detail-form';
@@ -359,7 +358,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
 
   return (
     <Box className="size-full">
-      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
+      <Container className="relative flex h-full flex-col" size="page">
         <DetailPage data-testid="member-detail">
           <DetailPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { admin7PageClassName } from '@/layout/admin7';
 import TagDeleteModal from './tag-delete-modal';
 import TagDetailForm from './tag-detail-form';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -377,7 +376,7 @@ const TagDetail: React.FC = () => {
 
   return (
     <Box className="size-full">
-      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
+      <Container className="relative flex h-full flex-col" size="page">
         <DetailPage data-testid="tag-detail">
           <DetailPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

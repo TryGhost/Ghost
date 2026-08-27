@@ -1,5 +1,4 @@
 import React from 'react';
-import { admin7PageClassName } from '@/layout/admin7';
 import TagsList from './components/tags-list';
 import { AdminLink } from '@/shared/admin-link';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -30,7 +29,7 @@ const Tags: React.FC = () => {
 
   return (
     <Box className="size-full">
-      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
+      <Container className="relative flex h-full flex-col" size="page">
         <ListPage data-testid="tags-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

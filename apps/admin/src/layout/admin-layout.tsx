@@ -15,6 +15,17 @@ const networkPageChrome = {
   contentGutter: 'var(--page-gutter)',
 };
 
+const admin7PageChromeClassName = [
+  'admin7:[&_.max-w-page]:max-w-(--content-width)',
+  'admin7:[&_[data-list-page=list-page]]:px-(--page-gutter)',
+  'admin7:[&_[data-detail-page=detail-page]]:px-(--page-gutter)',
+  'admin7:[&_[data-list-page=header]]:-mx-(--page-gutter)',
+  'admin7:[&_[data-list-page=header]]:px-(--page-gutter)',
+  'admin7:[&_[data-page-header=main]]:flex-wrap',
+  'admin7:[&_[data-page-header=left]]:h-auto',
+  'admin7:[&_[data-page-header=left]]:max-w-full',
+].join(' ');
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -55,7 +66,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <SidebarInset
         className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
       >
-        <main className="flex-1">
+        <main className={cn('flex-1', pageChromeEnabled && admin7PageChromeClassName)}>
           <ActivityPubHostLayoutProvider value={pageChromeEnabled ? networkPageChrome : undefined}>
             {children}
           </ActivityPubHostLayoutProvider>

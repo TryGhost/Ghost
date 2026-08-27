@@ -1,5 +1,4 @@
 import AutomationsHelpCards from './components/automations-help-cards';
-import { admin7PageClassName } from '@/layout/admin7';
 import AutomationsList from './components/automations-list';
 import React from 'react';
 import { Badge } from '@tryghost/shade/components';
@@ -17,7 +16,7 @@ const Automations: React.FC = () => {
 
   return (
     <Box className="size-full" data-sentry-mask="true">
-      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
+      <Container className="relative flex h-full flex-col" size="page">
         <ListPage data-testid="automations-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

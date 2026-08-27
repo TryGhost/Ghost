@@ -1,5 +1,4 @@
 import CommentsFilters from './components/comments-filters';
-import { admin7PageClassName } from '@/layout/admin7';
 import CommentsList from './components/comments-list';
 import { Box, Container } from '@tryghost/shade/primitives';
 import React, { useCallback, useMemo } from 'react';
@@ -90,7 +89,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 
   return (
     <Box className="size-full">
-      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
+      <Container className="relative flex h-full flex-col" size="page">
         <ListPage data-testid="comments-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
@@ -188,7 +187,7 @@ const Comments: React.FC = () => {
   if (shouldDelayHydration) {
     return (
       <Box className="size-full">
-        <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
+        <Container className="relative flex h-full flex-col" size="page">
           <ListPage>
             <ListPage.Header>
               <PageHeader blurredBackground={false} sticky={false}>
