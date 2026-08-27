@@ -1,0 +1,32 @@
+{
+  "name": "resuai-academy",
+  "description": "Healthcare learning and exam preparation theme for ResuAI Academy",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": {
+    "name": "ResuAIBuilder",
+    "email": "contact@resuaibuilder.com",
+    "url": "https://resuaibuilder.com"
+  },
+  "engines": {
+    "ghost": ">=5.0.0"
+  },
+  "config": {
+    "posts_per_page": 9,
+    "card_assets": true,
+    "image_sizes": {
+      "xs": {
+        "width": 160
+      },
+      "s": {
+        "width": 320
+      },
+      "m": {
+        "width": 720
+      },
+      "l": {
+        "width": 1200
+      }
+    }
+  }
+}
