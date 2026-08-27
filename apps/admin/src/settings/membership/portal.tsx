@@ -1,3 +1,4 @@
+import '@/settings/custom-fonts.css';
 import FakeLogo from '@/settings/assets/images/portal-splash-default-logo.png';
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
