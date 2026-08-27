@@ -52,7 +52,6 @@ export function ImportMembersModal({
   const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
   const errorCsvUrlRef = useRef<string | null>(null);
   const { mutateAsync: importMembers } = useImportMembers();
-  const importMemberTier = useFeatureFlag('importMemberTier');
 
   // Defined custom fields become mapping targets. Fetched only when the feature is on;
   // browse returns active fields only, which are the ones the importer writes to.
@@ -70,11 +69,11 @@ export function ImportMembersModal({
   // Detection options are read inside the effect through this ref rather than as deps, so
   // a later refetch of the options can't re-run the read and overwrite a mapping the user
   // has begun editing.
-  const detectOptionsRef = useRef({ importMemberTier, customFieldColumns });
-  detectOptionsRef.current = { importMemberTier, customFieldColumns };
+  const detectOptionsRef = useRef({ customFieldColumns });
+  detectOptionsRef.current = { customFieldColumns };
   const fieldMappings = useMemo(
-    () => getFieldMappings({ importMemberTier, customFieldColumns }),
-    [importMemberTier, customFieldColumns],
+    () => getFieldMappings({ customFieldColumns }),
+    [customFieldColumns],
   );
 
   const labelPicker = useLabelPicker({

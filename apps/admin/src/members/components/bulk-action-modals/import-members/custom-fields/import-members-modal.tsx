@@ -56,7 +56,6 @@ import {
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { parseCSV } from '@/members/components/bulk-action-modals/import-members/csv';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLabelPicker } from '@/members/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
@@ -75,7 +74,6 @@ export function ImportMembersModal({
   const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
   const errorCsvUrlRef = useRef<string | null>(null);
   const { mutateAsync: importMembers } = useImportMembers();
-  const importMemberTier = useFeatureFlag('importMemberTier');
 
   // Defined custom fields become mapping targets. Browse returns active fields only, which
   // are the ones the importer writes to. No flag check anywhere in this file: the gate does
@@ -100,21 +98,21 @@ export function ImportMembersModal({
   // Detection options are read inside the effect through this ref rather than as deps, so
   // a later refetch of the options can't re-run the read and overwrite a mapping the user
   // has begun editing.
-  const detectOptionsRef = useRef({ importMemberTier, customFieldColumns });
+  const detectOptionsRef = useRef({ customFieldColumns });
   // Assigned in an effect rather than during render: a ref written while rendering can tear
   // if a render is thrown away, and the read below happens after paint either way.
   useLayoutEffect(() => {
-    detectOptionsRef.current = { importMemberTier, customFieldColumns };
-  }, [importMemberTier, customFieldColumns]);
+    detectOptionsRef.current = { customFieldColumns };
+  }, [customFieldColumns]);
   // Auto-detection takes customFieldColumns separately, through detectOptionsRef above: it
   // matches on column names rather than on what is offered.
   const targets = useMemo(
     () =>
       fieldTargets({
-        membershipFields: getFieldMappings({ importMemberTier }),
+        membershipFields: getFieldMappings(),
         customFieldColumns,
       }),
-    [importMemberTier, customFieldColumns],
+    [customFieldColumns],
   );
 
   // Whether email is mapped is the mapping step's to answer, because it is the only thing

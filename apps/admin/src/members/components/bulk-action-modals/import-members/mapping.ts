@@ -5,7 +5,6 @@ import {
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 type FieldMappingOptions = {
-  importMemberTier?: boolean;
   // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
   // empty when the feature is off.
   customFieldColumns?: MemberCustomFieldCsvColumn[];
@@ -21,9 +20,8 @@ export const FIELD_MAPPINGS = [
   { label: 'Labels', value: 'labels' },
   { label: 'Created at', value: 'created_at' },
   { label: 'Gift ID', value: 'gift_id' },
+  { label: 'Tier', value: 'import_tier' },
 ];
-
-export const IMPORT_TIER_FIELD_MAPPING = { label: 'Tier', value: 'import_tier' };
 
 const SUPPORTED_TYPES = [
   'email',
@@ -35,28 +33,15 @@ const SUPPORTED_TYPES = [
   'labels',
   'created_at',
   'gift_id',
+  'import_tier',
 ];
 
-function getSupportedTypes({
-  importMemberTier = false,
-  customFieldColumns = [],
-}: FieldMappingOptions = {}): string[] {
-  return [
-    ...SUPPORTED_TYPES,
-    ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : []),
-    ...customFieldColumns.map((column) => column.value),
-  ];
+function getSupportedTypes({ customFieldColumns = [] }: FieldMappingOptions = {}): string[] {
+  return [...SUPPORTED_TYPES, ...customFieldColumns.map((column) => column.value)];
 }
 
-export function getFieldMappings({
-  importMemberTier = false,
-  customFieldColumns = [],
-}: FieldMappingOptions = {}) {
-  return [
-    ...FIELD_MAPPINGS,
-    ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : []),
-    ...customFieldColumns,
-  ];
+export function getFieldMappings({ customFieldColumns = [] }: FieldMappingOptions = {}) {
+  return [...FIELD_MAPPINGS, ...customFieldColumns];
 }
 
 const AUTO_DETECTED_TYPES = ['email'];
