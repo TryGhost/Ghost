@@ -12,6 +12,7 @@ import {
   tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import { STRIPE_ALLOWED_COUNTRIES } from '@/settings/membership/tiers/stripe-allowed-countries';
 
 const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'free', type: 'free' });
 const supporterTier = tier({
@@ -216,7 +217,7 @@ describe('Tier checkout collection', () => {
       phone: { collect: false },
     });
     // "All countries" is written as Stripe's full list, mirrored from the server.
-    expect(sent.shipping.allowed_countries).toHaveLength(238);
+    expect(sent.shipping.allowed_countries).toHaveLength(STRIPE_ALLOWED_COUNTRIES.length);
   });
 
   it('creates a destination field from inside the picker', async () => {
@@ -308,6 +309,20 @@ describe('Tier checkout collection', () => {
     });
 
     // The one Save covered both writes: closing asks no questions.
+    await modal.getByRole('button', { name: 'Close' }).click();
+    await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
+  });
+
+  it('closes without confirmation after saving checkout edits', async () => {
+    const putApi = checkoutWorld();
+    await renderAdminApp('/settings', { boot: flagOnBoot });
+
+    const modal = await openSupporterModal();
+    await modal.getByLabelText('Collect business tax ID').click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    expect(putApi.requests).toHaveLength(1);
+
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
   });
