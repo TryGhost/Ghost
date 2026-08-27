@@ -12,6 +12,35 @@ const {
 
 const KEEPALIVE_MS = 30 * 1000;
 
+const MAX_STREAMS_PER_USER = 10;
+
+// Open SSE streams per staff user. Request-rate limiting cannot bound these:
+// each open stream holds a socket, a bus subscriber and a keepalive timer for
+// as long as the tab lives. Process-local, like the presence state it guards.
+const openStreamsByUser = new Map();
+
+function countOpenStreams(userId) {
+  return openStreamsByUser.get(userId) || 0;
+}
+
+function trackStream(userId) {
+  if (userId) {
+    openStreamsByUser.set(userId, countOpenStreams(userId) + 1);
+  }
+}
+
+function untrackStream(userId) {
+  if (!userId) {
+    return;
+  }
+  const remaining = countOpenStreams(userId) - 1;
+  if (remaining > 0) {
+    openStreamsByUser.set(userId, remaining);
+  } else {
+    openStreamsByUser.delete(userId);
+  }
+}
+
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',
   // no-transform skips Ghost's global gzip middleware; without it, events buffer
@@ -74,12 +103,22 @@ async function stream(req, res) {
     return;
   }
 
+  const userId = req.user && req.user.id;
+
+  if (countOpenStreams(userId) >= MAX_STREAMS_PER_USER) {
+    logging.warn({ userId }, 'presence-stream: concurrent stream limit reached');
+    res.status(429).end();
+    return;
+  }
+
   try {
     openSse(res);
   } catch (err) {
     logging.warn({ err }, 'presence-stream: failed to write headers; client likely disconnected');
     return;
   }
+
+  trackStream(userId);
 
   let closed = false;
 
@@ -106,7 +145,7 @@ async function stream(req, res) {
   };
 
   const subscriber = {
-    userId: req.user && req.user.id,
+    userId,
     elevated: hasElevatedPresenceAccess(req.user),
   };
 
@@ -135,6 +174,7 @@ async function stream(req, res) {
       return;
     }
     closed = true;
+    untrackStream(userId);
     clearInterval(keepalive);
     try {
       unsubscribe();
@@ -225,4 +265,5 @@ module.exports = {
   stream,
   enter,
   leave,
+  MAX_STREAMS_PER_USER,
 };

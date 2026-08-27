@@ -8,6 +8,7 @@ const {
 } = require('../../../../../core/server/services/post-presence/mark-post-presence');
 const {
   stream: presenceStream,
+  MAX_STREAMS_PER_USER,
 } = require('../../../../../core/server/web/api/endpoints/admin/presence-controller');
 
 describe('PostPresence resilience', function () {
@@ -97,6 +98,69 @@ describe('PostPresence resilience', function () {
         baseline,
         'cleanup should be idempotent across all four signals',
       );
+    });
+  });
+
+  describe('presence-stream SSE handler — concurrent stream cap', function () {
+    function makeUserReqRes(userId) {
+      const req = new EventEmitter();
+      req.user = { id: userId };
+      const res = new EventEmitter();
+      res.writeHead = sinon.stub();
+      res.flushHeaders = sinon.stub();
+      res.write = sinon.stub();
+      res.end = sinon.stub();
+      res.status = sinon.stub().returns(res);
+      return { req, res };
+    }
+
+    async function openStreams(userId, count) {
+      const opened = [];
+      for (let i = 0; i < count; i += 1) {
+        const pair = makeUserReqRes(userId);
+        await presenceStream(pair.req, pair.res);
+        opened.push(pair);
+      }
+      return opened;
+    }
+
+    it('rejects a stream beyond the per-user limit with 429', async function () {
+      const opened = await openStreams('cap-user-1', MAX_STREAMS_PER_USER);
+
+      const { req, res } = makeUserReqRes('cap-user-1');
+      await presenceStream(req, res);
+
+      sinon.assert.calledWith(res.status, 429);
+      sinon.assert.notCalled(res.writeHead);
+
+      opened.forEach((pair) => pair.req.emit('close'));
+    });
+
+    it('counts the limit per user, so one user cannot block another', async function () {
+      const opened = await openStreams('cap-user-2', MAX_STREAMS_PER_USER);
+
+      const { req, res } = makeUserReqRes('cap-user-3');
+      await presenceStream(req, res);
+
+      sinon.assert.notCalled(res.status);
+      sinon.assert.calledOnce(res.writeHead);
+
+      req.emit('close');
+      opened.forEach((pair) => pair.req.emit('close'));
+    });
+
+    it('frees a slot when a stream closes', async function () {
+      const opened = await openStreams('cap-user-4', MAX_STREAMS_PER_USER);
+      opened[0].req.emit('close');
+
+      const { req, res } = makeUserReqRes('cap-user-4');
+      await presenceStream(req, res);
+
+      sinon.assert.notCalled(res.status);
+      sinon.assert.calledOnce(res.writeHead);
+
+      req.emit('close');
+      opened.slice(1).forEach((pair) => pair.req.emit('close'));
     });
   });
 });

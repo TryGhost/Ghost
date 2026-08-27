@@ -195,16 +195,6 @@ module.exports = {
     })(req, res, next);
   },
 
-  /** Per-IP limiter, applied before auth. */
-  presenceIpLimiter(req, res, next) {
-    return spamPrevention.presenceIpBlock().getMiddleware({
-      ignoreIP: false,
-      key(_req, _res, _next) {
-        return _next('presence_ip');
-      },
-    })(req, res, next);
-  },
-
   /** Per-staff-user limiter, applied after auth. */
   presenceLimiter(req, res, next) {
     return spamPrevention.presenceBlock().getMiddleware({

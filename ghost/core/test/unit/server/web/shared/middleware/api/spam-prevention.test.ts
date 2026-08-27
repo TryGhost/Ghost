@@ -22,8 +22,7 @@ type FactoryName =
   | 'contentApiKey'
   | 'webmentionsBlock'
   | 'emailPreviewBlock'
-  | 'presenceBlock'
-  | 'presenceIpBlock';
+  | 'presenceBlock';
 
 const factories: Array<{
   name: FactoryName;
@@ -60,8 +59,12 @@ const factories: Array<{
   },
   { name: 'webmentionsBlock', attachResetToRequest: false },
   { name: 'emailPreviewBlock', attachResetToRequest: false },
-  { name: 'presenceBlock', configKey: 'presence_block', attachResetToRequest: false },
-  { name: 'presenceIpBlock', configKey: 'presence_ip_block', attachResetToRequest: false },
+  {
+    name: 'presenceBlock',
+    configKey: 'presence_block',
+    attachResetToRequest: false,
+    isMemoryBacked: true,
+  },
 ];
 
 const fakeSpamConfig = (seed: number) => ({

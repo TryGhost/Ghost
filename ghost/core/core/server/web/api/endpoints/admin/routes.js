@@ -24,24 +24,22 @@ module.exports = function apiRoutes() {
   router.get('/config', mw.authAdminApi, http(api.config.read));
   router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
-  // ## Presence — per-IP limiter before auth, per-user limiter after
+  // ## Presence — in-memory per-user limiters, applied after auth.
+  // Concurrent streams are capped in the controller, not here.
   router.get(
     '/presence/stream',
-    shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
     shared.middleware.brute.presenceStreamLimiter,
     presence.stream,
   );
   router.post(
     '/presence/posts/:id/enter',
-    shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
     shared.middleware.brute.presenceLimiter,
     presence.enter,
   );
   router.post(
     '/presence/posts/:id/leave',
-    shared.middleware.brute.presenceIpLimiter,
     mw.authAdminApi,
     shared.middleware.brute.presenceLimiter,
     presence.leave,
