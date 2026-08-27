@@ -1,0 +1,42 @@
+{{!< default}}
+<section class="hero">
+  <div class="shell hero-grid">
+    <div>
+      <span class="eyebrow">Built for healthcare professionals</span>
+      <h1>Prepare for licensing exams. Build your global healthcare career.</h1>
+      <p>Practical learning paths, exam-focused guidance, premium notes and career tools for nurses, pharmacists, doctors and allied health professionals.</p>
+      <div class="hero-actions"><a class="button primary" href="#paths">Explore learning paths</a><a class="button secondary" href="#/portal/signup">Start free</a></div>
+      <div class="trust-row"><span>✓ Profession-specific</span><span>✓ GCC-focused</span><span>✓ Free + premium</span></div>
+    </div>
+    <aside class="readiness-card">
+      <span class="card-label">Your preparation roadmap</span>
+      <ol><li><b>01</b><span>Choose profession & authority</span></li><li><b>02</b><span>Follow a structured study path</span></li><li><b>03</b><span>Practice exam-level questions</span></li><li><b>04</b><span>Prepare CV & interview</span></li></ol>
+      <a href="#/portal/signup">Create your learning account →</a>
+    </aside>
+  </div>
+</section>
+
+<section id="paths" class="section shell">
+  <div class="section-head"><div><span class="eyebrow">Choose your path</span><h2>Learning designed around your goal</h2></div><p>Start with free guidance, then unlock premium exam notes, mock-test explanations and preparation plans.</p></div>
+  <div class="path-grid">
+    <a class="path-card nurse" href="/tag/nursing/"><span>RN</span><h3>Nursing Exams</h3><p>DHA, DOH, MOHAP and international nursing preparation.</p><b>Explore nursing →</b></a>
+    <a class="path-card pharmacy" href="/tag/pharmacy/"><span>Rx</span><h3>Pharmacy Exams</h3><p>Pharmacist and pharmacy technician licensing preparation.</p><b>Explore pharmacy →</b></a>
+    <a class="path-card licensing" href="/tag/licensing/"><span>GCC</span><h3>Licensing Guidance</h3><p>Eligibility, DataFlow, documents and authority-specific roadmaps.</p><b>Understand licensing →</b></a>
+    <a class="path-card career" href="/tag/career/"><span>CV</span><h3>Career Launchpad</h3><p>Healthcare CVs, interviews, job search and country readiness.</p><b>Build your career →</b></a>
+  </div>
+</section>
+
+{{#get "posts" filter="featured:true" limit="3" include="tags,authors"}}
+{{#if posts}}
+<section class="section featured-section"><div class="shell"><div class="section-head"><div><span class="eyebrow">Start here</span><h2>Featured learning resources</h2></div></div>
+<div class="post-grid">{{#foreach posts}}{{> "post-card"}}{{/foreach}}</div></div></section>
+{{/if}}
+{{/get}}
+
+<section class="section shell">
+  <div class="section-head"><div><span class="eyebrow">Latest resources</span><h2>Learn one useful topic at a time</h2></div></div>
+  <div class="post-grid">{{#foreach posts}}{{> "post-card"}}{{else}}<div class="empty-state"><h3>Your academy is ready for its first lesson</h3><p>Publish articles from Ghost Admin and they will appear here automatically.</p></div>{{/foreach}}</div>
+  {{pagination}}
+</section>
+
+<section class="cta-section"><div class="shell cta-inner"><div><span class="eyebrow light">Free membership</span><h2>Turn exam confusion into a clear preparation plan.</h2><p>Join for new study resources, licensing guidance and healthcare career updates.</p></div><a class="button light-button" href="#/portal/signup">Join ResuAI Academy</a></div></section>
