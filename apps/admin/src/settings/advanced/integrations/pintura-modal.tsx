@@ -20,7 +20,7 @@ import {
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUploadFile } from '@tryghost/admin-x-framework/api/files';
@@ -32,7 +32,8 @@ function PinturaModal() {
     css: false,
   });
 
-  const { settings, config } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
   const [pinturaEnabled] = getSettingValues<boolean>(settings, ['pintura']);
   const { mutateAsync: editSettings } = useEditSettings();
   const { mutateAsync: uploadFile } = useUploadFile();

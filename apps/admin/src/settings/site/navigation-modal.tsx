@@ -9,7 +9,7 @@ import { APIError } from '@tryghost/admin-x-framework/errors';
 import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 import { useCallback, useMemo, useState } from 'react';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
@@ -17,7 +17,7 @@ function NavigationModal() {
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();
   const { mutateAsync: uploadImage } = useUploadImage();
-  const { config } = useGlobalData();
+  const config = useConfig();
   const { localSettings, updateSetting, saveState, handleSave, siteData } = useSettingGroup();
 
   const [navigationValue, secondaryNavigationValue, membersSignupAccess] = getSettingValues<string>(

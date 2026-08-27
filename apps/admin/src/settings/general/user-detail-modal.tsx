@@ -3,7 +3,7 @@ import ProfileTab from './users/profile-tab';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SocialLinksTab from './users/social-links-tab';
 import clsx from 'clsx';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
+import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import validator from 'validator';
 import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
@@ -61,7 +61,7 @@ import {
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useCurrentUser } from '@/settings/hooks/use-settings-data';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
   name: ({ name }) => {
@@ -133,7 +133,7 @@ const UserDetailModalContent: React.FC<{
     return 'profile';
   };
   const { ownerUser } = useStaffUsers();
-  const { currentUser } = useGlobalData();
+  const currentUser = useCurrentUser();
   const handleError = useHandleError();
   const { confirm, showLimit } = useConfirmation();
   const {
@@ -654,7 +654,7 @@ const UserDetailModalContent: React.FC<{
 
 const UserDetailModal: React.FC = () => {
   const { slug } = useParams();
-  const { currentUser } = useGlobalData();
+  const currentUser = useCurrentUser();
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
   const handleError = useHandleError();

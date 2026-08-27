@@ -9,7 +9,7 @@ import {
   getSettingValues,
 } from '@tryghost/admin-x-framework/api/settings';
 import { fullEmailAddress, getEmailDomain } from '@tryghost/admin-x-framework/api/site';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings, useSite } from '@/settings/hooks/use-settings-data';
 
 const AccountPage: React.FC<{
   localSettings: Setting[];
@@ -17,7 +17,9 @@ const AccountPage: React.FC<{
   errors: Record<string, string | undefined>;
   setError: (key: string, error: string | undefined) => void;
 }> = ({ localSettings, updateSetting, errors, setError }) => {
-  const { siteData, settings, config } = useGlobalData();
+  const siteData = useSite();
+  const settings = useSettings();
+  const config = useConfig();
   const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, [
     'members_support_address',
     'support_email_address',

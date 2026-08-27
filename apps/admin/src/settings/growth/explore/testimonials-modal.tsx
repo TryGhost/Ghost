@@ -21,7 +21,12 @@ import { memberAvatarProps } from '@/members/api';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import {
+  useConfig,
+  useCurrentUser,
+  useSettings,
+  useSite,
+} from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 interface FormState {
@@ -33,7 +38,10 @@ const TestimonialsModal = () => {
   const platformErrorId = React.useId();
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();
-  const { settings, currentUser, siteData, config } = useGlobalData();
+  const settings = useSettings();
+  const currentUser = useCurrentUser();
+  const siteData = useSite();
+  const config = useConfig();
 
   const exploreTestimonialsUrl = config.exploreTestimonialsUrl as string;
 

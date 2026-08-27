@@ -29,7 +29,7 @@ import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { type Dirtyable, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings, useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 const Sidebar: React.FC<{
@@ -78,7 +78,8 @@ const Sidebar: React.FC<{
 };
 
 const DesignModal: React.FC = () => {
-  const { settings, siteData } = useGlobalData();
+  const settings = useSettings();
+  const siteData = useSite();
   const { mutateAsync: editSettings } = useEditSettings();
   const { data: { posts: [latestPost] } = { posts: [] } } = useBrowsePosts({
     searchParams: {

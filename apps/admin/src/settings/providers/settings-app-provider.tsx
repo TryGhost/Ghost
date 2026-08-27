@@ -1,14 +1,13 @@
-import GlobalDataProvider from './global-data-provider';
 import useSearchService from '@/settings/utils/search';
 import { type ReactNode, useState } from 'react';
 import { ScrollSectionProvider } from '@/settings/hooks/scroll-section-provider';
-import { SettingsAppContext, type Sorting, type UpgradeStatusType } from './settings-app-context';
+import { SettingsAppContext, type Sorting } from './settings-app-context';
 import { officialThemes } from '@/settings/data/official-themes';
 import { zapierTemplates } from '@/settings/data/zapier-templates';
 
-type SettingsAppProviderProps = { upgradeStatus?: UpgradeStatusType; children: ReactNode };
-
-const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({ children, upgradeStatus }) => {
+// UI state only (search, sorting, scroll spy); data comes from the framework
+// query hooks behind SettingsDataGate.
+const SettingsAppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const search = useSearchService();
 
   // a few sane defaults for keeping a sorting state
@@ -27,7 +26,6 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({ children, upg
       value={{
         officialThemes,
         zapierTemplates,
-        upgradeStatus,
         search,
         sortingState,
         setSortingState,
@@ -35,9 +33,7 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({ children, upg
         setOffersShowArchived,
       }}
     >
-      <GlobalDataProvider>
-        <ScrollSectionProvider>{children}</ScrollSectionProvider>
-      </GlobalDataProvider>
+      <ScrollSectionProvider>{children}</ScrollSectionProvider>
     </SettingsAppContext.Provider>
   );
 };

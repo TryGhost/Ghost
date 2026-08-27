@@ -3,8 +3,8 @@ import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 
 const mockConfig = vi.fn<() => unknown>();
 
-vi.mock('@/settings/providers/global-data-context', () => ({
-  useGlobalData: () => ({ config: mockConfig() }),
+vi.mock('@/settings/hooks/use-settings-data', () => ({
+  useConfig: () => mockConfig(),
 }));
 
 describe('useUpgradeRoute', () => {

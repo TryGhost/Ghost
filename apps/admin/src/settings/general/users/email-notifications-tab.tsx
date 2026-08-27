@@ -8,13 +8,14 @@ import {
 import { SettingGroup, SettingGroupContent } from '@tryghost/shade/patterns';
 import { type User, hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
 import { checkStripeEnabled } from '@tryghost/admin-x-framework/api/settings';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void }> = ({
   user,
   setUserData,
 }) => {
-  const { config, settings } = useGlobalData();
+  const config = useConfig();
+  const settings = useSettings();
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
   return (

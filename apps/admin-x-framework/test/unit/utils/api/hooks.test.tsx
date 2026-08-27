@@ -1,12 +1,14 @@
 import { InfiniteData, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, Suspense } from 'react';
+import { APIError } from '../../../../src/utils/errors';
 import { FrameworkProvider } from '../../../../src/providers/framework-provider';
 import {
   createInfiniteQuery,
   createMutation,
   createQuery,
   createQueryWithId,
+  createSuspenseQuery,
 } from '../../../../src/utils/api/hooks';
 import { withMockFetch } from '../../../utils/mock-fetch';
 
@@ -246,6 +248,153 @@ describe('API hooks', () => {
         expect(mock.calls.length).toBe(1);
         expect(result.current.data).toEqual({ test: 1 });
       });
+    });
+  });
+
+  describe('createSuspenseQuery', () => {
+    // Fresh data on mount: mounting a second observer on a stale entry would
+    // background-refetch, which is fine in the app but would hide whether the
+    // warm read below hit the shared entry or fetched its own.
+    const suspenseQueryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          staleTime: Infinity,
+        },
+      },
+    });
+
+    class Boundary extends React.Component<
+      { children: ReactNode; onError: (error: unknown) => void },
+      { failed: boolean }
+    > {
+      state = { failed: false };
+
+      static getDerivedStateFromError() {
+        return { failed: true };
+      }
+
+      componentDidCatch(error: unknown) {
+        this.props.onError(error);
+      }
+
+      render() {
+        return this.state.failed ? null : this.props.children;
+      }
+    }
+
+    const suspenseWrapper =
+      (onError: (error: unknown) => void = () => {}): React.FC<{ children: ReactNode }> =>
+      ({ children }) => (
+        <FrameworkProvider
+          externalNavigate={() => {}}
+          ghostVersion="5.x"
+          sentryDSN=""
+          unsplashConfig={{
+            Authorization: '',
+            'Accept-Version': '',
+            'Content-Type': '',
+            'App-Pragma': '',
+            'X-Unsplash-Cache': true,
+          }}
+          onDelete={() => {}}
+          onInvalidate={() => {}}
+          onUpdate={() => {}}
+        >
+          <QueryClientProvider client={suspenseQueryClient}>
+            <Boundary onError={onError}>
+              <Suspense fallback={null}>{children}</Suspense>
+            </Boundary>
+          </QueryClientProvider>
+        </FrameworkProvider>
+      );
+
+    afterEach(() => {
+      suspenseQueryClient.clear();
+    });
+
+    it('makes an API request and transforms return data', async () => {
+      await withMockFetch({ json: { test: 1 } }, async (mock) => {
+        const useTestQuery = createSuspenseQuery({
+          dataType: 'test',
+          path: '/test/',
+          returnData: (data) => (data as { test: number }).test + 1,
+        });
+
+        const { result } = renderHook(() => useTestQuery(), { wrapper: suspenseWrapper() });
+
+        await waitFor(() => expect(result.current).not.toBeNull());
+        expect(result.current.data).toEqual(2);
+        expect(mock.calls.length).toBe(1);
+        expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/');
+      });
+    });
+
+    it('builds the same query key as createQuery', async () => {
+      await withMockFetch({ json: { test: 1 } }, async () => {
+        const options = { dataType: 'test', path: '/test/', defaultSearchParams: { a: '?' } };
+        const useTestQuery = createSuspenseQuery(options);
+
+        const { result } = renderHook(() => useTestQuery(), { wrapper: suspenseWrapper() });
+        await waitFor(() => expect(result.current).not.toBeNull());
+
+        const entries = suspenseQueryClient.getQueryCache().getAll();
+        expect(entries.length).toBe(1);
+        // The key createQuery builds for the same options: [dataType, url]
+        expect(entries[0].queryKey).toEqual([
+          'test',
+          'http://localhost:3000/ghost/api/admin/test/?a=%3F',
+        ]);
+      });
+    });
+
+    it('serves a cache entry warmed through createQuery without a second fetch', async () => {
+      await withMockFetch({ json: { test: 1 } }, async (mock) => {
+        const options = { dataType: 'test', path: '/test/' };
+        const useWarmingQuery = createQuery(options);
+        const useTestQuery = createSuspenseQuery(options);
+
+        const warming = renderHook(() => useWarmingQuery(), { wrapper: suspenseWrapper() });
+        await waitFor(() => expect(warming.result.current.isLoading).toBe(false));
+        expect(mock.calls.length).toBe(1);
+
+        const { result } = renderHook(() => useTestQuery(), { wrapper: suspenseWrapper() });
+
+        // The warmed entry is served synchronously: no suspension, no request
+        expect(result.current.data).toEqual({ test: 1 });
+        expect(mock.calls.length).toBe(1);
+        expect(suspenseQueryClient.getQueryCache().getAll().length).toBe(1);
+      });
+    });
+
+    it('throws request errors to the nearest error boundary', async () => {
+      await withMockFetch(
+        {
+          json: { errors: [{ message: 'Everything is on fire' }] },
+          headers: { 'content-type': 'application/json' },
+          status: 500,
+          ok: false,
+        },
+        async () => {
+          const useTestQuery = createSuspenseQuery({ dataType: 'test', path: '/test/' });
+
+          const caught: unknown[] = [];
+          // Silence React's error boundary logging for the expected throw
+          const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+          try {
+            const { result } = renderHook(() => useTestQuery(), {
+              wrapper: suspenseWrapper((error) => caught.push(error)),
+            });
+
+            await waitFor(() => expect(caught.length).toBeGreaterThan(0));
+            expect(caught[0]).toBeInstanceOf(APIError);
+            // The hook never resolved to a value; the boundary took over
+            expect(result.current).toBeNull();
+          } finally {
+            consoleError.mockRestore();
+          }
+        },
+      );
     });
   });
 

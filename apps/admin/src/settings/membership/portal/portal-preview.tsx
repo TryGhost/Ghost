@@ -4,7 +4,7 @@ import React from 'react';
 import { type Setting } from '@tryghost/admin-x-framework/api/settings';
 import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { getPortalPreviewUrl } from '@/settings/utils/get-portal-preview-url';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSite } from '@/settings/hooks/use-settings-data';
 
 interface PortalPreviewProps {
   darkMode: boolean;
@@ -19,7 +19,8 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
   localSettings,
   localTiers,
 }) => {
-  const { siteData, config } = useGlobalData();
+  const siteData = useSite();
+  const config = useConfig();
 
   const href = getPortalPreviewUrl({
     settings: localSettings,

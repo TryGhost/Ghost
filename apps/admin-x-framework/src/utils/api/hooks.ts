@@ -6,10 +6,12 @@ import {
   UseInfiniteQueryOptions,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 import useHandleError from '../../hooks/use-handle-error';
@@ -77,6 +79,37 @@ export const createQuery =
         handleError(result.error);
       }
     }, [handleError, result.error, query.defaultErrorHandler]);
+
+    return {
+      ...result,
+      data,
+    };
+  };
+
+type SuspenseQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'permissions'>;
+
+// Suspense sibling of createQuery: identical queryKey and fetch, so both hook
+// families share one cache entry (boot warming and mutation invalidations
+// included). Loading suspends and errors throw to the nearest boundary, which
+// is why there is no `enabled`/permissions gating and no error effect here.
+export const createSuspenseQuery =
+  <ResponseData>(options: SuspenseQueryOptions<ResponseData>) =>
+  ({ searchParams }: { searchParams?: Record<string, string> } = {}): Omit<
+    UseSuspenseQueryResult<ResponseData>,
+    'data'
+  > & { data: ResponseData } => {
+    const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
+    const fetchApi = useFetchApi();
+
+    const result = useSuspenseQuery<ResponseData>({
+      queryKey: [options.dataType, url],
+      queryFn: () => fetchApi(url, { ...options }),
+    });
+
+    const data = useMemo(
+      () => (options.returnData ? options.returnData(result.data) : result.data),
+      [result.data],
+    );
 
     return {
       ...result,

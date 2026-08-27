@@ -5,11 +5,11 @@ import Newsletters from './newsletters';
 import React from 'react';
 import SearchableSection from '@/settings/components/searchable-section';
 import { useNewslettersEnabled } from '@tryghost/admin-x-framework/api/settings';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 import { searchKeywords } from './search-keywords';
 
 const EmailSettings: React.FC = () => {
-  const { config } = useGlobalData();
+  const config = useConfig();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
   const visibleSearchKeywords = [

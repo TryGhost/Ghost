@@ -1,4 +1,4 @@
-import { Meta, createMutation, createQuery } from '../utils/api/hooks';
+import { Meta, createMutation, createQuery, createSuspenseQuery } from '../utils/api/hooks';
 import { Config } from './config';
 
 // Types
@@ -27,14 +27,21 @@ export interface SettingsResponseType {
 
 const dataType = 'SettingsResponseType';
 
-export const useBrowseSettings = createQuery<SettingsResponseType>({
+// Shared between the plain and suspense hooks so both build the same URL and
+// therefore the same cache key.
+const browseSettingsQuery = {
   dataType,
   path: '/settings/',
   defaultSearchParams: {
     group:
       'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor',
   },
-});
+};
+
+export const useBrowseSettings = createQuery<SettingsResponseType>(browseSettingsQuery);
+
+export const useBrowseSettingsSuspense =
+  createSuspenseQuery<SettingsResponseType>(browseSettingsQuery);
 
 export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
   method: 'PUT',

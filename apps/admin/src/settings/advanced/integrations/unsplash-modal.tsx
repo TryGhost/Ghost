@@ -15,13 +15,13 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 function UnsplashModal() {
   const { updateRoute } = useSettingsNavigation();
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
   const { mutateAsync: editSettings } = useEditSettings();
   const handleError = useHandleError();

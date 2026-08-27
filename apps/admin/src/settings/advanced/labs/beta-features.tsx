@@ -8,14 +8,14 @@ import { downloadRedirects, useUploadRedirects } from '@tryghost/admin-x-framewo
 import { downloadRoutes, useUploadRoutes } from '@tryghost/admin-x-framework/api/routes';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { DialogPortal } from '@/settings/providers/dialog-portal';
 
 const IS_AUTOMATIONS_BETA_ACTIVE = true;
 
 const BetaFeatures: React.FC = () => {
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const { mutateAsync: uploadRedirects } = useUploadRedirects();
   const { mutateAsync: uploadRoutes } = useUploadRoutes();
   const handleError = useHandleError();

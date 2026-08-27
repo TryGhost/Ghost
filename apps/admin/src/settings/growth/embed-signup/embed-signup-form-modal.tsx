@@ -5,7 +5,7 @@ import { type EmbedSignupLayout, generateCode } from '@/settings/utils/generate-
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 const EmbedSignupFormModal = () => {
@@ -17,7 +17,7 @@ const EmbedSignupFormModal = () => {
   const [isCopied, setIsCopied] = useState(false);
 
   const { updateRoute } = useSettingsNavigation();
-  const { config } = useGlobalData();
+  const config = useConfig();
   const { localSettings, siteData } = useSettingGroup();
   const [accentColor, title, description, locale, icon] = getSettingValues<string>(localSettings, [
     'accent_color',

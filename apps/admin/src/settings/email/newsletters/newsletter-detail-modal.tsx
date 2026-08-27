@@ -63,7 +63,7 @@ import {
 import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newsletter-emails';
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { toast } from 'sonner';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings, useSite } from '@/settings/hooks/use-settings-data';
 
 interface IconToggleOption {
   value: string;
@@ -108,7 +108,8 @@ const ReplyToEmailField: React.FC<{
   validate: () => void;
   clearError: (field: string) => void;
 }> = ({ newsletter, updateNewsletter, errors, clearError }) => {
-  const { settings, config } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
   const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, [
     'default_email_address',
     'support_email_address',
@@ -169,7 +170,9 @@ const Sidebar: React.FC<{
   const upgradeRoute = useUpgradeRoute();
   const { mutateAsync: editNewsletter } = useEditNewsletter();
   const limiter = useLimiter();
-  const { settings, config, siteData } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
+  const siteData = useSite();
   const [icon, defaultEmailAddress] = getSettingValues<string>(settings, [
     'icon',
     'default_email_address',
@@ -1003,7 +1006,7 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
   newsletter,
   onlyOne,
 }) => {
-  const { config } = useGlobalData();
+  const config = useConfig();
   const { mutateAsync: editNewsletter } = useEditNewsletter();
   const { updateRoute } = useSettingsNavigation();
   const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';

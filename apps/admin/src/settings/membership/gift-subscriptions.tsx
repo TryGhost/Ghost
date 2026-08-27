@@ -10,11 +10,11 @@ import {
   CopyFieldValue,
 } from '@tryghost/shade/components';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const giftUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/gift`;
 
   const openPreview = () => {

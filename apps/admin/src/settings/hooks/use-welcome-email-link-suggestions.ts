@@ -1,9 +1,10 @@
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings, useSite } from '@/settings/hooks/use-settings-data';
 import { useKoenigLinkSuggestions } from '@tryghost/admin-x-framework';
 
 export const useWelcomeEmailLinkSuggestions = () => {
-  const { settings, siteData } = useGlobalData();
+  const settings = useSettings();
+  const siteData = useSite();
   const [membersSignupAccess, donationsEnabled = false, recommendationsEnabled = false] =
     getSettingValues(settings, [
       'members_signup_access',

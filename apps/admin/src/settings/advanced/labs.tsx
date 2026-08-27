@@ -5,14 +5,14 @@ import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@tryghost/shade/components';
 import { useAutoExpandable } from '@/settings/hooks/use-auto-expandable';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 type LabsTab = 'labs-private-features' | 'labs-beta-features';
 
 const Labs: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
-  const { config } = useGlobalData();
+  const config = useConfig();
   const { isOpen, openManually, closeManually } = useAutoExpandable(keywords);
 
   return (

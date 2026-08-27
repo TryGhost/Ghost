@@ -7,10 +7,11 @@ import Recommendations from './recommendations';
 import SearchableSection from '@/settings/components/searchable-section';
 import { checkStripeEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { searchKeywords } from './search-keywords';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 
 const GrowthSettings: React.FC = () => {
-  const { config, settings } = useGlobalData();
+  const config = useConfig();
+  const settings = useSettings();
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const visibleSearchKeywords = [
     searchKeywords.network,

@@ -1,8 +1,8 @@
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 
 export function useUpgradeRoute() {
-  const { config } = useGlobalData();
+  const config = useConfig();
 
   return upgradeRoute(config);
 }

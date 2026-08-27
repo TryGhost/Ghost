@@ -32,7 +32,7 @@ import { toast } from 'sonner';
 import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseTiers, useEditTier } from '@tryghost/admin-x-framework/api/tiers';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
@@ -202,7 +202,7 @@ const Connect: React.FC = () => {
 };
 
 const Connected: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, [
     'stripe_connect_display_name',
     'stripe_connect_livemode',
@@ -374,7 +374,8 @@ const Direct: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 const StripeConnectModal: React.FC = () => {
-  const { config, settings } = useGlobalData();
+  const config = useConfig();
+  const settings = useSettings();
   const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
   const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();

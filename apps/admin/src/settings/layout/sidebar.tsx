@@ -32,7 +32,7 @@ import { searchKeywords as membershipSearchKeywords } from '@/settings/membershi
 import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-keywords';
 
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
 import { useSearch } from '@/settings/providers/settings-app-context';
@@ -116,7 +116,8 @@ const Sidebar: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
-  const { settings, config } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
   const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, [
     'donations_enabled',
     'is_private',

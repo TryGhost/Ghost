@@ -22,7 +22,7 @@ import { ModalPage } from '@tryghost/shade/page-templates';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { getPaidActiveTiers, useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 
 interface PortalLinkPrefs {
   name: string;
@@ -46,7 +46,7 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({ name, value }) => {
 const PortalLinks: React.FC = () => {
   const [isDataAttributes, setIsDataAttributes] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const { data: { tiers: allTiers } = {} } = useBrowseTiers();
   const tiers = getPaidActiveTiers(allTiers || []);
   const paidMembersEnabled = usePaidMembersEnabled();

@@ -4,10 +4,18 @@ import { type Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newsletter-emails';
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import {
+  useConfig,
+  useCurrentUser,
+  useSettings,
+  useSite,
+} from '@/settings/hooks/use-settings-data';
 
 const NewsletterPreview: React.FC<{ newsletter: Newsletter }> = ({ newsletter }) => {
-  const { currentUser, settings, siteData, config } = useGlobalData();
+  const currentUser = useCurrentUser();
+  const settings = useSettings();
+  const siteData = useSite();
+  const config = useConfig();
   const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] =
     getSettingValues<string>(settings, [
       'title',

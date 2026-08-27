@@ -6,6 +6,7 @@ import WelcomeEmailModal, {
 } from './member-emails/welcome-email-modal';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { APIError } from '@tryghost/admin-x-framework/errors';
+import { type Config } from '@tryghost/admin-x-framework/api/config';
 import {
   ActionList,
   ActionListItem,
@@ -21,7 +22,11 @@ import {
   getDefaultWelcomeEmailRecord,
   getDefaultWelcomeEmailValues,
 } from './member-emails/default-welcome-email-values';
-import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import {
+  type Setting,
+  checkStripeEnabled,
+  getSettingValues,
+} from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import {
   useAddAutomatedEmail,
@@ -31,7 +36,7 @@ import {
 } from '@tryghost/admin-x-framework/api/automated-emails';
 import { useSearchParams } from '@tryghost/admin-x-framework';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 import type { AutomatedEmail } from '@tryghost/admin-x-framework/api/automated-emails';
@@ -112,8 +117,8 @@ const EmailPreviewRow: React.FC<{
 };
 
 const MemberEmailsTable: React.FC<{
-  settings: ReturnType<typeof useGlobalData>['settings'];
-  config: ReturnType<typeof useGlobalData>['config'];
+  settings: Setting[];
+  config: Config;
   freeEmailForDisplay: AutomatedEmail;
   paidEmailForDisplay: AutomatedEmail;
   freeWelcomeEmailEnabled: boolean;
@@ -169,7 +174,8 @@ const MemberEmailsTable: React.FC<{
 };
 
 const MemberEmails: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  const { settings, config } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
   const [siteTitle] = getSettingValues<string>(settings, ['title']);
   const verifyEmailToken = useQueryParams().getParam('verifyEmail');
   const [, setSearchParams] = useSearchParams();

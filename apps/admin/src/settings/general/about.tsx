@@ -4,8 +4,7 @@ import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation'
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { linkToGitHubReleases } from '@/settings/utils/link-to-github-releases';
 import { showDatabaseWarning } from '@/settings/utils/show-database-warning';
-import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useUpgradeStatus } from '@/settings/providers/settings-app-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 
 const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
 
@@ -27,9 +26,7 @@ function VersionLink({ label, version }: { label: string; version: string }) {
 
 function AboutModal() {
   const { updateRoute } = useSettingsNavigation();
-  const globalData = useGlobalData();
-  const config = globalData.config;
-  const upgradeStatus = useUpgradeStatus();
+  const config = useConfig();
 
   function copyrightYear(): number {
     const date = new Date();
@@ -67,12 +64,6 @@ function AboutModal() {
       <div className="flex flex-col gap-4 pb-7">
         <GhostLogo className="h-auto w-[120px] dark:invert" />
         <div className="mt-3 flex flex-col gap-1.5">
-          {upgradeStatus?.message && (
-            <div className="gh-prose-links mb-4 rounded-sm border border-green p-5">
-              <strong>Update available!</strong>
-              <div dangerouslySetInnerHTML={{ __html: upgradeStatus.message }} />
-            </div>
-          )}
           {adminBuildVersion ? (
             <>
               <VersionLink label="Server" version={config.version} />

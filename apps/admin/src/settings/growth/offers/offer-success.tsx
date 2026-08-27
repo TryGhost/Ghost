@@ -8,7 +8,7 @@ import { currencyToDecimal } from '@tryghost/admin-x-framework';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 const OfferSuccess: React.FC<{ id: string }> = ({ id }) => {
@@ -18,7 +18,7 @@ const OfferSuccess: React.FC<{ id: string }> = ({ id }) => {
   const [offer, setOffer] = useState<Offer>();
   const [offerLink, setOfferLink] = useState<string>('');
 
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
 
   useEffect(() => {
     if (offerById.length > 0) {

@@ -26,16 +26,10 @@ export type Sorting = {
   direction?: string;
 };
 
-export interface UpgradeStatusType {
-  isRequired: boolean;
-  message: string;
-}
-
 export interface SettingsAppContextType {
   officialThemes: OfficialTheme[];
   zapierTemplates: ZapierTemplate[];
   search: SearchService;
-  upgradeStatus?: UpgradeStatusType;
   sortingState?: Sorting[];
   setSortingState?: (sortingState: Sorting[]) => void;
   offersShowArchived: boolean;
@@ -67,8 +61,6 @@ export const useSettingsApp = () => useContext(SettingsAppContext);
 export const useOfficialThemes = () => useSettingsApp().officialThemes;
 
 export const useSearch = () => useSettingsApp().search;
-
-export const useUpgradeStatus = () => useSettingsApp().upgradeStatus;
 
 export const useSortingState = () => {
   const { sortingState, setSortingState } = useSettingsApp();

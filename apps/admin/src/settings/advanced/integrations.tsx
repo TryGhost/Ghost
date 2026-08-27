@@ -2,7 +2,7 @@ import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationsSettingsImg from '@/settings/assets/images/integrations-settings.png';
 import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
+import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import {
   ActionList,
   ActionListItem,
@@ -26,7 +26,7 @@ import { Plug } from 'lucide-react';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { DEFAULT_UPGRADE_ROUTE } from '@tryghost/admin-x-framework/api/config';
@@ -154,7 +154,7 @@ const BuiltInIntegrations: React.FC = () => {
 
   const pinturaEditor = usePinturaEditor();
 
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled] =
     getSettingValues<boolean>(settings, [
       'unsplash',

@@ -3,7 +3,7 @@ import { type User, useUpdatePassword } from '@tryghost/admin-x-framework/api/us
 import { ValidationError } from '@tryghost/admin-x-framework/errors';
 import { toast } from 'sonner';
 import { useEffect, useRef, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useCurrentUser, useSite } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 const BAD_PASSWORDS = [
@@ -50,7 +50,9 @@ const validateCharacterOccurrance = (stringToTest: string) => {
 };
 
 const ChangePasswordForm: React.FC<{ user: User }> = ({ user }) => {
-  const { currentUser, config, siteData } = useGlobalData();
+  const currentUser = useCurrentUser();
+  const config = useConfig();
+  const siteData = useSite();
   const [editPassword, setEditPassword] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');

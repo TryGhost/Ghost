@@ -45,7 +45,7 @@ import {
 import { getPaidActiveTiers, useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { toast } from 'sonner';
 import { useEffect, useMemo, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 type RetentionOfferFormState = {
@@ -502,7 +502,7 @@ const RetentionOfferSidebar: React.FC<{
 
 const EditRetentionOfferModal: React.FC<{ cadence: 'monthly' | 'yearly' }> = ({ cadence }) => {
   const { updateRoute } = useSettingsNavigation();
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const { data: { tiers = [] } = {} } = useBrowseTiers();
   const {
     data: { offers: allOffers = [] } = {},

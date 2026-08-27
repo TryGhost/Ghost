@@ -17,7 +17,7 @@ import { type Tier, useBrowseTiers, useEditTier } from '@tryghost/admin-x-framew
 import { fullEmailAddress } from '@tryghost/admin-x-framework/api/site';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useFocusContext } from '@tryghost/shade/app';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings, useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useVerifyEmailToken } from '@tryghost/admin-x-framework/api/email-verification';
 
@@ -105,7 +105,9 @@ const PortalModal: React.FC = () => {
 
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
-  const { settings, siteData, config } = useGlobalData();
+  const settings = useSettings();
+  const siteData = useSite();
+  const config = useConfig();
   const { mutateAsync: editSettings } = useEditSettings();
   const { data: { tiers: allTiers } = {} } = useBrowseTiers();
   // const tiers = getPaidActiveTiers(allTiers || []);

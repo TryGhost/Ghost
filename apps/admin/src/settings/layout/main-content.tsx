@@ -7,7 +7,7 @@ import { type ReactNode, useEffect } from 'react';
 import { Text } from '@tryghost/shade/primitives';
 import { canAccessSettings, isEditorUser } from '@tryghost/admin-x-framework/api/users';
 import { toast } from 'sonner';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useCurrentUser } from '@/settings/hooks/use-settings-data';
 import { useGlobalDirtyState } from '@tryghost/shade/utils';
 import { useNavigate } from '@tryghost/admin-x-framework';
 
@@ -34,7 +34,7 @@ const Page: React.FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 const MainContent: React.FC = () => {
-  const { currentUser } = useGlobalData();
+  const currentUser = useCurrentUser();
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
   const navigate = useNavigate();

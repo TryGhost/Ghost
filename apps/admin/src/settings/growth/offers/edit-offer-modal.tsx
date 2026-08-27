@@ -32,7 +32,7 @@ import {
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 function formatTimestamp(timestamp: string): string {
@@ -51,7 +51,7 @@ const Sidebar: React.FC<{
   updateOffer: (fields: Partial<Offer>) => void;
   validate: () => void;
 }> = ({ clearError, errors, offer, updateOffer }) => {
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const [isCopied, setIsCopied] = useState(false);
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
@@ -279,7 +279,7 @@ const Sidebar: React.FC<{
 };
 
 const EditOfferModal: React.FC<{ id: string }> = ({ id }) => {
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();
   const { mutateAsync: editOffer } = useEditOffer();

@@ -3,7 +3,7 @@ import ColorPickerField from '@/settings/components/color-picker-field';
 import React, { useState } from 'react';
 import UnsplashSelector from '@/settings/components/selectors/unsplash-selector';
 import clsx from 'clsx';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
+import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { CUSTOM_FONTS } from '@tryghost/custom-fonts';
 import {
@@ -33,7 +33,7 @@ import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/the
 import { formatNumber } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { useFramework } from '@tryghost/admin-x-framework';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { BodyFontName, HeadingFontName } from '@tryghost/custom-fonts';
 
@@ -100,7 +100,7 @@ const GlobalSettings: React.FC<{
   updateSetting: (key: string, value: SettingValue) => void;
 }> = ({ values, updateSetting }) => {
   const { mutateAsync: uploadImage } = useUploadImage();
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
   const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
   const { unsplashConfig } = useFramework();

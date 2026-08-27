@@ -36,7 +36,7 @@ import { toast } from 'sonner';
 import { useAddOffer } from '@tryghost/admin-x-framework/api/offers';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useEffect, useMemo, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 // we should replace this with a library
@@ -160,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [nameLength, setNameLength] = useState(0);
   const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
 
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const [isCopied, setIsCopied] = useState(false);
   const homepageUrl = getHomepageUrl(siteData);
   const offerUrl = `${homepageUrl}${overrides.code.value}`;
@@ -452,7 +452,7 @@ const parseData = (input: string): { id: string; period: string; currency: strin
 };
 
 const AddOfferModal = () => {
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const typeOptions = [
     { title: 'Discount', description: 'Offer a special reduced price', value: 'percent' },
     { title: 'Free trial', description: 'Give free access for a limited time', value: 'trial' },

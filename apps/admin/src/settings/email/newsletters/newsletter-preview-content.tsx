@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { GhostOrb } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { isManagedEmail } from '@tryghost/admin-x-framework/api/config';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 
 const NewsletterPreviewContent: React.FC<{
   senderName?: string;
@@ -100,7 +100,7 @@ const NewsletterPreviewContent: React.FC<{
   dividerStyle,
 }) => {
   const showHeader = headerIcon || headerTitle;
-  const { config } = useGlobalData();
+  const config = useConfig();
 
   const currentDate = new Date().toLocaleDateString('default', {
     year: 'numeric',

@@ -33,7 +33,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHostLimits, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
@@ -134,7 +134,7 @@ const getAccessOptionLabel = (options: Array<{ value: string; label: string }>, 
 
 const Access: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [tiersOpen, setTiersOpen] = React.useState(false);
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const limiter = useLimiter();
   const isTrialMode = limiter?.isDisabled('publicSiteAccess');
   const publicSiteAccessLimit = useHostLimits()?.publicSiteAccess;

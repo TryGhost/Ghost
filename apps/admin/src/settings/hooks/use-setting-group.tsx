@@ -13,7 +13,7 @@ import {
   useEditSettings,
 } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData } from '@tryghost/admin-x-framework/api/site';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings, useSite } from '@/settings/hooks/use-settings-data';
 import { useGlobalDirtyState } from '@tryghost/shade/utils';
 
 interface LocalSetting extends Setting {
@@ -43,7 +43,8 @@ const useSettingGroup = ({
   // create a ref to focus the input field
   const focusRef = useRef<HTMLInputElement>(null);
 
-  const { siteData, settings } = useGlobalData();
+  const siteData = useSite();
+  const settings = useSettings();
   const { mutateAsync: editSettings } = useEditSettings();
   const handleError = useHandleError();
 

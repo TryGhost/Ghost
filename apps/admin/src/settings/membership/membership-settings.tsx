@@ -15,10 +15,11 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { searchKeywords } from './search-keywords';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 
 const MembershipSettings: React.FC = () => {
-  const { config, settings } = useGlobalData();
+  const config = useConfig();
+  const settings = useSettings();
   const paidMembersEnabled = usePaidMembersEnabled();
   const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});

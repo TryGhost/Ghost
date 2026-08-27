@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
+import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
@@ -263,8 +263,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                         editor.openEditor({
                           image: facebookImage,
                           handleSave: async (file: File) => {
-                            const imageUrl = getImageUrl(await uploadImage({ file }));
-                            updateSetting('og_image', imageUrl);
+                            try {
+                              const imageUrl = getImageUrl(await uploadImage({ file }));
+                              updateSetting('og_image', imageUrl);
+                            } catch (e) {
+                              handleError(e);
+                            }
                           },
                         })
                       }
@@ -344,8 +348,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                         editor.openEditor({
                           image: twitterImage,
                           handleSave: async (file: File) => {
-                            const imageUrl = getImageUrl(await uploadImage({ file }));
-                            updateSetting('twitter_image', imageUrl);
+                            try {
+                              const imageUrl = getImageUrl(await uploadImage({ file }));
+                              updateSetting('twitter_image', imageUrl);
+                            } catch (e) {
+                              handleError(e);
+                            }
                           },
                         })
                       }

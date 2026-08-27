@@ -43,7 +43,7 @@ import {
 import { currencySelectGroups, validateCurrencyAmount } from '@tryghost/admin-x-framework';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
@@ -74,7 +74,8 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [machinePaymentsAmountError, setMachinePaymentsAmountError] = useState<
     string | undefined
   >();
-  const { settings, config } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
   const { data: { tiers, meta, isEnd } = {}, fetchNextPage } = useBrowseTiers();
   const { mutateAsync: editSettings } = useEditSettings();
   const machinePaymentSaveQueue = useRef(Promise.resolve());

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import useHandleError from '../hooks/use-handle-error';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
@@ -28,4 +28,16 @@ export const useCurrentUser = () => {
   }, [handleError, result.error]);
 
   return result;
+};
+
+// Suspense sibling of useCurrentUser on the exact same cache entry; loading
+// suspends and errors throw to the nearest boundary.
+export const useCurrentUserSuspense = () => {
+  const fetchApi = useFetchApi();
+
+  return useSuspenseQuery({
+    queryKey: currentUserQueryKey,
+    queryFn: () => fetchApi<UsersResponseType>(currentUserUrl),
+    select: (data) => data.users[0],
+  });
 };

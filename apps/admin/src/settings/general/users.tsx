@@ -36,7 +36,7 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { memberAvatarProps } from '@/members/api';
 import { getSettingValue, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useCurrentUser, useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
@@ -59,7 +59,7 @@ interface InviteListProps {
 
 const Owner: React.FC<OwnerProps> = ({ user }) => {
   const { updateRoute } = useSettingsNavigation();
-  const { currentUser } = useGlobalData();
+  const currentUser = useCurrentUser();
 
   const showDetailModal = () => {
     if (hasAdminAccess(currentUser)) {
@@ -103,7 +103,7 @@ const Owner: React.FC<OwnerProps> = ({ user }) => {
 
 const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
   const { updateRoute } = useSettingsNavigation();
-  const { currentUser } = useGlobalData();
+  const currentUser = useCurrentUser();
 
   const showDetailModal = (user: User) => {
     updateRoute({ route: `staff/${user.slug}` });
@@ -329,7 +329,9 @@ const Users: React.FC<{ keywords: string[]; highlight?: boolean }> = ({
     fetchNextInvitePage,
   } = useStaffUsers();
   const { updateRoute } = useSettingsNavigation();
-  const { settings, config, currentUser } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
+  const currentUser = useCurrentUser();
 
   const showInviteModal = () => {
     updateRoute('staff/invite');

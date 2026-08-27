@@ -10,13 +10,13 @@ import {
   useNewslettersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const { mutateAsync: editSettings } = useEditSettings();
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();

@@ -12,7 +12,7 @@ import {
   usePinturaConfig,
 } from '@tryghost/admin-x-framework/hooks';
 import { useFocusContext } from '@tryghost/shade/app';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useWelcomeEmailLinkSuggestions } from '@/settings/hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
@@ -130,7 +130,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
   const initialEditorState = useRef(value);
   const { unsplashConfig } = useFramework();
   const pinturaConfig = usePinturaConfig();
-  const { config, settings } = useGlobalData();
+  const config = useConfig();
+  const settings = useSettings();
   const { fetchAutocompleteLinks, searchLinks } = useWelcomeEmailLinkSuggestions();
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config.klipy?.apiKey ? config.klipy : null;

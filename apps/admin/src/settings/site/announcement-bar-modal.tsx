@@ -24,7 +24,7 @@ import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { getSettingValues, usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSite } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 type SidebarProps = {
@@ -138,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 const AnnouncementBarModal: React.FC = () => {
-  const { siteData } = useGlobalData();
+  const siteData = useSite();
   const { localSettings, updateSetting, handleSave, okProps } = useSettingGroup({
     savingDelay: 500,
   });

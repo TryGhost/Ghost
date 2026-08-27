@@ -21,14 +21,14 @@ import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useBrowseIntegrations } from '@tryghost/admin-x-framework/api/integrations';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useRefreshAPIKey } from '@tryghost/admin-x-framework/api/api-keys';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 function TransistorModal() {
   const { updateRoute } = useSettingsNavigation();
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const { mutateAsync: editSettings } = useEditSettings();
   const { data: { integrations } = { integrations: [] } } = useBrowseIntegrations();
 

@@ -4,7 +4,7 @@ import { type ConfigResponseType, configDataType } from '@tryghost/admin-x-frame
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { Switch } from '@tryghost/shade/components';
 import { getSettingValue, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { DialogPortal } from '@/settings/providers/dialog-portal';
@@ -70,7 +70,7 @@ const FeatureToggleConfirmationModal: React.FC<FeatureToggleConfirmationModalPro
 };
 
 const FeatureToggle: React.FC<FeatureToggleProps> = ({ label, flag, disabled, confirmation }) => {
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}') as Record<
     string,
     boolean | undefined

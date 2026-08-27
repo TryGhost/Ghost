@@ -5,7 +5,7 @@ import TopLevelGroup from '@/settings/components/top-level-group';
 import UserAddIcon from '@/settings/assets/images/portal-splash-user-add.png';
 import { Button } from '@tryghost/shade/components';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettings } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
@@ -36,7 +36,7 @@ const SignupOptionImage: React.FC<{ color: string; title: string; price: string 
 
 const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { updateRoute } = useSettingsNavigation();
-  const { settings } = useGlobalData();
+  const settings = useSettings();
   const [accentColor, icon, membersSignupAccess] = getSettingValues<string>(settings, [
     'accent_color',
     'icon',

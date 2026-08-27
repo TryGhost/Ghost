@@ -29,7 +29,7 @@ import {
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useNewslettersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useVerifyAutomatedEmailSender } from '@tryghost/admin-x-framework/api/automated-emails';
@@ -228,7 +228,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
 };
 
 const Emails: React.FC = () => {
-  const { config } = useGlobalData();
+  const config = useConfig();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
   const visibleSearchKeywords = [

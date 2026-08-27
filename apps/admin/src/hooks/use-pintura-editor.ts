@@ -7,6 +7,41 @@ interface OpenEditorParams {
   handleSave: (file: File) => void | boolean | Promise<void | boolean>;
 }
 
+type FrameOptionType = 'solidSharp' | 'solidRound' | 'lineSingle' | 'hook' | 'polaroid' | undefined;
+interface PinturaLocale {
+  labelNone: string;
+  frameLabelMatSharp: string;
+  frameLabelMatRound: string;
+  frameLabelLineSingle: string;
+  frameLabelCornerHooks: string;
+  frameLabelPolaroid: string;
+  labelButtonExport: string;
+}
+
+declare global {
+  interface Window {
+    pintura: {
+      openDefaultEditor: (params: {
+        src: string;
+        enableTransparencyGrid: boolean;
+        util: string;
+        utils: string[];
+        frameOptions: [FrameOptionType, (locale: PinturaLocale) => string][];
+        cropSelectPresetFilter: string;
+        cropSelectPresetOptions: [number | undefined, string][];
+        locale: {
+          labelButtonExport: string;
+        };
+        previewPad: boolean;
+        willClose: () => boolean;
+      }) => {
+        on: (event: string, callback: (result: { dest: File }) => void) => void;
+        destroy: () => void;
+      };
+    };
+  }
+}
+
 /** Loads Ghost's configured Pintura editor and exposes the legacy image-edit action. */
 export function usePinturaEditor({ disabled = false }: { disabled?: boolean } = {}) {
   const config = usePinturaConfig();

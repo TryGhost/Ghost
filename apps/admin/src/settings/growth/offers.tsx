@@ -4,13 +4,14 @@ import { Button } from '@tryghost/shade/components';
 import { checkStripeEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { getPaidActiveTiers, useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const Offers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { updateRoute } = useSettingsNavigation();
-  const { settings, config } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
 
   const { data: { offers: allOffers = [] } = {} } = useBrowseOffers();
 

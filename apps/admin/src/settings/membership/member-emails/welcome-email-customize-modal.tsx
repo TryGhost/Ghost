@@ -57,7 +57,7 @@ import {
 } from '@tryghost/admin-x-framework/api/automated-emails';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFeatureFlag, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings, useSite } from '@/settings/hooks/use-settings-data';
 import { useWelcomeEmailSenderDetails } from '@/settings/hooks/use-welcome-email-sender-details';
 
 const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
@@ -297,7 +297,9 @@ const normalizeSenderValue = (value: string | null | undefined) => {
 };
 
 const WelcomeEmailCustomizeModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { siteData, settings: globalSettings, config } = useGlobalData();
+  const siteData = useSite();
+  const globalSettings = useSettings();
+  const config = useConfig();
   const [siteTitle, defaultEmailAddress, icon, supportEmailAddress] = getSettingValues<string>(
     globalSettings,
     ['title', 'default_email_address', 'icon', 'support_email_address'],

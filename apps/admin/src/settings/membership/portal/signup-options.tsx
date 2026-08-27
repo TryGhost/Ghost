@@ -23,7 +23,7 @@ import {
   getSettingValues,
 } from '@tryghost/admin-x-framework/api/settings';
 import { type Tier, getPaidActiveTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig } from '@/settings/hooks/use-settings-data';
 
 type SignupCheckbox = {
   checked: boolean;
@@ -42,7 +42,7 @@ const SignupOptions: React.FC<{
   errors: Record<string, string | undefined>;
   setError: (key: string, error: string | undefined) => void;
 }> = ({ localSettings, updateSetting, localTiers, updateTier, errors, setError }) => {
-  const { config } = useGlobalData();
+  const config = useConfig();
   const [
     membersSignupAccess,
     portalName,

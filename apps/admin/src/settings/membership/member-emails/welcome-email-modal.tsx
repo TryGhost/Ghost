@@ -14,7 +14,7 @@ import {
   usePreviewWelcomeEmail,
 } from '@tryghost/admin-x-framework/api/automated-emails';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useWelcomeEmailPreview } from './use-welcome-email-preview';
 import { useWelcomeEmailSenderDetails } from '@/settings/hooks/use-welcome-email-sender-details';
@@ -115,7 +115,8 @@ const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & { onClose: () => void
   automatedEmail,
   onClose,
 }) => {
-  const { settings: globalSettings, config } = useGlobalData();
+  const globalSettings = useSettings();
+  const config = useConfig();
   const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(
     globalSettings,
     ['title', 'default_email_address', 'support_email_address'],
