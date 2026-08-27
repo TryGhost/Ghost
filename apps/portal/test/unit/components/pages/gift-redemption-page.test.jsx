@@ -1,6 +1,5 @@
 import { fireEvent, render, waitFor } from '../../../utils/test-utils';
 import GiftRedemptionPage from '../../../../src/components/pages/gift-redemption-page';
-import BetaGiftRedemptionPage from '../../../../src/components/pages/beta-gift-redemption-page';
 import { member, testSite } from '../../../../src/utils/fixtures';
 
 const gift = {
@@ -32,8 +31,7 @@ const renderGiftRedemptionPage = (Page, overrideContext = {}) => {
 };
 
 describe.each([
-  { name: 'GiftRedemptionPage', Page: GiftRedemptionPage, buttonLabel: 'Redeem your membership' },
-  { name: 'BetaGiftRedemptionPage', Page: BetaGiftRedemptionPage, buttonLabel: 'Redeem your gift' },
+  { name: 'GiftRedemptionPage', Page: GiftRedemptionPage, buttonLabel: 'Redeem your gift' },
 ])('$name', ({ Page, buttonLabel }) => {
   beforeEach(() => {
     window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
@@ -122,14 +120,14 @@ describe.each([
   });
 });
 
-describe('BetaGiftRedemptionPage', () => {
+describe('GiftRedemptionPage details', () => {
   test('shows the intended recipient name when a different member is logged in', () => {
     const personalizedGift = {
       ...gift,
       buyer_name: 'Morgan',
       recipient_name: 'Taylor',
     };
-    const { getByText, queryByText } = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+    const { getByText, queryByText } = renderGiftRedemptionPage(GiftRedemptionPage, {
       member: member.free,
       pageData: {
         token: 'gift-token-123',
@@ -142,7 +140,7 @@ describe('BetaGiftRedemptionPage', () => {
   });
 
   test('shows the anonymous introduction for a gift without a buyer name', () => {
-    const { container } = renderGiftRedemptionPage(BetaGiftRedemptionPage);
+    const { container } = renderGiftRedemptionPage(GiftRedemptionPage);
 
     const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
     expect(subtitle).toHaveTextContent(
@@ -161,7 +159,7 @@ describe('BetaGiftRedemptionPage', () => {
       expires_at: '2030-01-01T00:00:00.000Z',
     };
     const { container, getByLabelText, getByRole, getByTestId, getByText, mockDoActionFn } =
-      renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+      renderGiftRedemptionPage(GiftRedemptionPage, {
         site: {
           ...testSite,
           url: 'https://example.com/',
@@ -202,7 +200,7 @@ describe('BetaGiftRedemptionPage', () => {
       ...gift,
       expires_at: '2030-01-01T01:00:00.000Z',
     };
-    const { getByText } = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+    const { getByText } = renderGiftRedemptionPage(GiftRedemptionPage, {
       site: {
         ...testSite,
         locale: 'en-GB',

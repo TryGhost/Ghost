@@ -1,10 +1,7 @@
 import ActionHandler from '../src/actions';
 import { vi, type MockInstance } from 'vitest';
-import {
-  GIFT_FORM_STATE_KEY,
-  createGiftFormState,
-} from '../src/components/pages/beta-gift/form-state';
-import { ensureGiftPlanRoute, setGiftRoute } from '../src/components/pages/beta-gift/navigation';
+import { GIFT_FORM_STATE_KEY, createGiftFormState } from '../src/components/pages/gift/form-state';
+import { ensureGiftPlanRoute, setGiftRoute } from '../src/components/pages/gift/navigation';
 
 describe('closePopup action', () => {
   beforeEach(() => {

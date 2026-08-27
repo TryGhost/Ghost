@@ -101,12 +101,6 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'Gift subscription durations and delivery',
-    description:
-      'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
-    flag: 'giftSubCustomization',
-  },
-  {
     title: 'React posts & pages lists',
     description:
       'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
