@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="{{@site.locale}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#075e54">
+  <link rel="stylesheet" href="{{asset "css/screen.css"}}">
+  {{ghost_head}}
+</head>
+<body class="{{body_class}}">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell nav-wrap">
+      <a class="brand" href="{{@site.url}}">
+        <span class="brand-mark">R</span>
+        <span><strong>ResuAI Academy</strong><small>Healthcare careers & licensing</small></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+        {{navigation}}
+        <a href="https://resuaibuilder.com">CV Builder</a>
+        <a class="signin" href="#/portal/signin">Sign in</a>
+        <a class="join" href="#/portal/signup">Join free</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">{{{body}}}</main>
+  <footer class="site-footer">
+    <div class="shell footer-grid">
+      <div><a class="brand footer-brand" href="{{@site.url}}"><span class="brand-mark">R</span><span><strong>ResuAI Academy</strong><small>Prepare with clarity. Progress with confidence.</small></span></a></div>
+      <div><strong>Learning paths</strong><a href="/tag/nursing/">Nursing</a><a href="/tag/pharmacy/">Pharmacy</a><a href="/tag/licensing/">GCC Licensing</a></div>
+      <div><strong>Career tools</strong><a href="https://resuaibuilder.com">AI CV Builder</a><a href="https://resuaibuilder.com">Interview Coach</a><a href="#/portal/account">Member account</a></div>
+    </div>
+    <div class="shell footer-note">Educational preparation only. Always verify current licensing requirements with the relevant authority. © {{date format="YYYY"}} ResuAI Academy.</div>
+  </footer>
+  <script>
+    const toggle=document.querySelector('.nav-toggle'); const nav=document.querySelector('#site-nav');
+    toggle?.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));nav?.classList.toggle('is-open');});
+  </script>
+  {{ghost_foot}}
+</body>
+</html>
