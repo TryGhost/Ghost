@@ -13,10 +13,6 @@ const REPORT_COLUMNS = [
   'post_url',
 ];
 
-function includedInReport(row: RowOutcome): boolean {
-  return row.status === 'skipped' || row.status === 'failed' || Boolean(row.warnings?.length);
-}
-
 function formatMediaFailures(row: RowOutcome): string {
   return (
     row.mediaFailures?.map(({ sourceUrl, reason }) => `${sourceUrl}: ${reason}`).join('\n') ?? ''
@@ -24,13 +20,12 @@ function formatMediaFailures(row: RowOutcome): string {
 }
 
 export default function buildImportReport(run: ImportRun): string | undefined {
-  const rows = run.rows.filter(includedInReport);
-  if (!rows.length) {
+  if (!run.rows.length) {
     return undefined;
   }
 
   return serialize(
-    rows.map((row) => ({
+    run.rows.map((row) => ({
       line: row.line,
       title: row.title ?? '',
       outcome: row.duplicate ? 'duplicate' : row.status,

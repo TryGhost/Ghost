@@ -58,7 +58,7 @@ describe('content import completion email', function () {
     assert.match(email.html, /processed 1 row:/);
   });
 
-  it('omits the report attachment for a completely clean run', function () {
+  it('attaches a report for a completely clean run', function () {
     const email = buildCompletionEmail(
       run({
         total: 2,
@@ -70,7 +70,10 @@ describe('content import completion email', function () {
       'owner@example.com',
     );
 
-    assert.deepEqual(email.attachments, []);
+    assert.deepEqual(
+      email.attachments.map(({ filename }) => filename),
+      ['report.csv'],
+    );
   });
 
   it('attaches both the report and actionable errors file in stable order', function () {
@@ -82,7 +85,7 @@ describe('content import completion email', function () {
           {
             line: 2,
             title: 'Invalid',
-            status: 'skipped',
+            status: 'failed',
             reason: 'status is invalid',
             source: { Title: 'Invalid', State: 'scheduled' },
           },

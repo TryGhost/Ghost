@@ -1,16 +1,10 @@
 import { serialize } from '../csv';
 import type { ImportRun, RowOutcome } from './store';
 
-const ANNOTATION_NAMES = [
-  'ghost_import_outcome',
-  'ghost_import_reason',
-  'ghost_import_media_failures',
-] as const;
+const ANNOTATION_NAMES = ['import_status', 'import_reason', 'import_media_failures'] as const;
 
 function isActionable(row: RowOutcome): boolean {
-  return (
-    Boolean(row.source) && (row.status === 'failed' || (row.status === 'skipped' && !row.duplicate))
-  );
+  return Boolean(row.source) && row.status === 'failed';
 }
 
 function uniqueColumnName(preferred: string, used: Set<string>): string {
@@ -34,7 +28,7 @@ export default function buildErrorsFile(run: ImportRun): string | undefined {
   const [outcomeColumn, reasonColumn, mediaFailuresColumn] = ANNOTATION_NAMES.map((name) =>
     uniqueColumnName(name, usedColumns),
   );
-  const columns = [...run.sourceColumns, outcomeColumn, reasonColumn, mediaFailuresColumn];
+  const columns = [outcomeColumn, ...run.sourceColumns, reasonColumn, mediaFailuresColumn];
 
   return serialize(
     rows.map((row) => {

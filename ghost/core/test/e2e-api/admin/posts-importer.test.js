@@ -204,7 +204,7 @@ describe('Posts Importer API', function () {
     const { data: rows } = papaparse.parse(report.content.trim(), {
       header: true,
     });
-    assert.equal(rows.length, 5);
+    assert.equal(rows.length, 6);
     const sameRun = rows.find((row) => row.title === 'Duplicate in this run');
     assert.equal(sameRun.outcome, 'duplicate');
     assert.equal(sameRun.duplicate_origin, 'this_import');
@@ -216,15 +216,13 @@ describe('Posts Importer API', function () {
     assert.equal(rows.find((row) => row.title === 'Invalid status').outcome, 'failed');
     assert.equal(rows.find((row) => row.title === 'Write failure').outcome, 'failed');
     assert.match(rows.find((row) => row.title === 'Warning success').warnings, /assigned Owner/);
-    assert.equal(
-      rows.some((row) => row.title === 'First in this run'),
-      false,
-    );
+    assert.equal(rows.find((row) => row.title === 'First in this run').outcome, 'created');
 
     const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
     assert.ok(errorsFile);
     const { data: errorRows, meta } = papaparse.parse(errorsFile.content.trim(), { header: true });
-    assert.deepEqual(meta.fields.slice(0, 6), [
+    assert.deepEqual(meta.fields.slice(0, 7), [
+      'import_status',
       'title',
       'slug',
       'status',
@@ -250,13 +248,13 @@ describe('Posts Importer API', function () {
     await agent.loginAsOwner();
     const zipPath = await zipFile('posts-import-errors-source.zip', {
       'wrapper/posts.csv':
-        'Body,Headline,State,ghost_import_outcome\n<p>Keep source cells</p>,ZIP invalid,scheduled,publisher value\n',
+        'Body,Headline,State,import_status\n<p>Keep source cells</p>,ZIP invalid,scheduled,publisher value\n',
     });
     const form = new FormData();
     form.append('mapping[Body]', 'html');
     form.append('mapping[Headline]', 'title');
     form.append('mapping[State]', 'status');
-    form.append('mapping[ghost_import_outcome]', '');
+    form.append('mapping[import_status]', '');
     form.append('postsfile', await fs.readFile(zipPath), {
       filename: path.basename(zipPath),
       contentType: 'application/zip',
@@ -274,19 +272,19 @@ describe('Posts Importer API', function () {
     assert.ok(errorsFile);
     const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
     assert.deepEqual(parsed.meta.fields, [
+      'import_status_2',
       'Body',
       'Headline',
       'State',
-      'ghost_import_outcome',
-      'ghost_import_outcome_2',
-      'ghost_import_reason',
-      'ghost_import_media_failures',
+      'import_status',
+      'import_reason',
+      'import_media_failures',
     ]);
     assert.equal(parsed.data[0].Body, '<p>Keep source cells</p>');
     assert.equal(parsed.data[0].Headline, 'ZIP invalid');
     assert.equal(parsed.data[0].State, 'scheduled');
-    assert.equal(parsed.data[0].ghost_import_outcome, 'publisher value');
-    assert.equal(parsed.data[0].ghost_import_outcome_2, 'failed');
+    assert.equal(parsed.data[0].import_status, 'publisher value');
+    assert.equal(parsed.data[0].import_status_2, 'failed');
 
     const retryForm = new FormData();
     retryForm.append('mapping[Body]', 'html');
@@ -441,7 +439,7 @@ describe('Posts Importer API', function () {
     const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
     assert.equal(parsed.data.length, 1);
     assert.equal(parsed.data[0].title, 'Unsupported remote media');
-    assert.deepEqual(JSON.parse(parsed.data[0].ghost_import_media_failures), [
+    assert.deepEqual(JSON.parse(parsed.data[0].import_media_failures), [
       {
         sourceUrl: `${origin}/unsupported.exe`,
         reason: 'No configured storage accepts this media file.',

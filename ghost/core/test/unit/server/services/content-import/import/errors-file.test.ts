@@ -17,7 +17,7 @@ function run(overrides: Partial<ImportRun> = {}): ImportRun {
 }
 
 describe('content import errors file', function () {
-  it('omits the file without failed or fixable skipped rows', function () {
+  it('omits the file without failed rows containing source cells', function () {
     assert.equal(
       buildErrorsFile(
         run({
@@ -31,10 +31,9 @@ describe('content import errors file', function () {
             },
             {
               line: 3,
-              title: 'Duplicate',
+              title: 'Skipped validation',
               status: 'skipped',
-              duplicate: { origin: 'pre_existing', matchedBy: 'slug' },
-              source: { Headline: 'Duplicate', Body: '' },
+              source: { Headline: 'Skipped validation', Body: '' },
             },
             { line: 4, title: 'No source', status: 'failed', reason: 'Internal harness row' },
           ],
@@ -47,17 +46,17 @@ describe('content import errors file', function () {
   it('preserves source columns, annotates actionable rows, and defuses formulas', function () {
     const csv = buildErrorsFile(
       run({
-        sourceColumns: ['Body', 'Headline', 'ghost_import_outcome'],
+        sourceColumns: ['Body', 'Headline', 'import_status'],
         rows: [
           {
             line: 2,
-            title: '=Skipped()',
-            status: 'skipped',
+            title: '=Failed()',
+            status: 'failed',
             reason: '+invalid source value',
             source: {
               Body: '<p>Body</p>',
-              Headline: '=Skipped()',
-              ghost_import_outcome: 'publisher value',
+              Headline: '=Failed()',
+              import_status: 'publisher value',
             },
           },
           {
@@ -71,7 +70,7 @@ describe('content import errors file', function () {
             source: {
               Body: '<p>Media</p>',
               Headline: 'Failed media',
-              ghost_import_outcome: 'keep this',
+              import_status: 'keep this',
             },
           },
         ],
@@ -81,18 +80,18 @@ describe('content import errors file', function () {
     assert.ok(csv);
     const parsed = papaparse.parse<Record<string, string>>(csv, { header: true });
     assert.deepEqual(parsed.meta.fields, [
+      'import_status_2',
       'Body',
       'Headline',
-      'ghost_import_outcome',
-      'ghost_import_outcome_2',
-      'ghost_import_reason',
-      'ghost_import_media_failures',
+      'import_status',
+      'import_reason',
+      'import_media_failures',
     ]);
-    assert.equal(parsed.data[0].Headline, "'=Skipped()");
-    assert.equal(parsed.data[0].ghost_import_outcome, 'publisher value');
-    assert.equal(parsed.data[0].ghost_import_outcome_2, 'skipped');
-    assert.equal(parsed.data[0].ghost_import_reason, "'+invalid source value");
-    assert.deepEqual(JSON.parse(parsed.data[1].ghost_import_media_failures), [
+    assert.equal(parsed.data[0].Headline, "'=Failed()");
+    assert.equal(parsed.data[0].import_status, 'publisher value');
+    assert.equal(parsed.data[0].import_status_2, 'failed');
+    assert.equal(parsed.data[0].import_reason, "'+invalid source value");
+    assert.deepEqual(JSON.parse(parsed.data[1].import_media_failures), [
       { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
     ]);
   });
@@ -102,16 +101,16 @@ describe('content import errors file', function () {
       run({
         sourceColumns: [
           'Headline',
-          'ghost_import_outcome',
-          'ghost_import_outcome_2',
-          'ghost_import_reason',
-          'ghost_import_media_failures',
+          'import_status',
+          'import_status_2',
+          'import_reason',
+          'import_media_failures',
         ],
         rows: [
           {
             line: 2,
             title: 'Invalid',
-            status: 'skipped',
+            status: 'failed',
             source: { Headline: 'Invalid' },
           },
         ],
@@ -120,8 +119,8 @@ describe('content import errors file', function () {
 
     assert.ok(csv);
     const parsed = papaparse.parse(csv, { header: true });
-    assert.ok(parsed.meta.fields?.includes('ghost_import_outcome_3'));
-    assert.ok(parsed.meta.fields?.includes('ghost_import_reason_2'));
-    assert.ok(parsed.meta.fields?.includes('ghost_import_media_failures_2'));
+    assert.equal(parsed.meta.fields?.[0], 'import_status_3');
+    assert.ok(parsed.meta.fields?.includes('import_reason_2'));
+    assert.ok(parsed.meta.fields?.includes('import_media_failures_2'));
   });
 });

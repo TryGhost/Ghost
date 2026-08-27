@@ -16,16 +16,24 @@ function run(rows: ImportRun['rows']): ImportRun {
 }
 
 describe('content import report', function () {
-  it('omits the report when every row completed without warnings', function () {
-    assert.equal(
-      buildImportReport(
-        run([
-          { line: 2, title: 'Created', status: 'created', url: 'https://example.com/created/' },
-          { line: 3, title: 'Updated', status: 'updated' },
-        ]),
-      ),
-      undefined,
+  it('omits the report when no rows were processed', function () {
+    assert.equal(buildImportReport(run([])), undefined);
+  });
+
+  it('serializes every processed row', function () {
+    const csv = buildImportReport(
+      run([
+        { line: 2, title: 'Created', status: 'created', url: 'https://example.com/created/' },
+        { line: 3, title: 'Updated', status: 'updated' },
+      ]),
     );
+
+    assert.ok(csv);
+    const parsed = papaparse.parse<Record<string, string>>(csv, { header: true });
+    assert.equal(parsed.data.length, 2);
+    assert.equal(parsed.data[0].outcome, 'created');
+    assert.equal(parsed.data[0].post_url, 'https://example.com/created/');
+    assert.equal(parsed.data[1].outcome, 'updated');
   });
 
   it('serializes duplicates, failures, skips, and warning-bearing successes', function () {
@@ -80,7 +88,7 @@ describe('content import report', function () {
       'media_failures',
       'post_url',
     ]);
-    assert.equal(parsed.data.length, 5);
+    assert.equal(parsed.data.length, 6);
     assert.deepEqual(parsed.data[0], {
       line: '2',
       title: 'Same run duplicate',
@@ -104,5 +112,7 @@ describe('content import report', function () {
     );
     assert.equal(parsed.data[4].warnings, 'First warning\nSecond warning');
     assert.equal(parsed.data[4].post_url, 'https://example.com/warning/');
+    assert.equal(parsed.data[5].title, 'Clean');
+    assert.equal(parsed.data[5].outcome, 'created');
   });
 });
