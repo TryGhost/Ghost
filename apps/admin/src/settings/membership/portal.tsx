@@ -15,7 +15,7 @@ const SignupOptionImage: React.FC<{ color: string; title: string; price: string 
   price,
 }) => {
   return (
-    <div className="rounded-lg bg-grey-100/70 px-3 pt-1.5 pb-3">
+    <div className="rounded-lg bg-gray-100/70 px-3 pt-1.5 pb-3">
       <div
         className="font-space-grotesk text-[1.5rem] font-bold"
         style={{
@@ -26,9 +26,9 @@ const SignupOptionImage: React.FC<{ color: string; title: string; price: string 
       </div>
       <div className="-mt-1 font-space-grotesk text-[1.7rem] font-bold">{price}</div>
       <div className="mt-5 flex flex-col gap-1.5">
-        <div className="h-1.5 w-[100%] bg-grey-300/60"></div>
-        <div className="h-1.5 w-[70%] bg-grey-300/60"></div>
-        <div className="h-1.5 w-[90%] bg-grey-300/60"></div>
+        <div className="h-1.5 w-[100%] bg-gray-300/60"></div>
+        <div className="h-1.5 w-[70%] bg-gray-300/60"></div>
+        <div className="h-1.5 w-[90%] bg-gray-300/60"></div>
       </div>
     </div>
   );
@@ -69,7 +69,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       testId="portal"
       title="Signup portal"
     >
-      <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
+      <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-gray-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
         <div
           className="absolute right-6 bottom-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg"
           style={{
@@ -99,7 +99,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
               </div>
             )}
             <div className="mt-1.5 font-space-grotesk text-lg font-bold">Sign up</div>
-            <div className="mt-1.5 flex h-6 w-1/2 items-center rounded border border-grey-200 p-2 text-sm text-grey-700">
+            <div className="mt-1.5 flex h-6 w-1/2 items-center rounded border border-gray-200 p-2 text-sm text-gray-700">
               jamie@example.com
             </div>
           </div>

@@ -47,7 +47,7 @@ function ContentApiModal() {
         title="Content API"
       />
       <div className="mt-7">
-        <p className="mb-6 text-grey-700">
+        <p className="mb-6 text-gray-700">
           This key provides read-only access to your published content. For full read/write access,
           create a custom integration.
         </p>

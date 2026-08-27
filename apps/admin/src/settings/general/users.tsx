@@ -95,7 +95,7 @@ const Owner: React.FC<OwnerProps> = ({ user }) => {
             </Button>
           )}
         </span>
-        <span className="text-sm text-grey-700">{user.email}</span>
+        <span className="text-sm text-gray-700">{user.email}</span>
       </div>
     </div>
   );
