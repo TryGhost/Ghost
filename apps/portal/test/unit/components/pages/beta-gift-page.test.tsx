@@ -120,13 +120,15 @@ describe('BetaGiftPage', () => {
       },
       portalDefaultPlan: 'yearly',
     });
-    const { container, getByRole } = setup(site);
+    const { container, getByLabelText, getByRole } = setup(site);
 
     expect(getByRole('radio', { name: '1 year' })).toHaveAttribute('aria-checked', 'true');
 
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    expect(getByLabelText("Recipient's email")).toBeInTheDocument();
     expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent(
-      "You've been gifted a 1-year Premium membership to The Blueprint",
+      'Jamie has gifted you a 1-year Premium membership to The Blueprint',
     );
   });
 
@@ -165,11 +167,11 @@ describe('BetaGiftPage', () => {
 
   test('requires a buyer name before continuing to delivery', () => {
     const site = buildSite({ labs: { giftSubCustomization: true } });
-    const { getByLabelText, getByRole, getByText, mockDoActionFn } = setup(site);
+    const { getByLabelText, getByRole, getByText, mockDoActionFn, queryByLabelText } = setup(site);
 
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
 
-    expect(mockDoActionFn).not.toHaveBeenCalled();
+    expect(queryByLabelText("Recipient's email")).not.toBeInTheDocument();
     expect(getByText('Enter your name')).toBeInTheDocument();
 
     fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
@@ -188,14 +190,28 @@ describe('BetaGiftPage', () => {
     );
   });
 
+  test('requires a recipient email before continuing to payment', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { getByLabelText, getByRole, getByText, mockDoActionFn } = setup(site);
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(mockDoActionFn).not.toHaveBeenCalled();
+    expect(getByText("Enter the recipient's email address")).toBeInTheDocument();
+    expect(getByRole('button', { name: 'Continue to payment' })).toBeDisabled();
+  });
+
   test('clears the buyer name error as the buyer types', () => {
     const site = buildSite({ labs: { giftSubCustomization: true } });
-    const { getByLabelText, getByRole, getByText } = setup(site);
+    const { getByLabelText, getByRole, getByText, queryByText } = setup(site);
 
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
 
     expect(getByText('Enter your name')).toBeInTheDocument();
     fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    expect(queryByText('Enter your name')).not.toBeInTheDocument();
     expect(getByRole('button', { name: 'Continue to delivery details' })).not.toBeDisabled();
   });
 
@@ -210,6 +226,49 @@ describe('BetaGiftPage', () => {
     });
 
     expect(getByLabelText('Your name')).toBeInTheDocument();
+  });
+
+  test('going back clears delivery errors so the plan step is not locked', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { getByLabelText, getByRole, getByText, queryByText } = setup(site);
+
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(getByText("Enter the recipient's email address")).toBeInTheDocument();
+
+    fireEvent.click(getByRole('button', { name: /back/i }));
+
+    expect(queryByText("Enter the recipient's email address")).not.toBeInTheDocument();
+    expect(getByRole('button', { name: 'Continue to delivery details' })).not.toBeDisabled();
+
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    expect(getByLabelText("Recipient's email")).toBeInTheDocument();
+  });
+
+  test('continues without a name field for a member with a saved name', () => {
+    const site = buildSite({ labs: { giftSubCustomization: true } });
+    const { getByLabelText, getByRole, mockDoActionFn, queryByLabelText } = setup(site, {
+      member: {
+        email: 'buyer@example.com',
+        name: 'Jamie Larson',
+        status: 'free',
+      },
+    });
+
+    expect(queryByLabelText('Your name')).not.toBeInTheDocument();
+
+    fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
+    fireEvent.change(getByLabelText("Recipient's email"), {
+      target: { value: 'recipient@example.com' },
+    });
+    fireEvent.click(getByRole('button', { name: 'Continue to payment' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'checkoutGift',
+      expect.objectContaining({ buyerName: 'Jamie Larson' }),
+    );
   });
 
   test('omits the selector when only one duration is available', () => {

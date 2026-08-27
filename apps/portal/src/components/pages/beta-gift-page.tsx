@@ -262,12 +262,13 @@ const BetaGiftPage = () => {
   };
 
   const handleContinueToDelivery = () => {
-    const fieldsToValidate = !isLoggedIn ? [{ ...emailField, value: email.trim() }] : [];
-    const formErrors = validateInputForm({ fields: fieldsToValidate });
-
-    if (!buyerName.trim()) {
-      formErrors.buyerName = t('Enter your name');
+    const fieldsToValidate: GiftInputField[] = [];
+    if (!isLoggedIn) {
+      fieldsToValidate.push({ ...emailField, value: email.trim() });
     }
+    fieldsToValidate.push({ ...buyerNameField, value: buyerName.trim() });
+
+    const formErrors = validateInputForm({ fields: fieldsToValidate });
 
     const formHasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
 
