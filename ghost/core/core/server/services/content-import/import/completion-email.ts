@@ -1,5 +1,6 @@
 import type { ImportRun, RowStatus } from './store';
 import buildImportReport from './report';
+import buildErrorsFile from './errors-file';
 
 export interface CompletionEmailPayload {
   to: string;
@@ -133,20 +134,29 @@ export default function buildCompletionEmail(
 ): CompletionEmailPayload {
   const counts = countsFor(run);
   const report = buildImportReport(run);
+  const errorsFile = buildErrorsFile(run);
+  const attachments: CompletionEmailPayload['attachments'] = [];
+  if (report) {
+    attachments.push({
+      filename: 'report.csv',
+      content: report,
+      contentType: 'text/csv',
+      contentDisposition: 'attachment',
+    });
+  }
+  if (errorsFile) {
+    attachments.push({
+      filename: 'errors.csv',
+      content: errorsFile,
+      contentType: 'text/csv',
+      contentDisposition: 'attachment',
+    });
+  }
   return {
     to: recipient,
     subject: headingFor(run, counts),
     html: renderCompletionEmail(run, recipient),
     forceTextContent: true,
-    attachments: report
-      ? [
-          {
-            filename: 'report.csv',
-            content: report,
-            contentType: 'text/csv',
-            contentDisposition: 'attachment',
-          },
-        ]
-      : [],
+    attachments,
   };
 }

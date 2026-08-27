@@ -9,6 +9,7 @@ function run(overrides: Partial<ImportRun> = {}): ImportRun {
     startedAt: new Date('2026-01-01T10:00:00.000Z'),
     finishedAt: new Date('2026-01-01T10:01:00.000Z'),
     total: 5,
+    sourceColumns: [],
     rows: [
       { line: 2, title: 'Created', status: 'created' },
       { line: 3, title: 'Updated', status: 'updated' },
@@ -70,6 +71,30 @@ describe('content import completion email', function () {
     );
 
     assert.deepEqual(email.attachments, []);
+  });
+
+  it('attaches both the report and actionable errors file in stable order', function () {
+    const email = buildCompletionEmail(
+      run({
+        total: 1,
+        sourceColumns: ['Title', 'State'],
+        rows: [
+          {
+            line: 2,
+            title: 'Invalid',
+            status: 'skipped',
+            reason: 'status is invalid',
+            source: { Title: 'Invalid', State: 'scheduled' },
+          },
+        ],
+      }),
+      'owner@example.com',
+    );
+
+    assert.deepEqual(
+      email.attachments.map(({ filename }) => filename),
+      ['report.csv', 'errors.csv'],
+    );
   });
 
   it('uses plural warning copy for multiple warning-bearing posts', function () {

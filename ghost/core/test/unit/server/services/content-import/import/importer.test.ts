@@ -17,7 +17,10 @@ const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
 });
 
 // Collaborators are handed back as `deps` so a test can repoint the seam it is breaking.
-function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
+function harness(
+  rows: PostImportRow[] = [row('First'), row('Second')],
+  source?: { columns: string[]; rows: Array<Record<string, string>> },
+) {
   const created: Array<{ data: PostData; options: object; metadata?: PostWriteMetadata }> = [];
   const reported: unknown[] = [];
   const jobs: Array<{ name: string; offloaded: boolean; job: () => Promise<void> }> = [];
@@ -55,7 +58,13 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   };
 
   const deps = {
-    readRows: async () => rows,
+    readRows: async () =>
+      source
+        ? {
+            columns: source.columns,
+            rows: rows.map((data, index) => ({ data, source: source.rows[index] })),
+          }
+        : rows,
     posts: {
       write: async (data: PostData, options: object, metadata?: PostWriteMetadata) => {
         const failure = createFailures.get(data.title);
@@ -199,6 +208,22 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import queued');
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import started');
     sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import completed in \d+ms$/);
+  });
+
+  it('carries original source columns and cells into the completed run', async function () {
+    const h = harness([row('Mapped title')], {
+      columns: ['Headline', 'Body', 'Ignored'],
+      rows: [{ Headline: 'Mapped title', Body: '<p>Source body</p>', Ignored: 'kept' }],
+    });
+
+    await h.run();
+
+    assert.deepEqual(h.sentRuns[0].sourceColumns, ['Headline', 'Body', 'Ignored']);
+    assert.deepEqual(h.sentRuns[0].rows[0].source, {
+      Headline: 'Mapped title',
+      Body: '<p>Source body</p>',
+      Ignored: 'kept',
+    });
   });
 
   it('emails the requesting user once after completing and releases the run', async function () {

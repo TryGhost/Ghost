@@ -189,11 +189,12 @@ describe('Posts Importer API', function () {
     await jobsService.allSettled();
 
     const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
-    assert.equal(email.attachments.length, 1);
-    assert.equal(email.attachments[0].filename, 'report.csv');
-    assert.equal(email.attachments[0].contentType, 'text/csv');
+    assert.equal(email.attachments.length, 2);
+    const report = email.attachments.find(({ filename }) => filename === 'report.csv');
+    assert.ok(report);
+    assert.equal(report.contentType, 'text/csv');
 
-    const { data: rows } = papaparse.parse(email.attachments[0].content.trim(), {
+    const { data: rows } = papaparse.parse(report.content.trim(), {
       header: true,
     });
     assert.equal(rows.length, 5);
@@ -212,6 +213,81 @@ describe('Posts Importer API', function () {
       rows.some((row) => row.title === 'First in this run'),
       false,
     );
+
+    const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
+    assert.ok(errorsFile);
+    const { data: errorRows, meta } = papaparse.parse(errorsFile.content.trim(), { header: true });
+    assert.deepEqual(meta.fields.slice(0, 6), [
+      'title',
+      'slug',
+      'status',
+      'custom_excerpt',
+      'authors',
+      'author_emails',
+    ]);
+    assert.deepEqual(
+      errorRows.map(({ title }) => title),
+      ['Invalid status', 'Write failure'],
+    );
+    assert.equal(
+      errorRows.some(({ title }) => title === 'Duplicate in this run'),
+      false,
+    );
+    assert.equal(
+      errorRows.some(({ title }) => title === 'Warning success'),
+      false,
+    );
+  });
+
+  it('preserves mapped ZIP source columns and avoids annotation collisions', async function () {
+    await agent.loginAsOwner();
+    const zipPath = await zipFile('posts-import-errors-source.zip', {
+      'wrapper/posts.csv':
+        'Body,Headline,State,ghost_import_outcome\n<p>Keep source cells</p>,ZIP invalid,scheduled,publisher value\n',
+    });
+    const form = new FormData();
+    form.append('mapping[Body]', 'html');
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[State]', 'status');
+    form.append('mapping[ghost_import_outcome]', '');
+    form.append('postsfile', await fs.readFile(zipPath), {
+      filename: path.basename(zipPath),
+      contentType: 'application/zip',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
+    assert.ok(errorsFile);
+    const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
+    assert.deepEqual(parsed.meta.fields, [
+      'Body',
+      'Headline',
+      'State',
+      'ghost_import_outcome',
+      'ghost_import_outcome_2',
+      'ghost_import_reason',
+      'ghost_import_media_failures',
+    ]);
+    assert.equal(parsed.data[0].Body, '<p>Keep source cells</p>');
+    assert.equal(parsed.data[0].Headline, 'ZIP invalid');
+    assert.equal(parsed.data[0].State, 'scheduled');
+    assert.equal(parsed.data[0].ghost_import_outcome, 'publisher value');
+    assert.equal(parsed.data[0].ghost_import_outcome_2, 'skipped');
+
+    const retryForm = new FormData();
+    retryForm.append('mapping[Body]', 'html');
+    retryForm.append('mapping[Headline]', 'title');
+    retryForm.append('mapping[State]', 'status');
+    retryForm.append('postsfile', Buffer.from(errorsFile.content), {
+      filename: 'errors.csv',
+      contentType: 'text/csv',
+    });
+    await agent.post('posts/upload/').body(retryForm).expectStatus(202);
+    await jobsService.allSettled();
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
   });
 
   it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {
@@ -347,6 +423,19 @@ describe('Posts Importer API', function () {
       status: 'all',
     });
     assert.ok(continuedPost);
+
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
+    assert.ok(errorsFile);
+    const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
+    assert.equal(parsed.data.length, 1);
+    assert.equal(parsed.data[0].title, 'Unsupported remote media');
+    assert.deepEqual(JSON.parse(parsed.data[0].ghost_import_media_failures), [
+      {
+        sourceUrl: `${origin}/unsupported.exe`,
+        reason: 'No configured storage accepts this media file.',
+      },
+    ]);
   });
 
   it('preserves current-site media URLs without fetching or validating them', async function () {

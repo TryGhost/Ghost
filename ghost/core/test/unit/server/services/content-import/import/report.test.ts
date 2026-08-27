@@ -10,6 +10,7 @@ function run(rows: ImportRun['rows']): ImportRun {
     startedAt: new Date('2026-01-01T10:00:00.000Z'),
     finishedAt: new Date('2026-01-01T10:01:00.000Z'),
     total: rows.length,
+    sourceColumns: [],
     rows,
   };
 }

@@ -25,6 +25,7 @@ export interface RowOutcome {
   warnings?: string[];
   postId?: string;
   url?: string;
+  source?: Record<string, string>;
 }
 
 export interface ImportRun {
@@ -34,6 +35,7 @@ export interface ImportRun {
   finishedAt?: Date;
   failureReason?: string;
   total: number;
+  sourceColumns: string[];
   rows: RowOutcome[];
 }
 
@@ -50,7 +52,7 @@ export class ImportRunStore {
     this._now = now;
   }
 
-  create(id: string, total: number): ImportRun {
+  create(id: string, total: number, sourceColumns: string[] = []): ImportRun {
     this.evict();
 
     const run: ImportRun = {
@@ -58,6 +60,7 @@ export class ImportRunStore {
       status: 'running',
       startedAt: this._now(),
       total,
+      sourceColumns,
       rows: [],
     };
     this._runs.set(id, run);

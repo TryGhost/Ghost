@@ -2,7 +2,9 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { parse } from '../../../../../../core/server/services/content-import/csv';
+import papaparse from 'papaparse';
+import sinon from 'sinon';
+import { parse, parseWithSource } from '../../../../../../core/server/services/content-import/csv';
 
 // The CSVs live inline: each case writes its content to a temp file, so the
 // fixture sits next to the assertions that read it.
@@ -137,5 +139,56 @@ describe('content import csv parse', function () {
 
     assert.equal(result.length, 1);
     assert.equal(result[0].custom_thing, 'kept');
+  });
+
+  it('preserves original cells and source-column order before mapping', async function () {
+    const result = await parseWithSource(
+      await csvFile('Body,Ignore me,Headline\n<p>World</p>,unused,Hello\n'),
+      { Body: 'html', 'Ignore me': '', Headline: 'title' },
+    );
+
+    assert.deepEqual(result.columns, ['Body', 'Ignore me', 'Headline']);
+    assert.deepEqual(result.rows[0].data, { html: '<p>World</p>', title: 'Hello' });
+    assert.deepEqual(
+      { ...result.rows[0].source },
+      {
+        Body: '<p>World</p>',
+        'Ignore me': 'unused',
+        Headline: 'Hello',
+      },
+    );
+  });
+
+  it('drops a row when every source column is explicitly ignored', async function () {
+    const result = await parseWithSource(await csvFile('Ignore me\nunmapped value\n'), {
+      'Ignore me': '',
+    });
+
+    assert.deepEqual(result.columns, ['Ignore me']);
+    assert.deepEqual(result.rows, []);
+  });
+
+  it('uses an empty source-column list when the parser has no header metadata', async function () {
+    const parseStub = sinon
+      .stub(papaparse, 'parse')
+      .returns({ data: [], errors: [], meta: {} } as never);
+
+    try {
+      const result = await parseWithSource(await csvFile(''));
+      assert.deepEqual(result, { columns: [], rows: [] });
+    } finally {
+      parseStub.restore();
+    }
+  });
+
+  it('strips a report formula guard from imported data but preserves the source cell', async function () {
+    const result = await parseWithSource(
+      await csvFile("title,html\n'=SUM(A1:A2),'ordinary apostrophe\n"),
+      HEADER_MAPPING,
+    );
+
+    assert.equal(result.rows[0].data.title, '=SUM(A1:A2)');
+    assert.equal(result.rows[0].data.html, "'ordinary apostrophe");
+    assert.equal(result.rows[0].source.title, "'=SUM(A1:A2)");
   });
 });
