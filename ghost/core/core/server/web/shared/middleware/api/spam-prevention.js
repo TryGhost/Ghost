@@ -211,13 +211,6 @@ const webmentionsBlock = () => {
   return webmentionsBlockInstance;
 };
 
-// Per-staff-user limiter for editor presence routes, applied AFTER
-// authentication so the key can use req.user.id. Presence is routine
-// editorial traffic, so this is kept in memory rather than in the
-// brute table: the presence state it guards is process-local anyway,
-// and a DB round trip per editor navigation is not worth paying.
-// Generous because legitimate use fires on every editor navigation:
-// 600 requests / hour / user is roughly 1 every 6s.
 const presenceBlock = () => {
   const ExpressBrute = require('express-brute');
 
