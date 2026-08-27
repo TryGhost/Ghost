@@ -12,6 +12,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class SessionService extends ESASessionService {
     @service configManager;
+    @service presence;
     @service('store') dataStore;
     @service feature;
     @service koenig;
@@ -157,6 +158,9 @@ export default class SessionService extends ESASessionService {
     }
 
     handleInvalidation() {
+        // Close the presence SSE stream alongside the session.
+        this.presence.stop();
+
         let transition = this.appLoadTransition;
 
         if (transition) {

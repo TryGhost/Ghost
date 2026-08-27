@@ -40,6 +40,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     @service router;
     @service feature;
     @service postAnalytics;
+    @service presence;
     @service settings;
 
     queryParams = {
@@ -68,6 +69,11 @@ export default class PostsRoute extends AuthenticatedRoute {
                 }
             }
         });
+    }
+
+    activate() {
+        super.activate(...arguments);
+        this.presence.start();
     }
 
     model(params) {

@@ -1,5 +1,6 @@
 const urlUtils = require('../../../shared/url-utils').default;
 const models = require('../../models');
+const { markPostPresence } = require('../../services/post-presence/mark-post-presence');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');
@@ -169,7 +170,7 @@ const controller = {
     permissions: {
       unsafeAttrs: unsafeAttrs,
     },
-    query(frame) {
+    async query(frame) {
       return postsService.readPost(frame);
     },
   },
@@ -249,6 +250,8 @@ const controller = {
           }
         },
       });
+
+      markPostPresence(frame, model);
 
       return model;
     },

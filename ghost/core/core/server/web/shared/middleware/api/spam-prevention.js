@@ -30,6 +30,7 @@ const messages = {
   },
   webmentionsBlock: 'Too many mention attempts',
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
+  presenceBlock: 'Too many editor presence requests, please slow down',
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -44,6 +45,7 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
 let spamEmailPreviewBlock = spam.email_preview_block || {};
+let spamPresenceBlock = spam.presence_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -63,6 +65,7 @@ let sendVerificationCodeInstance;
 let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
+let presenceBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -206,6 +209,36 @@ const webmentionsBlock = () => {
     );
 
   return webmentionsBlockInstance;
+};
+
+const presenceBlock = () => {
+  const ExpressBrute = require('express-brute');
+
+  memoryStore = memoryStore || new ExpressBrute.MemoryStore();
+
+  presenceBlockInstance =
+    presenceBlockInstance ||
+    new ExpressBrute(
+      memoryStore,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.presenceBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+          freeRetries: 600,
+          lifetime: 60 * 60,
+        },
+        pick(spamPresenceBlock, spamConfigKeys),
+      ),
+    );
+
+  return presenceBlockInstance;
 };
 
 const emailPreviewBlock = () => {
@@ -729,6 +762,7 @@ module.exports = {
   contentApiKey: contentApiKey,
   webmentionsBlock: webmentionsBlock,
   emailPreviewBlock: emailPreviewBlock,
+  presenceBlock: presenceBlock,
   reset: () => {
     store = undefined;
     memoryStore = undefined;
@@ -746,6 +780,8 @@ module.exports = {
     contentApiKeyInstance = undefined;
     otcVerificationEnumerationInstance = undefined;
     otcVerificationInstance = undefined;
+    emailPreviewBlockInstance = undefined;
+    presenceBlockInstance = undefined;
 
     spam = config.get('spam') || {};
     spamPrivateBlock = spam.private_block || {};
@@ -759,6 +795,9 @@ module.exports = {
     spamCheckoutSessionGlobal = spam.checkout_session_global || {};
     spamCheckoutSessionEmail = spam.checkout_session_email || {};
     spamContentApiKey = spam.content_api_key || {};
+    spamWebmentionsBlock = spam.webmentions_block || {};
+    spamEmailPreviewBlock = spam.email_preview_block || {};
+    spamPresenceBlock = spam.presence_block || {};
     spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
     spamOtcVerification = spam.otc_verification || {};
   },

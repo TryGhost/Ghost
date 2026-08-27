@@ -5,6 +5,7 @@ const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const presence = require('./presence-controller');
 
 const shared = require('../../../shared');
 
@@ -22,6 +23,27 @@ module.exports = function apiRoutes() {
   // ## Configuration
   router.get('/config', mw.authAdminApi, http(api.config.read));
   router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
+
+  // ## Presence — in-memory per-user limiters, applied after auth.
+  // Concurrent streams are capped in the controller, not here.
+  router.get(
+    '/presence/stream',
+    mw.authAdminApi,
+    shared.middleware.brute.presenceStreamLimiter,
+    presence.stream,
+  );
+  router.post(
+    '/presence/posts/:id/enter',
+    mw.authAdminApi,
+    shared.middleware.brute.presenceLimiter,
+    presence.enter,
+  );
+  router.post(
+    '/presence/posts/:id/leave',
+    mw.authAdminApi,
+    shared.middleware.brute.presenceLimiter,
+    presence.leave,
+  );
 
   // ## Posts
   router.get('/posts', mw.authAdminApi, http(api.posts.browse));

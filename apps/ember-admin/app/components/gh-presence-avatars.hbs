@@ -1,0 +1,32 @@
+{{#if this.users.length}}
+    <div class="gh-presence-avatars {{this.sizeClass}}" data-test-presence-avatars={{@postId}}>
+        {{#each this.users as |user|}}
+            <div
+                class="gh-presence-avatar gh-tooltip-trigger tooltip-bottom no-shortcut {{if user.isIdle "gh-presence-avatar--idle"}}"
+                role="group"
+                aria-label={{user.tooltipText}}
+                tabindex="0"
+                data-test-presence-avatar={{user.id}}
+                data-test-presence-idle={{if user.isIdle "true" "false"}}
+            >
+                {{#if user.profileImage}}
+                    <img src={{user.profileImage}} alt="" />
+                {{else}}
+                    <span class="gh-presence-avatar-initials" aria-hidden="true">{{user.initials}}</span>
+                {{/if}}
+                <GhTooltip @text={{user.tooltipText}} />
+            </div>
+        {{/each}}
+        {{#if this.overflowCount}}
+            <span
+                class="gh-presence-avatars-overflow gh-tooltip-trigger tooltip-bottom no-shortcut"
+                aria-label={{this.overflowAriaLabel}}
+                tabindex="0"
+                data-test-presence-overflow={{this.overflowCount}}
+            >
+                +{{this.overflowCount}}
+                <GhTooltip @text={{this.overflowTooltip}} />
+            </span>
+        {{/if}}
+    </div>
+{{/if}}

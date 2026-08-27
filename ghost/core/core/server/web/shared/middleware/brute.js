@@ -194,4 +194,26 @@ module.exports = {
       },
     })(req, res, next);
   },
+
+  /** Per-staff-user limiter, applied after auth. */
+  presenceLimiter(req, res, next) {
+    return spamPrevention.presenceBlock().getMiddleware({
+      ignoreIP: true,
+      key(_req, _res, _next) {
+        const userId = _req.user && _req.user.id;
+        return _next(userId ? `presence_${userId}` : 'presence_anon');
+      },
+    })(req, res, next);
+  },
+
+  /** Separate key so SSE reconnects do not consume enter/leave budget. */
+  presenceStreamLimiter(req, res, next) {
+    return spamPrevention.presenceBlock().getMiddleware({
+      ignoreIP: true,
+      key(_req, _res, _next) {
+        const userId = _req.user && _req.user.id;
+        return _next(userId ? `presence_stream_${userId}` : 'presence_stream_anon');
+      },
+    })(req, res, next);
+  },
 };
