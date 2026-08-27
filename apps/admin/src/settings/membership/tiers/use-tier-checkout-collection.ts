@@ -9,7 +9,8 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
  * The gate and the data for a tier's checkout collection, in one place.
  *
  * With the membersCustomFields flag or Stripe off, nothing is fetched and the tier modal
- * renders exactly as it did before. The card itself additionally needs a saved paid tier.
+ * renders exactly as it did before. The card itself additionally needs a paid tier —
+ * saved, or in the middle of being created.
  * When the card is due, `isReady` lets the modal defer its first paint until the
  * configuration is loaded — the same rule it already applies to the tier itself — so the
  * card never grows after it appears.
@@ -22,7 +23,10 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
  * settled failure is a load problem with the feature present, and `failed` lets the modal
  * say so instead of silently looking like collection is off.
  */
-export const useTierCheckoutCollection = (tier: Tier | undefined) => {
+export const useTierCheckoutCollection = (
+  tier: Tier | undefined,
+  { creating = false }: { creating?: boolean } = {},
+) => {
   const hasCustomFields = useFeatureFlag('membersCustomFields');
   const { config: globalConfig, settings } = useGlobalData();
 
@@ -35,7 +39,10 @@ export const useTierCheckoutCollection = (tier: Tier | undefined) => {
     defaultErrorHandler: false,
   });
 
-  const sectionWanted = fetchWanted && Boolean(tier?.id) && tier?.type !== 'free';
+  // The card shows for a saved paid tier, and during creation — a new tier is paid by
+  // definition, and its configuration is held locally until the create supplies the id
+  // to save it against, the same conditions under which the price inputs show.
+  const sectionWanted = fetchWanted && (tier ? tier.type !== 'free' : creating);
 
   // Settled failure only: while a refetch after an earlier error is in flight the section
   // is pending, not unavailable, so a card that is about to load holds the modal's paint

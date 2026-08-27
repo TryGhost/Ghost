@@ -85,12 +85,14 @@ export type TierCheckoutCollectionHandle = {
    */
   validate: () => boolean;
   /**
-   * Persist the checkout configuration. Resolves true without a request when nothing
-   * changed. Resolves false when nothing was saved — invalid input (errors are shown
-   * inline) or a failed request (already handed to handleError) — so the caller can stop
-   * without an exception escaping the modal's onOk.
+   * Persist the checkout configuration against the given tier — the one being edited, or
+   * the one a create just made, which is why the id arrives here rather than as a prop.
+   * Resolves true without a request when nothing changed. Resolves false when nothing was
+   * saved — invalid input (errors are shown inline) or a failed request (already handed
+   * to handleError) — so the caller can stop without an exception escaping the modal's
+   * onOk.
    */
-  save: () => Promise<boolean>;
+  save: (tierId: string) => Promise<boolean>;
 };
 
 type TierCheckoutState = {
@@ -238,7 +240,6 @@ function DestinationRow({
 const TierCheckoutCollection = forwardRef<
   TierCheckoutCollectionHandle,
   {
-    tierId: string;
     config: TierCheckoutConfig | undefined;
     /**
      * The configuration read failed on a Core that has the endpoint: the card's place is
@@ -249,7 +250,7 @@ const TierCheckoutCollection = forwardRef<
     /** Fires when edits diverge from (or return to) the saved configuration. */
     onDirtyChange?: (dirty: boolean) => void;
   }
->(({ tierId, config, failed, onDirtyChange }, ref) => {
+>(({ config, failed, onDirtyChange }, ref) => {
   const [state, setState] = useState<TierCheckoutState>(() => stateFromConfig(config));
   const [errors, setErrors] = useState<ErrorMessages>({});
   const [countriesOpen, setCountriesOpen] = useState(false);
@@ -275,7 +276,12 @@ const TierCheckoutCollection = forwardRef<
     () => JSON.stringify(effectiveState(stateFromConfig(config))),
     [config],
   );
-  const dirty = !failed && JSON.stringify(effectiveState(state)) !== initialSerialized;
+  // A successful write makes the state it saved the baseline immediately, without waiting
+  // for a refetch to deliver it back — the create path depends on this, because a mount
+  // with no tier id has no config for any refetch to rebase it with.
+  const [savedSerialized, setSavedSerialized] = useState<string | null>(null);
+  const dirty =
+    !failed && JSON.stringify(effectiveState(state)) !== (savedSerialized ?? initialSerialized);
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -331,7 +337,7 @@ const TierCheckoutCollection = forwardRef<
     ref,
     () => ({
       validate: applyValidation,
-      save: async () => {
+      save: async (tierId: string) => {
         if (!dirty) {
           return true;
         }
@@ -365,6 +371,7 @@ const TierCheckoutCollection = forwardRef<
                 : { collect: false },
             },
           });
+          setSavedSerialized(JSON.stringify(effectiveState(state)));
           return true;
         } catch (error) {
           handleError(error);
@@ -374,7 +381,7 @@ const TierCheckoutCollection = forwardRef<
     }),
     // buildErrors and dirty close over render-scope values, so everything they read has
     // to invalidate the handle.
-    [dirty, editCheckoutConfig, fieldsData, handleError, state, tierId],
+    [dirty, editCheckoutConfig, fieldsData, handleError, state],
   );
 
   if (failed) {

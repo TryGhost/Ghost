@@ -60,8 +60,7 @@ const TierDetailModalContent: React.FC<{
   checkout: ReturnType<typeof useTierCheckoutCollection>;
 }> = ({ tier, checkout }) => {
   const isFreeTier = tier?.type === 'free';
-  // Both flags are already gated on a saved paid tier inside the hook; `tier` is
-  // re-checked only at the render site, where TypeScript needs it narrowed for tier.id.
+  // Both flags are already gated on a paid tier (saved or being created) inside the hook.
   const checkoutVisible = checkout.enabled;
   const checkoutFailed = checkout.failed;
   const [currencyOpen, setCurrencyOpen] = React.useState(false);
@@ -133,7 +132,10 @@ const TierDetailModalContent: React.FC<{
         if (tier?.id) {
           await updateTier({ ...tier, ...values });
         } else {
-          await createTier(values);
+          // The id the checkout save needs: a new tier has none until this create
+          // returns one, and onOk reads it from the ref right after.
+          const created = await createTier(values);
+          createdTierIdRef.current = created.tiers[0]?.id ?? null;
         }
         if (isFreeTier) {
           // If we changed the visibility, we also need to update Portal settings in some situations
@@ -186,6 +188,7 @@ const TierDetailModalContent: React.FC<{
   });
   const modalRef = useRef<HTMLElement>(null);
   const checkoutCollectionRef = useRef<TierCheckoutCollectionHandle>(null);
+  const createdTierIdRef = useRef<string | null>(null);
   // The checkout section keeps its own form state, so it reports its dirtiness up for
   // the modal's close confirmation to count.
   const [checkoutDirty, setCheckoutDirty] = React.useState(false);
@@ -345,7 +348,10 @@ const TierDetailModalContent: React.FC<{
         if (!(await handleSave({ fakeWhenUnchanged: true }))) {
           return;
         }
-        await checkoutCollectionRef.current?.save();
+        const savedTierId = tier?.id ?? createdTierIdRef.current;
+        if (savedTierId) {
+          await checkoutCollectionRef.current?.save(savedTierId);
+        }
       }}
     >
       <div className="mt-8 -mb-8 flex items-start gap-8">
@@ -626,13 +632,12 @@ const TierDetailModalContent: React.FC<{
             </FieldGroup>
           </FieldSet>
 
-          {(checkoutVisible || checkoutFailed) && tier && (
+          {(checkoutVisible || checkoutFailed) && (
             <TierCheckoutCollection
-              key={tier.id}
+              key={tier?.id ?? 'new'}
               ref={checkoutCollectionRef}
               config={checkout.config}
               failed={checkoutFailed}
-              tierId={tier.id}
               onDirtyChange={setCheckoutDirty}
             />
           )}
@@ -663,9 +668,9 @@ const TierDetailModal: React.FC = () => {
 
   // Deferring the first paint until everything it shows is loaded is this modal's
   // existing rule (the tier lookup above); the checkout configuration joins it so the
-  // Basic card never grows after it appears. Disabled (flag off, no Stripe, free or
-  // unsaved tier) means nothing is fetched and nothing is waited on.
-  const checkout = useTierCheckoutCollection(tier);
+  // Basic card never grows after it appears. Disabled (flag off, no Stripe, or a free
+  // tier) means nothing is fetched and nothing is waited on.
+  const checkout = useTierCheckoutCollection(tier, { creating: !tierId });
 
   if (tierId && !tier) {
     return null;
