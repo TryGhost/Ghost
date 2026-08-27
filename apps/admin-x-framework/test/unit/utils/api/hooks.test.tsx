@@ -312,65 +312,33 @@ describe('API hooks', () => {
       suspenseQueryClient.clear();
     });
 
-    it('makes an API request and transforms return data', async () => {
+    it('shares one canonical query between plain and suspense observers', async () => {
       await withMockFetch({ json: { test: 1 } }, async (mock) => {
-        const resource = createQueryResource({
+        const options = {
           dataType: 'test',
           path: '/test/',
-          returnData: (data) => (data as { test: number }).test + 1,
-        });
-
-        const { result } = renderHook(() => resource.useSuspenseQuery(), {
-          wrapper: suspenseWrapper(),
-        });
-
-        await waitFor(() => expect(result.current).not.toBeNull());
-        expect(result.current.data).toEqual(2);
-        expect(mock.calls.length).toBe(1);
-        expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/');
-      });
-    });
-
-    it('builds its observers from one canonical query definition', async () => {
-      await withMockFetch({ json: { test: 1 } }, async () => {
-        const options = { dataType: 'test', path: '/test/', defaultSearchParams: { a: '?' } };
+          returnData: (data: unknown) => (data as { test: number }).test + 1,
+        };
         const resource = createQueryResource(options);
         const definition = renderHook(() => resource.useQueryOptions(), {
           wrapper: suspenseWrapper(),
         });
 
-        const { result } = renderHook(() => resource.useSuspenseQuery(), {
-          wrapper: suspenseWrapper(),
-        });
-        await waitFor(() => expect(result.current).not.toBeNull());
-
-        const entries = suspenseQueryClient.getQueryCache().getAll();
-        expect(entries.length).toBe(1);
-        expect(definition.result.current.queryKey).toEqual([
-          'test',
-          'http://localhost:3000/ghost/api/admin/test/?a=%3F',
-        ]);
-        expect(entries[0].queryKey).toEqual(definition.result.current.queryKey);
-      });
-    });
-
-    it('serves a cache entry warmed through createQuery without a second fetch', async () => {
-      await withMockFetch({ json: { test: 1 } }, async (mock) => {
-        const options = { dataType: 'test', path: '/test/' };
-        const resource = createQueryResource(options);
-
         const warming = renderHook(() => resource.useQuery(), { wrapper: suspenseWrapper() });
         await waitFor(() => expect(warming.result.current.isLoading).toBe(false));
+        expect(warming.result.current.data).toBe(2);
         expect(mock.calls.length).toBe(1);
 
         const { result } = renderHook(() => resource.useSuspenseQuery(), {
           wrapper: suspenseWrapper(),
         });
 
-        // The warmed entry is served synchronously: no suspension, no request
-        expect(result.current.data).toEqual({ test: 1 });
+        expect(result.current.data).toBe(2);
         expect(mock.calls.length).toBe(1);
-        expect(suspenseQueryClient.getQueryCache().getAll().length).toBe(1);
+        expect(suspenseQueryClient.getQueryCache().getAll()).toHaveLength(1);
+        expect(suspenseQueryClient.getQueryCache().getAll()[0].queryKey).toEqual(
+          definition.result.current.queryKey,
+        );
       });
     });
 
@@ -402,45 +370,6 @@ describe('API hooks', () => {
           }
         },
       );
-    });
-
-    it('throws a settled refetch error even when cached data exists', async () => {
-      const fetchMock = vi
-        .spyOn(globalThis, 'fetch')
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ test: 1 }), {
-            headers: { 'content-type': 'application/json' },
-            status: 200,
-          }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ errors: [{ message: 'Refetch exploded' }] }), {
-            headers: { 'content-type': 'application/json' },
-            status: 500,
-          }),
-        );
-      const caught: unknown[] = [];
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      try {
-        const resource = createQueryResource({ dataType: 'test', path: '/test/' });
-        const { result } = renderHook(() => resource.useSuspenseQuery(), {
-          wrapper: suspenseWrapper((error) => caught.push(error)),
-        });
-
-        await waitFor(() => expect(result.current?.data).toEqual({ test: 1 }));
-
-        await act(async () => {
-          await suspenseQueryClient.invalidateQueries({ queryKey: ['test'] });
-        });
-
-        await waitFor(() => expect(caught).toHaveLength(1));
-        expect(caught[0]).toBeInstanceOf(APIError);
-        expect(fetchMock).toHaveBeenCalledTimes(2);
-      } finally {
-        consoleError.mockRestore();
-        fetchMock.mockRestore();
-      }
     });
   });
 

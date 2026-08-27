@@ -54,21 +54,13 @@ const SettingsDataLoader = ({ children }: { children: ReactNode }) => {
   const settingsQuery = useBrowseSettingsQueryOptions();
   const siteQuery = useBrowseSiteQueryOptions();
 
-  const results = useSuspenseQueries({
+  useSuspenseQueries({
     queries: [configQuery, currentUserQuery, settingsQuery, siteQuery],
   });
-  const settledError = results.find((result) => result.error && !result.isFetching)?.error;
-
-  if (settledError) {
-    throw settledError;
-  }
 
   return children;
 };
 
-// Start every unconditional settings dependency together. Screens below use
-// suspense observers over the same canonical query options, so they read the
-// warmed cache without a settings-only data context.
 const SettingsDataGate = ({ children }: { children: ReactNode }) => (
   <Suspense fallback={<SettingsLoadingIndicator />}>
     <SettingsDataLoader>{children}</SettingsDataLoader>

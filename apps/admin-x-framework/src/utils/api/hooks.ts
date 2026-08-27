@@ -21,7 +21,6 @@ import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
 import { useFramework } from '../../providers/framework-provider';
 import { RequestOptions, apiUrl, useFetchApi } from './fetch-api';
-import { withQueryErrorPolicy } from './query-error-policy';
 
 export interface Meta {
   capabilities?: {
@@ -40,7 +39,6 @@ export interface Meta {
 interface QueryOptions<ResponseData> {
   dataType: string;
   path: string;
-  errorResetScope?: string;
   headers?: Record<string, string>;
   defaultSearchParams?: Record<string, string>;
   permissions?: UserRoleType[];
@@ -63,57 +61,44 @@ type SuspenseQueryHookOptions<ResponseData> = Omit<
 };
 
 const createQueryResourceInternal = <ResponseData>(options: QueryOptions<ResponseData>) => {
-  function useResourceQueryOptionsInternal({
+  function useResourceQueryOptions({
     searchParams,
-    defaultErrorHandler,
-  }: {
-    searchParams?: Record<string, string>;
-    defaultErrorHandler: boolean;
-  }) {
+  }: { searchParams?: Record<string, string> } = {}) {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
 
     return queryOptions<ResponseData>({
       queryKey: [options.dataType, url],
-      queryFn: (context) =>
-        withQueryErrorPolicy(context, defaultErrorHandler, () => fetchApi(url, { ...options })),
-      meta: {
-        defaultErrorHandler: true,
-        errorResetScope: options.errorResetScope,
-      },
+      queryFn: () => fetchApi(url, { ...options }),
     });
   }
 
-  function useResourceQueryOptions({
-    searchParams,
-  }: { searchParams?: Record<string, string> } = {}) {
-    return useResourceQueryOptionsInternal({ searchParams, defaultErrorHandler: true });
-  }
-
-  function useResourceQuery({
-    searchParams,
-    defaultErrorHandler = true,
-    ...query
-  }: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {
+  function useResourceQuery({ searchParams, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
+    UseQueryResult<ResponseData>,
+    'data'
+  > & {
     data: ResponseData | undefined;
   } {
-    const resourceQueryOptions = useResourceQueryOptionsInternal({
-      searchParams,
-      defaultErrorHandler,
-    });
+    const resourceQueryOptions = useResourceQueryOptions({ searchParams });
+    const handleError = useHandleError();
     const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
       ...resourceQueryOptions,
-      meta: { ...resourceQueryOptions.meta, ...query.meta, defaultErrorHandler },
     });
 
     const data = useMemo(
       () => (result.data && options.returnData ? options.returnData(result.data) : result.data),
       [result.data],
     );
+
+    useEffect(() => {
+      if (result.error && query.defaultErrorHandler !== false) {
+        handleError(result.error);
+      }
+    }, [handleError, result.error, query.defaultErrorHandler]);
 
     return {
       ...result,
@@ -139,13 +124,6 @@ const createQueryResourceInternal = <ResponseData>(options: QueryOptions<Respons
       () => (options.returnData ? options.returnData(result.data) : result.data),
       [result.data],
     );
-
-    // TanStack only throws suspense-query errors when no cached data exists.
-    // Throw settled refetch errors as well so the framework's error-boundary
-    // contract does not change after a query has successfully loaded once.
-    if (result.error && !result.isFetching) {
-      throw result.error;
-    }
 
     return {
       ...result,

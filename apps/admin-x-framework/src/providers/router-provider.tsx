@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
-import { useQueryClient, useQueryErrorResetBoundary } from '@tanstack/react-query';
+import { useQueryErrorResetBoundary } from '@tanstack/react-query';
 import {
   createHashRouter,
   RouteObject,
@@ -8,7 +8,6 @@ import {
   useNavigate as useReactRouterNavigate,
   useLocation,
   useParams,
-  useRouteError,
   Navigate as ReactRouterNavigate,
 } from 'react-router';
 import { useFramework } from './framework-provider';
@@ -40,30 +39,11 @@ const scrollPositions = new Map<string, number>();
 
 function DefaultErrorPage() {
   const navigate = useReactRouterNavigate();
-  const queryClient = useQueryClient();
   const { reset } = useQueryErrorResetBoundary();
-  const routeError = useRouteError();
   const backToDashboard = useCallback(() => {
     reset();
-    const failedQuery = queryClient
-      .getQueryCache()
-      .getAll()
-      .find((query) => query.state.error === routeError);
-    const errorResetScope = failedQuery?.meta?.errorResetScope;
-
-    queryClient.removeQueries({
-      predicate: (query) => {
-        const belongsToFailure =
-          query.state.error === routeError ||
-          (errorResetScope !== undefined && query.meta?.errorResetScope === errorResetScope);
-        const needsFreshStart =
-          query.state.status === 'error' || query.state.fetchStatus === 'fetching';
-
-        return belongsToFailure && needsFreshStart;
-      },
-    });
     navigate('/');
-  }, [navigate, queryClient, reset, routeError]);
+  }, [navigate, reset]);
 
   return <ErrorPage onBackToDashboard={backToDashboard} />;
 }

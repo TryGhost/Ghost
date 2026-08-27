@@ -40,8 +40,7 @@ describe('Settings routing', () => {
     await page.getByText('← Back to the dashboard', { exact: true }).click();
     await expect.poll(currentRoute).toBe('/analytics');
 
-    // A later request succeeds. The recovery action must clear the failed
-    // query and the other failed dependencies in its bootstrap scope.
+    // A later request succeeds after the error boundary is reset.
     window.location.hash = '#/settings';
     await expect.element(settingsScreen.sidebar()).toBeVisible();
   });
