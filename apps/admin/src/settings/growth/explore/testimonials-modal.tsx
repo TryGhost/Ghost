@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import {
   useConfig,
-  useCurrentUser,
+  useSettingsCurrentUser,
   useSettings,
   useSite,
 } from '@/settings/hooks/use-settings-data';
@@ -39,7 +39,7 @@ const TestimonialsModal = () => {
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();
   const settings = useSettings();
-  const currentUser = useCurrentUser();
+  const currentUser = useSettingsCurrentUser();
   const siteData = useSite();
   const config = useConfig();
 

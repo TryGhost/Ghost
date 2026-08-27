@@ -1,4 +1,4 @@
-import { createQuery, createSuspenseQuery } from '../utils/api/hooks';
+import { createQueryResource } from '../utils/api/hooks';
 import { Config, hasSendingDomain, isManagedEmail, sendingDomain } from './config';
 
 // Types
@@ -24,15 +24,14 @@ export interface SiteResponseType {
 
 const dataType = 'SiteResponseType';
 
-export const useBrowseSite = createQuery<SiteResponseType>({
+const browseSiteResource = createQueryResource<SiteResponseType>({
   dataType,
   path: '/site/',
 });
 
-export const useBrowseSiteSuspense = createSuspenseQuery<SiteResponseType>({
-  dataType,
-  path: '/site/',
-});
+export const useBrowseSite = browseSiteResource.useQuery;
+export const useBrowseSiteQueryOptions = browseSiteResource.useQueryOptions;
+export const useBrowseSiteSuspense = browseSiteResource.useSuspenseQuery;
 
 // Helpers
 

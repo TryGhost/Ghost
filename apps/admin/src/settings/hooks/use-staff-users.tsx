@@ -1,7 +1,7 @@
 import { type User, useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
 import { type UserInvite, useBrowseInvites } from '@tryghost/admin-x-framework/api/invites';
 import { useBrowseRoles } from '@tryghost/admin-x-framework/api/roles';
-import { useCurrentUser } from '@/settings/hooks/use-settings-data';
+import { useSettingsCurrentUser } from '@/settings/hooks/use-settings-data';
 import { useMemo } from 'react';
 
 export type UsersHook = {
@@ -43,7 +43,7 @@ function getOwnerUser(users: User[]): User {
 }
 
 const useStaffUsers = (): UsersHook => {
-  const currentUser = useCurrentUser();
+  const currentUser = useSettingsCurrentUser();
   const {
     data: { users, meta, isEnd } = { users: [] },
     isLoading: usersLoading,

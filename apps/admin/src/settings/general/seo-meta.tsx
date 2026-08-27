@@ -268,6 +268,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                               updateSetting('og_image', imageUrl);
                             } catch (e) {
                               handleError(e);
+                              return false;
                             }
                           },
                         })
@@ -353,6 +354,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                               updateSetting('twitter_image', imageUrl);
                             } catch (e) {
                               handleError(e);
+                              return false;
                             }
                           },
                         })

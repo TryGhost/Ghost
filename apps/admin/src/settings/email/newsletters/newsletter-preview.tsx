@@ -6,13 +6,13 @@ import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newslett
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import {
   useConfig,
-  useCurrentUser,
+  useSettingsCurrentUser,
   useSettings,
   useSite,
 } from '@/settings/hooks/use-settings-data';
 
 const NewsletterPreview: React.FC<{ newsletter: Newsletter }> = ({ newsletter }) => {
-  const currentUser = useCurrentUser();
+  const currentUser = useSettingsCurrentUser();
   const settings = useSettings();
   const siteData = useSite();
   const config = useConfig();

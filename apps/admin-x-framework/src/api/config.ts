@@ -1,4 +1,4 @@
-import { createQuery, createSuspenseQuery } from '../utils/api/hooks';
+import { createQueryResource } from '../utils/api/hooks';
 
 export type JSONValue = string | number | boolean | null | Date | JSONObject | JSONArray;
 export interface JSONObject {
@@ -143,15 +143,14 @@ const dataType = 'ConfigResponseType';
 
 export const configDataType = dataType;
 
-export const useBrowseConfig = createQuery<ConfigResponseType>({
+const browseConfigResource = createQueryResource<ConfigResponseType>({
   dataType,
   path: '/config/',
 });
 
-export const useBrowseConfigSuspense = createSuspenseQuery<ConfigResponseType>({
-  dataType,
-  path: '/config/',
-});
+export const useBrowseConfig = browseConfigResource.useQuery;
+export const useBrowseConfigQueryOptions = browseConfigResource.useQueryOptions;
+export const useBrowseConfigSuspense = browseConfigResource.useSuspenseQuery;
 
 // Helpers
 

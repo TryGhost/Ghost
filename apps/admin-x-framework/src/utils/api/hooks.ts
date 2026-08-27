@@ -6,7 +6,9 @@ import {
   UseInfiniteQueryOptions,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryOptions,
   UseSuspenseQueryResult,
+  queryOptions,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -51,22 +53,42 @@ type QueryHookOptions<ResponseData> = Omit<
   defaultErrorHandler?: boolean;
 };
 
-export const createQuery =
-  <ResponseData>(options: QueryOptions<ResponseData>) =>
-  ({ searchParams, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
-    UseQueryResult<ResponseData>,
-    'data'
-  > & { data: ResponseData | undefined } => {
+type SuspenseQueryHookOptions<ResponseData> = Omit<
+  UseSuspenseQueryOptions<ResponseData>,
+  'queryKey' | 'queryFn'
+> & {
+  searchParams?: Record<string, string>;
+};
+
+const createQueryResourceInternal = <ResponseData>(options: QueryOptions<ResponseData>) => {
+  function useResourceQueryOptions({
+    searchParams,
+  }: { searchParams?: Record<string, string> } = {}) {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
-    const handleError = useHandleError();
+
+    return queryOptions<ResponseData>({
+      queryKey: [options.dataType, url],
+      queryFn: () => fetchApi(url, { ...options }),
+      meta: { defaultErrorHandler: true },
+    });
+  }
+
+  function useResourceQuery({
+    searchParams,
+    defaultErrorHandler = true,
+    ...query
+  }: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {
+    data: ResponseData | undefined;
+  } {
+    const resourceQueryOptions = useResourceQueryOptions({ searchParams });
     const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
-      queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options }),
+      ...resourceQueryOptions,
+      meta: { ...resourceQueryOptions.meta, ...query.meta, defaultErrorHandler },
     });
 
     const data = useMemo(
@@ -74,36 +96,24 @@ export const createQuery =
       [result.data],
     );
 
-    useEffect(() => {
-      if (result.error && query.defaultErrorHandler !== false) {
-        handleError(result.error);
-      }
-    }, [handleError, result.error, query.defaultErrorHandler]);
-
     return {
       ...result,
       data,
     };
-  };
+  }
 
-type SuspenseQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'permissions'>;
-
-// Suspense sibling of createQuery: identical queryKey and fetch, so both hook
-// families share one cache entry (boot warming and mutation invalidations
-// included). Loading suspends and errors throw to the nearest boundary, which
-// is why there is no `enabled`/permissions gating and no error effect here.
-export const createSuspenseQuery =
-  <ResponseData>(options: SuspenseQueryOptions<ResponseData>) =>
-  ({ searchParams }: { searchParams?: Record<string, string> } = {}): Omit<
+  function useResourceSuspenseQuery({
+    searchParams,
+    ...query
+  }: SuspenseQueryHookOptions<ResponseData> = {}): Omit<
     UseSuspenseQueryResult<ResponseData>,
     'data'
-  > & { data: ResponseData } => {
-    const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
-    const fetchApi = useFetchApi();
+  > & { data: ResponseData } {
+    const resourceQueryOptions = useResourceQueryOptions({ searchParams });
 
     const result = useSuspenseQuery<ResponseData>({
-      queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options }),
+      ...query,
+      ...resourceQueryOptions,
     });
 
     const data = useMemo(
@@ -111,11 +121,32 @@ export const createSuspenseQuery =
       [result.data],
     );
 
+    // TanStack only throws suspense-query errors when no cached data exists.
+    // Throw settled refetch errors as well so the framework's error-boundary
+    // contract does not change after a query has successfully loaded once.
+    if (result.error && !result.isFetching) {
+      throw result.error;
+    }
+
     return {
       ...result,
       data,
     };
+  }
+
+  return {
+    useQuery: useResourceQuery,
+    useQueryOptions: useResourceQueryOptions,
+    useSuspenseQuery: useResourceSuspenseQuery,
   };
+};
+
+export const createQueryResource = <ResponseData>(
+  options: Omit<QueryOptions<ResponseData>, 'permissions'>,
+) => createQueryResourceInternal(options);
+
+export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =>
+  createQueryResourceInternal(options).useQuery;
 
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
   returnData: NonNullable<QueryOptions<ResponseData>['returnData']>;

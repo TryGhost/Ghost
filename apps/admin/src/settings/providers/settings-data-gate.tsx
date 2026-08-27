@@ -1,5 +1,10 @@
 import SpinningOrb from '@/settings/assets/videos/logo-loader.mp4';
 import SpinningOrbDark from '@/settings/assets/videos/logo-loader-dark.mp4';
+import { useBrowseConfigQueryOptions } from '@tryghost/admin-x-framework/api/config';
+import { useCurrentUserQueryOptions } from '@tryghost/admin-x-framework/api/current-user';
+import { useBrowseSettingsQueryOptions } from '@tryghost/admin-x-framework/api/settings';
+import { useBrowseSiteQueryOptions } from '@tryghost/admin-x-framework/api/site';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import { type ReactNode, Suspense, useEffect, useState } from 'react';
 
 const SettingsLoadingIndicator = () => {
@@ -43,12 +48,31 @@ const SettingsLoadingIndicator = () => {
   );
 };
 
-// Suspense boundary for the settings tree: screens below read data with the
-// useSuspenseQuery-backed hooks in settings/hooks/use-settings-data.ts, so
-// loading suspends into the orb here and query errors throw to the route's
-// error boundary.
+const SettingsDataLoader = ({ children }: { children: ReactNode }) => {
+  const configQuery = useBrowseConfigQueryOptions();
+  const currentUserQuery = useCurrentUserQueryOptions();
+  const settingsQuery = useBrowseSettingsQueryOptions();
+  const siteQuery = useBrowseSiteQueryOptions();
+
+  const results = useSuspenseQueries({
+    queries: [configQuery, currentUserQuery, settingsQuery, siteQuery],
+  });
+  const settledError = results.find((result) => result.error && !result.isFetching)?.error;
+
+  if (settledError) {
+    throw settledError;
+  }
+
+  return children;
+};
+
+// Start every unconditional settings dependency together. Screens below use
+// suspense observers over the same canonical query options, so they read the
+// warmed cache without a settings-only data context.
 const SettingsDataGate = ({ children }: { children: ReactNode }) => (
-  <Suspense fallback={<SettingsLoadingIndicator />}>{children}</Suspense>
+  <Suspense fallback={<SettingsLoadingIndicator />}>
+    <SettingsDataLoader>{children}</SettingsDataLoader>
+  </Suspense>
 );
 
 export default SettingsDataGate;

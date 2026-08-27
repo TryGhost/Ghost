@@ -1,4 +1,4 @@
-import { Meta, createMutation, createQuery, createSuspenseQuery } from '../utils/api/hooks';
+import { Meta, createMutation, createQueryResource } from '../utils/api/hooks';
 import { Config } from './config';
 
 // Types
@@ -38,10 +38,11 @@ const browseSettingsQuery = {
   },
 };
 
-export const useBrowseSettings = createQuery<SettingsResponseType>(browseSettingsQuery);
+const browseSettingsResource = createQueryResource<SettingsResponseType>(browseSettingsQuery);
 
-export const useBrowseSettingsSuspense =
-  createSuspenseQuery<SettingsResponseType>(browseSettingsQuery);
+export const useBrowseSettings = browseSettingsResource.useQuery;
+export const useBrowseSettingsQueryOptions = browseSettingsResource.useQueryOptions;
+export const useBrowseSettingsSuspense = browseSettingsResource.useSuspenseQuery;
 
 export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
   method: 'PUT',

@@ -1,7 +1,66 @@
+import { QueryClient } from '@tanstack/react-query';
 import { StrictMode } from 'react';
-import { render, waitFor } from '@testing-library/react';
-import { Navigate } from '../../../src/providers/router-provider';
+import { Outlet } from 'react-router';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { FrameworkProvider } from '../../../src/providers/framework-provider';
+import { Navigate, RouterProvider } from '../../../src/providers/router-provider';
 import { TestWrapper } from '../../../src/test/test-utils';
+
+const frameworkProps = {
+  externalNavigate: () => {},
+  ghostVersion: '5.x',
+  sentryDSN: null,
+  unsplashConfig: {
+    Authorization: '',
+    'Accept-Version': '',
+    'Content-Type': '',
+    'App-Pragma': 'no-cache',
+    'X-Unsplash-Cache': true,
+  },
+  onDelete: () => {},
+  onInvalidate: () => {},
+  onUpdate: () => {},
+};
+
+describe('default route error recovery', () => {
+  it('clears failed queries even when they retain cached data', async () => {
+    const queryClient = new QueryClient();
+    const cachedQueryKey = ['cached-refetch-failure'];
+    queryClient.setQueryData(cachedQueryKey, { value: 'stale' });
+    queryClient
+      .getQueryCache()
+      .find({ queryKey: cachedQueryKey })
+      ?.setState({
+        error: new Error('Refetch failed'),
+        status: 'error',
+      });
+    window.location.hash = '#/failed';
+
+    const FailedRoute = () => {
+      throw new Error('Route failed');
+    };
+
+    render(
+      <FrameworkProvider {...frameworkProps} queryClient={queryClient}>
+        <RouterProvider
+          prefix=""
+          routes={[
+            { path: '/', element: <div>Dashboard</div> },
+            { path: '/failed', element: <FailedRoute /> },
+          ]}
+        >
+          <Outlet />
+        </RouterProvider>
+      </FrameworkProvider>,
+    );
+
+    await screen.findByRole('heading', { name: 'Loading interrupted' });
+    fireEvent.click(screen.getByText('← Back to the dashboard', { exact: true }));
+
+    await screen.findByText('Dashboard');
+    expect(queryClient.getQueryCache().find({ queryKey: cachedQueryKey })).toBeUndefined();
+  });
+});
 
 describe('Navigate', () => {
   it('performs cross-app navigation once after mounting in Strict Mode', async () => {

@@ -55,27 +55,31 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
-## Loading states
+## Server data and loading states
 
-Two loading models exist, chosen by surface type — not interchangeably:
+Admin has one server-state pattern: define each resource once in
+`admin-x-framework`, then observe its canonical TanStack Query options with the
+loading policy appropriate to the surface:
 
 - **Dashboard and progressive surfaces** (analytics, shell chrome, anything
   where components own their skeletons) read **derived query hooks** — hooks
   like `usePaidMembersEnabled(): boolean | undefined`, following TanStack
   Query's `data` contract: `undefined` means not loaded. Each component
-  handles its own pending state; hold render with `=== undefined` only where a
-  flash is user-visible, and let truthiness reads treat loading as off.
+  handles its own pending state. Treat `undefined` as an explicit unknown state;
+  a component may hide unavailable actions while loading, but must not use a
+  loading default to make access, routing, or ownership decisions.
 - **The settings subtree** renders inside a Suspense boundary
   (`SettingsDataGate`) and reads its shared resources with
-  `useSuspenseQuery`-backed hooks (`useSettings`, `useConfig`, `useSite`,
-  `useCurrentUser` from `src/settings/hooks/use-settings-data.ts`). Loading
-  suspends into the boundary's fallback; query errors throw to the route
-  error boundary.
+  `useSuspenseQuery`-backed hooks (`useSettings`, `useConfig`, `useSite`, and
+  `useSettingsCurrentUser` from `src/settings/hooks/use-settings-data.ts`).
+  `SettingsDataGate` starts all unconditional dependencies together; loading
+  suspends into its fallback, and query errors throw to the route error boundary.
 
-Both hook families share the framework's query keys, so one cache entry backs
-both models. Conditional queries stay on `useQuery`: suspense hooks take no
-`enabled` option by design, so a query that must not always run does not belong
-behind a Suspense read.
+Both observer policies consume the same resource definition, query key, fetch
+function, and cache entry. Conditional queries stay on `useQuery`: suspense
+hooks take no `enabled` option by design, so a query that must not always run
+does not belong behind a Suspense read. Every Suspense data boundary must have
+an error-reset path so a user can recover from a transient request failure.
 
 ## Testing
 

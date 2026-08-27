@@ -61,7 +61,7 @@ import {
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useCurrentUser } from '@/settings/hooks/use-settings-data';
+import { useSettingsCurrentUser } from '@/settings/hooks/use-settings-data';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
   name: ({ name }) => {
@@ -133,7 +133,7 @@ const UserDetailModalContent: React.FC<{
     return 'profile';
   };
   const { ownerUser } = useStaffUsers();
-  const currentUser = useCurrentUser();
+  const currentUser = useSettingsCurrentUser();
   const handleError = useHandleError();
   const { confirm, showLimit } = useConfirmation();
   const {
@@ -654,7 +654,7 @@ const UserDetailModalContent: React.FC<{
 
 const UserDetailModal: React.FC = () => {
   const { slug } = useParams();
-  const currentUser = useCurrentUser();
+  const currentUser = useSettingsCurrentUser();
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
   const handleError = useHandleError();

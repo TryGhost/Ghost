@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import { useQueryClient, useQueryErrorResetBoundary } from '@tanstack/react-query';
 import {
   createHashRouter,
   RouteObject,
@@ -35,6 +36,23 @@ export interface RouterProviderProps {
 
 // Store scroll positions globally
 const scrollPositions = new Map<string, number>();
+
+function DefaultErrorPage() {
+  const navigate = useReactRouterNavigate();
+  const queryClient = useQueryClient();
+  const { reset } = useQueryErrorResetBoundary();
+  const backToDashboard = useCallback(() => {
+    reset();
+    queryClient.removeQueries({
+      // Concurrent Suspense bootstraps can leave several failed dependencies.
+      // Cached refetch failures throw too, so every failed entry must start fresh.
+      predicate: (query) => query.state.status === 'error',
+    });
+    navigate('/');
+  }, [navigate, queryClient, reset]);
+
+  return <ErrorPage onBackToDashboard={backToDashboard} />;
+}
 
 export function resetScrollPosition(location: string) {
   scrollPositions.delete(location);
@@ -104,7 +122,7 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
       hydrateFallbackElement: <></>,
       children: routes.map((route) => ({
         ...route,
-        errorElement: route.errorElement || errorElement || <ErrorPage />,
+        errorElement: route.errorElement || errorElement || <DefaultErrorPage />,
       })),
     };
 

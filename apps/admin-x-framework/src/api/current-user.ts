@@ -1,6 +1,4 @@
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import useHandleError from '../hooks/use-handle-error';
+import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { UsersResponseType } from './users';
 
@@ -9,23 +7,25 @@ export const usersDataType = 'UsersResponseType';
 const currentUserUrl = apiUrl('/users/me/', { include: 'roles' });
 export const currentUserQueryKey = [usersDataType, currentUserUrl] as const;
 
+export const useCurrentUserQueryOptions = () => {
+  const fetchApi = useFetchApi();
+
+  return queryOptions({
+    queryKey: currentUserQueryKey,
+    queryFn: () => fetchApi<UsersResponseType>(currentUserUrl),
+    meta: { defaultErrorHandler: true },
+  });
+};
+
 // Special case where we can't use createQuery because this is used by
 // usePermissions, which is then used by createQuery
 export const useCurrentUser = () => {
-  const fetchApi = useFetchApi();
-  const handleError = useHandleError();
+  const currentUserQueryOptions = useCurrentUserQueryOptions();
 
   const result = useQuery({
-    queryKey: currentUserQueryKey,
-    queryFn: () => fetchApi<UsersResponseType>(currentUserUrl),
+    ...currentUserQueryOptions,
     select: (data) => data.users[0],
   });
-
-  useEffect(() => {
-    if (result.error) {
-      handleError(result.error);
-    }
-  }, [handleError, result.error]);
 
   return result;
 };
@@ -33,11 +33,16 @@ export const useCurrentUser = () => {
 // Suspense sibling of useCurrentUser on the exact same cache entry; loading
 // suspends and errors throw to the nearest boundary.
 export const useCurrentUserSuspense = () => {
-  const fetchApi = useFetchApi();
+  const currentUserQueryOptions = useCurrentUserQueryOptions();
 
-  return useSuspenseQuery({
-    queryKey: currentUserQueryKey,
-    queryFn: () => fetchApi<UsersResponseType>(currentUserUrl),
+  const result = useSuspenseQuery({
+    ...currentUserQueryOptions,
     select: (data) => data.users[0],
   });
+
+  if (result.error && !result.isFetching) {
+    throw result.error;
+  }
+
+  return result;
 };

@@ -14,10 +14,10 @@ import { type UserDetailProps } from '@/settings/general/user-detail-modal';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
-import { useCurrentUser, useSite } from '@/settings/hooks/use-settings-data';
+import { useSettingsCurrentUser, useSite } from '@/settings/hooks/use-settings-data';
 
 const BasicInputs: React.FC<UserDetailProps> = ({ errors, clearError, user, setUserData }) => {
-  const currentUser = useCurrentUser();
+  const currentUser = useSettingsCurrentUser();
   const siteData = useSite();
   const homepageUrl = getHomepageUrl(siteData);
 

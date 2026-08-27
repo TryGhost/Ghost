@@ -19,8 +19,8 @@ export function useSite(): SiteData {
   return useBrowseSiteSuspense().data.site;
 }
 
-// Deliberately shadows the framework's tri-state useCurrentUser inside
-// settings; the import path picks the suspense read.
-export function useCurrentUser(): User {
+// Named for its settings-only loaded-data contract so it cannot be confused
+// with the framework hook, which returns the full tri-state query result.
+export function useSettingsCurrentUser(): User {
   return useCurrentUserSuspense().data;
 }
