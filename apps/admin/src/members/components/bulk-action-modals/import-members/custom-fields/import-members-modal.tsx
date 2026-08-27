@@ -77,26 +77,39 @@ export function ImportMembersModal({
   const { mutateAsync: importMembers } = useImportMembers();
   const importMemberTier = useFeatureFlag('importMemberTier');
 
+  // Whether custom fields exist at all is their own flag's answer, not this dialog's: the
+  // redesigned import ships on `membersImportRedesign` and has to be a plain column-to-member-field
+  // mapper while custom fields are still an experiment. Off, they are absent from every part of
+  // this file — not fetched, not offered as a target, not creatable.
+  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
   // Defined custom fields become mapping targets. Browse returns active fields only, which
-  // are the ones the importer writes to. No flag check anywhere in this file: the gate does
-  // not render it unless membersCustomFields is on.
-  const { data: customFieldsData, isError: customFieldsFailed } = useBrowseMemberCustomFields();
+  // are the ones the importer writes to.
+  const { data: customFieldsData, isError: customFieldsFailed } = useBrowseMemberCustomFields({
+    enabled: customFieldsEnabled,
+  });
   // A field created from the mapping step is in here the moment it is created: the create
   // mutation puts it into the cached list, so there is no window where a row points at a
   // column the picker cannot name yet.
+  //
+  // The flag is asked again rather than left to the disabled query above: disabling stops the
+  // fetch, not the read, so a cache another screen had warmed would still be served here.
   const customFieldColumns = useMemo(
-    () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
-    [customFieldsData],
+    () =>
+      customFieldsEnabled
+        ? memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? [])
+        : [],
+    [customFieldsEnabled, customFieldsData],
   );
   // The file-reader effect waits for this before its first parse: the custom field
   // definitions must be loaded or auto-detection would miss custom_fields.* columns on a
   // fast upload. It flips false -> true once and stays true (a refetch keeps data defined),
   // so readiness never re-triggers the read.
-  // Ready, or never going to be. A failure has no representation in `data`, so waiting on it
-  // alone leaves the file unparsed and the step on a spinner with nothing said — for a query
-  // whose only job is to add targets to a list. Failing it costs the custom fields; blocking
-  // on it costs the import.
-  const customFieldsReady = customFieldsData !== undefined || customFieldsFailed;
+  // Ready, or never going to be. Neither a failed query nor a disabled one has any
+  // representation in `data`, so waiting on `data` alone leaves the file unparsed and the step
+  // on a spinner with nothing said — for a query whose only job is to add targets to a list.
+  // Failing it costs the custom fields; blocking on it costs the import.
+  const customFieldsReady =
+    !customFieldsEnabled || customFieldsData !== undefined || customFieldsFailed;
   // Detection options are read inside the effect through this ref rather than as deps, so
   // a later refetch of the options can't re-run the read and overwrite a mapping the user
   // has begun editing.
@@ -108,7 +121,7 @@ export function ImportMembersModal({
   }, [importMemberTier, customFieldColumns]);
   // Auto-detection takes customFieldColumns separately, through detectOptionsRef above: it
   // matches on column names rather than on what is offered.
-  const targets = useMemo(
+  const targetGroups = useMemo(
     () =>
       fieldTargets({
         membershipFields: getFieldMappings({ importMemberTier }),
@@ -474,6 +487,7 @@ export function ImportMembersModal({
         {(state.status === 'MAPPING' || state.status === 'UPLOADING') &&
           state.fileData !== null && (
             <MappingStep
+              canCreateCustomFields={customFieldsEnabled}
               dataPreviewIndex={state.dataPreviewIndex}
               fileData={state.fileData}
               labelPicker={labelPicker}
@@ -481,7 +495,7 @@ export function ImportMembersModal({
               mappingError={state.mappingError}
               showMappingErrors={state.showMappingErrors}
               status={state.status}
-              targets={targets}
+              targetGroups={targetGroups}
               onColumnsChanged={() => {
                 hasEditsRef.current = true;
               }}

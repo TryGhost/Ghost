@@ -27,10 +27,6 @@ import {
   isImportMembersCompleteResponse,
   useImportMembers,
 } from '@tryghost/admin-x-framework/api/members';
-import {
-  memberCustomFieldCsvColumns,
-  useBrowseMemberCustomFields,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { parseCSV } from './import-members/csv';
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -54,28 +50,12 @@ export function ImportMembersModal({
   const { mutateAsync: importMembers } = useImportMembers();
   const importMemberTier = useFeatureFlag('importMemberTier');
 
-  // Defined custom fields become mapping targets. Fetched only when the feature is on;
-  // browse returns active fields only, which are the ones the importer writes to.
-  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-  const { data: customFieldsData } = useBrowseMemberCustomFields({ enabled: customFieldsEnabled });
-  const customFieldColumns = useMemo(
-    () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
-    [customFieldsData],
-  );
-  // The file-reader effect waits for this before its first parse: with the feature on,
-  // the custom field definitions must be loaded or auto-detection would miss
-  // custom_fields.* columns on a fast upload. It flips false -> true once and stays true
-  // (a refetch keeps data defined), so readiness never re-triggers the read.
-  const customFieldsReady = !customFieldsEnabled || customFieldsData !== undefined;
   // Detection options are read inside the effect through this ref rather than as deps, so
-  // a later refetch of the options can't re-run the read and overwrite a mapping the user
-  // has begun editing.
-  const detectOptionsRef = useRef({ importMemberTier, customFieldColumns });
-  detectOptionsRef.current = { importMemberTier, customFieldColumns };
-  const fieldMappings = useMemo(
-    () => getFieldMappings({ importMemberTier, customFieldColumns }),
-    [importMemberTier, customFieldColumns],
-  );
+  // a later change to them can't re-run the read and overwrite a mapping the user has
+  // begun editing.
+  const detectOptionsRef = useRef({ importMemberTier });
+  detectOptionsRef.current = { importMemberTier };
+  const fieldMappings = useMemo(() => getFieldMappings({ importMemberTier }), [importMemberTier]);
 
   const labelPicker = useLabelPicker({
     selectedSlugs: state.selectedLabelSlugs,
@@ -119,7 +99,7 @@ export function ImportMembersModal({
   );
 
   useEffect(() => {
-    if (!state.file || !customFieldsReady) {
+    if (!state.file) {
       return;
     }
 
@@ -186,7 +166,7 @@ export function ImportMembersModal({
         reader.abort();
       }
     };
-  }, [state.file, customFieldsReady]);
+  }, [state.file]);
 
   const validateFile = useCallback((file: File): boolean => {
     const match = /(?:\.([^.]+))?$/.exec(file.name);
