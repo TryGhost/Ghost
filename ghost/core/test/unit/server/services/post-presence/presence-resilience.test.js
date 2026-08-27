@@ -149,6 +149,33 @@ describe('PostPresence resilience', function () {
       opened.forEach((pair) => pair.req.emit('close'));
     });
 
+    it('does not leak a slot when the client disconnects while roles load', async function () {
+      const baseline = postPresence._emitter.listenerCount('presence');
+
+      for (let i = 0; i < MAX_STREAMS_PER_USER + 1; i += 1) {
+        const { req, res } = makeUserReqRes('cap-user-5');
+        // Roles load before the close handlers are registered, so simulate a
+        // request that is already gone by the time the handler resumes.
+        req.user.load = sinon.stub().callsFake(async () => {
+          req.destroyed = true;
+        });
+        await presenceStream(req, res);
+      }
+
+      const { req, res } = makeUserReqRes('cap-user-5');
+      await presenceStream(req, res);
+
+      sinon.assert.notCalled(res.status);
+      sinon.assert.calledOnce(res.writeHead);
+      assert.equal(
+        postPresence._emitter.listenerCount('presence'),
+        baseline + 1,
+        'aborted streams should not leave subscribers behind',
+      );
+
+      req.emit('close');
+    });
+
     it('frees a slot when a stream closes', async function () {
       const opened = await openStreams('cap-user-4', MAX_STREAMS_PER_USER);
       opened[0].req.emit('close');
