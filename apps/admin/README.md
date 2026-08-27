@@ -68,7 +68,7 @@ Two loading models exist, chosen by surface type — not interchangeably:
 - **The settings subtree** renders inside a Suspense boundary
   (`SettingsDataGate`) and reads its shared resources with
   `useSuspenseQuery`-backed hooks (`useSettings`, `useConfig`, `useSite`,
-  `useCurrentUser` from `settings/hooks/use-settings-data.ts`). Loading
+  `useCurrentUser` from `src/settings/hooks/use-settings-data.ts`). Loading
   suspends into the boundary's fallback; query errors throw to the route
   error boundary.
 

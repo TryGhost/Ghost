@@ -27,11 +27,11 @@ export interface AnalyticsFrameworkData {
  *
  * The Tinybird token is deliberately not returned — `useTinybirdQuery` resolves
  * its own. It is still requested here so its loading and error states gate the
- * views the way GlobalDataProvider used to.
+ * views.
  *
- * Throws on request error. `apps/admin` mounts no `errorElement`, so this
- * surfaces through React Router's default error boundary; the standalone
- * StatsErrorBoundary that used to catch it is gone along with the standalone app.
+ * Throws on request error, surfacing through the route error boundary; the
+ * standalone StatsErrorBoundary that used to catch it is gone along with the
+ * standalone app.
  */
 export const useAnalyticsData = (): AnalyticsFrameworkData => {
   const settings = useBrowseSettings();
