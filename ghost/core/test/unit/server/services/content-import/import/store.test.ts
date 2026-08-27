@@ -60,6 +60,17 @@ describe('ImportRunStore', function () {
     assert.equal(store.get('nope'), undefined);
   });
 
+  it('releases a finished run idempotently', function () {
+    const store = new ImportRunStore();
+    store.create('run_release', 1);
+    store.finish('run_release');
+
+    store.release('run_release');
+    store.release('run_release');
+
+    assert.equal(store.get('run_release'), undefined);
+  });
+
   it('tracks a run-level failure as a finished terminal state', function () {
     const finishedAt = new Date('2026-01-01T11:00:00.000Z');
     const store = new ImportRunStore({ now: () => finishedAt });

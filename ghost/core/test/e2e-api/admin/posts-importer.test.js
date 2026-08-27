@@ -102,6 +102,7 @@ describe('Posts Importer API', function () {
     // Each test logs in as a different role — reset the login rate limiter
     // so the repeated logins don't trip spam prevention
     await resetRateLimits();
+    mockManager.mockMail();
     remoteImportedMediaUrls = [];
     await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
   });
@@ -125,6 +126,29 @@ describe('Posts Importer API', function () {
       .attach('postsfile', csvPath)
       .expectStatus(202)
       .expect(cacheInvalidateHeaderNotSet());
+  });
+
+  it('emails the requesting user when an accepted CSV import finishes', async function () {
+    await agent.loginAsOwner();
+    const completionCsvPath = await csvFile(
+      'posts-import-completion-email.csv',
+      'title,html,status\n' +
+        'Completion email created,<p>Created</p>,published\n' +
+        'Completion email draft,<p>Draft</p>,draft\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', completionCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const email = mockManager.assert.sentEmail({
+      subject: 'Your content import is complete',
+      to: 'jbloggs@example.com',
+    });
+    assert.match(email.html, /processed 2 rows/);
+    assert.match(email.html, /Created:<\/strong> 2/);
+    assert.match(email.html, /Updated:<\/strong> 0/);
+    assert.match(email.html, /Skipped:<\/strong> 0/);
+    assert.match(email.html, /Failed:<\/strong> 0/);
   });
 
   it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {

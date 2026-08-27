@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import ContentCSVImporter, { type ImportAccepted, type FailureReporter } from './import/importer';
+import ContentCSVImporter, {
+  type ImportAccepted,
+  type FailureReporter,
+  type EmailNotifications,
+} from './import/importer';
+import buildCompletionEmail from './import/completion-email';
 import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
 import { importRequestSchema, type ImportRequest } from './import/schema';
@@ -30,6 +35,8 @@ function makeImporter(): ContentCSVImporter {
   const mediaInlinerService = require('../media-inliner');
   const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
+  const { GhostMailer } = require('../mail');
+  const ghostMailer = new GhostMailer();
 
   // Inline jobs never reach the job manager's Sentry handler, which is wired to the
   // offloaded worker path only, so a throw here would be seen by nobody.
@@ -43,6 +50,11 @@ function makeImporter(): ContentCSVImporter {
     } catch {
       // Callers report from catch blocks, so this must not throw.
     }
+  };
+
+  const email: EmailNotifications = {
+    send: (run, recipient) => ghostMailer.send(buildCompletionEmail(run, recipient)),
+    getDefaultRecipient: async () => (await models.User.getOwnerUser()).get('email'),
   };
 
   return new ContentCSVImporter({
@@ -66,6 +78,7 @@ function makeImporter(): ContentCSVImporter {
             ],
           }),
       }),
+    email,
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),

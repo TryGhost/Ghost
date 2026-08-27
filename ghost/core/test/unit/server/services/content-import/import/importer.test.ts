@@ -7,6 +7,7 @@ import { ImportRunStore } from '../../../../../../core/server/services/content-i
 import type { PostImportRow } from '../../../../../../core/server/services/content-import/import/row';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
 import type { PostWriteMetadata } from '../../../../../../core/server/services/content-import/import/post-repository';
+import type { ImportRun } from '../../../../../../core/server/services/content-import/import/store';
 
 const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
   title,
@@ -28,6 +29,14 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const inlineMedia = sinon.stub().resolves();
   const createMediaInliner = sinon.stub().callsFake(() => ({ inline: inlineMedia }));
   const store = new ImportRunStore();
+  const releaseRun = sinon.stub(store, 'release');
+  const sentRuns: ImportRun[] = [];
+  const sentRecipients: string[] = [];
+  const sendEmail = sinon.stub().callsFake(async (run: ImportRun, recipient: string) => {
+    sentRuns.push(run);
+    sentRecipients.push(recipient);
+  });
+  const getDefaultRecipient = sinon.stub().resolves('owner@example.com');
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
   let cleanerResolutions = 0;
@@ -72,6 +81,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     getMarkdownToHtml: () => markdownToHtmlFactory(),
     getCleanHTML: () => cleanHTMLFactory(),
     createMediaInliner,
+    email: {
+      send: sendEmail,
+      getDefaultRecipient,
+    },
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -131,6 +144,11 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     urlFailures,
     inlineMedia,
     createMediaInliner,
+    sendEmail,
+    getDefaultRecipient,
+    sentRuns,
+    sentRecipients,
+    releaseRun,
     store,
     setHtmlToLexicalFactory,
     setMarkdownToHtmlFactory,
@@ -180,6 +198,87 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import queued');
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import started');
     sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import completed in \d+ms$/);
+  });
+
+  it('emails the requesting user once after completing and releases the run', async function () {
+    const h = harness();
+
+    await h.importer.importCSV({
+      filePath: '/tmp/posts.csv',
+      fileName: 'posts.csv',
+      requestUserEmail: 'requester@example.com',
+    });
+    await h.jobs[0].job();
+
+    sinon.assert.notCalled(h.getDefaultRecipient);
+    sinon.assert.calledOnce(h.sendEmail);
+    assert.deepEqual(h.sentRecipients, ['requester@example.com']);
+    assert.equal(h.sentRuns[0].status, 'complete');
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
+  });
+
+  it('falls back to Owner and reports email delivery failures without failing the run', async function () {
+    const h = harness();
+    const failure = new Error('mail unavailable');
+    h.sendEmail.rejects(failure);
+
+    await h.run();
+
+    sinon.assert.calledOnce(h.getDefaultRecipient);
+    sinon.assert.calledOnceWithExactly(
+      h.sendEmail,
+      sinon.match({ status: 'complete' }),
+      'owner@example.com',
+    );
+    assert.equal(h.reported.at(-1), failure);
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
+  });
+
+  it('does not prepare or schedule an import when the Owner recipient cannot be resolved', async function () {
+    const h = harness();
+    const failure = new Error('Owner unavailable');
+    const prepareSource = sinon.stub().resolves({
+      filePath: '/tmp/posts.csv',
+      cleanup: sinon.stub().resolves(),
+    });
+    h.getDefaultRecipient.rejects(failure);
+    const importer = new ContentCSVImporter({ ...h.deps, prepareSource });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
+      failure,
+    );
+
+    sinon.assert.notCalled(prepareSource);
+    assert.equal(h.jobs.length, 0);
+    sinon.assert.notCalled(h.sendEmail);
+  });
+
+  it('emails a failed accepted run before releasing it', async function () {
+    const h = harness();
+    const failure = new Error('converter unavailable');
+    h.setHtmlToLexicalFactory(() => {
+      throw failure;
+    });
+
+    await h.run();
+
+    sinon.assert.calledOnce(h.sendEmail);
+    assert.equal(h.sentRuns[0].status, 'failed');
+    assert.equal(h.sentRuns[0].failureReason, 'converter unavailable');
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
+  });
+
+  it('finishes safely if an injected store loses the run before the job settles', async function () {
+    const h = harness();
+    h.releaseRun.restore();
+
+    await h.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    h.store.release('run_test');
+    await h.jobs[0].job();
+
+    sinon.assert.notCalled(h.sendEmail);
+    assert.equal(h.created.length, 2);
   });
 
   it('uses the current time by default when one is not injected', async function () {
@@ -603,6 +702,8 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.status, 'failed');
     assert.equal(h.store.get('run_test')?.failureReason, 'queue unavailable');
     sinon.assert.calledOnce(cleanup);
+    sinon.assert.notCalled(h.sendEmail);
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
   });
 
   it('reports cleanup failures without rejecting the completed job', async function () {

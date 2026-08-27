@@ -18,6 +18,7 @@ describe('content import schema', function () {
       importRequestSchema.parse({
         filePath: '/tmp/posts.zip',
         fileName: 'posts.zip',
+        requestUserEmail: 'requester@example.com',
         mapping: {
           Headline: 'title',
           Body: 'html',
@@ -31,6 +32,7 @@ describe('content import schema', function () {
       {
         filePath: '/tmp/posts.zip',
         fileName: 'posts.zip',
+        requestUserEmail: 'requester@example.com',
         mapping: {
           Headline: 'title',
           Body: 'html',
@@ -48,6 +50,30 @@ describe('content import schema', function () {
     assert.deepEqual(
       importRequestSchema.parse({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
       { filePath: '/tmp/posts.csv', fileName: 'posts.csv' },
+    );
+  });
+
+  it('accepts a null request user and rejects an invalid email address', function () {
+    assert.deepEqual(
+      importRequestSchema.parse({
+        filePath: '/tmp/posts.csv',
+        fileName: 'posts.csv',
+        requestUserEmail: null,
+      }),
+      {
+        filePath: '/tmp/posts.csv',
+        fileName: 'posts.csv',
+        requestUserEmail: null,
+      },
+    );
+
+    assert.equal(
+      importRequestSchema.safeParse({
+        filePath: '/tmp/posts.csv',
+        fileName: 'posts.csv',
+        requestUserEmail: 'not-an-email',
+      }).success,
+      false,
     );
   });
 

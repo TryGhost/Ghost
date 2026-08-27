@@ -83,6 +83,10 @@ export class ImportRunStore {
     return this._runs.get(id);
   }
 
+  release(id: string): void {
+    this._runs.delete(id);
+  }
+
   // A running run is never evicted, whatever its age: the job holds only the runId,
   // so evicting mid-import would silently turn its record()/finish() calls into
   // no-ops and lose the report. The count cap can briefly overshoot while several

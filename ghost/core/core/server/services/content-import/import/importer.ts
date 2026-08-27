@@ -9,7 +9,7 @@ import buildPostData, {
 import type { PostImportRow } from './row';
 import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
-import type { Clock, ImportRunStore, RowOutcome } from './store';
+import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
 
@@ -31,6 +31,11 @@ export interface ImportAccepted {
 
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
+
+export interface EmailNotifications {
+  send(run: ImportRun, recipient: string): Promise<unknown>;
+  getDefaultRecipient(): Promise<string>;
+}
 
 type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PostImportRow[]>;
 type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
@@ -62,6 +67,7 @@ interface ImporterDeps {
   getMarkdownToHtml: () => MarkdownToHtml;
   getCleanHTML: () => CleanHTML;
   createMediaInliner: () => PostMediaInlining;
+  email: EmailNotifications;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -86,6 +92,7 @@ class ContentCSVImporter {
   private _getMarkdownToHtml: () => MarkdownToHtml;
   private _getCleanHTML: () => CleanHTML;
   private _createMediaInliner: () => PostMediaInlining;
+  private _email: EmailNotifications;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -102,6 +109,7 @@ class ContentCSVImporter {
     getMarkdownToHtml,
     getCleanHTML,
     createMediaInliner,
+    email,
     addJob,
     report,
     store,
@@ -117,6 +125,7 @@ class ContentCSVImporter {
     this._getMarkdownToHtml = getMarkdownToHtml;
     this._getCleanHTML = getCleanHTML;
     this._createMediaInliner = createMediaInliner;
+    this._email = email;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -127,6 +136,7 @@ class ContentCSVImporter {
   }
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
+    const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
     const source = await this._prepareSource(request);
     let rows: PostImportRow[];
     try {
@@ -155,13 +165,14 @@ class ContentCSVImporter {
     logLifecycle('queued');
     try {
       this._addJob({
-        job: () => this.runImportJob(runId, importTagNames, rows, source),
+        job: () => this.runImportJob(runId, importTagNames, rows, source, emailRecipient),
         offloaded: false,
         name: 'content-import',
       });
     } catch (error) {
       this._store.fail(runId, messageOf(error));
       await this.cleanupSource(source.cleanup);
+      this._store.release(runId);
       throw error;
     }
 
@@ -175,6 +186,7 @@ class ContentCSVImporter {
     importTagNames: string[],
     rows: PostImportRow[],
     source: PreparedImportSource,
+    emailRecipient: string,
   ): Promise<void> {
     const startedAt = Date.now();
     logLifecycle('started');
@@ -330,6 +342,11 @@ class ContentCSVImporter {
       this._store.fail(runId, messageOf(error));
     } finally {
       await this.cleanupSource(source.cleanup);
+      const run = this._store.get(runId);
+      if (run) {
+        await this.settle(() => this._email.send(run, emailRecipient));
+      }
+      this._store.release(runId);
       const outcome = failed ? 'failed after' : 'completed in';
       logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
     }
@@ -352,6 +369,14 @@ class ContentCSVImporter {
   private async cleanupSource(cleanup: () => Promise<void>): Promise<void> {
     try {
       await cleanup();
+    } catch (error) {
+      this._report(error);
+    }
+  }
+
+  private async settle(operation: () => Promise<unknown>): Promise<void> {
+    try {
+      await operation();
     } catch (error) {
       this._report(error);
     }
