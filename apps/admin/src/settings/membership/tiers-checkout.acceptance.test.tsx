@@ -234,6 +234,50 @@ describe('Tier checkout collection', () => {
     expect(sent.shipping).not.toHaveProperty('allowed_countries');
   });
 
+  // A destination can stop being usable between the picker offering it and the save
+  // reaching the server. Only the server sees that, so its refusal has to land on the
+  // picker it names, carrying the server's own words rather than a guess restated here.
+  it('shows a refused destination against the picker that named it', async () => {
+    const refusal = 'An archived custom field cannot receive collected data. Restore it first.';
+    fakeSettingsScreens();
+    fakeTiers([freeTier, supporterTier]);
+    fakeMemberCustomFields([addressField, nameField]);
+    fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
+    fakeAdminEndpoint(
+      'PUT',
+      `/tiers/${supporterTier.id}/checkout_config/`,
+      {
+        errors: [
+          {
+            message: 'Validation error',
+            context: refusal,
+            type: 'ValidationError',
+            property: 'checkout.shipping_address.custom_field_key',
+          },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp('/settings', { boot: flagOnBoot });
+
+    const modal = await openSupporterModal();
+    await modal.getByLabelText('Collect shipping address').click();
+    await modal.getByLabelText('Save address as').click();
+    await page.getByRole('option', { name: addressField.name }).click();
+    await modal.getByLabelText('Save recipient name as').click();
+    await page.getByRole('option', { name: nameField.name }).click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(modal.getByText(refusal)).toBeVisible();
+    // On the picker the server blamed, and only that one.
+    await expect
+      .element(modal.getByLabelText('Save address as'))
+      .toHaveAttribute('aria-invalid', 'true');
+    await expect
+      .element(modal.getByLabelText('Save recipient name as'))
+      .not.toHaveAttribute('aria-invalid');
+  });
+
   it('creates a destination field from inside the picker', async () => {
     let fields = [addressField];
     const created = { ...nameField, key: 'gift_recipient', name: 'Gift Recipient' };

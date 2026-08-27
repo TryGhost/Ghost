@@ -26,8 +26,10 @@ import {
   PORT_FIELD,
   STRIPE_ALLOWED_COUNTRIES,
   STRIPE_PORT,
+  isStripePort,
   type StripePort,
 } from '@tryghost/checkout';
+import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { type ErrorMessages, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { Text } from '@tryghost/shade/primitives';
 import {
@@ -69,6 +71,28 @@ const SHIPS_TO_OPTIONS = [
   { value: 'specific', label: 'Specific countries', hint: 'Choose the countries you deliver to' },
 ] as const;
 type ShipsToMode = (typeof SHIPS_TO_OPTIONS)[number]['value'];
+
+/** Which picker a refusal belongs to, by the collection the server names in it. */
+const DESTINATION_ERROR: Record<StripePort, string> = {
+  [STRIPE_PORT.shippingAddress]: 'shippingField',
+  [STRIPE_PORT.shippingName]: 'shippingName',
+  [STRIPE_PORT.phone]: 'phoneField',
+};
+
+/**
+ * The picker a refused save blamed, if it blamed one.
+ *
+ * A destination can stop being usable between the picker listing it and the save reaching
+ * the server — archived, or retyped to something that cannot hold what is collected. Only
+ * the server sees that, and it says which collection was refused, so the refusal can be
+ * shown against the picker that named it instead of as a toast that leaves every picker
+ * looking equally fine.
+ */
+const refusedDestination = (error: unknown): string | undefined => {
+  const property = (error instanceof JSONError ? error.data?.errors?.[0]?.property : null) ?? '';
+  const port = /^checkout\.(\w+)\.custom_field_key$/.exec(property)?.[1];
+  return port && isStripePort(port) ? DESTINATION_ERROR[port] : undefined;
+};
 
 export type TierCheckoutCollectionHandle = {
   /**
@@ -382,6 +406,18 @@ const TierCheckoutCollection = forwardRef<
           setSavedSerialized(JSON.stringify(effectiveState(state)));
           return true;
         } catch (error) {
+          const blamed = refusedDestination(error);
+          if (blamed) {
+            // Reported without a toast, the way the picker's own create does it: shown in
+            // place, but a refusal only the server can detect still has to reach error
+            // tracking rather than being swallowed by the field it lands on.
+            handleError(error, { withToast: false });
+            setErrors((current) => ({
+              ...current,
+              [blamed]: getErrorMessage(error, 'This field cannot be used here. Choose another'),
+            }));
+            return false;
+          }
           handleError(error);
           return false;
         }
