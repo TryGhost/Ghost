@@ -141,6 +141,16 @@ describe('BetaGiftRedemptionPage', () => {
     expect(queryByText(member.free.name)).not.toBeInTheDocument();
   });
 
+  test('shows the anonymous introduction for a gift without a buyer name', () => {
+    const { container } = renderGiftRedemptionPage(BetaGiftRedemptionPage);
+
+    const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
+    expect(subtitle).toHaveTextContent(
+      "You've been gifted a 1-year Premium membership to The Blueprint",
+    );
+    expect(subtitle).toContainHTML('<strong>1-year</strong>');
+  });
+
   test('presents the buyer details and prefills the intended recipient details', async () => {
     const personalizedGift = {
       ...gift,

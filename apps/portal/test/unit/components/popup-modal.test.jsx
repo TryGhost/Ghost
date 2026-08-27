@@ -29,6 +29,7 @@ describe('PopupContent', () => {
       },
     );
 
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
     const message = getByLabelText('Optional message');
     fireEvent.change(message, { target: { value: 'Enjoy!' } });
