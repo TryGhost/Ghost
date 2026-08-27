@@ -81,6 +81,13 @@ describe('Job: Clean expired comped', function () {
   it('cleans up expired comped members exactly once and leaves the rest alone', async function () {
     const expiredMemberId = await createCompedMember('expired-comped@example.com', daysFromNow(-2));
     const activeMemberId = await createCompedMember('active-comped@example.com', daysFromNow(2));
+    // Eligibility is strictly before the start of the current UTC day, so an
+    // expiry later today must survive - pins the cutoff's cross-dialect
+    // format (an ISO cutoff string wrongly matches this row on SQLite)
+    const sameDayMemberId = await createCompedMember(
+      'same-day-comped@example.com',
+      moment.utc().endOf('day').format('YYYY-MM-DD HH:mm:ss'),
+    );
 
     const editedEvents: any[] = [];
     const onMemberEdited = (model: any) => {
@@ -120,6 +127,17 @@ describe('Job: Clean expired comped', function () {
         .knex('members_products')
         .where({ member_id: activeMemberId });
       assert.equal(activeRelations.length, 1, 'The unexpired product relation is kept');
+
+      const sameDayMember = await models.Member.findOne({ id: sameDayMemberId });
+      assert.equal(
+        sameDayMember.get('status'),
+        'comped',
+        'An expiry later on the current UTC day is not yet eligible',
+      );
+      const sameDayRelations = await db
+        .knex('members_products')
+        .where({ member_id: sameDayMemberId });
+      assert.equal(sameDayRelations.length, 1, 'The same-day product relation is kept');
 
       // A repeat run must be a no-op: no duplicate status history, no new events
       editedEvents.length = 0;

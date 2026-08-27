@@ -63,7 +63,11 @@ async function cleanExpiredComped({
   const { deletedSubscriptionCount, updatedMemberCount, updatedMembers, now } =
     await db.knex.transaction(async (trx) => {
       const expiredCompedRows: ExpiredCompedRow[] = await trx('members_products')
-        .where('expiry_at', '<', moment.utc().startOf('day').toISOString())
+        // we need to be careful about the type here. .format() is the only
+        // thing that works across SQLite and MySQL: an ISO cutoff compares
+        // lexically against SQLite's 'YYYY-MM-DD HH:mm:ss' text and its 'T'
+        // sorts above ' ', wrongly matching same-UTC-day expiries
+        .where('expiry_at', '<', moment.utc().startOf('day').format('YYYY-MM-DD HH:mm:ss'))
         .select('*');
 
       if (!expiredCompedRows.length) {
