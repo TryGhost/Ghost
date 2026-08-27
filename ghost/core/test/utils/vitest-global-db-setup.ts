@@ -16,6 +16,7 @@
 // (mirrors vitest-setup-db.ts). Must run before any Ghost source is required.
 require('tsx/cjs');
 const crypto = require('crypto');
+const knex = require('knex');
 
 // Reject vitest's own NODE_ENV='test' default (Ghost has no config.test.json);
 // use the MySQL test environment. Mirrors vitest-setup-db.ts so the template is
@@ -23,27 +24,106 @@ const crypto = require('crypto');
 process.env.NODE_ENV = 'testing-mysql';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
+const portBlockSize = 128;
+const portBlockCount = 150;
+const firstPortBlock = 10000;
+
+const reservePortBlock = async (runId: string) => {
+  const config = require('../../core/shared/config');
+  const connectionConfig = { ...config.get('database:connection') };
+  delete connectionConfig.database;
+  const admin = knex({
+    client: config.get('database:client'),
+    connection: connectionConfig,
+  });
+  const connection = await admin.client.acquireConnection().catch(async (err: unknown) => {
+    await admin.destroy();
+    throw err;
+  });
+  const firstCandidate = parseInt(runId, 16) % portBlockCount;
+  const closeAdmin = async () => {
+    try {
+      await admin.client.releaseConnection(connection);
+    } catch {
+      // Closing the pool below also releases its MySQL advisory locks.
+    }
+    try {
+      await admin.destroy();
+    } catch {
+      // Best effort during setup/teardown cleanup.
+    }
+  };
+
+  try {
+    for (let offset = 0; offset < portBlockCount; offset += 1) {
+      const block = (firstCandidate + offset) % portBlockCount;
+      const lockName = `ghost-test-port-block-${block}`;
+      const [rows] = await admin
+        .raw('SELECT GET_LOCK(?, 0) AS acquired', [lockName])
+        .connection(connection);
+
+      if (rows[0].acquired === 1) {
+        return {
+          portBase: firstPortBlock + block * portBlockSize,
+          release: async () => {
+            try {
+              await admin.raw('SELECT RELEASE_LOCK(?)', [lockName]).connection(connection);
+            } catch {
+              // Closing the connection also releases its advisory locks.
+            }
+            await closeAdmin();
+          },
+        };
+      }
+    }
+  } catch (err) {
+    await closeAdmin();
+    throw err;
+  }
+
+  await closeAdmin();
+  throw new Error('No MySQL test port block is available');
+};
+
 export default async function setup() {
   // The run's BASE (un-suffixed) DB identifier. In this main process the base
   // env vars carry no per-fork session suffix, so deriving template locations
   // from them yields exactly the values the forks compute from their suffixed
   // config. Captured before loading config so it reflects the true base.
+  const runId = crypto.randomBytes(4).toString('hex');
   const run = {
     mysqlBase: process.env.database__connection__database || 'ghost_testing',
-    runId: crypto.randomBytes(4).toString('hex'),
+    runId,
   };
-  process.env.GHOST_TEST_DB_BASE = run.mysqlBase;
-  process.env.GHOST_TEST_DB_RUN_ID = run.runId;
 
   // Load Ghost's runtime overrides (nconf wiring) and the template builder.
   require('../../core/server/overrides');
   const { buildTemplate, dropRunDatabases } = require('./db-template');
+  const portBlock = await reservePortBlock(runId);
 
-  await buildTemplate(run);
+  process.env.GHOST_TEST_DB_BASE = run.mysqlBase;
+  process.env.GHOST_TEST_DB_RUN_ID = run.runId;
+  process.env.GHOST_TEST_PORT_BASE = String(portBlock.portBase);
+  process.env.GHOST_TEST_PORT_BLOCK_SIZE = String(portBlockSize);
+
+  try {
+    await buildTemplate(run);
+  } catch (err) {
+    try {
+      await dropRunDatabases(run);
+    } finally {
+      await portBlock.release();
+    }
+    throw err;
+  }
 
   // Teardown: drop the template and every worker database once all forks have
   // exited. Best effort.
   return async () => {
-    await dropRunDatabases(run);
+    try {
+      await dropRunDatabases(run);
+    } finally {
+      await portBlock.release();
+    }
   };
 }

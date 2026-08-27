@@ -46,8 +46,11 @@ const mysqlRunId = process.env.GHOST_TEST_DB_RUN_ID;
 if (!mysqlBase || !mysqlRunId) {
   throw new Error('DB test setup requires vitest-global-db-setup.ts');
 }
-const mysqlId = crypto.randomBytes(4).toString('hex');
-process.env.database__connection__database = `${mysqlBase}_${mysqlRunId}_${mysqlId}`;
+if (!process.env.GHOST_TEST_DB_WORKER_DATABASE) {
+  const mysqlId = crypto.randomBytes(4).toString('hex');
+  process.env.GHOST_TEST_DB_WORKER_DATABASE = `${mysqlBase}_${mysqlRunId}_${mysqlId}`;
+}
+process.env.database__connection__database = process.env.GHOST_TEST_DB_WORKER_DATABASE;
 
 // Flush this worker's V8 coverage after every file. The external c8 collector
 // reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
@@ -75,16 +78,20 @@ const canonicalTestPort = 2369;
 // supertest.agent(config.get('url'))); if two concurrent forks land on the same
 // port, one Ghost ends up serving the other's requests — or boots unready — and
 // every request 404s with an HTML body (e.g. the whole invites suite failing
-// intermittently). vitest gives each concurrent fork a distinct VITEST_POOL_ID
-// (1..poolSize); a recycled slot's port is reused only after its previous fork
-// has exited and freed it, so base+poolId never collides among live forks. The
-// old `Math.random()` port in a 7630-wide range collided often enough across ~90
-// parallel boots to flake. (The DB name already uses a 2^32 sessionId, which is
-// collision-resistant; only the port was under-spread.)
+// intermittently). globalSetup reserves a run-scoped low-port block with a
+// MySQL advisory lock, and vitest gives each concurrent fork a distinct
+// VITEST_POOL_ID within that block. A recycled slot's port is reused only after
+// its previous fork has exited and freed it.
 const poolId = parseInt(process.env.VITEST_POOL_ID || '', 10);
-const derivedPort = Number.isInteger(poolId)
-  ? 2370 + poolId
-  : 2370 + Math.floor(Math.random() * 7630);
+const portBase = parseInt(process.env.GHOST_TEST_PORT_BASE || '', 10);
+const portBlockSize = parseInt(process.env.GHOST_TEST_PORT_BLOCK_SIZE || '', 10);
+if (!Number.isInteger(portBase) || !Number.isInteger(portBlockSize)) {
+  throw new Error('DB test setup requires a reserved port block');
+}
+if (Number.isInteger(poolId) && (poolId < 1 || poolId >= portBlockSize)) {
+  throw new Error(`VITEST_POOL_ID ${poolId} is outside the reserved port block`);
+}
+const derivedPort = portBase + (Number.isInteger(poolId) ? poolId : 0);
 process.env.server__port = process.env.server__port || String(derivedPort);
 process.env.url = process.env.url || `http://127.0.0.1:${process.env.server__port}`;
 const sessionPort = parseInt(process.env.server__port, 10);

@@ -41,7 +41,7 @@ describe('Config API', function () {
         .expectStatus(200)
         .matchBodySnapshot({
           config: {
-            database: stringMatching(/^mysql(?:5|8)?$/),
+            database: 'mysql8',
             environment: 'testing-mysql',
             version: stringMatching(/\d+\.\d+\.\d+/),
             // labs is matched dynamically so adding/removing feature

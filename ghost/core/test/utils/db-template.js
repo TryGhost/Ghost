@@ -33,8 +33,8 @@ const getResetTables = () => {
   return schemaTables.concat(['migrations']);
 };
 
-const deriveMySQLTemplateDatabase = (database) => {
-  return `${database}_template`;
+const deriveMySQLTemplateDatabase = (database, runId) => {
+  return `${database}_${runId}_template`;
 };
 
 /**
@@ -44,7 +44,10 @@ const deriveMySQLTemplateDatabase = (database) => {
  * @returns {string}
  */
 const getForkTemplateDatabase = () => {
-  return deriveMySQLTemplateDatabase(process.env.GHOST_TEST_DB_BASE);
+  return deriveMySQLTemplateDatabase(
+    process.env.GHOST_TEST_DB_BASE,
+    process.env.GHOST_TEST_DB_RUN_ID,
+  );
 };
 
 /**
@@ -82,7 +85,7 @@ const ensureForkDatabaseExists = async () => {
  */
 const buildTemplate = async (run) => {
   debug('Building shared DB template');
-  config.set('database:connection:database', deriveMySQLTemplateDatabase(run.mysqlBase));
+  config.set('database:connection:database', deriveMySQLTemplateDatabase(run.mysqlBase, run.runId));
 
   // Construct after the override so MigratorConfig.js captures the template
   // location. reset({force}) drops the template DB (DROP DATABASE, tolerating
@@ -166,7 +169,10 @@ const dropRunDatabases = async (run) => {
     // Point config at the template and let knex-migrator reset({force}) drop
     // that database — reusing the same connection path build used, so we never
     // bind Ghost's singleton db.knex to a template.
-    config.set('database:connection:database', deriveMySQLTemplateDatabase(run.mysqlBase));
+    config.set(
+      'database:connection:database',
+      deriveMySQLTemplateDatabase(run.mysqlBase, run.runId),
+    );
     const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
     await knexMigrator.reset({ force: true });
   } catch (err) {
