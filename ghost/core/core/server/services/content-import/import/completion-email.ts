@@ -1,4 +1,5 @@
 import type { ImportRun, RowStatus } from './store';
+import buildImportReport from './report';
 
 export interface CompletionEmailPayload {
   to: string;
@@ -131,11 +132,21 @@ export default function buildCompletionEmail(
   recipient: string,
 ): CompletionEmailPayload {
   const counts = countsFor(run);
+  const report = buildImportReport(run);
   return {
     to: recipient,
     subject: headingFor(run, counts),
     html: renderCompletionEmail(run, recipient),
     forceTextContent: true,
-    attachments: [],
+    attachments: report
+      ? [
+          {
+            filename: 'report.csv',
+            content: report,
+            contentType: 'text/csv',
+            contentDisposition: 'attachment',
+          },
+        ]
+      : [],
   };
 }

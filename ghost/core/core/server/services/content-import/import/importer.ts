@@ -269,6 +269,7 @@ class ContentCSVImporter {
             },
             {
               sourceUpdatedAt: row.updated_at,
+              runTagName: importTagNames[1],
               authorNames: row.authors,
               authorEmails: row.author_emails,
               tagNames: row.tags,
@@ -281,6 +282,7 @@ class ContentCSVImporter {
               title: row.title,
               status: 'skipped',
               reason: result.reason,
+              duplicate: result.duplicate,
             });
             continue;
           }

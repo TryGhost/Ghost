@@ -12,6 +12,7 @@ const {
 const { cacheInvalidateHeaderNotSet } = assertions;
 const path = require('path');
 const nock = require('nock');
+const papaparse = require('papaparse');
 const models = require('../../../core/server/models');
 const jobsService = require('../../../core/server/services/jobs');
 const mediaInlinerService = require('../../../core/server/services/media-inliner');
@@ -157,6 +158,59 @@ describe('Posts Importer API', function () {
     assert.ok(
       email.html.includes(`/#/editor/post/${draft.id}`),
       'the draft links to its Admin editor',
+    );
+  });
+
+  it('attaches a report that classifies same-run and pre-existing duplicates', async function () {
+    await agent.loginAsOwner();
+    const preExistingPath = await csvFile(
+      'posts-import-report-pre-existing.csv',
+      'title,slug\nPre-existing report post,report-pre-existing\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', preExistingPath).expectStatus(202);
+    await jobsService.allSettled();
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+
+    const reportPath = await csvFile(
+      'posts-import-report.csv',
+      [
+        'title,slug,status,custom_excerpt,authors,author_emails',
+        'First in this run,report-same-run,draft,,,',
+        'Duplicate in this run,report-same-run,draft,,,',
+        'Pre-existing duplicate,report-pre-existing,draft,,,',
+        'Invalid status,report-invalid-status,scheduled,,,',
+        `Write failure,report-write-failure,draft,${'x'.repeat(301)},,`,
+        'Warning success,report-warning,draft,,Warning Author,not-an-email',
+      ].join('\n'),
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', reportPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    assert.equal(email.attachments.length, 1);
+    assert.equal(email.attachments[0].filename, 'report.csv');
+    assert.equal(email.attachments[0].contentType, 'text/csv');
+
+    const { data: rows } = papaparse.parse(email.attachments[0].content.trim(), {
+      header: true,
+    });
+    assert.equal(rows.length, 5);
+    const sameRun = rows.find((row) => row.title === 'Duplicate in this run');
+    assert.equal(sameRun.outcome, 'duplicate');
+    assert.equal(sameRun.duplicate_origin, 'this_import');
+    assert.equal(sameRun.matched_by, 'slug');
+    const preExisting = rows.find((row) => row.title === 'Pre-existing duplicate');
+    assert.equal(preExisting.outcome, 'duplicate');
+    assert.equal(preExisting.duplicate_origin, 'pre_existing');
+    assert.equal(preExisting.matched_by, 'slug');
+    assert.equal(rows.find((row) => row.title === 'Invalid status').outcome, 'skipped');
+    assert.equal(rows.find((row) => row.title === 'Write failure').outcome, 'failed');
+    assert.match(rows.find((row) => row.title === 'Warning success').warnings, /assigned Owner/);
+    assert.equal(
+      rows.some((row) => row.title === 'First in this run'),
+      false,
     );
   });
 

@@ -32,7 +32,11 @@ describe('content import completion email', function () {
     assert.equal(email.to, 'requester@example.com');
     assert.equal(email.subject, 'Your content import is complete');
     assert.equal(email.forceTextContent, true);
-    assert.deepEqual(email.attachments, []);
+    assert.equal(email.attachments.length, 1);
+    assert.equal(email.attachments[0].filename, 'report.csv');
+    assert.equal(email.attachments[0].contentType, 'text/csv');
+    assert.equal(email.attachments[0].contentDisposition, 'attachment');
+    assert.match(email.attachments[0].content, /Skipped/);
     assert.match(email.html, /Created:<\/strong> 2/);
     assert.match(email.html, /Updated:<\/strong> 1/);
     assert.match(email.html, /Skipped:<\/strong> 1/);
@@ -51,6 +55,21 @@ describe('content import completion email', function () {
 
     assert.equal(email.subject, 'Your content import was unsuccessful');
     assert.match(email.html, /processed 1 row:/);
+  });
+
+  it('omits the report attachment for a completely clean run', function () {
+    const email = buildCompletionEmail(
+      run({
+        total: 2,
+        rows: [
+          { line: 2, title: 'Created', status: 'created' },
+          { line: 3, title: 'Updated', status: 'updated' },
+        ],
+      }),
+      'owner@example.com',
+    );
+
+    assert.deepEqual(email.attachments, []);
   });
 
   it('uses plural warning copy for multiple warning-bearing posts', function () {

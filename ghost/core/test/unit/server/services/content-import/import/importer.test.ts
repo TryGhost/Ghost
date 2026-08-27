@@ -66,6 +66,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
           return {
             status: 'skipped' as const,
             reason: `A post with the slug "${data.slug}" already exists.`,
+            duplicate: { origin: 'pre_existing' as const, matchedBy: 'slug' as const },
           };
         }
         created.push({ data, options, metadata });
@@ -434,6 +435,7 @@ describe('ContentCSVImporter', function () {
       assert.deepEqual(call.options, { importing: true, context: { internal: true } });
       assert.deepEqual(call.metadata, {
         sourceUpdatedAt: undefined,
+        runTagName: '#Import Run run_test',
         authorNames: undefined,
         authorEmails: undefined,
         tagNames: undefined,
@@ -581,6 +583,7 @@ describe('ContentCSVImporter', function () {
 
     assert.deepEqual(h.created[0].metadata, {
       sourceUpdatedAt: undefined,
+      runTagName: '#Import Run run_test',
       authorNames: 'Alice, Bob',
       authorEmails: 'alice@example.com, bob@example.com',
       tagNames: 'News, Features',
@@ -778,6 +781,7 @@ describe('ContentCSVImporter', function () {
         title: 'Duplicate',
         status: 'skipped',
         reason: 'A post with the slug "duplicate" already exists.',
+        duplicate: { origin: 'pre_existing', matchedBy: 'slug' },
       },
       {
         line: 3,
@@ -798,6 +802,7 @@ describe('ContentCSVImporter', function () {
 
     assert.deepEqual(h.created[0].metadata, {
       sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
+      runTagName: '#Import Run run_test',
       authorNames: undefined,
       authorEmails: undefined,
       tagNames: undefined,
