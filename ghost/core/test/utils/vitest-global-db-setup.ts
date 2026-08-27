@@ -25,8 +25,11 @@ process.env.NODE_ENV = 'testing-mysql';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
 const portBlockSize = 128;
-const portBlockCount = 150;
-const firstPortBlock = 10000;
+// Keep every worker port four digits long, matching the canonical snapshot port
+// (2369). Response bodies normalize dynamic URLs before comparison, but their
+// content-length headers are calculated first and therefore depend on port width.
+const portBlockCount = 54;
+const firstPortBlock = 3000;
 
 const reservePortBlock = async (runId: string) => {
   const config = require('../../core/shared/config');
