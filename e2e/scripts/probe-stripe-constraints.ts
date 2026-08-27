@@ -1,14 +1,22 @@
 import { asSessionCreateParams, provision, stripeClient } from './provision-stripe-environment.ts';
 import { readFileSync } from 'node:fs';
+import type Stripe from 'stripe';
 
 /**
  * Measures the checkout constraints the fake Stripe server enforces.
  *
  * The limits in `fake-stripe-server.ts` cannot be taken from Stripe's docs or its
  * published OpenAPI spec, because both disagree with the API: the spec carries no
- * `maxItems` on `custom_fields`, states the `customer_update` rule only in prose,
- * and marks `allowed_countries` required when the API does not. This script is how
- * those limits were established, and how to re-establish them when Stripe moves one.
+ * `maxItems` on `custom_fields`, and states the `customer_update` rule only in prose.
+ * This script is how those limits were established, and how to re-establish them when
+ * Stripe moves one.
+ *
+ * Read what a probe reports, not whether it was accepted. Stripe's form encoding drops an
+ * empty object, so a parameter can disappear on the way out and the session is created
+ * without it — a success that collects nothing. This once produced the wrong conclusion
+ * here, that the API treats `allowed_countries` as optional where the spec marks it
+ * required. It does not: the list is the only key `shipping_address_collection` has, so
+ * leaving it out removes the whole parameter.
  *
  * Run: STRIPE_SECRET_KEY=sk_test_... pnpm --filter @tryghost/e2e stripe:probe
  */
@@ -42,10 +50,34 @@ const field = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+/** What the created session will actually ask a buyer for, which is the thing to read. */
+function collects(session: Stripe.Checkout.Session): string {
+  const asks: string[] = [];
+  const countries = session.shipping_address_collection?.allowed_countries;
+  if (countries) {
+    asks.push(`shipping_address (${countries.length} countries)`);
+  }
+  if (session.phone_number_collection?.enabled) {
+    asks.push('phone_number');
+  }
+  if (session.tax_id_collection?.enabled) {
+    asks.push('tax_id');
+  }
+  // Read through a cast: the API returns `custom_fields` on a session, but the types for
+  // the pinned version predate it and do not declare it. The probe exists to measure the
+  // API rather than the types, so the API is what it reads.
+  const questions = (session as { custom_fields?: unknown[] }).custom_fields;
+  if (questions?.length) {
+    asks.push(`custom_fields (${questions.length})`);
+  }
+  return asks.length ? asks.join(', ') : 'nothing';
+}
+
 async function probe(name: string, params: Record<string, unknown>): Promise<void> {
   try {
-    await stripe.checkout.sessions.create(asSessionCreateParams(params));
+    const session = await stripe.checkout.sessions.create(asSessionCreateParams(params));
     log(`  ACCEPTED  ${name}`);
+    log(`            collects ${collects(session)}`);
   } catch (error) {
     log(`  REJECTED  ${name}`);
     log(`            ${(error as Error).message}`);
@@ -92,9 +124,17 @@ async function main(): Promise<void> {
     ...base,
     customer_update: { address: 'auto' },
   });
+  // Whether a session can ask for an address without naming countries — the shape an
+  // "everywhere" sentinel would need. Both of these are accepted and both collect nothing,
+  // because the empty object never reaches Stripe. There is no sentinel; a caller that
+  // means everywhere has to enumerate every country.
   await probe('shipping_address_collection without allowed_countries', {
     ...base,
     shipping_address_collection: {},
+  });
+  await probe('shipping_address_collection with an empty allowed_countries', {
+    ...base,
+    shipping_address_collection: { allowed_countries: [] },
   });
 
   // Whether the SDK's own `AllowedCountry` union can be trusted as the list Ghost enforces
