@@ -6,80 +6,13 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin-7/fonts.css';
 
-/* The shell owns the static sidebar treatment; React surfaces opt into the
-   content dimensions with admin7-page-content. */
-.admin7-sidebar-layout {
-  --page-gutter: 40px;
-  --content-width: 1080px;
-  --content-width-wide: 1280px;
-  overflow: hidden;
-}
-
-.admin7-sidebar-layout [data-sidebar='sidebar'] {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  box-shadow: none;
-}
-
-.admin7-sidebar-layout > main {
-  min-width: 0;
-}
-
-.admin7-page-content {
-  max-width: var(--content-width);
-}
-
-.admin7-page-content > [data-list-page='list-page'],
-.admin7-page-content > [data-detail-page='detail-page'],
-.admin7-page-content .admin7-page-gutter {
-  padding-inline: var(--page-gutter);
-}
-
-.admin7-page-content [data-list-page='header'],
-.admin7-page-content .admin7-header-gutter {
-  margin-inline: calc(var(--page-gutter) * -1);
-  padding-inline: var(--page-gutter);
-}
-
-/* Analytics charts must not size their grid track beyond the available page. */
-.admin7-page-content > [data-admin-content-grid] {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.admin7-page-content .admin7-header-gutter {
-  padding-inline: 0;
-}
-
-.admin7-page-content .admin7-header-gutter > [data-header='header'] {
-  padding-inline: var(--page-gutter);
-}
-
-.admin7-page-content .admin7-custom-header-main {
-  flex-wrap: wrap;
-}
-
-/* An open panel leaves less room than the viewport's responsive breakpoints
-   imply. Let header actions take a second row before they cover the title. */
-.admin7-page-content [data-page-header='main'] {
-  flex-wrap: wrap;
-}
-
-.admin7-page-content [data-page-header='left'] {
-  max-width: 100%;
-  height: auto;
-}
-
-@media (min-width: 1380px) {
-  .admin7-sidebar-layout {
-    --content-width: var(--content-width-wide);
-  }
-}
+@custom-variant admin7 (&:where(.admin7, .admin7 *));
 
 /* The shell owns rollout eligibility. Admin overlays mount beside #root, so
    mirror typography into Shade portals and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
-.admin7-typography,
-:where(body.react-admin:has(> #root .admin7-typography))
+.admin7,
+:where(body.react-admin:has(> #root .admin7))
   > :is(
     .shade.shade-admin,
     #ember-basic-dropdown-wormhole,
@@ -100,8 +33,8 @@
 /* Browser form-control defaults can reset these inherited font properties.
    Keep the rule weaker than any explicit component typography choice. */
 :where(
-    .admin7-typography,
-    body.react-admin:has(> #root .admin7-typography)
+    .admin7,
+    body.react-admin:has(> #root .admin7)
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,

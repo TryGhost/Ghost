@@ -1,5 +1,5 @@
 import MemberActionsMenu from './member-actions-menu';
-import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
+import { admin7PageClassName } from '@/layout/admin7';
 import MemberActivityFeed from './member-activity-feed';
 import MemberCustomFieldsField from './member-custom-fields-field';
 import MemberDetailForm from './member-detail-form';
@@ -68,7 +68,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   newslettersUiEnabled,
   engagementEnabled,
 }) => {
-  const pageChromeEnabled = useAdminPageChrome();
   const { member_id: memberId = '' } = useParams<{ member_id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -360,10 +359,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
 
   return (
     <Box className="size-full">
-      <Container
-        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
-        size="page"
-      >
+      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
         <DetailPage data-testid="member-detail">
           <DetailPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

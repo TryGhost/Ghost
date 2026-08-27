@@ -33,7 +33,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
-import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
+import { admin7PageClassName } from '@/layout/admin7';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -51,7 +51,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
-  const pageChromeEnabled = useAdminPageChrome();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -161,10 +160,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   return (
     <Box className="size-full">
-      <Container
-        className={cn('relative flex h-full flex-col', pageChromeEnabled && 'admin7-page-content')}
-        size="page"
-      >
+      <Container className={cn('relative flex h-full flex-col', admin7PageClassName)} size="page">
         <ListPage data-testid="members-page">
           <ListPage.Header className="py-4 sidebar:py-5">
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
@@ -326,7 +322,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
 };
 
 const Members: React.FC = () => {
-  const pageChromeEnabled = useAdminPageChrome();
   const [searchParams] = useSearchParams();
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const { data: configData, isLoading: isConfigLoading } = useBrowseConfig();
@@ -347,13 +342,7 @@ const Members: React.FC = () => {
   ) {
     return (
       <Box className="size-full">
-        <Container
-          className={cn(
-            'relative flex h-full flex-col',
-            pageChromeEnabled && 'admin7-page-content',
-          )}
-          size="page"
-        >
+        <Container className={cn('relative flex h-full flex-col', admin7PageClassName)} size="page">
           <ListPage>
             <ListPage.Header className="py-4 sidebar:py-6">
               <PageHeader blurredBackground={false} sticky={false}>

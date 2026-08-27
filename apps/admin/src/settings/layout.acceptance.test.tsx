@@ -38,7 +38,12 @@ describe('Settings layout', () => {
           enabled ? '"cv05", "dlig", "ss01", "zero"' : 'normal',
         );
       }
-      expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+      expect(document.querySelector('.admin7') !== null).toBe(enabled);
+      expect(
+        getComputedStyle(document.querySelector('#root > div')!).getPropertyValue(
+          '--content-width',
+        ),
+      ).toBe('');
       expect(getComputedStyle(document.body).fontFamily).not.toContain('Inter Admin 7');
       await expect.element(settingsScreen.sidebar()).toBeVisible();
       await expect.element(settingsScreen.exitButton()).toBeVisible();
@@ -58,8 +63,7 @@ describe('Settings layout', () => {
     expect(getComputedStyle(settingsScreen.search().element()).fontFamily).not.toContain(
       'Inter Admin 7',
     );
-    expect(document.querySelector('.admin7-typography')).toBeNull();
-    expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+    expect(document.querySelector('.admin7')).toBeNull();
   });
 
   it('limits Settings typography to desktop without opting into page chrome', async () => {
@@ -72,10 +76,13 @@ describe('Settings layout', () => {
     try {
       await page.viewport(800, 800);
       await expect.poll(hasNewFont).toBe(false);
-      expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+      expect(document.querySelector('.admin7')).toBeNull();
       await page.viewport(801, 800);
       await expect.poll(hasNewFont).toBe(true);
-      expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+      expect(document.querySelector('.admin7')).not.toBeNull();
+      expect(
+        getComputedStyle(document.querySelector('.admin7')!).getPropertyValue('--content-width'),
+      ).toBe('');
     } finally {
       await page.viewport(1280, 800);
     }
@@ -148,7 +155,10 @@ describe('Settings layout', () => {
     await expect
       .poll(() => getComputedStyle(modal.element()).fontFamily)
       .toContain('Inter Admin 7');
-    expect(document.querySelector('.admin7-page-chrome')).toBeNull();
+    expect(document.querySelector('.admin7')).not.toBeNull();
+    expect(
+      getComputedStyle(document.querySelector('.admin7')!).getPropertyValue('--content-width'),
+    ).toBe('');
     await modal.getByLabelText('Default price at signup').click();
     await expect.element(settingsScreen.selectOptionExact('Yearly')).toBeVisible();
     await userEvent.keyboard('{Escape}');

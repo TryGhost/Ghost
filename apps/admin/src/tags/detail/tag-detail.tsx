@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
+import { admin7PageClassName } from '@/layout/admin7';
 import TagDeleteModal from './tag-delete-modal';
 import TagDetailForm from './tag-detail-form';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -52,7 +52,6 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
-  const pageChromeEnabled = useAdminPageChrome();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -378,10 +377,7 @@ const TagDetail: React.FC = () => {
 
   return (
     <Box className="size-full">
-      <Container
-        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
-        size="page"
-      >
+      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
         <DetailPage data-testid="tag-detail">
           <DetailPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

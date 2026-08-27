@@ -167,7 +167,7 @@ describe('Analytics overview', () => {
     config.config.labs = { ...config.config.labs, admin7PageChrome: true };
     await renderAdminApp('/analytics', { boot });
     await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
-    await expect.poll(() => document.querySelector('#root .admin7-typography')).not.toBeNull();
+    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
     await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
     const tooltip = page.getByRole('tooltip');
     await expect.element(tooltip).toHaveTextContent(/trending/);

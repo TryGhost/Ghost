@@ -1,5 +1,5 @@
 import AutomationsHelpCards from './components/automations-help-cards';
-import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
+import { admin7PageClassName } from '@/layout/admin7';
 import AutomationsList from './components/automations-list';
 import React from 'react';
 import { Badge } from '@tryghost/shade/components';
@@ -9,7 +9,6 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 
 const Automations: React.FC = () => {
-  const pageChromeEnabled = useAdminPageChrome();
   const { automations, error, isError, isLoading } = useVisibleAutomations();
 
   if (isError) {
@@ -18,10 +17,7 @@ const Automations: React.FC = () => {
 
   return (
     <Box className="size-full" data-sentry-mask="true">
-      <Container
-        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
-        size="page"
-      >
+      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
         <ListPage data-testid="automations-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>

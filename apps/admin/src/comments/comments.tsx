@@ -1,5 +1,5 @@
 import CommentsFilters from './components/comments-filters';
-import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
+import { admin7PageClassName } from '@/layout/admin7';
 import CommentsList from './components/comments-list';
 import { Box, Container } from '@tryghost/shade/primitives';
 import React, { useCallback, useMemo } from 'react';
@@ -27,7 +27,6 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   timezone,
   singleCommentId,
 }) => {
-  const pageChromeEnabled = useAdminPageChrome();
   const [searchParams, setSearchParams] = useSearchParams();
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
@@ -91,10 +90,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 
   return (
     <Box className="size-full">
-      <Container
-        className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
-        size="page"
-      >
+      <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
         <ListPage data-testid="comments-page">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
@@ -181,7 +177,6 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 };
 
 const Comments: React.FC = () => {
-  const pageChromeEnabled = useAdminPageChrome();
   const [searchParams] = useSearchParams();
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const singleCommentId = useMemo(() => getSingleCommentIdParam(searchParams), [searchParams]);
@@ -193,10 +188,7 @@ const Comments: React.FC = () => {
   if (shouldDelayHydration) {
     return (
       <Box className="size-full">
-        <Container
-          className={`relative flex h-full flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
-          size="page"
-        >
+        <Container className={`relative flex h-full flex-col ${admin7PageClassName}`} size="page">
           <ListPage>
             <ListPage.Header>
               <PageHeader blurredBackground={false} sticky={false}>

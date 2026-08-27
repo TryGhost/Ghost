@@ -1,13 +1,12 @@
 import React from 'react';
-import { useAdminPageChrome } from '@/layout/admin-page-chrome-context';
+import { admin7PageClassName } from '@/layout/admin7';
 
 const MainLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
-  const pageChromeEnabled = useAdminPageChrome();
   return (
     <div className="size-full">
       <div className="relative size-full" {...props}>
         <div
-          className={`mx-auto flex size-full max-w-page flex-col${pageChromeEnabled ? ' admin7-page-content' : ''}`}
+          className={`mx-auto flex size-full max-w-page flex-col ${admin7PageClassName} admin7:[&>[data-admin-content-grid]]:grid-cols-[minmax(0,1fr)]`}
         >
           {children}
         </div>

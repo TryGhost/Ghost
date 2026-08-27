@@ -6,7 +6,7 @@ const StatsLayout = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEleme
     return (
       <MainLayout>
         <div ref={ref} className="grid w-full grow" data-admin-content-grid>
-          <div className="admin7-page-gutter flex h-full flex-col px-6">{children}</div>
+          <div className="flex h-full flex-col px-6 admin7:px-(--page-gutter)">{children}</div>
         </div>
       </MainLayout>
     );

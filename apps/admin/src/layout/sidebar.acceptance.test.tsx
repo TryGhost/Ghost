@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 import type { StateBridge } from '@/ember-bridge';
 
 import {
@@ -69,8 +70,11 @@ describe('Sidebar navigation', () => {
     });
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect.poll(() => document.querySelector('.admin7-sidebar-layout')).not.toBeNull();
-    await expect.poll(() => document.querySelector('.admin7-page-content')).not.toBeNull();
+    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
+    const tagsPage = page.getByTestId('tags-page').element();
+    const pageContainer = tagsPage.parentElement!;
+    expect(getComputedStyle(pageContainer).maxWidth).toBe('1080px');
+    expect(getComputedStyle(tagsPage).paddingLeft).toBe('40px');
     expect(document.querySelector('[data-sidebar="sidebar"]')).not.toBeNull();
     expect(document.querySelector('[data-sidebar="sidebar"]')?.parentElement).toHaveClass('p-2');
     expect(document.querySelector('[data-state="collapsed"]')).toBeNull();
@@ -82,8 +86,7 @@ describe('Sidebar navigation', () => {
     await renderAdminApp('/tags', { labs: { admin7PageChrome: false } });
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    expect(document.querySelector('.admin7-sidebar-layout')).toBeNull();
-    expect(document.querySelector('.admin7-page-content')).toBeNull();
+    expect(document.querySelector('.admin7')).toBeNull();
   });
 
   it('renders the navigation for the current user', async () => {
