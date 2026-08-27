@@ -19,12 +19,25 @@ type FieldOffer =
   | (FieldFacts & { source: 'custom'; type: MemberCustomField['type'] });
 
 /**
- * One thing a CSV column can be imported as.
+ * One thing a CSV column can be imported as, as the picker shows it.
  *
- * `contested` belongs to the list rather than to the field: whether "Tier" needs telling apart
- * depends on whether tiers are on offer at all.
+ * The badge is settled here rather than left to the picker, because it is not a fact about the
+ * field: whether "Tier" needs telling apart depends on whether tiers are on offer at all, which
+ * only the whole list knows.
  */
-export type FieldTarget = FieldOffer & { contested: boolean };
+export type FieldTarget = FieldOffer & {
+  /** The kind, shown beside the label; null where no other source offers this label. */
+  badge: string | null;
+  /** The kind named in full, for the accessible name; null to say nothing. */
+  ariaKind: string | null;
+};
+
+/** One section of the picker's list: what heads it, and what is under it. */
+export interface FieldTargetGroup {
+  source: FieldSource;
+  heading: string;
+  targets: FieldTarget[];
+}
 
 interface FieldSourcePresentation {
   heading: string;
@@ -34,21 +47,28 @@ interface FieldSourcePresentation {
   ariaKind: string | null;
 }
 
-export const FIELD_SOURCES: Record<FieldSource, FieldSourcePresentation> = {
+const FIELD_SOURCES: Record<FieldSource, FieldSourcePresentation> = {
   membership: { heading: 'Membership fields', badge: null, ariaKind: null },
   custom: { heading: 'Custom fields', badge: 'Custom', ariaKind: 'Custom field' },
 };
 
-export const FIELD_SOURCE_ORDER = Object.keys(FIELD_SOURCES) as FieldSource[];
+const FIELD_SOURCE_ORDER = Object.keys(FIELD_SOURCES) as FieldSource[];
 
-/** Everything a column can be imported as, in the order the sections offer it. */
+/**
+ * Everything a column can be imported as, sectioned as the picker offers it: in the order the
+ * sources are declared in, and without a section nothing falls into — a site with custom fields
+ * off is not told there is a Custom fields section and then shown nothing under it.
+ *
+ * The picker is handed this and nothing else, so where a target sits, what heads its section and
+ * how it is named are all answered before it renders.
+ */
 export function fieldTargets({
   membershipFields,
   customFieldColumns,
 }: {
   membershipFields: { label: string; value: string }[];
   customFieldColumns: MemberCustomFieldCsvColumn[];
-}): FieldTarget[] {
+}): FieldTargetGroup[] {
   const offers: FieldOffer[] = [
     ...membershipFields.map((field): FieldOffer => ({
       value: field.value,
@@ -67,7 +87,17 @@ export function fieldTargets({
   ];
 
   const contested = labelsSharedAcrossSources(offers);
-  return offers.map((offer) => ({ ...offer, contested: contested.has(readsAs(offer)) }));
+  const targets = offers.map((offer): FieldTarget => ({
+    ...offer,
+    badge: contested.has(readsAs(offer)) ? FIELD_SOURCES[offer.source].badge : null,
+    ariaKind: FIELD_SOURCES[offer.source].ariaKind,
+  }));
+
+  return FIELD_SOURCE_ORDER.map((source) => ({
+    source,
+    heading: FIELD_SOURCES[source].heading,
+    targets: targets.filter((target) => target.source === source),
+  })).filter((group) => group.targets.length > 0);
 }
 
 function readsAs(offer: { label: string }): string {

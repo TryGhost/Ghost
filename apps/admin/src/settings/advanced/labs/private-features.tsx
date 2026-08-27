@@ -84,6 +84,12 @@ const features: Feature[] = [
     flag: 'membersCustomFields',
   },
   {
+    title: 'Members import redesign',
+    description:
+      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
+    flag: 'membersImportRedesign',
+  },
+  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',

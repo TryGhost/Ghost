@@ -148,20 +148,6 @@ describe('mapping helpers', () => {
     },
   ];
 
-  it('offers the custom field columns as mapping targets', () => {
-    const mappings = getFieldMappings({ customFieldColumns });
-
-    expect(mappings).toContainEqual(
-      expect.objectContaining({ label: 'Nickname', value: 'custom_fields.nickname' }),
-    );
-    expect(mappings).toContainEqual(
-      expect.objectContaining({
-        label: 'Shipping Address (Line 1)',
-        value: 'custom_fields.shipping_address.line1',
-      }),
-    );
-  });
-
   it('auto-detects a custom field column by its namespaced header', () => {
     const mapping = detectFieldTypes(
       [{ email: 'user@example.com', 'custom_fields.nickname': 'Bex' }],

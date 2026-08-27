@@ -15,6 +15,7 @@ import {
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
 import { membersScreen } from '@/members/members.screen';
+import { sidebarScreen } from '@/layout/sidebar.screen';
 import { postAnalyticsScreen } from './post-analytics.screen';
 
 const POST_ID = '64d623b64676110001e897d9';
@@ -133,6 +134,10 @@ describe('Post analytics overview', () => {
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
     await expect(postsApi).toHaveSentFilter(`id:${POST_ID}`);
+    await expect
+      .element(sidebarScreen.navLink('Analytics'))
+      .toHaveAttribute('aria-current', 'page');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
 
     // Web performance: visitors summed from the Tinybird rows.
     await expect.element(postAnalyticsScreen.webPerformanceCard()).toBeVisible();
