@@ -1,5 +1,7 @@
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
+import { SETTINGS_BOOTSTRAP_QUERY_SCOPE } from '../utils/api/query-scopes';
+import { withQueryErrorPolicy } from '../utils/api/query-error-policy';
 import { UsersResponseType } from './users';
 
 export const usersDataType = 'UsersResponseType';
@@ -12,8 +14,12 @@ export const useCurrentUserQueryOptions = () => {
 
   return queryOptions({
     queryKey: currentUserQueryKey,
-    queryFn: () => fetchApi<UsersResponseType>(currentUserUrl),
-    meta: { defaultErrorHandler: true },
+    queryFn: (context) =>
+      withQueryErrorPolicy(context, true, () => fetchApi<UsersResponseType>(currentUserUrl)),
+    meta: {
+      defaultErrorHandler: true,
+      errorResetScope: SETTINGS_BOOTSTRAP_QUERY_SCOPE,
+    },
   });
 };
 

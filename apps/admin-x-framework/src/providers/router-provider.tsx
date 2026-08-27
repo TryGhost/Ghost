@@ -8,6 +8,7 @@ import {
   useNavigate as useReactRouterNavigate,
   useLocation,
   useParams,
+  useRouteError,
   Navigate as ReactRouterNavigate,
 } from 'react-router';
 import { useFramework } from './framework-provider';
@@ -41,15 +42,28 @@ function DefaultErrorPage() {
   const navigate = useReactRouterNavigate();
   const queryClient = useQueryClient();
   const { reset } = useQueryErrorResetBoundary();
+  const routeError = useRouteError();
   const backToDashboard = useCallback(() => {
     reset();
+    const failedQuery = queryClient
+      .getQueryCache()
+      .getAll()
+      .find((query) => query.state.error === routeError);
+    const errorResetScope = failedQuery?.meta?.errorResetScope;
+
     queryClient.removeQueries({
-      // Concurrent Suspense bootstraps can leave several failed dependencies.
-      // Cached refetch failures throw too, so every failed entry must start fresh.
-      predicate: (query) => query.state.status === 'error',
+      predicate: (query) => {
+        const belongsToFailure =
+          query.state.error === routeError ||
+          (errorResetScope !== undefined && query.meta?.errorResetScope === errorResetScope);
+        const needsFreshStart =
+          query.state.status === 'error' || query.state.fetchStatus === 'fetching';
+
+        return belongsToFailure && needsFreshStart;
+      },
     });
     navigate('/');
-  }, [navigate, queryClient, reset]);
+  }, [navigate, queryClient, reset, routeError]);
 
   return <ErrorPage onBackToDashboard={backToDashboard} />;
 }

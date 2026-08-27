@@ -1,4 +1,5 @@
 import { createQueryResource } from '../utils/api/hooks';
+import { SETTINGS_BOOTSTRAP_QUERY_SCOPE } from '../utils/api/query-scopes';
 import { Config, hasSendingDomain, isManagedEmail, sendingDomain } from './config';
 
 // Types
@@ -27,6 +28,7 @@ const dataType = 'SiteResponseType';
 const browseSiteResource = createQueryResource<SiteResponseType>({
   dataType,
   path: '/site/',
+  errorResetScope: SETTINGS_BOOTSTRAP_QUERY_SCOPE,
 });
 
 export const useBrowseSite = browseSiteResource.useQuery;

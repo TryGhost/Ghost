@@ -1,4 +1,5 @@
 import { createQueryResource } from '../utils/api/hooks';
+import { SETTINGS_BOOTSTRAP_QUERY_SCOPE } from '../utils/api/query-scopes';
 
 export type JSONValue = string | number | boolean | null | Date | JSONObject | JSONArray;
 export interface JSONObject {
@@ -146,6 +147,7 @@ export const configDataType = dataType;
 const browseConfigResource = createQueryResource<ConfigResponseType>({
   dataType,
   path: '/config/',
+  errorResetScope: SETTINGS_BOOTSTRAP_QUERY_SCOPE,
 });
 
 export const useBrowseConfig = browseConfigResource.useQuery;

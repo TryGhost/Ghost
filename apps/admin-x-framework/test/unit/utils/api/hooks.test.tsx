@@ -1,4 +1,4 @@
-import { InfiniteData, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { InfiniteData, QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React, { ReactNode, Suspense } from 'react';
 import { APIError } from '../../../../src/utils/errors';
@@ -33,6 +33,7 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
     externalNavigate={() => {}}
     ghostVersion="5.x"
+    queryClient={queryClient}
     sentryDSN=""
     unsplashConfig={{
       Authorization: '',
@@ -45,8 +46,7 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
     onInvalidate={() => {}}
     onUpdate={() => {}}
   >
-    {/* Being nested, this overrides the default QueryClientProvider from the framework */}
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    {children}
   </FrameworkProvider>
 );
 
@@ -289,6 +289,7 @@ describe('API hooks', () => {
         <FrameworkProvider
           externalNavigate={() => {}}
           ghostVersion="5.x"
+          queryClient={suspenseQueryClient}
           sentryDSN=""
           unsplashConfig={{
             Authorization: '',
@@ -301,11 +302,9 @@ describe('API hooks', () => {
           onInvalidate={() => {}}
           onUpdate={() => {}}
         >
-          <QueryClientProvider client={suspenseQueryClient}>
-            <Boundary onError={onError}>
-              <Suspense fallback={null}>{children}</Suspense>
-            </Boundary>
-          </QueryClientProvider>
+          <Boundary onError={onError}>
+            <Suspense fallback={null}>{children}</Suspense>
+          </Boundary>
         </FrameworkProvider>
       );
 
@@ -763,6 +762,7 @@ describe('API hooks', () => {
             <FrameworkProvider
               externalNavigate={() => {}}
               ghostVersion="5.x"
+              queryClient={queryClient}
               sentryDSN=""
               unsplashConfig={{
                 Authorization: '',
@@ -775,7 +775,7 @@ describe('API hooks', () => {
               onInvalidate={onInvalidate}
               onUpdate={() => {}}
             >
-              <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+              {children}
             </FrameworkProvider>
           );
 

@@ -21,6 +21,7 @@ import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
 import { useFramework } from '../../providers/framework-provider';
 import { RequestOptions, apiUrl, useFetchApi } from './fetch-api';
+import { withQueryErrorPolicy } from './query-error-policy';
 
 export interface Meta {
   capabilities?: {
@@ -39,6 +40,7 @@ export interface Meta {
 interface QueryOptions<ResponseData> {
   dataType: string;
   path: string;
+  errorResetScope?: string;
   headers?: Record<string, string>;
   defaultSearchParams?: Record<string, string>;
   permissions?: UserRoleType[];
@@ -61,17 +63,31 @@ type SuspenseQueryHookOptions<ResponseData> = Omit<
 };
 
 const createQueryResourceInternal = <ResponseData>(options: QueryOptions<ResponseData>) => {
-  function useResourceQueryOptions({
+  function useResourceQueryOptionsInternal({
     searchParams,
-  }: { searchParams?: Record<string, string> } = {}) {
+    defaultErrorHandler,
+  }: {
+    searchParams?: Record<string, string>;
+    defaultErrorHandler: boolean;
+  }) {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
 
     return queryOptions<ResponseData>({
       queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options }),
-      meta: { defaultErrorHandler: true },
+      queryFn: (context) =>
+        withQueryErrorPolicy(context, defaultErrorHandler, () => fetchApi(url, { ...options })),
+      meta: {
+        defaultErrorHandler: true,
+        errorResetScope: options.errorResetScope,
+      },
     });
+  }
+
+  function useResourceQueryOptions({
+    searchParams,
+  }: { searchParams?: Record<string, string> } = {}) {
+    return useResourceQueryOptionsInternal({ searchParams, defaultErrorHandler: true });
   }
 
   function useResourceQuery({
@@ -81,7 +97,10 @@ const createQueryResourceInternal = <ResponseData>(options: QueryOptions<Respons
   }: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {
     data: ResponseData | undefined;
   } {
-    const resourceQueryOptions = useResourceQueryOptions({ searchParams });
+    const resourceQueryOptions = useResourceQueryOptionsInternal({
+      searchParams,
+      defaultErrorHandler,
+    });
     const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({

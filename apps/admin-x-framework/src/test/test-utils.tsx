@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { renderHook, RenderHookOptions } from '@testing-library/react';
 import { FrameworkProvider, TopLevelFrameworkProps } from '../providers/framework-provider';
 
@@ -61,8 +61,8 @@ export function TestWrapper({
   };
 
   return (
-    <FrameworkProvider {...mergedFrameworkProps}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <FrameworkProvider {...mergedFrameworkProps} queryClient={queryClient}>
+      {children}
     </FrameworkProvider>
   );
 }

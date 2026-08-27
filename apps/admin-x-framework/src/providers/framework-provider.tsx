@@ -9,11 +9,13 @@ import {
 import { ReactNode, createContext, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { handleFrameworkError } from '../utils/handle-error';
 import queryClient from '../utils/query-client';
+import { clearQueryErrorPolicy, takeQueryErrorPolicy } from '../utils/api/query-error-policy';
 
 declare module '@tanstack/react-query' {
   interface Register {
     queryMeta: {
       defaultErrorHandler?: boolean;
+      errorResetScope?: string;
     };
   }
 }
@@ -103,6 +105,7 @@ type QueryErrorHandler = (
 type QueryCacheRegistration = {
   handlers: Map<symbol, QueryErrorHandler>;
   originalHandler: QueryCache['config']['onError'];
+  unsubscribe: () => void;
 };
 
 const queryCacheRegistrations = new WeakMap<QueryCache, QueryCacheRegistration>();
@@ -114,12 +117,23 @@ function registerQueryErrorHandler(cache: QueryCache, token: symbol, handler: Qu
     registration = {
       handlers: new Map(),
       originalHandler: cache.config.onError,
+      unsubscribe: cache.subscribe((event) => {
+        if (event.type === 'updated' && event.action.type === 'fetch') {
+          // Cancellation can settle TanStack's retryer before the underlying
+          // request promise. Clear its snapshot before any subsequent queryFn
+          // records the policy for a new request on the same Query.
+          clearQueryErrorPolicy(cache, event.query);
+        }
+      }),
     };
     queryCacheRegistrations.set(cache, registration);
 
     cache.config.onError = (error, query) => {
       registration?.originalHandler?.(error, query);
-      registration?.handlers.forEach((registeredHandler) => registeredHandler(error, query));
+      // Several embedded apps can temporarily mount FrameworkProvider against
+      // the shared client. Reporting is a cache-level policy, so one provider
+      // handles each failure rather than duplicating the same toast/Sentry event.
+      registration?.handlers.values().next().value?.(error, query);
     };
   }
 
@@ -134,6 +148,7 @@ function unregisterQueryErrorHandler(cache: QueryCache, token: symbol) {
 
   registration.handlers.delete(token);
   if (registration.handlers.size === 0) {
+    registration.unsubscribe();
     cache.config.onError = registration.originalHandler;
     queryCacheRegistrations.delete(cache);
   }
@@ -156,16 +171,10 @@ export function FrameworkProvider({
   const cache = client.getQueryCache();
   useLayoutEffect(() => {
     registerQueryErrorHandler(cache, queryErrorHandlerToken, (error, query) => {
-      // Query.meta only reflects the observer that updated the shared entry
-      // last. Aggregate active observer policies for mixed progressive and
-      // Suspense reads; imperative reads fall back to the query's own meta.
-      const observerPolicies = query.observers.map(
-        (observer) => observer.options.meta?.defaultErrorHandler,
-      );
+      // Canonical resource queryFns snapshot the initiating request's policy;
+      // the public Query.meta fallback covers imperative/non-resource queries.
       const shouldHandle =
-        observerPolicies.some((policy) => policy === true) ||
-        (observerPolicies.length === 0 && query.meta?.defaultErrorHandler === true);
-
+        takeQueryErrorPolicy(cache, query) ?? query.meta?.defaultErrorHandler === true;
       if (shouldHandle) {
         handleFrameworkError(error, { sentryDSN: props.sentryDSN });
       }

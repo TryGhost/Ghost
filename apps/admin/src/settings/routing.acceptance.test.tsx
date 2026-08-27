@@ -4,6 +4,7 @@ import { page } from 'vitest/browser';
 import {
   currentRoute,
   fakeAdminEndpoint,
+  fakeAnalyticsOverview,
   fakeSettingsScreens,
   renderAdminApp,
   settingsResponse,
@@ -30,13 +31,17 @@ describe('Settings routing', () => {
     // The suspense read throws to the route error boundary; no blank screen
     await expect.element(page.getByRole('heading', { name: 'Loading interrupted' })).toBeVisible();
 
-    await page.getByText('← Back to the dashboard', { exact: true }).click();
-    await expect.poll(currentRoute).toBe('/');
-
-    // A later request succeeds. The recovery action must clear the failed
-    // no-data queries, not merely the first error thrown to the route boundary.
+    // Install successful handlers before recovery. Analytics also reads site
+    // data, so waiting until after navigation would race a fresh request
+    // against the original failing boot override under a loaded test suite.
     fakeAdminEndpoint('GET', /^\/settings\/\?group=/, settingsResponse());
     fakeAdminEndpoint('GET', '/site/', siteResponse());
+    fakeAnalyticsOverview();
+    await page.getByText('← Back to the dashboard', { exact: true }).click();
+    await expect.poll(currentRoute).toBe('/analytics');
+
+    // A later request succeeds. The recovery action must clear the failed
+    // query and the other failed dependencies in its bootstrap scope.
     window.location.hash = '#/settings';
     await expect.element(settingsScreen.sidebar()).toBeVisible();
   });

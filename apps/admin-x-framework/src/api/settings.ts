@@ -1,4 +1,5 @@
 import { Meta, createMutation, createQueryResource } from '../utils/api/hooks';
+import { SETTINGS_BOOTSTRAP_QUERY_SCOPE } from '../utils/api/query-scopes';
 import { Config } from './config';
 
 // Types
@@ -32,6 +33,7 @@ const dataType = 'SettingsResponseType';
 const browseSettingsQuery = {
   dataType,
   path: '/settings/',
+  errorResetScope: SETTINGS_BOOTSTRAP_QUERY_SCOPE,
   defaultSearchParams: {
     group:
       'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor',

@@ -26,18 +26,25 @@ describe('default route error recovery', () => {
   it('clears failed queries even when they retain cached data', async () => {
     const queryClient = new QueryClient();
     const cachedQueryKey = ['cached-refetch-failure'];
+    const unrelatedQueryKey = ['unrelated-failure'];
+    const routeError = new Error('Refetch failed');
     queryClient.setQueryData(cachedQueryKey, { value: 'stale' });
+    queryClient.getQueryCache().find({ queryKey: cachedQueryKey })?.setState({
+      error: routeError,
+      status: 'error',
+    });
+    queryClient.setQueryData(unrelatedQueryKey, { value: 'still usable' });
     queryClient
       .getQueryCache()
-      .find({ queryKey: cachedQueryKey })
+      .find({ queryKey: unrelatedQueryKey })
       ?.setState({
-        error: new Error('Refetch failed'),
+        error: new Error('Unrelated refetch failed'),
         status: 'error',
       });
     window.location.hash = '#/failed';
 
     const FailedRoute = () => {
-      throw new Error('Route failed');
+      throw routeError;
     };
 
     render(
@@ -59,6 +66,65 @@ describe('default route error recovery', () => {
 
     await screen.findByText('Dashboard');
     expect(queryClient.getQueryCache().find({ queryKey: cachedQueryKey })).toBeUndefined();
+    expect(queryClient.getQueryCache().find({ queryKey: unrelatedQueryKey })).toBeDefined();
+  });
+
+  it('cancels and removes sibling queries that are still fetching', async () => {
+    const queryClient = new QueryClient();
+    const errorResetScope = 'route-bootstrap';
+    const failedQueryKey = ['failed-bootstrap-query'];
+    const fetchingQueryKey = ['late-sibling-failure'];
+    const routeError = new Error('Route failed');
+    queryClient.setQueryDefaults(failedQueryKey, {
+      meta: { errorResetScope },
+    });
+    queryClient.setQueryData(failedQueryKey, { value: 'stale' });
+    queryClient
+      .getQueryCache()
+      .find({ queryKey: failedQueryKey })
+      ?.setState({ error: routeError, status: 'error' });
+    let rejectQuery!: (error: Error) => void;
+    const pendingFailure = new Promise<never>((_resolve, reject) => {
+      rejectQuery = reject;
+    });
+    const queryPromise = queryClient
+      .fetchQuery({
+        queryKey: fetchingQueryKey,
+        queryFn: () => pendingFailure,
+        meta: { errorResetScope },
+      })
+      .catch(() => undefined);
+    window.location.hash = '#/failed';
+
+    const FailedRoute = () => {
+      throw routeError;
+    };
+
+    render(
+      <FrameworkProvider {...frameworkProps} queryClient={queryClient}>
+        <RouterProvider
+          prefix=""
+          routes={[
+            { path: '/', element: <div>Dashboard</div> },
+            { path: '/failed', element: <FailedRoute /> },
+          ]}
+        >
+          <Outlet />
+        </RouterProvider>
+      </FrameworkProvider>,
+    );
+
+    await screen.findByRole('heading', { name: 'Loading interrupted' });
+    expect(queryClient.getQueryState(fetchingQueryKey)?.fetchStatus).toBe('fetching');
+
+    fireEvent.click(screen.getByText('← Back to the dashboard', { exact: true }));
+
+    await screen.findByText('Dashboard');
+    expect(queryClient.getQueryCache().find({ queryKey: fetchingQueryKey })).toBeUndefined();
+
+    rejectQuery(new Error('Late sibling failed'));
+    await queryPromise;
+    expect(queryClient.getQueryCache().find({ queryKey: fetchingQueryKey })).toBeUndefined();
   });
 });
 
