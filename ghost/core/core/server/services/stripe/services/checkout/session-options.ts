@@ -4,7 +4,7 @@ import {
   MAX_CHECKOUT_LABEL_LENGTH,
   isCheckoutEligible,
   type CheckoutEligibleFieldType,
-} from './field-ports';
+} from '@tryghost/checkout';
 import type { ResolvedCheckout, ResolvedQuestion } from '../../../tier-checkout-config';
 
 /**

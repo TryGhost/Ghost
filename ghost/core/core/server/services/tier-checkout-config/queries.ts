@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { FIELD_STATUS } from '../members-custom-fields/schema';
-import { STRIPE_PORT } from '../stripe/services/checkout/field-ports';
+import { STRIPE_PORT } from '@tryghost/checkout';
 import { DbCheckoutOptions } from './schema';
 import type { CollectionRow, QuestionRow } from './codec';
 

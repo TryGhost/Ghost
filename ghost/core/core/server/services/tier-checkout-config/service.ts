@@ -7,11 +7,12 @@ import { DbCustomField, FIELD_STATUS } from '../members-custom-fields/schema';
 import type { CustomField, RequestContext } from '../members-custom-fields';
 import {
   MAX_CHECKOUT_LABEL_LENGTH,
+  PORT_FIELD,
   STRIPE_PORT,
   isCheckoutEligible,
   isStripePort,
   type StripePort,
-} from '../stripe/services/checkout/field-ports';
+} from '@tryghost/checkout';
 import {
   collectionRowCodec,
   optionsCodec,
@@ -35,7 +36,6 @@ import {
   type ResolvedQuestion,
   type TierCheckoutConfig,
 } from './models';
-import { PORT_FIELD } from './destinations';
 import { CheckoutConfigInput } from './serializers';
 
 type FieldRow = Pick<z.infer<typeof DbCustomField>, 'key' | 'name' | 'type' | 'status'>;
