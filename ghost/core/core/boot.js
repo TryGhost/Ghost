@@ -389,6 +389,11 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   });
   const giftDeliveryService = giftService.deliveryService;
   assert(giftDeliveryService, 'Gift delivery service should be initialized');
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(async () => {
+      await stripe.shutdown();
+    }, 'Stripe');
+  }
 
   await Promise.all([
     identityTokens.init(),

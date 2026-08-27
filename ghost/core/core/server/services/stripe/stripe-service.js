@@ -25,6 +25,7 @@ const customFields = require('../members-custom-fields');
  * @prop {boolean} testEnv Whether this is a test environment
  * @prop {string} webhookSecret The Stripe webhook secret
  * @prop {string} webhookHandlerUrl The URL to handle Stripe webhooks
+ * @prop {boolean} [ephemeralWebhook] Whether the webhook endpoint is deleted on shutdown
  * @prop {string[]} webhookCustomerIgnoreList List of customer IDs for customer.subscription.updated webhook bypass
  * @prop {string} siteUrl The site URL for billing portal return URL
  */
@@ -162,6 +163,8 @@ module.exports = class StripeService {
     this.migrations = migrations;
     this.webhookController = webhookController;
     this.billingPortalManager = billingPortalManager;
+    /** @private */
+    this.ephemeralWebhook = false;
   }
 
   async connect() {
@@ -213,23 +216,31 @@ module.exports = class StripeService {
       webhookSecret: config.webhookSecret,
       webhookHandlerUrl: config.webhookHandlerUrl,
     });
+    this.ephemeralWebhook = config.ephemeralWebhook === true;
 
     this.billingPortalManager.configure({
       siteUrl: config.siteUrl,
     });
 
-    // webhookManager.start() already self-guards: configure() above puts it in
-    // 'local' mode whenever a webhookSecret is set, which is always true outside
-    // production (config.js defaults it to DEFAULT_WEBHOOK_SECRET), so start()
-    // returns immediately without touching Stripe. Only billingPortalManager
-    // needs an explicit test-env skip — in the test env there is no real Stripe
-    // to register against, and the mock returns 500 for billing_portal/
-    // configurations, so this network-registration call only error-logs on
-    // every boot. Tests never need a registered portal configuration. Skip it
-    // under test; prod and dev register exactly as before.
+    // webhookManager.start() registers a webhook URL with Stripe only when no webhook
+    // secret was supplied. Outside production config.js supplies a placeholder secret
+    // unless stripeRemoteWebhooks is set, so start() normally returns without touching
+    // Stripe. billingPortalManager has no such guard: in the test environment the mock
+    // Stripe answers its registration call with a 500 on every boot, and tests never
+    // need a registered portal, so skip it under test only.
     await this.webhookManager.start();
     if (!config.testEnv) {
       await this.billingPortalManager.start();
+    }
+  }
+
+  /**
+   * Removes the webhook registration from Stripe, but only when it was marked ephemeral.
+   * A production registration is kept and reused on the next boot.
+   */
+  async shutdown() {
+    if (this.ephemeralWebhook) {
+      await this.webhookManager.stop();
     }
   }
 };
