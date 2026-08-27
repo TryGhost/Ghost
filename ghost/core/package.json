@@ -94,6 +94,7 @@
     "@tryghost/api-framework": "catalog:",
     "@tryghost/bookshelf-plugins": "2.3.8",
     "@tryghost/brute-knex": "catalog:",
+    "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.27",
     "@tryghost/custom-field-types": "workspace:*",
