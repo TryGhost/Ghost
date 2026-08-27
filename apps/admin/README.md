@@ -55,6 +55,28 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
+## Loading states
+
+Two loading models exist, chosen by surface type — not interchangeably:
+
+- **Dashboard and progressive surfaces** (analytics, shell chrome, anything
+  where components own their skeletons) read **derived query hooks** — hooks
+  like `usePaidMembersEnabled(): boolean | undefined`, following TanStack
+  Query's `data` contract: `undefined` means not loaded. Each component
+  handles its own pending state; hold render with `=== undefined` only where a
+  flash is user-visible, and let truthiness reads treat loading as off.
+- **The settings subtree** renders inside a Suspense boundary
+  (`SettingsDataGate`) and reads its shared resources with
+  `useSuspenseQuery`-backed hooks (`useSettings`, `useConfig`, `useSite`,
+  `useCurrentUser` from `settings/hooks/use-settings-data.ts`). Loading
+  suspends into the boundary's fallback; query errors throw to the route
+  error boundary.
+
+Both hook families share the framework's query keys, so one cache entry backs
+both models. Conditional queries stay on `useQuery`: suspense hooks take no
+`enabled` option by design, so a query that must not always run does not belong
+behind a Suspense read.
+
 ## Testing
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
