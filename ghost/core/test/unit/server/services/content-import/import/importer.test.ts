@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import ContentCSVImporter from '../../../../../../core/server/services/content-import/import/importer';
+import { MediaInliningFailure } from '../../../../../../core/server/services/content-import/import/media';
 import { ImportRunStore } from '../../../../../../core/server/services/content-import/import/store';
 import type { PostImportRow } from '../../../../../../core/server/services/content-import/import/row';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
@@ -24,6 +25,8 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const updatedTitles = new Set<string>();
   const warningsByTitle = new Map<string, string[]>();
   const urlFailures = new Map<string, unknown>();
+  const inlineMedia = sinon.stub().resolves();
+  const createMediaInliner = sinon.stub().callsFake(() => ({ inline: inlineMedia }));
   const store = new ImportRunStore();
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
@@ -68,6 +71,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     getHtmlToLexical: () => htmlToLexicalFactory(),
     getMarkdownToHtml: () => markdownToHtmlFactory(),
     getCleanHTML: () => cleanHTMLFactory(),
+    createMediaInliner,
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -125,6 +129,8 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     updatedTitles,
     warningsByTitle,
     urlFailures,
+    inlineMedia,
+    createMediaInliner,
     store,
     setHtmlToLexicalFactory,
     setMarkdownToHtmlFactory,
@@ -263,6 +269,10 @@ describe('ContentCSVImporter', function () {
       events.push('convert');
       return (html: string) => ({ converted: html });
     });
+    h.inlineMedia.callsFake(async (data: PostData) => {
+      events.push('inline');
+      assert.match(data.lexical ?? '', /unique\.jpg/);
+    });
     const importer = new ContentCSVImporter({
       ...h.deps,
       prepareSource: async () => ({
@@ -275,7 +285,7 @@ describe('ContentCSVImporter', function () {
     await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
     await h.jobs[0].job();
 
-    assert.deepEqual(events.slice(0, 3), ['store', 'rewrite', 'convert']);
+    assert.deepEqual(events.slice(0, 4), ['store', 'rewrite', 'convert', 'inline']);
     assert.match(h.created[0].data.lexical ?? '', /unique\.jpg/);
     sinon.assert.calledOnce(cleanup);
   });
@@ -330,6 +340,132 @@ describe('ContentCSVImporter', function () {
         tagNames: undefined,
       });
     }
+  });
+
+  it('inlines built post data before opening the repository write transaction', async function () {
+    const h = harness([row('Inline order')]);
+    const events: string[] = [];
+    h.setHtmlToLexicalFactory(() => (html: string) => {
+      events.push('convert');
+      return { converted: html };
+    });
+    h.inlineMedia.callsFake(async (data: PostData) => {
+      events.push('inline');
+      data.feature_image = '__GHOST_URL__/content/images/inlined.jpg';
+    });
+    const write = h.deps.posts.write;
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      posts: {
+        write: async (data, options, metadata) => {
+          events.push('write');
+          assert.equal(data.feature_image, '__GHOST_URL__/content/images/inlined.jpg');
+          return write(data, options, metadata);
+        },
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await h.jobs[0].job();
+
+    assert.deepEqual(events, ['convert', 'inline', 'write']);
+  });
+
+  it('creates an isolated media inliner for every import run', async function () {
+    const h = harness([row('Cached media')]);
+
+    await h.importer.importCSV({ filePath: '/tmp/first.csv', fileName: 'first.csv' });
+    await h.jobs[0].job();
+    await h.importer.importCSV({ filePath: '/tmp/second.csv', fileName: 'second.csv' });
+    await h.jobs[1].job();
+
+    sinon.assert.calledTwice(h.createMediaInliner);
+    assert.notEqual(
+      h.createMediaInliner.firstCall.returnValue,
+      h.createMediaInliner.secondCall.returnValue,
+    );
+  });
+
+  it('records expected media failures against one row and imports the rest', async function () {
+    const h = harness([row('First'), row('Media failure'), row('Third')]);
+    const failure = new MediaInliningFailure([
+      { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
+      { sourceUrl: 'https://assets.test/broken.mp4', reason: 'Storage failed.' },
+    ]);
+    h.inlineMedia.callsFake(async (data: PostData) => {
+      if (data.title === 'Media failure') {
+        throw failure;
+      }
+    });
+
+    await h.run();
+
+    assert.deepEqual(
+      h.created.map((call) => call.data.title),
+      ['First', 'Third'],
+    );
+    assert.equal(h.inlineMedia.callCount, 3);
+    assert.deepEqual(h.reported, []);
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.deepEqual(h.store.get('run_test')?.rows[1], {
+      line: 3,
+      title: 'Media failure',
+      status: 'failed',
+      reason: 'Could not import 2 media files.',
+      mediaFailures: [
+        { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
+        { sourceUrl: 'https://assets.test/broken.mp4', reason: 'Storage failed.' },
+      ],
+    });
+  });
+
+  it('reports once when media failures prevent every post write', async function () {
+    const h = harness([row('First'), row('Second')]);
+    const failure = new MediaInliningFailure([
+      { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
+    ]);
+    h.inlineMedia.rejects(failure);
+
+    await h.run();
+
+    assert.equal(h.created.length, 0);
+    assert.equal(h.reported.length, 1);
+    assert.equal(
+      (h.reported[0] as Error).message,
+      'Content import failed to write all 2 attempted posts.',
+    );
+    assert.match((h.reported[0] as Error).stack ?? '', /Could not import 1 media file/);
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.deepEqual(
+      h.store.get('run_test')?.rows.map((outcome) => outcome.status),
+      ['failed', 'failed'],
+    );
+  });
+
+  it('stops the run when media preparation throws an unexpected error', async function () {
+    const h = harness([row('Media defect'), row('Never reached')]);
+    const failure = new Error('media importer defect');
+    h.inlineMedia.rejects(failure);
+
+    await h.run();
+
+    assert.equal(h.created.length, 0);
+    assert.equal(h.inlineMedia.callCount, 1);
+    assert.deepEqual(h.reported, [failure]);
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.equal(h.store.get('run_test')?.failureReason, failure.message);
+  });
+
+  it('does not inspect media for a row skipped during post-data validation', async function () {
+    const h = harness([
+      { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
+      row('Valid row'),
+    ]);
+
+    await h.run();
+
+    sinon.assert.calledOnce(h.inlineMedia);
+    assert.equal(h.inlineMedia.firstCall.args[0].title, 'Valid row');
   });
 
   it('forwards author and tag cells to the transactional write seam', async function () {
