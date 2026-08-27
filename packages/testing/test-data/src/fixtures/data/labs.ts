@@ -8,7 +8,6 @@
 export const labsDefaults: Record<string, boolean> = {
   postsListReact: true,
   membersActivityReact: true,
-  membersImportRedesign: true,
   superEditors: false,
   editorExcerpt: false,
   additionalPaymentMethods: false,

@@ -13,10 +13,10 @@ import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-// Both flags: the redesigned dialog is what this file exercises, and custom fields are what it
-// exercises it for. They are separate switches — the redesign ships without custom fields.
-const FLAGS = { labs: { membersImportRedesign: true, membersCustomFields: true } };
-const WITHOUT_CUSTOM_FIELDS = { labs: { membersImportRedesign: true } };
+// The import dialog is served to everyone now, so custom fields are the only switch left, and
+// the dialog has to hold up on either side of it.
+const FLAGS = { labs: { membersCustomFields: true } };
+const WITHOUT_CUSTOM_FIELDS = { labs: {} };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
