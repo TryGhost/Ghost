@@ -3,7 +3,7 @@ import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { checkStripeEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseTiersCheckoutConfig } from '@tryghost/admin-x-framework/api/tiers-checkout-config';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useConfig, useSettings } from '@/settings/hooks/use-settings-data';
 
 /**
  * The gate and the data for a tier's checkout collection, in one place.
@@ -28,12 +28,13 @@ export const useTierCheckoutCollection = (
   { creating = false }: { creating?: boolean } = {},
 ) => {
   const hasCustomFields = useFeatureFlag('membersCustomFields');
-  const { config: globalConfig, settings } = useGlobalData();
+  const settings = useSettings();
+  const config = useConfig();
 
   // The read is tier-independent — one browse covers every tier — so it hangs only on
   // the feature being on. That lets the tiers list warm it before any modal opens, and
   // means a free-tier or new-tier modal costs at most one cached request.
-  const fetchWanted = hasCustomFields && checkStripeEnabled(settings || [], globalConfig || {});
+  const fetchWanted = hasCustomFields && checkStripeEnabled(settings, config);
   const { data, error, isError, isFetching } = useBrowseTiersCheckoutConfig({
     enabled: fetchWanted,
     defaultErrorHandler: false,
