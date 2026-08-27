@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import buildCompletionEmail from '../../../../../../core/server/services/content-import/import/completion-email';
 import type { ImportRun } from '../../../../../../core/server/services/content-import/import/store';
 
+const ADMIN_URL = 'https://example.com/ghost/';
+
 function run(overrides: Partial<ImportRun> = {}): ImportRun {
   return {
     id: 'run_test',
@@ -28,7 +30,7 @@ function run(overrides: Partial<ImportRun> = {}): ImportRun {
 
 describe('content import completion email', function () {
   it('summarises every row outcome and warning-bearing post', function () {
-    const email = buildCompletionEmail(run(), 'requester@example.com');
+    const email = buildCompletionEmail(run(), 'requester@example.com', ADMIN_URL);
 
     assert.equal(email.to, 'requester@example.com');
     assert.equal(email.subject, 'Your content import is complete');
@@ -52,6 +54,7 @@ describe('content import completion email', function () {
         rows: [{ line: 2, title: 'Failed', status: 'failed', reason: 'Write failed' }],
       }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
     assert.equal(email.subject, 'Your content import was unsuccessful');
@@ -68,6 +71,7 @@ describe('content import completion email', function () {
         ],
       }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
     assert.deepEqual(
@@ -92,6 +96,7 @@ describe('content import completion email', function () {
         ],
       }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
     assert.deepEqual(
@@ -110,6 +115,7 @@ describe('content import completion email', function () {
         ],
       }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
     assert.match(email.html, /2<\/strong> posts have warnings/);
@@ -119,6 +125,7 @@ describe('content import completion email', function () {
     const email = buildCompletionEmail(
       run({ status: 'failed', failureReason: 'database password leaked here' }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
     assert.equal(email.subject, 'Your content import could not be completed');
@@ -126,8 +133,18 @@ describe('content import completion email', function () {
     assert.doesNotMatch(email.html, /database password/);
   });
 
+  it('omits attachments when a fatal run stopped before processing a row', function () {
+    const email = buildCompletionEmail(
+      run({ status: 'failed', total: 0, rows: [] }),
+      'owner@example.com',
+      ADMIN_URL,
+    );
+
+    assert.deepEqual(email.attachments, []);
+  });
+
   it('escapes the recipient in the HTML footer', function () {
-    const email = buildCompletionEmail(run(), 'unsafe<email@example.com');
+    const email = buildCompletionEmail(run(), 'unsafe<email@example.com', ADMIN_URL);
 
     assert.match(email.html, /unsafe&lt;email@example\.com/);
     assert.doesNotMatch(email.html, /unsafe<email@example\.com/);
@@ -159,15 +176,18 @@ describe('content import completion email', function () {
         ],
       }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
-    assert.match(email.html, /Imported posts/);
+    assert.match(email.html, /Imported posts and pages/);
     assert.match(email.html, /Published &amp; linked/);
     assert.match(email.html, /published\/\?one=1&amp;two=2/);
     assert.match(email.html, /&lt;Draft&gt;/);
     assert.match(email.html, /#\/editor\/post\/draft-id/);
     assert.doesNotMatch(email.html, /No URL/);
     assert.doesNotMatch(email.html, /must-not-render/);
+    assert.match(email.html, /#\/posts\?tag=hash-import-run-run_test/);
+    assert.match(email.html, /#\/pages\?tag=hash-import-run-run_test/);
   });
 
   it('uses the row number when a linked outcome has no title', function () {
@@ -183,8 +203,35 @@ describe('content import completion email', function () {
         ],
       }),
       'owner@example.com',
+      ADMIN_URL,
     );
 
     assert.match(email.html, />Row 7<\/a>/);
+  });
+
+  it('limits the imported post preview and links to the complete filtered run', function () {
+    const rows: ImportRun['rows'] = Array.from({ length: 35 }, (_, index) => ({
+      line: index + 2,
+      title: `Imported ${index + 1}`,
+      status: 'created',
+      url: `https://example.com/imported-${index + 1}/`,
+    }));
+    const email = buildCompletionEmail(
+      run({ id: '6a9072a2e385e56d77b83c15', total: rows.length, rows }),
+      'owner@example.com',
+      'https://example.com/blog/ghost/',
+    );
+
+    assert.match(email.html, /Imported 10/);
+    assert.doesNotMatch(email.html, /Imported 11/);
+    assert.match(email.html, /Including 25 more\./);
+    assert.match(
+      email.html,
+      /https:\/\/example\.com\/blog\/ghost\/#\/posts\?tag=hash-import-run-6a9072a2e385e56d77b83c15/,
+    );
+    assert.match(
+      email.html,
+      /https:\/\/example\.com\/blog\/ghost\/#\/pages\?tag=hash-import-run-6a9072a2e385e56d77b83c15/,
+    );
   });
 });

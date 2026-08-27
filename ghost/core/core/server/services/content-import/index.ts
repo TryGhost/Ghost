@@ -55,7 +55,8 @@ function makeImporter(): ContentCSVImporter {
   };
 
   const email: EmailNotifications = {
-    send: (run, recipient) => ghostMailer.send(buildCompletionEmail(run, recipient)),
+    send: (run, recipient) =>
+      ghostMailer.send(buildCompletionEmail(run, recipient, urlUtils.urlFor('admin', true))),
     getDefaultRecipient: async () => (await models.User.getOwnerUser()).get('email'),
   };
 

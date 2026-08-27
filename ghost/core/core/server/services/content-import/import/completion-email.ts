@@ -2,6 +2,10 @@ import type { ImportRun, RowStatus } from './store';
 import buildImportReport from './report';
 import buildErrorsFile from './errors-file';
 
+const { slugify } = require('@tryghost/string');
+
+const IMPORTED_POST_PREVIEW_LIMIT = 10;
+
 export interface CompletionEmailPayload {
   to: string;
   subject: string;
@@ -75,26 +79,46 @@ function summaryItems(counts: OutcomeCounts): string {
     .join('');
 }
 
-function importedPostLinks(run: ImportRun): string {
-  const rows = run.rows.filter(
-    (row) => (row.status === 'created' || row.status === 'updated') && row.url,
+function importTagSlug(runId: string): string {
+  // Internal tag slugs replace the leading # with "hash-" in the model layer.
+  return slugify(`#Import Run ${runId}`.replace(/^#/, 'hash-'));
+}
+
+function importedPostLinks(run: ImportRun, adminUrl: string): string {
+  const importedRows = run.rows.filter(
+    (row) => row.status === 'created' || row.status === 'updated',
   );
-  if (!rows.length) {
+  if (!importedRows.length) {
     return '';
   }
 
-  const links = rows
+  const rows = importedRows.filter((row) => row.url);
+  const previewRows = rows.slice(0, IMPORTED_POST_PREVIEW_LIMIT);
+
+  const links = previewRows
     .map((row) => {
       const title = escapeHTML(row.title || `Row ${row.line}`);
       return `<li style="margin-bottom: 6px;"><a href="${escapeHTML(row.url as string)}" style="color: #3A464C;">${title}</a></li>`;
     })
     .join('');
+  const remaining = importedRows.length - previewRows.length;
+  const remainingCopy = remaining
+    ? `<p style="font-size: 16px; line-height: 25px; color: #3A464C;">Including ${formatNumber(remaining)} more.</p>`
+    : '';
+  const tag = encodeURIComponent(importTagSlug(run.id));
+  const postsUrl = escapeHTML(new URL(`#/posts?tag=${tag}`, adminUrl).href);
+  const pagesUrl = escapeHTML(new URL(`#/pages?tag=${tag}`, adminUrl).href);
+  const preview = links
+    ? `<ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${links}</ul>`
+    : '';
 
-  return `<h2 style="color: #15212A; font-size: 18px; line-height: 24px; margin: 32px 0 12px;">Imported posts</h2>
-      <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${links}</ul>`;
+  return `<h2 style="color: #15212A; font-size: 18px; line-height: 24px; margin: 32px 0 12px;">Imported posts and pages</h2>
+      ${preview}
+      ${remainingCopy}
+      <p style="font-size: 16px; line-height: 25px; color: #3A464C;"><a href="${postsUrl}" style="color: #3A464C;">View imported posts</a> · <a href="${pagesUrl}" style="color: #3A464C;">View imported pages</a></p>`;
 }
 
-function renderCompletionEmail(run: ImportRun, recipient: string): string {
+function renderCompletionEmail(run: ImportRun, recipient: string, adminUrl: string): string {
   const counts = countsFor(run);
   const heading = headingFor(run, counts);
   const warningCopy = counts.warningRows
@@ -121,7 +145,7 @@ function renderCompletionEmail(run: ImportRun, recipient: string): string {
       <p style="font-size: 16px; line-height: 25px; color: #3A464C;">The import processed ${formatNumber(run.total)} ${run.total === 1 ? 'row' : 'rows'}:</p>
       <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${summaryItems(counts)}</ul>
       ${warningCopy}
-      ${importedPostLinks(run)}
+      ${importedPostLinks(run, adminUrl)}
       <p style="color: #738A94; font-size: 11px; line-height: 18px; margin-top: 64px;">This email was sent to <a href="mailto:${escapedRecipient}" style="color: #738A94;">${escapedRecipient}</a>.</p>
     </div>
   </body>
@@ -131,6 +155,7 @@ function renderCompletionEmail(run: ImportRun, recipient: string): string {
 export default function buildCompletionEmail(
   run: ImportRun,
   recipient: string,
+  adminUrl: string,
 ): CompletionEmailPayload {
   const counts = countsFor(run);
   const report = buildImportReport(run);
@@ -155,7 +180,7 @@ export default function buildCompletionEmail(
   return {
     to: recipient,
     subject: headingFor(run, counts),
-    html: renderCompletionEmail(run, recipient),
+    html: renderCompletionEmail(run, recipient, adminUrl),
     forceTextContent: true,
     attachments,
   };

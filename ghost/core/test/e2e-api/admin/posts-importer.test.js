@@ -138,7 +138,10 @@ describe('Posts Importer API', function () {
         'Completion email draft,<p>Draft</p>,draft\n',
     );
 
-    await agent.post('posts/upload/').attach('postsfile', completionCsvPath).expectStatus(202);
+    const { body } = await agent
+      .post('posts/upload/')
+      .attach('postsfile', completionCsvPath)
+      .expectStatus(202);
     await jobsService.allSettled();
 
     const email = mockManager.assert.sentEmail({
@@ -159,6 +162,8 @@ describe('Posts Importer API', function () {
       email.html.includes(`/#/editor/post/${draft.id}`),
       'the draft links to its Admin editor',
     );
+    assert.match(email.html, new RegExp(`/#/posts\\?tag=hash-import-run-${body.meta.import_id}`));
+    assert.match(email.html, new RegExp(`/#/pages\\?tag=hash-import-run-${body.meta.import_id}`));
   });
 
   it('attaches a report that classifies same-run and pre-existing duplicates', async function () {
