@@ -168,10 +168,8 @@ describe('Posts Importer API', function () {
     const origin = 'https://csv-import-assets.example';
     const requests = [
       nock(origin).get('/body.jpg').reply(200, GIF1x1),
-      nock(origin).get('/feature.jpg').reply(200, GIF1x1),
       nock(origin).get('/og.jpg').reply(200, GIF1x1),
       nock(origin).get('/twitter.jpg').reply(200, GIF1x1),
-      nock(origin).get('/markdown.jpg').reply(200, GIF1x1),
       nock(origin).get('/audio.mp3').reply(200, audioFixture),
       nock(origin).get('/video.mp4').reply(200, videoFixture),
       nock(origin).get('/guide.pdf').reply(200, fileFixture),
@@ -184,8 +182,8 @@ describe('Posts Importer API', function () {
     const csvValue = (value) => `"${value.replaceAll('"', '""')}"`;
     const csv = [
       'title,html,markdown,feature_image,og_image,twitter_image',
-      `Remote CSV media,${csvValue(html)},,${origin}/feature.jpg,${origin}/og.jpg,${origin}/twitter.jpg`,
-      `Remote Markdown media,,${csvValue(`![Remote](${origin}/markdown.jpg)`)},,,`,
+      `Remote CSV media,${csvValue(html)},,${origin}/body.jpg,${origin}/og.jpg,${origin}/twitter.jpg`,
+      `Remote Markdown media,,${csvValue(`![Remote](${origin}/body.jpg)`)},,,`,
     ].join('\n');
     const filePath = await csvFile('remote-media.csv', csv);
 
@@ -218,6 +216,8 @@ describe('Posts Importer API', function () {
     assert.ok(markdownPost);
     const markdownLexical = JSON.parse(markdownPost.get('lexical'));
     const markdownImage = markdownLexical.root.children.find((node) => node.type === 'image').src;
+    assert.equal(post.get('feature_image'), nodeByType('image').src);
+    assert.equal(markdownImage, nodeByType('image').src);
     storedUrls.push(markdownImage);
     remoteImportedMediaUrls.push(...storedUrls);
     for (const storedUrl of storedUrls) {

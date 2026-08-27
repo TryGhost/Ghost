@@ -25,6 +25,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const warningsByTitle = new Map<string, string[]>();
   const urlFailures = new Map<string, unknown>();
   const inlineMedia = sinon.stub().resolves();
+  const createMediaInliner = sinon.stub().callsFake(() => ({ inline: inlineMedia }));
   const store = new ImportRunStore();
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
@@ -69,7 +70,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     getHtmlToLexical: () => htmlToLexicalFactory(),
     getMarkdownToHtml: () => markdownToHtmlFactory(),
     getCleanHTML: () => cleanHTMLFactory(),
-    media: { inline: inlineMedia },
+    createMediaInliner,
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -128,6 +129,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     warningsByTitle,
     urlFailures,
     inlineMedia,
+    createMediaInliner,
     store,
     setHtmlToLexicalFactory,
     setMarkdownToHtmlFactory,
@@ -366,6 +368,21 @@ describe('ContentCSVImporter', function () {
     await h.jobs[0].job();
 
     assert.deepEqual(events, ['convert', 'inline', 'write']);
+  });
+
+  it('creates an isolated media inliner for every import run', async function () {
+    const h = harness([row('Cached media')]);
+
+    await h.importer.importCSV({ filePath: '/tmp/first.csv', fileName: 'first.csv' });
+    await h.jobs[0].job();
+    await h.importer.importCSV({ filePath: '/tmp/second.csv', fileName: 'second.csv' });
+    await h.jobs[1].job();
+
+    sinon.assert.calledTwice(h.createMediaInliner);
+    assert.notEqual(
+      h.createMediaInliner.firstCall.returnValue,
+      h.createMediaInliner.secondCall.returnValue,
+    );
   });
 
   it('stops the run when media preparation fails before row isolation is added', async function () {

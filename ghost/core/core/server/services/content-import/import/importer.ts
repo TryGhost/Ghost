@@ -61,7 +61,7 @@ interface ImporterDeps {
   getHtmlToLexical: () => HtmlToLexical;
   getMarkdownToHtml: () => MarkdownToHtml;
   getCleanHTML: () => CleanHTML;
-  media: PostMediaInlining;
+  createMediaInliner: () => PostMediaInlining;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -85,7 +85,7 @@ class ContentCSVImporter {
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
   private _getCleanHTML: () => CleanHTML;
-  private _media: PostMediaInlining;
+  private _createMediaInliner: () => PostMediaInlining;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -101,7 +101,7 @@ class ContentCSVImporter {
     getHtmlToLexical,
     getMarkdownToHtml,
     getCleanHTML,
-    media,
+    createMediaInliner,
     addJob,
     report,
     store,
@@ -116,7 +116,7 @@ class ContentCSVImporter {
     this._getHtmlToLexical = getHtmlToLexical;
     this._getMarkdownToHtml = getMarkdownToHtml;
     this._getCleanHTML = getCleanHTML;
-    this._media = media;
+    this._createMediaInliner = createMediaInliner;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -191,6 +191,7 @@ class ContentCSVImporter {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
+      const media = this._createMediaInliner();
       let successfulWrites = 0;
       let failedWrites = 0;
       let firstWriteFailure: unknown;
@@ -217,7 +218,7 @@ class ContentCSVImporter {
           throw error;
         }
 
-        await this._media.inline(data);
+        await media.inline(data);
 
         let post: WrittenPost;
         let writeStatus: 'created' | 'updated';

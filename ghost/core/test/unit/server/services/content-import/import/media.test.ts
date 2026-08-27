@@ -5,6 +5,7 @@ import {
   PostMediaInliner,
 } from '../../../../../../core/server/services/content-import/import/media';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
+import type { ExternalMediaImportResult } from '../../../../../../core/server/services/media-inliner/types';
 
 const postData = (overrides: Partial<PostData> = {}): PostData => ({
   title: 'Media post',
@@ -17,14 +18,16 @@ const postData = (overrides: Partial<PostData> = {}): PostData => ({
 });
 
 function harness() {
-  const importUrl = sinon.stub().callsFake(async (sourceUrl: string) => {
-    const fileName = new URL(sourceUrl.replace(/^\/\//, 'https://')).pathname.split('/').at(-1);
-    return {
-      status: 'stored' as const,
-      sourceUrl,
-      storedUrl: `__GHOST_URL__/content/files/${fileName}`,
-    };
-  });
+  const importUrl = sinon
+    .stub<[string], Promise<ExternalMediaImportResult>>()
+    .callsFake(async (sourceUrl: string) => {
+      const fileName = new URL(sourceUrl.replace(/^\/\//, 'https://')).pathname.split('/').at(-1);
+      return {
+        status: 'stored',
+        sourceUrl,
+        storedUrl: `__GHOST_URL__/content/files/${fileName}`,
+      };
+    });
   const inliner = new PostMediaInliner({
     media: { importUrl },
   });
@@ -271,6 +274,125 @@ describe('PostMediaInliner', function () {
     sinon.assert.calledWithExactly(h.importUrl, '//assets.test/protocol-relative.jpg');
   });
 
+  it('reuses the same URL across fields in one row', async function () {
+    const h = harness();
+    const sourceUrl = 'https://assets.test/shared.jpg';
+    const data = postData({
+      feature_image: sourceUrl,
+      posts_meta: { og_image: sourceUrl, twitter_image: sourceUrl },
+      lexical: JSON.stringify({
+        root: { children: [{ type: 'image', src: sourceUrl }] },
+      }),
+    });
+
+    await h.inliner.inline(data);
+
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    assert.equal(data.feature_image, '__GHOST_URL__/content/files/shared.jpg');
+    assert.equal(data.posts_meta?.og_image, '__GHOST_URL__/content/files/shared.jpg');
+    assert.equal(data.posts_meta?.twitter_image, '__GHOST_URL__/content/files/shared.jpg');
+    assert.equal(
+      JSON.parse(data.lexical ?? '{}').root.children[0].src,
+      '__GHOST_URL__/content/files/shared.jpg',
+    );
+  });
+
+  it('reuses the same URL in the same field across rows', async function () {
+    const h = harness();
+    const sourceUrl = 'https://assets.test/cross-row.jpg';
+    const first = postData({ feature_image: sourceUrl });
+    const second = postData({ feature_image: sourceUrl });
+
+    await h.inliner.inline(first);
+    await h.inliner.inline(second);
+
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    assert.equal(first.feature_image, '__GHOST_URL__/content/files/cross-row.jpg');
+    assert.equal(second.feature_image, '__GHOST_URL__/content/files/cross-row.jpg');
+  });
+
+  it('shares an in-flight import for simultaneous references', async function () {
+    const h = harness();
+    const sourceUrl = 'https://assets.test/simultaneous.jpg';
+    let resolveImport: (result: ExternalMediaImportResult) => void = () => {};
+    const pendingImport = new Promise<ExternalMediaImportResult>((resolve) => {
+      resolveImport = resolve;
+    });
+    h.importUrl.returns(pendingImport);
+    const first = postData({ feature_image: sourceUrl });
+    const second = postData({ feature_image: sourceUrl });
+
+    const firstInlining = h.inliner.inline(first);
+    const secondInlining = h.inliner.inline(second);
+
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    resolveImport({
+      status: 'stored',
+      sourceUrl,
+      storedUrl: '__GHOST_URL__/content/files/simultaneous.jpg',
+    });
+    await Promise.all([firstInlining, secondInlining]);
+    assert.equal(first.feature_image, '__GHOST_URL__/content/files/simultaneous.jpg');
+    assert.equal(second.feature_image, '__GHOST_URL__/content/files/simultaneous.jpg');
+  });
+
+  it('caches failed imports while reporting them for every affected row', async function () {
+    const h = harness();
+    const sourceUrl = 'https://assets.test/missing.jpg';
+    h.importUrl.resolves({
+      status: 'failed',
+      sourceUrl,
+      stage: 'download',
+      reason: 'The media file could not be downloaded.',
+    });
+
+    for (const title of ['First affected row', 'Second affected row']) {
+      await assert.rejects(
+        h.inliner.inline(postData({ title, feature_image: sourceUrl })),
+        (error: unknown) => {
+          assert.ok(error instanceof MediaInliningFailure);
+          assert.deepEqual(error.failures, [
+            { sourceUrl, reason: 'The media file could not be downloaded.' },
+          ]);
+          return true;
+        },
+      );
+    }
+
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+  });
+
+  it('keeps query strings and fragments in the exact cache key', async function () {
+    const h = harness();
+    const sourceUrls = [
+      'https://assets.test/image.jpg',
+      'https://assets.test/image.jpg?size=large',
+      'https://assets.test/image.jpg#preview',
+    ];
+    const data = postData({
+      feature_image: sourceUrls[0],
+      posts_meta: { og_image: sourceUrls[1], twitter_image: sourceUrls[2] },
+    });
+
+    await h.inliner.inline(data);
+
+    assert.deepEqual(
+      h.importUrl.getCalls().map((call) => call.args[0]),
+      sourceUrls,
+    );
+  });
+
+  it('does not share cached URLs across media-inliner instances', async function () {
+    const h = harness();
+    const sourceUrl = 'https://assets.test/separate-imports.jpg';
+    const nextImportInliner = new PostMediaInliner({ media: { importUrl: h.importUrl } });
+
+    await h.inliner.inline(postData({ feature_image: sourceUrl }));
+    await nextImportInliner.inline(postData({ feature_image: sourceUrl }));
+
+    sinon.assert.calledTwice(h.importUrl);
+  });
+
   it('collects every unique expected download, extraction, and storage failure', async function () {
     const h = harness();
     h.importUrl.callsFake(async (sourceUrl: string) => {
@@ -352,7 +474,7 @@ describe('PostMediaInliner', function () {
       ]);
       return true;
     });
-    assert.equal(h.importUrl.callCount, 6, 'all references are attempted before failing');
+    assert.equal(h.importUrl.callCount, 5, 'every unique reference is attempted before failing');
   });
 
   it('propagates unexpected errors from the media importer', async function () {

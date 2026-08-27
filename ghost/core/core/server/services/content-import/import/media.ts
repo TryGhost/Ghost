@@ -1,5 +1,5 @@
 import type { PostData } from './post-data';
-import type { ExternalMediaImporter } from '../../media-inliner/types';
+import type { ExternalMediaImporter, ExternalMediaImportResult } from '../../media-inliner/types';
 
 const cheerio = require('cheerio');
 
@@ -103,6 +103,7 @@ export interface PostMediaInlining {
 
 export class PostMediaInliner implements PostMediaInlining {
   private _media: ExternalMediaImporter;
+  private _cache = new Map<string, Promise<ExternalMediaImportResult>>();
   private _failures = new Map<string, MediaFailure>();
 
   constructor({ media }: { media: ExternalMediaImporter }) {
@@ -135,7 +136,13 @@ export class PostMediaInliner implements PostMediaInlining {
       return sourceUrl;
     }
 
-    const result = await this._media.importUrl(sourceUrl);
+    let resultPromise = this._cache.get(sourceUrl);
+    if (!resultPromise) {
+      resultPromise = this._media.importUrl(sourceUrl);
+      this._cache.set(sourceUrl, resultPromise);
+    }
+
+    const result = await resultPromise;
     if (result.status === 'failed') {
       this.recordFailure(sourceUrl, result.reason);
       return sourceUrl;

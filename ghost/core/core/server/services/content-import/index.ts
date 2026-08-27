@@ -50,7 +50,7 @@ function makeImporter(): ContentCSVImporter {
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
-    media: new PostMediaInliner({ media: mediaInlinerService.getInstance() }),
+    createMediaInliner: () => new PostMediaInliner({ media: mediaInlinerService.getInstance() }),
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),
