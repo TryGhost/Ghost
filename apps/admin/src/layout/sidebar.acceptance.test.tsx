@@ -1681,13 +1681,49 @@ describe('Embedded Network page chrome', () => {
     }
   });
 
-  it('keeps the toggle in the profile back-only header', async () => {
+  it('hides the toggle where it would overlap Network profile content', async () => {
     await renderAdminApp('/activitypub/profile', seedNetwork());
-    await expect.element(toggle()).toHaveAttribute('aria-expanded', 'false');
-    await expect(toggle()).toHaveCount(1);
+    await expect(toggle()).toHaveCount(0);
     await expect
       .element(page.getByRole('heading', { name: 'Network account', exact: true }))
       .toBeVisible();
+  });
+
+  it('hides the toggle beside Network detail-page back buttons', async () => {
+    const profileHandle = '@index@example.com';
+    const noteId = 'https://example.com/.ghost/activitypub/note/1';
+    const account = {
+      id: 'me',
+      apId: 'https://example.com/ap/me',
+      name: 'Network account',
+      handle: profileHandle,
+      bio: '',
+      url: 'https://example.com',
+      avatarUrl: '',
+      bannerImageUrl: null,
+      customFields: {},
+      attachment: [],
+      postCount: 0,
+      likedCount: 0,
+      followingCount: 0,
+      followerCount: 0,
+      followsMe: false,
+      followedByMe: false,
+      blockedByMe: false,
+      domainBlockedByMe: false,
+    };
+    fakeEndpoint('GET', `${base}account/${profileHandle}`, account);
+    fakeEndpoint('GET', `${base}posts/${profileHandle}`, { posts: [], next: null });
+
+    await renderAdminApp(`/activitypub/profile/${profileHandle}`, seedNetwork());
+    await expect(toggle()).toHaveCount(0);
+    await expect
+      .element(page.getByRole('heading', { name: 'Network account', exact: true }))
+      .toBeVisible();
+
+    window.location.hash = `#/activitypub/notes/${encodeURIComponent(noteId)}`;
+    await expect.poll(currentRoute).toBe(`/activitypub/notes/${encodeURIComponent(noteId)}`);
+    await expect(toggle()).toHaveCount(0);
   });
 
   it('keeps a reopening control on Network onboarding', async () => {

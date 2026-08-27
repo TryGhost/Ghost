@@ -49,6 +49,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, showBorder = tru
   const currentPage = useCurrentPage();
   const routeHasParams = useRouteHasParams();
   const activeRoute = useActiveRoute();
+  const hostHeaderLeading = activeRoute?.hideHostHeaderLeading ? null : hostLayout?.headerLeading;
 
   // Logic for special pages
   let onlyBackButton = false;
@@ -67,9 +68,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, showBorder = tru
     <>
       {onlyBackButton ? (
         <div className="sticky top-5 left-0 z-50 inline-block max-lg:flex max-lg:items-center max-lg:justify-between max-lg:pr-[15.5px] max-md:top-4">
-          {hostLayout?.headerLeading ? (
-            <Inline align="center" gap="md" style={{ paddingInline: hostLayout.contentGutter }}>
-              {hostLayout.headerLeading}
+          {hostHeaderLeading ? (
+            <Inline align="center" gap="md" style={{ paddingInline: hostLayout?.contentGutter }}>
+              {hostHeaderLeading}
               {backActive && <BackButton className="-ml-2" />}
             </Inline>
           ) : (
@@ -83,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, showBorder = tru
             className={`relative flex h-[72px] items-center justify-between gap-5 px-[var(--network-gutter,min(4vw,24px))] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[var(--network-gutter,min(4vw,24px))] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950' : ''}`}
           >
             <Inline align="center" gap="md">
-              {hostLayout?.headerLeading}
+              {hostHeaderLeading}
               <HeaderTitle backIcon={backActive} title={activeRoute?.pageTitle || ''} />
             </Inline>
             <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />
