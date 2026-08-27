@@ -123,16 +123,15 @@ const effectiveState = (current: TierCheckoutState): TierCheckoutState => ({
 
 const stateFromConfig = (config: TierCheckoutConfig | undefined): TierCheckoutState => {
   const shipping = config?.shipping;
-  // A saved list covering Stripe's whole set reads back as "all countries".
-  const shipsEverywhere =
-    !shipping || shipping.allowed_countries.length >= STRIPE_ALLOWED_COUNTRIES.length;
+  // Countries are a restriction, so a configuration that names none delivers everywhere.
+  const restrictedTo = shipping?.allowed_countries;
   return {
     shipping: {
       collect: Boolean(shipping),
       addressFieldKey: shipping?.address.custom_field_key ?? null,
       nameFieldKey: shipping?.name.custom_field_key ?? null,
-      countriesMode: shipsEverywhere ? 'all' : 'specific',
-      allowedCountries: shipping && !shipsEverywhere ? shipping.allowed_countries : [],
+      countriesMode: restrictedTo ? 'specific' : 'all',
+      allowedCountries: restrictedTo ?? [],
     },
     taxNumber: {
       collect: Boolean(config?.tax_number),
@@ -342,10 +341,12 @@ const TierCheckoutCollection = forwardRef<
               shipping: state.shipping.collect
                 ? {
                     collect: true,
-                    allowed_countries:
-                      state.shipping.countriesMode === 'all'
-                        ? STRIPE_ALLOWED_COUNTRIES
-                        : state.shipping.allowedCountries,
+                    // Everywhere is the absence of a list, never a copy of every country:
+                    // that set moves, and a saved enumeration would silently become a
+                    // restriction the day the processor adds one.
+                    ...(state.shipping.countriesMode === 'specific'
+                      ? { allowed_countries: state.shipping.allowedCountries }
+                      : {}),
                     name: { custom_field_key: state.shipping.nameFieldKey! },
                     address: { custom_field_key: state.shipping.addressFieldKey! },
                   }
