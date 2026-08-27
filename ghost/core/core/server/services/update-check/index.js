@@ -3,7 +3,6 @@ const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const UpdateCheckJob = require('./jobs/update-check-job').default;
-const UpdateCheckBootJob = require('./jobs/update-check-boot-job').default;
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
@@ -79,6 +78,6 @@ module.exports.scheduleRecurringJobs = async (classBasedJobs) => {
 };
 
 module.exports.scheduleBootJob = async (classBasedJobs) => {
-  logging.info('[Background Job] update-check-boot queued');
-  await classBasedJobs.dispatch(new UpdateCheckBootJob());
+  logging.info('[Background Job] update-check boot run queued');
+  await classBasedJobs.dispatch(new UpdateCheckJob());
 };

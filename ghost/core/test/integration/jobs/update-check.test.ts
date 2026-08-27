@@ -3,7 +3,6 @@ import http from 'node:http';
 import sinon from 'sinon';
 import type { AddressInfo } from 'node:net';
 import UpdateCheckJob from '../../../core/server/services/update-check/jobs/update-check-job';
-import UpdateCheckBootJob from '../../../core/server/services/update-check/jobs/update-check-boot-job';
 
 const logging = require('@tryghost/logging');
 const models = require('../../../core/server/models');
@@ -54,7 +53,7 @@ describe('Job: Update check', function () {
     );
   });
 
-  it('runs the update check when the boot job is dispatched', async function () {
+  it('runs the update check when a boot dispatch occurs', async function () {
     let requestCount = 0;
     mockUpdateServer = http.createServer((req, res) => {
       requestCount += 1;
@@ -69,10 +68,10 @@ describe('Job: Update check', function () {
 
     const loggingInfoSpy = sinon.spy(logging, 'info');
 
-    await getJobsService().dispatch(new UpdateCheckBootJob());
+    await getJobsService().dispatch(new UpdateCheckJob());
 
-    const completed = await waitFor(() => jobCompleted(loggingInfoSpy, 'update-check-boot'));
-    assert.ok(completed, 'the boot job completes under its own update-check-boot identity');
+    const completed = await waitFor(() => jobCompleted(loggingInfoSpy, 'update-check'));
+    assert.ok(completed, 'the boot dispatch completes under the shared update-check type');
     assert.equal(requestCount, 1, 'the dispatched job reached the update endpoint once');
   });
 
@@ -123,7 +122,7 @@ describe('Job: Update check', function () {
     await getJobsService().dispatch(new UpdateCheckJob());
 
     const completed = await waitFor(() => jobCompleted(loggingInfoSpy, 'update-check'));
-    assert.ok(completed, 'the recurring job completes under its own update-check identity');
+    assert.ok(completed, 'the dispatched job completes under the update-check type');
 
     const setting = await models.Settings.findOne(
       { key: 'notifications' },
