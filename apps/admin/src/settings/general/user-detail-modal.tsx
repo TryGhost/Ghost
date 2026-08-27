@@ -347,6 +347,7 @@ const UserDetailModalContent: React.FC<{
         error.message = 'Unsupported file type';
       }
       handleError(error);
+      return false;
     }
   };
 

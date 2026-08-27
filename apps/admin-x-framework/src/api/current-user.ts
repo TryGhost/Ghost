@@ -1,4 +1,6 @@
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import useHandleError from '../hooks/use-handle-error';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { UsersResponseType } from './users';
 
@@ -20,11 +22,18 @@ export const useCurrentUserQueryOptions = () => {
 // usePermissions, which is then used by createQuery
 export const useCurrentUser = () => {
   const currentUserQueryOptions = useCurrentUserQueryOptions();
+  const handleError = useHandleError();
 
   const result = useQuery({
     ...currentUserQueryOptions,
     select: (data) => data.users[0],
   });
+
+  useEffect(() => {
+    if (result.error) {
+      handleError(result.error);
+    }
+  }, [handleError, result.error]);
 
   return result;
 };

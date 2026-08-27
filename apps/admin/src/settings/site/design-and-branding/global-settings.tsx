@@ -333,6 +333,7 @@ const GlobalSettings: React.FC<{
                               );
                             } catch (e) {
                               handleError(e);
+                              return false;
                             }
                           },
                         })
