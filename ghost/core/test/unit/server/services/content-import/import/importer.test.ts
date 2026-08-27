@@ -582,7 +582,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.failureReason, failure.message);
   });
 
-  it('does not inspect media for a row skipped during post-data validation', async function () {
+  it('does not inspect media for a row failed during post-data validation', async function () {
     const h = harness([
       { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
       row('Valid row'),
@@ -917,7 +917,7 @@ describe('ContentCSVImporter', function () {
     );
   });
 
-  it('skips a malformed row on its own and imports the rest', async function () {
+  it('fails a malformed row on its own and imports the rest', async function () {
     const h = harness([
       row('First'),
       { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
@@ -936,12 +936,12 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(run?.rows[1], {
       line: 3,
       title: null,
-      status: 'skipped',
+      status: 'failed',
       reason: 'title is required',
     });
     assert.deepEqual(
       run?.rows.map((r) => r.status),
-      ['created', 'skipped', 'created'],
+      ['created', 'failed', 'created'],
     );
   });
 
@@ -964,7 +964,7 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.store.get('run_test')?.rows[1], {
       line: 3,
       title: 'Bad markdown',
-      status: 'skipped',
+      status: 'failed',
       reason: 'markdown could not be converted',
     });
   });
@@ -987,12 +987,12 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.store.get('run_test')?.rows[1], {
       line: 3,
       title: 'Bad clean',
-      status: 'skipped',
+      status: 'failed',
       reason: 'html could not be cleaned',
     });
   });
 
-  it('completes without reporting when every row is skipped before a write', async function () {
+  it('completes without an internal error when every row fails validation before a write', async function () {
     const h = harness([
       { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
       { title: '', html: '<p>Still no title</p>', markdown: '', published_at: undefined },
@@ -1004,7 +1004,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.status, 'complete');
     assert.deepEqual(
       h.store.get('run_test')?.rows.map((outcome) => outcome.status),
-      ['skipped', 'skipped'],
+      ['failed', 'failed'],
     );
   });
 

@@ -49,7 +49,9 @@ export async function parseWithSource(
   const content = (await fs.readFile(path, 'utf8')).replace(/^\ufeff/, '');
   const parsed = papaparse.parse<Record<string, unknown>>(content, {
     header: true,
-    skipEmptyLines: true,
+    // Spreadsheet exports can represent an empty row as delimiters for every
+    // column rather than a literally blank line. Greedy mode drops both forms.
+    skipEmptyLines: 'greedy',
   });
 
   const fatal = parsed.errors.find(isFatal);

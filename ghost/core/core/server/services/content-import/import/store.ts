@@ -2,8 +2,8 @@
 // outcome per row. Nothing is persisted; the durable job system milestone
 // replaces this.
 
-// skipped = the row was never attempted (the publisher can fix the file);
-// failed = row processing was attempted but did not produce a post.
+// skipped = an otherwise valid row required no write (for example a duplicate);
+// failed = the row could not produce a post, including source validation errors.
 export type Clock = () => Date;
 
 export type RowStatus = 'created' | 'updated' | 'skipped' | 'failed';

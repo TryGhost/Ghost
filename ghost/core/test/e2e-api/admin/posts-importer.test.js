@@ -182,6 +182,8 @@ describe('Posts Importer API', function () {
         'Invalid status,report-invalid-status,scheduled,,,',
         `Write failure,report-write-failure,draft,${'x'.repeat(301)},,`,
         'Warning success,report-warning,draft,,Warning Author,not-an-email',
+        ',,,,,',
+        '  ,  ,  ,  ,  ,  ',
       ].join('\n'),
     );
 
@@ -189,6 +191,11 @@ describe('Posts Importer API', function () {
     await jobsService.allSettled();
 
     const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    assert.match(email.html, /processed 6 rows/);
+    assert.match(email.html, /Created:<\/strong> 2/);
+    assert.match(email.html, /Updated:<\/strong> 0/);
+    assert.match(email.html, /Skipped:<\/strong> 2/);
+    assert.match(email.html, /Failed:<\/strong> 2/);
     assert.equal(email.attachments.length, 2);
     const report = email.attachments.find(({ filename }) => filename === 'report.csv');
     assert.ok(report);
@@ -206,7 +213,7 @@ describe('Posts Importer API', function () {
     assert.equal(preExisting.outcome, 'duplicate');
     assert.equal(preExisting.duplicate_origin, 'pre_existing');
     assert.equal(preExisting.matched_by, 'slug');
-    assert.equal(rows.find((row) => row.title === 'Invalid status').outcome, 'skipped');
+    assert.equal(rows.find((row) => row.title === 'Invalid status').outcome, 'failed');
     assert.equal(rows.find((row) => row.title === 'Write failure').outcome, 'failed');
     assert.match(rows.find((row) => row.title === 'Warning success').warnings, /assigned Owner/);
     assert.equal(
@@ -258,7 +265,11 @@ describe('Posts Importer API', function () {
     await agent.post('posts/upload/').body(form).expectStatus(202);
     await jobsService.allSettled();
 
-    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    const email = mockManager.assert.sentEmail({
+      subject: 'Your content import was unsuccessful',
+    });
+    assert.match(email.html, /Skipped:<\/strong> 0/);
+    assert.match(email.html, /Failed:<\/strong> 1/);
     const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
     assert.ok(errorsFile);
     const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
@@ -275,7 +286,7 @@ describe('Posts Importer API', function () {
     assert.equal(parsed.data[0].Headline, 'ZIP invalid');
     assert.equal(parsed.data[0].State, 'scheduled');
     assert.equal(parsed.data[0].ghost_import_outcome, 'publisher value');
-    assert.equal(parsed.data[0].ghost_import_outcome_2, 'skipped');
+    assert.equal(parsed.data[0].ghost_import_outcome_2, 'failed');
 
     const retryForm = new FormData();
     retryForm.append('mapping[Body]', 'html');
@@ -287,7 +298,7 @@ describe('Posts Importer API', function () {
     });
     await agent.post('posts/upload/').body(retryForm).expectStatus(202);
     await jobsService.allSettled();
-    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    mockManager.assert.sentEmail({ subject: 'Your content import was unsuccessful' });
   });
 
   it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {

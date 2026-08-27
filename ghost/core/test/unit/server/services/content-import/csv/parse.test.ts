@@ -87,6 +87,27 @@ describe('content import csv parse', function () {
     assert.equal(result[1].title, 'After blank');
   });
 
+  it('drops delimiter-only rows emitted by spreadsheet applications', async function () {
+    const result = await parse(
+      await csvFile(
+        'title,html,published_at\n' +
+          'Actual post,<p>Body</p>,2025-01-01T00:00:00.000Z\n' +
+          ',,\n' +
+          '  ,  ,  \n' +
+          ',,\n',
+      ),
+      HEADER_MAPPING,
+    );
+
+    assert.deepEqual(result, [
+      {
+        title: 'Actual post',
+        html: '<p>Body</p>',
+        published_at: '2025-01-01T00:00:00.000Z',
+      },
+    ]);
+  });
+
   it('ignores the overflow cells of a ragged row', async function () {
     const result = await parse(
       await csvFile(

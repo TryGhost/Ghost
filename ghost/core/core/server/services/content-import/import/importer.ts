@@ -228,7 +228,7 @@ class ContentCSVImporter {
             this.recordOutcome(runId, sourceCells, {
               line,
               title: row.title || null,
-              status: 'skipped',
+              status: 'failed',
               reason: messageOf(error),
             });
             continue;
