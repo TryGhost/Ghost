@@ -86,10 +86,10 @@ const response: TierCheckoutConfig = {
 const responseWithNullDestination: TierCheckoutConfig = {
   tier_id: 'abc',
   custom_fields: [],
-  // @ts-expect-error a served shipping block always names both destinations
   shipping: {
     collect: true,
     allowed_countries: ['US'],
+    // @ts-expect-error a served shipping block always names both destinations
     name: { custom_field_key: null },
     address: { custom_field_key: 'shipping_address' },
   },

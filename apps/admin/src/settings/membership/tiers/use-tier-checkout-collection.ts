@@ -56,6 +56,8 @@ export const useTierCheckoutCollection = (
     enabled,
     failed: sectionWanted && failed && !missingBackend,
     isReady: !enabled || Boolean(data),
-    config: data?.tiers_checkout_config.find((entry) => entry.tier_id === tier?.id),
+    // The extra `?.` guards a malformed success response: the section degrades to its
+    // empty state instead of the modal crashing on a missing array.
+    config: data?.tiers_checkout_config?.find((entry) => entry.tier_id === tier?.id),
   };
 };
