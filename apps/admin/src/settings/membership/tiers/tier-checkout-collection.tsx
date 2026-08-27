@@ -22,7 +22,12 @@ import {
   Separator,
   Switch,
 } from '@tryghost/shade/components';
-import { STRIPE_ALLOWED_COUNTRIES } from '@tryghost/checkout';
+import {
+  PORT_FIELD,
+  STRIPE_ALLOWED_COUNTRIES,
+  STRIPE_PORT,
+  type StripePort,
+} from '@tryghost/checkout';
 import { type ErrorMessages, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { Text } from '@tryghost/shade/primitives';
 import {
@@ -190,19 +195,20 @@ function CollectToggle({
 }
 
 function DestinationRow({
-  createTypes,
+  eligible,
   error,
-  fields,
   id,
   label,
+  port,
   value,
   onChange,
 }: {
-  createTypes: MemberCustomField['type'][];
+  eligible: Record<StripePort, MemberCustomField[]>;
   error: string | undefined;
-  fields: MemberCustomField[];
   id: string;
   label: string;
+  /** Names what is collected. What may hold it follows from the port table, not from here. */
+  port: StripePort;
   value: string | null;
   onChange: (key: string) => void;
 }) {
@@ -210,8 +216,8 @@ function DestinationRow({
     <Row label={label}>
       <Field data-invalid={Boolean(error) || undefined}>
         <CustomFieldPicker
-          createTypes={createTypes}
-          fields={fields}
+          createTypes={[PORT_FIELD[port].type]}
+          fields={eligible[port]}
           id={id}
           invalid={Boolean(error)}
           label={label}
@@ -246,12 +252,16 @@ const TierCheckoutCollection = forwardRef<
 
   const { data: fieldsData } = useBrowseMemberCustomFields();
   const allFields = fieldsData?.members_custom_fields ?? [];
-  // What each collection may be kept in is the server's rule (PORT_FIELD in
-  // tier-checkout-config/destinations.ts): an address goes into an address field, a
-  // recipient name or phone number strictly into a short text one. Offering anything
-  // wider here would invite a pick the save then refuses.
-  const addressFields = allFields.filter((field) => field.type === 'address');
-  const shortTextFields = allFields.filter((field) => field.type === 'short_text');
+  // What each collected value may be kept in is the server's rule, so it is read from the
+  // shared port table rather than restated here: anything wider would invite a pick the
+  // save then refuses, anything narrower would hide a field that would have been accepted.
+  // Cast because Object.entries widens the port keys back to string.
+  const eligible = Object.fromEntries(
+    Object.entries(PORT_FIELD).map(([port, wants]) => [
+      port,
+      allFields.filter((field) => field.type === wants.type),
+    ]),
+  ) as Record<StripePort, MemberCustomField[]>;
 
   const selectedCountries = state.shipping.allowedCountries;
 
@@ -280,18 +290,24 @@ const TierCheckoutCollection = forwardRef<
     // list means the field was archived or deleted since — the server would refuse it,
     // so it is surfaced here, next to a picker that would otherwise just look empty.
     // Held off while the fields are still loading, when absence proves nothing.
-    const destinationError = (key: string | null, eligible: MemberCustomField[]) => {
+    const destinationError = (key: string | null, offered: MemberCustomField[]) => {
       if (!key) {
         return 'Choose where this should be kept';
       }
-      if (fieldsData && !eligible.some((field) => field.key === key)) {
+      if (fieldsData && !offered.some((field) => field.key === key)) {
         return 'This field is no longer available. Choose another';
       }
       return undefined;
     };
     if (state.shipping.collect) {
-      newErrors.shippingField = destinationError(state.shipping.addressFieldKey, addressFields);
-      newErrors.shippingName = destinationError(state.shipping.nameFieldKey, shortTextFields);
+      newErrors.shippingField = destinationError(
+        state.shipping.addressFieldKey,
+        eligible[STRIPE_PORT.shippingAddress],
+      );
+      newErrors.shippingName = destinationError(
+        state.shipping.nameFieldKey,
+        eligible[STRIPE_PORT.shippingName],
+      );
       if (state.shipping.countriesMode === 'specific' && !state.shipping.allowedCountries.length) {
         newErrors.shippingCountries = 'Choose at least one country you deliver to';
       }
@@ -300,7 +316,10 @@ const TierCheckoutCollection = forwardRef<
       // Two collections MAY share a destination: writes apply in a fixed order and the
       // last wins, which is the designed behaviour for shared fields — so no distinctness
       // rule here, deliberately.
-      newErrors.phoneField = destinationError(state.phone.customFieldKey, shortTextFields);
+      newErrors.phoneField = destinationError(
+        state.phone.customFieldKey,
+        eligible[STRIPE_PORT.phone],
+      );
     }
     return newErrors;
   };
@@ -471,11 +490,11 @@ const TierCheckoutCollection = forwardRef<
             </Row>
           )}
           <DestinationRow
-            createTypes={['address']}
+            eligible={eligible}
             error={errors.shippingField}
-            fields={addressFields}
             id="tier-shipping-address-field"
             label="Save address as"
+            port={STRIPE_PORT.shippingAddress}
             value={state.shipping.addressFieldKey}
             onChange={(key) => {
               setErrors((current) => ({ ...current, shippingField: undefined }));
@@ -486,11 +505,11 @@ const TierCheckoutCollection = forwardRef<
             }}
           />
           <DestinationRow
-            createTypes={['short_text']}
+            eligible={eligible}
             error={errors.shippingName}
-            fields={shortTextFields}
             id="tier-shipping-name-field"
             label="Save recipient name as"
+            port={STRIPE_PORT.shippingName}
             value={state.shipping.nameFieldKey}
             onChange={(key) => {
               setErrors((current) => ({ ...current, shippingName: undefined }));
@@ -519,11 +538,11 @@ const TierCheckoutCollection = forwardRef<
       />
       {state.phone.collect && (
         <DestinationRow
-          createTypes={['short_text']}
+          eligible={eligible}
           error={errors.phoneField}
-          fields={shortTextFields}
           id="tier-phone-field"
           label="Save to custom field"
+          port={STRIPE_PORT.phone}
           value={state.phone.customFieldKey}
           onChange={(key) => {
             setErrors((current) => ({ ...current, phoneField: undefined }));
