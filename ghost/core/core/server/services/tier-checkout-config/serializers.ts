@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { MAX_CHECKOUT_CUSTOM_FIELDS } from '../stripe/services/checkout/field-ports';
 import {
+  MAX_CHECKOUT_CUSTOM_FIELDS,
   STRIPE_ALLOWED_COUNTRIES,
   isStripeAllowedCountry,
-} from '../stripe/services/checkout/allowed-countries';
+} from '@tryghost/checkout';
 import { TierCheckoutConfig } from './models';
 
 // Every country Stripe will take, sent at once, was measured as accepted — so the only

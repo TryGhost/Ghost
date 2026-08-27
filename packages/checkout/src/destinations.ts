@@ -1,5 +1,5 @@
 import type { FieldType } from '@tryghost/custom-field-types';
-import type { StripePort } from '../stripe/services/checkout/field-ports';
+import type { StripePort } from './field-ports.ts';
 
 /**
  * What a port supplies, and what to call a field made to hold it. The type is a rule about
