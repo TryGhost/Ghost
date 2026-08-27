@@ -229,7 +229,7 @@ describe('Posts Importer API', function () {
     assert.doesNotMatch(markdownPost.get('html'), /csv-import-assets\.example/);
   });
 
-  it('fails the import when no storage adapter accepts referenced media', async function () {
+  it('isolates unsupported referenced media to its CSV row', async function () {
     await agent.loginAsOwner();
     const origin = 'https://csv-import-assets.example';
     const unsupportedFixture = await fs.readFile(
@@ -238,7 +238,7 @@ describe('Posts Importer API', function () {
     const request = nock(origin).get('/unsupported.exe').reply(200, unsupportedFixture);
     const filePath = await csvFile(
       'unsupported-remote-media.csv',
-      `title,feature_image\nUnsupported remote media,${origin}/unsupported.exe\n`,
+      `title,feature_image\nUnsupported remote media,${origin}/unsupported.exe\nContinues after media failure,\n`,
     );
 
     await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
@@ -247,6 +247,11 @@ describe('Posts Importer API', function () {
     assert.equal(request.isDone(), true, request.pendingMocks().join(', '));
     const post = await models.Post.findOne({ title: 'Unsupported remote media', status: 'all' });
     assert.equal(post, null);
+    const continuedPost = await models.Post.findOne({
+      title: 'Continues after media failure',
+      status: 'all',
+    });
+    assert.ok(continuedPost);
   });
 
   it('Imports the single mapped CSV inside a ZIP', async function () {

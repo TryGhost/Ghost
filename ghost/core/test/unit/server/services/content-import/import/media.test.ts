@@ -362,6 +362,38 @@ describe('PostMediaInliner', function () {
     sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
   });
 
+  it('keeps successful cached media when another URL makes the row fail', async function () {
+    const h = harness();
+    const storedSource = 'https://assets.test/stored-before-failure.jpg';
+    const failedSource = 'https://assets.test/failure-after-storage.jpg';
+    h.importUrl.callsFake(async (sourceUrl: string) => {
+      if (sourceUrl === failedSource) {
+        return {
+          status: 'failed',
+          sourceUrl,
+          stage: 'storage',
+          reason: 'The media file could not be stored in Ghost.',
+        };
+      }
+      return {
+        status: 'stored',
+        sourceUrl,
+        storedUrl: '__GHOST_URL__/content/images/stored-before-failure.jpg',
+      };
+    });
+    const failedRow = postData({
+      feature_image: storedSource,
+      posts_meta: { og_image: failedSource },
+    });
+
+    await assert.rejects(h.inliner.inline(failedRow), MediaInliningFailure);
+    const laterRow = postData({ feature_image: storedSource });
+    await h.inliner.inline(laterRow);
+
+    assert.equal(laterRow.feature_image, '__GHOST_URL__/content/images/stored-before-failure.jpg');
+    assert.equal(h.importUrl.getCalls().filter((call) => call.args[0] === storedSource).length, 1);
+  });
+
   it('keeps query strings and fragments in the exact cache key', async function () {
     const h = harness();
     const sourceUrls = [

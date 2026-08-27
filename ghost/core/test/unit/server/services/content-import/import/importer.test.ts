@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import ContentCSVImporter from '../../../../../../core/server/services/content-import/import/importer';
+import { MediaInliningFailure } from '../../../../../../core/server/services/content-import/import/media';
 import { ImportRunStore } from '../../../../../../core/server/services/content-import/import/store';
 import type { PostImportRow } from '../../../../../../core/server/services/content-import/import/row';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
@@ -385,9 +386,65 @@ describe('ContentCSVImporter', function () {
     );
   });
 
-  it('stops the run when media preparation fails before row isolation is added', async function () {
-    const h = harness([row('Media failure'), row('Never reached')]);
-    const failure = new Error('Could not import 1 media file.');
+  it('records expected media failures against one row and imports the rest', async function () {
+    const h = harness([row('First'), row('Media failure'), row('Third')]);
+    const failure = new MediaInliningFailure([
+      { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
+      { sourceUrl: 'https://assets.test/broken.mp4', reason: 'Storage failed.' },
+    ]);
+    h.inlineMedia.callsFake(async (data: PostData) => {
+      if (data.title === 'Media failure') {
+        throw failure;
+      }
+    });
+
+    await h.run();
+
+    assert.deepEqual(
+      h.created.map((call) => call.data.title),
+      ['First', 'Third'],
+    );
+    assert.equal(h.inlineMedia.callCount, 3);
+    assert.deepEqual(h.reported, []);
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.deepEqual(h.store.get('run_test')?.rows[1], {
+      line: 3,
+      title: 'Media failure',
+      status: 'failed',
+      reason: 'Could not import 2 media files.',
+      mediaFailures: [
+        { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
+        { sourceUrl: 'https://assets.test/broken.mp4', reason: 'Storage failed.' },
+      ],
+    });
+  });
+
+  it('reports once when media failures prevent every post write', async function () {
+    const h = harness([row('First'), row('Second')]);
+    const failure = new MediaInliningFailure([
+      { sourceUrl: 'https://assets.test/missing.jpg', reason: 'Download failed.' },
+    ]);
+    h.inlineMedia.rejects(failure);
+
+    await h.run();
+
+    assert.equal(h.created.length, 0);
+    assert.equal(h.reported.length, 1);
+    assert.equal(
+      (h.reported[0] as Error).message,
+      'Content import failed to write all 2 attempted posts.',
+    );
+    assert.match((h.reported[0] as Error).stack ?? '', /Could not import 1 media file/);
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.deepEqual(
+      h.store.get('run_test')?.rows.map((outcome) => outcome.status),
+      ['failed', 'failed'],
+    );
+  });
+
+  it('stops the run when media preparation throws an unexpected error', async function () {
+    const h = harness([row('Media defect'), row('Never reached')]);
+    const failure = new Error('media importer defect');
     h.inlineMedia.rejects(failure);
 
     await h.run();
