@@ -162,7 +162,7 @@ class MailgunEmailProvider {
           message: this.#createMailgunErrorMessage(error),
           errorDetails: JSON.stringify({ error, messageData }),
           context: `Mailgun Error ${error.status}: ${error.details}`,
-          help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+          help: `https://docs.ghost.org/newsletters/#bulk-email-configuration`,
           code: 'BULK_EMAIL_SEND_FAILED',
         });
       } else {

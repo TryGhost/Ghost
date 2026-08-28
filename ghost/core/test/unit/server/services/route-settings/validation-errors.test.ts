@@ -62,7 +62,7 @@ describe('UNIT: services/route-settings/validation-errors', function () {
         err.message,
         /^The following definition "routes\['\/x\/'\]\.mystery" is invalid: /,
       );
-      assert.equal(err.help, 'https://ghost.org/docs/themes/routing/');
+      assert.equal(err.help, 'https://docs.ghost.org/themes/routing/');
     });
 
     it('does not mistake inherited object properties for known keys', function () {

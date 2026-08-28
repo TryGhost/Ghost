@@ -97,7 +97,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
       Default: English (<strong>en</strong>); find out more about
       <a
         className="text-primary"
-        href="https://ghost.org/docs/faq/translation/"
+        href="https://docs.ghost.org/faq/translation/"
         rel="noopener noreferrer"
         target="_blank"
       >
