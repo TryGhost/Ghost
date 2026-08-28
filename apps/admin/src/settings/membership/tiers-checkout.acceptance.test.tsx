@@ -354,6 +354,9 @@ describe('Tier checkout collection', () => {
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
 
     expect(createApi.lastRequest?.body).toMatchObject({ tiers: [{ name: createdTier.name }] });
+    // The checkout write is chained after the tier's, so "Saved" — which the tier's own
+    // save flips — is reached before it lands. Wait for the write itself.
+    await expect.poll(() => putApi.requests.length).toBe(1);
     const sent = (
       putApi.lastRequest?.body as { tiers_checkout_config: [{ shipping: { collect: boolean } }] }
     ).tiers_checkout_config[0];
@@ -380,7 +383,8 @@ describe('Tier checkout collection', () => {
     await modal.getByLabelText('Collect business tax ID').click();
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(putApi.requests).toHaveLength(1);
+    // "Saved" is the tier save's signal; the checkout write is chained after it.
+    await expect.poll(() => putApi.requests.length).toBe(1);
 
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
