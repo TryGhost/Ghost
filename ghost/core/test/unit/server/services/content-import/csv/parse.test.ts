@@ -72,7 +72,7 @@ describe('content import csv parse', function () {
   });
 
   it('drops a blank line rather than emitting an empty row', async function () {
-    const result = await parse(
+    const result = await parseWithSource(
       await csvFile(
         'title,html,published_at\n' +
           'Before blank,<p>a</p>,2025-01-01T00:00:00.000Z\n' +
@@ -82,9 +82,13 @@ describe('content import csv parse', function () {
       HEADER_MAPPING,
     );
 
-    assert.equal(result.length, 2);
-    assert.equal(result[0].title, 'Before blank');
-    assert.equal(result[1].title, 'After blank');
+    assert.equal(result.rows.length, 2);
+    assert.equal(result.rows[0].data.title, 'Before blank');
+    assert.equal(result.rows[1].data.title, 'After blank');
+    assert.deepEqual(
+      result.rows.map(({ line }) => line),
+      [2, 4],
+    );
   });
 
   it('drops delimiter-only rows emitted by spreadsheet applications', async function () {
@@ -123,6 +127,17 @@ describe('content import csv parse', function () {
       html: '<p>Hi</p>',
       published_at: '2025-01-01T00:00:00.000Z',
     });
+  });
+
+  it('keeps a row with content only in overflow cells', async function () {
+    const result = await parseWithSource(
+      await csvFile('title,html\n' + ',,overflow\n'),
+      HEADER_MAPPING,
+    );
+
+    assert.equal(result.rows.length, 1);
+    assert.equal(result.rows[0].line, 2);
+    assert.deepEqual(result.rows[0].data, { title: '', html: '' });
   });
 
   it('rejects a file with an unterminated quoted field instead of importing garbage', async function () {
@@ -169,6 +184,7 @@ describe('content import csv parse', function () {
     );
 
     assert.deepEqual(result.columns, ['Body', 'Ignore me', 'Headline']);
+    assert.equal(result.rows[0].line, 2);
     assert.deepEqual(result.rows[0].data, { html: '<p>World</p>', title: 'Hello' });
     assert.deepEqual(
       { ...result.rows[0].source },

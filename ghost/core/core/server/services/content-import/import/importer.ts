@@ -146,7 +146,7 @@ class ContentCSVImporter {
     try {
       const result = await this._readRows(source.filePath, request.mapping);
       preparedRows = Array.isArray(result)
-        ? { columns: [], rows: result.map((data) => ({ data })) }
+        ? { columns: [], rows: result.map((data, index) => ({ data, line: index + 2 })) }
         : result;
     } catch (error) {
       await this.cleanupSource(source.cleanup);
@@ -216,9 +216,8 @@ class ContentCSVImporter {
       let failedRows = 0;
       let firstRowFailure: unknown;
 
-      for (const [index, preparedRow] of rows.entries()) {
-        const line = index + 2;
-        const { data: row, source: sourceCells } = preparedRow;
+      for (const preparedRow of rows) {
+        const { data: row, source: sourceCells, line } = preparedRow;
         let data: PostData;
 
         try {

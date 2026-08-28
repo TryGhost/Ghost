@@ -190,6 +190,7 @@ describe('Posts Importer API', function () {
         'First in this run,report-same-run,draft,,,',
         'Duplicate in this run,report-same-run,draft,,,',
         'Pre-existing duplicate,report-pre-existing,draft,,,',
+        ',,,,,',
         'Invalid status,report-invalid-status,scheduled,,,',
         `Write failure,report-write-failure,draft,${'x'.repeat(301)},,`,
         'Warning success,report-warning,draft,,Warning Author,not-an-email',
@@ -225,7 +226,9 @@ describe('Posts Importer API', function () {
     assert.equal(preExisting.duplicate_origin, 'pre_existing');
     assert.equal(preExisting.matched_by, 'slug');
     assert.equal(rows.find((row) => row.title === 'Invalid status').outcome, 'failed');
+    assert.equal(rows.find((row) => row.title === 'Invalid status').line, '6');
     assert.equal(rows.find((row) => row.title === 'Write failure').outcome, 'failed');
+    assert.equal(rows.find((row) => row.title === 'Write failure').line, '7');
     assert.match(rows.find((row) => row.title === 'Warning success').warnings, /assigned Owner/);
     assert.equal(rows.find((row) => row.title === 'First in this run').outcome, 'created');
 

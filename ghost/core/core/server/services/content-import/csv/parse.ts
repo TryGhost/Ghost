@@ -10,6 +10,7 @@ export type Row = Record<string, string>;
 export interface ParsedRow {
   data: Row;
   source: Row;
+  line: number;
 }
 
 export interface ParsedCSV {
@@ -27,6 +28,15 @@ function isSafeColumnName(name: string): boolean {
 // stay tolerated: an overflow cell is dropped per row, not per file.
 function isFatal(error: papaparse.ParseError): boolean {
   return error.type === 'Quotes';
+}
+
+function isEmptyRow(row: Record<string, string | string[]>): boolean {
+  return !Object.values(row).some((value) => {
+    if (Array.isArray(value)) {
+      return value.some((cell) => typeof cell === 'string' && cell.trim().length > 0);
+    }
+    return value.trim().length > 0;
+  });
 }
 
 // headerMapping renames headers to the columns they emit under; unmapped columns
@@ -47,11 +57,11 @@ export async function parseWithSource(
   // papaparse's stream mode drops results.errors, which is what catches a
   // malformed quoted field before it imports as garbage.
   const content = (await fs.readFile(path, 'utf8')).replace(/^\ufeff/, '');
-  const parsed = papaparse.parse<Record<string, unknown>>(content, {
+  const parsed = papaparse.parse<Record<string, string | string[]>>(content, {
     header: true,
-    // Spreadsheet exports can represent an empty row as delimiters for every
-    // column rather than a literally blank line. Greedy mode drops both forms.
-    skipEmptyLines: 'greedy',
+    // Empty records stay in the parser output long enough to contribute to the
+    // publisher-visible spreadsheet line number, then are dropped below.
+    skipEmptyLines: false,
   });
 
   const fatal = parsed.errors.find(isFatal);
@@ -61,7 +71,11 @@ export async function parseWithSource(
 
   const rows: ParsedRow[] = [];
 
-  for (const parsedRow of parsed.data) {
+  for (const [index, parsedRow] of parsed.data.entries()) {
+    if (isEmptyRow(parsedRow)) {
+      continue;
+    }
+
     const row: Row = {};
     const source: Row = Object.create(null) as Row;
 
@@ -88,7 +102,7 @@ export async function parseWithSource(
       continue;
     }
 
-    rows.push({ data: row, source });
+    rows.push({ data: row, source, line: index + 2 });
   }
 
   return { columns: parsed.meta.fields ?? [], rows };

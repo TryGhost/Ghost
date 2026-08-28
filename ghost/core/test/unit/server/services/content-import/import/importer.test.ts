@@ -19,7 +19,7 @@ const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
 // Collaborators are handed back as `deps` so a test can repoint the seam it is breaking.
 function harness(
   rows: PostImportRow[] = [row('First'), row('Second')],
-  source?: { columns: string[]; rows: Array<Record<string, string>> },
+  source?: { columns: string[]; rows: Array<Record<string, string>>; lines?: number[] },
 ) {
   const created: Array<{ data: PostData; options: object; metadata?: PostWriteMetadata }> = [];
   const reported: unknown[] = [];
@@ -62,7 +62,11 @@ function harness(
       source
         ? {
             columns: source.columns,
-            rows: rows.map((data, index) => ({ data, source: source.rows[index] })),
+            rows: rows.map((data, index) => ({
+              data,
+              source: source.rows[index],
+              line: source.lines?.[index] ?? index + 2,
+            })),
           }
         : rows,
     posts: {
@@ -224,6 +228,30 @@ describe('ContentCSVImporter', function () {
       Body: '<p>Source body</p>',
       Ignored: 'kept',
     });
+  });
+
+  it('records the original spreadsheet line after an ignored empty row', async function () {
+    const h = harness(
+      [
+        row('Before blank'),
+        { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
+      ],
+      {
+        columns: ['title', 'html'],
+        rows: [
+          { title: 'Before blank', html: '<p>First</p>' },
+          { title: '', html: '<p>No title</p>' },
+        ],
+        lines: [2, 4],
+      },
+    );
+
+    await h.run();
+
+    assert.deepEqual(
+      h.store.get('run_test')?.rows.map(({ line }) => line),
+      [2, 4],
+    );
   });
 
   it('emails the requesting user once after completing and releases the run', async function () {

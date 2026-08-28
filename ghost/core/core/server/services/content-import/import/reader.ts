@@ -8,6 +8,7 @@ const FIELD_BY_HEADER: Record<string, string> = Object.fromEntries(
 export interface PreparedPostRow {
   data: PostImportRow;
   source?: Row;
+  line: number;
 }
 
 export interface PreparedPostRows {
@@ -22,9 +23,10 @@ export default async function readPostRows(
   const parsed = await parseWithSource(path, mapping ?? FIELD_BY_HEADER);
   return {
     columns: parsed.columns,
-    rows: parsed.rows.map(({ data, source }) => ({
+    rows: parsed.rows.map(({ data, source, line }) => ({
       data: postImportRowSchema.parse(data),
       source,
+      line,
     })),
   };
 }

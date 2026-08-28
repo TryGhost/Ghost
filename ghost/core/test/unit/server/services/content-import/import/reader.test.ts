@@ -53,6 +53,21 @@ describe('content import reader', function () {
     );
   });
 
+  it('preserves spreadsheet line numbers after ignored empty rows', async function () {
+    const file = path.join(directory, 'posts-with-empty-row.csv');
+    await fs.writeFile(
+      file,
+      'title,html\nBefore blank,<p>First</p>\n\nAfter blank,<p>Second</p>\n',
+    );
+
+    const result = await readPostRows(file);
+
+    assert.deepEqual(
+      result.rows.map(({ line }) => line),
+      [2, 4],
+    );
+  });
+
   it('keeps full editorial identity headers for direct API clients', async function () {
     const file = path.join(directory, 'full-post.csv');
     await fs.writeFile(
