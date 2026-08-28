@@ -713,6 +713,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       recipientName,
       buyerName,
       personalMessage,
+      deliveryDate,
     } = {}) {
       const siteUrlObj = new URL(siteUrl);
       const url = endpointFor({ type: 'members', resource: 'create-stripe-checkout-session' });
@@ -742,6 +743,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         ...(recipientName ? { recipientName } : {}),
         ...(buyerName ? { buyerName } : {}),
         ...(personalMessage ? { personalMessage } : {}),
+        ...(deliveryDate ? { deliveryDate } : {}),
         cancelUrl: cancelUrlObj.href,
       };
 

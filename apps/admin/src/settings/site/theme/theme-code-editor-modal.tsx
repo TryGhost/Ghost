@@ -6,7 +6,7 @@ import ThemeEditorInputModal from './theme-editor-input-modal';
 import ThemeEditorToolbar from './theme-editor-toolbar';
 import ThemeFileTree from './theme-file-tree';
 import ThemeInstalledModal, { type ThemeInstalledModalProps } from './theme-installed-modal';
-import { parseFatalErrors } from './theme-validation-issues';
+import { getIssuesFromInstalledTheme, parseFatalErrors } from './theme-validation-issues';
 import { TextWrap, Undo2 } from 'lucide-react';
 import {
   cloneThemeFiles,
@@ -898,14 +898,12 @@ const ThemeCodeEditorModal: React.FC<{ themeName: string }> = ({ themeName }) =>
         updateRoute(buildThemeEditorRoute(nextThemeName, returnRoute));
       }
 
-      if (isSaveAs || uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
+      const problems = getIssuesFromInstalledTheme(uploadedTheme);
+
+      if (isSaveAs || problems.length) {
         setInstalledModal({
           title: isSaveAs ? 'Theme saved' : 'Theme updated',
-          prompt: (
-            <>
-              <strong>{uploadedTheme.name}</strong> saved successfully.
-            </>
-          ),
+          action: 'saved',
           installedTheme: uploadedTheme,
         });
       } else {
@@ -1115,7 +1113,10 @@ const ThemeCodeEditorModal: React.FC<{ themeName: string }> = ({ themeName }) =>
       )}
       {saveErrors && (
         <InvalidThemeModal
+          action="saved"
+          cancelLabel="Close"
           fatalErrors={saveErrors}
+          themeName={currentThemeName}
           title="Theme not saved"
           onClose={() => setSaveErrors(null)}
         />

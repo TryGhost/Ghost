@@ -2,7 +2,6 @@
 const _ = require('lodash');
 const crypto = require('crypto');
 const moment = require('moment');
-const { sequence } = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
@@ -30,9 +29,9 @@ const messages = {
   notEnoughPermission: 'You do not have permission to perform this action',
   invalidNewsletter: "The newsletter parameter doesn't match any active newsletter.",
   invalidMobiledocStructure: 'Invalid mobiledoc structure.',
-  invalidMobiledocStructureHelp: 'https://ghost.org/docs/publishing/',
+  invalidMobiledocStructureHelp: 'https://docs.ghost.org/publishing/',
   invalidLexicalStructure: 'Invalid lexical structure.',
-  invalidLexicalStructureHelp: 'https://ghost.org/docs/publishing/',
+  invalidLexicalStructureHelp: 'https://docs.ghost.org/publishing/',
   emailOnlyWithoutNewsletter: 'Scheduling an email requires a newsletter reference.',
 };
 
@@ -1052,7 +1051,11 @@ Post = ghostBookshelf.Model.extend(
         }
       }
 
-      return sequence(ops);
+      const results = [];
+      for (const op of ops) {
+        results.push(await op());
+      }
+      return results;
     },
 
     published_by: function publishedBy() {

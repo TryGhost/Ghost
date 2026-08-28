@@ -20,6 +20,8 @@ type GlobalSettings = {
 interface ThemePreviewProps {
   settings: GlobalSettings;
   url: string;
+  // Hidden previews stay mounted and laid out, so revealing one needs no reflow.
+  isVisible?: boolean;
 }
 
 function getPreviewData({
@@ -71,7 +73,7 @@ function getPreviewData({
   return params.toString();
 }
 
-const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url }) => {
+const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url, isVisible = true }) => {
   const previewData = getPreviewData({ ...settings });
 
   const injectContentIntoIframe = useCallback(
@@ -84,6 +86,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url }) => {
       const previewUrl = new URL(url);
       previewUrl.searchParams.set('admin_toolbar', '0');
 
+      // eslint-disable-next-line no-restricted-syntax -- posts preview data to the site front-end, not the Admin API
       void fetch(previewUrl.toString(), {
         method: 'POST',
         headers: {
@@ -132,7 +135,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url }) => {
       className="absolute -top-px -left-px size-[calc(110%_+_3px)] origin-top-left scale-[.90909] bg-white max-[1600px]:size-[calc(130%_+_3px)] max-[1600px]:scale-[.76923]"
       generateContent={injectContentIntoIframe}
       height="100%"
-      parentClassName="relative h-full w-full overflow-hidden"
+      parentClassName={`absolute inset-0 overflow-hidden ${isVisible ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'}`}
       testId="theme-preview"
       width="100%"
     />

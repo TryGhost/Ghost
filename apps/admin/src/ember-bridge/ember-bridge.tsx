@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { EmberContext } from './ember-context';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -16,13 +17,15 @@ export type StateBridgeEventMap = {
   featureFlagsChange: undefined;
 };
 
+export type AdminThemeMode = 'light' | 'dark' | 'system';
+
 export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
-  applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
+  applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -95,11 +98,13 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
   tier: 'TiersResponseType',
   user: 'UsersResponseType',
   post: 'PostsResponseType',
+  // Without this, saving a page in the (Ember) editor never invalidates the
+  // React pages list, so a newly created page only appears after a manual
+  // refresh. Harmless while Ember owned /pages; visible as soon as React does.
+  page: 'PagesResponseType',
   member: 'MembersResponseType',
-  comment: 'CommentsResponseType',
   tag: 'TagsResponseType',
   label: 'LabelsResponseType',
-  webhook: 'WebhooksResponseType',
 };
 
 /**
@@ -176,11 +181,22 @@ export function useEmberDataSync() {
         return;
       }
 
-      // Invalidate all queries matching this data type
+      /**
+       * Saving a post or page can *create* tags: a tag typed into the
+       * editor is written as part of that post's own save, as an embedded
+       * relation. Ember therefore reports a `post` change and never a
+       * `tag` one — so without this the posts list's tag filter keeps
+       * serving a cached list, and a tag the user just made is missing
+       * from it until a full browser reload.
+       */
+      const alsoInvalidate =
+        modelName === 'post' || modelName === 'page' ? ['TagsResponseType'] : [];
+      const dataTypes = new Set([reactDataType, ...alsoInvalidate]);
+
       void queryClient.invalidateQueries({
         predicate: (query) => {
           // Query keys are structured as [dataType, url]
-          return query.queryKey[0] === reactDataType;
+          return dataTypes.has(query.queryKey[0] as string);
         },
       });
     };
@@ -261,6 +277,59 @@ export function subscribeOpenGiftLinkModal(
   return onEmberStateBridgeEvent('openGiftLinkModal', handler);
 }
 
+/**
+ * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
+ * `dark` class and the dark stylesheet, and installs its own
+ * prefers-color-scheme listener, so React must not apply the theme itself.
+ *
+ * Deliberately a synchronous snapshot (no waitForStateBridge): theme effects
+ * need the answer at effect time and fall back to applying the theme
+ * themselves while the bridge is absent.
+ */
+export function isEmberThemeManaged(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
+}
+
+/**
+ * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
+ * a flash. Resolves immediately when no bridge (or an older Ember without the
+ * method) is present.
+ */
+export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
+  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
+}
+
+/**
+ * Asks Ember to apply an admin theme preference. Returns false when no bridge
+ * (or an older Ember without the method) is present, so the caller can fall
+ * back to applying the theme itself.
+ */
+export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.applyAdminThemePreference) {
+    return false;
+  }
+  void stateBridge.applyAdminThemePreference(mode);
+  return true;
+}
+
+/**
+ * React -> Ember mutation sync handlers for the FrameworkProvider. Each
+ * forwards a successful React mutation to Ember's store sync and no-ops when
+ * the bridge is absent (standalone React).
+ */
+export const emberMutationHandlers = {
+  onUpdate: (dataType: string, response: unknown): void => {
+    window.EmberBridge?.state.onUpdate(dataType, response);
+  },
+  onInvalidate: (dataType: string): void => {
+    window.EmberBridge?.state.onInvalidate(dataType);
+  },
+  onDelete: (dataType: string, id: string): void => {
+    window.EmberBridge?.state.onDelete(dataType, id);
+  },
+};
+
 // External store for sidebar visibility state
 function subscribeSidebarVisibility(callback: () => void): () => void {
   return onEmberStateBridgeEvent('sidebarVisibilityChange', callback);
@@ -307,6 +376,7 @@ const defaultRouting: EmberRouting = {
  * ```
  */
 export function useEmberRouting(): EmberRouting {
+  const emberContext = useContext(EmberContext);
   const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
   const [, forceUpdate] = useState(0);
 
@@ -332,7 +402,12 @@ export function useEmberRouting(): EmberRouting {
 
   return {
     getRouteUrl: bridge.getRouteUrl,
-    isRouteActive: bridge.isRouteActive,
+    // React-owned navigations use pushState, which Ember does not observe.
+    // Only trust Ember's route state while the current route is actually
+    // rendering an Ember fallback. Outside EmberProvider (mainly unit tests
+    // and standalone consumers), preserve the bridge's original behaviour.
+    isRouteActive: (...args) =>
+      (emberContext?.isFallbackPresent ?? true) && bridge.isRouteActive(...args),
   };
 }
 

@@ -82,20 +82,32 @@ describe('CSV content import side-effects', function () {
     // published, so both events are armed.
     const publishedURL = 'https://test-webhook-receiver.com/post-published-import/';
     const addedURL = 'https://test-webhook-receiver.com/post-added-import/';
+    const editedURL = 'https://test-webhook-receiver.com/post-edited-import/';
     await webhookMockReceiver.mock(publishedURL);
     await webhookMockReceiver.mock(addedURL);
+    await webhookMockReceiver.mock(editedURL);
     await fixtureManager.insertWebhook({ event: 'post.published', url: publishedURL });
     await fixtureManager.insertWebhook({ event: 'post.added', url: addedURL });
+    await fixtureManager.insertWebhook({ event: 'post.edited', url: editedURL });
 
     const csvPath = path.join(tmpDir, 'posts-import-side-effects.csv');
     await fs.writeFile(
       csvPath,
-      'title,html,published_at\n' +
-        'Side effect check one,<p>First</p>,2024-07-01T00:00:00.000Z\n' +
-        'Side effect check two,<p>Second</p>,2024-07-02T00:00:00.000Z\n',
+      'title,html,published_at,updated_at,comment_id\n' +
+        'Side effect check one,<p>First</p>,2024-07-01T00:00:00.000Z,2024-07-01T00:00:00.000Z,side-effect-one\n' +
+        'Side effect check two,<p>Second</p>,2024-07-02T00:00:00.000Z,2024-07-02T00:00:00.000Z,side-effect-two\n',
     );
 
     await adminAPIAgent.post('posts/upload/').attach('postsfile', csvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const updateCsvPath = path.join(tmpDir, 'posts-import-update-side-effects.csv');
+    await fs.writeFile(
+      updateCsvPath,
+      'title,slug,html,updated_at,comment_id\n' +
+        'Side effect check one updated,side-effect-check-one-updated,<p>Updated</p>,2024-08-01T00:00:00.000Z,side-effect-one\n',
+    );
+    await adminAPIAgent.post('posts/upload/').attach('postsfile', updateCsvPath).expectStatus(202);
 
     await jobsService.allSettled();
     await DomainEvents.allSettled();
@@ -113,12 +125,19 @@ describe('CSV content import side-effects', function () {
     });
     assert.equal(posts.length, 2, 'both rows imported');
     assert.equal(posts[0].get('status'), 'published');
+    assert.ok(
+      posts.some((post: any) => post.get('title') === 'Side effect check one updated'),
+      'the newer row updated its matching post',
+    );
 
     // Zero webhooks: the receiver never recorded a request
     assert.equal(webhookMockReceiver.body, undefined, 'no webhook fired for the imported posts');
 
-    // Zero transactional mail
-    mockManager.assert.sentEmailCount(0);
+    // The only mail side effects are the completion emails for the two
+    // accepted import runs. No per-post or newsletter mail is sent.
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    mockManager.assert.sentEmailCount(2);
 
     // Zero newsletters: a newsletter can only be attached via the API layer, which
     // the importer never touches.

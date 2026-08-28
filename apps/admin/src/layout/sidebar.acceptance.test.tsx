@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import type { StateBridge } from '@/ember-bridge';
 
 import {
   activeThemeResponse,
@@ -29,6 +30,29 @@ function fakeUnreadNotifications(count: number): void {
   fakeAdminEndpoint('GET', '/identities/', { identities: [{ token: 'test-token' }] });
   fakeEndpoint('GET', UNREAD_COUNT_URL, { count });
 }
+
+function installStaleEmberRoute(activeRoute: 'members-activity' | 'pages' | 'posts'): void {
+  window.EmberBridge = {
+    state: {
+      onUpdate: () => {},
+      onInvalidate: () => {},
+      onDelete: () => {},
+      isFeatureEnabled: () => false,
+      on: () => {},
+      off: () => {},
+      sidebarVisible: true,
+      getRouteUrl: (routeName) => routeName,
+      isRouteActive: (routeNames) => {
+        const routes = Array.isArray(routeNames) ? routeNames : routeNames.split(' ');
+        return routes.includes(activeRoute);
+      },
+    } satisfies StateBridge,
+  };
+}
+
+afterEach(() => {
+  delete window.EmberBridge;
+});
 
 describe('Sidebar navigation', () => {
   it('renders the navigation for the current user', async () => {
@@ -88,6 +112,25 @@ describe('Sidebar navigation', () => {
     await sidebarScreen.navLink('Pages').click();
     await expect.poll(currentRoute).toBe('/pages');
   });
+
+  it.each([
+    { label: 'Posts', route: '/posts', emberRoute: 'posts' },
+    { label: 'Pages', route: '/pages', emberRoute: 'pages' },
+    { label: 'Members', route: '/members-activity', emberRoute: 'members-activity' },
+  ] as const)(
+    'clears the $label active state after leaving its Ember route',
+    async ({ label, route, emberRoute }) => {
+      fakeTags([]);
+      installStaleEmberRoute(emberRoute);
+      await renderAdminApp(route);
+
+      await expect.element(sidebarScreen.navLink(label)).toHaveAttribute('aria-current', 'page');
+
+      await sidebarScreen.navLink('Tags').click();
+      await expect.poll(currentRoute).toBe('/tags');
+      await expect.element(sidebarScreen.navLink(label)).not.toHaveAttribute('aria-current');
+    },
+  );
 
   it('shows the default post views and collapses them with the toggle', async () => {
     await renderAdminApp('/posts');

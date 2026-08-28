@@ -6,7 +6,6 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 
 const emberDataTypeMapping = {
-    AutomatedEmailDesignResponseType: null, // automated email design settings only exist in React admin
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
     AutomationsResponseType: null, // automations only exist in React admin
     CommentsResponseType: null, // comments only exist in React admin
@@ -23,8 +22,9 @@ const emberDataTypeMapping = {
     TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
+    TiersCheckoutConfigResponseType: null, // tier checkout collection only exists in React admin
     UsersResponseType: {type: 'user'},
-    CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
+    CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };
 
 export default class StateBridgeService extends Service.extend(Evented) {
@@ -81,23 +81,22 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     /* React -> Ember -------------------------------------------------------
 
-    The React admin shell app or a component that extends AdminXComponent will
-    call these methods any time they update their own data.
+    The React admin shell calls these methods any time it updates its own
+    data.
 
     These methods take the React data and push it into the Ember store to
     trigger reactivity, then trigger any other side effects needed to keep
     non-derived state in sync.
 
+    Data types without a model mapping — explicitly null or absent entirely —
+    are React-only and no-op; emberDataTypeMapping lists the Ember-relevant
+    types.
+
     */
 
     @action
     onUpdate(dataType, response) {
-        if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation updating ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
-        }
-
-        // Skip processing if mapping is explicitly set to null
-        if (emberDataTypeMapping[dataType] === null) {
+        if (!emberDataTypeMapping[dataType]) {
             return;
         }
 
@@ -165,12 +164,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     onInvalidate(dataType) {
-        if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation invalidating ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
-        }
-
-        // Skip processing if mapping is explicitly set to null
-        if (emberDataTypeMapping[dataType] === null) {
+        if (!emberDataTypeMapping[dataType]) {
             return;
         }
 
@@ -197,12 +191,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     onDelete(dataType, id) {
-        if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation deleting ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
-        }
-
-        // Skip processing if mapping is explicitly set to null
-        if (emberDataTypeMapping[dataType] === null) {
+        if (!emberDataTypeMapping[dataType]) {
             return;
         }
 
@@ -264,7 +253,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     // The gift-link modal lives in React. Ember surfaces (the posts/pages
     // context menu) ask React to open it for a given post/page rather than
-    // duplicating the modal — see useOpenGiftLinkModal on the React side.
+    // duplicating the modal — see subscribeOpenGiftLinkModal on the React side.
     @action
     triggerOpenGiftLinkModal({id, resource}) {
         this.trigger('openGiftLinkModal', {id, resource});

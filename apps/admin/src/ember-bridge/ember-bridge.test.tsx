@@ -171,6 +171,85 @@ describe('useEmberDataSync', () => {
     unmount();
   });
 
+  /**
+   * Saving a post in the editor can *create* tags: a tag typed into the post
+   * is written as part of the post's own save, as an embedded relation. Ember
+   * therefore reports a `post` change and never a `tag` one — so the posts
+   * list's tag filter kept serving a cached list, and a tag you had just
+   * made was missing from it until a full browser reload.
+   */
+  queryTest(
+    'invalidates tags when Ember saves a post, which can create them',
+    async ({ queryClient, wrapper }) => {
+      const mock = createMockStateBridge();
+      window.EmberBridge = { state: mock.stateBridge };
+
+      // Without a gcTime these are collected before the assertion runs, and
+      // `every` on an empty array passes vacuously.
+      queryClient.setQueryDefaults(['TagsResponseType', '/tags'], { gcTime: Infinity });
+      queryClient.setQueryDefaults(['MembersResponseType', '/members'], { gcTime: Infinity });
+      queryClient.setQueryData(['TagsResponseType', '/tags'], { tags: [] });
+      queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
+
+      renderHook(() => useEmberDataSync(), { wrapper });
+
+      await waitFor(() => {
+        expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+      });
+
+      act(() => {
+        mock.emit('emberDataChange', {
+          operation: 'update',
+          modelName: 'post',
+          id: '1',
+          data: null,
+        });
+      });
+
+      await waitFor(() => {
+        const queries = queryClient.getQueryCache().getAll();
+        const tagQueries = queries.filter((q) => q.queryKey[0] === 'TagsResponseType');
+        const memberQueries = queries.filter((q) => q.queryKey[0] === 'MembersResponseType');
+
+        expect(tagQueries.length).toBeGreaterThan(0);
+        expect(tagQueries.every((q) => q.state.isInvalidated)).toBe(true);
+        // ...and nothing unrelated is dragged along with it.
+        expect(memberQueries.every((q) => !q.state.isInvalidated)).toBe(true);
+      });
+    },
+  );
+
+  queryTest('invalidates tags when Ember saves a page too', async ({ queryClient, wrapper }) => {
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    queryClient.setQueryDefaults(['TagsResponseType', '/tags'], { gcTime: Infinity });
+    queryClient.setQueryDefaults(['PagesResponseType', '/pages'], { gcTime: Infinity });
+    queryClient.setQueryData(['TagsResponseType', '/tags'], { tags: [] });
+    queryClient.setQueryData(['PagesResponseType', '/pages'], { pages: [] });
+
+    renderHook(() => useEmberDataSync(), { wrapper });
+
+    await waitFor(() => {
+      expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+    });
+
+    act(() => {
+      mock.emit('emberDataChange', { operation: 'update', modelName: 'page', id: '1', data: null });
+    });
+
+    await waitFor(() => {
+      const queries = queryClient.getQueryCache().getAll();
+      const tagQueries = queries.filter((q) => q.queryKey[0] === 'TagsResponseType');
+      const pageQueries = queries.filter((q) => q.queryKey[0] === 'PagesResponseType');
+
+      expect(tagQueries.length).toBeGreaterThan(0);
+      expect(tagQueries.every((q) => q.state.isInvalidated)).toBe(true);
+      expect(pageQueries.length).toBeGreaterThan(0);
+      expect(pageQueries.every((q) => q.state.isInvalidated)).toBe(true);
+    });
+  });
+
   queryTest(
     'invalidates the sidebar member count query for Ember member changes',
     async ({ queryClient, wrapper }) => {
@@ -233,42 +312,6 @@ describe('useEmberDataSync', () => {
 
     expect(invalidateSpy).not.toHaveBeenCalled();
   });
-
-  queryTest(
-    'invalidates comment queries for mapped Ember comment events',
-    async ({ queryClient, wrapper }) => {
-      const mock = createMockStateBridge();
-      window.EmberBridge = { state: mock.stateBridge };
-
-      queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
-      queryClient.setQueryData(['CommentsResponseType', '/comments'], { comments: [] });
-      queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
-
-      renderHook(() => useEmberDataSync(), { wrapper });
-
-      await waitFor(() => {
-        expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
-      });
-
-      act(() => {
-        mock.emit('emberDataChange', {
-          operation: 'update',
-          modelName: 'comment',
-          id: 'member-1',
-          data: null,
-        });
-      });
-
-      await waitFor(() => {
-        const queries = queryClient.getQueryCache().getAll();
-        const commentQueries = queries.filter((q) => q.queryKey[0] === 'CommentsResponseType');
-        const nonCommentQueries = queries.filter((q) => q.queryKey[0] !== 'CommentsResponseType');
-
-        expect(commentQueries.every((q) => q.state.isInvalidated)).toBe(true);
-        expect(nonCommentQueries.every((q) => !q.state.isInvalidated)).toBe(true);
-      });
-    },
-  );
 
   queryTest(
     'does not subscribe if unmounted before the bridge becomes available',
@@ -452,6 +495,7 @@ describe('useEmberRouting', () => {
 
   baseTest('returns bridge routing methods when bridge is available', () => {
     const mock = createMockStateBridge();
+    mock.stateBridge.isRouteActive = vi.fn(() => true);
     window.EmberBridge = { state: mock.stateBridge };
 
     const { result } = renderHook(() => useEmberRouting());
@@ -459,9 +503,11 @@ describe('useEmberRouting', () => {
     expect(result.current).toHaveProperty('getRouteUrl');
     expect(result.current).toHaveProperty('isRouteActive');
 
-    // Should be using bridge methods, not defaults
+    // Should be using bridge methods, not defaults. The active-state method is
+    // wrapped so the app can ignore stale Ember state on React-owned routes.
     expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    expect(result.current.isRouteActive('posts')).toBe(true);
+    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
   });
 
   baseTest('switches to bridge methods when bridge becomes available', async () => {
@@ -475,6 +521,7 @@ describe('useEmberRouting', () => {
 
     // Bridge becomes available
     const mock = createMockStateBridge();
+    mock.stateBridge.isRouteActive = vi.fn(() => true);
     window.EmberBridge = { state: mock.stateBridge };
 
     // Wait for the subscription interval to fire
@@ -484,7 +531,8 @@ describe('useEmberRouting', () => {
 
     // Now should be using bridge methods
     expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    expect(result.current.isRouteActive('posts')).toBe(true);
+    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
   });
 
   baseTest('re-renders when route changes', async () => {
@@ -517,5 +565,67 @@ describe('useEmberRouting', () => {
     await waitFor(() => {
       expect(renderCount).toBe(2);
     });
+  });
+});
+
+describe('theme bridge helpers', () => {
+  test('isEmberThemeManaged reflects bridge presence', async () => {
+    const { isEmberThemeManaged } = await import('./ember-bridge');
+    expect(isEmberThemeManaged()).toBe(false);
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(isEmberThemeManaged()).toBe(true);
+  });
+
+  test('applyEmberAdminThemePreference calls Ember when the method exists and reports it', async () => {
+    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    const apply = vi.fn();
+    mock.stateBridge.applyAdminThemePreference = apply;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    expect(applyEmberAdminThemePreference('dark')).toBe(true);
+    expect(apply).toHaveBeenCalledWith('dark');
+  });
+
+  test('applyEmberAdminThemePreference returns false without a bridge or method', async () => {
+    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
+    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+
+    // Bridge present but from an older Ember without the method
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+  });
+
+  test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
+    const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
+    await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
+
+    const mock = createMockStateBridge();
+    const preload = vi.fn().mockResolvedValue(undefined);
+    mock.stateBridge.preloadAdminThemeStylesheet = preload;
+    window.EmberBridge = { state: mock.stateBridge };
+    await preloadEmberAdminThemeStylesheet();
+    expect(preload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('emberMutationHandlers', () => {
+  test('resolves the bridge at call time, not import time', async () => {
+    // Import first, install the bridge after: forwarding must still work.
+    const { emberMutationHandlers } = await import('./ember-bridge');
+    expect(() => emberMutationHandlers.onUpdate('SettingsResponseType', {})).not.toThrow();
+
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    emberMutationHandlers.onUpdate('SettingsResponseType', { settings: [] });
+    emberMutationHandlers.onInvalidate('TagsResponseType');
+    emberMutationHandlers.onDelete('UsersResponseType', 'user-1');
+
+    expect(mock.stateBridge.onUpdate).toHaveBeenCalledWith('SettingsResponseType', {
+      settings: [],
+    });
+    expect(mock.stateBridge.onInvalidate).toHaveBeenCalledWith('TagsResponseType');
+    expect(mock.stateBridge.onDelete).toHaveBeenCalledWith('UsersResponseType', 'user-1');
   });
 });

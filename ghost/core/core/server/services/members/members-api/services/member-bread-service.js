@@ -9,6 +9,8 @@ const messages = {
   memberNotFound: 'Member not found.',
   customFieldsOnAdd:
     'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.',
+  customFieldsWithoutWriter:
+    'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
@@ -654,7 +656,23 @@ module.exports = class MemberBREADService {
     }
 
     if (plannedCustomFields) {
-      await this.customFieldValues.applyWrite(model.id, plannedCustomFields);
+      // Every value reaching here was typed into the Admin API, so the writer is
+      // whoever made the request — the same pair the action log records, so the two
+      // agree about who did it rather than one saying only that it was "admin".
+      //
+      // The only route to this branch is the authenticated Admin API, so an anonymous
+      // request is a mistake somewhere upstream rather than a writer to invent a name
+      // for. Refusing keeps every stored writer resolvable.
+      const context = options.context || {};
+      if (!context.integration && !context.user) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.customFieldsWithoutWriter),
+        });
+      }
+      const writtenBy = context.integration
+        ? { type: 'integration', id: context.integration.id }
+        : { type: 'user', id: context.user };
+      await this.customFieldValues.applyWrite(model.id, plannedCustomFields, { writtenBy });
 
       // Custom fields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.

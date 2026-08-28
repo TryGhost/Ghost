@@ -7,9 +7,7 @@ const MembersConfigProvider = require('./members-config-provider');
 const { makeImporter, makeExporter } = require('./import-export');
 const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
-const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
-const jobLogging = require('../jobs/job-logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
@@ -30,7 +28,7 @@ const messages = {
   sslRequiredForStripe:
     'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
   remoteWebhooksInDevelopment:
-    'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
+    'Cannot use remote webhooks in development. See https://docs.ghost.org/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
 const ghostMailer = new GhostMailer();
@@ -187,21 +185,21 @@ module.exports = {
     if (!env?.startsWith('testing')) {
       const membersMigrationJobName = 'members-migrations';
       if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
-        jobLogging.info(`[Background Job] ${membersMigrationJobName} queued`);
+        logging.info(`[Background Job] ${membersMigrationJobName} queued`);
         jobsService.addOneOffJob({
           name: membersMigrationJobName,
           offloaded: false,
           job: async () => {
             const startedAt = Date.now();
-            jobLogging.info(`[Background Job] ${membersMigrationJobName} started`);
+            logging.info(`[Background Job] ${membersMigrationJobName} started`);
             try {
               const result = await stripeService.migrations.execute();
-              jobLogging.info(
+              logging.info(
                 `[Background Job] ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`,
               );
               return result;
             } catch (err) {
-              jobLogging.error(
+              logging.error(
                 err,
                 `[Background Job] ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
               );
@@ -212,14 +210,11 @@ module.exports = {
 
         await jobsService.awaitOneOffCompletion(membersMigrationJobName);
       } else {
-        jobLogging.info(
+        logging.info(
           `[Background Job] ${membersMigrationJobName} skipped because it has already run`,
         );
       }
     }
-
-    // Schedule daily cron job to clean expired comp subs
-    memberJobs.scheduleExpiredCompCleanupJob();
   },
   contentGating: require('./content-gating'),
 

@@ -105,7 +105,6 @@
     "@radix-ui/react-tooltip": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@types/validator": "catalog:",
     "@uiw/react-codemirror": "catalog:",
     "class-variance-authority": "0.7.1",
     "clsx": "catalog:",
@@ -113,7 +112,7 @@
     "color": "5.0.3",
     "country-flag-icons": "catalog:",
     "lucide-react": "catalog:",
-    "moment-timezone": "^0.5.48",
+    "moment-timezone": "0.5.48",
     "react": "catalog:",
     "react-day-picker": "9.14.0",
     "react-dom": "catalog:",
@@ -122,7 +121,6 @@
     "recharts": "2.15.4",
     "sonner": "catalog:",
     "tailwind-merge": "3.6.0",
-    "validator": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

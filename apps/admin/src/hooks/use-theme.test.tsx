@@ -4,7 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useTheme } from './use-theme';
 import { useUserPreferences } from './user-preferences';
 import { HttpResponse, http } from 'msw';
-import { mockUser } from '@test-utils/factories';
+import { staffUser } from '@tryghost/test-data';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import type {
@@ -16,6 +16,8 @@ import type { SetupServer } from 'msw/node';
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
+
+const mockUser = staffUser();
 
 const themeTest = baseTest.extend<{
   server: SetupServer;

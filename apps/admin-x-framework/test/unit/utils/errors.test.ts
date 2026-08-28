@@ -243,6 +243,24 @@ describe('errors utils', () => {
       expect(error.data).toBe(mockErrorResponse);
     });
 
+    // The shape @tryghost/limit-service passes when it constructs the registered class
+    it('creates error from a limit-service options object', () => {
+      const error = new HostLimitError({
+        message: 'Your plan supports up to 5 staff users.',
+        errorDetails: { name: 'staff', limit: 5, total: 6 },
+        help: 'https://ghost.org/help/',
+      });
+      expect(error.message).toBe('Your plan supports up to 5 staff users.');
+      expect(error.errorDetails).toEqual({ name: 'staff', limit: 5, total: 6 });
+      expect(error.response).toBeUndefined();
+      expect(error.data).toBeUndefined();
+    });
+
+    it('falls back to the generic message when a limit-service error has none', () => {
+      const error = new HostLimitError({ errorDetails: { name: 'customThemes' } });
+      expect(error.message).toBe('A hosting plan limit was reached or exceeded.');
+    });
+
     it('is included in errorsWithMessage', () => {
       expect(errorsWithMessage).toContain(HostLimitError);
     });
@@ -365,7 +383,7 @@ describe('errors utils', () => {
           },
         ],
       };
-      return new HostLimitError({} as Response, data);
+      return new HostLimitError(new Response(), data);
     };
 
     it('returns the context of any error carrying an API body, not only a validation one', () => {

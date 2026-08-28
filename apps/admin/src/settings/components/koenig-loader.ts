@@ -1,7 +1,5 @@
 import type React from 'react';
-import { type FetchKoenigLexical } from '@tryghost/shade/app';
-
-export type { FetchKoenigLexical };
+import { fetchKoenigLexical } from '@/utils/fetch-koenig-lexical';
 
 declare global {
   interface Window {
@@ -40,7 +38,7 @@ export type KoenigInstance = {
   lastNodeIsDecorator: () => boolean;
 };
 
-export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+export const loadKoenig = function () {
   let status: 'pending' | 'success' | 'error' = 'pending';
   let response: KoenigLexicalModule | undefined;
   let error: unknown;

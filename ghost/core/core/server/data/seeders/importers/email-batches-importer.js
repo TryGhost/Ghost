@@ -1,7 +1,7 @@
 const { TableImporter } = require('./table-importer');
 const { faker } = require('@faker-js/faker');
 const { randomDateBetween } = require('../utils/random');
-const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-date');
+const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 
 class EmailBatchesImporter extends TableImporter {
   static table = 'email_batches';

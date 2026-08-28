@@ -1,6 +1,9 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { Meta, createInfiniteQuery, createQuery } from '../utils/api/hooks';
+import { Meta, createInfiniteQuery, createMutation, createQuery } from '../utils/api/hooks';
+import type { Email, PostBulkAction, PostListFields } from './posts';
 
+// A page is a post with `displayName: 'page'` server-side, so the list screens
+// read the same fields off both.
 export type Page = {
   id: string;
   title: string;
@@ -10,7 +13,17 @@ export type Page = {
   published_at?: string;
   visibility?: string;
   uuid?: string;
-};
+  feature_image?: string;
+  email?: Email;
+  count?: {
+    clicks?: number;
+  };
+  // Pages are never emailed, but the list reads these off both resources
+  // through one type, so they have to be addressable here too.
+  email_only?: boolean;
+  email_segment?: string;
+  newsletter?: object;
+} & PostListFields;
 
 export interface PagesResponseType {
   meta?: Meta;
@@ -48,4 +61,32 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
       isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
     };
   },
+});
+
+/** Duplicate a page. As with posts, the copy is always a draft. */
+export const useCopyPage = createMutation<PagesResponseType, string>({
+  method: 'POST',
+  path: (id) => `/pages/${id}/copy/`,
+});
+
+/** Bulk-edit pages matching an NQL filter. See `useBulkEditPosts`. */
+export const useBulkEditPages = createMutation<unknown, { filter: string; action: PostBulkAction }>(
+  {
+    method: 'PUT',
+    path: () => '/pages/bulk/',
+    searchParams: ({ filter }) => ({ filter }),
+    body: ({ action }) => ({
+      bulk: {
+        action: action.type,
+        meta: 'meta' in action ? action.meta : {},
+      },
+    }),
+  },
+);
+
+/** Bulk-delete pages matching an NQL filter. */
+export const useBulkDeletePages = createMutation<unknown, { filter: string }>({
+  method: 'DELETE',
+  path: () => '/pages/',
+  searchParams: ({ filter }) => ({ filter }),
 });

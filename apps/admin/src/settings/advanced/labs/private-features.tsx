@@ -2,7 +2,8 @@ import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
 type Feature = {
   title: string;
@@ -72,12 +73,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Navigation icons & visibility',
-    description:
-      'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
-    flag: 'navigationIcons',
-  },
-  {
     title: 'React tag details',
     description:
       'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
@@ -89,6 +84,12 @@ const features: Feature[] = [
     flag: 'membersCustomFields',
   },
   {
+    title: 'Members import redesign',
+    description:
+      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
+    flag: 'membersImportRedesign',
+  },
+  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -98,6 +99,12 @@ const features: Feature[] = [
     description:
       'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
     flag: 'giftSubCustomization',
+  },
+  {
+    title: 'React posts & pages lists',
+    description:
+      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'postsListReact',
   },
   {
     title: 'Self-serve archives',

@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import validator from 'validator';
 import {
   MEMBER_CUSTOM_FIELD_TYPES,
   memberCustomFieldParts,
@@ -45,9 +46,6 @@ interface MemberFieldSource {
   labels?: Array<{ name: string; slug: string }> | null;
   newsletters?: Array<{ id: string }> | null;
 }
-
-// Same shape as the import-members validator already used in this app.
-const MEMBER_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
 // allows 2000). The counter may go negative, matching the Ember behaviour.
@@ -143,9 +141,19 @@ export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: st
   return [...subscribedIds, newsletterId].sort();
 }
 
-/** Client-side email sanity check for the save gate; the server remains authoritative. */
-export function isValidMemberEmail(email: string): boolean {
-  return MEMBER_EMAIL_REGEX.test(email.trim());
+/**
+ * Client-side email sanity check for the save gate; the server remains
+ * authoritative. Mirrors the server's update semantics: an email is validated
+ * only when it differs from the stored one, because the server deliberately
+ * grandfathers stored emails that predate stricter validation
+ * (member-repository.js validates the email only when it changed).
+ */
+export function isValidMemberEmail(email: string, storedEmail?: string): boolean {
+  const trimmed = email.trim();
+  if (storedEmail !== undefined && trimmed === storedEmail.trim()) {
+    return true;
+  }
+  return validator.isEmail(trimmed);
 }
 
 /**
@@ -155,14 +163,18 @@ export function isValidMemberEmail(email: string): boolean {
  * validator runs on save-attempt for the same reason
  * (`ghost/admin/app/validators/member.js:15`).
  */
-export function getEmailErrorMessage(email: string, touched: boolean): string | null {
+export function getEmailErrorMessage(
+  email: string,
+  touched: boolean,
+  storedEmail?: string,
+): string | null {
   if (!touched) {
     return null;
   }
   if (email.trim() === '') {
     return 'Email is required.';
   }
-  if (!isValidMemberEmail(email)) {
+  if (!isValidMemberEmail(email, storedEmail)) {
     return 'Invalid email.';
   }
   return null;
@@ -207,13 +219,6 @@ export function getMemberSuppressionInfo(
 }
 
 /**
- * Whether the newsletter section of the member form should render, gated on the
- * `editor_default_email_recipients` setting the same way Ember does: only
- * `'disabled'` hides it. Treating `undefined`/`null` as "show" biases for the
- * common case (sites with emails enabled see no flash) at the cost of a possible
- * flash-out on disabled sites when the setting finishes loading.
- */
-/**
  * Newsletters that Ember auto-subscribes a new member to on save. Ports
  * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
  * via `subscribe_on_signup` AND are visible to member-tier subscribers
@@ -234,12 +239,6 @@ export function getDefaultNewsletterIdsForNewMember(
   return newsletters
     .filter((nl) => nl.subscribe_on_signup === true && nl.visibility === 'members')
     .map((nl) => nl.id);
-}
-
-export function getMemberNewslettersUiEnabled(
-  editorDefaultEmailRecipients: string | null | undefined,
-): boolean {
-  return editorDefaultEmailRecipients !== 'disabled';
 }
 
 /**

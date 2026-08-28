@@ -29,9 +29,12 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { centsToDollars } from '@tryghost/shade/app';
+import { centsToDollars } from '@/shared/analytics/chart-helpers';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  useMembersTrackSources,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -53,7 +56,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
   mode,
   defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
 }) => {
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   if (mode === 'growth') {
     return (
@@ -67,7 +70,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
               {children}
             </TableHead>
             <TableHead className="w-[110px] text-right">Free members</TableHead>
-            {appSettings?.paidMembersEnabled && (
+            {paidMembersEnabled && (
               <>
                 <TableHead className="w-[110px] text-right">Paid members</TableHead>
                 <TableHead className="w-[100px] text-right">MRR impact</TableHead>
@@ -108,7 +111,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
                 <TableCell className="text-right font-mono text-sm">
                   +{formatNumber(row.free_members || 0)}
                 </TableCell>
-                {appSettings?.paidMembersEnabled && (
+                {paidMembersEnabled && (
                   <>
                     <TableCell className="text-right font-mono text-sm">
                       +{formatNumber(row.paid_members || 0)}
@@ -154,7 +157,7 @@ const GrowthSources: React.FC<SourcesCardProps> = ({
   getPeriodText,
   className,
 }) => {
-  const { appSettings } = useAppContext();
+  const membersTrackSources = useMembersTrackSources();
   // Process and group sources data with pre-computed icons and display values
   const processedData = React.useMemo(() => {
     return processSources({
@@ -205,7 +208,7 @@ const GrowthSources: React.FC<SourcesCardProps> = ({
         </CardHeader>
       )}
       <CardContent>
-        {mode === 'growth' && !appSettings?.analytics.membersTrackSources ? (
+        {mode === 'growth' && !membersTrackSources ? (
           <DisabledSourcesIndicator className="py-10" />
         ) : topSources.length > 0 ? (
           <SourcesTable

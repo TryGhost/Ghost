@@ -154,7 +154,10 @@ export default class MembersCSVExporter {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
     const ids = hasFilter ? await this._members.findFilteredIds(options) : null;
     if (ids) {
-      logging.info(`[MembersExporter] Found ${ids.length} members matching filter criteria`);
+      logging.info(
+        { event: { name: 'members-export.filtered' }, matched: ids.length },
+        'Found members matching the export filter',
+      );
     }
 
     const reference = await this.fetchReferenceData();
@@ -164,7 +167,10 @@ export default class MembersCSVExporter {
       membersQuery.whereIn('id', ids);
     }
 
-    logging.info('[MembersExporter] Starting streaming export of members');
+    logging.info(
+      { event: { name: 'members-export.started' } },
+      'Starting streaming export of members',
+    );
     const batchingTransform = this.createBatchingTransform();
     const processingTransform = this.createProcessingTransform(reference);
 
@@ -176,9 +182,8 @@ export default class MembersCSVExporter {
         );
       } else {
         logging.info(
-          '[MembersExporter] Total time taken for member export: ' +
-            (Date.now() - start) / 1000 +
-            's',
+          { event: { name: 'members-export.completed' }, durationMs: Date.now() - start },
+          'Members export completed',
         );
       }
     });
@@ -212,7 +217,10 @@ export default class MembersCSVExporter {
         }, {}),
       );
 
-    logging.info('[MembersExporter] Fetched products and labels in ' + (Date.now() - start) + 'ms');
+    logging.info(
+      { event: { name: 'members-export.reference_data_read' }, durationMs: Date.now() - start },
+      'Read the products and labels an export names',
+    );
 
     const activeCustomFields = await this._customFields.activeDefinitions();
 

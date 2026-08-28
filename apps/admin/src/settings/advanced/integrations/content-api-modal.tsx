@@ -20,7 +20,7 @@ function ContentApiModal() {
       footer={
         <div className="mx-8 flex w-full items-center justify-between">
           <Button variant="outline" asChild>
-            <a href="https://ghost.org/docs/content-api/" rel="noopener noreferrer" target="_blank">
+            <a href="https://docs.ghost.org/content-api/" rel="noopener noreferrer" target="_blank">
               Open docs <LucideIcon.ExternalLink className="size-3" />
             </a>
           </Button>

@@ -4,14 +4,14 @@ import { GiftBookshelfRepository } from './gift-bookshelf-repository';
 import { GiftDeliveryBookshelfRepository } from './gift-delivery-bookshelf-repository';
 import { GiftDeliveryService } from './gift-delivery-service';
 import { GiftService } from './gift-service';
-import { GiftReminderScheduler } from './gift-reminder-scheduler';
+import { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
 import { GiftEmailService } from './gift-email-service';
 import { GiftController } from './gift-controller';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 
 export interface GiftServiceInitOptions {
   apiUrl: string;
-  schedulerAdapter: SchedulerAdapter;
+  schedulerAdapter: SchedulerAdapter & { rescheduleOnBoot?: boolean };
   internalKeys: InternalKeys;
 }
 
@@ -24,7 +24,11 @@ export let service: GiftService | undefined;
 
 export let deliveryService: GiftDeliveryService | undefined;
 
-export async function init(options: GiftServiceInitOptions): Promise<void> {
+// Persistent scheduling adapters keep their queue across restarts and opt out
+// of boot-time rebuilds (same contract post scheduling honours in boot.js).
+let rescheduleDeliveriesOnBoot = true;
+
+export function init(options: GiftServiceInitOptions): void {
   if (service) {
     return;
   }
@@ -41,10 +45,9 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
   const staffService = require('../staff');
   const DomainEvents = require('@tryghost/domain-events');
   const logging = require('@tryghost/logging');
-  const jobLogging = require('../jobs/job-logging');
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
   const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
-  const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
+  const { StartGiftDeliveryFlushEvent } = require('./events/start-gift-delivery-flush-event');
   const jobs = require('./jobs');
   const emailAnalyticsJobs = require('../email-analytics/jobs');
 
@@ -78,8 +81,20 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     settingsCache,
     urlUtils,
     getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
+    getReplyToAddress: () => settingsHelpers.getMembersSupportAddress(),
     blogIcon,
     t,
+  });
+  const giftDeliveryScheduler = new SignedFlushScheduler({
+    apiUrl: options.apiUrl,
+    adapter: options.schedulerAdapter,
+    internalKeys: options.internalKeys,
+    endpoint: ['gifts', 'flush_deliveries'],
+    name: 'gift_delivery',
+    findScheduledTimes: async () => {
+      const scheduled = await deliveryRepository.findScheduledTimesForPurchasedGifts(new Date());
+      return scheduled.map((scheduledAt) => scheduledAt.getTime());
+    },
   });
   const giftDeliveryService = new GiftDeliveryService({
     giftRepository: repository,
@@ -89,13 +104,22 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     giftEmailAnalytics: {
       schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true),
     },
+    giftDeliveryScheduler,
   });
 
-  const giftReminderScheduler = new GiftReminderScheduler({
+  const giftReminderScheduler = new SignedFlushScheduler({
     apiUrl: options.apiUrl,
     adapter: options.schedulerAdapter,
     internalKeys: options.internalKeys,
-    findUnsentReminders: () => repository.findUnsentReminders(),
+    endpoint: ['gifts', 'flush_reminders'],
+    name: 'gift_reminder',
+    legacyDelaysMs: [0],
+    findScheduledTimes: async () => {
+      const pending = await repository.findUnsentReminders();
+      return pending
+        .map((gift) => gift.reminderDueAt()?.getTime())
+        .filter((time): time is number => time !== undefined);
+    },
   });
   const giftService = new GiftService({
     giftRepository: repository,
@@ -116,6 +140,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
   service = giftService;
   deliveryService = giftDeliveryService;
+  rescheduleDeliveriesOnBoot = Boolean(options.schedulerAdapter.rescheduleOnBoot);
   controller = new GiftController({ service: giftService });
 
   DomainEvents.subscribe(
@@ -131,18 +156,30 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
   DomainEvents.subscribe(StartGiftReminderFlushEvent, async () => {
     const start = Date.now();
-    jobLogging.info('[Background Job] send-gift-reminders started');
+    logging.info('[Background Job] send-gift-reminders started');
     try {
       const { remindedCount, skippedCount, failedCount } = await giftService.processReminders();
 
-      jobLogging.info(
+      logging.info(
         `[Background Job] send-gift-reminders completed in ${Date.now() - start}ms: ${remindedCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
       );
     } catch (err) {
-      jobLogging.error(
+      logging.error(
         err,
         `[Background Job] send-gift-reminders failed after ${Date.now() - start}ms`,
       );
+    }
+  });
+
+  DomainEvents.subscribe(StartGiftDeliveryFlushEvent, async () => {
+    const start = Date.now();
+    try {
+      const { sentCount, skippedCount, failedCount } = await giftDeliveryService.recoverPending();
+      logging.info(
+        `Processed ${sentCount} due gift deliveries, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`,
+      );
+    } catch (err) {
+      logging.error(err, 'Failed to process due gift deliveries');
     }
   });
 
@@ -156,73 +193,26 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     }
   });
 
-  DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
-    const cleanupStart = Date.now();
-    jobLogging.info('[Background Job] clean-gifts started');
-
-    const checkoutStart = Date.now();
-    try {
-      const { deletedCount } = await giftService.processAbandonedCheckouts();
-
-      jobLogging.info(
-        `[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`,
-      );
-    } catch (err) {
-      jobLogging.error(err, '[Background Job] clean-gifts error processing abandoned checkouts');
-    }
-
-    const consumedStart = Date.now();
-    try {
-      const { consumedCount, updatedMemberCount } = await giftService.processConsumed();
-
-      jobLogging.info(
-        `[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`,
-      );
-    } catch (err) {
-      jobLogging.error(err, '[Background Job] clean-gifts error processing consumed gifts');
-    }
-
-    const expiredStart = Date.now();
-    try {
-      const { expiredCount } = await giftService.processExpired();
-
-      jobLogging.info(
-        `[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`,
-      );
-    } catch (err) {
-      jobLogging.error(err, '[Background Job] clean-gifts error processing expired gifts');
-    }
-
-    try {
-      const { sentCount, skippedCount, failedCount } = await giftDeliveryService.recoverPending();
-      if (sentCount + skippedCount + failedCount > 0) {
-        jobLogging.info(
-          `[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
-        );
-      }
-    } catch (err) {
-      jobLogging.error(
-        err,
-        '[Background Job] clean-gifts error processing pending gift deliveries',
-      );
-    }
-
-    jobLogging.info(`[Background Job] clean-gifts completed in ${Date.now() - cleanupStart}ms`);
-  });
-
-  jobs.scheduleGiftCleanupJob();
   jobs.scheduleGiftReminderJob();
 }
 
-// Retries deliveries interrupted by a previous shutdown. Sending needs the tiers
-// and members services, which boot alongside this one, so this must run once
-// every service has finished initialising rather than from init().
+// Re-arms future deliveries and retries sends interrupted by a previous
+// shutdown. Runs after all services initialise because recovery sends need
+// tiers and members.
 export async function recoverPendingDeliveries(): Promise<void> {
   if (!deliveryService) {
     return;
   }
 
   const logging = require('@tryghost/logging');
+
+  if (rescheduleDeliveriesOnBoot) {
+    try {
+      await deliveryService.reschedulePending();
+    } catch (err) {
+      logging.error(err, 'Failed to reschedule pending gift deliveries');
+    }
+  }
 
   try {
     const { sentCount, skippedCount, failedCount } = await deliveryService.recoverPending();

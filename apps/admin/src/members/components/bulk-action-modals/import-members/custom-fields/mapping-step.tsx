@@ -32,7 +32,7 @@ import {
   columnsOf,
 } from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
 import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { type FieldTarget } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
+import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
 
@@ -56,7 +56,10 @@ interface MappingStepProps {
   mappingError: string | null;
   showMappingErrors: boolean;
   dataPreviewIndex: number;
-  targets: FieldTarget[];
+  targetGroups: FieldTargetGroup[];
+  // Whether custom fields exist for this site at all. Off, no row offers to make one and the
+  // create form is unreachable, so the table is a plain mapping of columns onto member fields.
+  canCreateCustomFields: boolean;
   labelPicker: UseLabelPickerResult;
   onUpdateMapping: (from: string, to: string | null) => void;
   onFieldCreated: (columnKey: string, column: string | null) => void;
@@ -106,7 +109,8 @@ export function MappingStep({
   mappingError,
   showMappingErrors,
   dataPreviewIndex,
-  targets,
+  targetGroups,
+  canCreateCustomFields,
   labelPicker,
   onUpdateMapping,
   onFieldCreated,
@@ -525,13 +529,14 @@ export function MappingStep({
                                                         second mechanism. The mapping is not lost either way —
                                                         it comes back with the row when it is selected again. */}
                               <FieldPicker
+                                canCreateField={canCreateCustomFields}
                                 className={cn(!isImported(row) && 'invisible')}
                                 columnKey={row.key}
                                 disabled={isRowLocked(row)}
                                 invalid={incomplete?.columns.has(row.key)}
                                 open={openPicker?.columnKey === row.key}
                                 search={openPicker?.columnKey === row.key ? openPicker.search : ''}
-                                targets={targets}
+                                targetGroups={targetGroups}
                                 triggerRef={(node) => {
                                   if (node) {
                                     fieldTriggers.current.set(row.key, node);

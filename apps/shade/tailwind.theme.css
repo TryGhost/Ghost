@@ -216,6 +216,7 @@
   --color-button-hover: var(--button-hover);
   --color-interactive-hover: var(--interactive-hover);
   --color-table-row-hover: var(--table-row-hover);
+  --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
   --color-control-readonly-surface: var(--control-readonly-surface);
   --color-control-disabled-surface: var(--control-disabled-surface);
@@ -223,16 +224,6 @@
 
   /* Typography */
   /* ---------------------------------------------------------------------- */
-  --font-cardo: Cardo;
-  --font-manrope: Manrope;
-  --font-merriweather: Merriweather;
-  --font-nunito: Nunito;
-  --font-tenor-sans: Tenor Sans;
-  --font-old-standard-tt: Old Standard TT;
-  --font-prata: Prata;
-  --font-roboto: Roboto;
-  --font-rufina: Rufina;
-  --font-inter: Inter;
   --font-body: var(--font-sans);
   --font-heading: var(--font-sans);
   --font-code: var(--font-mono);
@@ -242,17 +233,6 @@
   --font-serif: Georgia, serif;
   --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
   --font-inherit: inherit;
-  --font-space-grotesk: Space Grotesk;
-  --font-chakra-petch: Chakra Petch;
-  --font-noto-sans: Noto Sans;
-  --font-poppins: Poppins;
-  --font-fira-sans: Fira Sans;
-  --font-noto-serif: Noto Serif;
-  --font-lora: Lora;
-  --font-ibm-plex-serif: IBM Plex Serif;
-  --font-space-mono: Space Mono;
-  --font-fira-mono: Fira Mono;
-  --font-jetbrains-mono: JetBrains Mono;
   --tracking-tightest: -0.05em;
   --tracking-tighter: -0.025em;
   --tracking-tight: -0.01em;
@@ -366,7 +346,6 @@
   --animate-toaster-top-in: toasterTopIn 0.8s cubic-bezier(0.445, 0.05, 0.55, 0.95);
   --animate-fade-in: fadeIn 0.15s ease forwards;
   --animate-fade-out: fadeOut 0.15s ease forwards;
-  --animate-setting-highlight-fade-out: fadeOut 0.2s 1.4s ease forwards;
   --animate-modal-backdrop-in: fadeIn 0.15s ease forwards;
   --animate-modal-in: modalIn 0.25s ease forwards;
   --animate-modal-in-from-right: modalInFromRight 0.25s ease forwards;

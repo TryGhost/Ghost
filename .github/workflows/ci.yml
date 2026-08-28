@@ -770,7 +770,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        image: mysql:8.0
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -794,25 +794,11 @@ jobs:
           --health-interval=2s
           --health-timeout=5s
           --health-retries=60
-    strategy:
-      matrix:
-        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
-        env:
-          - DB: mysql8
-            NODE_ENV: testing-mysql
-        include:
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: better-sqlite3
-              NODE_ENV: testing
     env:
-      DB: ${{ matrix.env.DB }}
-      NODE_ENV: ${{ matrix.env.NODE_ENV }}
-      # The `test:ci:*` targets wrap the suites in c8. Only the sqlite leg is
-      # instrumented (mysql covers the same code), and only on the canonical
-      # repo — see job_setup's coverage_enabled output.
-      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.env.DB == 'better-sqlite3' }}
-    name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+      DB: mysql8
+      NODE_ENV: testing-mysql
+      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled }}
+    name: Acceptance tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -820,33 +806,18 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ needs.job_setup.outputs.node_version }}
           cache: pnpm
 
       - name: Install dependencies
-        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless. The mysql leg
-        # doesn't need better-sqlite3, so it skips --force and gets a fast cache
-        # restore (matches the legacy-tests job below).
-        run: |
-          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
           timezoneLinux: 'America/New_York'
 
-      - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
-
       - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
         run: |
           {
             echo "database__connection__host=127.0.0.1"
@@ -899,7 +870,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: env.COVERAGE_ENABLED == 'true' && matrix.node == env.NODE_VERSION
+        if: env.COVERAGE_ENABLED == 'true'
         with:
           name: e2e-coverage
           path: |
@@ -919,7 +890,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        image: mysql:8.0
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -931,21 +902,10 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
-    strategy:
-      matrix:
-        include:
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: mysql8
-              NODE_ENV: testing-mysql
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: better-sqlite3
-              NODE_ENV: testing
     env:
-      DB: ${{ matrix.env.DB }}
-      NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+      DB: mysql8
+      NODE_ENV: testing-mysql
+    name: Legacy tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -955,26 +915,13 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ needs.job_setup.outputs.node_version }}
           cache: pnpm
 
       - name: Install dependencies
-        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
-        run: |
-          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
-
-      - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'better-sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: pnpm install --frozen-lockfile
 
       - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
         run: |
           echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
           echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
@@ -1117,6 +1064,18 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
+      # Vitest Browser Mode apps (e.g. apps/admin) save failure screenshots
+      # into __screenshots__/ directories next to the specs, not a
+      # playwright-report; upload them so failures are debuggable from CI.
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ${{ steps.app_name.outputs.name }}-failure-screenshots
+          path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
+          if-no-files-found: ignore
+          retention-days: 30
+
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -1215,11 +1174,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Asserts the fake Stripe server against responses captured from Stripe, and
-      # that it refuses the requests Stripe refuses. Needs no Ghost, no Docker and
-      # no browser, so it does not belong in the e2e matrix that waits on the image.
+      # Needs no Ghost, no Docker and no browser, so it does not belong in the e2e
+      # matrix that waits on the image. Run through nx so the target pulls in the
+      # build it declares.
       - name: Check Stripe fixtures
-        run: pnpm --filter @tryghost/e2e test:fixtures
+        run: pnpm nx run @tryghost/e2e:test:fixtures
 
       - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'

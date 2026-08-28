@@ -1366,6 +1366,334 @@ describe('Members API', function () {
       });
     });
 
+    // The other half of the collection work: what Stripe collected on the payment page
+    // landing on the member's own fields. Driven through the real webhook, because the
+    // whole point is that this happens on the path that already creates the member.
+    describe('Fields collected on the checkout page', function () {
+      // Named here rather than inside the one test that adds it, because the cleanup that
+      // takes it away again has to name the same thing.
+      const SECOND_TIER_ID = 'ffffffffffffffffffffffff';
+      let fieldKeys;
+
+      async function createField(name, type) {
+        const { body } = await adminAgent
+          .post('/members/custom_fields/')
+          .body({ members_custom_fields: [{ name, type }] });
+        return body.members_custom_fields[0].key;
+      }
+
+      async function sendCheckoutWebhook(email, sessionExtras) {
+        set(customer, {
+          id: 'cus_123',
+          name: 'Test Member',
+          email,
+          subscriptions: { type: 'list', data: [subscription] },
+        });
+
+        const webhookPayload = JSON.stringify({
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              mode: 'subscription',
+              customer: customer.id,
+              subscription: subscription.id,
+              // The tier the session was created for, which is how the write
+              // finds the configuration that produced these questions.
+              metadata: { ghostTierId: (await getPaidProduct()).id },
+              ...sessionExtras,
+            },
+          },
+        });
+
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(webhookPayload)
+          .header('content-type', 'application/json')
+          .header(
+            'stripe-signature',
+            stripe.webhooks.generateTestHeaderString({
+              payload: webhookPayload,
+              secret: process.env.WEBHOOK_SECRET,
+            }),
+          );
+
+        const { body } = await adminAgent.get(`/members/?search=${encodeURIComponent(email)}`);
+        assert.equal(body.members.length, 1, 'The member was not created');
+        const { body: read } = await adminAgent.get(`/members/${body.members[0].id}/`);
+        return read.members[0];
+      }
+
+      beforeEach(async function () {
+        mockManager.mockLabsEnabled('membersCustomFields');
+        fieldKeys = {
+          question: await createField('T-shirt size', 'short_text'),
+          address: await createField('Delivery address', 'address'),
+          vat: await createField('VAT number', 'short_text'),
+          recipient: await createField('Recipient name', 'short_text'),
+        };
+        // A destination is set by configuring a tier to collect into it, which is
+        // the only way a publisher gets one: the checkbox and the field are one
+        // choice. The binding it creates is what the webhook resolves against.
+        const product = await getPaidProduct();
+        await adminAgent.put(`/tiers/${product.id}/checkout_config/`).body({
+          tiers_checkout_config: [
+            {
+              // The question has to be configured too: an answer lands because the
+              // tier asked for it, and asking is what creates the binding it lands
+              // through. An answer to a question a tier never asked is not ours.
+              custom_fields: [{ key: fieldKeys.question }],
+              shipping: {
+                collect: true,
+                allowed_countries: ['GB'],
+                name: { custom_field_key: fieldKeys.recipient },
+                address: { custom_field_key: fieldKeys.address },
+              },
+              tax_number: { collect: true },
+            },
+          ],
+        });
+      });
+
+      afterEach(async function () {
+        await models.Base.knex('members_custom_field_values').del();
+        await models.Base.knex('members_custom_field_bindings').del();
+        await models.Base.knex('products_checkout_fields').del();
+        await models.Base.knex('products_checkout_config').del();
+        await models.Base.knex('members_custom_fields').del();
+        // The second tier one test adds is a paid product, and `getPaidProduct` asks for
+        // whichever paid product comes first. Leaving it behind would decide that answer
+        // for every test after this one.
+        await models.Base.knex('products').where('id', SECOND_TIER_ID).del();
+      });
+
+      it('saves the answers and the collected data onto the member', async function () {
+        const member = await sendCheckoutWebhook('checkout-collected-fields@email.com', {
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+          shipping: {
+            name: 'Bex Jones, c/o Acme Ltd',
+            address: {
+              line1: '1 High Street',
+              line2: null,
+              city: 'London',
+              state: null,
+              postal_code: 'E1 6AN',
+              country: 'GB',
+            },
+          },
+          customer_details: { tax_ids: [{ type: 'gb_vat', value: 'GB123456789' }] },
+        });
+
+        assert.equal(member.custom_fields[fieldKeys.question], 'Large');
+        // Stripe returns the recipient beside the address and Ghost keeps them
+        // apart, so each lands in the field the publisher chose for it.
+        assert.equal(member.custom_fields[fieldKeys.recipient], 'Bex Jones, c/o Acme Ltd');
+        // Stripe's address parts are exactly ours, so nothing is transformed.
+        assert.deepEqual(member.custom_fields[fieldKeys.address], {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'E1 6AN',
+          country: 'GB',
+        });
+        // Asked for on the page and kept by Stripe against the customer it invoices.
+        // Ghost never copies one into a publisher's field, so there is nothing here for it.
+        assert.equal(member.custom_fields[fieldKeys.vat], undefined);
+      });
+
+      // Turning collection off has to stop the collecting, and Stripe keeps returning
+      // the recipient and address on every completed session whatever a tier asked for,
+      // so "stopped" can only mean the values stop landing on the member.
+      //
+      // A second tier still collects, because that is what makes the difference between
+      // one tier changing its mind and the site doing so — and a publisher running a
+      // print tier beside a digital one is the ordinary case, not a corner.
+      it('keeps a phone number a checkout collected', async function () {
+        const phone = await createField('Contact number', 'short_text');
+        const product = await getPaidProduct();
+        await adminAgent
+          .put(`/tiers/${product.id}/checkout_config/`)
+          .body({
+            tiers_checkout_config: [{ phone: { collect: true, custom_field_key: phone } }],
+          })
+          .expectStatus(200);
+
+        const member = await sendCheckoutWebhook('checkout-phone@email.com', {
+          customer_details: { phone: '+447700900123' },
+        });
+
+        assert.equal(member.custom_fields[phone], '+447700900123');
+      });
+
+      // The member has already paid by the time this runs, so losing an answer must never
+      // cost the payment work. A throw would fail the webhook, and Stripe would retry the
+      // event and risk creating the subscription twice.
+      it('takes the payment even when the session cannot be read at all', async function () {
+        const member = await sendCheckoutWebhook('checkout-unreadable@email.com', {
+          // Stripe would never send this. It fails the codec, so the whole read throws
+          // rather than one value being dropped.
+          shipping: 'not an object at all',
+        });
+
+        assert.ok(member, 'the member was still created');
+        assert.deepEqual(
+          member.custom_fields,
+          {},
+          'nothing was collected, and nothing else was disturbed',
+        );
+      });
+
+      it('stops collecting for a tier that has turned it off, while another still does', async function () {
+        const [existing] = await models.Base.knex('products').where(
+          'id',
+          (await getPaidProduct()).id,
+        );
+        await models.Base.knex('products').insert({
+          ...existing,
+          id: SECOND_TIER_ID,
+          name: 'Still shipping',
+          slug: 'still-shipping-tier',
+        });
+        await adminAgent
+          .put(`/tiers/${SECOND_TIER_ID}/checkout_config/`)
+          .body({
+            tiers_checkout_config: [
+              {
+                shipping: {
+                  collect: true,
+                  allowed_countries: ['GB'],
+                  name: { custom_field_key: fieldKeys.recipient },
+                  address: { custom_field_key: fieldKeys.address },
+                },
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        // The publisher stops collecting on the tier this session is for.
+        const product = await getPaidProduct();
+        await adminAgent.put(`/tiers/${product.id}/checkout_config/`).body({
+          tiers_checkout_config: [{ shipping: { collect: false }, tax_number: { collect: false } }],
+        });
+
+        const member = await sendCheckoutWebhook('checkout-collection-off@email.com', {
+          shipping: {
+            name: 'Bex Jones',
+            address: { line1: '1 High Street', country: 'GB' },
+          },
+          customer_details: { tax_ids: [{ type: 'gb_vat', value: 'GB123456789' }] },
+        });
+
+        assert.equal(
+          member.custom_fields[fieldKeys.recipient],
+          undefined,
+          'no recipient name was kept',
+        );
+        assert.equal(member.custom_fields[fieldKeys.address], undefined, 'no address was kept');
+      });
+
+      // The acceptance criterion this whole thing turns on: a value Stripe collected
+      // has to be tellable apart from one a person typed, and only the moment of the
+      // write can record that.
+      it('records the binding that wrote every value it collected', async function () {
+        const member = await sendCheckoutWebhook('checkout-collected-source@email.com', {
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+          shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
+        });
+
+        const written = await models.Base.knex('members_custom_field_values')
+          .where('member_id', member.id)
+          .distinct('written_by_type')
+          .pluck('written_by_type');
+        assert.deepEqual(written, ['binding'], 'a checkout writes through a binding');
+
+        // The id is the point: it resolves back to the tier that asked, what it was
+        // collected as, and the field it landed in — which is everything worth
+        // knowing about how a value got here, and more than a name could say.
+        const resolved = await models.Base.knex('members_custom_field_values')
+          .join(
+            'members_custom_field_bindings',
+            'members_custom_field_bindings.id',
+            'members_custom_field_values.written_by_id',
+          )
+          .where('members_custom_field_values.member_id', member.id)
+          .distinct('members_custom_field_bindings.port')
+          .pluck('port');
+        assert.deepEqual(
+          resolved.sort(),
+          ['shipping_address', 'shipping_name', fieldKeys.question].sort(),
+        );
+      });
+
+      // Several writers may land in one field: a binding says where a value goes, and
+      // nothing says a field may only be written into once. So what matters is not that it
+      // cannot happen but that it settles the same way every time, rather than on whichever
+      // value the payload happened to carry first. What the processor collected under its
+      // own name is written after the answers the member typed, so it is what remains.
+      it('settles a field two writers share the same way every time', async function () {
+        const product = await getPaidProduct();
+        await adminAgent
+          .put(`/tiers/${product.id}/checkout_config/`)
+          .body({
+            tiers_checkout_config: [
+              {
+                // Asked for as a question and collected into as the recipient's name, so
+                // two bindings of this tier point at one field.
+                custom_fields: [{ key: fieldKeys.recipient }],
+                shipping: {
+                  collect: true,
+                  allowed_countries: ['GB'],
+                  name: { custom_field_key: fieldKeys.recipient },
+                  address: { custom_field_key: fieldKeys.address },
+                },
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        const member = await sendCheckoutWebhook('checkout-collected-shared@email.com', {
+          custom_fields: [
+            { key: fieldKeys.recipient, type: 'text', text: { value: 'Typed by the member' } },
+          ],
+          shipping: { name: 'Collected by Stripe', address: { country: 'GB' } },
+        });
+
+        assert.equal(member.custom_fields[fieldKeys.recipient], 'Collected by Stripe');
+      });
+
+      // A value the member gave us for free must never fail the webhook: a throw makes
+      // Stripe retry the event and risks doing the payment work twice.
+      it('still creates the member when a collected value cannot be saved', async function () {
+        const member = await sendCheckoutWebhook('checkout-collected-invalid@email.com', {
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+          // Longer than any postcode our address type will take. The recipient's name
+          // arrives on the same Stripe parameter and routes through its own binding.
+          shipping: {
+            name: 'Ada Lovelace',
+            address: { postal_code: 'x'.repeat(40), country: 'GB' },
+          },
+        });
+
+        assert.equal(member.status, 'paid');
+        assert.equal(
+          member.custom_fields[fieldKeys.question],
+          'Large',
+          'the answer beside it was kept',
+        );
+        assert.equal(
+          member.custom_fields[fieldKeys.recipient],
+          'Ada Lovelace',
+          'and so was the other half of what Stripe returned together',
+        );
+        assert.equal(member.custom_fields[fieldKeys.address], undefined);
+      });
+
+      it('leaves the member alone when the checkout collected nothing', async function () {
+        const member = await sendCheckoutWebhook('checkout-collected-nothing@email.com', {});
+
+        assert.equal(member.status, 'paid');
+        assert.deepEqual(member.custom_fields, {});
+      });
+    });
+
     it('Will create a member with default newsletter subscriptions', async function () {
       set(customer, {
         id: 'cus_123',

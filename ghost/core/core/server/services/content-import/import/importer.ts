@@ -1,7 +1,20 @@
 import moment from 'moment-timezone';
-import buildPostData, { RowSkipped, type HtmlToLexical, type PostData } from './post-data';
+import buildPostData, {
+  RowSkipped,
+  type CleanHTML,
+  type HtmlToLexical,
+  type MarkdownToHtml,
+  type PostData,
+} from './post-data';
 import type { PostImportRow } from './row';
-import type { Clock, ImportRunStore, RowOutcome } from './store';
+import type { PostsRepository, WrittenPost } from './post-repository';
+import type { ImportRequest } from './schema';
+import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
+import type { PreparedImportSource } from './source';
+import type { PreparedPostRow, PreparedPostRows } from './reader';
+import { MediaInliningFailure, type PostMediaInlining } from './media';
+
+export type { ImportRequest } from './schema';
 
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -11,36 +24,32 @@ const tpl = require('@tryghost/tpl');
 // response is sent); the parsed rows are handed to an in-process background job
 // that writes one post per row.
 
-export interface ImportRequest {
-  filePath: string;
-}
-
 // The id is what a completion report will be looked up by.
 export interface ImportAccepted {
   importId: string;
   total: number;
 }
 
-export interface CreatedPost {
-  id: string;
-  toJSON(): Record<string, unknown>;
-}
-
-export interface PostsRepository {
-  create(data: PostData, options: object): Promise<CreatedPost>;
-}
-
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
 
-type ReadRows = (path: string) => Promise<PostImportRow[]>;
+export interface EmailNotifications {
+  send(run: ImportRun, recipient: string): Promise<unknown>;
+  getDefaultRecipient(): Promise<string>;
+}
+
+type ReadRows = (
+  path: string,
+  mapping?: Record<string, string>,
+) => Promise<PreparedPostRows | PostImportRow[]>;
+type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
   tooManyPosts:
     'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.',
   allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
-  urlResolutionFailed: 'Content import could not resolve a URL for {count} created {postNoun}.',
+  urlResolutionFailed: 'Content import could not resolve a URL for {count} imported {postNoun}.',
 };
 
 function logLifecycle(message: string): void {
@@ -55,13 +64,18 @@ const MAX_POSTS = 100;
 
 interface ImporterDeps {
   readRows: ReadRows;
+  prepareSource?: PrepareSource;
   posts: PostsRepository;
   // A getter so the heavy html->lexical require resolves once per run
   getHtmlToLexical: () => HtmlToLexical;
+  getMarkdownToHtml: () => MarkdownToHtml;
+  getCleanHTML: () => CleanHTML;
+  createMediaInliner: () => PostMediaInlining;
+  email: EmailNotifications;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
-  urlForPost: (post: CreatedPost) => string;
+  urlForPost: (post: WrittenPost) => string;
   newRunId: () => string;
   getTimezone: () => string;
   now?: Clock;
@@ -76,20 +90,30 @@ function buildImportTagNames(runId: string, timezone: string, now: Date): string
 
 class ContentCSVImporter {
   private _readRows: ReadRows;
+  private _prepareSource: PrepareSource;
   private _posts: PostsRepository;
   private _getHtmlToLexical: () => HtmlToLexical;
+  private _getMarkdownToHtml: () => MarkdownToHtml;
+  private _getCleanHTML: () => CleanHTML;
+  private _createMediaInliner: () => PostMediaInlining;
+  private _email: EmailNotifications;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
-  private _urlForPost: (post: CreatedPost) => string;
+  private _urlForPost: (post: WrittenPost) => string;
   private _newRunId: () => string;
   private _getTimezone: () => string;
   private _now: Clock;
 
   constructor({
     readRows,
+    prepareSource = async ({ filePath }) => ({ filePath, cleanup: async () => {} }),
     posts,
     getHtmlToLexical,
+    getMarkdownToHtml,
+    getCleanHTML,
+    createMediaInliner,
+    email,
     addJob,
     report,
     store,
@@ -99,8 +123,13 @@ class ContentCSVImporter {
     now = () => new Date(),
   }: ImporterDeps) {
     this._readRows = readRows;
+    this._prepareSource = prepareSource;
     this._posts = posts;
     this._getHtmlToLexical = getHtmlToLexical;
+    this._getMarkdownToHtml = getMarkdownToHtml;
+    this._getCleanHTML = getCleanHTML;
+    this._createMediaInliner = createMediaInliner;
+    this._email = email;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -111,10 +140,16 @@ class ContentCSVImporter {
   }
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
-    let rows: PostImportRow[];
+    const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
+    const source = await this._prepareSource(request);
+    let preparedRows: PreparedPostRows;
     try {
-      rows = await this._readRows(request.filePath);
+      const result = await this._readRows(source.filePath, request.mapping);
+      preparedRows = Array.isArray(result)
+        ? { columns: [], rows: result.map((data, index) => ({ data, line: index + 2 })) }
+        : result;
     } catch (error) {
+      await this.cleanupSource(source.cleanup);
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),
         err: error,
@@ -123,7 +158,8 @@ class ContentCSVImporter {
 
     // Temporary while import state is held in memory: the durable job
     // system milestone removes the cap.
-    if (rows.length > MAX_POSTS) {
+    if (preparedRows.rows.length > MAX_POSTS) {
+      await this.cleanupSource(source.cleanup);
       throw new errors.ValidationError({
         message: tpl(messages.tooManyPosts, { max: MAX_POSTS }),
       });
@@ -131,16 +167,24 @@ class ContentCSVImporter {
 
     const runId = this._newRunId();
     const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
-    this._store.create(runId, rows.length);
+    this._store.create(runId, preparedRows.rows.length, preparedRows.columns);
 
     logLifecycle('queued');
-    this._addJob({
-      job: () => this.runImportJob(runId, importTagNames, rows),
-      offloaded: false,
-      name: 'content-import',
-    });
+    try {
+      this._addJob({
+        job: () =>
+          this.runImportJob(runId, importTagNames, preparedRows.rows, source, emailRecipient),
+        offloaded: false,
+        name: 'content-import',
+      });
+    } catch (error) {
+      this._store.fail(runId, messageOf(error));
+      await this.cleanupSource(source.cleanup);
+      this._store.release(runId);
+      throw error;
+    }
 
-    return { importId: runId, total: rows.length };
+    return { importId: runId, total: preparedRows.rows.length };
   }
 
   // Must resolve in every case: the job manager reads a rejected inline job as a
@@ -148,7 +192,9 @@ class ContentCSVImporter {
   private async runImportJob(
     runId: string,
     importTagNames: string[],
-    rows: PostImportRow[],
+    rows: PreparedPostRow[],
+    source: PreparedImportSource,
+    emailRecipient: string,
   ): Promise<void> {
     const startedAt = Date.now();
     logLifecycle('started');
@@ -157,24 +203,31 @@ class ContentCSVImporter {
     let failed = false;
 
     try {
-      const htmlToLexical = this._getHtmlToLexical();
-      let attemptedWrites = 0;
-      let successfulWrites = 0;
-      let failedWrites = 0;
-      let firstWriteFailure: unknown;
+      if (source.assets) {
+        await source.assets.store();
+        source.assets.rewriteRows(rows.map(({ data }) => data));
+      }
 
-      for (const [index, row] of rows.entries()) {
-        const line = index + 2;
+      const htmlToLexical = this._getHtmlToLexical();
+      const markdownToHtml = this._getMarkdownToHtml();
+      const cleanHTML = this._getCleanHTML();
+      const media = this._createMediaInliner();
+      let successfulWrites = 0;
+      let failedRows = 0;
+      let firstRowFailure: unknown;
+
+      for (const preparedRow of rows) {
+        const { data: row, source: sourceCells, line } = preparedRow;
         let data: PostData;
 
         try {
-          data = buildPostData(row, htmlToLexical, importTagNames);
+          data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml, cleanHTML);
         } catch (error) {
           if (error instanceof RowSkipped) {
-            this._store.record(runId, {
+            this.recordOutcome(runId, sourceCells, {
               line,
               title: row.title || null,
-              status: 'skipped',
+              status: 'failed',
               reason: messageOf(error),
             });
             continue;
@@ -185,8 +238,30 @@ class ContentCSVImporter {
           throw error;
         }
 
-        attemptedWrites += 1;
-        let post: CreatedPost;
+        try {
+          await media.inline(data);
+        } catch (error) {
+          if (error instanceof MediaInliningFailure) {
+            if (failedRows === 0) {
+              firstRowFailure = error;
+            }
+            failedRows += 1;
+            this.recordOutcome(runId, sourceCells, {
+              line,
+              title: row.title,
+              status: 'failed',
+              reason: messageOf(error),
+              mediaFailures: error.failures,
+            });
+            continue;
+          }
+
+          throw error;
+        }
+
+        let post: WrittenPost;
+        let writeStatus: 'created' | 'updated';
+        let warnings: string[];
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:
           // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
@@ -194,17 +269,42 @@ class ContentCSVImporter {
           // it, one reason status is never 'scheduled'). Pinned by
           // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
           // model layer mutates it.
-          post = await this._posts.create(data, {
-            importing: true,
-            context: { internal: true },
-          });
+          const result = await this._posts.write(
+            data,
+            {
+              importing: true,
+              context: { internal: true },
+            },
+            {
+              sourceUpdatedAt: row.updated_at,
+              runTagName: importTagNames[1],
+              authorNames: row.authors,
+              authorEmails: row.author_emails,
+              tagNames: row.tags,
+            },
+          );
+
+          if (result.status === 'skipped') {
+            this.recordOutcome(runId, sourceCells, {
+              line,
+              title: row.title,
+              status: 'skipped',
+              reason: result.reason,
+              duplicate: result.duplicate,
+            });
+            continue;
+          }
+
+          post = result.post;
+          writeStatus = result.status;
+          warnings = result.warnings;
           successfulWrites += 1;
         } catch (error) {
-          if (failedWrites === 0) {
-            firstWriteFailure = error;
+          if (failedRows === 0) {
+            firstRowFailure = error;
           }
-          failedWrites += 1;
-          this._store.record(runId, {
+          failedRows += 1;
+          this.recordOutcome(runId, sourceCells, {
             line,
             title: row.title,
             status: 'failed',
@@ -216,8 +316,10 @@ class ContentCSVImporter {
         const outcome: RowOutcome = {
           line,
           title: row.title,
-          status: 'created',
+          status: writeStatus,
           postId: post.id,
+          postType: data.type,
+          ...(warnings.length > 0 ? { warnings } : {}),
         };
         try {
           outcome.url = this._urlForPost(post);
@@ -227,17 +329,17 @@ class ContentCSVImporter {
           }
           urlFailureCount += 1;
         }
-        this._store.record(runId, outcome);
+        this.recordOutcome(runId, sourceCells, outcome);
       }
 
-      if (attemptedWrites > 0 && successfulWrites === 0 && failedWrites === attemptedWrites) {
+      if (failedRows > 0 && successfulWrites === 0) {
         this._report(
           new errors.InternalServerError({
             message: tpl(messages.allWritesFailed, {
-              count: failedWrites,
-              postNoun: failedWrites === 1 ? 'post' : 'posts',
+              count: failedRows,
+              postNoun: failedRows === 1 ? 'post' : 'posts',
             }),
-            err: firstWriteFailure,
+            err: firstRowFailure,
           }),
         );
       }
@@ -250,9 +352,23 @@ class ContentCSVImporter {
       this._report(error);
       this._store.fail(runId, messageOf(error));
     } finally {
+      await this.cleanupSource(source.cleanup);
+      const run = this._store.get(runId);
+      if (run) {
+        await this.settle(() => this._email.send(run, emailRecipient));
+      }
+      this._store.release(runId);
       const outcome = failed ? 'failed after' : 'completed in';
       logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
     }
+  }
+
+  private recordOutcome(
+    runId: string,
+    source: Record<string, string> | undefined,
+    outcome: RowOutcome,
+  ): void {
+    this._store.record(runId, source ? { ...outcome, source } : outcome);
   }
 
   private reportUrlFailures(count: number, firstFailure: unknown): void {
@@ -266,6 +382,22 @@ class ContentCSVImporter {
           err: firstFailure,
         }),
       );
+    }
+  }
+
+  private async cleanupSource(cleanup: () => Promise<void>): Promise<void> {
+    try {
+      await cleanup();
+    } catch (error) {
+      this._report(error);
+    }
+  }
+
+  private async settle(operation: () => Promise<unknown>): Promise<void> {
+    try {
+      await operation();
+    } catch (error) {
+      this._report(error);
     }
   }
 }

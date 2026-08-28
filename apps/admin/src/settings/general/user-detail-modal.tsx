@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import validator from 'validator';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
 import {
   Button,
   DropdownMenu,
@@ -19,8 +19,12 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tryghost/shade/components';
-import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import {
+  type ErrorMessages,
+  useForm,
+  useHandleError,
+  useLimiter,
+} from '@tryghost/admin-x-framework/hooks';
 import {
   ImageUpload,
   ImageUploadAction,

@@ -19,11 +19,11 @@ import {
   SkeletonTable,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { buildMembersUrl } from '@/members/member-route';
-import { centsToDollars } from '@tryghost/shade/app';
+import { buildMembersUrl } from '@/members/api';
+import { centsToDollars } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useAppContext } from '@tryghost/admin-x-framework';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { usePostReferrers } from '@/posts/analytics/hooks/use-post-referrers';
 
 const Growth: React.FC = () => {
@@ -35,7 +35,7 @@ const Growth: React.FC = () => {
     isLoading,
     currencySymbol,
   } = usePostReferrers(postId || '');
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
   const navigate = useNavigate();
   const navigateToMembers = (filter: string) => navigate(buildMembersUrl({ filter }));
 
@@ -45,7 +45,7 @@ const Growth: React.FC = () => {
 
   let containerClass = 'flex flex-col items-stretch gap-6';
   let cardClass = '';
-  if (!appSettings?.paidMembersEnabled) {
+  if (!paidMembersEnabled) {
     containerClass = 'grid grid-cols-1 border rounded-md';
     cardClass = 'border-none hover:shadow-none';
   }
@@ -86,7 +86,7 @@ const Growth: React.FC = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <div
-                  className={`flex flex-col md:grid md:items-stretch ${appSettings?.paidMembersEnabled ? 'md:grid-cols-3' : 'md:grid-cols-1'}`}
+                  className={`flex flex-col md:grid md:items-stretch ${paidMembersEnabled ? 'md:grid-cols-3' : 'md:grid-cols-1'}`}
                 >
                   <KpiCard className="grow">
                     <KpiCardMoreButton
@@ -108,7 +108,7 @@ const Growth: React.FC = () => {
                       <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
                     </KpiCardContent>
                   </KpiCard>
-                  {appSettings?.paidMembersEnabled && (
+                  {paidMembersEnabled && (
                     <>
                       <KpiCard className="grow">
                         <KpiCardMoreButton
@@ -147,7 +147,7 @@ const Growth: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-            {!appSettings?.paidMembersEnabled && <Separator />}
+            {!paidMembersEnabled && <Separator />}
             <GrowthSources
               className={cardClass}
               data={postReferrers}

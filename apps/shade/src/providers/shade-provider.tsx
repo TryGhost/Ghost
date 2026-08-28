@@ -3,21 +3,18 @@ import { Toaster } from '../components/ui/sonner';
 import { createPortal } from 'react-dom';
 import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { SHADE_APP_NAMESPACES } from '@/shade-app';
-
-export type FetchKoenigLexical = () => Promise<unknown>;
 
 interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
-  fetchKoenigLexical: FetchKoenigLexical | null;
   darkMode: boolean;
 }
 
 const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
-  fetchKoenigLexical: null,
   darkMode: false,
 });
 
@@ -70,16 +67,11 @@ const ToasterPortal = () => {
 };
 
 interface ShadeProviderProps {
-  fetchKoenigLexical: FetchKoenigLexical | null;
   darkMode: boolean;
   children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({
-  darkMode,
-  fetchKoenigLexical,
-  children,
-}) => {
+const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, children }) => {
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
   const setFocusState = (value: boolean) => {
@@ -87,12 +79,14 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
   };
 
   return (
-    <ShadeContext.Provider
-      value={{ isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode }}
-    >
+    <ShadeContext.Provider value={{ isAnyTextFieldFocused, setFocusState, darkMode }}>
       <GlobalDirtyStateProvider>
-        {children}
-        <ToasterPortal />
+        {/* Default Radix tooltip timing for any Tooltip without a nearer
+            provider; inner providers still win via nearest-provider scoping. */}
+        <TooltipProvider>
+          {children}
+          <ToasterPortal />
+        </TooltipProvider>
       </GlobalDirtyStateProvider>
     </ShadeContext.Provider>
   );

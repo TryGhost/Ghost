@@ -21,13 +21,16 @@ function normalizeFacilitatorUrl(urlString: string): string {
 
 const x402ConfigSchema = z
   .object({
+    // Per-rail override: x402 rides along whenever machine payments is on.
+    // Set to false to keep the x402 rail off while leaving mpp enabled.
+    enabled: z.boolean().optional().default(true),
     network: z.string().regex(/^eip155:\d+$/, {
       message: 'machinePayments.x402.network must be a CAIP-2 EVM network (eip155:<chainId>)',
     }),
     stripeNetwork: z.enum(['base'], {
       message: 'machinePayments.x402.stripeNetwork must be "base"',
     }),
-    facilitatorUrl: z.string().url({
+    facilitatorUrl: z.url({
       message: 'machinePayments.x402.facilitatorUrl must be a valid URL',
     }),
   })
@@ -110,16 +113,19 @@ type X402RuntimeModules = {
   Hono: new () => HonoLike;
 };
 
+type X402RawConfig = {
+  enabled?: unknown;
+  network?: unknown;
+  stripeNetwork?: unknown;
+  facilitatorUrl?: unknown;
+};
+
 type X402AdapterDeps = {
   depositAddressStore: DepositAddressStoreLike;
   facilitatorClient?: FacilitatorClientLike;
   maxCachedApps?: number;
   runtimeFactory?: () => X402RuntimeModules;
-  configProvider?: () => {
-    network?: unknown;
-    stripeNetwork?: unknown;
-    facilitatorUrl?: unknown;
-  };
+  configProvider?: () => X402RawConfig;
 };
 
 /**
@@ -163,12 +169,9 @@ export class BoundedRouteCache<V> {
   }
 }
 
-export function parseX402Config(raw: {
-  network?: unknown;
-  stripeNetwork?: unknown;
-  facilitatorUrl?: unknown;
-}): X402Config | null {
+export function parseX402Config(raw: X402RawConfig): X402Config | null {
   const parsed = x402ConfigSchema.safeParse({
+    enabled: raw.enabled ?? true,
     network: raw.network ?? BASE_MAINNET,
     stripeNetwork: raw.stripeNetwork ?? 'base',
     facilitatorUrl: raw.facilitatorUrl ?? DEFAULT_FACILITATOR_URL,
@@ -223,8 +226,8 @@ export class X402Adapter implements PaymentAdapter {
   }
 
   /**
-   * Boot-owned initialization: validate config, load x402 runtime modules, and
-   * construct the shared facilitator/scheme before the first paid markdown request.
+   * Boot-owned initialization: validate config only. Runtime modules load
+   * lazily on the first challenge (see #ensureRuntime).
    */
   async init(): Promise<boolean> {
     if (this.#initAttempted) {
@@ -236,36 +239,45 @@ export class X402Adapter implements PaymentAdapter {
     const rawConfig = this.#configProvider
       ? this.#configProvider()
       : {
+          enabled: config.get('machinePayments:x402:enabled'),
           network: config.get('machinePayments:x402:network'),
           stripeNetwork: config.get('machinePayments:x402:stripeNetwork'),
           facilitatorUrl: config.get('machinePayments:x402:facilitatorUrl'),
         };
 
     const parsedConfig = parseX402Config(rawConfig);
-    if (!parsedConfig) {
+    if (!parsedConfig?.enabled) {
       return false;
     }
 
-    try {
-      const runtime = this.#loadRuntimeModules();
-      const { HTTPFacilitatorClient, ExactEvmScheme } = runtime;
+    this.#config = parsedConfig;
+    this.#ready = true;
+    return true;
+  }
 
-      this.#config = parsedConfig;
-      this.#runtime = runtime;
-      this.#facilitator =
-        this.facilitatorClient || new HTTPFacilitatorClient({ url: parsedConfig.facilitatorUrl });
-      this.#scheme = new ExactEvmScheme();
-      this.#ready = true;
-      return true;
-    } catch (err) {
-      logging.warn(err);
-      this.#config = null;
-      this.#runtime = null;
-      this.#facilitator = null;
-      this.#scheme = null;
-      this.#ready = false;
-      return false;
+  /**
+   * Lazily load the x402 runtime modules and build the shared facilitator/scheme
+   * on first use. Idempotent; throws if the modules fail to load so the caller
+   * can fall back (challenge swallows it, returning null).
+   */
+  #ensureRuntime(): void {
+    if (this.#runtime) {
+      return;
     }
+
+    if (!this.#config) {
+      throw new errors.InternalServerError({
+        message: 'x402 adapter used before boot initialization',
+      });
+    }
+
+    const runtime = this.#loadRuntimeModules();
+    const { HTTPFacilitatorClient, ExactEvmScheme } = runtime;
+
+    this.#runtime = runtime;
+    this.#facilitator =
+      this.facilitatorClient || new HTTPFacilitatorClient({ url: this.#config.facilitatorUrl });
+    this.#scheme = new ExactEvmScheme();
   }
 
   canHandle(request: Request): boolean {
@@ -335,6 +347,8 @@ export class X402Adapter implements PaymentAdapter {
     terms: PaymentTerms,
     responseData: DispatchOptions,
   ): Promise<Response> {
+    this.#ensureRuntime();
+
     if (!this.#config || !this.#runtime || !this.#facilitator || !this.#scheme) {
       throw new errors.InternalServerError({
         message: 'x402 adapter used before boot initialization',

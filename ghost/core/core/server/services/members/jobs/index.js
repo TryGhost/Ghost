@@ -1,7 +1,6 @@
-const path = require('path');
-const jobLogging = require('../../jobs/job-logging');
-const jobsService = require('../../jobs');
+const logging = require('@tryghost/logging');
 const CleanTokensJob = require('./clean-tokens-job').default;
+const CleanExpiredCompedJob = require('./clean-expired-comped-job').default;
 
 let hasScheduled = {
   expiredComped: false,
@@ -19,32 +18,19 @@ function randomDailyCron(maxHour = 24) {
   return `${s} ${m} ${h} * * *`;
 }
 
-function scheduleJob(key, name, jobFile, maxHour = 6) {
-  if (alreadyScheduledOrTest(key)) {
-    return hasScheduled[key];
-  }
-
-  const s = Math.floor(Math.random() * 60);
-  const m = Math.floor(Math.random() * 60);
-  const h = Math.floor(Math.random() * maxHour);
-
-  const at = `${s} ${m} ${h} * * *`;
-
-  jobLogging.info(`[Background Job] ${name} scheduled at ${at}`);
-  jobsService.addJob({
-    at,
-    job: path.resolve(__dirname, jobFile),
-    name,
-  });
-
-  hasScheduled[key] = true;
-
-  return true;
-}
-
 module.exports = {
   async scheduleExpiredCompCleanupJob() {
-    return scheduleJob('expiredComped', 'clean-expired-comped', 'clean-expired-comped.js');
+    if (alreadyScheduledOrTest('expiredComped')) {
+      return;
+    }
+
+    const classBasedJobs = require('../../jobs-service').getInstance();
+    // Keep the legacy off-peak window: a random time between 00:00 and 05:59
+    const cron = randomDailyCron(6);
+    logging.info(`[Background Job] clean-expired-comped scheduled at ${cron}`);
+    await classBasedJobs.scheduleRecurring(new CleanExpiredCompedJob(), { cron });
+
+    hasScheduled.expiredComped = true;
   },
 
   async scheduleTokenCleanupJob() {
@@ -54,7 +40,7 @@ module.exports = {
 
     const classBasedJobs = require('../../jobs-service').getInstance();
     const cron = randomDailyCron();
-    jobLogging.info(`[Background Job] clean-tokens scheduled at ${cron}`);
+    logging.info(`[Background Job] clean-tokens scheduled at ${cron}`);
     await classBasedJobs.scheduleRecurring(new CleanTokensJob(), { cron });
 
     hasScheduled.tokens = true;

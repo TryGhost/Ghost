@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const emailTemplate = require('./emails/signin');
 const UAParser = require('ua-parser-js');
 const got = require('got').default;
-const otp = require('../otp');
+const totp = require('../totp');
 const IPV4_REGEX =
   /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
@@ -108,7 +108,7 @@ module.exports = function createSessionService({
       return false;
     }
 
-    const verified = otp.verify(session.user_id, token, secret, session.auth_code_challenge);
+    const verified = totp.verify(session.user_id, token, secret, session.auth_code_challenge);
 
     if (verified) {
       invalidateAuthCodeChallenge(session);
@@ -319,7 +319,7 @@ module.exports = function createSessionService({
     const session = await getSession(req, res);
     const secret = getSettingsCache('admin_session_secret');
     const challenge = ensureAuthCodeChallenge(session);
-    return otp.generate(session.user_id, secret, challenge);
+    return totp.generate(session.user_id, secret, challenge);
   }
 
   /**

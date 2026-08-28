@@ -1,4 +1,4 @@
-import { FIELD_SOURCES, FIELD_SOURCE_ORDER, fieldTargets } from './field-targets';
+import { type FieldTargetGroup, fieldTargets } from './field-targets';
 import { type MemberCustomFieldCsvColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const membershipFields = [
@@ -17,25 +17,31 @@ const customColumn = (
   ...overrides,
 });
 
+/** Every target across every section, for the assertions that are about the list as a whole. */
+const allTargets = (groups: FieldTargetGroup[]) => groups.flatMap((group) => group.targets);
+
 describe('field targets', () => {
   describe('fieldTargets', () => {
-    it('gives a membership field the same two halves every target carries', () => {
-      const [target] = fieldTargets({
+    it('gives a membership field the same halves every target carries', () => {
+      const [group] = fieldTargets({
         membershipFields: [{ label: 'Name', value: 'name' }],
         customFieldColumns: [],
       });
 
-      expect(target).toEqual({
-        value: 'name',
-        source: 'membership',
-        fieldName: 'Name',
-        label: 'Name',
-        contested: false,
-      });
+      expect(group.targets).toEqual([
+        {
+          value: 'name',
+          source: 'membership',
+          fieldName: 'Name',
+          label: 'Name',
+          badge: null,
+          ariaKind: null,
+        },
+      ]);
     });
 
     it("carries a custom field's type, name and part through", () => {
-      const targets = fieldTargets({
+      const groups = fieldTargets({
         membershipFields: [],
         customFieldColumns: [
           customColumn({
@@ -48,7 +54,7 @@ describe('field targets', () => {
         ],
       });
 
-      expect(targets).toEqual([
+      expect(allTargets(groups)).toEqual([
         {
           value: 'custom_fields.shipping_address.city',
           source: 'custom',
@@ -56,54 +62,80 @@ describe('field targets', () => {
           partLabel: 'City',
           label: 'Shipping Address (City)',
           type: 'address',
-          contested: false,
+          badge: null,
+          ariaKind: 'Custom field',
         },
       ]);
     });
 
     it('leaves a one-column field with no part at all', () => {
-      const [target] = fieldTargets({ membershipFields: [], customFieldColumns: [customColumn()] });
+      const [target] = allTargets(
+        fieldTargets({ membershipFields: [], customFieldColumns: [customColumn()] }),
+      );
 
       expect(target).not.toHaveProperty('partLabel');
     });
+  });
 
-    it('offers the sources in the order they are declared in', () => {
-      const targets = fieldTargets({ membershipFields, customFieldColumns: [customColumn()] });
+  describe('sections', () => {
+    it('heads each section with the kind under it, in the order they are declared in', () => {
+      const groups = fieldTargets({ membershipFields, customFieldColumns: [customColumn()] });
 
-      expect([...new Set(targets.map((target) => target.source))]).toEqual([...FIELD_SOURCE_ORDER]);
+      expect(groups.map((group) => [group.source, group.heading])).toEqual([
+        ['membership', 'Membership fields'],
+        ['custom', 'Custom fields'],
+      ]);
+    });
+
+    // A section with nothing under it would still be announced, so a site with custom fields
+    // off must not be offered the heading at all.
+    it('drops a section nothing falls into', () => {
+      const groups = fieldTargets({ membershipFields, customFieldColumns: [] });
+
+      expect(groups.map((group) => group.source)).toEqual(['membership']);
+    });
+
+    it('offers no section at all when there is nothing to offer', () => {
+      expect(fieldTargets({ membershipFields: [], customFieldColumns: [] })).toEqual([]);
     });
   });
 
-  describe('contested', () => {
-    const contestedLabels = (targets: ReturnType<typeof fieldTargets>) =>
-      targets.filter((target) => target.contested).map((target) => target.label);
+  // The badge tells two same-named targets apart. It is a fact about the list rather than the
+  // field, so it is settled here and the picker only shows what it is given.
+  describe('badge', () => {
+    const badged = (groups: FieldTargetGroup[]) =>
+      allTargets(groups)
+        .filter((target) => target.badge !== null)
+        .map((target) => [target.label, target.badge]);
 
-    it('finds a custom field a membership field has the name of', () => {
-      const targets = fieldTargets({
+    it('marks a custom field a membership field has the name of', () => {
+      const groups = fieldTargets({
         membershipFields,
         customFieldColumns: [customColumn({ fieldName: 'Name', label: 'Name' })],
       });
 
-      expect(contestedLabels(targets)).toEqual(['Name', 'Name']);
+      // Only the custom one is marked: membership is the kind a reader assumes, so naming it
+      // would mark both halves of the pair and tell them apart no better than marking neither.
+      expect(badged(groups)).toEqual([['Name', 'Custom']]);
     });
 
-    it('leaves a name no other source offers alone', () => {
-      const targets = fieldTargets({ membershipFields, customFieldColumns: [customColumn()] });
+    it('leaves a name no other source offers unmarked', () => {
+      const groups = fieldTargets({ membershipFields, customFieldColumns: [customColumn()] });
 
-      expect(contestedLabels(targets)).toEqual([]);
+      expect(badged(groups)).toEqual([]);
     });
 
     it('counts a name differing only in case or space as the same name', () => {
-      const targets = fieldTargets({
+      const groups = fieldTargets({
         membershipFields,
         customFieldColumns: [customColumn({ fieldName: ' name ', label: ' name ' })],
       });
 
-      expect(contestedLabels(targets)).toEqual(['Name', ' name ']);
+      expect(badged(groups)).toEqual([[' name ', 'Custom']]);
     });
 
-    it('does not contest a composite part that shares only its field name', () => {
-      const targets = fieldTargets({
+    it('does not mark a composite part that shares only its field name', () => {
+      const groups = fieldTargets({
         membershipFields,
         customFieldColumns: [
           customColumn({
@@ -116,41 +148,52 @@ describe('field targets', () => {
         ],
       });
 
-      expect(contestedLabels(targets)).toEqual([]);
+      expect(badged(groups)).toEqual([]);
     });
 
-    it('contests only against the targets in the list it is given', () => {
+    it('marks only against the targets in the list it is given', () => {
       const custom = [
         customColumn({ value: 'custom_fields.tier', fieldName: 'Tier', label: 'Tier' }),
       ];
 
+      expect(badged(fieldTargets({ membershipFields, customFieldColumns: custom }))).toEqual([]);
       expect(
-        contestedLabels(fieldTargets({ membershipFields, customFieldColumns: custom })),
-      ).toEqual([]);
-      expect(
-        contestedLabels(
+        badged(
           fieldTargets({
             membershipFields: [...membershipFields, { label: 'Tier', value: 'import_tier' }],
             customFieldColumns: custom,
           }),
         ),
-      ).toEqual(['Tier', 'Tier']);
+      ).toEqual([['Tier', 'Custom']]);
     });
   });
 
-  describe('FIELD_SOURCES', () => {
-    it('leaves exactly one source unmarked', () => {
-      const unmarked = FIELD_SOURCE_ORDER.filter((source) => FIELD_SOURCES[source].badge === null);
+  // Read out with the selection, so a custom field is not announced as a membership one.
+  describe('accessible kind', () => {
+    it('names a custom field in full, and says nothing for a membership field', () => {
+      const groups = fieldTargets({
+        membershipFields: [{ label: 'Name', value: 'name' }],
+        customFieldColumns: [customColumn()],
+      });
 
-      expect(unmarked).toEqual(['membership']);
+      expect(allTargets(groups).map((target) => [target.label, target.ariaKind])).toEqual([
+        ['Name', null],
+        ['Nickname', 'Custom field'],
+      ]);
     });
 
-    it('names a marked source in full for the accessible name', () => {
-      expect(FIELD_SOURCES.custom).toEqual({
-        heading: 'Custom fields',
-        badge: 'Custom',
-        ariaKind: 'Custom field',
+    // Unlike the badge, which only appears where something else shares the label.
+    it('names the kind whether or not the label is shared', () => {
+      const groups = fieldTargets({
+        membershipFields,
+        customFieldColumns: [customColumn({ fieldName: 'Name', label: 'Name' })],
       });
+
+      expect(
+        allTargets(groups)
+          .filter((target) => target.source === 'custom')
+          .map((target) => target.ariaKind),
+      ).toEqual(['Custom field']);
     });
   });
 });

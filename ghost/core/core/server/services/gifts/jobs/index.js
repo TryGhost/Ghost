@@ -1,27 +1,36 @@
 const path = require('path');
-const jobLogging = require('../../jobs/job-logging');
+const logging = require('@tryghost/logging');
 const jobsService = require('../../jobs');
+const CleanGiftsJob = require('./clean-gifts-job').default;
 
 let hasScheduled = {
   cleanup: false,
   reminders: false,
 };
 
-function scheduleJob(key, name, jobFile) {
-  if (hasScheduled[key] || process.env.NODE_ENV?.startsWith('test')) {
-    return hasScheduled[key];
-  }
+function alreadyScheduledOrTest(key) {
+  return hasScheduled[key] || process.env.NODE_ENV?.startsWith('test');
+}
 
-  // randomise the schedule so the job doesn't fire at the same instant
-  // across every Ghost instance - spreads load across the day and avoids
-  // DB spikes on the hour. Hour is bounded to a 0-5am off-peak window.
+// randomise the schedule so the job doesn't fire at the same instant
+// across every Ghost instance - spreads load across the day and avoids
+// DB spikes on the hour. Hour is bounded to a 0-5am off-peak window.
+function randomOffPeakDailyCron() {
   const s = Math.floor(Math.random() * 60);
   const m = Math.floor(Math.random() * 60);
   const h = Math.floor(Math.random() * 6);
 
-  const at = `${s} ${m} ${h} * * *`;
+  return `${s} ${m} ${h} * * *`;
+}
 
-  jobLogging.info(`[Background Job] ${name} scheduled at ${at}`);
+function scheduleJob(key, name, jobFile) {
+  if (alreadyScheduledOrTest(key)) {
+    return hasScheduled[key];
+  }
+
+  const at = randomOffPeakDailyCron();
+
+  logging.info(`[Background Job] ${name} scheduled at ${at}`);
   jobsService.addJob({
     at,
     job: path.resolve(__dirname, jobFile),
@@ -34,8 +43,16 @@ function scheduleJob(key, name, jobFile) {
 }
 
 module.exports = {
-  scheduleGiftCleanupJob() {
-    return scheduleJob('cleanup', 'clean-gifts', 'clean-gifts-job.js');
+  async scheduleGiftCleanupJob(classBasedJobs) {
+    if (alreadyScheduledOrTest('cleanup')) {
+      return;
+    }
+
+    const cron = randomOffPeakDailyCron();
+    logging.info(`[Background Job] clean-gifts scheduled at ${cron}`);
+    await classBasedJobs.scheduleRecurring(new CleanGiftsJob(), { cron });
+
+    hasScheduled.cleanup = true;
   },
 
   scheduleGiftReminderJob() {

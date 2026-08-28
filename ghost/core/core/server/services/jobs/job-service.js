@@ -5,29 +5,19 @@
 
 const JobManager = require('@tryghost/job-manager');
 const logging = require('@tryghost/logging');
-const jobLogging = require('./job-logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
-const WorkerModelEventBridge = require('./worker-model-event-bridge');
 const errorHandler = (error, workerMeta) => {
-  jobLogging.error(error, `[Background Job] ${workerMeta.name} failed`);
+  logging.error(error, `[Background Job] ${workerMeta.name} failed`);
   sentry.captureException(error);
 };
 const events = require('../../lib/common/events');
-const workerModelEventBridge = new WorkerModelEventBridge({ models, events, logging, sentry });
 
 const workerMessageHandler = ({ name, message }) => {
-  if (workerModelEventBridge.isModelEventMessage(message)) {
-    // Carries its own `eventName` rather than job-manager's reserved `event` key,
-    // so it routes through the bridge instead of being dispatched as a raw domain event.
-    workerModelEventBridge.handle(message, { jobName: name });
-    return;
-  }
-
   if (typeof message === 'string' && !['done', 'cancelled'].includes(message)) {
-    jobLogging.info(`[Background Job] ${name}: ${message}`);
+    logging.info(`[Background Job] ${name}: ${message}`);
   }
 };
 

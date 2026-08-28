@@ -6,7 +6,7 @@ Accept pay-per-request access to paid-members markdown (`.md`) URLs from AI agen
 
 - **Protocol:** Machine Payments Protocol (MPP) — Tempo USDC + Shared Payment Tokens (card / Link Agent Wallet). x402 (Base USDC via ExactEvmScheme) is a second adapter behind the same payment-authorization boundary; agents that don't speak it ignore it. Neither rail changes membership.
 - **Access model:** One-shot unlock of markdown bytes for that request. No member session, tier grant, or change to `content-gating` / Portal.
-- **Surface:** Explicit `.md` URLs only. Accept-header markdown stays public-only. HTML theme views and the Content API stay membership-gated.
+- **Surface:** Explicit `.md` URLs only. Canonical HTML URLs always render HTML (Accept headers are ignored). HTML theme views and the Content API stay membership-gated.
 - **Pricing:** Site-wide amount. SPT charges use the configured fiat currency (Stripe card minimum applies). Tempo charges USDC using the same minor-unit amount; publishers should treat the crypto rail as USDC, not as on-chain publisher currency.
 - **Eligibility:** `visibility: paid`, or `visibility: tiers` where every related tier is paid. Free-members-only (`visibility: members`) is out of scope.
 - **Enablement:** Labs `machinePayments` + `llms_enabled` + `machine_payments_enabled` + Stripe connected.
@@ -25,11 +25,15 @@ Defaults target **Base mainnet** (`eip155:8453`) with real USDC settlement via t
 
 Supported values are validated at boot:
 
+- `enabled`: defaults to `true` — the x402 rail rides along whenever machine payments is enabled. Set to `false` to keep the x402 rail off (and its `@x402/*` modules out of the process) while MPP stays on.
 - `network`: `eip155:8453` (Base mainnet) or `eip155:84532` (Base Sepolia)
 - `stripeNetwork`: `base`
 - `facilitatorUrl`: HTTPS URL; mainnet cannot use the x402.org testnet facilitator
 
-Invalid x402 config disables the rail at boot (MPP continues to work).
+The `@x402/*` runtime modules load lazily on the first real x402 challenge, not
+at boot — so a site that never receives an x402 payment never pays the import
+cost, and toggling machine payments on at runtime needs no restart. Invalid x402
+config disables the rail at boot (MPP continues to work).
 
 For local development against the x402.org testnet facilitator, override in `config.local.json`:
 
