@@ -39,7 +39,7 @@ describe('Account Home Page', () => {
     expect(utils.queryByText('Update your preferences')).toBeInTheDocument();
     expect(utils.queryByText("You're currently not receiving emails")).not.toBeInTheDocument();
 
-    const manageBtn = utils.queryByText('Manage')?.closest('section');
+    const manageBtn = utils.queryByText('Emails')?.closest('section');
     expect(manageBtn).toHaveAttribute('role', 'button');
 
     fireEvent.click(manageBtn);

@@ -90,6 +90,24 @@
     opacity: 0.9;
 }
 
+.gh-signin .gh-btn-passkey {
+    margin-top: 12px;
+}
+
+.gh-signin .gh-btn-passkey:not(.gh-btn-red) {
+    color: var(--darkgrey);
+    fill: var(--darkgrey);
+}
+
+.gh-signin .gh-btn-passkey:not(.gh-btn-red) span {
+    color: inherit;
+}
+
+.gh-signin .gh-btn-passkey:not(.gh-btn-red):hover {
+    color: var(--black);
+    fill: var(--black);
+}
+
 .gh-signin label {
     font-size: 1.3rem;
     font-weight: 600 !important;

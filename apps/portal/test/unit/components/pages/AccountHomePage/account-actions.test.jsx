@@ -179,4 +179,15 @@ describe('AccountActions', () => {
       expect(switchPageCalls).toHaveLength(1);
     });
   });
+
+  test('opens passkey management from the native account row', () => {
+    const { getByText, mockDoActionFn } = render(<AccountActions />);
+
+    fireEvent.click(getByText('Passkeys').closest('section'));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+      page: 'accountPasskeys',
+      lastPage: 'accountHome',
+    });
+  });
 });

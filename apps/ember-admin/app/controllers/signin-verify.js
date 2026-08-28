@@ -6,6 +6,7 @@ import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {isUnauthorizedError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
+import {startAuthentication} from '@simplewebauthn/browser';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -64,6 +65,7 @@ export default class SigninVerifyController extends Controller {
     @tracked verifyData = new VerifyData();
     @tracked resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
     @tracked twoFactorRequired = false;
+    @tracked passkeyRequired = false;
 
     constructor() {
         super(...arguments);
@@ -72,6 +74,8 @@ export default class SigninVerifyController extends Controller {
 
         if (errorCode === '2FA_TOKEN_REQUIRED') {
             this.twoFactorRequired = true;
+        } else if (errorCode === 'PASSKEY_REQUIRED') {
+            this.passkeyRequired = true;
         }
         this.session.set('errorCode', null); // Clear it after reading
     }
@@ -113,6 +117,45 @@ export default class SigninVerifyController extends Controller {
             }
             return TASK_FAILURE;
         }
+    }
+
+    @task({drop: true})
+    *verifyPasskeyTask() {
+        this.flowErrors = '';
+        const endpoint = `${this.ghostPaths.apiRoot}/session/passkeys/authentication`;
+
+        try {
+            const {ceremony, ...options} = yield this.ajax.post(endpoint);
+            const response = yield startAuthentication({optionsJSON: options});
+            yield this.session.authenticate('authenticator:cookie', {
+                passkeyResponse: response,
+                passkeyCeremony: ceremony
+            });
+            return TASK_SUCCESS;
+        } catch (error) {
+            if (error?.name === 'NotAllowedError') {
+                this.flowErrors = 'Passkey verification was cancelled or timed out.';
+            } else if (error?.payload?.errors) {
+                this.flowErrors = error.payload.errors[0].message;
+            } else {
+                this.flowErrors = 'There was a problem verifying your passkey. Please try again.';
+            }
+            return TASK_FAILURE;
+        }
+    }
+
+    @task({drop: true})
+    *useEmailCodeTask() {
+        this.flowErrors = '';
+        const result = yield this.resendTokenTask.perform();
+        if (result !== TASK_SUCCESS) {
+            return TASK_FAILURE;
+        }
+
+        this.passkeyRequired = false;
+        this.twoFactorRequired = true;
+        this.resetData();
+        return TASK_SUCCESS;
     }
 
     @task({drop: true})

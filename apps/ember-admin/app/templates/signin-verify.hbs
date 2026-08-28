@@ -1,19 +1,21 @@
 <div class="gh-flow">
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
-            <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.verifyTokenTask)}}>
+            <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform (if this.passkeyRequired this.verifyPasskeyTask this.verifyTokenTask))}}>
                 <header>
                     <div class="gh-site-icon" style={{site-icon-style}}></div>
-                    <h1>{{#if this.twoFactorRequired}}2FA confirmation{{else}}Verify it's really you{{/if}}</h1>
+                    <h1>{{#if this.passkeyRequired}}Use your passkey{{else if this.twoFactorRequired}}2FA confirmation{{else}}Verify it's really you{{/if}}</h1>
                 </header>
 
-
-                {{#if this.twoFactorRequired}}
+                {{#if this.passkeyRequired}}
+                    <p>Confirm with Touch ID, Face ID, your device PIN, or a security key.</p>
+                {{else if this.twoFactorRequired}}
                     <p>Enter the sign-in verification code sent to your email.</p>
                 {{else}}
                     <p>It looks like you're signing in from a new device. A 6-digit sign-in verification code has been sent to your email to keep your account safe.</p>
                 {{/if}}
 
+                {{#unless this.passkeyRequired}}
                 <GhFormGroup @errors={{this.verifyData.errors}} @hasValidated={{this.verifyData.hasValidated}} @property="token">
                     <label for="token">Verification code</label>
 
@@ -51,15 +53,28 @@
                         </GhTaskButton>
                     </span>
                 </GhFormGroup>
+                {{/unless}}
 
                 <GhTaskButton
-                    @buttonText="Verify &rarr;"
-                    @task={{this.verifyTokenTask}}
+                    @buttonText={{if this.passkeyRequired "Continue with passkey →" "Verify →"}}
+                    @task={{if this.passkeyRequired this.verifyPasskeyTask this.verifyTokenTask}}
                     @showSuccess={{false}}
                     @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
                     @type="submit"
                     @useAccentColor={{true}}
                     data-test-button="verify" />
+                {{#if this.passkeyRequired}}
+                    <GhTaskButton
+                        @buttonText="Use an email code instead"
+                        @failureText="Use an email code instead"
+                        @failureClass=""
+                        @showIcon={{false}}
+                        @task={{this.useEmailCodeTask}}
+                        @showSuccess={{false}}
+                        @class="login gh-btn gh-btn-login gh-btn-outline gh-btn-block gh-btn-icon"
+                        @type="button"
+                        data-test-button="use-email-code" />
+                {{/if}}
             </form>
 
             {{#let (or this.flowErrors this.verifyData.validationMessage) as |error|}}

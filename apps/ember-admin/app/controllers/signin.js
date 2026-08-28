@@ -1,3 +1,4 @@
+import * as SimpleWebAuthnBrowser from '@simplewebauthn/browser';
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';
@@ -38,6 +39,10 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
     get signin() {
         return this.model;
+    }
+
+    get passkeysAvailable() {
+        return typeof window !== 'undefined' && Boolean(window.PublicKeyCredential);
     }
 
     @action
@@ -125,6 +130,78 @@ export default class SigninController extends Controller.extend(ValidationEngine
             this.flowErrors = 'Please fill out the form to sign in.';
             return FAILURE;
         }
+    }
+
+    @task({drop: true})
+    *passkeySigninTask() {
+        this.flowErrors = '';
+        const endpoint = `${this.ghostPaths.apiRoot}/session/passkeys/authentication`;
+
+        try {
+            this.cancelConditionalPasskeySignin();
+            const {ceremony, ...options} = yield this.ajax.post(endpoint);
+            const response = yield SimpleWebAuthnBrowser.startAuthentication({optionsJSON: options});
+            yield this.session.authenticate('authenticator:cookie', {
+                passkeyResponse: response,
+                passkeyCeremony: ceremony
+            });
+            return SUCCESS;
+        } catch (error) {
+            if (error?.name === 'NotAllowedError') {
+                this.flowErrors = 'Passkey sign-in was cancelled or no matching passkey was found.';
+            } else if (error?.payload?.errors) {
+                this.flowErrors = error.payload.errors[0].message;
+            } else {
+                this.flowErrors = 'There was a problem signing in with your passkey. Try your password instead.';
+            }
+            return FAILURE;
+        }
+    }
+
+    @task({drop: true})
+    *conditionalPasskeySigninTask() {
+        const endpoint = `${this.ghostPaths.apiRoot}/session/passkeys/authentication`;
+        let passkeySelected = false;
+
+        try {
+            const autofillAvailable = yield SimpleWebAuthnBrowser.browserSupportsWebAuthnAutofill();
+            if (!autofillAvailable) {
+                return FAILURE;
+            }
+
+            const {ceremony, ...options} = yield this.ajax.post(endpoint);
+            const response = yield SimpleWebAuthnBrowser.startAuthentication({
+                optionsJSON: options,
+                useBrowserAutofill: true
+            });
+            passkeySelected = true;
+            yield this.session.authenticate('authenticator:cookie', {
+                passkeyResponse: response,
+                passkeyCeremony: ceremony
+            });
+            return SUCCESS;
+        } catch (error) {
+            if (error?.code === 'ERROR_CEREMONY_ABORTED' || error?.name === 'AbortError') {
+                return FAILURE;
+            }
+
+            // Conditional UI is intentionally silent until a passkey has been
+            // selected. Password sign-in must remain unaffected when autofill
+            // is unavailable, times out, or is dismissed.
+            if (passkeySelected) {
+                if (error?.payload?.errors) {
+                    this.flowErrors = error.payload.errors[0].message;
+                } else {
+                    this.flowErrors = 'There was a problem signing in with your passkey. Try your password instead.';
+                }
+            }
+            return FAILURE;
+        }
+    }
+
+    @action
+    cancelConditionalPasskeySignin() {
+        SimpleWebAuthnBrowser.WebAuthnAbortService.cancelCeremony();
     }
 
     @task

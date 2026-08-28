@@ -16,6 +16,11 @@ import {
 import { t } from './utils/i18n';
 import { clearGiftFormState } from './components/pages/beta-gift/form-state';
 import { restoreGiftEntryRoute } from './components/pages/beta-gift/navigation';
+import {
+  browserSupportsWebAuthnAutofill,
+  startAuthentication,
+  WebAuthnAbortService,
+} from '@simplewebauthn/browser';
 
 const CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
 
@@ -166,6 +171,97 @@ async function signin({ data, api, state }) {
         state,
         status: 'error',
         message: chooseBestErrorMessage(e, t('Failed to log in, please try again')),
+      }),
+    };
+  }
+}
+
+async function passkeySignin({ api, state }) {
+  try {
+    WebAuthnAbortService.cancelCeremony();
+    const beginIntegrityToken = await api.member.getIntegrityToken();
+    const { options, ceremony } = await api.member.beginPasskeyAuthentication({
+      integrityToken: beginIntegrityToken,
+    });
+    const response = await startAuthentication({ optionsJSON: options });
+    const finishIntegrityToken = await api.member.getIntegrityToken();
+    await api.member.finishPasskeyAuthentication({
+      response,
+      ceremony,
+      integrityToken: finishIntegrityToken,
+    });
+    const member = await api.member.sessionData();
+    return {
+      action: 'passkeySignin:success',
+      member,
+      page: 'accountHome',
+      reloadOnPopupClose: true,
+      popupNotification: null,
+    };
+  } catch (error) {
+    return {
+      action: 'passkeySignin:failed',
+      popupNotification: createPopupNotification({
+        type: 'passkeySignin:failed',
+        autoHide: false,
+        closeable: true,
+        state,
+        status: 'error',
+        message: t('Passkey sign in failed. You can still use an email link.'),
+      }),
+    };
+  }
+}
+
+async function conditionalPasskeySignin({ api, state }) {
+  let passkeySelected = false;
+
+  try {
+    if (!(await browserSupportsWebAuthnAutofill())) {
+      return { action: 'conditionalPasskeySignin:unavailable' };
+    }
+
+    const beginIntegrityToken = await api.member.getIntegrityToken();
+    const { options, ceremony } = await api.member.beginPasskeyAuthentication({
+      integrityToken: beginIntegrityToken,
+    });
+    const response = await startAuthentication({
+      optionsJSON: options,
+      useBrowserAutofill: true,
+    });
+    passkeySelected = true;
+    const finishIntegrityToken = await api.member.getIntegrityToken();
+    await api.member.finishPasskeyAuthentication({
+      response,
+      ceremony,
+      integrityToken: finishIntegrityToken,
+    });
+    const member = await api.member.sessionData();
+    return {
+      action: 'conditionalPasskeySignin:success',
+      member,
+      page: 'accountHome',
+      reloadOnPopupClose: true,
+      popupNotification: null,
+    };
+  } catch (error) {
+    if (
+      !passkeySelected ||
+      error?.code === 'ERROR_CEREMONY_ABORTED' ||
+      error?.name === 'AbortError'
+    ) {
+      return { action: 'conditionalPasskeySignin:cancelled' };
+    }
+
+    return {
+      action: 'conditionalPasskeySignin:failed',
+      popupNotification: createPopupNotification({
+        type: 'conditionalPasskeySignin:failed',
+        autoHide: false,
+        closeable: true,
+        state,
+        status: 'error',
+        message: t('Passkey sign in failed. You can still use an email link.'),
       }),
     };
   }
@@ -1013,6 +1109,8 @@ const Actions = {
   back,
   signout,
   signin,
+  passkeySignin,
+  conditionalPasskeySignin,
   startSigninOTCFromCustomForm,
   verifyOTC,
   signup,

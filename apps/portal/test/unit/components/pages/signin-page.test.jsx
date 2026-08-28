@@ -33,11 +33,34 @@ const setup = (overrides) => {
 
 describe('SigninPage', () => {
   test('renders', () => {
-    const { emailInput, submitButton, signupButton } = setup();
+    const { emailInput, submitButton, signupButton, mockDoActionFn } = setup();
 
     expect(emailInput).toBeInTheDocument();
+    expect(emailInput).toHaveAttribute('autocomplete', 'username webauthn');
     expect(submitButton).toBeInTheDocument();
     expect(signupButton).toBeInTheDocument();
+    expect(mockDoActionFn).toHaveBeenCalledWith('conditionalPasskeySignin');
+  });
+
+  test('renders passkey sign in as a secondary action after email sign in', () => {
+    const originalPublicKeyCredential = window.PublicKeyCredential;
+    window.PublicKeyCredential = class PublicKeyCredential {};
+
+    try {
+      const { submitButton, getByRole } = setup();
+      const passkeyButton = getByRole('button', { name: 'Sign in with a passkey →' });
+
+      expect(submitButton).toHaveClass('gh-portal-btn-primary');
+      expect(passkeyButton).toHaveClass('gh-portal-btn');
+      expect(passkeyButton).not.toHaveClass('gh-portal-btn-primary');
+      expect(passkeyButton).toHaveStyle({ width: '100%' });
+      expect(submitButton).toHaveStyle({ width: '100%' });
+      expect(submitButton.compareDocumentPosition(passkeyButton)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    } finally {
+      window.PublicKeyCredential = originalPublicKeyCredential;
+    }
   });
 
   test('can call signin action with email', () => {
@@ -58,8 +81,8 @@ describe('SigninPage', () => {
   });
 
   describe('when members are disabled', () => {
-    test('renders an informative message', () => {
-      setup({
+    test('renders an informative message without starting passkey sign in', () => {
+      const { mockDoActionFn } = setup({
         site: getSiteData({
           membersSignupAccess: 'none',
         }),
@@ -67,6 +90,7 @@ describe('SigninPage', () => {
 
       const message = getByTestId(document.body, 'members-disabled-notification-text');
       expect(message).toBeInTheDocument();
+      expect(mockDoActionFn).not.toHaveBeenCalledWith('conditionalPasskeySignin');
     });
   });
 });

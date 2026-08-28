@@ -8,6 +8,7 @@ import { ValidateInputForm } from '../../utils/form';
 import { hasAvailablePrices, isSigninAllowed, isSignupAllowed } from '../../utils/helpers';
 import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { t } from '../../utils/i18n';
+import { WebAuthnAbortService } from '@simplewebauthn/browser';
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -21,12 +22,18 @@ export default class SigninPage extends React.Component {
   }
 
   componentDidMount() {
-    const { member } = this.context;
+    const { member, site } = this.context;
     if (member) {
       this.context.doAction('switchPage', {
         page: 'accountHome',
       });
+    } else if (isSigninAllowed({ site })) {
+      this.context.doAction('conditionalPasskeySignin');
     }
+  }
+
+  componentWillUnmount() {
+    WebAuthnAbortService.cancelCeremony();
   }
 
   handleSignin(e) {
@@ -78,6 +85,7 @@ export default class SigninPage extends React.Component {
         required: true,
         errorMessage: errors.email || '',
         autoFocus: true,
+        autoComplete: 'username webauthn',
       },
       {
         type: 'text',
@@ -115,6 +123,22 @@ export default class SigninPage extends React.Component {
         brandColor={this.context.brandColor}
         label={label}
         isRunning={isRunning}
+      />
+    );
+  }
+
+  renderPasskeyButton() {
+    const isRunning = this.context.action === 'passkeySignin:running';
+    return (
+      <ActionButton
+        dataTestId="passkey-signin"
+        style={{ width: '100%' }}
+        onClick={() => this.context.doAction('passkeySignin')}
+        disabled={isRunning}
+        brandColor={this.context.brandColor}
+        label={isRunning ? t('Waiting for passkey...') : t('Sign in with a passkey →')}
+        isRunning={isRunning}
+        isPrimary={false}
       />
     );
   }
@@ -166,6 +190,7 @@ export default class SigninPage extends React.Component {
         </div>
         <footer className="gh-portal-signin-footer">
           {this.renderSubmitButton()}
+          {window.PublicKeyCredential && this.renderPasskeyButton()}
           {isSignupAvailable && this.renderSignupMessage()}
         </footer>
       </section>

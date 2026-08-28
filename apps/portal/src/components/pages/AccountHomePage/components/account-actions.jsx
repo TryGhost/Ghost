@@ -12,6 +12,7 @@ import GiveGiftCard from './give-gift-card';
 import TransistorPodcastsAction from './transistor-podcasts-action';
 import EmailNewsletterAction from './email-newsletter-action';
 import EmailPreferencesAction from './email-preferences-action';
+import PasskeysAction from './passkeys-action';
 import useIntegrations from './use-integrations';
 import { t } from '../../../../utils/i18n';
 
@@ -78,6 +79,7 @@ const AccountActions = () => {
         </section>
 
         <PaidAccountActions />
+        <PasskeysAction />
         {showEmailPreferences && <EmailPreferencesAction />}
         {showEmailNewsletterAction && <EmailNewsletterAction />}
         {transistor.enabled && (

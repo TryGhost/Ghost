@@ -2,6 +2,92 @@ import setupGhostApi from '../src/utils/api';
 import { HumanReadableError } from '../src/utils/errors';
 import { vi } from 'vitest';
 
+describe('Portal API passkey registration', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('includes the member supplied passkey name', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ passkeys: [] }), {
+        status: 201,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
+    );
+
+    await ghostApi.member.finishPasskeyRegistration({
+      response: { id: 'credential' },
+      ceremony: 'ceremony-token',
+      integrityToken: 'integrity-token',
+      name: 'Work MacBook',
+    });
+
+    const [, options] = window.fetch.mock.calls[0];
+    expect(JSON.parse(options.body)).toMatchObject({ name: 'Work MacBook' });
+  });
+
+  test('preserves the duplicate passkey conflict message', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          errors: [{ message: 'This passkey is already registered.' }],
+        }),
+        {
+          status: 409,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(
+      ghostApi.member.finishPasskeyRegistration({
+        response: { id: 'credential' },
+        ceremony: 'ceremony-token',
+        integrityToken: 'integrity-token',
+        name: 'Work MacBook',
+      }),
+    ).rejects.toEqual(new HumanReadableError('This passkey is already registered.'));
+  });
+});
+
+describe('Portal API passkey authentication', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('accepts an empty successful authentication response', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    vi.spyOn(window, 'fetch').mockResolvedValue(new Response(null, { status: 204 }));
+
+    await expect(
+      ghostApi.member.finishPasskeyAuthentication({
+        response: { id: 'credential' },
+        ceremony: 'ceremony-token',
+        integrityToken: 'integrity-token',
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  test('falls back to a generic error for non-human-readable responses', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    vi.spyOn(window, 'fetch').mockResolvedValue(new Response(null, { status: 401 }));
+
+    await expect(
+      ghostApi.member.finishPasskeyAuthentication({
+        response: { id: 'credential' },
+        ceremony: 'ceremony-token',
+        integrityToken: 'integrity-token',
+      }),
+    ).rejects.toEqual(new Error('Passkey request failed'));
+  });
+});
+
 describe('Portal API gift redemption', () => {
   beforeEach(() => {
     vi.restoreAllMocks();

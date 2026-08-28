@@ -11,6 +11,7 @@ const expressSession = require('./express-session');
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils').default;
 const config = require('../../../../shared/config');
+const passkeys = require('../../passkeys');
 const { blogIcon } = require('../../../lib/image');
 const url = require('url');
 
@@ -75,7 +76,13 @@ const sessionService = createSessionService({
   t,
 });
 
-module.exports = createSessionMiddleware({ sessionService });
+module.exports = createSessionMiddleware({
+  sessionService,
+  passkeys,
+  getAdminOrigin() {
+    return new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+  },
+});
 
 // Looks funky but this is a "custom" piece of middleware
 module.exports.createSessionFromToken = () => {

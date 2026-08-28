@@ -198,7 +198,7 @@ export class TwoFactorTokenRequiredError extends AjaxError {
 }
 
 export function isTwoFactorTokenRequiredError(errorOrStatus, payload) {
-    const twoFactorAuthCodes = ['2FA_TOKEN_REQUIRED', '2FA_NEW_DEVICE_DETECTED'];
+    const twoFactorAuthCodes = ['2FA_TOKEN_REQUIRED', '2FA_NEW_DEVICE_DETECTED', 'PASSKEY_REQUIRED'];
 
     if (isAjaxError(errorOrStatus)) {
         return errorOrStatus instanceof TwoFactorTokenRequiredError || twoFactorAuthCodes.includes(getErrorCode(errorOrStatus));

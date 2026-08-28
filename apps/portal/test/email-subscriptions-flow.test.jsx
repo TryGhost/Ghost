@@ -62,7 +62,7 @@ const setup = async ({ site, member = null, newsletters }, loggedOut = false) =>
   const accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
   const viewPlansButton = within(popupIframeDocument).queryByRole('button', { name: 'View plans' });
   const manageSubscriptionsButton = within(popupIframeDocument)
-    .queryByText('Manage')
+    .queryByText('Emails')
     ?.closest('section');
   return {
     ghostApi,
@@ -296,7 +296,7 @@ describe('Newsletter Subscriptions', () => {
 
       // Open the NewsletterManagement page
       const manageSubscriptionsButton = within(newPopupIframeDocument)
-        .queryByText('Manage')
+        .queryByText('Emails')
         ?.closest('section');
       await userEvent.click(manageSubscriptionsButton);
 

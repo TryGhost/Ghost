@@ -15,6 +15,7 @@ const api = require('../../api').endpoints;
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
 const corsMiddleware = require('./middleware/cors');
+const memberPasskeys = require('../../services/passkeys/member-controller');
 
 /**
  * @returns {import('express').Application}
@@ -91,6 +92,38 @@ module.exports = function setupMembersApp() {
   // Manage session
   membersApp.get('/api/session', middleware.getIdentityToken);
   membersApp.delete('/api/session', bodyParser.json({ limit: '5mb' }), middleware.deleteSession);
+  membersApp.get('/api/passkeys', memberPasskeys.list);
+  membersApp.post(
+    '/api/passkeys/registration',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    memberPasskeys.beginRegistration,
+  );
+  membersApp.put(
+    '/api/passkeys/registration',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    memberPasskeys.finishRegistration,
+  );
+  membersApp.delete(
+    '/api/passkeys/:id',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    memberPasskeys.remove,
+  );
+  membersApp.post(
+    '/api/passkeys/authentication',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    memberPasskeys.beginAuthentication,
+  );
+  membersApp.put(
+    '/api/passkeys/authentication',
+    bodyParser.json(),
+    middleware.verifyIntegrityToken,
+    shared.middleware.brute.memberPasskeyAuth,
+    memberPasskeys.finishAuthentication,
+  );
 
   membersApp.get('/api/entitlements', middleware.getEntitlementToken);
   membersApp.get('/api/integrity-token', middleware.createIntegrityToken);

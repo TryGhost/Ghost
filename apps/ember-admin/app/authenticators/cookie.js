@@ -15,11 +15,23 @@ export default Authenticator.extend({
         return `${this.ghostPaths.apiRoot}/session/verify`;
     }),
 
+    passkeyAuthenticationEndpoint: computed('ghostPaths.apiRoot', function () {
+        return `${this.ghostPaths.apiRoot}/session/passkeys/authentication`;
+    }),
+
     restore: function () {
         return RSVP.resolve();
     },
 
-    authenticate({identification, password, token}) {
+    authenticate({identification, password, token, passkeyResponse, passkeyCeremony}) {
+        if (passkeyResponse) {
+            return this.ajax.put(this.passkeyAuthenticationEndpoint, {
+                data: {response: passkeyResponse, ceremony: passkeyCeremony},
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'text'
+            });
+        }
+
         if (token && !identification && !password) {
             const data = {token};
             const options = {
