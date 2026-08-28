@@ -24,6 +24,7 @@ export interface RowOutcome {
   mediaFailures?: Array<{ sourceUrl: string; reason: string }>;
   warnings?: string[];
   postId?: string;
+  postType?: 'post' | 'page';
   url?: string;
   source?: Record<string, string>;
 }

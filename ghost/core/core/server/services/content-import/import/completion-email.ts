@@ -94,6 +94,8 @@ function importedPostLinks(run: ImportRun, adminUrl: string): string {
 
   const rows = importedRows.filter((row) => row.url);
   const previewRows = rows.slice(0, IMPORTED_POST_PREVIEW_LIMIT);
+  const hasPages = importedRows.some((row) => row.postType === 'page');
+  const hasPosts = importedRows.some((row) => row.postType !== 'page');
 
   const links = previewRows
     .map((row) => {
@@ -108,14 +110,24 @@ function importedPostLinks(run: ImportRun, adminUrl: string): string {
   const tag = encodeURIComponent(importTagSlug(run.id));
   const postsUrl = escapeHTML(new URL(`#/posts?tag=${tag}`, adminUrl).href);
   const pagesUrl = escapeHTML(new URL(`#/pages?tag=${tag}`, adminUrl).href);
+  let heading = 'Imported posts';
+  if (hasPages) {
+    heading = hasPosts ? 'Imported posts and pages' : 'Imported pages';
+  }
+  const filteredLinks = [
+    hasPosts ? `<a href="${postsUrl}" style="color: #3A464C;">View imported posts</a>` : '',
+    hasPages ? `<a href="${pagesUrl}" style="color: #3A464C;">View imported pages</a>` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const preview = links
     ? `<ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${links}</ul>`
     : '';
 
-  return `<h2 style="color: #15212A; font-size: 18px; line-height: 24px; margin: 32px 0 12px;">Imported posts and pages</h2>
+  return `<h2 style="color: #15212A; font-size: 18px; line-height: 24px; margin: 32px 0 12px;">${heading}</h2>
       ${preview}
       ${remainingCopy}
-      <p style="font-size: 16px; line-height: 25px; color: #3A464C;"><a href="${postsUrl}" style="color: #3A464C;">View imported posts</a> · <a href="${pagesUrl}" style="color: #3A464C;">View imported pages</a></p>`;
+      <p style="font-size: 16px; line-height: 25px; color: #3A464C;">${filteredLinks}</p>`;
 }
 
 function renderCompletionEmail(run: ImportRun, recipient: string, adminUrl: string): string {

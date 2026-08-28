@@ -179,7 +179,10 @@ describe('content import completion email', function () {
       ADMIN_URL,
     );
 
-    assert.match(email.html, /Imported posts and pages/);
+    assert.match(email.html, /Imported posts/);
+    assert.match(email.html, /View imported posts/);
+    assert.doesNotMatch(email.html, /Imported posts and pages/);
+    assert.doesNotMatch(email.html, /View imported pages/);
     assert.match(email.html, /Published &amp; linked/);
     assert.match(email.html, /published\/\?one=1&amp;two=2/);
     assert.match(email.html, /&lt;Draft&gt;/);
@@ -187,7 +190,31 @@ describe('content import completion email', function () {
     assert.doesNotMatch(email.html, /No URL/);
     assert.doesNotMatch(email.html, /must-not-render/);
     assert.match(email.html, /#\/posts\?tag=hash-import-run-run_test/);
+  });
+
+  it('shows only the pages heading and filter link for page-only imports', function () {
+    const email = buildCompletionEmail(
+      run({
+        rows: [
+          {
+            line: 2,
+            title: 'Imported page',
+            status: 'created',
+            postType: 'page',
+            url: 'https://example.com/imported-page/',
+          },
+        ],
+      }),
+      'owner@example.com',
+      ADMIN_URL,
+    );
+
+    assert.match(email.html, /Imported pages/);
+    assert.match(email.html, /View imported pages/);
+    assert.doesNotMatch(email.html, /Imported posts and pages/);
+    assert.doesNotMatch(email.html, /View imported posts/);
     assert.match(email.html, /#\/pages\?tag=hash-import-run-run_test/);
+    assert.doesNotMatch(email.html, /#\/posts\?tag=hash-import-run-run_test/);
   });
 
   it('uses the row number when a linked outcome has no title', function () {
@@ -214,6 +241,7 @@ describe('content import completion email', function () {
       line: index + 2,
       title: `Imported ${index + 1}`,
       status: 'created',
+      postType: index % 2 === 0 ? ('post' as const) : ('page' as const),
       url: `https://example.com/imported-${index + 1}/`,
     }));
     const email = buildCompletionEmail(
@@ -225,6 +253,7 @@ describe('content import completion email', function () {
     assert.match(email.html, /Imported 10/);
     assert.doesNotMatch(email.html, /Imported 11/);
     assert.match(email.html, /Including 25 more\./);
+    assert.match(email.html, /Imported posts and pages/);
     assert.match(
       email.html,
       /https:\/\/example\.com\/blog\/ghost\/#\/posts\?tag=hash-import-run-6a9072a2e385e56d77b83c15/,

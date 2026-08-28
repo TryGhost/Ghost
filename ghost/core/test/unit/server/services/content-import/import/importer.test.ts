@@ -813,6 +813,7 @@ describe('ContentCSVImporter', function () {
         title: 'Created',
         status: 'created',
         postId: 'post_1',
+        postType: 'post',
         url: 'https://example.com/post_1/',
       },
     ]);
@@ -838,6 +839,7 @@ describe('ContentCSVImporter', function () {
         title: 'Updated',
         status: 'updated',
         postId: 'post_1',
+        postType: 'post',
         url: 'https://example.com/post_1/',
       },
     ]);
@@ -1068,6 +1070,7 @@ describe('ContentCSVImporter', function () {
       title: 'Owner fallback',
       status: 'created',
       postId: 'post_1',
+      postType: 'post',
       url: 'https://example.com/post_1/',
       warnings: ['Author "Missing Author" has no email; assigned Owner instead.'],
     });
@@ -1082,12 +1085,19 @@ describe('ContentCSVImporter', function () {
 
     assert.equal(h.created.length, 2);
     assert.deepEqual(h.store.get('run_test')?.rows, [
-      { line: 2, title: 'First', status: 'updated', postId: 'post_1' },
+      {
+        line: 2,
+        title: 'First',
+        status: 'updated',
+        postId: 'post_1',
+        postType: 'post',
+      },
       {
         line: 3,
         title: 'Second',
         status: 'created',
         postId: 'post_2',
+        postType: 'post',
         url: 'https://example.com/post_2/',
       },
     ]);
@@ -1122,8 +1132,8 @@ describe('ContentCSVImporter', function () {
     );
   });
 
-  it('records a created outcome per row, 1-based, with the post id and URL', async function () {
-    const h = harness();
+  it('records a created outcome per row with its id, type and URL', async function () {
+    const h = harness([row('First'), { ...row('Second'), type: 'page' }]);
 
     await h.run();
 
@@ -1137,6 +1147,7 @@ describe('ContentCSVImporter', function () {
         title: 'First',
         status: 'created',
         postId: 'post_1',
+        postType: 'post',
         url: 'https://example.com/post_1/',
       },
       {
@@ -1144,6 +1155,7 @@ describe('ContentCSVImporter', function () {
         title: 'Second',
         status: 'created',
         postId: 'post_2',
+        postType: 'page',
         url: 'https://example.com/post_2/',
       },
     ]);

@@ -158,12 +158,18 @@ describe('Posts Importer API', function () {
     assert.ok(draft);
     assert.match(email.html, /Completion email created/);
     assert.match(email.html, /\/completion-email-created\//);
+    assert.match(email.html, /Imported posts/);
+    assert.doesNotMatch(email.html, /Imported posts and pages/);
     assert.ok(
       email.html.includes(`/#/editor/post/${draft.id}`),
       'the draft links to its Admin editor',
     );
     assert.match(email.html, new RegExp(`/#/posts\\?tag=hash-import-run-${body.meta.import_id}`));
-    assert.match(email.html, new RegExp(`/#/pages\\?tag=hash-import-run-${body.meta.import_id}`));
+    assert.doesNotMatch(email.html, /View imported pages/);
+    assert.doesNotMatch(
+      email.html,
+      new RegExp(`/#/pages\\?tag=hash-import-run-${body.meta.import_id}`),
+    );
   });
 
   it('attaches a report that classifies same-run and pre-existing duplicates', async function () {

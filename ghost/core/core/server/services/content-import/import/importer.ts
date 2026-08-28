@@ -319,6 +319,7 @@ class ContentCSVImporter {
           title: row.title,
           status: writeStatus,
           postId: post.id,
+          postType: data.type,
           ...(warnings.length > 0 ? { warnings } : {}),
         };
         try {
