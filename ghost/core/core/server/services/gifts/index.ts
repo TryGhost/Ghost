@@ -28,7 +28,7 @@ export let deliveryService: GiftDeliveryService | undefined;
 // of boot-time rebuilds (same contract post scheduling honours in boot.js).
 let rescheduleDeliveriesOnBoot = true;
 
-export async function init(options: GiftServiceInitOptions): Promise<void> {
+export function init(options: GiftServiceInitOptions): void {
   if (service) {
     return;
   }
