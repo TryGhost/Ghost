@@ -8,6 +8,8 @@ import * as gifts from '../gifts';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
 import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
+import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
+import * as contentImport from '../content-import';
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
@@ -56,5 +58,9 @@ export default function registerJobHandlers({
 
   jobsService.handle(ExternalMediaInlinerJob, async (job) => {
     await mediaInliner.inline(job.domains);
+  });
+
+  jobsService.handle(ContentCSVImportJob, async (job) => {
+    await contentImport.handleJob(job);
   });
 }

@@ -5,6 +5,7 @@ import logging from '@tryghost/logging';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
+import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -115,5 +116,21 @@ describe('register-job-handlers', function () {
     await assert.rejects(async () => {
       await externalMediaInlinerHandler(job);
     }, error);
+  });
+
+  it('routes content CSV import jobs to the content import service', async function () {
+    const job = new ContentCSVImportJob({
+      importId: 'run_test',
+      file: { path: '/tmp/staged-import', name: 'posts.zip' },
+      mapping: { Headline: 'title' },
+      importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
+      emailRecipient: 'owner@example.com',
+    });
+    const contentImportHandler = handlerFor('content-csv-import');
+
+    await assert.rejects(
+      () => contentImportHandler(job),
+      /Content import service used before init/,
+    );
   });
 });

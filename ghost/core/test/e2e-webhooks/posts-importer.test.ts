@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const DomainEvents = require('@tryghost/domain-events');
 const { agentProvider, mockManager, fixtureManager, dbUtils } = require('../utils/e2e-framework');
 const models = require('../../core/server/models');
-const jobsService = require('../../core/server/services/jobs');
+const contentImportService = require('../../core/server/services/content-import');
 
 // The importer's key safety guarantee: a bulk import sends zero newsletter emails
 // and fires zero per-post webhooks. Every consumer of post events checks
@@ -36,7 +36,7 @@ describe('CSV content import side-effects', function () {
   });
 
   afterEach(async function () {
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
     mockManager.restore();
   });
 
@@ -99,7 +99,7 @@ describe('CSV content import side-effects', function () {
     );
 
     await adminAPIAgent.post('posts/upload/').attach('postsfile', csvPath).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const updateCsvPath = path.join(tmpDir, 'posts-import-update-side-effects.csv');
     await fs.writeFile(
@@ -109,7 +109,7 @@ describe('CSV content import side-effects', function () {
     );
     await adminAPIAgent.post('posts/upload/').attach('postsfile', updateCsvPath).expectStatus(202);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
     await DomainEvents.allSettled();
     // The negative needs a settle window: a wrongly-fired webhook reaches nock a
     // beat after the model event, and asserting too early would pass vacuously

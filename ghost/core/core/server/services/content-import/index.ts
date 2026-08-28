@@ -13,6 +13,9 @@ import { prepareImportSource } from './import/source';
 import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
+import { createImportFileStager } from './import/staged-file';
+import ContentCSVImportJob from './jobs/content-csv-import-job';
+import { getInstance as getJobsService } from '../jobs-service';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
@@ -30,7 +33,6 @@ function makeImporter(): ContentCSVImporter {
   // are guaranteed loaded.
   const models = require('../../models');
   const lexicalLib = require('../../lib/lexical');
-  const jobsService = require('../jobs');
   const settingsCache = require('../../../shared/settings-cache');
   const urlService = require('../url');
   const urlUtils = require('../../../shared/url-utils').default;
@@ -40,8 +42,8 @@ function makeImporter(): ContentCSVImporter {
   const { GhostMailer } = require('../mail');
   const ghostMailer = new GhostMailer();
 
-  // Inline jobs never reach the job manager's Sentry handler, which is wired to the
-  // offloaded worker path only, so a throw here would be seen by nobody.
+  // Row aggregates and best-effort cleanup are intentionally reported without
+  // failing a run. Fatal handler errors are reported by the class-based jobs service.
   const report: FailureReporter = (error) => {
     try {
       logging.error(
@@ -82,7 +84,8 @@ function makeImporter(): ContentCSVImporter {
           }),
       }),
     email,
-    addJob: jobsService.addJob.bind(jobsService),
+    dispatchJob: (job) => getJobsService().dispatch(job),
+    fileStager: createImportFileStager(),
     report,
     store: new ImportRunStore(),
     urlForPost: (post) =>
@@ -121,4 +124,22 @@ export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
   }
 
   return importer.importCSV(parsedRequest.data);
+}
+
+export function handleJob(job: ContentCSVImportJob): Promise<void> {
+  if (!importer) {
+    throw new errors.InternalServerError({ message: 'Content import service used before init' });
+  }
+
+  return importer.handle(job);
+}
+
+// Test-facing parity with the legacy inline queue while the import run store
+// remains in memory. M8 removes this together with that store.
+export function allSettled(): Promise<void> {
+  if (!importer) {
+    return Promise.resolve();
+  }
+
+  return importer.allSettled();
 }
