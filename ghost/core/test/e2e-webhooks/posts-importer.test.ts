@@ -133,8 +133,11 @@ describe('CSV content import side-effects', function () {
     // Zero webhooks: the receiver never recorded a request
     assert.equal(webhookMockReceiver.body, undefined, 'no webhook fired for the imported posts');
 
-    // Zero transactional mail
-    mockManager.assert.sentEmailCount(0);
+    // The only mail side effects are the completion emails for the two
+    // accepted import runs. No per-post or newsletter mail is sent.
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    mockManager.assert.sentEmailCount(2);
 
     // Zero newsletters: a newsletter can only be attached via the API layer, which
     // the importer never touches.

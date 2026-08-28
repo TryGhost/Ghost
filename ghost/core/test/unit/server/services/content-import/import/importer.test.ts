@@ -7,6 +7,7 @@ import { ImportRunStore } from '../../../../../../core/server/services/content-i
 import type { PostImportRow } from '../../../../../../core/server/services/content-import/import/row';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
 import type { PostWriteMetadata } from '../../../../../../core/server/services/content-import/import/post-repository';
+import type { ImportRun } from '../../../../../../core/server/services/content-import/import/store';
 
 const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
   title,
@@ -16,7 +17,10 @@ const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
 });
 
 // Collaborators are handed back as `deps` so a test can repoint the seam it is breaking.
-function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
+function harness(
+  rows: PostImportRow[] = [row('First'), row('Second')],
+  source?: { columns: string[]; rows: Array<Record<string, string>>; lines?: number[] },
+) {
   const created: Array<{ data: PostData; options: object; metadata?: PostWriteMetadata }> = [];
   const reported: unknown[] = [];
   const jobs: Array<{ name: string; offloaded: boolean; job: () => Promise<void> }> = [];
@@ -28,6 +32,14 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const inlineMedia = sinon.stub().resolves();
   const createMediaInliner = sinon.stub().callsFake(() => ({ inline: inlineMedia }));
   const store = new ImportRunStore();
+  const releaseRun = sinon.stub(store, 'release');
+  const sentRuns: ImportRun[] = [];
+  const sentRecipients: string[] = [];
+  const sendEmail = sinon.stub().callsFake(async (run: ImportRun, recipient: string) => {
+    sentRuns.push(run);
+    sentRecipients.push(recipient);
+  });
+  const getDefaultRecipient = sinon.stub().resolves('owner@example.com');
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
   let cleanerResolutions = 0;
@@ -46,7 +58,17 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   };
 
   const deps = {
-    readRows: async () => rows,
+    readRows: async () =>
+      source
+        ? {
+            columns: source.columns,
+            rows: rows.map((data, index) => ({
+              data,
+              source: source.rows[index],
+              line: source.lines?.[index] ?? index + 2,
+            })),
+          }
+        : rows,
     posts: {
       write: async (data: PostData, options: object, metadata?: PostWriteMetadata) => {
         const failure = createFailures.get(data.title);
@@ -57,6 +79,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
           return {
             status: 'skipped' as const,
             reason: `A post with the slug "${data.slug}" already exists.`,
+            duplicate: { origin: 'pre_existing' as const, matchedBy: 'slug' as const },
           };
         }
         created.push({ data, options, metadata });
@@ -72,6 +95,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     getMarkdownToHtml: () => markdownToHtmlFactory(),
     getCleanHTML: () => cleanHTMLFactory(),
     createMediaInliner,
+    email: {
+      send: sendEmail,
+      getDefaultRecipient,
+    },
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -131,6 +158,11 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     urlFailures,
     inlineMedia,
     createMediaInliner,
+    sendEmail,
+    getDefaultRecipient,
+    sentRuns,
+    sentRecipients,
+    releaseRun,
     store,
     setHtmlToLexicalFactory,
     setMarkdownToHtmlFactory,
@@ -180,6 +212,127 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import queued');
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-import started');
     sinon.assert.calledWithMatch(infoLog, /^\[Background Job\] content-import completed in \d+ms$/);
+  });
+
+  it('carries original source columns and cells into the completed run', async function () {
+    const h = harness([row('Mapped title')], {
+      columns: ['Headline', 'Body', 'Ignored'],
+      rows: [{ Headline: 'Mapped title', Body: '<p>Source body</p>', Ignored: 'kept' }],
+    });
+
+    await h.run();
+
+    assert.deepEqual(h.sentRuns[0].sourceColumns, ['Headline', 'Body', 'Ignored']);
+    assert.deepEqual(h.sentRuns[0].rows[0].source, {
+      Headline: 'Mapped title',
+      Body: '<p>Source body</p>',
+      Ignored: 'kept',
+    });
+  });
+
+  it('records the original spreadsheet line after an ignored empty row', async function () {
+    const h = harness(
+      [
+        row('Before blank'),
+        { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
+      ],
+      {
+        columns: ['title', 'html'],
+        rows: [
+          { title: 'Before blank', html: '<p>First</p>' },
+          { title: '', html: '<p>No title</p>' },
+        ],
+        lines: [2, 4],
+      },
+    );
+
+    await h.run();
+
+    assert.deepEqual(
+      h.store.get('run_test')?.rows.map(({ line }) => line),
+      [2, 4],
+    );
+  });
+
+  it('emails the requesting user once after completing and releases the run', async function () {
+    const h = harness();
+
+    await h.importer.importCSV({
+      filePath: '/tmp/posts.csv',
+      fileName: 'posts.csv',
+      requestUserEmail: 'requester@example.com',
+    });
+    await h.jobs[0].job();
+
+    sinon.assert.notCalled(h.getDefaultRecipient);
+    sinon.assert.calledOnce(h.sendEmail);
+    assert.deepEqual(h.sentRecipients, ['requester@example.com']);
+    assert.equal(h.sentRuns[0].status, 'complete');
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
+  });
+
+  it('falls back to Owner and reports email delivery failures without failing the run', async function () {
+    const h = harness();
+    const failure = new Error('mail unavailable');
+    h.sendEmail.rejects(failure);
+
+    await h.run();
+
+    sinon.assert.calledOnce(h.getDefaultRecipient);
+    sinon.assert.calledOnceWithExactly(
+      h.sendEmail,
+      sinon.match({ status: 'complete' }),
+      'owner@example.com',
+    );
+    assert.equal(h.reported.at(-1), failure);
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
+  });
+
+  it('does not prepare or schedule an import when the Owner recipient cannot be resolved', async function () {
+    const h = harness();
+    const failure = new Error('Owner unavailable');
+    const prepareSource = sinon.stub().resolves({
+      filePath: '/tmp/posts.csv',
+      cleanup: sinon.stub().resolves(),
+    });
+    h.getDefaultRecipient.rejects(failure);
+    const importer = new ContentCSVImporter({ ...h.deps, prepareSource });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
+      failure,
+    );
+
+    sinon.assert.notCalled(prepareSource);
+    assert.equal(h.jobs.length, 0);
+    sinon.assert.notCalled(h.sendEmail);
+  });
+
+  it('emails a failed accepted run before releasing it', async function () {
+    const h = harness();
+    const failure = new Error('converter unavailable');
+    h.setHtmlToLexicalFactory(() => {
+      throw failure;
+    });
+
+    await h.run();
+
+    sinon.assert.calledOnce(h.sendEmail);
+    assert.equal(h.sentRuns[0].status, 'failed');
+    assert.equal(h.sentRuns[0].failureReason, 'converter unavailable');
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
+  });
+
+  it('finishes safely if an injected store loses the run before the job settles', async function () {
+    const h = harness();
+    h.releaseRun.restore();
+
+    await h.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    h.store.release('run_test');
+    await h.jobs[0].job();
+
+    sinon.assert.notCalled(h.sendEmail);
+    assert.equal(h.created.length, 2);
   });
 
   it('uses the current time by default when one is not injected', async function () {
@@ -335,6 +488,7 @@ describe('ContentCSVImporter', function () {
       assert.deepEqual(call.options, { importing: true, context: { internal: true } });
       assert.deepEqual(call.metadata, {
         sourceUpdatedAt: undefined,
+        runTagName: '#Import Run run_test',
         authorNames: undefined,
         authorEmails: undefined,
         tagNames: undefined,
@@ -456,7 +610,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.failureReason, failure.message);
   });
 
-  it('does not inspect media for a row skipped during post-data validation', async function () {
+  it('does not inspect media for a row failed during post-data validation', async function () {
     const h = harness([
       { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
       row('Valid row'),
@@ -482,6 +636,7 @@ describe('ContentCSVImporter', function () {
 
     assert.deepEqual(h.created[0].metadata, {
       sourceUpdatedAt: undefined,
+      runTagName: '#Import Run run_test',
       authorNames: 'Alice, Bob',
       authorEmails: 'alice@example.com, bob@example.com',
       tagNames: 'News, Features',
@@ -603,6 +758,8 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.status, 'failed');
     assert.equal(h.store.get('run_test')?.failureReason, 'queue unavailable');
     sinon.assert.calledOnce(cleanup);
+    sinon.assert.notCalled(h.sendEmail);
+    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
   });
 
   it('reports cleanup failures without rejecting the completed job', async function () {
@@ -677,12 +834,14 @@ describe('ContentCSVImporter', function () {
         title: 'Duplicate',
         status: 'skipped',
         reason: 'A post with the slug "duplicate" already exists.',
+        duplicate: { origin: 'pre_existing', matchedBy: 'slug' },
       },
       {
         line: 3,
         title: 'Created',
         status: 'created',
         postId: 'post_1',
+        postType: 'post',
         url: 'https://example.com/post_1/',
       },
     ]);
@@ -697,6 +856,7 @@ describe('ContentCSVImporter', function () {
 
     assert.deepEqual(h.created[0].metadata, {
       sourceUpdatedAt: '2025-02-01T00:00:00.000Z',
+      runTagName: '#Import Run run_test',
       authorNames: undefined,
       authorEmails: undefined,
       tagNames: undefined,
@@ -707,6 +867,7 @@ describe('ContentCSVImporter', function () {
         title: 'Updated',
         status: 'updated',
         postId: 'post_1',
+        postType: 'post',
         url: 'https://example.com/post_1/',
       },
     ]);
@@ -786,7 +947,7 @@ describe('ContentCSVImporter', function () {
     );
   });
 
-  it('skips a malformed row on its own and imports the rest', async function () {
+  it('fails a malformed row on its own and imports the rest', async function () {
     const h = harness([
       row('First'),
       { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
@@ -805,12 +966,12 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(run?.rows[1], {
       line: 3,
       title: null,
-      status: 'skipped',
+      status: 'failed',
       reason: 'title is required',
     });
     assert.deepEqual(
       run?.rows.map((r) => r.status),
-      ['created', 'skipped', 'created'],
+      ['created', 'failed', 'created'],
     );
   });
 
@@ -833,7 +994,7 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.store.get('run_test')?.rows[1], {
       line: 3,
       title: 'Bad markdown',
-      status: 'skipped',
+      status: 'failed',
       reason: 'markdown could not be converted',
     });
   });
@@ -856,12 +1017,12 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.store.get('run_test')?.rows[1], {
       line: 3,
       title: 'Bad clean',
-      status: 'skipped',
+      status: 'failed',
       reason: 'html could not be cleaned',
     });
   });
 
-  it('completes without reporting when every row is skipped before a write', async function () {
+  it('completes without an internal error when every row fails validation before a write', async function () {
     const h = harness([
       { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
       { title: '', html: '<p>Still no title</p>', markdown: '', published_at: undefined },
@@ -873,7 +1034,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test')?.status, 'complete');
     assert.deepEqual(
       h.store.get('run_test')?.rows.map((outcome) => outcome.status),
-      ['skipped', 'skipped'],
+      ['failed', 'failed'],
     );
   });
 
@@ -937,6 +1098,7 @@ describe('ContentCSVImporter', function () {
       title: 'Owner fallback',
       status: 'created',
       postId: 'post_1',
+      postType: 'post',
       url: 'https://example.com/post_1/',
       warnings: ['Author "Missing Author" has no email; assigned Owner instead.'],
     });
@@ -951,12 +1113,19 @@ describe('ContentCSVImporter', function () {
 
     assert.equal(h.created.length, 2);
     assert.deepEqual(h.store.get('run_test')?.rows, [
-      { line: 2, title: 'First', status: 'updated', postId: 'post_1' },
+      {
+        line: 2,
+        title: 'First',
+        status: 'updated',
+        postId: 'post_1',
+        postType: 'post',
+      },
       {
         line: 3,
         title: 'Second',
         status: 'created',
         postId: 'post_2',
+        postType: 'post',
         url: 'https://example.com/post_2/',
       },
     ]);
@@ -991,8 +1160,8 @@ describe('ContentCSVImporter', function () {
     );
   });
 
-  it('records a created outcome per row, 1-based, with the post id and URL', async function () {
-    const h = harness();
+  it('records a created outcome per row with its id, type and URL', async function () {
+    const h = harness([row('First'), { ...row('Second'), type: 'page' }]);
 
     await h.run();
 
@@ -1006,6 +1175,7 @@ describe('ContentCSVImporter', function () {
         title: 'First',
         status: 'created',
         postId: 'post_1',
+        postType: 'post',
         url: 'https://example.com/post_1/',
       },
       {
@@ -1013,6 +1183,7 @@ describe('ContentCSVImporter', function () {
         title: 'Second',
         status: 'created',
         postId: 'post_2',
+        postType: 'page',
         url: 'https://example.com/post_2/',
       },
     ]);
