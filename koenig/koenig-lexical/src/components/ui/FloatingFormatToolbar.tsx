@@ -37,13 +37,17 @@ export function FloatingFormatToolbar({
 
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
-    const showToolbarIfHidden = React.useCallback((e) => {
+    const showToolbarIfHidden = React.useCallback(() => {
         if (toolbarItemType && toolbarRef.current?.style.opacity === '0') {
             toolbarRef.current.style.opacity = '1';
         }
     }, [toolbarItemType]);
 
     React.useEffect(() => {
+        let isMouseDown = false;
+        const onMouseDown = () => { isMouseDown = true; };
+        const onMouseUp = () => { isMouseDown = false; };
+
         const toggle = (e) => {
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
@@ -54,16 +58,34 @@ export function FloatingFormatToolbar({
                     });
 
                     if (selectedNodeMatchesTarget) {
-                        showToolbarIfHidden(e);
+                        showToolbarIfHidden();
                     }
                 }
             });
         };
 
+        const onSelectionChange = debounce(() => {
+            if (isMouseDown) {
+                return;
+            }
+            editor.getEditorState().read(() => {
+                const selection = $getSelection();
+                if ($isRangeSelection(selection) && !selection.isCollapsed()) {
+                    showToolbarIfHidden();
+                }
+            });
+        }, 10);
+
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('selectionchange', onSelectionChange);
         document.addEventListener('mouseup', toggle); // desktop
         document.addEventListener('touchend', toggle); // mobile
 
         return () => {
+            document.removeEventListener('mousedown', onMouseDown);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('selectionchange', onSelectionChange);
             document.removeEventListener('mouseup', toggle); // desktop
             document.removeEventListener('touchend', toggle); // mobile
         };
@@ -154,6 +176,8 @@ export function FloatingFormatToolbar({
                 isVisible={!!toolbarItemType}
                 shouldReposition={toolbarItemType !== toolbarItemTypes.text} // format toolbar shouldn't reposition when applying formats
                 toolbarRef={toolbarRef}
+                targetElem={null}
+                onReposition={undefined}
             >
                 {isSnippetToolbar && (
                     <SnippetActionToolbar
