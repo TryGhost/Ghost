@@ -82,31 +82,47 @@ describe('BookshelfPostsRepository', function () {
     const h = harness();
     h.findOne.resolves(h.existing);
 
-    const result = await h.repository.write(data, {
-      importing: true,
-      context: { internal: true },
-    });
+    const options = { importing: true, context: { internal: true } };
+    const result = await h.repository.write(data, options, { runTagName: '#Import Run current' });
 
     assert.deepEqual(result, {
       status: 'skipped',
       reason: 'A post with the slug "imported-post" already exists.',
+      duplicate: { origin: 'pre_existing', matchedBy: 'slug' },
     });
+    sinon.assert.calledWithExactly(
+      h.findOne,
+      { slug: 'imported-post', status: 'all' },
+      {
+        ...options,
+        transacting: h.transacting,
+        forUpdate: true,
+        withRelated: ['tags'],
+      },
+    );
     sinon.assert.notCalled(h.add);
     sinon.assert.notCalled(h.edit);
   });
 
   it('matches an explicit source ID before considering the slug', async function () {
     const h = harness();
+    h.existing.toJSON.returns({
+      id: 'existing',
+      updated_at: new Date('2025-01-01T00:00:00Z'),
+      tags: [{ name: '#Import Run current' }],
+    });
     h.findOne.resolves(h.existing);
 
     const result = await h.repository.write(
       { ...data, comment_id: 'source-123', slug: 'a-different-slug' },
       { importing: true, context: { internal: true } },
+      { runTagName: '#Import Run current' },
     );
 
     assert.deepEqual(result, {
       status: 'skipped',
       reason: 'A post with the source ID "source-123" already exists.',
+      duplicate: { origin: 'this_import', matchedBy: 'source_id' },
     });
     sinon.assert.calledOnce(h.findOne);
     sinon.assert.calledWithMatch(h.findOne, {
@@ -130,6 +146,7 @@ describe('BookshelfPostsRepository', function () {
     assert.deepEqual(result, {
       status: 'skipped',
       reason: 'A post with the slug "imported-post" already exists.',
+      duplicate: { origin: 'pre_existing', matchedBy: 'slug' },
     });
     assert.deepEqual(h.findOne.firstCall.args[0], {
       comment_id: 'new-source',
@@ -307,6 +324,7 @@ describe('BookshelfPostsRepository', function () {
     assert.deepEqual(result, {
       status: 'skipped',
       reason: 'The existing post is newer than or as recent as the imported row.',
+      duplicate: { origin: 'pre_existing', matchedBy: 'slug' },
     });
     sinon.assert.notCalled(h.edit);
   });

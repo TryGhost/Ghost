@@ -16,13 +16,14 @@ describe('ImportRunStore', function () {
   it('tracks a run from created to complete, in order', function () {
     const store = new ImportRunStore();
 
-    store.create('run_1', 2);
+    store.create('run_1', 2, ['Headline', 'Body']);
     store.record('run_1', outcome(1));
     store.record('run_1', outcome(2));
 
     const running = store.get('run_1');
     assert.equal(running?.status, 'running');
     assert.equal(running?.total, 2);
+    assert.deepEqual(running?.sourceColumns, ['Headline', 'Body']);
     assert.deepEqual(
       running?.rows.map((r) => r.line),
       [1, 2],
@@ -50,6 +51,14 @@ describe('ImportRunStore', function () {
     assert.equal(store.get('run_updated')?.rows[0].status, 'updated');
   });
 
+  it('defaults source columns for internal callers without source data', function () {
+    const store = new ImportRunStore();
+
+    store.create('run_no_source', 0);
+
+    assert.deepEqual(store.get('run_no_source')?.sourceColumns, []);
+  });
+
   it('ignores writes against an unknown run rather than throwing', function () {
     const store = new ImportRunStore();
 
@@ -58,6 +67,17 @@ describe('ImportRunStore', function () {
     store.fail('nope', 'failed');
 
     assert.equal(store.get('nope'), undefined);
+  });
+
+  it('releases a finished run idempotently', function () {
+    const store = new ImportRunStore();
+    store.create('run_release', 1);
+    store.finish('run_release');
+
+    store.release('run_release');
+    store.release('run_release');
+
+    assert.equal(store.get('run_release'), undefined);
   });
 
   it('tracks a run-level failure as a finished terminal state', function () {

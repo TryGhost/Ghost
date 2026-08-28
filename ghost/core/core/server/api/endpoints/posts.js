@@ -136,6 +136,7 @@ const controller = {
         filePath: frame.file.path,
         fileName: frame.file.name,
         mapping: frame.data.mapping,
+        requestUserEmail: frame.user ? frame.user.get('email') : null,
       });
       return { meta: { import_id: importId, total } };
     },

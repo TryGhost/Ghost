@@ -2,11 +2,16 @@
 // outcome per row. Nothing is persisted; the durable job system milestone
 // replaces this.
 
-// skipped = the row was never attempted (the publisher can fix the file);
-// failed = row processing was attempted but did not produce a post.
+// skipped = an otherwise valid row required no write (for example a duplicate);
+// failed = the row could not produce a post, including source validation errors.
 export type Clock = () => Date;
 
 export type RowStatus = 'created' | 'updated' | 'skipped' | 'failed';
+
+export interface DuplicateMetadata {
+  origin: 'this_import' | 'pre_existing';
+  matchedBy: 'source_id' | 'slug';
+}
 
 export interface RowOutcome {
   // Source line number as a publisher sees it in a spreadsheet: the header is
@@ -15,10 +20,13 @@ export interface RowOutcome {
   title: string | null;
   status: RowStatus;
   reason?: string;
+  duplicate?: DuplicateMetadata;
   mediaFailures?: Array<{ sourceUrl: string; reason: string }>;
   warnings?: string[];
   postId?: string;
+  postType?: 'post' | 'page';
   url?: string;
+  source?: Record<string, string>;
 }
 
 export interface ImportRun {
@@ -28,6 +36,7 @@ export interface ImportRun {
   finishedAt?: Date;
   failureReason?: string;
   total: number;
+  sourceColumns: string[];
   rows: RowOutcome[];
 }
 
@@ -44,7 +53,7 @@ export class ImportRunStore {
     this._now = now;
   }
 
-  create(id: string, total: number): ImportRun {
+  create(id: string, total: number, sourceColumns: string[] = []): ImportRun {
     this.evict();
 
     const run: ImportRun = {
@@ -52,6 +61,7 @@ export class ImportRunStore {
       status: 'running',
       startedAt: this._now(),
       total,
+      sourceColumns,
       rows: [],
     };
     this._runs.set(id, run);
@@ -81,6 +91,10 @@ export class ImportRunStore {
 
   get(id: string): ImportRun | undefined {
     return this._runs.get(id);
+  }
+
+  release(id: string): void {
+    this._runs.delete(id);
   }
 
   // A running run is never evicted, whatever its age: the job holds only the runId,
