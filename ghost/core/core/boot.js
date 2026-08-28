@@ -388,7 +388,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
     internalKeys,
   });
   const giftDeliveryService = giftService.deliveryService;
-  assert(giftDeliveryService, 'Gift delivery service should be not initialized');
+  assert(giftDeliveryService, 'Gift delivery service should be initialized');
 
   await Promise.all([
     identityTokens.init(),
