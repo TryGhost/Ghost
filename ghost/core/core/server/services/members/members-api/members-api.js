@@ -202,7 +202,6 @@ module.exports = function MembersAPI({
     paymentsService,
     tiersService,
     memberRepository,
-    StripePrice,
     allowSelfSignup,
     magicLinkService,
     stripeAPIService,
