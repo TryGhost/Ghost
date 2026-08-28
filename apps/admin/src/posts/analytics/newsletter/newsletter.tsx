@@ -1,4 +1,10 @@
 import Feedback from './components/feedback';
+import {
+  DeliverySimulatorControl,
+  DeliveryStatusRow,
+  SimulatedKpiRow,
+} from './components/delivery-status';
+import { AVERAGE_DELIVERED_RATE, useDeliverySimulator } from './hooks/use-delivery-simulator';
 import KpiCard, {
   KpiCardContent,
   KpiCardLabel,
@@ -54,6 +60,13 @@ import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-frame
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
+
+// Delivery rates live between 98–100%, so whole-percent rounding (which turns
+// 99.6% into 100%) hides the entire signal — keep one decimal unless exact.
+const formatDeliveredRate = (rate: number): string => {
+  const percentage = rate * 100;
+  return Number.isInteger(percentage) ? `${percentage}%` : `${percentage.toFixed(1)}%`;
+};
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -128,6 +141,36 @@ const Newsletter: React.FC = () => {
     refetchTopLinks,
   } = usePostNewsletterStats(postId);
   const { mutate: editLinks } = useBulkEditLinks();
+
+  // Prototype: simulated delivery status states (see components/delivery-status.tsx)
+  const simAudience = stats.sent > 0 ? stats.sent : 5000;
+  const sim = useDeliverySimulator(simAudience);
+  const simActive = sim.state !== 'off';
+  // Blank = no data exists at all (nothing sent). In-flight = counts exist
+  // but engagement rates are still structurally biased and shouldn't show.
+  const simBlank = sim.state === 'publishing' || sim.state === 'failed-all';
+  const simInFlight = sim.state === 'sending';
+
+  // While simulating, every number on the page comes from the one sim model —
+  // same rate formulas as the real stats hook — so cards, charts, and the
+  // links list can't disagree with each other.
+  // Rates render only once the send has finished (successfully or by
+  // failing), so both possible denominators are frozen. All rates are over
+  // the intended audience — matching Ghost's existing email_count semantics.
+  // On a successful send audience === sent, so the numbers are identical;
+  // after a partial failure the rings visibly carry the incident.
+  const displayStats = simActive
+    ? {
+        ...stats,
+        sent: sim.model.sent,
+        opened: sim.numbersLive ? sim.model.opened : 0,
+        clicked: sim.numbersLive ? sim.model.clicked : 0,
+        openedRate:
+          sim.numbersLive && sim.model.audience ? sim.model.opened / sim.model.audience : 0,
+        clickedRate:
+          sim.numbersLive && sim.model.audience ? sim.model.clicked / sim.model.audience : 0,
+      }
+    : stats;
 
   // Calculate feedback stats from the post data
   const feedbackStats = useMemo(() => {
@@ -243,10 +286,29 @@ const Newsletter: React.FC = () => {
 
   const isLoading = isNewsletterStatsLoading || isPostLoading;
 
-  // "Sent" Chart
-  const sentChartData: NewsletterRadialChartData[] = [
-    { datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'var(--chart-purple)' },
-  ];
+  // "Sent" Chart — becomes a "Delivered vs average" comparison while simulating.
+  // One denominator in every state: delivered of what was sent (matching how
+  // open/click rates are defined). Rates only render once the send settles —
+  // mid-send the denominator grows in bursts and every ratio can tick
+  // backwards, so counts flow live but rates wait.
+  const deliveredRate =
+    sim.numbersLive && sim.model.audience > 0 ? sim.model.delivered / sim.model.audience : 0;
+  const sentChartData: NewsletterRadialChartData[] = simActive
+    ? [
+        {
+          datatype: 'Average',
+          value: simBlank ? 0 : AVERAGE_DELIVERED_RATE,
+          fill: 'url(#gradientGray)',
+          color: 'var(--chart-gray)',
+        },
+        {
+          datatype: 'This newsletter',
+          value: deliveredRate,
+          fill: 'url(#gradientPurple)',
+          color: 'var(--chart-purple)',
+        },
+      ]
+    : [{ datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'var(--chart-purple)' }];
 
   const sentChartConfig = {
     percentage: {
@@ -270,7 +332,7 @@ const Newsletter: React.FC = () => {
     },
     {
       datatype: 'This newsletter',
-      value: stats.openedRate,
+      value: displayStats.openedRate,
       fill: 'url(#gradientBlue)',
       color: 'var(--chart-blue)',
     },
@@ -298,7 +360,7 @@ const Newsletter: React.FC = () => {
     },
     {
       datatype: 'This newsletter',
-      value: stats.clickedRate,
+      value: displayStats.clickedRate,
       fill: 'url(#gradientTeal)',
       color: 'var(--chart-teal)',
     },
@@ -334,6 +396,7 @@ const Newsletter: React.FC = () => {
   return (
     <>
       <PostAnalyticsHeader currentTab="Newsletter" />
+      <DeliverySimulatorControl state={sim.state} onChange={sim.setState} />
       <PostAnalyticsContent>
         <div
           className={`grid grid-cols-1 gap-6 ${shouldShowFeedback && emailTrackClicksEnabled && 'lg:grid-cols-2'}`}
@@ -349,92 +412,120 @@ const Newsletter: React.FC = () => {
               </CardContent>
             ) : (
               <CardContent className="p-0">
-                <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
-                  <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
-                    <KpiCardMoreButton
-                      onClick={() => {
-                        navigateToMembers(`emails.post_id:${postId}`);
-                      }}
-                    >
-                      View members &rarr;
-                    </KpiCardMoreButton>
-                    <KpiCardLabel
-                      onClick={() => {
-                        navigateToMembers(`emails.post_id:${postId}`);
-                      }}
-                    >
-                      <div className="ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50"></div>
-                      Sent
-                    </KpiCardLabel>
-                    <KpiCardContent>
-                      <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                        {formatNumber(stats.sent)}
-                      </KpiCardValue>
-                    </KpiCardContent>
-                  </KpiCard>
-
-                  {emailTrackOpensEnabled && (
-                    <KpiCard className="p-3 md:px-6 md:py-5">
-                      <KpiCardMoreButton
-                        onClick={() => {
-                          navigateToMembers(`opened_emails.post_id:${postId}`);
-                        }}
-                      >
-                        View members &rarr;
-                      </KpiCardMoreButton>
-                      <KpiCardLabel
-                        onClick={() => {
-                          navigateToMembers(`opened_emails.post_id:${postId}`);
-                        }}
-                      >
-                        <div className="ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50"></div>
-                        Opened
-                      </KpiCardLabel>
-                      <KpiCardContent>
-                        <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {formatNumber(stats.opened)}
-                        </KpiCardValue>
-                      </KpiCardContent>
-                    </KpiCard>
-                  )}
-
-                  {emailTrackClicksEnabled && (
+                <DeliveryStatusRow
+                  model={sim.model}
+                  progress={sim.progress}
+                  publishedAt={typedPost?.published_at}
+                  state={sim.state}
+                />
+                {simActive ? (
+                  <SimulatedKpiRow
+                    model={sim.model}
+                    showClicked={!!emailTrackClicksEnabled}
+                    showOpened={!!emailTrackOpensEnabled}
+                    state={sim.state}
+                  />
+                ) : (
+                  <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
                     <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                       <KpiCardMoreButton
                         onClick={() => {
-                          navigateToMembers(`clicked_links.post_id:${postId}`);
+                          navigateToMembers(`emails.post_id:${postId}`);
                         }}
                       >
                         View members &rarr;
                       </KpiCardMoreButton>
                       <KpiCardLabel
                         onClick={() => {
-                          navigateToMembers(`clicked_links.post_id:${postId}`);
+                          navigateToMembers(`emails.post_id:${postId}`);
                         }}
                       >
-                        <div className="ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50"></div>
-                        Clicked
+                        <div className="ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50"></div>
+                        Sent
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {formatNumber(stats.clicked)}
+                          {formatNumber(stats.sent)}
                         </KpiCardValue>
                       </KpiCardContent>
                     </KpiCard>
-                  )}
-                </div>
+
+                    {emailTrackOpensEnabled && (
+                      <KpiCard className="p-3 md:px-6 md:py-5">
+                        <KpiCardMoreButton
+                          onClick={() => {
+                            navigateToMembers(`opened_emails.post_id:${postId}`);
+                          }}
+                        >
+                          View members &rarr;
+                        </KpiCardMoreButton>
+                        <KpiCardLabel
+                          onClick={() => {
+                            navigateToMembers(`opened_emails.post_id:${postId}`);
+                          }}
+                        >
+                          <div className="ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50"></div>
+                          Opened
+                        </KpiCardLabel>
+                        <KpiCardContent>
+                          <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
+                            {formatNumber(stats.opened)}
+                          </KpiCardValue>
+                        </KpiCardContent>
+                      </KpiCard>
+                    )}
+
+                    {emailTrackClicksEnabled && (
+                      <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
+                        <KpiCardMoreButton
+                          onClick={() => {
+                            navigateToMembers(`clicked_links.post_id:${postId}`);
+                          }}
+                        >
+                          View members &rarr;
+                        </KpiCardMoreButton>
+                        <KpiCardLabel
+                          onClick={() => {
+                            navigateToMembers(`clicked_links.post_id:${postId}`);
+                          }}
+                        >
+                          <div className="ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50"></div>
+                          Clicked
+                        </KpiCardLabel>
+                        <KpiCardContent>
+                          <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
+                            {formatNumber(stats.clicked)}
+                          </KpiCardValue>
+                        </KpiCardContent>
+                      </KpiCard>
+                    )}
+                  </div>
+                )}
                 <div
-                  className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
+                  className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'} ${simBlank ? 'pointer-events-none opacity-40' : ''}`}
                 >
                   <div
-                    className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
+                    className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'} ${simActive ? 'group/block transition-all hover:bg-muted/25' : ''}`}
                   >
+                    {simActive && (
+                      <BlockTooltip
+                        avgValue={formatDeliveredRate(AVERAGE_DELIVERED_RATE)}
+                        dataColor="var(--chart-purple)"
+                        value={formatDeliveredRate(deliveredRate)}
+                      />
+                    )}
                     <NewsletterRadialChart
                       className={chartClass}
                       config={sentChartConfig}
                       data={sentChartData}
-                      percentageLabel="Sent"
-                      percentageValue={formatPercentage(1)}
+                      percentageLabel={simActive ? 'Delivered' : 'Sent'}
+                      percentageValue={
+                        simBlank || simInFlight
+                          ? '—'
+                          : simActive
+                            ? formatDeliveredRate(deliveredRate)
+                            : formatPercentage(1)
+                      }
                       size={chartSize}
                       tooltip={false}
                     />
@@ -448,14 +539,16 @@ const Newsletter: React.FC = () => {
                       <BlockTooltip
                         avgValue={formatPercentage(averageStats.openedRate)}
                         dataColor="var(--chart-blue)"
-                        value={formatPercentage(stats.openedRate)}
+                        value={formatPercentage(displayStats.openedRate)}
                       />
                       <NewsletterRadialChart
                         className={chartClass}
                         config={openedChartConfig}
                         data={openedChartData}
                         percentageLabel="Open rate"
-                        percentageValue={formatPercentage(stats.openedRate)}
+                        percentageValue={
+                          simBlank || simInFlight ? '—' : formatPercentage(displayStats.openedRate)
+                        }
                         size={chartSize}
                         tooltip={false}
                       />
@@ -468,14 +561,16 @@ const Newsletter: React.FC = () => {
                       <BlockTooltip
                         avgValue={formatPercentage(averageStats.clickedRate)}
                         dataColor="var(--chart-teal)"
-                        value={formatPercentage(stats.clickedRate)}
+                        value={formatPercentage(displayStats.clickedRate)}
                       />
                       <NewsletterRadialChart
                         className={chartClass}
                         config={clickedChartConfig}
                         data={clickedChartData}
                         percentageLabel="Click rate"
-                        percentageValue={formatPercentage(stats.clickedRate)}
+                        percentageValue={
+                          simBlank || simInFlight ? '—' : formatPercentage(displayStats.clickedRate)
+                        }
                         size={chartSize}
                         tooltip={false}
                       />
@@ -509,7 +604,8 @@ const Newsletter: React.FC = () => {
                     <DataList className="">
                       <DataListBody>
                         {paginatedTopLinks?.map((link) => {
-                          const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                          const percentage =
+                            displayStats.clicked > 0 ? link.count / displayStats.clicked : 0;
                           const linkId = link.link.link_id;
                           const title = link.link.title;
                           const url = link.link.to;

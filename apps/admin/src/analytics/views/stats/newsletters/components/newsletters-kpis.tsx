@@ -1,4 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import {
+  DELIVERY_PROVIDERS,
+  type DeliveryProviderKey,
+  deliveryRateForSend,
+} from './deliverability-breakdown';
 import { type AvgsDataItem } from '@/analytics/views/stats/newsletters/newsletters';
 import {
   BarChartLoadingIndicator,
@@ -10,6 +15,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   EmptyIndicator,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Tabs,
   TabsList,
 } from '@tryghost/shade/components';
@@ -47,12 +57,19 @@ interface BarTooltipProps {
   range?: number;
 }
 
+// Delivery rates live between 98–100%, so whole-percent rounding (which
+// turns 99.6% into 100%) hides the signal — keep one decimal unless exact.
+const formatDeliveredRate = (rate: number): string => {
+  const percentage = rate * 100;
+  return Number.isInteger(percentage) ? `${percentage}%` : `${percentage.toFixed(1)}%`;
+};
+
 const BarTooltipContent = ({ active, payload }: BarTooltipProps) => {
   if (!active || !payload?.length) {
     return null;
   }
 
-  const currentItem = payload[0].payload;
+  const currentItem = payload[0].payload as AvgsDataItem & { delivery_rate?: number };
   const sendDate =
     typeof currentItem.send_date === 'string'
       ? currentItem.send_date
@@ -69,6 +86,15 @@ const BarTooltipContent = ({ active, payload }: BarTooltipProps) => {
         <span className="font-medium text-muted-foreground">Sent</span>
         <div className="ml-2 w-full text-right font-mono">{formatNumber(currentItem.sent_to)}</div>
       </div>
+
+      {typeof currentItem.delivery_rate === 'number' && (
+        <div className="mb-1 flex w-full justify-between">
+          <span className="font-medium text-muted-foreground">Delivered</span>
+          <div className="ml-2 w-full text-right font-mono">
+            {formatDeliveredRate(currentItem.delivery_rate)}
+          </div>
+        </div>
+      )}
 
       <div className="mb-1 flex w-full justify-between">
         <span className="font-medium text-muted-foreground">Opens</span>
@@ -215,9 +241,51 @@ const NewsletterKPIs: React.FC<{
         color: 'var(--chart-teal)',
         datakey: 'click_rate',
       },
+      'avg-delivery-rate': {
+        // Rendered as dots, not bars: delivery rates live within a few
+        // points of 100%, so bar length from a zero baseline is unreadable
+        // and a truncated bar axis would lie. Position encoding on a
+        // data-floored axis shows the rate itself honestly.
+        color: 'var(--chart-purple)',
+        datakey: 'delivery_rate',
+      },
     }),
     [],
   );
+
+  // Prototype: per-send delivery rate, filterable by inbox provider (see
+  // deliverability-breakdown.ts for the demo model and the real data notes).
+  const [deliveryProvider, setDeliveryProvider] = useState<DeliveryProviderKey>('all');
+
+  const avgsWithDelivery = useMemo(() => {
+    return avgsData.map((item, index) => ({
+      ...item,
+      delivery_rate: deliveryRateForSend(deliveryProvider, index, avgsData.length),
+    }));
+  }, [avgsData, deliveryProvider]);
+
+  // The tab trigger always shows the overall average; the in-chart reference
+  // line follows the provider filter.
+  const avgDeliveryRateAll = useMemo(() => {
+    if (avgsData.length === 0) {
+      return 0;
+    }
+    return (
+      avgsData.reduce(
+        (sum, _item, index) => sum + deliveryRateForSend('all', index, avgsData.length),
+        0,
+      ) / avgsData.length
+    );
+  }, [avgsData]);
+
+  const avgDeliveryRate = useMemo(() => {
+    if (avgsWithDelivery.length === 0) {
+      return 0;
+    }
+    return (
+      avgsWithDelivery.reduce((sum, item) => sum + item.delivery_rate, 0) / avgsWithDelivery.length
+    );
+  }, [avgsWithDelivery]);
 
   // Calculate dynamic domain and ticks based on current tab's data
   const { barDomain, barTicks } = useMemo(() => {
@@ -231,12 +299,20 @@ const NewsletterKPIs: React.FC<{
     }
 
     // Extract values for the current data key
-    const values = avgsData
-      .map((item) => item[dataKey as keyof AvgsDataItem])
-      .filter((val) => typeof val === 'number');
+    const values = avgsWithDelivery
+      .map((item) => item[dataKey as keyof typeof item])
+      .filter((val): val is number => typeof val === 'number');
 
     if (values.length === 0) {
       return { barDomain: [0, 1], barTicks: [0, 1] };
+    }
+
+    // Delivery rates cluster near 100%: floor the axis just below the data
+    // (position encoding via dots, so a non-zero floor is honest).
+    if (currentTab === 'avg-delivery-rate') {
+      const minValue = Math.min(...values, avgDeliveryRate);
+      const floor = Math.max(0, Math.floor((minValue - 0.002) * 100) / 100);
+      return { barDomain: [floor, 1], barTicks: [floor, 1] };
     }
 
     // Include the avg line value so the y-axis always contains both the
@@ -262,7 +338,15 @@ const NewsletterKPIs: React.FC<{
       barDomain: [finalMin, finalMax],
       barTicks: [finalMin, finalMax],
     };
-  }, [avgsData, currentTab, tabConfig, avgOpenRate, avgClickRate]);
+  }, [
+    avgsData,
+    avgsWithDelivery,
+    currentTab,
+    tabConfig,
+    avgOpenRate,
+    avgClickRate,
+    avgDeliveryRate,
+  ]);
 
   if (isLoading) {
     return (
@@ -272,18 +356,28 @@ const NewsletterKPIs: React.FC<{
     );
   }
 
-  let gridClass = 'grid-cols-3';
+  let gridClass = 'grid-cols-4';
   if (!emailTrackClicksEnabled || !emailTrackOpensEnabled) {
-    gridClass = 'grid-cols-2';
+    gridClass = 'grid-cols-3';
   }
   if (!emailTrackClicksEnabled && !emailTrackOpensEnabled) {
-    gridClass = 'grid-cols-1';
+    gridClass = 'grid-cols-2';
   }
 
   const showAvgLine =
     (currentTab === 'avg-open-rate' && avgOpenRate > barDomain[0] && avgOpenRate < barDomain[1]) ||
-    (currentTab === 'avg-click-rate' && avgClickRate > barDomain[0] && avgClickRate < barDomain[1]);
-  const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
+    (currentTab === 'avg-click-rate' &&
+      avgClickRate > barDomain[0] &&
+      avgClickRate < barDomain[1]) ||
+    (currentTab === 'avg-delivery-rate' &&
+      avgDeliveryRate > barDomain[0] &&
+      avgDeliveryRate < barDomain[1]);
+  const avgValue =
+    currentTab === 'avg-open-rate'
+      ? avgOpenRate
+      : currentTab === 'avg-delivery-rate'
+        ? avgDeliveryRate
+        : avgClickRate;
 
   return (
     <Tabs defaultValue={initialTab} variant="kpis">
@@ -336,6 +430,20 @@ const NewsletterKPIs: React.FC<{
             />
           </KpiTabTrigger>
         )}
+
+        <KpiTabTrigger
+          value="avg-delivery-rate"
+          onClick={() => {
+            handleTabChange('avg-delivery-rate');
+          }}
+        >
+          <KpiTabValue
+            className={isAvgsLoading ? 'opacity-50' : ''}
+            color={tabConfig['avg-delivery-rate'].color}
+            label="Avg. delivery rate"
+            value={formatPercentage(avgDeliveryRateAll)}
+          />
+        </KpiTabTrigger>
       </TabsList>
       <DropdownMenu>
         <DropdownMenuTrigger className="md:hidden" asChild>
@@ -363,6 +471,14 @@ const NewsletterKPIs: React.FC<{
                 value={formatPercentage(avgClickRate)}
               />
             )}
+            {currentTab === 'avg-delivery-rate' && (
+              <KpiTabValue
+                className={isAvgsLoading ? 'opacity-50' : ''}
+                color={tabConfig['avg-delivery-rate'].color}
+                label="Avg. delivery rate"
+                value={formatPercentage(avgDeliveryRateAll)}
+              />
+            )}
           </KpiDropdownButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
@@ -381,6 +497,10 @@ const NewsletterKPIs: React.FC<{
               Avg. click rate
             </DropdownMenuItem>
           )}
+
+          <DropdownMenuItem onClick={() => handleTabChange('avg-delivery-rate')}>
+            Avg. delivery rate
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <div className="my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500">
@@ -395,7 +515,8 @@ const NewsletterKPIs: React.FC<{
         )}
 
         {((currentTab === 'avg-open-rate' && emailTrackOpensEnabled) ||
-          (currentTab === 'avg-click-rate' && emailTrackClicksEnabled)) && (
+          (currentTab === 'avg-click-rate' && emailTrackClicksEnabled) ||
+          currentTab === 'avg-delivery-rate') && (
           <>
             {isAvgsLoading ? (
               <div className="h-[320px] w-full items-center justify-center">
@@ -403,13 +524,33 @@ const NewsletterKPIs: React.FC<{
               </div>
             ) : avgsData && avgsData.length > 0 ? (
               <>
+                {currentTab === 'avg-delivery-rate' && (
+                  <div className="mb-2 flex justify-end">
+                    <Select
+                      value={deliveryProvider}
+                      onValueChange={(value) => setDeliveryProvider(value as DeliveryProviderKey)}
+                    >
+                      <SelectTrigger className="w-[190px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        <SelectItem value="all">All inbox providers</SelectItem>
+                        {DELIVERY_PROVIDERS.map((provider) => (
+                          <SelectItem key={provider.key} value={provider.key}>
+                            {provider.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <ChartContainer
                   className="aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]"
                   config={barChartConfig}
                 >
-                  <Recharts.BarChart
+                  <Recharts.ComposedChart
                     className={isHoveringClickable ? 'cursor-pointer!' : ''}
-                    data={avgsData}
+                    data={avgsWithDelivery}
                     margin={{
                       top: 20,
                     }}
@@ -488,20 +629,35 @@ const NewsletterKPIs: React.FC<{
                         y={avgValue}
                       />
                     )}
-                    <Recharts.Bar
-                      activeBar={{ fillOpacity: 1 }}
-                      dataKey={tabConfig[currentTab].datakey}
-                      fill="url(#barGradient)"
-                      fillOpacity={0.6}
-                      isAnimationActive={false}
-                      maxBarSize={32}
-                      minPointSize={3}
-                      radius={4}
-                    />
-                  </Recharts.BarChart>
+                    {currentTab === 'avg-delivery-rate' ? (
+                      <Recharts.Line
+                        activeDot={{ r: 6 }}
+                        dataKey="delivery_rate"
+                        dot={{ r: 4, fill: 'var(--chart-purple)', strokeWidth: 0 }}
+                        isAnimationActive={false}
+                        stroke="var(--chart-purple)"
+                        strokeOpacity={0.35}
+                        strokeWidth={1.5}
+                        type="linear"
+                      />
+                    ) : (
+                      <Recharts.Bar
+                        activeBar={{ fillOpacity: 1 }}
+                        dataKey={tabConfig[currentTab].datakey}
+                        fill="url(#barGradient)"
+                        fillOpacity={0.6}
+                        isAnimationActive={false}
+                        maxBarSize={32}
+                        minPointSize={3}
+                        radius={4}
+                      />
+                    )}
+                  </Recharts.ComposedChart>
                 </ChartContainer>
                 <div className="-mt-4 text-center text-sm text-muted-foreground">
-                  Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
+                  {currentTab === 'avg-delivery-rate'
+                    ? 'Delivery rate per newsletter in this period'
+                    : `Newsletters ${currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period`}
                 </div>
               </>
             ) : (

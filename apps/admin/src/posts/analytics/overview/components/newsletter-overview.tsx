@@ -25,7 +25,12 @@ import {
   type NewsletterRadialChartData,
 } from '@/posts/analytics/newsletter/components/newsletter-radial-chart';
 import { type Post } from '@tryghost/admin-x-framework/api/posts';
+import {
+  DeliverySimulatorControl,
+  DeliveryStatusRow,
+} from '@/posts/analytics/newsletter/components/delivery-status';
 import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
+import { useDeliverySimulator } from '@/posts/analytics/newsletter/hooks/use-delivery-simulator';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 
@@ -58,6 +63,26 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
     };
   }, [post]);
 
+  // Prototype: shared delivery simulator (same store as the Newsletter tab)
+  const sim = useDeliverySimulator(stats.sent > 0 ? stats.sent : 5000);
+  const simActive = sim.state !== 'off';
+  // Rates render once the sent denominator is frozen (handoff done); while
+  // the send itself is in flight they stay blank.
+  const simPending = simActive && !sim.numbersLive;
+  // All rates over the intended audience (matches Ghost's email_count
+  // semantics); on a successful send audience === sent, so no difference.
+  const displayStats = simActive
+    ? {
+        opened: sim.numbersLive ? sim.model.opened : 0,
+        clicked: sim.numbersLive ? sim.model.clicked : 0,
+        openedRate:
+          sim.numbersLive && sim.model.audience ? sim.model.opened / sim.model.audience : 0,
+        clickedRate:
+          sim.numbersLive && sim.model.audience ? sim.model.clicked / sim.model.audience : 0,
+        sent: sim.model.sent,
+      }
+    : stats;
+
   // Get top links for this post
   const { data: linksResponse } = useTopLinks({
     searchParams: {
@@ -73,13 +98,13 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   const commonChartData: NewsletterRadialChartData[] = [
     {
       datatype: 'Clicked',
-      value: stats.clickedRate,
+      value: displayStats.clickedRate,
       fill: 'url(#gradientTeal)',
       color: 'var(--chart-teal)',
     },
     {
       datatype: 'Opened',
-      value: stats.openedRate,
+      value: displayStats.openedRate,
       fill: 'url(#gradientBlue)',
       color: 'var(--chart-blue)',
     },
@@ -101,6 +126,13 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
 
   return (
     <Card className={`group/datalist overflow-hidden ${fullWidth && 'col-span-2'}`}>
+      <DeliverySimulatorControl state={sim.state} onChange={sim.setState} />
+      <DeliveryStatusRow
+        model={sim.model}
+        progress={sim.progress}
+        publishedAt={post.published_at}
+        state={sim.state}
+      />
       <div className="relative flex items-center justify-between gap-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-1.5 text-lg">
@@ -126,7 +158,9 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           </div>
         </CardContent>
       ) : (
-        <CardContent className={`${fullWidth && 'grid grid-cols-2'}`}>
+        <CardContent
+          className={`${fullWidth && 'grid grid-cols-2'} ${simPending ? 'pointer-events-none opacity-40' : ''}`}
+        >
           <div className={`${fullWidth && 'border-r pr-6'}`}>
             <div className="grid grid-cols-2 gap-6">
               <KpiCardHeader className="group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0">
@@ -136,7 +170,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                     // diffDirection={'up'}
                     // diffTooltip={'Better than the average'}
                     // diffValue={1.45}
-                    value={formatPercentage(stats.openedRate)}
+                    value={simPending ? '—' : formatPercentage(displayStats.openedRate)}
                   />
                 </div>
               </KpiCardHeader>
@@ -147,7 +181,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                     // diffDirection={'up'}
                     // diffTooltip={'Better than the average'}
                     // diffValue={1.45}
-                    value={formatPercentage(stats.clickedRate)}
+                    value={simPending ? '—' : formatPercentage(displayStats.clickedRate)}
                   />
                 </div>
               </KpiCardHeader>
@@ -179,7 +213,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                 <DataList className="">
                   <DataListBody>
                     {topLinks.slice(0, fullWidth ? 10 : 5).map((link) => {
-                      const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                      const percentage =
+                        displayStats.clicked > 0 ? link.count / displayStats.clicked : 0;
                       return (
                         <DataListRow key={link.link.link_id}>
                           <DataListBar
