@@ -20,6 +20,7 @@ describe('email analytics service', function () {
   const domainEvents = { subscribe: sinon.stub() };
   const metrics = { metric: sinon.stub() };
   const settingsCache = { get: sinon.stub() };
+  const giftDeliveryService = { recordOutcome: sinon.stub() };
 
   let newslettersInit: sinon.SinonStub;
   let automationsInit: sinon.SinonStub;
@@ -49,6 +50,7 @@ describe('email analytics service', function () {
         removeComplaint: sinon.stub(),
         removeUnsubscribe: sinon.stub(),
       },
+      giftDeliveryService,
       membersRepository: {
         get: sinon.stub(),
         update: sinon.stub(),
