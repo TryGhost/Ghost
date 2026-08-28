@@ -139,11 +139,11 @@ describe('register-job-handlers', function () {
   // gate, so invoking the registered handler proves the wiring without
   // touching the network.
   it('registers the update-check handler', async function () {
-    // Compare the type string, not class identity: the module under test
-    // loads its job class through the CJS cache, a different instance from
-    // this file's ESM import.
-    assert.equal(jobsService.handle.getCall(5).args[0].type, 'update-check');
+    // handlerFor matches on the type string, not class identity: the module
+    // under test loads its job class through the CJS cache, a different
+    // instance from this file's ESM import.
+    const updateCheckHandler = handlerFor('update-check');
 
-    await jobsService.handle.getCall(5).args[1](new UpdateCheckJob());
+    await updateCheckHandler(new UpdateCheckJob());
   });
 });

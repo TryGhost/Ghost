@@ -66,7 +66,7 @@ module.exports = async ({
   await updateChecker.check();
 };
 
-module.exports.scheduleRecurringJobs = async (classBasedJobs) => {
+const scheduleRecurringJob = async (jobsService) => {
   // use a random seconds/minutes/hours value to avoid spikes to the update service API
   const s = Math.floor(Math.random() * 60); // 0-59
   const m = Math.floor(Math.random() * 60); // 0-59
@@ -74,10 +74,17 @@ module.exports.scheduleRecurringJobs = async (classBasedJobs) => {
 
   const at = `${s} ${m} ${h} * * *`;
   logging.info(`[Background Job] update-check scheduled at ${at}`);
-  await classBasedJobs.scheduleRecurring(new UpdateCheckJob(), { cron: at });
+  await jobsService.scheduleRecurring(new UpdateCheckJob(), { cron: at });
 };
 
-module.exports.scheduleBootJob = async (classBasedJobs) => {
+const scheduleBootJob = async (jobsService) => {
   logging.info('[Background Job] update-check boot run queued');
-  await classBasedJobs.dispatch(new UpdateCheckJob());
+  await jobsService.dispatch(new UpdateCheckJob());
+};
+
+module.exports.scheduleJobs = async (jobsService) => {
+  await scheduleRecurringJob(jobsService);
+  if (config.get('updateCheck:forceUpdate')) {
+    await scheduleBootJob(jobsService);
+  }
 };

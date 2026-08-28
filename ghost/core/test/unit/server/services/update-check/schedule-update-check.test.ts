@@ -7,6 +7,7 @@ import logging from '@tryghost/logging';
 // that core/server/services/update-check/index.js loads - so a stray addJob()
 // call is visible here, and the scheduled job is instanceof the class below.
 const legacyJobsManager = require('../../../../../core/server/services/jobs');
+const config = require('../../../../../core/shared/config');
 const updateCheck = require('../../../../../core/server/services/update-check');
 const UpdateCheckJob =
   require('../../../../../core/server/services/update-check/jobs/update-check-job').default;
@@ -30,7 +31,7 @@ describe('update-check scheduling', function () {
   });
 
   it('schedules a daily update-check job at a random time of day', async function () {
-    await updateCheck.scheduleRecurringJobs(jobsService);
+    await updateCheck.scheduleJobs(jobsService);
 
     assert.ok(jobsService.scheduleRecurring.calledOnce);
     const [job, schedule] = jobsService.scheduleRecurring.firstCall.args;
@@ -44,12 +45,22 @@ describe('update-check scheduling', function () {
       loggingInfo.calledWith(`[Background Job] update-check scheduled at ${schedule.cron}`),
       'the scheduled log line is preserved verbatim',
     );
+    assert.ok(
+      jobsService.dispatch.notCalled,
+      'no boot run is dispatched unless updateCheck:forceUpdate is set',
+    );
     assert.ok(addJob.notCalled, 'update-check is no longer registered with the legacy job manager');
   });
 
-  it('dispatches a one-off update-check job for the boot run', async function () {
-    await updateCheck.scheduleBootJob(jobsService);
+  it('also dispatches a one-off boot run when updateCheck:forceUpdate is set', async function () {
+    const originalGet = config.get.bind(config);
+    sinon
+      .stub(config, 'get')
+      .callsFake((key: string) => (key === 'updateCheck:forceUpdate' ? true : originalGet(key)));
 
+    await updateCheck.scheduleJobs(jobsService);
+
+    assert.ok(jobsService.scheduleRecurring.calledOnce, 'the recurring job is still scheduled');
     assert.ok(jobsService.dispatch.calledOnce);
     const [job] = jobsService.dispatch.firstCall.args;
     assert.ok(job instanceof UpdateCheckJob);
