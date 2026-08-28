@@ -31,7 +31,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
 
       const deliveryTime = new Date();
@@ -109,7 +108,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
       await assert.rejects(
         async () => {
@@ -164,7 +162,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
       await assert.rejects(
         async () => {
@@ -218,7 +215,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
       await assert.rejects(
         async () => {
@@ -275,7 +271,6 @@ describe('Mailgun Email Provider', function () {
 
       const provider = new MailgunEmailProvider({
         mailgunClient,
-        errorHandler: () => {},
       });
       assert.equal(provider.getMaximumRecipients(), 1000);
     });
@@ -294,7 +289,6 @@ describe('Mailgun Email Provider', function () {
 
       const provider = new MailgunEmailProvider({
         mailgunClient,
-        errorHandler: () => {},
       });
       assert.equal(provider.getTargetDeliveryWindow(), 0);
     });

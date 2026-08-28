@@ -133,8 +133,6 @@ class SettingsHelpers {
       return EmailAddressParser.stringify(this.getDefaultEmail());
     }
 
-    supportAddress = supportAddress || 'noreply';
-
     // Any fromAddress without domain uses site domain, like default setting `noreply`
     if (supportAddress.indexOf('@') < 0) {
       return `${supportAddress}@${this.getDefaultEmailDomain()}`;
