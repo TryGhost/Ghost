@@ -7,7 +7,6 @@ const MembersConfigProvider = require('./members-config-provider');
 const { makeImporter, makeExporter } = require('./import-export');
 const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
-const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
@@ -216,9 +215,6 @@ module.exports = {
         );
       }
     }
-
-    // Schedule daily cron job to clean expired comp subs
-    memberJobs.scheduleExpiredCompCleanupJob();
   },
   contentGating: require('./content-gating'),
 
