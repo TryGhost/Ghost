@@ -368,6 +368,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
+  const assert = require('node:assert/strict');
   const metrics = require('@tryghost/metrics');
   const db = require('./server/data/db');
   const models = require('./server/models');
@@ -381,6 +382,13 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
   await stripe.init();
+  giftService.init({
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+  });
+  const giftDeliveryService = giftService.deliveryService;
+  assert(giftDeliveryService, 'Gift delivery service should be initialized');
 
   await Promise.all([
     identityTokens.init(),
@@ -403,6 +411,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
       db,
       domainEvents,
       emailSuppressionList,
+      giftDeliveryService,
       membersRepository: members.api.members,
       models,
       metrics,
@@ -420,11 +429,6 @@ async function initServices({ ghostServer, config, prometheusClient }) {
     recommendationsService.init(),
     statsService.init(),
     explorePingService.init(),
-    giftService.init({
-      apiUrl,
-      schedulerAdapter,
-      internalKeys,
-    }),
     machinePaymentsService.init(),
     automationsService.init({
       domainEvents,
