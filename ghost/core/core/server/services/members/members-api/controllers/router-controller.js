@@ -140,7 +140,6 @@ module.exports = class RouterController {
    * @param {any} deps.offersAPI
    * @param {any} deps.paymentsService
    * @param {any} deps.memberRepository
-   * @param {any} deps.StripePrice
    * @param {() => boolean} deps.allowSelfSignup
    * @param {any} deps.magicLinkService
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
@@ -160,7 +159,6 @@ module.exports = class RouterController {
     paymentsService,
     tiersService,
     memberRepository,
-    StripePrice,
     allowSelfSignup,
     magicLinkService,
     stripeAPIService,
@@ -180,7 +178,6 @@ module.exports = class RouterController {
     this._paymentsService = paymentsService;
     this._tiersService = tiersService;
     this._memberRepository = memberRepository;
-    this._StripePrice = StripePrice;
     this._allowSelfSignup = allowSelfSignup;
     this._magicLinkService = magicLinkService;
     this._stripeAPIService = stripeAPIService;
