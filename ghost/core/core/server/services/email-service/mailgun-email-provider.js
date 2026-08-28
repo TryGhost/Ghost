@@ -35,18 +35,15 @@ const debug = require('@tryghost/debug')('email-service:mailgun-provider-service
 class MailgunEmailProvider {
   #mailgunClient;
   #config;
-  #errorHandler;
 
   /**
    * @param {object} dependencies
    * @param {import('../lib/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
    * @param {Config} dependencies.config
-   * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
    */
-  constructor({ mailgunClient, config, errorHandler }) {
+  constructor({ mailgunClient, config }) {
     this.#mailgunClient = mailgunClient;
     this.#config = config;
-    this.#errorHandler = errorHandler;
   }
 
   #createRecipientData(replacements) {
@@ -165,7 +162,7 @@ class MailgunEmailProvider {
           message: this.#createMailgunErrorMessage(error),
           errorDetails: JSON.stringify({ error, messageData }),
           context: `Mailgun Error ${error.status}: ${error.details}`,
-          help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+          help: `https://docs.ghost.org/newsletters/#bulk-email-configuration`,
           code: 'BULK_EMAIL_SEND_FAILED',
         });
       } else {

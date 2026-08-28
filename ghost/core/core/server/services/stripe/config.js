@@ -4,7 +4,7 @@ const labs = require('../../../shared/labs');
 
 const messages = {
   remoteWebhooksInDevelopment:
-    'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
+    'Cannot use remote webhooks in development. See https://docs.ghost.org/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
 // @TODO Refactor to a class w/ constructor

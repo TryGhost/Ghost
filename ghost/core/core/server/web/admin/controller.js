@@ -46,7 +46,7 @@ module.exports = function adminController(req, res) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.templateError.message, { templatePath }),
         context: tpl(messages.templateError.context),
-        help: tpl(messages.templateError.help, { link: 'https://ghost.org/docs/install/source/' }),
+        help: tpl(messages.templateError.help, { link: 'https://docs.ghost.org/install/source/' }),
         err,
       });
     }

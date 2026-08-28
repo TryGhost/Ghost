@@ -104,7 +104,7 @@ function AboutModal() {
             <div className="text-red-500 dark:text-red-400">
               You are running an unsupported database in production. Please{' '}
               <a
-                href="https://ghost.org/docs/faq/supported-databases/"
+                href="https://docs.ghost.org/faq/supported-databases/"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -118,7 +118,7 @@ function AboutModal() {
         <div className="flex flex-col gap-1.5">
           <a
             className="flex items-center gap-2 hover:text-grey-900 dark:hover:text-grey-400"
-            href="https://ghost.org/docs/"
+            href="https://docs.ghost.org/"
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -134,7 +134,7 @@ function AboutModal() {
           </a>
           <a
             className="flex items-center gap-2 hover:text-grey-900 dark:hover:text-grey-400"
-            href="https://ghost.org/docs/contributing/"
+            href="https://docs.ghost.org/contributing/"
             rel="noopener noreferrer"
             target="_blank"
           >
