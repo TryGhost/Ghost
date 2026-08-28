@@ -398,20 +398,10 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         }
 
         function isOwner() {
-          let isCorrectOwner = true;
-
           if (!unsafeAttrs.authors) {
             return false;
           }
-
-          if (unsafeAttrs.authors) {
-            isCorrectOwner =
-              isCorrectOwner &&
-              unsafeAttrs.authors.length &&
-              unsafeAttrs.authors[0].id === context.user;
-          }
-
-          return isCorrectOwner;
+          return unsafeAttrs.authors.length && unsafeAttrs.authors[0].id === context.user;
         }
 
         function isPrimaryAuthor() {
