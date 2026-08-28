@@ -136,7 +136,7 @@
     "@tryghost/string": "catalog:",
     "@tryghost/tpl": "catalog:",
     "@tryghost/url-utils": "5.2.6",
-    "@tryghost/validator": "3.2.6",
+    "@tryghost/validator": "0.2.22",
     "@tryghost/version": "2.3.2",
     "@tryghost/zip": "3.5.1",
     "@x402/core": "catalog:",
