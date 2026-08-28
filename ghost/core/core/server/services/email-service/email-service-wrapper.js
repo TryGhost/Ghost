@@ -134,7 +134,6 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
-      debugStorageFilePath: configService.getContentPath('data'),
     });
 
     if (ghostServer) {
