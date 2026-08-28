@@ -258,7 +258,7 @@ function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLi
         <a
           key={link.id ?? link.href}
           aria-label={link.label}
-          className="flex h-(--control-height) w-14 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 [&_svg]:h-4"
+          className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
           href={link.href}
           rel="noopener noreferrer"
           target="_blank"
