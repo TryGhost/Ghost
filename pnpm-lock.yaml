@@ -195,6 +195,9 @@ catalogs:
     '@tryghost/tpl':
       specifier: 2.3.9
       version: 2.3.9
+    '@tryghost/validator':
+      specifier: 3.2.10
+      version: 3.2.10
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
@@ -2408,8 +2411,8 @@ importers:
         specifier: 5.2.6
         version: 5.2.6
       '@tryghost/validator':
-        specifier: 0.2.22
-        version: 0.2.22
+        specifier: 'catalog:'
+        version: 3.2.10
       '@tryghost/version':
         specifier: 2.3.2
         version: 2.3.2
@@ -9571,14 +9574,8 @@ packages:
   '@tryghost/url-utils@5.2.7':
     resolution: {integrity: sha512-enJ084BtVwsr+q+1wz2hy/jjooBfDLh4FS4g2o8n1ZAgGAly4mch6w7IpDX6MjRcy6an/S1i/Jo3tMsHa2igfw==}
 
-  '@tryghost/validator@0.2.22':
-    resolution: {integrity: sha512-dmobNVEKXMi3K4OdAXLBFwa78hVgy8cYvCPJgfV4h3NtYIyRHqwARr3upT3/ASpVBpKGVBu7XexfSv+tibzsuQ==}
-
   '@tryghost/validator@3.2.10':
     resolution: {integrity: sha512-mk4bexOTmO4xaGiTvHXwCQIH5okcR3XOA3zF2vSMu89lpwZ0QJPXEaooHZUdLLBGOwuigz0iLVyiNeC58OAyrg==}
-
-  '@tryghost/validator@3.2.9':
-    resolution: {integrity: sha512-dhb8ix2Xd1TVCjpwAJ87MRO/39m1fTl72dfqLbjnmA8r/vgA59SLVUF+BimH3DHcN6vDldwJlDlfJ4nHl5NEaA==}
 
   '@tryghost/version@2.3.10':
     resolution: {integrity: sha512-4KHPqEZwhyixUFfDiNCoJ6nCjmLrX5VwqrPcAsNQs82W2chkaysvjZU9rXFNULpapRcYu0Y7xX/Sn2JJDlbriQ==}
@@ -22292,10 +22289,6 @@ packages:
     resolution: {integrity: sha512-TQ5pAGhd5whStmqWvYF4OjQROlmv9SMFVt37qoCBdqRffuuklWYQlCNnEs2ZaIBD1kZRNnikiZOS1eqgkar0iw==}
     engines: {node: '>= 0.10'}
 
-  validator@7.2.0:
-    resolution: {integrity: sha512-c8NGTUYeBEcUIGeMppmNVKHE7wwfm3mYbNZxV+c5mlv9fDHI7Ad3p07qfNrn/CvpdkK2k61fOLRO2sTEhgQXmg==}
-    engines: {node: '>= 0.10'}
-
   value-or-function@4.0.0:
     resolution: {integrity: sha512-aeVK81SIuT6aMJfNo9Vte8Dw0/FZINGBV8BfCraGtqVxIeLAEhJyoWs8SmvRVmXfGss2PmmOwZCuBPbZR+IYWg==}
     engines: {node: '>= 10.13.0'}
@@ -28813,7 +28806,7 @@ snapshots:
       '@tryghost/errors': 3.3.9
       '@tryghost/promise': 2.3.9
       '@tryghost/tpl': 2.3.9
-      '@tryghost/validator': 3.2.9
+      '@tryghost/validator': 3.2.10
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
@@ -29215,7 +29208,7 @@ snapshots:
   '@tryghost/request@4.0.2':
     dependencies:
       '@tryghost/errors': 3.3.9
-      '@tryghost/validator': 3.2.9
+      '@tryghost/validator': 3.2.10
       '@tryghost/version': 2.3.9
       cacheable-lookup: 7.0.0
       got: 15.1.0
@@ -29317,26 +29310,10 @@ snapshots:
       remark-footnotes: 1.0.0
       unist-util-visit: 2.0.3
 
-  '@tryghost/validator@0.2.22':
-    dependencies:
-      '@tryghost/errors': 3.3.9
-      '@tryghost/tpl': 0.1.40
-      lodash: 4.18.1
-      moment-timezone: 0.5.45
-      validator: 7.2.0
-
   '@tryghost/validator@3.2.10':
     dependencies:
       '@tryghost/errors': 3.3.9
       '@tryghost/tpl': 2.3.10
-      lodash: 4.18.1
-      moment-timezone: 0.5.45
-      validator: 13.15.35
-
-  '@tryghost/validator@3.2.9':
-    dependencies:
-      '@tryghost/errors': 3.3.9
-      '@tryghost/tpl': 2.3.9
       lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 13.15.35
@@ -30454,9 +30431,9 @@ snapshots:
       obug: 2.1.3
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
     optionalDependencies:
-      '@vitest/browser': 4.1.10(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10)
+      '@vitest/browser': 4.1.10(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10)
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -30537,7 +30514,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -46726,8 +46703,6 @@ snapshots:
   validator@13.12.0: {}
 
   validator@13.15.35: {}
-
-  validator@7.2.0: {}
 
   value-or-function@4.0.0: {}
 
