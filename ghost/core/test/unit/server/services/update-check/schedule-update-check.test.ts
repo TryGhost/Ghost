@@ -53,10 +53,7 @@ describe('update-check scheduling', function () {
   });
 
   it('also dispatches a one-off boot run when updateCheck:forceUpdate is set', async function () {
-    const originalGet = config.get.bind(config);
-    sinon
-      .stub(config, 'get')
-      .callsFake((key: string) => (key === 'updateCheck:forceUpdate' ? true : originalGet(key)));
+    sinon.stub(config, 'get').withArgs('updateCheck:forceUpdate').returns(true);
 
     await updateCheck.scheduleJobs(jobsService);
 
