@@ -8,7 +8,7 @@ inputs:
     description: 'Docker image tags (multi-line string)'
     required: true
   artifact-name:
-    description: 'Name of the artifact to download (fork PRs only)'
+    description: 'Name of the image artifact to download'
     required: false
     default: 'docker-image'
 
@@ -20,15 +20,17 @@ runs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: ${{ inputs.artifact-name }}
+        path: ${{ runner.temp }}/${{ inputs.artifact-name }}
 
     - name: Load image from artifact (artifact)
       if: inputs.use-artifact == 'true'
       shell: bash
       env:
-        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        ARTIFACT_PATH: ${{ runner.temp }}/${{ inputs.artifact-name }}/${{ inputs.artifact-name }}.tar.gz
       run: |
+        trap 'rm -f -- "$ARTIFACT_PATH"' EXIT
         echo "Loading Docker image from artifact..."
-        gunzip -c "${ARTIFACT_NAME}.tar.gz" | docker load
+        gunzip -c "$ARTIFACT_PATH" | docker load
         echo "Available images after load:"
         docker images
 

@@ -93,6 +93,35 @@ describe('ImportRunStore', function () {
     assert.equal(failed?.finishedAt, finishedAt);
   });
 
+  it('settles immediately when no imports are running', async function () {
+    const store = new ImportRunStore();
+
+    await store.allSettled();
+  });
+
+  it('settles waiters only after every import has finished its reporting and is released', async function () {
+    const store = new ImportRunStore();
+    store.create('run_1', 1);
+    store.create('run_2', 1);
+    let settled = false;
+    const waiting = store.allSettled().then(() => {
+      settled = true;
+    });
+
+    store.finish('run_1');
+    store.release('run_1');
+    await Promise.resolve();
+    assert.equal(settled, false);
+
+    store.fail('run_2', 'failed');
+    await Promise.resolve();
+    assert.equal(settled, false);
+
+    store.release('run_2');
+    await waiting;
+    assert.equal(settled, true);
+  });
+
   it('keeps only the most recent finished runs', function () {
     const store = new ImportRunStore();
 
