@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
-  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
@@ -36,24 +35,22 @@ const nameField = {
   type: 'short_text',
 };
 
-function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
+function stripeSettings() {
   return settingsResponse({
-    ...overrides,
     settings: {
       stripe_connect_display_name: 'Dummy',
       stripe_connect_livemode: false,
       stripe_connect_account_id: 'acct_123',
       stripe_connect_publishable_key: 'pk_test_123',
       stripe_connect_secret_key: 'sk_test_123',
-      ...overrides.settings,
     },
   });
 }
 
-// The flag lives in settings and config in lockstep, and Stripe rides along in settings.
-const flagOnBoot = {
-  browseConfig: { response: configResponse({ labs: { membersCustomFields: true } }) },
-  browseSettings: { response: stripeSettings({ labs: { membersCustomFields: true } }) },
+// The harness composes the flag into settings and config; Stripe rides along in settings.
+const flagOn = {
+  labs: { membersCustomFields: true },
+  boot: { browseSettings: { response: stripeSettings() } },
 };
 
 const supporterConfig = {
@@ -114,7 +111,7 @@ describe('Tier checkout collection', () => {
       { errors: [{ type: 'NotFoundError', message: 'Resource not found error.' }] },
       { status: 404 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect(modal.getByText('Checkout', { exact: true })).toHaveCount(0);
@@ -131,7 +128,7 @@ describe('Tier checkout collection', () => {
       { errors: [{ type: 'InternalServerError', message: 'Something went wrong.' }] },
       { status: 500 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByText(/could not be loaded/)).toBeVisible();
@@ -140,7 +137,7 @@ describe('Tier checkout collection', () => {
 
   it('shows no checkout section on the free tier', async () => {
     checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.tiers().getByText(freeTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -150,7 +147,7 @@ describe('Tier checkout collection', () => {
 
   it('reflects the saved configuration and writes nothing when untouched', async () => {
     const putApi = checkoutWorld([supporterConfig]);
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
@@ -182,7 +179,7 @@ describe('Tier checkout collection', () => {
     const everywhere = { ...supporterConfig.shipping };
     delete (everywhere as { allowed_countries?: string[] }).allowed_countries;
     checkoutWorld([{ ...supporterConfig, shipping: everywhere }]);
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
@@ -192,7 +189,7 @@ describe('Tier checkout collection', () => {
 
   it('validates destinations inline before anything is written', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -204,7 +201,7 @@ describe('Tier checkout collection', () => {
 
   it('saves the chosen collections, stating every block explicitly', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -259,7 +256,7 @@ describe('Tier checkout collection', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -290,7 +287,7 @@ describe('Tier checkout collection', () => {
       fields = [...fields, created];
       return { members_custom_fields: [created] };
     });
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -335,7 +332,7 @@ describe('Tier checkout collection', () => {
         ],
       }),
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.tiers().getByRole('button', { name: 'Add tier' }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -377,7 +374,7 @@ describe('Tier checkout collection', () => {
 
   it('closes without confirmation after saving checkout edits', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect business tax ID').click();
@@ -392,7 +389,7 @@ describe('Tier checkout collection', () => {
 
   it('asks before discarding unsaved checkout edits', async () => {
     checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect phone number').click();
