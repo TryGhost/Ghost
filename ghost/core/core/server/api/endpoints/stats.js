@@ -1,30 +1,5 @@
 const statsService = require('../../services/stats');
-const commentsService = require('../../services/comments');
-const { BadRequestError } = require('@tryghost/errors');
-const moment = require('moment-timezone');
-
-function validateCommentsOverviewOptions({
-  date_from: dateFrom,
-  date_to: dateTo,
-  timezone = 'UTC',
-}) {
-  if (!moment.tz.zone(timezone)) {
-    throw new BadRequestError({ message: 'Invalid timezone.' });
-  }
-
-  for (const [name, value] of [
-    ['date_from', dateFrom],
-    ['date_to', dateTo],
-  ]) {
-    if (value && !moment(value, 'YYYY-MM-DD', true).isValid()) {
-      throw new BadRequestError({ message: `Invalid ${name}. Expected YYYY-MM-DD.` });
-    }
-  }
-
-  if (dateFrom && dateTo && moment(dateFrom).isAfter(moment(dateTo))) {
-    throw new BadRequestError({ message: 'date_from must be before or equal to date_to.' });
-  }
-}
+const { validateDateRangeOptions } = require('../../services/stats/utils/date-utils');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -468,29 +443,18 @@ const controller = {
     },
     options: ['date_from', 'date_to', 'timezone'],
     validation(frame) {
-      validateCommentsOverviewOptions(frame.options);
+      validateDateRangeOptions(frame.options);
     },
     permissions: {
       docName: 'comments',
       method: 'browse',
     },
-    cache: statsService.cache,
-    generateCacheKeyData(frame) {
-      return {
-        method: 'commentsOverview',
-        options: {
-          date_from: frame.options.date_from,
-          date_to: frame.options.date_to,
-          timezone: frame.options.timezone,
-        },
-      };
-    },
+    // Deliberately uncached: the api-framework pipeline serves a cache hit
+    // before it runs the permissions stage, so caching a response that only
+    // comment-permission holders may see would hand it to any authenticated
+    // Admin API caller.
     async query(frame) {
-      const overview = await commentsService.stats.getOverview({
-        dateFrom: frame?.options?.date_from,
-        dateTo: frame?.options?.date_to,
-        timezone: frame?.options?.timezone,
-      });
+      const overview = await statsService.api.getCommentsOverview(frame.options);
       return { data: [overview] };
     },
   },

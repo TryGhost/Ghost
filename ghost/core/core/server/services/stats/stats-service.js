@@ -4,6 +4,7 @@ const SubscriptionStatsService = require('./subscription-stats-service');
 const ReferrersStatsService = require('./referrers-stats-service');
 const PostsStatsService = require('./posts-stats-service');
 const ContentStatsService = require('./content-stats-service');
+const CommentsStatsService = require('./comments-stats-service');
 class StatsService {
   /**
    * @param {object} deps
@@ -13,6 +14,7 @@ class StatsService {
    * @param {ReferrersStatsService} deps.referrers
    * @param {PostsStatsService} deps.posts
    * @param {ContentStatsService} deps.content
+   * @param {CommentsStatsService} deps.comments
    **/
   constructor(deps) {
     this.mrr = deps.mrr;
@@ -21,6 +23,7 @@ class StatsService {
     this.referrers = deps.referrers;
     this.posts = deps.posts;
     this.content = deps.content;
+    this.comments = deps.comments;
   }
 
   async getMRRHistory(options = {}) {
@@ -235,6 +238,16 @@ class StatsService {
   }
 
   /**
+   * @param {Object} options
+   * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+   * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+   * @param {string} [options.timezone] - Timezone to use for date interpretation
+   */
+  async getCommentsOverview(options = {}) {
+    return this.comments.getOverview(options);
+  }
+
+  /**
    * @param {object} deps
    *
    * @returns {StatsService}
@@ -271,6 +284,7 @@ class StatsService {
       referrers: new ReferrersStatsService(deps),
       posts: new PostsStatsService(depsWithTinybird),
       content: new ContentStatsService(depsWithTinybird),
+      comments: new CommentsStatsService(deps),
     });
   }
 }

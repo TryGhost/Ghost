@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const knexLib = require('knex');
-const CommentsStatsService = require('../../../../../core/server/services/comments/comments-stats-service');
+const CommentsStatsService = require('../../../../../core/server/services/stats/comments-stats-service');
+const { getDateBoundaries } = require('../../../../../core/server/services/stats/utils/date-utils');
 
 function makeQB(resultFn) {
   const qb = {};
@@ -41,9 +42,10 @@ function createService({ tableResults = {} } = {}) {
     return qb;
   });
   knex.raw = sinon.stub().callsFake((v) => v);
+  knex.client = { config: { client: 'mysql2' } };
 
   return {
-    service: new CommentsStatsService({ db: { knex } }),
+    service: new CommentsStatsService({ knex }),
     knex,
     captured,
   };
@@ -93,7 +95,10 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      const result = await service.getOverview({ dateFrom: '2026-01-01', dateTo: '2026-01-31' });
+      const result = await service.getOverview({
+        date_from: '2026-01-01',
+        date_to: '2026-01-31',
+      });
 
       assert.deepEqual(result.totals, {
         comments: 0,
@@ -122,14 +127,17 @@ describe('CommentsStatsService', function () {
               { id: 'post-2', title: 'Post Two', slug: 'post-two', count: '15' },
             ],
             members: [
-              { id: 'mem-1', name: 'Alice', email: 'a@example.com', count: '12' },
-              { id: 'mem-2', name: 'Bob', email: 'b@example.com', count: '9' },
+              { id: 'mem-1', name: 'Alice', count: '12' },
+              { id: 'mem-2', name: 'Bob', count: '9' },
             ],
           }),
         },
       });
 
-      const result = await service.getOverview({ dateFrom: '2026-01-01', dateTo: '2026-01-31' });
+      const result = await service.getOverview({
+        date_from: '2026-01-01',
+        date_to: '2026-01-31',
+      });
 
       assert.deepEqual(result.totals, {
         comments: 42,
@@ -157,9 +165,36 @@ describe('CommentsStatsService', function () {
       assert.deepEqual(result.top_members[0], {
         id: 'mem-1',
         name: 'Alice',
-        email: 'a@example.com',
         count: 12,
       });
+    });
+
+    it('never exposes member email in top_members', async function () {
+      const { service, captured } = createService({
+        tableResults: {
+          comments: commentsHandler({
+            totals: { count: 0, commenters: 0 },
+            reportedTotals: { reported: 0 },
+            members: [{ id: 'mem-1', name: 'Alice', email: 'a@example.com', count: '12' }],
+          }),
+        },
+      });
+
+      const result = await service.getOverview({
+        date_from: '2026-01-01',
+        date_to: '2026-01-31',
+      });
+
+      for (const member of result.top_members) {
+        assert.ok(!('email' in member), 'top_members rows must not carry member email');
+      }
+
+      const membersQuery = captured.comments.find((qb) => qb.join.called);
+      const selected = membersQuery.select.firstCall.args;
+      assert.ok(
+        !selected.some((column) => String(column).includes('email')),
+        'members query must not select an email column',
+      );
     });
 
     it('counts reported comments by comment created_at, not report created_at', async function () {
@@ -208,7 +243,10 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      const result = await service.getOverview({ dateFrom: '2026-02-08', dateTo: '2026-02-14' });
+      const result = await service.getOverview({
+        date_from: '2026-02-08',
+        date_to: '2026-02-14',
+      });
 
       assert.deepEqual(result.totals, { comments: 40, commenters: 15, reported: 6 });
       assert.deepEqual(result.previous_totals, { comments: 20, commenters: 8, reported: 3 });
@@ -233,8 +271,8 @@ describe('CommentsStatsService', function () {
       });
 
       await service.getOverview({
-        dateFrom: '2026-02-08',
-        dateTo: '2026-02-08',
+        date_from: '2026-02-08',
+        date_to: '2026-02-08',
         timezone: 'America/Los_Angeles',
       });
 
@@ -288,8 +326,8 @@ describe('CommentsStatsService', function () {
       });
 
       const result = await service.getOverview({
-        dateFrom: '2026-01-01',
-        dateTo: '2026-04-01',
+        date_from: '2026-01-01',
+        date_to: '2026-04-01',
       });
 
       assert.equal(result.series_aggregation, 'week');
@@ -326,8 +364,8 @@ describe('CommentsStatsService', function () {
       });
 
       const result = await service.getOverview({
-        dateFrom: '2026-01-01',
-        dateTo: '2026-01-31',
+        date_from: '2026-01-01',
+        date_to: '2026-01-31',
         timezone: 'Australia/Sydney',
       });
 
@@ -357,7 +395,10 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      const result = await service.getOverview({ dateFrom: '2026-01-01', dateTo: '2026-01-03' });
+      const result = await service.getOverview({
+        date_from: '2026-01-01',
+        date_to: '2026-01-03',
+      });
 
       assert.deepEqual(result.series, [
         { date: '2025-06-01', count: 4, commenters: 1, reported: 0 },
@@ -377,7 +418,7 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      await service.getOverview({ dateFrom: '2026-01-01', dateTo: '2026-01-31' });
+      await service.getOverview({ date_from: '2026-01-01', date_to: '2026-01-31' });
 
       const totalsQuery = captured.comments.find(
         (qb) => !qb.groupByRaw.called && !qb.join.called && !qb.whereExists.called,
@@ -394,7 +435,7 @@ describe('CommentsStatsService', function () {
         connection: { filename: ':memory:' },
         useNullAsDefault: true,
       });
-      const service = new CommentsStatsService({ db: { knex } });
+      const service = new CommentsStatsService({ knex });
 
       try {
         await knex.schema.createTable('comments', (table) => {
@@ -427,7 +468,11 @@ describe('CommentsStatsService', function () {
           },
         ]);
 
-        const dayRange = service._resolveRange('2026-01-01', '2026-01-30', 'Asia/Kolkata');
+        const dayRange = getDateBoundaries({
+          date_from: '2026-01-01',
+          date_to: '2026-01-30',
+          timezone: 'Asia/Kolkata',
+        });
         const daySeries = await service._getSeries(knex, dayRange, 'Asia/Kolkata', 'day');
         assert.deepEqual(
           daySeries.filter((row) => row.count > 0),
@@ -438,7 +483,11 @@ describe('CommentsStatsService', function () {
           ],
         );
 
-        const weekRange = service._resolveRange('2026-01-01', '2026-04-30', 'Asia/Kolkata');
+        const weekRange = getDateBoundaries({
+          date_from: '2026-01-01',
+          date_to: '2026-04-30',
+          timezone: 'Asia/Kolkata',
+        });
         const weekSeries = await service._getSeries(knex, weekRange, 'Asia/Kolkata', 'week');
         assert.deepEqual(
           weekSeries.filter((row) => row.count > 0),

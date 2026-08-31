@@ -20,7 +20,7 @@ describe('Comments analytics rail', () => {
       series: [{ date: '2026-02-08', count: 3, commenters: 2, reported: 1 }],
       series_aggregation: 'day',
       top_posts: [{ id: 'post-1', title: 'Popular post', slug: 'popular', count: 8 }],
-      top_members: [{ id: 'mem-1', name: 'Alice', email: 'a@example.com', count: 5 }],
+      top_members: [{ id: 'mem-1', name: 'Alice', count: 5 }],
     });
     await renderAdminApp('/comments');
 

@@ -40,7 +40,7 @@ const renderRows = (
           type="button"
           onClick={() => onRowClick(member.id)}
         >
-          <span className="line-clamp-1 flex-1 text-sm">{member.name || member.email}</span>
+          <span className="line-clamp-1 flex-1 text-sm">{member.name || 'Unknown member'}</span>
           <span className="font-mono text-sm">{formatNumber(member.count)}</span>
         </button>
       </li>

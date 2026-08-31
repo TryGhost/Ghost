@@ -30,7 +30,6 @@ class CommentsServiceWrapper {
 
     const stats = new CommentsStats({ db });
 
-    this.stats = stats;
     this.controller = new CommentsController(this.api, stats);
   }
 }

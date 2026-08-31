@@ -297,7 +297,6 @@ export type CommentsOverviewTopPost = {
 export type CommentsOverviewTopMember = {
   id: string;
   name: string | null;
-  email: string;
   count: number;
 };
 

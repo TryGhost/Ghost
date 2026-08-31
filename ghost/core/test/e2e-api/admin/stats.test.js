@@ -11,6 +11,7 @@ const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 
 let agent;
+let contributorAgent;
 let analyticsCommentIds = [];
 
 async function addAnalyticsComment(createdAt, memberIndex = 0) {
@@ -48,8 +49,10 @@ const matchSubscriptionStats = {
 describe('Stats API', function () {
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
-    await fixtureManager.init('posts', 'members');
+    contributorAgent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('posts', 'members', 'users');
     await agent.loginAsOwner();
+    await contributorAgent.loginAsContributor();
   });
 
   beforeEach(async function () {
@@ -449,6 +452,35 @@ describe('Stats API', function () {
       assert.ok(['day', 'week', 'month'].includes(overview.series_aggregation));
       assert.ok(Array.isArray(overview.top_posts));
       assert.ok(Array.isArray(overview.top_members));
+    });
+
+    it('refuses roles without comment permissions', async function () {
+      await contributorAgent.get('/stats/comments/').expectStatus(403);
+    });
+
+    it('refuses roles without comment permissions even after the payload has been served once', async function () {
+      // The api-framework consults an endpoint cache before it runs the
+      // permissions stage, so a warmed response must not become readable to
+      // callers who would otherwise be refused.
+      const query = '/stats/comments/?date_from=2026-01-01&date_to=2026-01-31&timezone=UTC';
+
+      await agent.get(query).expectStatus(200);
+      await contributorAgent.get(query).expectStatus(403);
+    });
+
+    it('does not expose member email in top_members', async function () {
+      await addAnalyticsComment('2026-01-05T12:00:00.000Z', 0);
+      await addAnalyticsComment('2026-01-06T12:00:00.000Z', 1);
+
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-01-31')
+        .expectStatus(200);
+
+      const { top_members: topMembers } = body.stats[0];
+      assert.ok(topMembers.length > 0, 'expected commenters in the fixture range');
+      for (const member of topMembers) {
+        assert.ok(!('email' in member), 'top_members rows must not carry member email');
+      }
     });
 
     it('accepts date_from and date_to range parameters and returns previous_totals', async function () {
