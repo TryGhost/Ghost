@@ -93,7 +93,11 @@ function validateDateRangeOptions({ date_from: dateFrom, date_to: dateTo, timezo
     }
   }
 
-  if (dateFrom && dateTo && moment(dateFrom).isAfter(moment(dateTo))) {
+  if (!dateFrom || !dateTo) {
+    throw new BadRequestError({ message: 'date_from and date_to are required.' });
+  }
+
+  if (moment(dateFrom).isAfter(moment(dateTo))) {
     throw new BadRequestError({ message: 'date_from must be before or equal to date_to.' });
   }
 }

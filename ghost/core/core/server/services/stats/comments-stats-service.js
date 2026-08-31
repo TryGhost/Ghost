@@ -2,6 +2,7 @@ const {
   getDateBoundaries,
   getPreviousDateBoundaries,
   applyDateFilter,
+  validateDateRangeOptions,
 } = require('./utils/date-utils');
 const {
   resolveSeriesAggregation,
@@ -32,13 +33,15 @@ module.exports = class CommentsStatsService {
    * @returns {Promise<{totals: object, previous_totals: object|null, series: Array<object>, series_aggregation: string, top_posts: Array<object>, top_members: Array<object>}>}
    */
   async getOverview(options = {}) {
-    const knex = this.knex;
     const timezone = options.timezone || 'UTC';
     const dateOptions = {
       date_from: options.date_from,
       date_to: options.date_to,
       timezone,
     };
+    validateDateRangeOptions(dateOptions);
+
+    const knex = this.knex;
     const range = getDateBoundaries(dateOptions);
     const previousRange = getPreviousDateBoundaries(dateOptions);
     const seriesAggregation = resolveSeriesAggregation(range);

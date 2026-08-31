@@ -424,7 +424,8 @@ describe('Stats API', function () {
   });
 
   describe('Comments overview', function () {
-    it('rejects invalid dates, inverted ranges, and unknown timezones', async function () {
+    it('rejects invalid dates, inverted ranges, unknown timezones, and missing bounds', async function () {
+      await agent.get('/stats/comments/').expectStatus(400);
       await agent.get('/stats/comments/?date_from=garbage&date_to=2026-02-14').expectStatus(400);
       await agent.get('/stats/comments/?date_from=2026-02-14&date_to=2026-02-08').expectStatus(400);
       await agent
@@ -433,11 +434,14 @@ describe('Stats API', function () {
     });
 
     it('returns the overview payload with expected shape', async function () {
-      const { body } = await agent.get('/stats/comments/').expectStatus(200).matchHeaderSnapshot({
-        'content-version': anyContentVersion,
-        'content-length': anyContentLength,
-        etag: anyEtag,
-      });
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-12-31')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-length': anyContentLength,
+          etag: anyEtag,
+        });
 
       assert.ok(Array.isArray(body.stats), 'expected stats array in response');
       assert.equal(body.stats.length, 1, 'expected a single overview object');
@@ -455,7 +459,9 @@ describe('Stats API', function () {
     });
 
     it('refuses roles without comment permissions', async function () {
-      await contributorAgent.get('/stats/comments/').expectStatus(403);
+      await contributorAgent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-01-31')
+        .expectStatus(403);
     });
 
     it('refuses roles without comment permissions even after the payload has been served once', async function () {

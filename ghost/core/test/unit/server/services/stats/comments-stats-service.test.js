@@ -209,12 +209,16 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      const result = await service.getOverview({});
+      const result = await service.getOverview({
+        date_from: '2026-02-01',
+        date_to: '2026-02-28',
+      });
 
-      assert.deepEqual(result.series, [
+      assert.deepEqual(
+        result.series.find((row) => row.reported > 0),
         { date: '2026-02-01', count: 0, commenters: 0, reported: 4 },
-      ]);
-      assert.equal(result.series_aggregation, 'month');
+      );
+      assert.equal(result.series_aggregation, 'day');
       assert.equal(captured.comment_reports, undefined);
     });
 
@@ -281,7 +285,7 @@ describe('CommentsStatsService', function () {
       assert.equal(currentBounds.to, '2026-02-09T07:59:59.999Z');
     });
 
-    it('returns previous_totals = null when range has no bounds', async function () {
+    it('rejects requests with missing date bounds', async function () {
       const { service } = createService({
         tableResults: {
           comments: commentsHandler({
@@ -291,9 +295,9 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      const result = await service.getOverview({});
-
-      assert.equal(result.previous_totals, null);
+      await assert.rejects(() => service.getOverview({}), {
+        message: 'date_from and date_to are required.',
+      });
     });
 
     it('formats Date instances in series rows into YYYY-MM-DD strings', async function () {
@@ -307,11 +311,15 @@ describe('CommentsStatsService', function () {
         },
       });
 
-      const result = await service.getOverview({});
+      const result = await service.getOverview({
+        date_from: '2026-03-01',
+        date_to: '2026-03-31',
+      });
 
-      assert.deepEqual(result.series, [
+      assert.deepEqual(
+        result.series.find((row) => row.count > 0),
         { date: '2026-03-01', count: 4, commenters: 3, reported: 0 },
-      ]);
+      );
     });
 
     it('returns true distinct commenter counts in server-side weekly buckets', async function () {
