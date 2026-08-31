@@ -43,7 +43,7 @@ describe('adapter-paths', function () {
   it('finds an adapter placed in content/adapters/<type>/<name> per the documented convention, and reports its own missing dependency rather than "unable to find adapter"', function () {
     // Regression test for https://github.com/TryGhost/Ghost/issues/22883:
     // a storage adapter placed under content/adapters/storage/<Name>/, per
-    // https://ghost.org/docs/config/#location, that itself requires a
+    // https://docs.ghost.org/config/#location, that itself requires a
     // missing npm dependency (e.g. aws-sdk) was misreported as "unable to
     // find storage adapter" instead of surfacing the real missing-dependency
     // error, because `loadAdapterClass` matched the adapter's own path

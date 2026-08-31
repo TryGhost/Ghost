@@ -1,26 +1,61 @@
-import errors from '@tryghost/errors';
-import { getInstance } from './index';
+import { JobsService } from './jobs-service';
+import type { GiftService } from '../gifts/gift-service';
 import CleanTokensJob from '../members/jobs/clean-tokens-job';
-import cleanTokens from '../members/jobs/clean-tokens-task';
-import * as gifts from '../gifts';
+import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
+import ExternalMediaInliner from '../media-inliner/external-media-inliner';
+import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
+import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
+import * as contentImport from '../content-import';
+import UpdateCheckJob from '../update-check/jobs/update-check-job';
+import type MentionController from '../mentions/mention-controller';
+import ProcessWebmentionJob from '../mentions/process-webmention-job';
 
-const logging = require('@tryghost/logging');
+const updateCheck = require('../update-check');
 
-export default function registerJobHandlers(): void {
-  const jobsService = getInstance();
-  const db = require('../../data/db');
+interface RegisterJobHandlersDependencies {
+  jobsService: JobsService;
+  memberJobs: {
+    cleanTokens(): Promise<number>;
+    cleanExpiredComped(): Promise<unknown>;
+  };
+  giftService: GiftService;
+  mediaInliner: ExternalMediaInliner;
+  mentionsController: MentionController;
+}
 
+export default function registerJobHandlers({
+  jobsService,
+  memberJobs,
+  giftService,
+  mediaInliner,
+  mentionsController,
+}: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
-    await cleanTokens({ db, logging });
+    await memberJobs.cleanTokens();
+  });
+
+  jobsService.handle(CleanExpiredCompedJob, async () => {
+    await memberJobs.cleanExpiredComped();
   });
 
   jobsService.handle(CleanGiftsJob, async () => {
-    if (!gifts.service) {
-      throw new errors.IncorrectUsageError({
-        message: 'clean-gifts ran before the gifts service was initialised',
-      });
-    }
-    await gifts.service.cleanup();
+    await giftService.cleanup();
+  });
+
+  jobsService.handle(ExternalMediaInlinerJob, async (job) => {
+    await mediaInliner.inline(job.domains);
+  });
+
+  jobsService.handle(ContentCSVImportJob, async (job) => {
+    await contentImport.handleJob(job);
+  });
+
+  jobsService.handle(UpdateCheckJob, async () => {
+    await updateCheck({ rethrowErrors: true });
+  });
+
+  jobsService.handle(ProcessWebmentionJob, async (job) => {
+    await mentionsController.processWebmention(job);
   });
 }

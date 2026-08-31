@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
 // @ts-expect-error This module lacks type definitions.
@@ -56,6 +57,20 @@ describe('fetchMailgunEvents', function () {
     sinon.assert.calledOnceWithExactly(mailgunFetchEventsStub, MAILGUN_OPTIONS, batchHandler, {
       maxEvents: undefined,
     });
+  });
+
+  it('returns the domain-safe cursor from the Mailgun client', async function () {
+    const safeCursor = new Date('Thu Feb 25 2021 13:00:00 GMT+0000');
+    sinon.stub(MailgunClient.prototype, 'fetchEvents').resolves({ safeCursor });
+
+    const result = await fetchMailgunEvents({
+      config,
+      settings,
+      tags: DEFAULT_TAGS,
+      batchHandler: sinon.spy(),
+    });
+
+    assert.deepEqual(result, { safeCursor });
   });
 
   it('uses supplied end timestamp and max events', async function () {

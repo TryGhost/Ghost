@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import ThemeErrorsBanner from '@/layout/app-sidebar/theme-errors-banner';
 import UpgradeBanner from '@/layout/app-sidebar/upgrade-banner';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
-import WhatsNewBanner from '@/whats-new/components/whats-new-banner';
+import { WhatsNewBanner } from '@/whats-new/api';
 
 import { useUpgradeStatus } from './use-upgrade-status';
 import { useWhatsNewStatus } from './use-whats-new-status';

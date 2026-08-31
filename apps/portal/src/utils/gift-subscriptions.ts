@@ -8,7 +8,7 @@ export type GiftDuration = (typeof GIFT_DURATION_CATALOGUE)[number];
 type PortalPlan = 'free' | 'monthly' | 'yearly';
 
 // portal_default_plan is server-validated to the paid plans only
-type PortalDefaultPlan = Exclude<PortalPlan, 'free'>;
+export type PortalDefaultPlan = Exclude<PortalPlan, 'free'>;
 
 interface Price {
   amount?: unknown;
@@ -21,8 +21,16 @@ interface ValidPrice extends Price {
   currency: string;
 }
 
-interface Product {
+export interface GiftBenefit {
+  id?: string;
+  name: string;
+}
+
+export interface GiftProduct {
   id: string;
+  name: string;
+  description?: string | null;
+  benefits?: GiftBenefit[];
   type?: string;
   monthlyPrice?: Price | null;
   yearlyPrice?: Price | null;
@@ -30,10 +38,14 @@ interface Product {
 
 // the slice of Portal's site data that gift purchasing reads
 export interface Site {
+  title?: string;
+  icon?: string;
+  timezone?: string;
   paid_members_enabled?: boolean;
   portal_plans?: PortalPlan[];
+  portal_default_plan?: PortalDefaultPlan;
   portal_products?: string[];
-  products?: Product[];
+  products?: GiftProduct[];
   labs?: {
     giftSubCustomization?: boolean;
   };
@@ -41,7 +53,7 @@ export interface Site {
   portal_account_gift_promotion?: boolean;
 }
 
-function getPriceForDuration(product: Product, duration: GiftDuration): Price | null {
+function getPriceForDuration(product: GiftProduct, duration: GiftDuration): Price | null {
   if (duration === 12) {
     return product.yearlyPrice ?? null;
   }
@@ -70,7 +82,7 @@ function isDurationEnabled({
   return duration === 12 ? portalPlans.includes('yearly') : portalPlans.includes('monthly');
 }
 
-export function getGiftPrice(product: Product, duration: GiftDuration): ValidPrice | null {
+export function getGiftPrice(product: GiftProduct, duration: GiftDuration): ValidPrice | null {
   const price = getPriceForDuration(product, duration);
 
   if (!hasValidPrice(price)) {
@@ -89,7 +101,7 @@ export function getGiftProducts({
 }: {
   site: Site | null;
   duration: GiftDuration;
-}): Product[] {
+}): GiftProduct[] {
   const {
     paid_members_enabled: paidMembersEnabled,
     portal_plans: portalPlans = [],

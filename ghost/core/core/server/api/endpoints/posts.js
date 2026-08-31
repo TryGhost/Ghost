@@ -129,13 +129,13 @@ const controller = {
       method: 'importContent',
     },
     async query(frame) {
-      // The CSV must be parsed before the response goes out: the uploaded temp file is
-      // deleted as soon as it is sent. The posts are written by a background job behind
-      // the 202.
+      // The content-import service stages and validates the upload before this response;
+      // Multer deletes the request temp file as soon as the 202 is sent.
       const { importId, total } = await contentImportService.importCSV({
         filePath: frame.file.path,
         fileName: frame.file.name,
         mapping: frame.data.mapping,
+        requestUserEmail: frame.user ? frame.user.get('email') : null,
       });
       return { meta: { import_id: importId, total } };
     },

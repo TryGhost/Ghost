@@ -98,7 +98,28 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
     return [];
   }
 
-  return filter.split('+').filter((component) => {
+  const components: string[] = [];
+  let componentStart = 0;
+  let quote: "'" | '"' | undefined;
+
+  for (let index = 0; index < filter.length; index += 1) {
+    const character = filter[index];
+
+    if (quote) {
+      if (character === quote && filter[index - 1] !== '\\') {
+        quote = undefined;
+      }
+    } else if (character === "'" || character === '"') {
+      quote = character;
+    } else if (character === '+') {
+      components.push(filter.slice(componentStart, index));
+      componentStart = index + 1;
+    }
+  }
+
+  components.push(filter.slice(componentStart));
+
+  return components.filter((component) => {
     const key = component.match(/^([\w.]+):/)?.[1];
     return !key || !covers.includes(key);
   });
@@ -182,15 +203,15 @@ export function defineResource<TEntity>({
   };
 }
 
-/** Tags list fake: declared-query semantics covering the `visibility` filter the tags tabs send. */
+/** Tags list fake: declared-query semantics for the tags tabs and remote tag pickers. */
 export const fakeTags = defineResource<Tag>({
   resource: 'tags',
   semantics: {
     kind: 'declared-query',
-    covers: ['visibility'],
+    covers: ['visibility', 'tags.name'],
     select: (tags, { filter }) => {
       const visibility = filter?.match(/(?:^|\+)visibility:(\w+)/)?.[1];
-      return visibility ? tags.filter((t) => t.visibility === visibility) : tags;
+      return visibility ? tags.filter((tag) => tag.visibility === visibility) : tags;
     },
   },
 });
@@ -259,6 +280,17 @@ const newslettersResource = defineResource<Newsletter>({
  */
 export const fakePosts = defineResource<Post>({
   resource: 'posts',
+  semantics: { kind: 'passthrough' },
+});
+
+/**
+ * Pages list fake (passthrough). The pages list screen browses this endpoint
+ * once per status bucket, exactly as the posts one does — declare the response
+ * (a function of the query, if a test needs each bucket to differ) and assert
+ * the outgoing filters.
+ */
+export const fakePages = defineResource<Post>({
+  resource: 'pages',
   semantics: { kind: 'passthrough' },
 });
 
@@ -413,6 +445,25 @@ export function fakeSettingsScreens(): void {
     }
     return undefined;
   });
+}
+
+/**
+ * Declares the chrome every posts/pages list mount reads: the batched
+ * analytics counts the metric columns request, and the tag/author worlds the
+ * filter bar and its slug lookups probe. Screen-specific data a spec asserts
+ * on is declared in the spec — a fake registered after this one wins.
+ */
+export function fakePostsListScreen(): void {
+  fakeAdminEndpoint('POST', '/stats/posts-visitor-counts/', {
+    stats: [{ data: { visitor_counts: {} } }],
+  });
+  fakeAdminEndpoint('POST', '/stats/posts-member-counts/', {
+    stats: [{ data: { member_counts: {} } }],
+  });
+  fakeTags([]);
+  fakeUsers([]);
+  fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, { tags: [] });
+  fakeAdminEndpoint('GET', /^\/users\/\?.*slug/, { users: [] });
 }
 
 type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };

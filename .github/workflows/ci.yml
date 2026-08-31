@@ -103,23 +103,6 @@ jobs:
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
         run: node scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
-      - name: Check user org membership
-        id: check_user_org_membership
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Looking up: ${{ github.triggering_actor }}"
-          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
-
-          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
-
-          if [ "$LOOKUP_USER" == "204" ]; then
-            echo "User is in the org"
-            echo "is_member=true" >> $GITHUB_OUTPUT
-          else
-            echo "User is not in the org"
-            echo "is_member=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
@@ -325,7 +308,6 @@ jobs:
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
-      member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -593,7 +575,9 @@ jobs:
           series: Benchmark
           metric: Boot time
           title: Boot time (dev tree)
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Only push runs publish, and only they get the token: a pull_request run
+          # executes PR-authored code, including this local action's own definition.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.CANARY_DOCKER_BUILD || '' }}
 
   # Boot time of the production image, as a series separate from job_perf-tests:
   # that one tracks the code, this one tracks what ships (NODE_ENV=production, no
@@ -685,7 +669,9 @@ jobs:
           series: Production image
           metric: Boot time
           title: Boot time (production image)
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Only push runs publish, and only they get the token: a pull_request run
+          # executes PR-authored code, including this local action's own definition.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.CANARY_DOCKER_BUILD || '' }}
 
   job_unit-tests:
     runs-on: ubuntu-latest
@@ -770,7 +756,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        image: mysql:8.0
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -794,25 +780,11 @@ jobs:
           --health-interval=2s
           --health-timeout=5s
           --health-retries=60
-    strategy:
-      matrix:
-        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
-        env:
-          - DB: mysql8
-            NODE_ENV: testing-mysql
-        include:
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: better-sqlite3
-              NODE_ENV: testing
     env:
-      DB: ${{ matrix.env.DB }}
-      NODE_ENV: ${{ matrix.env.NODE_ENV }}
-      # The `test:ci:*` targets wrap the suites in c8. Only the sqlite leg is
-      # instrumented (mysql covers the same code), and only on the canonical
-      # repo — see job_setup's coverage_enabled output.
-      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.env.DB == 'better-sqlite3' }}
-    name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+      DB: mysql8
+      NODE_ENV: testing-mysql
+      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled }}
+    name: Acceptance tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -820,33 +792,18 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ needs.job_setup.outputs.node_version }}
           cache: pnpm
 
       - name: Install dependencies
-        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless. The mysql leg
-        # doesn't need better-sqlite3, so it skips --force and gets a fast cache
-        # restore (matches the legacy-tests job below).
-        run: |
-          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
           timezoneLinux: 'America/New_York'
 
-      - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
-
       - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
         run: |
           {
             echo "database__connection__host=127.0.0.1"
@@ -899,7 +856,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: env.COVERAGE_ENABLED == 'true' && matrix.node == env.NODE_VERSION
+        if: env.COVERAGE_ENABLED == 'true'
         with:
           name: e2e-coverage
           path: |
@@ -919,7 +876,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        image: mysql:8.0
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -931,21 +888,10 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
-    strategy:
-      matrix:
-        include:
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: mysql8
-              NODE_ENV: testing-mysql
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: better-sqlite3
-              NODE_ENV: testing
     env:
-      DB: ${{ matrix.env.DB }}
-      NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+      DB: mysql8
+      NODE_ENV: testing-mysql
+    name: Legacy tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -955,26 +901,13 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ needs.job_setup.outputs.node_version }}
           cache: pnpm
 
       - name: Install dependencies
-        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
-        run: |
-          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
-
-      - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'better-sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: pnpm install --frozen-lockfile
 
       - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
         run: |
           echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
           echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
@@ -1227,11 +1160,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Asserts the fake Stripe server against responses captured from Stripe, and
-      # that it refuses the requests Stripe refuses. Needs no Ghost, no Docker and
-      # no browser, so it does not belong in the e2e matrix that waits on the image.
+      # Needs no Ghost, no Docker and no browser, so it does not belong in the e2e
+      # matrix that waits on the image. Run through nx so the target pulls in the
+      # build it declares.
       - name: Check Stripe fixtures
-        run: pnpm --filter @tryghost/e2e test:fixtures
+        run: pnpm nx run @tryghost/e2e:test:fixtures
 
       - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -2113,28 +2046,33 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+      - name: Pull Tinybird CLI image
+        id: pull_tb_cli
+        if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tb_cli != 'true'
+        run: |
+          COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
+          if docker pull ghcr.io/tryghost/tb-cli:latest; then
+            docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
+            echo "Pulled tb-cli from GHCR"
+            echo "build_required=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "GHCR image not available, building from source"
+            echo "build_required=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Pull or build Tinybird CLI Image
-        if: matrix.analytics == 'true'
+      - name: Build Tinybird CLI image
+        if: matrix.analytics == 'true' && (needs.job_setup.outputs.changed_tb_cli == 'true' || steps.pull_tb_cli.outputs.build_required == 'true')
         env:
           CHANGED_TB_CLI: ${{ needs.job_setup.outputs.changed_tb_cli }}
         run: |
           COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
-          # GHCR's :latest is only republished from main, so it can't reflect a
-          # Dockerfile change under review — build from source when this PR
-          # touches it, otherwise take the prebuilt fast path.
           if [[ "$CHANGED_TB_CLI" == 'true' ]]; then
             echo "docker/tb-cli changed, building from source"
-            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
-          elif docker pull ghcr.io/tryghost/tb-cli:latest 2>/dev/null; then
-            echo "Pulled tb-cli from GHCR"
-            docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
           else
             echo "GHCR image not available, building from source"
-            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
           fi
+          docker build --tag "$COMPOSE_IMAGE" --file docker/tb-cli/Dockerfile .
+          docker builder prune --all --force
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image
@@ -2155,6 +2093,12 @@ jobs:
         # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
         # (admin, apps, ghost/core). Scope the install to cut shard setup time.
         run: pnpm install --frozen-lockfile --filter @tryghost/e2e...
+
+      - name: Report Analytics runner disk usage
+        if: matrix.analytics == 'true'
+        run: |
+          df -h /
+          docker system df
 
       - name: Prepare E2E CI job
         env:
@@ -2386,6 +2330,7 @@ jobs:
     # Serialize per-app publishes so two quick main merges can't both compute the
     # same next-patch number and collide on npm. Different apps still publish in
     # parallel; cancel-in-progress stays false so a queued publish isn't dropped.
+    environment: npm-release
     concurrency:
       group: publish-public-app-${{ matrix.package_name }}
       cancel-in-progress: false

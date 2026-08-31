@@ -184,8 +184,8 @@ catalogs:
       specifier: 0.11.2
       version: 0.11.2
     '@tryghost/request':
-      specifier: 4.0.2
-      version: 4.0.2
+      specifier: 4.0.3
+      version: 4.0.3
     '@tryghost/string':
       specifier: 0.3.5
       version: 0.3.5
@@ -195,6 +195,9 @@ catalogs:
     '@tryghost/tpl':
       specifier: 2.3.9
       version: 2.3.9
+    '@tryghost/validator':
+      specifier: 3.2.10
+      version: 3.2.10
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
@@ -787,6 +790,9 @@ importers:
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.20
@@ -1011,9 +1017,6 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@18.3.1)
-      '@tinybirdco/charts':
-        specifier: 0.3.0
-        version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/custom-field-types':
         specifier: workspace:*
         version: link:../../packages/custom-field-types
@@ -2152,6 +2155,12 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../packages/checkout
+      '@tryghost/custom-field-types':
+        specifier: workspace:*
+        version: link:../packages/custom-field-types
       '@tryghost/debug':
         specifier: 'catalog:'
         version: 2.3.9(supports-color@10.2.2)
@@ -2200,6 +2209,9 @@ importers:
       stripe:
         specifier: 8.222.0
         version: 8.222.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.12
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2263,6 +2275,9 @@ importers:
       '@tryghost/brute-knex':
         specifier: 'catalog:'
         version: 3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.20
@@ -2376,7 +2391,7 @@ importers:
         version: 0.1.21
       '@tryghost/request':
         specifier: 'catalog:'
-        version: 4.0.2
+        version: 4.0.3
       '@tryghost/root-utils':
         specifier: 2.3.2
         version: 2.3.2
@@ -2396,8 +2411,8 @@ importers:
         specifier: 5.2.6
         version: 5.2.6
       '@tryghost/validator':
-        specifier: 0.2.22
-        version: 0.2.22
+        specifier: 'catalog:'
+        version: 3.2.10
       '@tryghost/version':
         specifier: 2.3.2
         version: 2.3.2
@@ -4010,6 +4025,40 @@ importers:
       ajv-formats:
         specifier: 'catalog:'
         version: 3.0.1(ajv@8.20.0)
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
+  packages/checkout:
+    dependencies:
+      '@tryghost/custom-field-types':
+        specifier: workspace:*
+        version: link:../custom-field-types
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -9195,12 +9244,6 @@ packages:
   '@textlint/types@15.8.0':
     resolution: {integrity: sha512-Anhc6y5736YIsvqae0U6k0YmB2M/QVHkEeOv2aydAn/WIkdI69dCOiDbe3/+RagS3qstFTSFWJzNRA2lUjv19w==}
 
-  '@tinybirdco/charts@0.3.0':
-    resolution: {integrity: sha512-nL/SswRPO8VBOjRBxpJ9o4O6dWCgvs2xcsYiucA7AR4dTTewydTy+2bPFBxkubuX/LFce9FLOGWwFy8yOIi37g==}
-    peerDependencies:
-      react: ^18.2.0
-      react-dom: ^18.2.0
-
   '@tiptap/core@2.27.2':
     resolution: {integrity: sha512-ABL1N6eoxzDzC1bYvkMbvyexHacszsKdVPYqhl5GwHLOvpZcv9VE9QaKwDILTyz5voCA0lGcAAXZp+qnXOk5lQ==}
     peerDependencies:
@@ -9470,11 +9513,17 @@ packages:
   '@tryghost/request@4.0.2':
     resolution: {integrity: sha512-43mgzdOSd09u7Ek9nIjgk1MIkYteZ5FmiS4UYc+H82G8ci5RnVvkW2qplaNYK8Rpih36KxxjNIb7SglX6IL+kg==}
 
+  '@tryghost/request@4.0.3':
+    resolution: {integrity: sha512-vcKSJua/W9zjUQrH7jw/16t8dB6UbEbwCFMiFFxMY0uXcn2IbYEJuxmHOg0aMhqpOc11lAk714rDi3K+RNoweQ==}
+
   '@tryghost/root-utils@0.3.38':
     resolution: {integrity: sha512-ARn8wC6qv867lCr7BZ+IS8S/88K5go0j6HgQFhP27rKje4b40PsxH/P3rO4Ez2NzF/Do8ywFrTWHoLCSsCazXQ==}
 
   '@tryghost/root-utils@2.3.1':
     resolution: {integrity: sha512-1g0HskTTDJzn3CzcEWhd4aKtcmPm3IztD7cyfQQiG4QX+6gfpPOkYk7Y5gDOwTKAYtfor0nc8npSY90vvIj93A==}
+
+  '@tryghost/root-utils@2.3.10':
+    resolution: {integrity: sha512-QqOj7YQxG91ovizRFKUn5f1AHZn5pdkgxcz8Qbg2M9QRJvACRVF9Pxst/yGoWmjdWRchpaDbfl7QipTOT/jH/Q==}
 
   '@tryghost/root-utils@2.3.2':
     resolution: {integrity: sha512-tUyMS4xJUceE62JjZIjWAXCeoVlbNHWF2dIy6xJkaYgeHw4oZ5YoKMu9Mzqa7TPHIapU+BxwdWV0HvMj9dZGlA==}
@@ -9510,6 +9559,9 @@ packages:
   '@tryghost/tpl@2.3.1':
     resolution: {integrity: sha512-qqa2SvhnBVKFYN+G4hfj2cYZuZXINBDyJ9cTzNBtev/FRNUKniyGarPKAkyb6ZBtvp3Nqlmyvrqe+SFoqHcfrQ==}
 
+  '@tryghost/tpl@2.3.10':
+    resolution: {integrity: sha512-jYUMBtCDc7Ok9m7VbdaL5znxhb4cWpRlnoCHZKTtxnP/D5Kt/WWwuV8fBRabqvdpPABkGlMm+momDAKMwst3lw==}
+
   '@tryghost/tpl@2.3.7':
     resolution: {integrity: sha512-TIDQF9tj4MaQKrIxNB8CxpElShAwLfyByozggIBnuzIVkGudX07gy/o9oWGRYslRselrvdByf+NpYonQ9j3Y0Q==}
 
@@ -9522,11 +9574,11 @@ packages:
   '@tryghost/url-utils@5.2.7':
     resolution: {integrity: sha512-enJ084BtVwsr+q+1wz2hy/jjooBfDLh4FS4g2o8n1ZAgGAly4mch6w7IpDX6MjRcy6an/S1i/Jo3tMsHa2igfw==}
 
-  '@tryghost/validator@0.2.22':
-    resolution: {integrity: sha512-dmobNVEKXMi3K4OdAXLBFwa78hVgy8cYvCPJgfV4h3NtYIyRHqwARr3upT3/ASpVBpKGVBu7XexfSv+tibzsuQ==}
+  '@tryghost/validator@3.2.10':
+    resolution: {integrity: sha512-mk4bexOTmO4xaGiTvHXwCQIH5okcR3XOA3zF2vSMu89lpwZ0QJPXEaooHZUdLLBGOwuigz0iLVyiNeC58OAyrg==}
 
-  '@tryghost/validator@3.2.9':
-    resolution: {integrity: sha512-dhb8ix2Xd1TVCjpwAJ87MRO/39m1fTl72dfqLbjnmA8r/vgA59SLVUF+BimH3DHcN6vDldwJlDlfJ4nHl5NEaA==}
+  '@tryghost/version@2.3.10':
+    resolution: {integrity: sha512-4KHPqEZwhyixUFfDiNCoJ6nCjmLrX5VwqrPcAsNQs82W2chkaysvjZU9rXFNULpapRcYu0Y7xX/Sn2JJDlbriQ==}
 
   '@tryghost/version@2.3.2':
     resolution: {integrity: sha512-tBW8gJKLJTUsrGdt/mM1k28Vy4DRTQF7tfZPUf9DQ0KkTgFc+5Z2WipGa50dOaicGysM15imOq7AK7IfXddCHw==}
@@ -13317,9 +13369,6 @@ packages:
 
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
-
-  echarts@5.6.0:
-    resolution: {integrity: sha512-oTbVTsXfKuEhxftHqL5xprgLoc0k7uScAwtryCgWF6hPYFLRwOUHiFmHGCBKP5NPFNkDVopOieyUqYGH8Fa3kA==}
 
   editions@1.3.4:
     resolution: {integrity: sha512-gzao+mxnYDzIysXKMQi/+M1mjy/rjestjg6OPoYTtI+3Izp23oiGZitsl9lPDPiTGXbcSIk1iJWhliSaglxnUg==}
@@ -19659,6 +19708,7 @@ packages:
   prom-client@15.1.3:
     resolution: {integrity: sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==}
     engines: {node: ^16 || ^18 || >=20}
+    deprecated: prom-client has been replaced by @prometheus-io/client
 
   promise-inflight@1.0.1:
     resolution: {integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g==}
@@ -21293,11 +21343,6 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  swr@2.4.2:
-    resolution: {integrity: sha512-ej644Y2bvkIajfR32KGeSSdBXQW+ScjGjkybZgSE7kFpk9eGnV44XY9FJylXi+W75pavSX1PVNB57W5EbhGIYw==}
-    peerDependencies:
-      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
@@ -21715,9 +21760,6 @@ packages:
 
   tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
-
-  tslib@2.3.0:
-    resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -22245,10 +22287,6 @@ packages:
 
   validator@13.15.35:
     resolution: {integrity: sha512-TQ5pAGhd5whStmqWvYF4OjQROlmv9SMFVt37qoCBdqRffuuklWYQlCNnEs2ZaIBD1kZRNnikiZOS1eqgkar0iw==}
-    engines: {node: '>= 0.10'}
-
-  validator@7.2.0:
-    resolution: {integrity: sha512-c8NGTUYeBEcUIGeMppmNVKHE7wwfm3mYbNZxV+c5mlv9fDHI7Ad3p07qfNrn/CvpdkK2k61fOLRO2sTEhgQXmg==}
     engines: {node: '>= 0.10'}
 
   value-or-function@4.0.0:
@@ -22898,9 +22936,6 @@ packages:
 
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
-
-  zrender@5.6.1:
-    resolution: {integrity: sha512-OFXkDJKcrlx5su2XbzJvj/34Q3m6PvyCZkVPHGYpcCJ52ek4U/ymZyfuV1nKE23AyBJ51E/6Yr0mhZ7xGTO4ag==}
 
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
@@ -28672,13 +28707,6 @@ snapshots:
     dependencies:
       '@textlint/ast-node-types': 15.8.0
 
-  '@tinybirdco/charts@0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      echarts: 5.6.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      swr: 2.4.2(react@18.3.1)
-
   '@tiptap/core@2.27.2(@tiptap/pm@2.27.2)':
     dependencies:
       '@tiptap/pm': 2.27.2
@@ -28778,7 +28806,7 @@ snapshots:
       '@tryghost/errors': 3.3.9
       '@tryghost/promise': 2.3.9
       '@tryghost/tpl': 2.3.9
-      '@tryghost/validator': 3.2.9
+      '@tryghost/validator': 3.2.10
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
@@ -29180,8 +29208,17 @@ snapshots:
   '@tryghost/request@4.0.2':
     dependencies:
       '@tryghost/errors': 3.3.9
-      '@tryghost/validator': 3.2.9
+      '@tryghost/validator': 3.2.10
       '@tryghost/version': 2.3.9
+      cacheable-lookup: 7.0.0
+      got: 15.1.0
+      lodash: 4.18.1
+
+  '@tryghost/request@4.0.3':
+    dependencies:
+      '@tryghost/errors': 3.3.9
+      '@tryghost/validator': 3.2.10
+      '@tryghost/version': 2.3.10
       cacheable-lookup: 7.0.0
       got: 15.1.0
       lodash: 4.18.1
@@ -29192,6 +29229,11 @@ snapshots:
       find-root: 1.1.0
 
   '@tryghost/root-utils@2.3.1':
+    dependencies:
+      caller: 1.1.0
+      find-root: 1.1.0
+
+  '@tryghost/root-utils@2.3.10':
     dependencies:
       caller: 1.1.0
       find-root: 1.1.0
@@ -29242,6 +29284,8 @@ snapshots:
 
   '@tryghost/tpl@2.3.1': {}
 
+  '@tryghost/tpl@2.3.10': {}
+
   '@tryghost/tpl@2.3.7': {}
 
   '@tryghost/tpl@2.3.9': {}
@@ -29266,21 +29310,18 @@ snapshots:
       remark-footnotes: 1.0.0
       unist-util-visit: 2.0.3
 
-  '@tryghost/validator@0.2.22':
+  '@tryghost/validator@3.2.10':
     dependencies:
       '@tryghost/errors': 3.3.9
-      '@tryghost/tpl': 0.1.40
-      lodash: 4.18.1
-      moment-timezone: 0.5.45
-      validator: 7.2.0
-
-  '@tryghost/validator@3.2.9':
-    dependencies:
-      '@tryghost/errors': 3.3.9
-      '@tryghost/tpl': 2.3.9
+      '@tryghost/tpl': 2.3.10
       lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 13.15.35
+
+  '@tryghost/version@2.3.10':
+    dependencies:
+      '@tryghost/root-utils': 2.3.10
+      semver: 7.8.5
 
   '@tryghost/version@2.3.2':
     dependencies:
@@ -30390,9 +30431,9 @@ snapshots:
       obug: 2.1.3
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
     optionalDependencies:
-      '@vitest/browser': 4.1.10(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10)
+      '@vitest/browser': 4.1.10(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10)
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -30473,7 +30514,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -34453,11 +34494,6 @@ snapshots:
   ecdsa-sig-formatter@1.0.11:
     dependencies:
       safe-buffer: 5.2.1
-
-  echarts@5.6.0:
-    dependencies:
-      tslib: 2.3.0
-      zrender: 5.6.1
 
   editions@1.3.4: {}
 
@@ -45596,12 +45632,6 @@ snapshots:
       picocolors: 1.1.1
       sax: 1.6.0
 
-  swr@2.4.2(react@18.3.1):
-    dependencies:
-      dequal: 2.0.3
-      react: 18.3.1
-      use-sync-external-store: 1.6.0(react@18.3.1)
-
   symbol-tree@3.2.4: {}
 
   symlink-or-copy@1.3.1: {}
@@ -46115,8 +46145,6 @@ snapshots:
       strip-bom: 3.0.0
 
   tslib@1.14.1: {}
-
-  tslib@2.3.0: {}
 
   tslib@2.8.1: {}
 
@@ -46675,8 +46703,6 @@ snapshots:
   validator@13.12.0: {}
 
   validator@13.15.35: {}
-
-  validator@7.2.0: {}
 
   value-or-function@4.0.0: {}
 
@@ -47598,10 +47624,6 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.4.3: {}
-
-  zrender@5.6.1:
-    dependencies:
-      tslib: 2.3.0
 
   zustand@4.5.7(@types/react@18.3.31)(react@18.3.1):
     dependencies:

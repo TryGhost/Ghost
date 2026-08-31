@@ -1,5 +1,4 @@
-import { useChangelog } from '@/whats-new/hooks/use-changelog';
-import { useWhatsNew } from '@/whats-new/hooks/use-whats-new';
+import { useChangelog, useWhatsNew } from '@/whats-new/api';
 
 export interface WhatsNewStatus {
   showWhatsNewBanner: boolean;

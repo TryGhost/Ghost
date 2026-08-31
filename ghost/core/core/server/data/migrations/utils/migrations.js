@@ -117,7 +117,7 @@ function createFinalMigration(major) {
     async function up() {
       throw new errors.InternalServerError({
         message: `Unable to run migrations`,
-        context: `You must be on the latest v${major}.x to update across major versions - https://ghost.org/docs/update/`,
+        context: `You must be on the latest v${major}.x to update across major versions - https://docs.ghost.org/update/`,
         help: `Run 'ghost update v${major}' to get the latest v${major}.x version, then run 'ghost update' to get to the latest.`,
       });
     },

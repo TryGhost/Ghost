@@ -256,6 +256,32 @@ describe('private.hbs template translation', function () {
         assert(html.includes('src="/private.js"'));
       });
 
+      it('renders the access-code form instead of the signup form for an authenticated member', function () {
+        const context = {
+          member: { email: 'member@example.com' },
+          site: {
+            title: 'Test',
+            url: 'http://test.local',
+            locale: 'en',
+            allow_self_signup: true,
+            admin_url: 'http://test.local/ghost/',
+          },
+        };
+        const html = renderPrivateTemplate(context);
+
+        assertExists(html);
+        assert(!html.includes('data-ghost-private-subscribe-form'));
+        assert.equal(
+          (html.match(/<form class="gh-signin gh-private-signin gh-private-access-form"/g) || [])
+            .length,
+          1,
+        );
+        assert(html.includes('placeholder="Access code"'));
+        assert(html.includes('type="submit"'));
+        assert(!html.includes('id="access"'));
+        assert(!html.includes('data-ghost-private-trigger'));
+      });
+
       it('uses the site accent color for the signup button when available', function () {
         const context = {
           site: {

@@ -5,10 +5,50 @@
 
 @import '@tryghost/shade/styles.css';
 
+/* Site custom-font families for the settings font pickers. The font-* utilities
+   must be generated in this Tailwind lane; the font files themselves load with
+   settings/custom-fonts.css in the settings chunk. */
+@theme {
+  --font-cardo: Cardo;
+  --font-manrope: Manrope;
+  --font-merriweather: Merriweather;
+  --font-nunito: Nunito;
+  --font-tenor-sans: Tenor Sans;
+  --font-old-standard-tt: Old Standard TT;
+  --font-prata: Prata;
+  --font-roboto: Roboto;
+  --font-rufina: Rufina;
+  --font-inter: Inter;
+  --font-space-grotesk: Space Grotesk;
+  --font-chakra-petch: Chakra Petch;
+  --font-noto-sans: Noto Sans;
+  --font-poppins: Poppins;
+  --font-fira-sans: Fira Sans;
+  --font-noto-serif: Noto Serif;
+  --font-lora: Lora;
+  --font-ibm-plex-serif: IBM Plex Serif;
+  --font-space-mono: Space Mono;
+  --font-fira-mono: Fira Mono;
+  --font-jetbrains-mono: JetBrains Mono;
+}
+
 /* Koenig mounts floating toolbars to document.body. Radix modal dialogs disable
    body pointer events, so body-level Koenig portals need to opt back in. */
 [data-kg-portal] {
   pointer-events: auto;
+}
+
+/* Prose classes are for formatting arbitrary HTML that comes from the API */
+.gh-prose-links a {
+  color: #30cf43;
+}
+
+.dark .shade .gh-loading-orb-container {
+  background-color: #000000;
+}
+
+.dark .shade .gh-loading-orb {
+  filter: invert(100%);
 }
 
 /* Legacy utility compatibility (Spirit/Tachyons-style percentages). */

@@ -1,16 +1,11 @@
 name: Release
-run-name: "Release — ${{ inputs.bump-type || 'auto' }} from ${{ inputs.branch || 'main' }}${{ inputs.dry-run && ' (dry run)' || '' }}"
+run-name: "Release — ${{ inputs.bump-type || 'auto' }} from main${{ inputs.dry-run && ' (dry run)' || '' }}"
 
 on:
   schedule:
     - cron: '0 15 * * 2' # Tuesday 3pm UTC
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Git branch to release from'
-        type: string
-        default: 'main'
-        required: false
       bump-type:
         description: 'Version bump type (auto, patch, minor)'
         type: string
@@ -55,7 +50,11 @@ jobs:
         with:
           # Deploy key (via ssh-agent) is used for git push — it bypasses
           # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)
-          ref: ${{ inputs.branch || 'main' }}
+          #
+          # Pinned to main, not a dispatch input: this job runs the checked-out
+          # scripts/release.js with the deploy key and PAT loaded, so a
+          # releasable ref must be one that went through review.
+          ref: main
           fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
@@ -84,8 +83,8 @@ jobs:
         env:
           # release.js reads these RELEASE_* vars as its arg defaults. inputs.*
           # are empty on the schedule trigger, so fall back to the
-          # scheduled-release defaults (main / auto / no flags).
-          RELEASE_BRANCH: ${{ inputs.branch || 'main' }}
+          # scheduled-release defaults (auto / no flags).
+          RELEASE_BRANCH: main
           RELEASE_BUMP_TYPE: ${{ inputs.bump-type || 'auto' }}
           RELEASE_DRY_RUN: ${{ inputs.dry-run || 'false' }}
           RELEASE_SKIP_CHECKS: ${{ inputs.skip-checks || 'false' }}

@@ -73,15 +73,15 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'React tag details',
-    description:
-      'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'tagDetailsReact',
-  },
-  {
     title: 'Member custom fields',
     description: 'Let admins create and manage custom field definitions for members',
     flag: 'membersCustomFields',
+  },
+  {
+    title: 'Members import redesign',
+    description:
+      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
+    flag: 'membersImportRedesign',
   },
   {
     title: 'Paywall improvements',
@@ -93,6 +93,12 @@ const features: Feature[] = [
     description:
       'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
     flag: 'giftSubCustomization',
+  },
+  {
+    title: 'React posts & pages lists',
+    description:
+      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'postsListReact',
   },
   {
     title: 'Self-serve archives',

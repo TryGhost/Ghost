@@ -1,5 +1,12 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  confirmationModal,
+  portal,
+  portalModal,
+  tierDetailModal,
+  tiers,
+} from '@tryghost/test-data/selectors/settings';
 
 export interface TierFormData {
   name: string;
@@ -19,10 +26,10 @@ export class TiersSection extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.section = page.getByTestId('tiers');
+    this.section = page.getByTestId(tiers);
     this.addTierButton = this.section.getByRole('button', { name: 'Add tier' });
-    this.tierDetailModal = page.getByTestId('tier-detail-modal');
-    this.confirmationModal = page.getByTestId('confirmation-modal');
+    this.tierDetailModal = page.getByTestId(tierDetailModal);
+    this.confirmationModal = page.getByTestId(confirmationModal);
     this.activeTab = this.section.getByRole('tab', { name: 'Active' });
     this.archivedTab = this.section.getByRole('tab', { name: 'Archived' });
   }
@@ -89,27 +96,27 @@ export class TiersSection extends BasePage {
   }
 
   async enableTierInPortal(tierName: string): Promise<void> {
-    const portalSection = this.page.getByTestId('portal');
+    const portalSection = this.page.getByTestId(portal);
     await portalSection.getByRole('button', { name: 'Customize' }).click();
-    const portalModal = this.page.getByTestId('portal-modal');
-    await portalModal.waitFor({ state: 'visible' });
+    const modal = this.page.getByTestId(portalModal);
+    await modal.waitFor({ state: 'visible' });
 
-    const tierCheckbox = portalModal.getByLabel(tierName).first();
+    const tierCheckbox = modal.getByLabel(tierName).first();
     if (!(await tierCheckbox.isChecked())) {
       await tierCheckbox.check();
     }
 
-    const monthlyCheckbox = portalModal.getByLabel('Monthly').first();
+    const monthlyCheckbox = modal.getByLabel('Monthly').first();
     if (!(await monthlyCheckbox.isChecked())) {
       await monthlyCheckbox.check();
     }
 
-    const yearlyCheckbox = portalModal.getByLabel('Yearly').first();
+    const yearlyCheckbox = modal.getByLabel('Yearly').first();
     if (!(await yearlyCheckbox.isChecked())) {
       await yearlyCheckbox.check();
     }
 
-    await portalModal.getByRole('button', { name: 'Save' }).click();
-    await portalModal.getByRole('button', { name: 'Close' }).click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await modal.getByRole('button', { name: 'Close' }).click();
   }
 }

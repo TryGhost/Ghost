@@ -18,18 +18,28 @@ describe('content import schema', function () {
       importRequestSchema.parse({
         filePath: '/tmp/posts.zip',
         fileName: 'posts.zip',
+        requestUserEmail: 'requester@example.com',
         mapping: {
           Headline: 'title',
           Body: 'html',
+          Source: 'comment_id',
+          Bylines: 'authors',
+          Emails: 'author_emails',
+          Topics: 'tags',
           Notes: '',
         },
       }),
       {
         filePath: '/tmp/posts.zip',
         fileName: 'posts.zip',
+        requestUserEmail: 'requester@example.com',
         mapping: {
           Headline: 'title',
           Body: 'html',
+          Source: 'comment_id',
+          Bylines: 'authors',
+          Emails: 'author_emails',
+          Topics: 'tags',
           Notes: '',
         },
       },
@@ -43,6 +53,30 @@ describe('content import schema', function () {
     );
   });
 
+  it('accepts a null request user and rejects an invalid email address', function () {
+    assert.deepEqual(
+      importRequestSchema.parse({
+        filePath: '/tmp/posts.csv',
+        fileName: 'posts.csv',
+        requestUserEmail: null,
+      }),
+      {
+        filePath: '/tmp/posts.csv',
+        fileName: 'posts.csv',
+        requestUserEmail: null,
+      },
+    );
+
+    assert.equal(
+      importRequestSchema.safeParse({
+        filePath: '/tmp/posts.csv',
+        fileName: 'posts.csv',
+        requestUserEmail: 'not-an-email',
+      }).success,
+      false,
+    );
+  });
+
   it('rejects empty and prototype CSV headers', function () {
     assert.deepEqual(issuesFor({ '': 'title' }), ['Invalid CSV header mapping: ""']);
     assert.deepEqual(issuesFor({ constructor: 'title' }), [
@@ -53,6 +87,9 @@ describe('content import schema', function () {
   it('rejects unknown and duplicate post targets', function () {
     assert.deepEqual(issuesFor({ Headline: 'title', Body: 'not_a_field' }), [
       'Unknown post field mapping: "not_a_field"',
+    ]);
+    assert.deepEqual(issuesFor({ Headline: 'title', Metadata: 'frontmatter' }), [
+      'Unknown post field mapping: "frontmatter"',
     ]);
     assert.deepEqual(issuesFor({ Headline: 'title', Duplicate: 'title' }), [
       'Post field is mapped more than once: "title"',

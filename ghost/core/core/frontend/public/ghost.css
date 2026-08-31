@@ -740,7 +740,7 @@ h2 {
 }
 
 .gh-private-signup-form,
-.gh-flow-content.private > .gh-private-access-form {
+.gh-flow-content.private .gh-private-access-form {
   width: min(100%, 550px);
   margin: 40px auto 0;
 }

@@ -182,6 +182,7 @@ const messages = {
   giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
   giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
   giftReassignFailed: 'Failed to reassign gift to member.',
+  customFieldWriteFailed: 'Failed to save the custom field values for this member.',
 };
 
 // Columns whose presence makes a row slow to import (they reach out to Stripe), so
@@ -305,7 +306,10 @@ class MembersCSVImporter {
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
     const spooled = await this._spool.write(rows);
 
-    logging.info('[Background Job] members-import queued');
+    logging.info(
+      { event: { name: 'members.import.queued' }, rows: rows.length },
+      'Members import queued',
+    );
     this._addJob({
       job: () =>
         this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
@@ -326,7 +330,7 @@ class MembersCSVImporter {
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {
     const startedAt = Date.now();
-    logging.info('[Background Job] members-import started');
+    logging.info({ event: { name: 'members.import.started' } }, 'Members import started');
     // Null until the import produces one: parsing and mapping already happened inside
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
@@ -355,10 +359,19 @@ class MembersCSVImporter {
 
     if (result) {
       logging.info(
-        `[Background Job] members-import completed in ${Date.now() - startedAt}ms: imported ${result.imported}, ${result.errors.length} row(s) rejected`,
+        {
+          event: { name: 'members.import.completed' },
+          durationMs: Date.now() - startedAt,
+          imported: result.imported,
+          rejected: result.errors.length,
+        },
+        'Members import completed',
       );
     } else {
-      logging.info(`[Background Job] members-import failed after ${Date.now() - startedAt}ms`);
+      logging.info(
+        { event: { name: 'members.import.failed' }, durationMs: Date.now() - startedAt },
+        'Members import failed',
+      );
     }
   }
 
@@ -569,7 +582,16 @@ class MembersCSVImporter {
         }
 
         // On the row's transaction, so the values commit or roll back with the member.
-        await this._customFields.applyWrite(member.id, customFieldPlan, trx);
+        try {
+          await this._customFields.applyWrite(member.id, customFieldPlan, trx);
+        } catch (writeError) {
+          // planWrite passed every value before the transaction opened, so a failure
+          // here is ours and not the row's. Operators get the original, which a driver
+          // will have written a query into; the publisher gets a sentence instead, in a
+          // file they open next to a spreadsheet.
+          this._report(writeError);
+          throw new errors.DataImportError({ message: tpl(messages.customFieldWriteFailed) });
+        }
 
         await trx.commit();
         imported += 1;

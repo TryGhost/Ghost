@@ -11,9 +11,20 @@ const {
 } = require('../../utils/e2e-framework');
 const { cacheInvalidateHeaderNotSet } = assertions;
 const path = require('path');
+const nock = require('nock');
+const papaparse = require('papaparse');
 const models = require('../../../core/server/models');
-const jobsService = require('../../../core/server/services/jobs');
+const contentImportService = require('../../../core/server/services/content-import');
+const mediaInlinerService = require('../../../core/server/services/media-inliner');
+const {
+  PostMediaInliner,
+  isBlockedMediaUrl,
+} = require('../../../core/server/services/content-import/import/media');
+const {
+  isLocalMediaUrl,
+} = require('../../../core/server/services/content-import/import/local-media-url');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
+const urlUtils = require('../../../core/shared/url-utils').default;
 const { compress } = require('@tryghost/zip');
 const sinon = require('sinon');
 
@@ -21,6 +32,7 @@ const csvPath = path.join(__dirname, '../../utils/fixtures/csv/valid-posts-impor
 
 // Test CSVs are written inline to a temp dir rather than committed as fixtures.
 let tmpDir;
+let remoteImportedMediaUrls = [];
 const getImportedAssetPaths = () => [
   path.join(adapterManager.getAdapter('storage:images').storagePath, 'csv-zip-photo.jpg'),
   path.join(adapterManager.getAdapter('storage:media').storagePath, 'csv-zip-movie.mp4'),
@@ -57,6 +69,23 @@ const zipFile = async (name, files) => {
   return zipPath;
 };
 
+const cleanupRemoteImportedMedia = async () => {
+  const storageByDirectory = {
+    images: adapterManager.getAdapter('storage:images'),
+    media: adapterManager.getAdapter('storage:media'),
+    files: adapterManager.getAdapter('storage:files'),
+  };
+  for (const mediaUrl of new Set(remoteImportedMediaUrls)) {
+    const absoluteUrl = urlUtils.transformReadyToAbsolute(mediaUrl);
+    const directory = new URL(absoluteUrl).pathname.match(/\/content\/(images|media|files)\//)?.[1];
+    if (directory) {
+      const storage = storageByDirectory[directory];
+      await storage.delete(storage.urlToPath(absoluteUrl));
+    }
+  }
+  remoteImportedMediaUrls = [];
+};
+
 describe('Posts Importer API', function () {
   let agent;
 
@@ -74,15 +103,19 @@ describe('Posts Importer API', function () {
     // Each test logs in as a different role — reset the login rate limiter
     // so the repeated logins don't trip spam prevention
     await resetRateLimits();
+    mockManager.mockMail();
+    remoteImportedMediaUrls = [];
     await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
   });
 
   afterEach(async function () {
     // Every accepted upload schedules a background import — drain it so a job
     // doesn't run on into another test (or another file on this fork's DB)
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
+    await cleanupRemoteImportedMedia();
     await Promise.all(getImportedAssetPaths().map((filePath) => fs.rm(filePath, { force: true })));
     mockManager.restore();
+    nock.cleanAll();
     sinon.restore();
   });
 
@@ -96,6 +129,224 @@ describe('Posts Importer API', function () {
       .expect(cacheInvalidateHeaderNotSet());
   });
 
+  it('emails the requesting user when an accepted CSV import finishes', async function () {
+    await agent.loginAsOwner();
+    const completionCsvPath = await csvFile(
+      'posts-import-completion-email.csv',
+      'title,html,status\n' +
+        'Completion email created,<p>Created</p>,published\n' +
+        'Completion email draft,<p>Draft</p>,draft\n',
+    );
+
+    const { body } = await agent
+      .post('posts/upload/')
+      .attach('postsfile', completionCsvPath)
+      .expectStatus(202);
+    await contentImportService.allSettled();
+
+    const email = mockManager.assert.sentEmail({
+      subject: 'Your content import is complete',
+      to: 'jbloggs@example.com',
+    });
+    assert.match(email.html, /processed 2 rows/);
+    assert.match(email.html, /Created:<\/strong> 2/);
+    assert.match(email.html, /Updated:<\/strong> 0/);
+    assert.match(email.html, /Skipped:<\/strong> 0/);
+    assert.match(email.html, /Failed:<\/strong> 0/);
+
+    const draft = await models.Post.findOne({ title: 'Completion email draft', status: 'all' });
+    assert.ok(draft);
+    assert.match(email.html, /Completion email created/);
+    assert.match(email.html, /\/completion-email-created\//);
+    assert.match(email.html, /Imported posts/);
+    assert.doesNotMatch(email.html, /Imported posts and pages/);
+    assert.ok(
+      email.html.includes(`/#/editor/post/${draft.id}`),
+      'the draft links to its Admin editor',
+    );
+    assert.match(email.html, new RegExp(`/#/posts\\?tag=hash-import-run-${body.meta.import_id}`));
+    assert.doesNotMatch(email.html, /View imported pages/);
+    assert.doesNotMatch(
+      email.html,
+      new RegExp(`/#/pages\\?tag=hash-import-run-${body.meta.import_id}`),
+    );
+  });
+
+  it('attaches a report that classifies same-run and pre-existing duplicates', async function () {
+    await agent.loginAsOwner();
+    const preExistingPath = await csvFile(
+      'posts-import-report-pre-existing.csv',
+      'title,slug\nPre-existing report post,report-pre-existing\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', preExistingPath).expectStatus(202);
+    await contentImportService.allSettled();
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+
+    const reportPath = await csvFile(
+      'posts-import-report.csv',
+      [
+        'title,slug,status,custom_excerpt,authors,author_emails',
+        'First in this run,report-same-run,draft,,,',
+        'Duplicate in this run,report-same-run,draft,,,',
+        'Pre-existing duplicate,report-pre-existing,draft,,,',
+        ',,,,,',
+        'Invalid status,report-invalid-status,scheduled,,,',
+        `Write failure,report-write-failure,draft,${'x'.repeat(301)},,`,
+        'Warning success,report-warning,draft,,Warning Author,not-an-email',
+        ',,,,,',
+        '  ,  ,  ,  ,  ,  ',
+      ].join('\n'),
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', reportPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    assert.match(email.html, /processed 6 rows/);
+    assert.match(email.html, /Created:<\/strong> 2/);
+    assert.match(email.html, /Updated:<\/strong> 0/);
+    assert.match(email.html, /Skipped:<\/strong> 2/);
+    assert.match(email.html, /Failed:<\/strong> 2 \(see attached errors\.csv\)/);
+    assert.equal(email.attachments.length, 2);
+    const report = email.attachments.find(({ filename }) => filename === 'report.csv');
+    assert.ok(report);
+    assert.equal(report.contentType, 'text/csv');
+
+    const { data: rows } = papaparse.parse(report.content.trim(), {
+      header: true,
+    });
+    assert.equal(rows.length, 6);
+    const sameRun = rows.find((row) => row.title === 'Duplicate in this run');
+    assert.equal(sameRun.outcome, 'duplicate');
+    assert.equal(sameRun.duplicate_origin, 'this_import');
+    assert.equal(sameRun.matched_by, 'slug');
+    const preExisting = rows.find((row) => row.title === 'Pre-existing duplicate');
+    assert.equal(preExisting.outcome, 'duplicate');
+    assert.equal(preExisting.duplicate_origin, 'pre_existing');
+    assert.equal(preExisting.matched_by, 'slug');
+    assert.equal(rows.find((row) => row.title === 'Invalid status').outcome, 'failed');
+    assert.equal(rows.find((row) => row.title === 'Invalid status').line, '6');
+    assert.equal(rows.find((row) => row.title === 'Write failure').outcome, 'failed');
+    assert.equal(rows.find((row) => row.title === 'Write failure').line, '7');
+    assert.match(rows.find((row) => row.title === 'Warning success').warnings, /assigned Owner/);
+    assert.equal(rows.find((row) => row.title === 'First in this run').outcome, 'created');
+
+    const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
+    assert.ok(errorsFile);
+    const { data: errorRows, meta } = papaparse.parse(errorsFile.content.trim(), { header: true });
+    assert.deepEqual(meta.fields.slice(0, 9), [
+      'import_status',
+      'import_reason',
+      'import_media_failures',
+      'title',
+      'slug',
+      'status',
+      'custom_excerpt',
+      'authors',
+      'author_emails',
+    ]);
+    assert.deepEqual(
+      errorRows.map(({ title }) => title),
+      ['Invalid status', 'Write failure'],
+    );
+    assert.equal(
+      errorRows.some(({ title }) => title === 'Duplicate in this run'),
+      false,
+    );
+    assert.equal(
+      errorRows.some(({ title }) => title === 'Warning success'),
+      false,
+    );
+  });
+
+  it('preserves mapped ZIP source columns and avoids annotation collisions', async function () {
+    await agent.loginAsOwner();
+    const zipPath = await zipFile('posts-import-errors-source.zip', {
+      'wrapper/posts.csv':
+        'Body,Headline,State,import_status\n<p>Keep source cells</p>,ZIP invalid,scheduled,publisher value\n',
+    });
+    const form = new FormData();
+    form.append('mapping[Body]', 'html');
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[State]', 'status');
+    form.append('mapping[import_status]', '');
+    form.append('postsfile', await fs.readFile(zipPath), {
+      filename: path.basename(zipPath),
+      contentType: 'application/zip',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const email = mockManager.assert.sentEmail({
+      subject: 'Your content import was unsuccessful',
+    });
+    assert.match(email.html, /Skipped:<\/strong> 0/);
+    assert.match(email.html, /Failed:<\/strong> 1 \(see attached errors\.csv\)/);
+    const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
+    assert.ok(errorsFile);
+    const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
+    assert.deepEqual(parsed.meta.fields, [
+      'import_status_2',
+      'import_reason',
+      'import_media_failures',
+      'Body',
+      'Headline',
+      'State',
+      'import_status',
+    ]);
+    assert.equal(parsed.data[0].Body, '<p>Keep source cells</p>');
+    assert.equal(parsed.data[0].Headline, 'ZIP invalid');
+    assert.equal(parsed.data[0].State, 'scheduled');
+    assert.equal(parsed.data[0].import_status, 'publisher value');
+    assert.equal(parsed.data[0].import_status_2, 'failed');
+
+    const retryForm = new FormData();
+    retryForm.append('mapping[Body]', 'html');
+    retryForm.append('mapping[Headline]', 'title');
+    retryForm.append('mapping[State]', 'status');
+    retryForm.append('postsfile', Buffer.from(errorsFile.content), {
+      filename: 'errors.csv',
+      contentType: 'text/csv',
+    });
+    await agent.post('posts/upload/').body(retryForm).expectStatus(202);
+    await contentImportService.allSettled();
+    mockManager.assert.sentEmail({ subject: 'Your content import was unsuccessful' });
+  });
+
+  it('Keeps content import initialization idempotent and rejects invalid service requests', async function () {
+    const isolatedContentImportService =
+      await import('../../../core/server/services/content-import/index.ts?coverage-lifecycle');
+
+    assert.throws(
+      () =>
+        isolatedContentImportService.importCSV({
+          filePath: '/tmp/posts.csv',
+          fileName: 'posts.csv',
+        }),
+      /Content import service used before init/,
+    );
+    isolatedContentImportService.init();
+    isolatedContentImportService.init();
+
+    assert.throws(
+      () => isolatedContentImportService.importCSV({ filePath: '', fileName: '' }),
+      (error) => {
+        assert.equal(error.errorType, 'ValidationError');
+        assert.match(error.message, /Too small/);
+        return true;
+      },
+    );
+    await assert.rejects(
+      isolatedContentImportService.importCSV({
+        filePath: path.join(tmpDir, 'missing.csv'),
+        fileName: 'missing.csv',
+      }),
+      /The file could not be parsed as a CSV file/,
+    );
+  });
+
   it('Can upload a posts CSV as Administrator', async function () {
     await agent.loginAsAdmin();
 
@@ -104,6 +355,268 @@ describe('Posts Importer API', function () {
       .attach('postsfile', csvPath)
       .expectStatus(202)
       .expect(cacheInvalidateHeaderNotSet());
+  });
+
+  it('downloads and stores referenced CSV media before creating the post', async function () {
+    await agent.loginAsOwner();
+    const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+    const [audioFixture, videoFixture, fileFixture] = await Promise.all([
+      fs.readFile(path.join(__dirname, '../../utils/fixtures/media/sample.mp3')),
+      fs.readFile(path.join(__dirname, '../../utils/fixtures/media/sample_640x360.mp4')),
+      fs.readFile(path.join(__dirname, '../../utils/fixtures/files/test.pdf')),
+    ]);
+    const origin = 'https://csv-import-assets.example';
+    const requests = [
+      nock(origin).get('/body.jpg').reply(200, GIF1x1),
+      nock(origin).get('/og.jpg').reply(200, GIF1x1),
+      nock(origin).get('/twitter.jpg').reply(200, GIF1x1),
+      nock(origin).get('/audio.mp3').reply(200, audioFixture),
+      nock(origin).get('/video.mp4').reply(200, videoFixture),
+      nock(origin).get('/guide.pdf').reply(200, fileFixture),
+    ];
+    const html =
+      `<p><img src="${origin}/body.jpg"></p>` +
+      `<div class="kg-card kg-audio-card"><div class="kg-audio-player-container"><audio src="${origin}/audio.mp3"></audio></div></div>` +
+      `<figure class="kg-card kg-video-card"><div class="kg-video-container"><video src="${origin}/video.mp4"></video></div></figure>` +
+      `<div class="kg-card kg-file-card"><a href="${origin}/guide.pdf"><div class="kg-file-card-title">Guide</div><div class="kg-file-card-filename">guide.pdf</div></a></div>`;
+    const csvValue = (value) => `"${value.replaceAll('"', '""')}"`;
+    const csv = [
+      'title,html,markdown,feature_image,og_image,twitter_image',
+      `Remote CSV media,${csvValue(html)},,${origin}/body.jpg,${origin}/og.jpg,${origin}/twitter.jpg`,
+      `Remote Markdown media,,${csvValue(`![Remote](${origin}/body.jpg)`)},,,`,
+    ].join('\n');
+    const filePath = await csvFile('remote-media.csv', csv);
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    for (const request of requests) {
+      assert.equal(request.isDone(), true, request.pendingMocks().join(', '));
+    }
+    const post = await models.Post.findOne(
+      { title: 'Remote CSV media', status: 'all' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    const lexical = JSON.parse(post.get('lexical'));
+    const nodeByType = (type) => lexical.root.children.find((node) => node.type === type);
+    const storedUrls = [
+      nodeByType('image').src,
+      nodeByType('audio').src,
+      nodeByType('video').src,
+      nodeByType('file').src,
+      post.get('feature_image'),
+      post.related('posts_meta').get('og_image'),
+      post.related('posts_meta').get('twitter_image'),
+    ];
+    const markdownPost = await models.Post.findOne({
+      title: 'Remote Markdown media',
+      status: 'all',
+    });
+    assert.ok(markdownPost);
+    const markdownLexical = JSON.parse(markdownPost.get('lexical'));
+    const markdownImage = markdownLexical.root.children.find((node) => node.type === 'image').src;
+    assert.equal(post.get('feature_image'), nodeByType('image').src);
+    assert.equal(markdownImage, nodeByType('image').src);
+    storedUrls.push(markdownImage);
+    remoteImportedMediaUrls.push(...storedUrls);
+    for (const storedUrl of storedUrls) {
+      const absoluteUrl = new URL(urlUtils.transformReadyToAbsolute(storedUrl));
+      assert.equal(absoluteUrl.origin, new URL(urlUtils.getSiteUrl()).origin);
+      assert.match(absoluteUrl.pathname, /\/content\/(?:images|media|files)\//);
+    }
+    assert.doesNotMatch(post.get('html'), /csv-import-assets\.example/);
+    assert.doesNotMatch(markdownPost.get('html'), /csv-import-assets\.example/);
+  });
+
+  it('isolates unsupported referenced media to its CSV row', async function () {
+    await agent.loginAsOwner();
+    const origin = 'https://csv-import-assets.example';
+    const unsupportedFixture = await fs.readFile(
+      path.join(__dirname, '../../unit/server/services/media-inliner/test/fixtures/fixture.exe'),
+    );
+    const request = nock(origin).get('/unsupported.exe').reply(200, unsupportedFixture);
+    const filePath = await csvFile(
+      'unsupported-remote-media.csv',
+      `title,feature_image\nUnsupported remote media,${origin}/unsupported.exe\nContinues after media failure,\n`,
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    assert.equal(request.isDone(), true, request.pendingMocks().join(', '));
+    const post = await models.Post.findOne({ title: 'Unsupported remote media', status: 'all' });
+    assert.equal(post, null);
+    const continuedPost = await models.Post.findOne({
+      title: 'Continues after media failure',
+      status: 'all',
+    });
+    assert.ok(continuedPost);
+
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
+    assert.ok(errorsFile);
+    const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
+    assert.equal(parsed.data.length, 1);
+    assert.equal(parsed.data[0].title, 'Unsupported remote media');
+    assert.deepEqual(JSON.parse(parsed.data[0].import_media_failures), [
+      {
+        sourceUrl: `${origin}/unsupported.exe`,
+        reason: 'No configured storage accepts this media file.',
+      },
+    ]);
+  });
+
+  it('preserves current-site media URLs without fetching or validating them', async function () {
+    await agent.loginAsOwner();
+    const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+    const imageUrl = `${siteUrl}/content/images/already-stored.jpg`;
+    const unsplashUrl = 'https://images.unsplash.com/photo-123?fit=crop&w=1200';
+    const gravatarUrl = 'https://www.gravatar.com/avatar/abc123?s=200';
+    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
+    const filePath = await csvFile(
+      'local-media.csv',
+      [
+        'title,html,feature_image',
+        `Local media,"<p><img src=""${imageUrl}"" /></p>",${imageUrl}`,
+        `Unsplash media,"<p><img src=""${unsplashUrl}"" /></p>",${unsplashUrl}`,
+        `Gravatar media,"<p><img src=""${gravatarUrl}"" /></p>",${gravatarUrl}`,
+      ].join('\n'),
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    sinon.assert.notCalled(importUrl);
+    const post = await models.Post.findOne({ title: 'Local media', status: 'all' });
+    assert.ok(post);
+    assert.ok(post.get('feature_image').endsWith('/content/images/already-stored.jpg'));
+    assert.match(post.get('html'), /\/content\/images\/already-stored\.jpg/);
+
+    for (const [title, sourceUrl] of [
+      ['Unsplash media', unsplashUrl],
+      ['Gravatar media', gravatarUrl],
+    ]) {
+      const blockedPost = await models.Post.findOne({ title, status: 'all' });
+      assert.ok(blockedPost);
+      assert.equal(blockedPost.get('feature_image'), sourceUrl);
+      assert.ok(blockedPost.get('html').includes(new URL(sourceUrl).hostname));
+    }
+  });
+
+  it('classifies local media URL variants used by importer configuration', function () {
+    const options = {
+      siteUrl: 'https://example.com/blog/',
+      subdir: 'blog',
+      assetBaseUrls: [
+        'not a URL',
+        'https://assets.example/c/site/',
+        'https://root-assets.example/',
+        null,
+      ],
+    };
+
+    for (const sourceUrl of [
+      '__GHOST_URL__/content/images/image.jpg',
+      '/content/media/video.mp4',
+      '/blog/content/files/guide.pdf',
+      '//example.com/blog/content/images/image.jpg',
+      'https://assets.example/c/site/content/images/image.jpg',
+      'https://root-assets.example/anything/image.jpg',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), true, sourceUrl);
+    }
+
+    for (const sourceUrl of [
+      '/blogger/content/images/image.jpg',
+      'https://assets.example/c/site-other/image.jpg',
+      'https://example.com/blog/content/images-other/image.jpg',
+      'https://external.example/content/images/image.jpg',
+      'not a URL',
+    ]) {
+      assert.equal(isLocalMediaUrl(sourceUrl, options), false, sourceUrl);
+    }
+
+    assert.equal(
+      isLocalMediaUrl('https://example.com/content/images/image.jpg', {
+        ...options,
+        siteUrl: 'not a URL',
+      }),
+      false,
+    );
+  });
+
+  it('rewrites media in raw Lexical HTML and Markdown card content', async function () {
+    const origin = 'https://raw-card-assets.example';
+    const importUrl = sinon.stub().callsFake(async (sourceUrl) => ({
+      status: 'stored',
+      sourceUrl,
+      storedUrl: sourceUrl.replace(origin, '__GHOST_URL__/content/images'),
+    }));
+    const inliner = new PostMediaInliner({
+      media: { importUrl },
+      isLocalMediaUrl: () => false,
+    });
+    const data = {
+      feature_image: 'https://images.unsplash.com/photo-123',
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            {
+              type: 'before-after',
+              beforeImage: { src: `${origin}/before.jpg` },
+              afterImage: { src: `${origin}/after.jpg` },
+            },
+            {
+              type: 'html',
+              html:
+                `<img src="${origin}/image.jpg" srcset="${origin}/small.jpg 1x, ${origin}/large.jpg 2x">` +
+                `<div style="background-image: url('${origin}/background.jpg')"></div>` +
+                `<style>.hero { background: url(${origin}/style.jpg) }</style>`,
+            },
+            {
+              type: 'markdown',
+              markdown: `![Remote](${origin}/markdown.jpg)`,
+            },
+          ],
+        },
+      }),
+    };
+
+    await inliner.inline(data);
+
+    const lexical = JSON.parse(data.lexical);
+    assert.equal(
+      lexical.root.children[0].beforeImage.src,
+      '__GHOST_URL__/content/images/before.jpg',
+    );
+    assert.equal(lexical.root.children[0].afterImage.src, '__GHOST_URL__/content/images/after.jpg');
+    assert.doesNotMatch(lexical.root.children[1].html, /raw-card-assets\.example/);
+    assert.doesNotMatch(lexical.root.children[2].markdown, /raw-card-assets\.example/);
+    assert.equal(data.feature_image, 'https://images.unsplash.com/photo-123');
+    assert.equal(isBlockedMediaUrl('https://gravatar.com/avatar/abc123'), true);
+    assert.equal(isBlockedMediaUrl('https://gravatar.com.evil.example/avatar/abc123'), false);
+    assert.equal(isBlockedMediaUrl('not a URL'), false);
+    assert.equal(importUrl.callCount, 8);
+  });
+
+  it('fails the run when media inlining throws an unexpected error', async function () {
+    await agent.loginAsOwner();
+    const sourceUrl = 'https://unexpected-media-error.example/image.jpg';
+    const importUrl = sinon
+      .stub(mediaInlinerService.getInstance(), 'importUrl')
+      .rejects(new Error('Unexpected media importer failure'));
+    const filePath = await csvFile(
+      'unexpected-media-error.csv',
+      `title,feature_image\nUnexpected media failure,${sourceUrl}\n`,
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    sinon.assert.calledOnceWithExactly(importUrl, sourceUrl);
+    const post = await models.Post.findOne({ title: 'Unexpected media failure', status: 'all' });
+    assert.equal(post, null);
   });
 
   it('Imports the single mapped CSV inside a ZIP', async function () {
@@ -124,7 +637,7 @@ describe('Posts Importer API', function () {
     const { body } = await agent.post('posts/upload/').body(form).expectStatus(202);
     assert.equal(body.meta.total, 1);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
     const post = await models.Post.findOne({ title: 'ZIP mapping post', status: 'all' });
     assert.ok(post);
     assert.match(post.get('html'), /Mapped from ZIP/);
@@ -132,6 +645,7 @@ describe('Posts Importer API', function () {
 
   it('Stores and rewrites wrapped image, media, and file assets before importing posts', async function () {
     await agent.loginAsOwner();
+    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
 
     const csv =
       'title,html,markdown,feature_image,og_image,twitter_image\n' +
@@ -150,7 +664,9 @@ describe('Posts Importer API', function () {
       .attach('postsfile', zipPath)
       .expectStatus(202);
     assert.equal(body.meta.total, 3);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
+
+    sinon.assert.notCalled(importUrl);
 
     for (const filePath of getImportedAssetPaths().slice(0, 3)) {
       assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);
@@ -209,7 +725,7 @@ describe('Posts Importer API', function () {
       .attach('postsfile', zipPath)
       .expectStatus(202);
     assert.equal(body.meta.total, 1);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     for (const filePath of getImportedAssetPaths().slice(4, 7)) {
       assert.equal(await fs.stat(filePath).then(() => true), true, `${filePath} was stored`);
@@ -250,7 +766,7 @@ describe('Posts Importer API', function () {
     });
 
     await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'ZIP failed assets', status: 'all' });
     assert.equal(post, null);
@@ -275,7 +791,7 @@ describe('Posts Importer API', function () {
     });
 
     await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'ZIP partial file failure', status: 'all' });
     assert.equal(post, null);
@@ -296,7 +812,7 @@ describe('Posts Importer API', function () {
     });
 
     await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'ZIP cross-group failure', status: 'all' });
     assert.equal(post, null);
@@ -325,7 +841,7 @@ describe('Posts Importer API', function () {
     });
 
     await agent.post('posts/upload/').attach('postsfile', zipPath).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'ZIP incomplete rollback', status: 'all' });
     assert.equal(post, null);
@@ -506,8 +1022,12 @@ describe('Posts Importer API', function () {
         reason: /Invalid CSV header mapping: "constructor"/,
       },
       {
-        mapping: { First: 'title', Second: 'authors' },
-        reason: /Unknown post field mapping: "authors"/,
+        mapping: { First: 'title', Second: 'newsletter_id' },
+        reason: /Unknown post field mapping: "newsletter_id"/,
+      },
+      {
+        mapping: { First: 'title', Second: 'frontmatter' },
+        reason: /Unknown post field mapping: "frontmatter"/,
       },
       {
         mapping: { First: 'title', Second: 'title' },
@@ -530,6 +1050,25 @@ describe('Posts Importer API', function () {
     }
   });
 
+  it('Ignores an unmapped frontmatter identity header', async function () {
+    await agent.loginAsOwner();
+
+    const frontmatterCsvPath = await csvFile(
+      'posts-import-frontmatter.csv',
+      'title,frontmatter\nFrontmatter source column,key: value\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', frontmatterCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'Frontmatter source column' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    assert.equal(post.related('posts_meta').get('frontmatter'), undefined);
+  });
+
   it('Imports each CSV row as a post with its content and publish date', async function () {
     await agent.loginAsOwner();
 
@@ -548,7 +1087,7 @@ describe('Posts Importer API', function () {
     assert.match(body.meta.import_id, /^[0-9a-f]{24}$/);
     assert.equal(body.meta.total, 2);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const { data: posts } = await models.Post.findPage({
       filter: `title:~'Content check post'`,
@@ -613,6 +1152,130 @@ describe('Posts Importer API', function () {
     assert.equal(two.get('updated_at').toISOString(), '2024-06-15T18:45:00.000Z');
   });
 
+  it('Skips existing post slugs when the same CSV is imported again', async function () {
+    await agent.loginAsOwner();
+
+    const duplicateCsvPath = await csvFile(
+      'posts-import-deduplication.csv',
+      'title,slug,html\n' +
+        'CSV deduplication check,csv-deduplication-check,<p>Only one copy</p>\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', duplicateCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+    await agent.post('posts/upload/').attach('postsfile', duplicateCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const { data: posts } = await models.Post.findPage({
+      filter: "slug:'csv-deduplication-check'",
+      status: 'all',
+      limit: 'all',
+    });
+
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].get('title'), 'CSV deduplication check');
+    assert.match(posts[0].get('html'), /Only one copy/);
+  });
+
+  it('Matches explicit CSV source IDs before falling back to slugs', async function () {
+    await agent.loginAsOwner();
+
+    const originalCsvPath = await csvFile(
+      'posts-import-source-id-original.csv',
+      'title,slug,comment_id\n' +
+        'CSV source ID original,csv-source-id-original,m5-source-id-primary\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', originalCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const comparisonCsvPath = await csvFile(
+      'posts-import-source-id-comparisons.csv',
+      'Headline,Address,Source\n' +
+        'CSV source ID duplicate,csv-source-id-different,m5-source-id-primary\n' +
+        'CSV source ID slug fallback,csv-source-id-original,m5-source-id-unmatched\n' +
+        `CSV source ID too long,csv-source-id-too-long,${'x'.repeat(51)}\n` +
+        'CSV source ID distinct,csv-source-id-distinct,m5-source-id-distinct\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[Address]', 'slug');
+    form.append('mapping[Source]', 'comment_id');
+    form.append('postsfile', await fs.readFile(comparisonCsvPath), {
+      filename: path.basename(comparisonCsvPath),
+      contentType: 'text/csv',
+    });
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const original = await models.Post.findOne({ slug: 'csv-source-id-original', status: 'all' });
+    const sourceDuplicate = await models.Post.findOne({
+      slug: 'csv-source-id-different',
+      status: 'all',
+    });
+    const tooLong = await models.Post.findOne({
+      slug: 'csv-source-id-too-long',
+      status: 'all',
+    });
+    const distinct = await models.Post.findOne({ slug: 'csv-source-id-distinct', status: 'all' });
+
+    assert.ok(original);
+    assert.equal(original.get('title'), 'CSV source ID original');
+    assert.equal(original.get('comment_id'), 'm5-source-id-primary');
+    assert.equal(sourceDuplicate, null, 'the source ID match takes precedence over its new slug');
+    assert.equal(tooLong, null, 'an invalid source ID skips only its row');
+    assert.ok(distinct, 'a valid row after the invalid source ID is still imported');
+    assert.equal(distinct.get('comment_id'), 'm5-source-id-distinct');
+  });
+
+  it('Updates matching posts only when the CSV has a newer explicit updated_at', async function () {
+    await agent.loginAsOwner();
+
+    const originalCsvPath = await csvFile(
+      'posts-import-update-originals.csv',
+      'title,slug,comment_id,updated_at\n' +
+        'CSV update original,csv-update-original,m5-update-source,2025-01-01T00:00:00.000Z\n' +
+        'CSV update slug original,csv-update-by-slug,,2025-01-01T00:00:00.000Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', originalCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const updatesCsvPath = await csvFile(
+      'posts-import-update-comparisons.csv',
+      'title,slug,comment_id,updated_at\n' +
+        'CSV update newer,csv-update-newer,m5-update-source,2025-02-01T00:00:00.000Z\n' +
+        'CSV update equal,csv-update-equal,m5-update-source,2025-02-01T01:00:00.000+01:00\n' +
+        'CSV update older,csv-update-older,m5-update-source,2025-01-31T23:59:59.999Z\n' +
+        'CSV update by slug,csv-update-by-slug,,2025-03-01T00:00:00.000Z\n' +
+        'CSV update invalid date,csv-update-invalid-date,,not-a-date\n' +
+        'CSV update after invalid,csv-update-after-invalid,,2025-04-01T00:00:00.000Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', updatesCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const newer = await models.Post.findOne({
+      comment_id: 'm5-update-source',
+      status: 'all',
+    });
+    const updatedBySlug = await models.Post.findOne({
+      slug: 'csv-update-by-slug',
+      status: 'all',
+    });
+    const invalid = await models.Post.findOne({ slug: 'csv-update-invalid-date', status: 'all' });
+    const afterInvalid = await models.Post.findOne({
+      slug: 'csv-update-after-invalid',
+      status: 'all',
+    });
+
+    assert.ok(newer);
+    assert.equal(newer.get('updated_at').toISOString(), '2025-02-01T00:00:00.000Z');
+    assert.equal(newer.get('title'), 'CSV update newer');
+    assert.ok(updatedBySlug);
+    assert.equal(updatedBySlug.get('title'), 'CSV update by slug');
+    assert.equal(updatedBySlug.get('updated_at').toISOString(), '2025-03-01T00:00:00.000Z');
+    assert.equal(invalid, null, 'an invalid updated_at skips only its row');
+    assert.ok(afterInvalid, 'a valid row after the invalid date is still imported');
+  });
+
   it('Imports public posts even when the site default visibility is paid', async function () {
     mockManager.mockSetting('default_content_visibility', 'paid');
     await agent.loginAsOwner();
@@ -624,7 +1287,7 @@ describe('Posts Importer API', function () {
 
     await agent.post('posts/upload/').attach('postsfile', paidSiteCsvPath).expectStatus(202);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'Visibility check post', status: 'all' });
     // left to the model, visibility would have followed default_content_visibility
@@ -664,7 +1327,7 @@ describe('Posts Importer API', function () {
     });
 
     await agent.post('posts/upload/').body(form).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne(
       { title: 'Mapped field post', status: 'all' },
@@ -689,6 +1352,223 @@ describe('Posts Importer API', function () {
     assert.match(post.get('html'), /Mapped body/);
   });
 
+  it('Reconciles mapped CSV authors and tags with existing records', async function () {
+    await agent.loginAsOwner();
+
+    const emailAuthor = fixtureManager.get('users', 1);
+    const nameAuthor = fixtureManager.get('users', 3);
+    const tagOptions = { context: { internal: true } };
+    const exactTag = await models.Tag.add(
+      { name: 'CSV exact relation', slug: 'csv-exact-relation-stored' },
+      tagOptions,
+    );
+    const explicitSlugTag = await models.Tag.add(
+      { name: 'Stored explicit relation', slug: 'csv-explicit-relation' },
+      tagOptions,
+    );
+    const normalizedSlugTag = await models.Tag.add(
+      { name: 'Stored normalized relation', slug: 'csv-normalized-relation' },
+      tagOptions,
+    );
+    const relationsCsvPath = await csvFile(
+      'posts-import-existing-relations.csv',
+      'Headline,Bylines,Emails,Topics\n' +
+        `CSV existing relations,"${emailAuthor.name}, ${nameAuthor.name}, ${emailAuthor.name}","${emailAuthor.email.toUpperCase()}, , ${emailAuthor.email}","CSV exact relation,csv-explicit-relation,CSV normalized relation,CSV exact relation"\n`,
+    );
+    const form = new FormData();
+    for (const [header, field] of Object.entries({
+      Headline: 'title',
+      Bylines: 'authors',
+      Emails: 'author_emails',
+      Topics: 'tags',
+    })) {
+      form.append(`mapping[${header}]`, field);
+    }
+    form.append('postsfile', await fs.readFile(relationsCsvPath), {
+      filename: path.basename(relationsCsvPath),
+      contentType: 'text/csv',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'CSV existing relations', status: 'all' },
+      { withRelated: ['authors', 'tags'] },
+    );
+    assert.ok(post);
+    assert.deepEqual(
+      post.related('authors').map((author) => author.id),
+      [emailAuthor.id, nameAuthor.id],
+      'email and name-only matches retain source order and remove duplicates',
+    );
+    const importedTags = post.related('tags').models;
+    assert.deepEqual(
+      importedTags.slice(0, 3).map((tag) => tag.id),
+      [exactTag.id, explicitSlugTag.id, normalizedSlugTag.id],
+      'exact names, explicit slugs, and normalized slugs retain source order',
+    );
+    assert.equal(importedTags.length, 5);
+    assert.match(importedTags[3].get('name'), /^#Import /);
+    assert.match(importedTags[4].get('name'), /^#Import Run /);
+  });
+
+  it('Creates missing CSV authors as locked Contributors and falls back to Owner', async function () {
+    await agent.loginAsOwner();
+
+    const authorsCsvPath = await csvFile(
+      'posts-import-new-authors.csv',
+      'title,authors,author_emails\n' +
+        'CSV created contributor,"New CSV Contributor, New CSV Contributor","new-csv-contributor@example.com, new-csv-contributor@example.com"\n' +
+        'CSV missing author email,Missing CSV Email,\n' +
+        'CSV invalid author email,Invalid CSV Email,not-an-email\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', authorsCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const contributor = await models.User.findOne(
+      { email: 'new-csv-contributor@example.com', status: 'all' },
+      { withRelated: ['roles'] },
+    );
+    assert.ok(contributor);
+    assert.equal(contributor.get('status'), 'locked');
+    assert.deepEqual(
+      contributor.related('roles').map((role) => role.get('name')),
+      ['Contributor'],
+    );
+
+    const owner = await models.User.getOwnerUser();
+    const createdPost = await models.Post.findOne(
+      { title: 'CSV created contributor', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    const missingEmailPost = await models.Post.findOne(
+      { title: 'CSV missing author email', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    const invalidEmailPost = await models.Post.findOne(
+      { title: 'CSV invalid author email', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    assert.deepEqual(
+      createdPost.related('authors').map((author) => author.id),
+      [contributor.id],
+      'duplicate author inputs create and attach one Contributor',
+    );
+    for (const post of [missingEmailPost, invalidEmailPost]) {
+      assert.deepEqual(
+        post.related('authors').map((author) => author.id),
+        [owner.id],
+      );
+    }
+    assert.equal(await models.User.findOne({ slug: 'missing-csv-email', status: 'all' }), null);
+    assert.equal(await models.User.findOne({ slug: 'invalid-csv-email', status: 'all' }), null);
+  });
+
+  it('Rolls back a newly created Contributor when the post model fails', async function () {
+    await agent.loginAsOwner();
+    sinon.stub(models.Post, 'add').rejects(new Error('post model failed'));
+    const authorsCsvPath = await csvFile(
+      'posts-import-author-rollback.csv',
+      'title,authors,author_emails\n' +
+        'CSV contributor rollback,Rollback Contributor,csv-rollback-contributor@example.com\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', authorsCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    assert.equal(
+      await models.User.findOne({ email: 'csv-rollback-contributor@example.com', status: 'all' }),
+      null,
+    );
+    assert.equal(
+      await models.Post.findOne({ title: 'CSV contributor rollback', status: 'all' }),
+      null,
+    );
+  });
+
+  it('Creates missing CSV tags once and preserves their order and visibility', async function () {
+    await agent.loginAsOwner();
+
+    const firstCsvPath = await csvFile(
+      'posts-import-new-tags.csv',
+      'title,tags\n' +
+        'CSV created tags one,"New CSV Tag,#CSV Internal Tag,New CSV Tag"\n' +
+        'CSV created tags two,"#CSV Internal Tag,New CSV Tag"\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', firstCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const secondCsvPath = await csvFile(
+      'posts-import-reused-tags.csv',
+      'title,tags\nCSV reused tags,New CSV Tag\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', secondCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const publicTags = await models.Tag.findAll({ filter: "name:'New CSV Tag'" });
+    const internalTags = await models.Tag.findAll({ filter: "name:'#CSV Internal Tag'" });
+    assert.equal(publicTags.length, 1, 'later rows and imports reuse the created public tag');
+    assert.equal(internalTags.length, 1, 'duplicate inputs create one internal tag');
+    const publicTag = publicTags.at(0);
+    const internalTag = internalTags.at(0);
+    assert.equal(publicTag.get('visibility'), 'public');
+    assert.equal(internalTag.get('visibility'), 'internal');
+
+    const firstPost = await models.Post.findOne(
+      { title: 'CSV created tags one', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const secondPost = await models.Post.findOne(
+      { title: 'CSV created tags two', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const reusedPost = await models.Post.findOne(
+      { title: 'CSV reused tags', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    assert.deepEqual(
+      firstPost
+        .related('tags')
+        .models.slice(0, 2)
+        .map((tag) => tag.id),
+      [publicTag.id, internalTag.id],
+    );
+    assert.deepEqual(
+      secondPost
+        .related('tags')
+        .models.slice(0, 2)
+        .map((tag) => tag.id),
+      [internalTag.id, publicTag.id],
+    );
+    assert.equal(firstPost.related('tags').length, 4, 'the two batch tags remain attached');
+    assert.equal(secondPost.related('tags').length, 4, 'the two batch tags remain attached');
+    assert.deepEqual(
+      reusedPost
+        .related('tags')
+        .models.slice(0, 1)
+        .map((tag) => tag.id),
+      [publicTag.id],
+    );
+    assert.equal(reusedPost.related('tags').length, 3, 'a later import gets its own batch tags');
+  });
+
+  it('Rolls back a newly created tag when the post model fails', async function () {
+    await agent.loginAsOwner();
+    sinon.stub(models.Post, 'add').rejects(new Error('post model failed'));
+    const tagsCsvPath = await csvFile(
+      'posts-import-tag-rollback.csv',
+      'title,tags\nCSV tag rollback,CSV Rollback Tag\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', tagsCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    assert.equal(await models.Tag.findOne({ name: 'CSV Rollback Tag' }), null);
+    assert.equal(await models.Post.findOne({ title: 'CSV tag rollback', status: 'all' }), null);
+  });
+
   it('Renders a mapped Markdown column through the post content converter', async function () {
     await agent.loginAsOwner();
 
@@ -705,7 +1585,7 @@ describe('Posts Importer API', function () {
     });
 
     await agent.post('posts/upload/').body(form).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'Markdown field post', status: 'all' });
     assert.ok(post);
@@ -722,7 +1602,7 @@ describe('Posts Importer API', function () {
     );
 
     await agent.post('posts/upload/').attach('postsfile', cleanupCsvPath).expectStatus(202);
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const post = await models.Post.findOne({ title: 'Clean HTML post', status: 'all' });
     assert.ok(post);
@@ -750,7 +1630,7 @@ describe('Posts Importer API', function () {
 
     await agent.post('posts/upload/').attach('postsfile', badRowsCsvPath).expectStatus(202);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const { data: posts } = await models.Post.findPage({
       filter: `title:~'Bad rows check'`,
@@ -781,7 +1661,7 @@ describe('Posts Importer API', function () {
 
     await agent.post('posts/upload/').attach('postsfile', garbageCsvPath).expectStatus(202);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const {
       meta: {
@@ -810,7 +1690,7 @@ describe('Posts Importer API', function () {
 
     assert.match(body.errors[0].message, /more than 100 posts/);
 
-    await jobsService.allSettled();
+    await contentImportService.allSettled();
 
     const { data: posts } = await models.Post.findPage({
       filter: `title:~'Over cap post'`,

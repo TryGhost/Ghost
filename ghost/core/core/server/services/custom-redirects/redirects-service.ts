@@ -8,7 +8,7 @@ import { errify } from '../../../shared/errify';
 
 const messages = {
   redirectsRegister: 'Could not register custom redirects.',
-  redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
+  redirectsHelp: 'https://docs.ghost.org/themes/routing/#redirects',
   skippedInvalidRedirect: 'Skipped invalid redirect: {context}',
   rejectedRedirect: 'Could not register redirect: {from} -> {to}',
   allRedirectsSkipped:
