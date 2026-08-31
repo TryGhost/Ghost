@@ -96,7 +96,7 @@ Object {
 }
 `;
 
-exports[`Site Public Settings Sets allow_external_signup to false when the free plan is hidden in Portal on a paid site 1: [body] 1`] = `
+exports[`Site Public Settings Sets allow_external_signup to false when the free plan is hidden in Portal 1: [body] 1`] = `
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
@@ -115,7 +115,7 @@ Object {
 }
 `;
 
-exports[`Site Public Settings Sets allow_external_signup to false when the free plan is hidden in Portal on a paid site 2: [headers] 1`] = `
+exports[`Site Public Settings Sets allow_external_signup to false when the free plan is hidden in Portal 2: [headers] 1`] = `
 Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",

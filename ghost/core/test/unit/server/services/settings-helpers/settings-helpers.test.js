@@ -167,10 +167,19 @@ describe('Settings Helpers', function () {
       assert.equal(settingsHelpers.allowSelfSignup(), false);
     });
 
-    it('returns true when the free plan is hidden in Portal but paid members are disabled', function () {
+    it('returns false when the free plan is hidden in Portal even without paid members', function () {
       const settingsHelpers = createSettingsHelpers({
         signupAccess: 'all',
         portalPlans: [],
+        stripeConnected: false,
+      });
+      assert.equal(settingsHelpers.allowSelfSignup(), false);
+    });
+
+    it('returns true when the free plan is visible in Portal without paid members', function () {
+      const settingsHelpers = createSettingsHelpers({
+        signupAccess: 'all',
+        portalPlans: ['free'],
         stripeConnected: false,
       });
       assert.equal(settingsHelpers.allowSelfSignup(), true);
