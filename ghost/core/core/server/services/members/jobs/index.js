@@ -19,29 +19,27 @@ function randomDailyCron(maxHour = 24) {
 }
 
 module.exports = {
-  async scheduleExpiredCompCleanupJob() {
+  async scheduleExpiredCompCleanupJob(jobsService) {
     if (alreadyScheduledOrTest('expiredComped')) {
       return;
     }
 
-    const classBasedJobs = require('../../jobs-service').getInstance();
     // Keep the legacy off-peak window: a random time between 00:00 and 05:59
     const cron = randomDailyCron(6);
     logging.info(`[Background Job] clean-expired-comped scheduled at ${cron}`);
-    await classBasedJobs.scheduleRecurring(new CleanExpiredCompedJob(), { cron });
+    await jobsService.scheduleRecurring(new CleanExpiredCompedJob(), { cron });
 
     hasScheduled.expiredComped = true;
   },
 
-  async scheduleTokenCleanupJob() {
+  async scheduleTokenCleanupJob(jobsService) {
     if (alreadyScheduledOrTest('tokens')) {
       return;
     }
 
-    const classBasedJobs = require('../../jobs-service').getInstance();
     const cron = randomDailyCron();
     logging.info(`[Background Job] clean-tokens scheduled at ${cron}`);
-    await classBasedJobs.scheduleRecurring(new CleanTokensJob(), { cron });
+    await jobsService.scheduleRecurring(new CleanTokensJob(), { cron });
 
     hasScheduled.tokens = true;
   },

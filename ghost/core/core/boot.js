@@ -502,7 +502,7 @@ async function initBackgroundServices({ config }) {
   // service fails.
   try {
     const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob();
+    await memberJobs.scheduleTokenCleanupJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -510,7 +510,7 @@ async function initBackgroundServices({ config }) {
 
   try {
     const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleExpiredCompCleanupJob();
+    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
