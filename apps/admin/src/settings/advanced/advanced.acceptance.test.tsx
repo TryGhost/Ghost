@@ -58,7 +58,7 @@ describe('Advanced settings', () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
     const labs = { admin7PageChrome: false, tagsX: true };
-    const response = configResponse({ labs });
+    const response = configResponse();
     response.config.enableDeveloperExperiments = true;
     await renderAdminApp('/settings/labs', { labs, boot: { browseConfig: { response } } });
 

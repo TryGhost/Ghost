@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
-import type { ConfigResponse } from '@tryghost/test-data';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -162,10 +161,10 @@ describe('Analytics overview', () => {
   it('uses Admin 7 typography in the portalled trend tooltip', async () => {
     seedAnalyticsWorld();
     seedTopPostsViews();
-    const boot = webAnalyticsBootOverrides();
-    const config = boot.browseConfig?.response as ConfigResponse;
-    config.config.labs = { ...config.config.labs, admin7PageChrome: true };
-    await renderAdminApp('/analytics', { boot });
+    await renderAdminApp('/analytics', {
+      labs: { admin7PageChrome: true },
+      boot: webAnalyticsBootOverrides(),
+    });
     await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
     await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
     await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
